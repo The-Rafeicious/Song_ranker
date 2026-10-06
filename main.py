@@ -168,6 +168,57 @@ def is_close_match(guess, actual, threshold=0.75):
     return SequenceMatcher(None, g, a).ratio() >= threshold
 
 
+def get_matchup(is_blind=False):
+    """Unified song selection logic for all game modes."""
+    conn = get_db_connection()
+
+    # 1. Fetch eligible pool
+    if is_blind:
+        songs = conn.execute('SELECT * FROM songs WHERE audio_url IS NOT NULL AND audio_url != ""').fetchall()
+    else:
+        songs = conn.execute('SELECT * FROM songs').fetchall()
+
+    conn.close()
+
+    if len(songs) < 2:
+        return None, None
+
+    # 2. Calculate the 25% Elo gap threshold
+    elos = sorted([s['elo_score'] for s in songs])
+    mid = len(elos) // 2
+
+    if mid > 0:
+        bottom_avg = sum(elos[:mid]) / mid
+        top_avg = sum(elos[mid:]) / (len(elos) - mid)
+        elo_gap = top_avg - bottom_avg
+        # Use 25% of the gap, but never let the threshold drop below 50 Elo
+        threshold = max(elo_gap * 0.25, 50)
+    else:
+        threshold = 50
+
+    # Helper function for Weighted Probability (Advantage to least played)
+    def pick_weighted(pool):
+        # Weight formula: 1 / (matches_played + 1)
+        weights = [1.0 / (s['matches_played'] + 1) for s in pool]
+        return random.choices(pool, weights=weights, k=1)[0]
+
+    # 3. Pick Song 1 using the weighted advantage
+    song1 = pick_weighted(songs)
+
+    # 4. Filter for Song 2 within the exact dynamic threshold limit
+    pool2 = [s for s in songs if s['id'] != song1['id'] and abs(s['elo_score'] - song1['elo_score']) <= threshold]
+
+    # 5. Fallback: If no opponents sit in that exact range, grab the 15 mathematically closest songs
+    if not pool2:
+        songs_except_1 = [s for s in songs if s['id'] != song1['id']]
+        songs_except_1.sort(key=lambda x: abs(x['elo_score'] - song1['elo_score']))
+        pool2 = songs_except_1[:15]
+
+    song2 = pick_weighted(pool2)
+
+    return song1, song2
+
+
 @app.route('/')
 def home():
     conn = get_db_connection()
@@ -212,50 +263,25 @@ def home():
 def index():
     conn = get_db_connection()
 
+    # Preserve the matchup if the user accidentally refreshes the page
     if 'song1_id' in session and 'song2_id' in session:
         song1 = conn.execute('SELECT * FROM songs WHERE id = ?', (session['song1_id'],)).fetchone()
         song2 = conn.execute('SELECT * FROM songs WHERE id = ?', (session['song2_id'],)).fetchone()
 
         if song1 and song2:
             conn.close()
-            return render_template('index.html', song1=song1, song2=song2)
-
-    # 1. Widen the net for Song 1:
-    # Pick from the 40 least-played songs instead of just the bottom 5.
-    pool1 = conn.execute('''
-        SELECT * FROM songs 
-        ORDER BY matches_played ASC, RANDOM() 
-        LIMIT 40
-    ''').fetchall()
-
-    if not pool1:
-        conn.close()
-        return "<h1>Database is empty. Please add songs!</h1>"
-
-    song1 = random.choice(pool1)
-
-    # 2. Widen the Elo range for Song 2:
-    # Look at the 60 closest songs instead of 15 to break the Elo bubble.
-    pool2 = conn.execute('''
-        SELECT * FROM songs 
-        WHERE id != ? 
-        ORDER BY ABS(elo_score - ?) ASC 
-        LIMIT 60
-    ''', (song1['id'], song1['elo_score'])).fetchall()
+            return render_template('index.html', song1=song1, song2=song2, last_vote=session.get('last_vote'))
 
     conn.close()
 
-    if not pool2:
-        return "<h1>Not enough songs in the database. Add at least two!</h1>"
+    # Generate a brand new matchup using the unified logic
+    song1, song2 = get_matchup(is_blind=False)
 
-    # 3. Add more variety to the final opponent selection:
-    # Pick randomly from the 15 least-played competitors in that widened pool (instead of just 3).
-    pool2_sorted = sorted(pool2, key=lambda x: x['matches_played'])
-    song2 = random.choice(pool2_sorted[:15])
+    if not song1 or not song2:
+        return "<h1>Not enough songs in the database. Add at least two!</h1>"
 
     session['song1_id'] = song1['id']
     session['song2_id'] = song2['id']
-
     last_vote = session.pop('last_vote', None)
 
     return render_template('index.html', song1=song1, song2=song2, last_vote=last_vote)
@@ -482,16 +508,12 @@ def song_page(song_id):
 
 @app.route('/blind')
 def blind_mode():
-    conn = get_db_connection()
-    # Only pull songs that actually have an audio preview
-    songs = conn.execute(
-        'SELECT * FROM songs WHERE audio_url IS NOT NULL AND audio_url != "" ORDER BY RANDOM() LIMIT 2').fetchall()
-    conn.close()
+    song1, song2 = get_matchup(is_blind=True)
 
-    if len(songs) < 2:
+    if not song1 or not song2:
         return "Not enough songs with audio previews to play Blind Mode."
 
-    return render_template('blind_mode.html', song1=songs[0], song2=songs[1])
+    return render_template('blind_mode.html', song1=song1, song2=song2)
 
 
 @app.route('/api/blind_vote', methods=['POST'])
@@ -535,43 +557,99 @@ def api_blind_vote():
 
 # --- TRIVIA MINI-GAME ---
 
+# --- TRIVIA MINI-GAME ---
+
 @app.route('/trivia')
 def trivia_mode():
-    # Initialize the user's running score in their session
+    conn = get_db_connection()
+
+    # Safely ensure the high score table exists
+    conn.execute('CREATE TABLE IF NOT EXISTS global_stats (key TEXT PRIMARY KEY, value INTEGER)')
+    conn.execute('INSERT OR IGNORE INTO global_stats (key, value) VALUES ("trivia_high_score", 0)')
+
+    # Fetch current high score
+    high_score_row = conn.execute('SELECT value FROM global_stats WHERE key = "trivia_high_score"').fetchone()
+    high_score = high_score_row['value'] if high_score_row else 0
+
+    # Initialize session stats independently if they don't exist
     if 'trivia_score' not in session:
         session['trivia_score'] = 0
 
-    conn = get_db_connection()
-    song = conn.execute(
-        'SELECT id, audio_url FROM songs WHERE audio_url IS NOT NULL AND audio_url != "" ORDER BY RANDOM() LIMIT 1').fetchone()
+    if 'trivia_streak' not in session:
+        session['trivia_streak'] = 0
+
+    song = conn.execute('''
+                        SELECT id, audio_url
+                        FROM songs
+                        WHERE audio_url IS NOT NULL
+                          AND audio_url != ""
+                        ORDER BY RANDOM()
+                        LIMIT 1
+                        ''').fetchone()
     conn.close()
 
-    return render_template('trivia_mode.html', song=song, score=session['trivia_score'])
+    return render_template('trivia_mode.html',
+                           song=song,
+                           score=session['trivia_score'],
+                           streak=session['trivia_streak'],
+                           high_score=high_score)
 
 
 @app.route('/api/trivia_guess', methods=['POST'])
 def api_trivia_guess():
-    """Checks the guess, updates the recognizability stats, and returns the result."""
+    """Checks the guess, updates streak/score, handles timeouts, and returns the result."""
     data = request.json
     song_id = data['song_id']
+    time_taken = float(data.get('time_taken', 30.0))
+    timeout = data.get('timeout', False)
 
     conn = get_db_connection()
     song = conn.execute('SELECT title, artist, cover_url FROM songs WHERE id = ?', (song_id,)).fetchone()
 
-    # Check guesses against actual data (75% accuracy threshold)
-    title_match = is_close_match(data.get('title_guess', ''), song['title'])
-    artist_match = is_close_match(data.get('artist_guess', ''), song['artist'])
+    # Process answers (auto-fail if it was a timeout)
+    title_match = False if timeout else is_close_match(data.get('title_guess', ''), song['title'])
+    artist_match = False if timeout else is_close_match(data.get('artist_guess', ''), song['artist'])
+
+    correct_count = sum([title_match, artist_match])
 
     points = 0
-    if title_match: points += 1
-    if artist_match: points += 1
+    speed_bonus = 0
+    game_over = False
 
-    session['trivia_score'] = session.get('trivia_score', 0) + points
+    # Only award points and continue streak if at least ONE answer is right
+    if correct_count > 0:
+        points += (correct_count * 100)  # 100 base points per correct field
+
+        # Speed bonus: up to 100 extra points based on answering quickly (assuming 30s preview)
+        speed_bonus = max(0, int((1.0 - (time_taken / 30.0)) * 100))
+        points += speed_bonus
+
+        session['trivia_streak'] = session.get('trivia_streak', 0) + 1
+        session['trivia_score'] = session.get('trivia_score', 0) + points
+    else:
+        game_over = True
+
+    final_score = session.get('trivia_score', 0)
+
+    # Check and update High Score
+    high_score_row = conn.execute('SELECT value FROM global_stats WHERE key = "trivia_high_score"').fetchone()
+    high_score = high_score_row['value'] if high_score_row else 0
+
+    new_high_score = False
+    if final_score > high_score:
+        conn.execute('UPDATE global_stats SET value = ? WHERE key = "trivia_high_score"', (final_score,))
+        high_score = final_score
+        new_high_score = True
+
+    # If the player lost, wipe their active session streak
+    if game_over:
+        session['trivia_score'] = 0
+        session['trivia_streak'] = 0
 
     # Update global recognizability stats for this song
     conn.execute(
         'UPDATE songs SET trivia_attempts = trivia_attempts + 1, trivia_correct = trivia_correct + ? WHERE id = ?',
-        (points, song_id))
+        (correct_count, song_id))
     conn.commit()
     conn.close()
 
@@ -580,25 +658,40 @@ def api_trivia_guess():
         "actual_artist": song['artist'],
         "cover_url": song['cover_url'],
         "points_earned": points,
-        "new_total": session['trivia_score'],
+        "speed_bonus": speed_bonus,
+        "new_total": final_score,
         "title_correct": title_match,
-        "artist_correct": artist_match
+        "artist_correct": artist_match,
+        "game_over": game_over,
+        "new_high_score": new_high_score,
+        "high_score": high_score
     })
+
 
 @app.route('/trivia_stats')
 def trivia_stats():
     conn = get_db_connection()
+
+    # Fetch global high score safely
+    high_score_row = conn.execute('SELECT value FROM global_stats WHERE key = "trivia_high_score"').fetchone()
+    high_score = high_score_row['value'] if high_score_row else 0
+
     # Calculate recognizability percentage. Only show songs with at least 1 attempt.
     stats_data = conn.execute('''
-        SELECT id, title, artist, cover_url, trivia_attempts, trivia_correct,
-               (CAST(trivia_correct AS FLOAT) / (trivia_attempts * 2)) * 100 as rec_score
-        FROM songs
-        WHERE trivia_attempts > 0
-        ORDER BY rec_score DESC, trivia_attempts DESC
-    ''').fetchall()
+                              SELECT id,
+                                     title,
+                                     artist,
+                                     cover_url,
+                                     trivia_attempts,
+                                     trivia_correct,
+                                     (CAST(trivia_correct AS FLOAT) / (trivia_attempts * 2)) * 100 as rec_score
+                              FROM songs
+                              WHERE trivia_attempts > 0
+                              ORDER BY rec_score DESC, trivia_attempts DESC
+                              ''').fetchall()
     conn.close()
 
-    return render_template('trivia_stats.html', stats=stats_data)
+    return render_template('trivia_stats.html', stats=stats_data, high_score=high_score)
 
 # --- DEVELOPER AUTHENTICATION ---
 

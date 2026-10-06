@@ -1,177 +1,204 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Song Trivia</title>
+{% extends "base.html" %}
+
+{% block title %}Song Trivia{% endblock %}
+
+{% block extra_css %}
     <style>
-        body { font-family: -apple-system, sans-serif; background-color: #121212; color: #fff; text-align: center; margin: 0; padding-bottom: 50px; }
-        .navbar { background-color: #1e1e1e; padding: 15px 30px; display: flex; justify-content: space-between; border-bottom: 1px solid #333; margin-bottom: 40px; }
-        .navbar a { color: #fff; text-decoration: none; font-weight: bold; margin-right: 20px; }
-        .navbar a:hover, .active { color: #1db954; }
+        .trivia-container { max-width: 600px; margin: 0 auto; background-color: #1e1e1e; padding: 40px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); text-align: center; }
 
-        .trivia-container { max-width: 500px; margin: 0 auto; background-color: #1e1e1e; padding: 40px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
-        .score-banner { font-size: 1.2em; font-weight: bold; color: #1db954; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        /* Stats Dashboard */
+        .stats-dash { display: flex; justify-content: space-between; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+        .stat-block { flex: 1; }
+        .stat-label { color: #888; font-size: 0.85em; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+        .stat-value { font-size: 1.4em; font-weight: bold; color: #fff; }
+        .highlight-green { color: #1db954; }
+        .highlight-orange { color: #ffbf7f; }
 
-        .mystery-cover { width: 250px; height: 250px; background-color: #2a2a2a; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 5em; cursor: pointer; margin: 0 auto 30px auto; object-fit: cover; transition: all 0.3s ease;}
+        /* Timer Bar */
+        .timer-container { width: 100%; height: 8px; background-color: #333; border-radius: 4px; margin-bottom: 30px; overflow: hidden; position: relative; }
+        .timer-bar { height: 100%; width: 100%; background-color: #1db954; transition: width 0.1s linear, background-color 0.3s; }
+
+        .mystery-cover { width: 250px; height: 250px; background-color: #2a2a2a; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 5em; cursor: pointer; margin: 0 auto 30px auto; object-fit: cover; transition: transform 0.2s;}
+        .mystery-cover:hover { transform: scale(1.02); }
 
         .form-group { text-align: left; margin-bottom: 20px; }
         .form-group label { display: block; color: #888; margin-bottom: 8px; font-weight: bold; }
         .guess-input { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #333; background-color: #2a2a2a; color: white; font-size: 1.1em; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+        .guess-input:disabled { opacity: 0.5; cursor: not-allowed; }
         .guess-input:focus { border-color: #1db954; }
         .guess-input.correct { border-color: #1db954; background-color: rgba(29, 185, 84, 0.1); }
         .guess-input.wrong { border-color: #e22134; background-color: rgba(226, 33, 52, 0.1); }
 
         .submit-btn { background-color: #1db954; color: white; border: none; padding: 15px; font-size: 1.2em; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
+        .submit-btn:disabled { background-color: #333; color: #888; cursor: not-allowed; }
 
         .reveal-data { display: none; margin-top: 25px; padding-top: 25px; border-top: 1px solid #333; }
+        .game-over-text { color: #e22134; font-size: 1.8em; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; }
         .actual-text { font-size: 1.5em; font-weight: bold; margin-bottom: 5px; }
         .actual-sub { color: #b3b3b3; font-size: 1.1em; margin-bottom: 20px; }
-        .nav-right { display: flex; align-items: center; gap: 20px; }
-        .volume-control {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            background-color: #2a2a2a;
-            padding: 5px 15px;
-            border-radius: 20px;
-        }
-        .search-form { display: flex; }
-        .search-input {
-            padding: 8px 15px;
-            border-radius: 20px 0 0 20px;
-            border: 1px solid #333;
-            background-color: #2a2a2a;
-            color: white;
-            outline: none;
-            width: 200px;
-        }
-        .search-btn {
-            padding: 8px 20px;
-            border-radius: 0 20px 20px 0;
-            border: none;
-            background-color: #1db954;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        .navbar {
-            background-color: #1e1e1e;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            margin-bottom: 40px;
-        }
-        .nav-left { display: flex; align-items: center; gap: 20px; }
-        .nav-left a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.2s;
-        }
-        .nav-left a:hover, .nav-left .active { color: #1db954; }
     </style>
-</head>
-<body>
+{% endblock %}
 
-    <div class="navbar">
-        <div>
-            <a href="/">Home</a>
-            <a href="/blind">Blind Mode</a>
-            <a href="/trivia" class="active">Trivia</a>
-            <a href="/artists">Artists</a>
-            <a href="/albums">Albums</a>
-            <a href="/tiers">Tier List</a>
-            <a href="/trivia_stats">Trivia Stats</a>
-            <a href="/history">History</a>
-            <a href="/dev/login">Dev</a>
-        </div>
-        <div class="nav-right">
-            <form action="/search" method="GET" class="search-form">
-                <input type="text" name="q" class="search-input" placeholder="Search songs, artists...">
-                <button type="submit" class="search-btn">Search</button>
-            </form>
-        </div>
-    </div>
-
+{% block content %}
     <div class="trivia-container">
-        <div class="score-banner">Total Score: <span id="score-display">{{ score }}</span></div>
+
+        <div class="stats-dash">
+            <div class="stat-block">
+                <div class="stat-label">Score</div>
+                <div class="stat-value highlight-green" id="score-display">{{ score }}</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-label">Streak</div>
+                <div class="stat-value highlight-orange" id="streak-display">{{ streak }} 🔥</div>
+            </div>
+            <div class="stat-block">
+                <div class="stat-label">High Score</div>
+                <div class="stat-value" id="highscore-display">{{ high_score }}</div>
+            </div>
+        </div>
+
+        <div class="timer-container">
+            <div class="timer-bar" id="timer-bar"></div>
+        </div>
 
         <img class="mystery-cover" id="cover-art" src="" style="display: none;">
-        <div class="mystery-cover" id="play-btn" onclick="toggleAudio()">▶</div>
+        <div class="mystery-cover" id="play-btn" onclick="startGame()">▶</div>
         <audio id="trivia-audio" src="{{ song.audio_url }}"></audio>
 
         <div id="guess-section">
             <div class="form-group">
                 <label>Song Title</label>
-                <input type="text" id="title-guess" class="guess-input" placeholder="Guess the title..." autocomplete="off">
+                <input type="text" id="title-guess" class="guess-input" placeholder="Guess the title..." autocomplete="off" disabled>
             </div>
             <div class="form-group">
                 <label>Artist Name</label>
-                <input type="text" id="artist-guess" class="guess-input" placeholder="Guess the artist..." autocomplete="off">
+                <input type="text" id="artist-guess" class="guess-input" placeholder="Guess the artist..." autocomplete="off" disabled>
             </div>
-            <button class="submit-btn" onclick="submitGuess({{ song.id }})" id="action-btn">Submit Guess</button>
+            <button class="submit-btn" onclick="submitGuess(false)" id="action-btn" disabled>Start Round to Guess</button>
         </div>
 
         <div class="reveal-data" id="reveal-section">
+            <div id="game-over-banner" class="game-over-text" style="display: none;">Streak Broken!</div>
             <div style="color: #1db954; font-weight: bold; font-size: 1.2em; margin-bottom: 15px;" id="points-earned"></div>
             <div class="actual-text" id="actual-title"></div>
             <div class="actual-sub" id="actual-artist"></div>
-            <button class="submit-btn" onclick="location.reload()" style="background-color: #333;">Next Track</button>
+            <button class="submit-btn" id="next-btn" onclick="location.reload()" style="background-color: #333;">Next Round</button>
         </div>
     </div>
 
     <script>
         const audio = document.getElementById('trivia-audio');
         const playBtn = document.getElementById('play-btn');
+        const timerBar = document.getElementById('timer-bar');
+        const titleInput = document.getElementById('title-guess');
+        const artistInput = document.getElementById('artist-guess');
+        const actionBtn = document.getElementById('action-btn');
 
-        function toggleAudio() {
-            if (audio.paused) { audio.play(); playBtn.innerText = '⏸'; }
-            else { audio.pause(); playBtn.innerText = '▶'; }
+        const SONG_ID = {{ song.id }};
+        let startTime = 0;
+        let gameActive = false;
+
+        function startGame() {
+            if (gameActive) return;
+            gameActive = true;
+            startTime = Date.now();
+
+            // Unlock Inputs
+            titleInput.disabled = false;
+            artistInput.disabled = false;
+            actionBtn.disabled = false;
+            actionBtn.innerText = "Submit Guess";
+
+            // Start Audio & Visuals
+            playBtn.innerText = "🎵";
+            playBtn.style.cursor = "default";
+            audio.play();
+            titleInput.focus();
         }
-        audio.addEventListener('ended', () => playBtn.innerText = '▶');
 
-        async function submitGuess(songId) {
-            const titleInput = document.getElementById('title-guess');
-            const artistInput = document.getElementById('artist-guess');
-            const actionBtn = document.getElementById('action-btn');
+        // Sync visual timer bar with the audio element's playback
+        audio.addEventListener('timeupdate', () => {
+            if (!gameActive) return;
+            const percentage = 100 - ((audio.currentTime / audio.duration) * 100);
+            timerBar.style.width = percentage + '%';
 
-            actionBtn.innerText = "Checking...";
+            if (percentage < 25) timerBar.style.backgroundColor = '#e22134'; // Turn red near end
+            else if (percentage < 50) timerBar.style.backgroundColor = '#ffbf7f'; // Turn orange in middle
+        });
+
+        // Trigger a timeout loss if the song finishes playing before they guess
+        audio.addEventListener('ended', () => {
+            if (gameActive) submitGuess(true);
+        });
+
+        // Allow pressing Enter in inputs to submit
+        titleInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') submitGuess(false); });
+        artistInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') submitGuess(false); });
+
+        async function submitGuess(isTimeout = false) {
+            if (!gameActive) return;
+            gameActive = false;
+
+            const timeTaken = (Date.now() - startTime) / 1000; // In seconds
+            audio.pause();
+
+            actionBtn.innerText = isTimeout ? "Time's Up!" : "Checking...";
             actionBtn.disabled = true;
+            titleInput.readOnly = true;
+            artistInput.readOnly = true;
 
             const response = await fetch('/api/trivia_guess', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                    song_id: songId,
+                    song_id: SONG_ID,
                     title_guess: titleInput.value,
-                    artist_guess: artistInput.value
+                    artist_guess: artistInput.value,
+                    time_taken: timeTaken,
+                    timeout: isTimeout
                 })
             });
             const data = await response.json();
 
-            // Swap the generic play icon for the actual album cover
+            // UI Reveal
             playBtn.style.display = 'none';
             const coverArt = document.getElementById('cover-art');
             coverArt.src = data.cover_url;
             coverArt.style.display = 'block';
 
-            // Grade the inputs visually
-            titleInput.readOnly = true;
-            artistInput.readOnly = true;
+            // Grade Inputs Visually
             titleInput.classList.add(data.title_correct ? 'correct' : 'wrong');
             artistInput.classList.add(data.artist_correct ? 'correct' : 'wrong');
 
-            // Show the true metadata
+            // Populate Data
             document.getElementById('actual-title').innerText = data.actual_title;
             document.getElementById('actual-artist').innerText = data.actual_artist;
-            document.getElementById('points-earned').innerText = `+${data.points_earned} Points`;
             document.getElementById('score-display').innerText = data.new_total;
+            document.getElementById('highscore-display').innerText = data.high_score;
+
+            if (data.new_high_score) {
+                document.getElementById('highscore-display').classList.add('highlight-green');
+            }
+
+            if (data.game_over) {
+                document.getElementById('game-over-banner').style.display = 'block';
+                document.getElementById('streak-display').innerText = "0 🔥";
+                document.getElementById('next-btn').innerText = "Restart Game";
+                document.getElementById('next-btn').style.backgroundColor = "#e22134";
+                if (isTimeout) document.getElementById('points-earned').innerText = "You ran out of time.";
+            } else {
+                let currentStreak = parseInt(document.getElementById('streak-display').innerText);
+                document.getElementById('streak-display').innerText = (currentStreak + 1) + " 🔥";
+                document.getElementById('points-earned').innerText = `+${data.points_earned} Points (Speed Bonus: ${data.speed_bonus})`;
+            }
 
             actionBtn.style.display = 'none';
             document.getElementById('reveal-section').style.display = 'block';
+
+            // Replay the first 3 seconds of the track as a reward/reminder during reveal
+            audio.currentTime = 0;
+            audio.play();
+            setTimeout(() => { audio.pause(); }, 3000);
         }
     </script>
-</body>
-</html>
+{% endblock %}
