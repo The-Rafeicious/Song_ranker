@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ song.title }} - Song Ranker</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
+            padding-bottom: 50px;
+        }
+        .navbar {
+            background-color: #1e1e1e;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            margin-bottom: 40px;
+        }
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .nav-left a { color: #ffffff; text-decoration: none; font-weight: bold; transition: color 0.2s; }
+        .nav-left a:hover { color: #1db954; }
+
+        .nav-right { display: flex; align-items: center; gap: 20px; }
+        .search-form { display: flex; }
+        .search-input { padding: 8px 15px; border-radius: 20px 0 0 20px; border: 1px solid #333; background-color: #2a2a2a; color: white; outline: none; width: 200px; }
+        .search-btn { padding: 8px 20px; border-radius: 0 20px 20px 0; border: none; background-color: #1db954; color: white; font-weight: bold; cursor: pointer; }
+
+        .profile-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 40px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            display: flex;
+            gap: 40px;
+            text-align: left;
+            margin-bottom: 40px;
+        }
+        .cover-art {
+            width: 250px;
+            height: 250px;
+            border-radius: 8px;
+            object-fit: cover;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+        .details-col { flex-grow: 1; }
+        .title { font-size: 2.5em; font-weight: 900; margin: 0 0 5px 0; line-height: 1.1; }
+        .artist { color: #b3b3b3; font-size: 1.2em; margin-bottom: 25px; }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            background-color: #2a2a2a;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .stat-box { display: flex; flex-direction: column; }
+        .stat-label { color: #888; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+        .stat-value { font-size: 1.6em; font-weight: bold; color: #1db954; }
+        .stat-value.secondary { color: #ffffff; }
+
+        h2 { margin: 40px 0 20px 0; }
+
+        .history-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #1e1e1e;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+        .history-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 10px;
+            border-bottom: 1px solid #333;
+        }
+        .history-row:last-child { border-bottom: none; }
+        .side { display: flex; align-items: center; width: 45%; }
+        .winner-side { justify-content: flex-end; text-align: right; }
+        .loser-side { justify-content: flex-start; text-align: left; opacity: 0.6; }
+        .hist-cover { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; margin: 0 15px; }
+        .song-text { overflow: hidden; white-space: nowrap; }
+        .hist-title { font-size: 1.1em; font-weight: bold; text-overflow: ellipsis; overflow: hidden; }
+        .winner-text { color: #1db954; }
+        .hist-artist { color: #b3b3b3; font-size: 0.85em; text-overflow: ellipsis; overflow: hidden; }
+        .vs-badge { background-color: #333; color: #888; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="nav-left">
+            <a href="/">Home</a>
+            <a href="/leaderboard">Top 20</a>
+            <a href="/artists">Artists</a>
+            <a href="/albums">Albums</a>
+            <a href="/tiers">Tier List</a>
+            <a href="/history">History</a>
+            <a href="/dev/login">Dev</a>
+        </div>
+        <div class="nav-right">
+            <form action="/search" method="GET" class="search-form">
+                <input type="text" name="q" class="search-input" placeholder="Search songs, artists...">
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="profile-container">
+        <div>
+            <img src="{{ song.cover_url }}" alt="Cover" class="cover-art">
+            {% if song.audio_url %}
+                <audio controls src="{{ song.audio_url }}" style="width: 100%; margin-top: 15px; outline: none; height: 35px;"></audio>
+            {% endif %}
+        </div>
+
+        <div class="details-col">
+            <h1 class="title">{{ song.title }}</h1>
+            <div class="artist">{{ song.artist }} {% if song.album %}• {{ song.album }}{% endif %}</div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-label">Current Elo</span>
+                    <span class="stat-value">{{ song.elo_score|int }}</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Current Rank</span>
+                    <span class="stat-value secondary">#{{ current_rank }}</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Highest Elo</span>
+                    <span class="stat-value" style="color: #b3b3b3;">{{ song.highest_elo|int if song.highest_elo else song.elo_score|int }}</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-label">Peak Rank</span>
+                    <span class="stat-value secondary" style="color: #b3b3b3;">#{{ song.highest_rank if song.highest_rank and song.highest_rank != 9999 else current_rank }}</span>
+                </div>
+                <div class="stat-box" style="grid-column: 1 / -1; align-items: center; border-top: 1px solid #444; padding-top: 15px; margin-top: 5px;">
+                    <span class="stat-label">Total Matches Played</span>
+                    <span class="stat-value secondary" style="font-size: 1.2em;">{{ song.matches_played }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h2>Last 5 Matches</h2>
+
+    <div class="history-container">
+        {% for match in history %}
+        <div class="history-row">
+            <!-- Winner Side -->
+            <div class="side winner-side">
+                <div class="song-text">
+                    <div class="hist-title winner-text" title="{{ match.winner_title }}">🏆 {{ match.winner_title }}</div>
+                    <div class="hist-artist">{{ match.winner_artist }}</div>
+                </div>
+                <img src="{{ match.winner_cover }}" alt="Cover" class="hist-cover">
+            </div>
+
+            <div class="vs-badge">VS</div>
+
+            <!-- Loser Side -->
+            <div class="side loser-side">
+                <img src="{{ match.loser_cover }}" alt="Cover" class="hist-cover">
+                <div class="song-text">
+                    <div class="hist-title" title="{{ match.loser_title }}">{{ match.loser_title }}</div>
+                    <div class="hist-artist">{{ match.loser_artist }}</div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; color: #888; padding: 20px 0;">No match history found for this song.</div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

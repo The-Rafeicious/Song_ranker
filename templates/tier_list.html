@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Tier List</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+            margin: 0;
+            padding-bottom: 50px;
+        }
+        .navbar {
+            background-color: #1e1e1e;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            margin-bottom: 40px;
+        }
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .nav-left a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+        .nav-left a:hover, .nav-left .active { color: #1db954; }
+
+        .nav-right { display: flex; align-items: center; gap: 20px; }
+        .search-form { display: flex; }
+        .search-input {
+            padding: 8px 15px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: white;
+            outline: none;
+            width: 200px;
+        }
+        .search-btn {
+            padding: 8px 20px;
+            border-radius: 0 20px 20px 0;
+            border: none;
+            background-color: #1db954;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        h1 { margin-bottom: 30px; }
+
+        /* TIER LIST STYLES */
+        .tier-container {
+            max-width: 900px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 0 20px;
+        }
+        .tier-row {
+            display: flex;
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+            min-height: 80px;
+        }
+        .tier-label {
+            width: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5em;
+            font-weight: 900;
+            color: #121212;
+            flex-shrink: 0;
+        }
+        .tier-S { background-color: #ff7f7f; }
+        .tier-A { background-color: #ffbf7f; }
+        .tier-B { background-color: #ffff7f; }
+        .tier-C { background-color: #7fff7f; }
+        .tier-D { background-color: #7fbfff; }
+
+        .tier-songs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            padding: 10px;
+            align-items: flex-start;
+            flex-grow: 1;
+        }
+        .tier-song-img {
+            width: 60px;
+            height: 60px;
+            border-radius: 4px;
+            object-fit: cover;
+            background-color: #2a2a2a;
+            transition: transform 0.15s ease-in-out;
+            cursor: pointer;
+        }
+        .tier-song-img:hover {
+            transform: scale(1.15);
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="nav-left">
+            <a href="/">Home</a>
+            <a href="/leaderboard">Top 20</a>
+            <a href="/artists">Artists</a>
+            <a href="/albums">Albums</a>
+            <a href="/tiers" class="active">Tier List</a>
+            <a href="/history">History</a>
+            <a href="/dev/login">Dev</a>
+        </div>
+        <div class="nav-right">
+            <form action="/search" method="GET" class="search-form">
+                <input type="text" name="q" class="search-input" placeholder="Search songs, artists...">
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <h1>Visual Tier List</h1>
+
+    <div class="tier-container">
+        <!-- Loop through our dictionary of tiers -->
+        {% for tier_name, color_class in [('S (1600+)', 'tier-S'), ('A (1400+)', 'tier-A'), ('B (1200+)', 'tier-B'), ('C (1000+)', 'tier-C'), ('D (<1000)', 'tier-D')] %}
+        <div class="tier-row">
+            <div class="tier-label {{ color_class }}">{{ tier_name[0] }}</div>
+            <div class="tier-songs">
+                {% for song in tiers[tier_name] %}
+                    <img src="{{ song.cover_url }}" alt="Cover" class="tier-song-img" title="{{ song.title }} by {{ song.artist }} (Elo: {{ song.elo_score|int }})">
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

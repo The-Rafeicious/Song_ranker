@@ -7,14 +7,14 @@ def rnd_song (SONG_VS):
     random_num1 = rnd.randint(0, 5)
     random_num2 = rnd.randint(0, 5)
 
+    print(random_num1, random_num2)
+
     with open("Songs_test") as fp:
         for i, line in enumerate(fp):
-            if i == 5:
-                SONG_VS["song1"] = line
-            elif i == 3:
-                SONG_VS["song2"] = line
-            else:
-                SONG_VS["song1"] = "fail"
+            if i == random_num1:
+                SONG_VS["song1"] = line.strip()
+            if i == random_num2:
+                SONG_VS["song2"] = line.strip()
         return SONG_VS
 
 def check_song(SONG_VS):
@@ -24,13 +24,15 @@ def check_song(SONG_VS):
         return False
     elif song1 == "fail":
         return "fail"
+    elif song2 == "fail":
+        return "fail"
     elif song1 != song2:
         return True
 
 def main():
     SONG_VS = {
-        "song1": "",
-        "song2": "",
+        "song1": "fail",
+        "song2": "fail",
     }
     SONG_VS = rnd_song(SONG_VS)
     check_state = check_song(SONG_VS)
@@ -40,6 +42,7 @@ def main():
         print("song picked")
         song_fight(SONG_VS)
     elif check_state == False:
+        print("redo")
         main()
 
 

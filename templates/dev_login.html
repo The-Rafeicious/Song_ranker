@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developer Login</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .login-box {
+            background-color: #1e1e1e;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            width: 300px;
+        }
+        .login-box h2 { margin-top: 0; margin-bottom: 25px; color: #1db954; }
+        .pin-input {
+            width: 100%;
+            padding: 15px;
+            font-size: 2em;
+            text-align: center;
+            letter-spacing: 15px;
+            background-color: #2a2a2a;
+            border: 1px solid #333;
+            color: white;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-sizing: border-box;
+            outline: none;
+        }
+        .pin-input:focus { border-color: #1db954; }
+        .submit-btn {
+            width: 100%;
+            background-color: #1db954;
+            color: white;
+            border: none;
+            padding: 15px;
+            font-size: 1.2em;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .submit-btn:hover { background-color: #1ed760; }
+        .error-msg { color: #e22134; margin-bottom: 15px; font-weight: bold; }
+        .back-link { display: block; margin-top: 20px; color: #888; text-decoration: none; }
+        .back-link:hover { color: white; }
+    </style>
+</head>
+<body>
+    <div class="login-box">
+        <h2>System Access</h2>
+        {% if error %}
+            <div class="error-msg">{{ error }}</div>
+        {% endif %}
+        <form action="/dev/login" method="POST">
+            <input type="password" name="pin" class="pin-input" maxlength="4" placeholder="••••" required autofocus>
+            <button type="submit" class="submit-btn">Unlock</button>
+        </form>
+        <a href="/" class="back-link">← Return to Main Site</a>
+    </div>
+</body>
+</html>

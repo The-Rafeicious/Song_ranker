@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Song Ranker</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            text-align: center;
+            padding: 0 0 50px 0;
+            margin: 0;
+        }
+        /* NAVBAR STYLES */
+        .navbar {
+            background-color: #1e1e1e;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            margin-bottom: 40px;
+        }
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .nav-left a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+        .nav-left a:hover, .nav-left .active { color: #1db954; }
+
+        .nav-right { display: flex; align-items: center; gap: 20px; }
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #2a2a2a;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        .search-form { display: flex; }
+        .search-input {
+            padding: 8px 15px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: white;
+            outline: none;
+            width: 200px;
+        }
+        .search-btn {
+            padding: 8px 20px;
+            border-radius: 0 20px 20px 0;
+            border: none;
+            background-color: #1db954;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        h1 { margin-bottom: 30px; }
+
+        /* FLOATING TOAST NOTIFICATION (LAST MATCH BANNER) */
+        .last-vote-banner {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            background-color: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 15px 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            text-align: left;
+            min-width: 300px;
+            animation: slideUp 0.4s ease-out;
+        }
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .text-green { color: #1db954; font-weight: bold; }
+        .text-red { color: #e22134; font-weight: bold; }
+        .banner-title {
+            color: #b3b3b3;
+            font-size: 0.8em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 12px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 6px;
+        }
+        .banner-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+        .banner-song {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 140px;
+            margin-right: 15px;
+        }
+
+        /* MATCHUP STYLES */
+        .matchup-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .song-card {
+            background-color: #1e1e1e;
+            padding: 20px;
+            border-radius: 12px;
+            width: 320px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        /* INTERACTIVE COVER ART STYLES */
+        .cover-container {
+            position: relative;
+            width: 100%;
+            height: 320px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            overflow: hidden;
+            background-color: #2a2a2a;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+        .cover-art {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.2s, transform 0.2s;
+        }
+        .cover-container:hover .cover-art {
+            opacity: 0.5;
+            transform: scale(1.02);
+        }
+        .play-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4em;
+            color: rgba(255, 255, 255, 0.9);
+            text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+            pointer-events: none;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .cover-container:hover .play-overlay {
+            opacity: 1;
+        }
+
+        .song-title {
+            font-size: 1.6em;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .song-artist {
+            color: #b3b3b3;
+            font-size: 1.1em;
+            margin-bottom: 25px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .vote-btn {
+            background-color: #1db954;
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            font-size: 1.2em;
+            border-radius: 30px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        .vote-btn:hover { background-color: #1ed760; }
+        .vs-text {
+            font-size: 2.5em;
+            font-weight: 900;
+            color: #555555;
+            margin: 0 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- UNIVERSAL NAVBAR -->
+    <div class="navbar">
+        <div class="nav-left">
+            <a href="/" class="active">Home</a>
+            <a href="/leaderboard">Top 20</a>
+            <a href="/artists">Artists</a>
+            <a href="/albums">Albums</a>
+            <a href="/tiers">Tier List</a>
+            <a href="/history">History</a>
+            <a href="/dev/login">Dev</a>
+        </div>
+        <div class="nav-right">
+            <div class="volume-control">
+                <span>🔊</span>
+                <input type="range" id="global-volume" min="0" max="1" step="0.01" value="0.5" style="cursor: pointer;">
+            </div>
+            <form action="/search" method="GET" class="search-form">
+                <input type="text" name="q" class="search-input" placeholder="Search songs, artists...">
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <h1>Which track is better?</h1>
+
+    <div class="matchup-container">
+
+        <!-- Song 1 -->
+        <div class="song-card">
+            <div class="cover-container" onclick="toggleAudio('audio1', 'btn1')">
+                <img src="{{ song1.cover_url }}" alt="Cover Art" class="cover-art">
+                {% if song1.audio_url %}
+                    <div class="play-overlay" id="btn1">▶</div>
+                {% else %}
+                    <div class="play-overlay" style="font-size: 1.5em; opacity: 0.5;">No Audio</div>
+                {% endif %}
+            </div>
+
+            <div class="song-title" title="{{ song1.title }}">{{ song1.title }}</div>
+            <div class="song-artist" title="{{ song1.artist }}">{{ song1.artist }}</div>
+
+            {% if song1.audio_url %}
+                <audio id="audio1" src="{{ song1.audio_url }}"></audio>
+            {% endif %}
+
+            <form action="/vote" method="POST">
+                <input type="hidden" name="winner_id" value="{{ song1.id }}">
+                <input type="hidden" name="loser_id" value="{{ song2.id }}">
+                <button type="submit" class="vote-btn">Vote</button>
+            </form>
+        </div>
+
+        <div class="vs-text">VS</div>
+
+        <!-- Song 2 -->
+        <div class="song-card">
+            <div class="cover-container" onclick="toggleAudio('audio2', 'btn2')">
+                <img src="{{ song2.cover_url }}" alt="Cover Art" class="cover-art">
+                {% if song2.audio_url %}
+                    <div class="play-overlay" id="btn2">▶</div>
+                {% else %}
+                    <div class="play-overlay" style="font-size: 1.5em; opacity: 0.5;">No Audio</div>
+                {% endif %}
+            </div>
+
+            <div class="song-title" title="{{ song2.title }}">{{ song2.title }}</div>
+            <div class="song-artist" title="{{ song2.artist }}">{{ song2.artist }}</div>
+
+            {% if song2.audio_url %}
+                <audio id="audio2" src="{{ song2.audio_url }}"></audio>
+            {% endif %}
+
+            <form action="/vote" method="POST">
+                <input type="hidden" name="winner_id" value="{{ song2.id }}">
+                <input type="hidden" name="loser_id" value="{{ song1.id }}">
+                <button type="submit" class="vote-btn">Vote</button>
+            </form>
+        </div>
+
+    </div>
+
+    <!-- PREVIOUS VOTE RESULTS BANNER (FLOATING TOAST) -->
+    {% if last_vote %}
+    <div class="last-vote-banner">
+        <div class="banner-title">Last Match Result</div>
+
+        <div class="banner-row">
+            <div class="banner-song" title="{{ last_vote.winner_title }}">🏆 <strong>{{ last_vote.winner_title }}</strong></div>
+            <div>
+                <span style="color: #888; text-decoration: line-through; font-size: 0.9em; margin-right: 4px;">{{ last_vote.winner_old }}</span>
+                <span>{{ last_vote.winner_new }}</span>
+                <span class="text-green" style="margin-left: 4px;">({{ last_vote.winner_change }})</span>
+            </div>
+        </div>
+
+        <div class="banner-row" style="margin-bottom: 0;">
+            <div class="banner-song" title="{{ last_vote.loser_title }}">💀 <strong>{{ last_vote.loser_title }}</strong></div>
+            <div>
+                <span style="color: #888; text-decoration: line-through; font-size: 0.9em; margin-right: 4px;">{{ last_vote.loser_old }}</span>
+                <span>{{ last_vote.loser_new }}</span>
+                <span class="text-red" style="margin-left: 4px;">({{ last_vote.loser_change }})</span>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- AUDIO CONTROLLER LOGIC -->
+    <script>
+        const audio1 = document.getElementById('audio1');
+        const audio2 = document.getElementById('audio2');
+        const volumeSlider = document.getElementById('global-volume');
+
+        if (audio1) audio1.volume = volumeSlider.value;
+        if (audio2) audio2.volume = volumeSlider.value;
+
+        volumeSlider.addEventListener('input', (e) => {
+            if (audio1) audio1.volume = e.target.value;
+            if (audio2) audio2.volume = e.target.value;
+        });
+
+        function toggleAudio(targetId, btnId) {
+            const currentAudio = document.getElementById(targetId);
+            const currentBtn = document.getElementById(btnId);
+
+            if (!currentAudio) return;
+
+            const otherAudio = targetId === 'audio1' ? audio2 : audio1;
+            const otherBtn = targetId === 'audio1' ? document.getElementById('btn2') : document.getElementById('btn1');
+
+            if (currentAudio.paused) {
+                if (otherAudio && !otherAudio.paused) {
+                    otherAudio.pause();
+                    if (otherBtn) otherBtn.innerText = '▶';
+                }
+                currentAudio.play();
+                currentBtn.innerText = '⏸';
+            } else {
+                currentAudio.pause();
+                currentBtn.innerText = '▶';
+            }
+        }
+
+        if (audio1) audio1.addEventListener('ended', () => document.getElementById('btn1').innerText = '▶');
+        if (audio2) audio2.addEventListener('ended', () => document.getElementById('btn2').innerText = '▶');
+    </script>
+
+</body>
+</html>
