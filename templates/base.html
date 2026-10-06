@@ -61,6 +61,11 @@
         </div>
 
         <div class="nav-right">
+            <!-- Universal Volume -->
+            <div class="volume-container">
+                <span class="volume-icon" id="vol-icon">🔊</span>
+                <input type="range" id="global-volume" min="0" max="1" step="0.01" value="0.5">
+            </div>
             <!-- Universal Search -->
             <form action="/search" method="GET" class="search-form">
                 <input type="text" name="q" class="search-input" placeholder="Search songs, artists...">
@@ -101,6 +106,42 @@
                 document.querySelectorAll('.dropbtn').forEach(btn => btn.classList.remove('dropdown-open'));
             }
         }
+
+        // --- UNIVERSAL VOLUME LOGIC ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const volumeSlider = document.getElementById('global-volume');
+            const volIcon = document.getElementById('vol-icon');
+
+            // 1. Load saved volume from local browser storage (default to 50%)
+            let savedVolume = localStorage.getItem('siteVolume');
+            if (savedVolume !== null) {
+                volumeSlider.value = savedVolume;
+            } else {
+                savedVolume = 0.5;
+                volumeSlider.value = savedVolume;
+            }
+
+            // Function to update the UI icon and apply volume to all audio tags
+            function applyVolume(vol) {
+                if (vol == 0) volIcon.innerText = '🔇';
+                else if (vol < 0.5) volIcon.innerText = '🔉';
+                else volIcon.innerText = '🔊';
+
+                document.querySelectorAll('audio').forEach(audio => {
+                    audio.volume = vol;
+                });
+            }
+
+            // 2. Apply the saved volume immediately on page load
+            applyVolume(savedVolume);
+
+            // 3. Listen for the user dragging the slider
+            volumeSlider.addEventListener('input', (e) => {
+                const newVol = e.target.value;
+                localStorage.setItem('siteVolume', newVol); // Save it permanently
+                applyVolume(newVol); // Apply it instantly
+            });
+        });
     </script>
 </body>
 </html>
