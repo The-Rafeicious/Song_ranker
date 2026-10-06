@@ -134,7 +134,10 @@
 
         <div class="details-col">
             <h1 class="title">{{ song.title }}</h1>
-            <div class="artist">{{ song.artist }} {% if song.album %}• {{ song.album }}{% endif %}</div>
+            <div class="artist">
+                <a href="/artist/{{ song.artist | urlencode }}" style="color: #1db954; text-decoration: none;">{{ song.artist }}</a>
+                {% if song.album %}• {{ song.album }}{% endif %}
+            </div>
 
             <div class="stats-grid">
                 <div class="stat-box">

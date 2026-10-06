@@ -618,6 +618,37 @@ def dev_logout():
     session.pop('is_admin', None)
     return redirect(url_for('index'))
 
+@app.route('/artist/<path:artist_name>')
+def artist_page(artist_name):
+    conn = get_db_connection()
+    # Fetch all songs by this artist (case-insensitive) ordered by highest Elo first
+    songs = conn.execute('''
+        SELECT * FROM songs 
+        WHERE artist = ? COLLATE NOCASE 
+        ORDER BY elo_score DESC
+    ''', (artist_name,)).fetchall()
+    conn.close()
+
+    if not songs:
+        return "Artist not found.", 404
+
+    song_count = len(songs)
+    best_song = songs[0]
+    worst_song = songs[-1]
+
+    # Calculate Impact Score: Average Elo + (Total Songs * 5)
+    avg_elo = sum(s['elo_score'] for s in songs) / song_count
+    impact_score = avg_elo + (song_count * 5)
+
+    return render_template('artist_page.html',
+                           artist_name=best_song['artist'],
+                           pfp_url=best_song['cover_url'],
+                           song_count=song_count,
+                           impact_score=impact_score,
+                           best_song=best_song,
+                           worst_song=worst_song,
+                           songs=songs)
+
 
 # --- DEVELOPER DASHBOARD ---
 

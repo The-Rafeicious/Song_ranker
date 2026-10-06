@@ -43,8 +43,8 @@
             <div class="rank">{{ loop.index }}</div>
             <img src="{{ artist.sample_cover }}" alt="Cover" class="cover-art">
             <div class="info">
-                <a href="/search?q={{ artist.artist }}" class="search-link">
-                    <div class="title" title="{{ artist.artist }}">{{ artist.artist }}</div>
+                <a href="/artist/{{ artist.artist | urlencode }}" class="search-link">
+                    <div class="title">{{ artist.artist }}</div>
                 </a>
                 <div class="subtitle">{{ artist.song_count }} Tracks • Avg Elo: {{ artist.avg_elo|int }}</div>
             </div>
