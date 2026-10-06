@@ -1,9 +1,63 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from functools import wraps
-import sqlite3
 import random
 import requests
 import re
+import subprocess
+import sqlite3
+import os
+
+
+def git_pull():
+    """Pulls the latest SQL dump and rebuilds the local database if changes are found."""
+    try:
+        print("Pulling latest data from GitHub...")
+        result = subprocess.run(["git", "pull", "origin", "main"], capture_output=True, text=True, check=True)
+
+        # If the pull downloaded new data, rebuild the binary .db file
+        if "Already up to date." not in result.stdout and os.path.exists('database_backup.sql'):
+            print("Updates found. Rebuilding local database...")
+
+            # Delete the outdated binary file
+            if os.path.exists('song_ranker.db'):
+                os.remove('song_ranker.db')
+
+            # Rebuild it from the fresh text dump
+            conn = sqlite3.connect('song_ranker.db')
+            with open('database_backup.sql', 'r', encoding='utf-8') as f:
+                conn.executescript(f.read())
+            conn.close()
+
+    except subprocess.CalledProcessError as e:
+        print(f"Git pull failed: {e}")
+
+
+def git_push():
+    """Converts the database to a text file and pushes it to GitHub."""
+    try:
+        # 1. Convert the binary database into a text-based SQL file
+        conn = sqlite3.connect('song_ranker.db')
+        with open('database_backup.sql', 'w', encoding='utf-8') as f:
+            for line in conn.iterdump():
+                f.write('%s\n' % line)
+        conn.close()
+
+        # 2. Stage only the text backup file for GitHub
+        subprocess.run(["git", "add", "database_backup.sql"], check=True)
+
+        result = subprocess.run(
+            ["git", "commit", "-m", "Auto-sync database update"],
+            capture_output=True, text=True
+        )
+
+        # 3. Push if there are actual changes
+        if "nothing to commit" in result.stdout:
+            return True
+
+        subprocess.run(["git", "push", "origin", "main"], check=True)
+        return True
+    except subprocess.CalledProcessError:
+        return False
 
 app = Flask(__name__)
 app.secret_key = "theandwasdwe"
@@ -525,6 +579,16 @@ def api_delete_song(song_id):
     conn.close()
     return jsonify({"status": "success", "message": "Song deleted."})
 
+@app.route('/api/dev/sync', methods=['POST'])
+@admin_required
+def api_sync():
+    """Endpoint to trigger a manual database push."""
+    success = git_push()
+    if success:
+        return jsonify({"status": "success", "message": "Database synced to GitHub!"})
+    return jsonify({"status": "error", "message": "Failed to sync to GitHub."}), 500
+
 if __name__ == "__main__":
+    git_pull()
     init_db()
     app.run(debug=True)

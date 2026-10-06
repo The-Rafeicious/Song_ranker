@@ -63,9 +63,12 @@
 <body>
 
     <div class="navbar">
-        <h2>Developer Dashboard</h2>
+    <h2>Developer Dashboard</h2>
+    <div>
+        <button class="logout-btn" style="margin-right: 10px; color: #1db954; border-color: #1db954;" onclick="syncDatabase()">Sync to GitHub</button>
         <a href="/dev/logout" class="logout-btn">Lock Database</a>
     </div>
+</div>
 
     <div class="container">
         <div class="tab-container">
@@ -307,6 +310,21 @@
                 }
             } catch (err) {
                 showToast("Error updating song.", true);
+            }
+        }
+        async function syncDatabase() {
+            showToast("Syncing to GitHub...");
+            try {
+                const response = await fetch('/api/dev/sync', { method: 'POST' });
+                const result = await response.json();
+
+                if (response.ok) {
+                    showToast(result.message);
+                } else {
+                    showToast(result.message, true);
+                }
+            } catch (err) {
+                showToast("Error communicating with server.", true);
             }
         }
     </script>
