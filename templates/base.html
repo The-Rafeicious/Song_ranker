@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Block for child templates to insert their own title -->
+    <title>{% block title %}Song Ranker{% endblock %}</title>
+
+    <!-- Link to the universal CSS file -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+
+    <!-- Block for child templates to insert specific CSS -->
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- UNIVERSAL NAVBAR -->
+    <div class="navbar">
+        <div class="nav-left">
+
+            <!-- Modes Dropdown -->
+            <div class="dropdown">
+                <button class="dropbtn {% if request.path in ['/blind', '/trivia', '/game'] %}active{% endif %}" onclick="toggleDropdown(event, 'modes-dropdown')">
+                    Game Modes ▾
+                </button>
+                <div id="modes-dropdown" class="dropdown-content">
+                    <a href="/game">Standard Vote</a>
+                    <a href="/blind">Blind Audition</a>
+                    <a href="/trivia">Trivia Mini-Game</a>
+                </div>
+            </div>
+
+            <!-- Rankings Dropdown -->
+            <div class="dropdown">
+                <button class="dropbtn {% if request.path in ['/leaderboard', '/artists', '/albums', '/tiers'] %}active{% endif %}" onclick="toggleDropdown(event, 'rankings-dropdown')">
+                    Rankings ▾
+                </button>
+                <div id="rankings-dropdown" class="dropdown-content">
+                    <a href="/leaderboard">Top Tracks</a>
+                    <a href="/artists">Top Artists</a>
+                    <a href="/albums">Top Albums</a>
+                    <a href="/tiers">Visual Tier List</a>
+                </div>
+            </div>
+
+            <!-- Stats Dropdown -->
+            <div class="dropdown">
+                <button class="dropbtn {% if request.path in ['/history', '/trivia_stats'] %}active{% endif %}" onclick="toggleDropdown(event, 'stats-dropdown')">
+                    Stats ▾
+                </button>
+                <div id="stats-dropdown" class="dropdown-content">
+                    <a href="/history">Match History</a>
+                    <a href="/trivia_stats">Recognizability</a>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="nav-center">
+            <a href="/" class="{% if request.path == '/' %}active{% endif %}">Song Ranker</a>
+        </div>
+
+        <div class="nav-right">
+            <!-- Universal Search -->
+            <form action="/search" method="GET" class="search-form">
+                <input type="text" name="q" class="search-input" placeholder="Search songs, artists...">
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MAIN CONTENT INJECTED HERE -->
+    {% block content %}{% endblock %}
+
+    <!-- DROPDOWN CLICK LOGIC -->
+    <script>
+        function toggleDropdown(event, dropdownId) {
+            // Prevent the window click listener from immediately closing it
+            event.stopPropagation();
+
+            const targetMenu = document.getElementById(dropdownId);
+            const clickedBtn = event.target;
+
+            // Close all menus first to prevent multiple being open at once
+            document.querySelectorAll('.dropdown-content').forEach(menu => {
+                if (menu !== targetMenu) menu.classList.remove('show');
+            });
+            document.querySelectorAll('.dropbtn').forEach(btn => {
+                if (btn !== clickedBtn) btn.classList.remove('dropdown-open');
+            });
+
+            // Toggle the one we actually clicked
+            targetMenu.classList.toggle('show');
+            clickedBtn.classList.toggle('dropdown-open');
+        }
+
+        // Close dropdowns if the user clicks anywhere else on the screen
+        window.onclick = function(event) {
+            if (!event.target.matches('.dropbtn')) {
+                document.querySelectorAll('.dropdown-content').forEach(menu => menu.classList.remove('show'));
+                document.querySelectorAll('.dropbtn').forEach(btn => btn.classList.remove('dropdown-open'));
+            }
+        }
+    </script>
+</body>
+</html>

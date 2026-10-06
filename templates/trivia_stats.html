@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trivia Stats</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background-color: #121212; color: #fff; text-align: center; margin: 0; padding-bottom: 50px; }
+        .navbar { background-color: #1e1e1e; padding: 15px 30px; display: flex; justify-content: space-between; border-bottom: 1px solid #333; margin-bottom: 40px; }
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .nav-left a { color: #fff; text-decoration: none; font-weight: bold; transition: color 0.2s; }
+        .nav-left a:hover, .active { color: #1db954; }
+
+        h1 { margin-bottom: 10px; }
+        .subtitle { color: #888; margin-bottom: 30px; }
+
+        .results-container { max-width: 700px; margin: 0 auto; text-align: left; background-color: #1e1e1e; border-radius: 12px; padding: 20px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); }
+        .row { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #333; }
+        .row:last-child { border-bottom: none; }
+
+        .rank { font-size: 1.5em; font-weight: bold; color: #555; width: 40px; text-align: center; margin-right: 15px; }
+        .cover-art { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; margin-right: 20px; background-color: #2a2a2a; }
+
+        .info { flex-grow: 1; overflow: hidden; }
+        .title { font-size: 1.2em; font-weight: bold; margin-bottom: 4px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+        .title-link { color: inherit; text-decoration: none; transition: color 0.2s; }
+        .title-link:hover { color: #1db954; }
+        .artist { color: #b3b3b3; font-size: 0.9em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+
+        .stats-col { text-align: right; margin-left: 15px; }
+        .highlight-score { font-weight: bold; font-size: 1.2em; }
+        /* Dynamic color based on score */
+        .score-high { color: #1db954; }
+        .score-mid { color: #ffbf7f; }
+        .score-low { color: #e22134; }
+
+        .attempts-sub { font-size: 0.8em; color: #888; margin-top: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div class="nav-left">
+            <a href="/">Home</a>
+            <a href="/blind">Blind Mode</a>
+            <a href="/trivia">Trivia</a>
+            <a href="/leaderboard">Top 20</a>
+            <a href="/artists">Artists</a>
+            <a href="/albums">Albums</a>
+            <a href="/tiers">Tier List</a>
+            <a href="/trivia_stats" class="active">Trivia Stats</a>
+            <a href="/history">History</a>
+            <a href="/dev/login">Dev</a>
+        </div>
+    </div>
+
+    <h1>Most Recognizable Tracks</h1>
+    <div class="subtitle">Ranked by trivia accuracy percentage.</div>
+
+    <div class="results-container">
+        {% for stat in stats %}
+        <div class="row">
+            <div class="rank">{{ loop.index }}</div>
+            <img src="{{ stat.cover_url }}" alt="Cover" class="cover-art">
+            <div class="info">
+                <a href="/song/{{ stat.id }}" class="title-link">
+                    <div class="title" title="{{ stat.title }}">{{ stat.title }}</div>
+                </a>
+                <div class="artist" title="{{ stat.artist }}">{{ stat.artist }}</div>
+            </div>
+            <div class="stats-col">
+                <div class="highlight-score {% if stat.rec_score >= 80 %}score-high{% elif stat.rec_score >= 40 %}score-mid{% else %}score-low{% endif %}">
+                    {{ stat.rec_score|int }}%
+                </div>
+                <div class="attempts-sub">{{ stat.trivia_correct }} / {{ stat.trivia_attempts * 2 }} Pts</div>
+            </div>
+        </div>
+        {% else %}
+        <div style="text-align: center; color: #888; padding: 30px 0;">
+            No trivia data found. Go play the mini-game!
+        </div>
+        {% endfor %}
+    </div>
+
+</body>
+</html>

@@ -1,59 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Top Albums</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            text-align: center;
-            margin: 0;
-            padding-bottom: 50px;
-        }
-        .navbar {
-            background-color: #1e1e1e;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            margin-bottom: 40px;
-        }
-        .nav-left { display: flex; align-items: center; gap: 20px; }
-        .nav-left a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.2s;
-        }
-        .nav-left a:hover, .nav-left .active { color: #1db954; }
+{% extends "base.html" %}
 
-        .nav-right { display: flex; align-items: center; gap: 20px; }
-        .search-form { display: flex; }
-        .search-input {
-            padding: 8px 15px;
-            border-radius: 20px 0 0 20px;
-            border: 1px solid #333;
-            background-color: #2a2a2a;
-            color: white;
-            outline: none;
-            width: 200px;
-        }
-        .search-btn {
-            padding: 8px 20px;
-            border-radius: 0 20px 20px 0;
-            border: none;
-            background-color: #1db954;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
+{% block title %}Top 10 Albums{% endblock %}
 
-        h1 { margin-bottom: 30px; }
-        .results-container {
+{% block extra_css %}
+<style>
+    /* Put ONLY CSS specific to the leaderboard here */
+    .title-top { font-size: 3.5em; margin-top: 40px; margin-bottom: 50px; color: #1db954; font-weight: 900; letter-spacing: -1px; }
+    .results-container {
             max-width: 650px;
             margin: 0 auto;
             text-align: left;
@@ -61,87 +14,28 @@
             border-radius: 12px;
             padding: 20px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-        }
-        .row {
-            display: flex;
-            align-items: center;
-            padding: 15px 0;
-            border-bottom: 1px solid #333;
-        }
-        .row:last-child { border-bottom: none; }
-        .rank {
-            font-size: 1.5em;
-            font-weight: bold;
-            color: #555;
-            width: 40px;
-            text-align: center;
-            margin-right: 15px;
-        }
-        .cover-art {
-            width: 60px;
-            height: 60px;
-            border-radius: 8px;
-            object-fit: cover;
-            margin-right: 20px;
-            background-color: #2a2a2a;
-        }
-        .info {
-            flex-grow: 1;
-            overflow: hidden;
-        }
-        .title {
-            font-size: 1.3em;
-            font-weight: bold;
-            margin-bottom: 4px;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-            overflow: hidden;
-        }
-        .subtitle {
-            color: #b3b3b3;
-            font-size: 0.9em;
-        }
-        .stats-col {
-            text-align: right;
-            margin-left: 15px;
-        }
-        .highlight-score {
-            font-weight: bold;
-            color: #1db954;
-            font-size: 1.2em;
-        }
-        .search-link {
-            color: inherit;
-            text-decoration: none;
-            transition: color 0.2s;
-            display: inline-block;
-        }
-        .search-link:hover {
-            color: #1db954;
-        }
-    </style>
-</head>
-<body>
+    }
+    .row {
+        display: flex;
+        align-items: center;
+        padding: 15px 0;
+        border-bottom: 1px solid #333;
+    }
+    .row:last-child { border-bottom: none; }
+    .rank { font-size: 1.5em; font-weight: bold; color: #555; width: 40px; text-align: center; margin-right: 15px; }
+    .cover-art { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; margin-right: 20px; background-color: #2a2a2a; }
+    .info { flex-grow: 1; overflow: hidden; }
+    .title { font-size: 1.2em; font-weight: bold; margin-bottom: 4px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .subtitle { color: #b3b3b3; font-size: 0.9em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .stats-col { text-align: right; margin-left: 15px; }
+    .highlight-score { font-weight: bold; color: #1db954; font-size: 1.2em; }
+    .search-link { color: inherit; text-decoration: none; transition: color 0.2s; display: inline-block; }
+    .search-link:hover { color: #1db954; }
+</style>
+{% endblock %}
 
-    <div class="navbar">
-        <div class="nav-left">
-            <a href="/">Home</a>
-            <a href="/leaderboard">Top 20</a>
-            <a href="/artists">Artists</a>
-            <a href="/albums" class="active">Albums</a>
-            <a href="/tiers">Tier List</a>
-            <a href="/history">History</a>
-            <a href="/dev/login">Dev</a>
-        </div>
-        <div class="nav-right">
-            <form action="/search" method="GET" class="search-form">
-                <input type="text" name="q" class="search-input" placeholder="Search songs, artists...">
-                <button type="submit" class="search-btn">Search</button>
-            </form>
-        </div>
-    </div>
-
-    <h1>Top Albums</h1>
+{% block content %}
+    <div class="title-top">Top 10 Highest Ranked Albums</div>
 
     <div class="results-container">
         {% for album in albums %}
@@ -168,6 +62,4 @@
         </div>
         {% endfor %}
     </div>
-
-</body>
-</html>
+{% endblock %}

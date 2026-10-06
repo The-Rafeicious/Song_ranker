@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from functools import wraps
+from difflib import SequenceMatcher
 import random
 import requests
 import re
@@ -114,6 +115,16 @@ def init_db():
     except sqlite3.OperationalError:
         pass
 
+    # Safely add the new tracking columns to existing databases
+    try:
+        conn.execute('ALTER TABLE songs ADD COLUMN trivia_attempts INTEGER DEFAULT 0')
+    except sqlite3.OperationalError:
+        pass
+    try:
+        conn.execute('ALTER TABLE songs ADD COLUMN trivia_correct INTEGER DEFAULT 0')
+    except sqlite3.OperationalError:
+        pass
+
     conn.commit()
     conn.close()
 
@@ -147,8 +158,57 @@ def calculate_new_elo(winner_elo, loser_elo, k_factor=32):
 
     return new_winner_elo, new_loser_elo
 
+def is_close_match(guess, actual, threshold=0.75):
+    """Returns True if the guess is at least 75% similar to the actual answer."""
+    if not guess or not actual:
+        return False
+    # Strip spaces and make lowercase for comparison
+    g = guess.lower().strip()
+    a = actual.lower().strip()
+    return SequenceMatcher(None, g, a).ratio() >= threshold
+
 
 @app.route('/')
+def home():
+    conn = get_db_connection()
+
+    # Fetch #1 Track
+    top_song = conn.execute('''
+        SELECT title, artist, cover_url 
+        FROM songs 
+        ORDER BY elo_score DESC 
+        LIMIT 1
+    ''').fetchone()
+
+    # Fetch #1 Artist (Highest Impact Score) and grab their best track's cover art
+    top_artist = conn.execute('''
+            SELECT artist, 
+                   (SELECT cover_url FROM songs s2 WHERE s2.artist = songs.artist ORDER BY elo_score DESC LIMIT 1) as cover_url,
+                   (AVG(elo_score) + (COUNT(id) * 5)) as impact_score
+            FROM songs 
+            GROUP BY artist 
+            ORDER BY impact_score DESC 
+            LIMIT 1
+        ''').fetchone()
+
+    # Fetch #1 Album (Highest Impact Score, ignoring empty albums)
+    top_album = conn.execute('''
+            SELECT album, artist, cover_url,
+                COUNT(id) as song_count, 
+                AVG(elo_score) as avg_elo, 
+                1200 + SUM(elo_score - 1200) as impact_score
+            FROM songs 
+            WHERE album IS NOT NULL AND album != '' 
+            GROUP BY album 
+            ORDER BY impact_score DESC 
+            LIMIT 1
+        ''').fetchone()
+
+    conn.close()
+
+    return render_template('home.html', top_song=top_song, top_artist=top_artist, top_album=top_album)
+
+@app.route('/game')
 def index():
     conn = get_db_connection()
 
@@ -264,7 +324,7 @@ def leaderboard():
     conn = get_db_connection()
     # Fetch the top 20 songs ordered by Elo score
     top_songs = conn.execute('''
-        SELECT id, title, artist, cover_url, elo_score 
+        SELECT id, title, artist, album, cover_url, elo_score 
         FROM songs 
         ORDER BY elo_score DESC 
         LIMIT 20
@@ -417,6 +477,128 @@ def song_page(song_id):
 
     return render_template('song_page.html', song=song, current_rank=current_rank, history=history_data)
 
+
+# --- BLIND AUDITION MODE ---
+
+@app.route('/blind')
+def blind_mode():
+    conn = get_db_connection()
+    # Only pull songs that actually have an audio preview
+    songs = conn.execute(
+        'SELECT * FROM songs WHERE audio_url IS NOT NULL AND audio_url != "" ORDER BY RANDOM() LIMIT 2').fetchall()
+    conn.close()
+
+    if len(songs) < 2:
+        return "Not enough songs with audio previews to play Blind Mode."
+
+    return render_template('blind_mode.html', song1=songs[0], song2=songs[1])
+
+
+@app.route('/api/blind_vote', methods=['POST'])
+def api_blind_vote():
+    """Processes the vote silently and returns the identities for the reveal modal."""
+    data = request.json
+    winner_id = data['winner_id']
+    loser_id = data['loser_id']
+
+    conn = get_db_connection()
+    winner = conn.execute('SELECT * FROM songs WHERE id = ?', (winner_id,)).fetchone()
+    loser = conn.execute('SELECT * FROM songs WHERE id = ?', (loser_id,)).fetchone()
+
+    new_winner_elo, new_loser_elo = calculate_new_elo(winner['elo_score'], loser['elo_score'])
+    winner_new_rank = conn.execute('SELECT COUNT(*) + 1 FROM songs WHERE elo_score > ?', (new_winner_elo,)).fetchone()[
+        0]
+
+    # Update Database
+    conn.execute('''
+        UPDATE songs 
+        SET elo_score = ?, matches_played = matches_played + 1,
+            highest_elo = CASE WHEN ? > highest_elo THEN ? ELSE highest_elo END,
+            highest_rank = CASE WHEN ? < highest_rank OR highest_rank = 9999 THEN ? ELSE highest_rank END
+        WHERE id = ?
+    ''', (new_winner_elo, new_winner_elo, new_winner_elo, winner_new_rank, winner_new_rank, winner_id))
+
+    conn.execute('UPDATE songs SET elo_score = ?, matches_played = matches_played + 1 WHERE id = ?',
+                 (new_loser_elo, loser_id))
+    conn.execute('INSERT INTO history (winner_id, loser_id) VALUES (?, ?)', (winner_id, loser_id))
+    conn.commit()
+    conn.close()
+
+    # Return the reveal data to the frontend
+    return jsonify({
+        "winner": {"title": winner['title'], "artist": winner['artist'], "cover_url": winner['cover_url'],
+                   "elo_change": f"+{int(new_winner_elo - winner['elo_score'])}"},
+        "loser": {"title": loser['title'], "artist": loser['artist'], "cover_url": loser['cover_url'],
+                  "elo_change": f"{int(new_loser_elo - loser['elo_score'])}"}
+    })
+
+
+# --- TRIVIA MINI-GAME ---
+
+@app.route('/trivia')
+def trivia_mode():
+    # Initialize the user's running score in their session
+    if 'trivia_score' not in session:
+        session['trivia_score'] = 0
+
+    conn = get_db_connection()
+    song = conn.execute(
+        'SELECT id, audio_url FROM songs WHERE audio_url IS NOT NULL AND audio_url != "" ORDER BY RANDOM() LIMIT 1').fetchone()
+    conn.close()
+
+    return render_template('trivia_mode.html', song=song, score=session['trivia_score'])
+
+
+@app.route('/api/trivia_guess', methods=['POST'])
+def api_trivia_guess():
+    """Checks the guess, updates the recognizability stats, and returns the result."""
+    data = request.json
+    song_id = data['song_id']
+
+    conn = get_db_connection()
+    song = conn.execute('SELECT title, artist, cover_url FROM songs WHERE id = ?', (song_id,)).fetchone()
+
+    # Check guesses against actual data (75% accuracy threshold)
+    title_match = is_close_match(data.get('title_guess', ''), song['title'])
+    artist_match = is_close_match(data.get('artist_guess', ''), song['artist'])
+
+    points = 0
+    if title_match: points += 1
+    if artist_match: points += 1
+
+    session['trivia_score'] = session.get('trivia_score', 0) + points
+
+    # Update global recognizability stats for this song
+    conn.execute(
+        'UPDATE songs SET trivia_attempts = trivia_attempts + 1, trivia_correct = trivia_correct + ? WHERE id = ?',
+        (points, song_id))
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        "actual_title": song['title'],
+        "actual_artist": song['artist'],
+        "cover_url": song['cover_url'],
+        "points_earned": points,
+        "new_total": session['trivia_score'],
+        "title_correct": title_match,
+        "artist_correct": artist_match
+    })
+
+@app.route('/trivia_stats')
+def trivia_stats():
+    conn = get_db_connection()
+    # Calculate recognizability percentage. Only show songs with at least 1 attempt.
+    stats_data = conn.execute('''
+        SELECT id, title, artist, cover_url, trivia_attempts, trivia_correct,
+               (CAST(trivia_correct AS FLOAT) / (trivia_attempts * 2)) * 100 as rec_score
+        FROM songs
+        WHERE trivia_attempts > 0
+        ORDER BY rec_score DESC, trivia_attempts DESC
+    ''').fetchall()
+    conn.close()
+
+    return render_template('trivia_stats.html', stats=stats_data)
 
 # --- DEVELOPER AUTHENTICATION ---
 

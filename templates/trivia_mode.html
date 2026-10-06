@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Song Trivia</title>
+    <style>
+        body { font-family: -apple-system, sans-serif; background-color: #121212; color: #fff; text-align: center; margin: 0; padding-bottom: 50px; }
+        .navbar { background-color: #1e1e1e; padding: 15px 30px; display: flex; justify-content: space-between; border-bottom: 1px solid #333; margin-bottom: 40px; }
+        .navbar a { color: #fff; text-decoration: none; font-weight: bold; margin-right: 20px; }
+        .navbar a:hover, .active { color: #1db954; }
+
+        .trivia-container { max-width: 500px; margin: 0 auto; background-color: #1e1e1e; padding: 40px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
+        .score-banner { font-size: 1.2em; font-weight: bold; color: #1db954; margin-bottom: 30px; border-bottom: 1px solid #333; padding-bottom: 15px; }
+
+        .mystery-cover { width: 250px; height: 250px; background-color: #2a2a2a; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 5em; cursor: pointer; margin: 0 auto 30px auto; object-fit: cover; transition: all 0.3s ease;}
+
+        .form-group { text-align: left; margin-bottom: 20px; }
+        .form-group label { display: block; color: #888; margin-bottom: 8px; font-weight: bold; }
+        .guess-input { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #333; background-color: #2a2a2a; color: white; font-size: 1.1em; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+        .guess-input:focus { border-color: #1db954; }
+        .guess-input.correct { border-color: #1db954; background-color: rgba(29, 185, 84, 0.1); }
+        .guess-input.wrong { border-color: #e22134; background-color: rgba(226, 33, 52, 0.1); }
+
+        .submit-btn { background-color: #1db954; color: white; border: none; padding: 15px; font-size: 1.2em; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
+
+        .reveal-data { display: none; margin-top: 25px; padding-top: 25px; border-top: 1px solid #333; }
+        .actual-text { font-size: 1.5em; font-weight: bold; margin-bottom: 5px; }
+        .actual-sub { color: #b3b3b3; font-size: 1.1em; margin-bottom: 20px; }
+        .nav-right { display: flex; align-items: center; gap: 20px; }
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background-color: #2a2a2a;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+        .search-form { display: flex; }
+        .search-input {
+            padding: 8px 15px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid #333;
+            background-color: #2a2a2a;
+            color: white;
+            outline: none;
+            width: 200px;
+        }
+        .search-btn {
+            padding: 8px 20px;
+            border-radius: 0 20px 20px 0;
+            border: none;
+            background-color: #1db954;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .navbar {
+            background-color: #1e1e1e;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            margin-bottom: 40px;
+        }
+        .nav-left { display: flex; align-items: center; gap: 20px; }
+        .nav-left a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: bold;
+            transition: color 0.2s;
+        }
+        .nav-left a:hover, .nav-left .active { color: #1db954; }
+    </style>
+</head>
+<body>
+
+    <div class="navbar">
+        <div>
+            <a href="/">Home</a>
+            <a href="/blind">Blind Mode</a>
+            <a href="/trivia" class="active">Trivia</a>
+            <a href="/artists">Artists</a>
+            <a href="/albums">Albums</a>
+            <a href="/tiers">Tier List</a>
+            <a href="/trivia_stats">Trivia Stats</a>
+            <a href="/history">History</a>
+            <a href="/dev/login">Dev</a>
+        </div>
+        <div class="nav-right">
+            <form action="/search" method="GET" class="search-form">
+                <input type="text" name="q" class="search-input" placeholder="Search songs, artists...">
+                <button type="submit" class="search-btn">Search</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="trivia-container">
+        <div class="score-banner">Total Score: <span id="score-display">{{ score }}</span></div>
+
+        <img class="mystery-cover" id="cover-art" src="" style="display: none;">
+        <div class="mystery-cover" id="play-btn" onclick="toggleAudio()">▶</div>
+        <audio id="trivia-audio" src="{{ song.audio_url }}"></audio>
+
+        <div id="guess-section">
+            <div class="form-group">
+                <label>Song Title</label>
+                <input type="text" id="title-guess" class="guess-input" placeholder="Guess the title..." autocomplete="off">
+            </div>
+            <div class="form-group">
+                <label>Artist Name</label>
+                <input type="text" id="artist-guess" class="guess-input" placeholder="Guess the artist..." autocomplete="off">
+            </div>
+            <button class="submit-btn" onclick="submitGuess({{ song.id }})" id="action-btn">Submit Guess</button>
+        </div>
+
+        <div class="reveal-data" id="reveal-section">
+            <div style="color: #1db954; font-weight: bold; font-size: 1.2em; margin-bottom: 15px;" id="points-earned"></div>
+            <div class="actual-text" id="actual-title"></div>
+            <div class="actual-sub" id="actual-artist"></div>
+            <button class="submit-btn" onclick="location.reload()" style="background-color: #333;">Next Track</button>
+        </div>
+    </div>
+
+    <script>
+        const audio = document.getElementById('trivia-audio');
+        const playBtn = document.getElementById('play-btn');
+
+        function toggleAudio() {
+            if (audio.paused) { audio.play(); playBtn.innerText = '⏸'; }
+            else { audio.pause(); playBtn.innerText = '▶'; }
+        }
+        audio.addEventListener('ended', () => playBtn.innerText = '▶');
+
+        async function submitGuess(songId) {
+            const titleInput = document.getElementById('title-guess');
+            const artistInput = document.getElementById('artist-guess');
+            const actionBtn = document.getElementById('action-btn');
+
+            actionBtn.innerText = "Checking...";
+            actionBtn.disabled = true;
+
+            const response = await fetch('/api/trivia_guess', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    song_id: songId,
+                    title_guess: titleInput.value,
+                    artist_guess: artistInput.value
+                })
+            });
+            const data = await response.json();
+
+            // Swap the generic play icon for the actual album cover
+            playBtn.style.display = 'none';
+            const coverArt = document.getElementById('cover-art');
+            coverArt.src = data.cover_url;
+            coverArt.style.display = 'block';
+
+            // Grade the inputs visually
+            titleInput.readOnly = true;
+            artistInput.readOnly = true;
+            titleInput.classList.add(data.title_correct ? 'correct' : 'wrong');
+            artistInput.classList.add(data.artist_correct ? 'correct' : 'wrong');
+
+            // Show the true metadata
+            document.getElementById('actual-title').innerText = data.actual_title;
+            document.getElementById('actual-artist').innerText = data.actual_artist;
+            document.getElementById('points-earned').innerText = `+${data.points_earned} Points`;
+            document.getElementById('score-display').innerText = data.new_total;
+
+            actionBtn.style.display = 'none';
+            document.getElementById('reveal-section').style.display = 'block';
+        }
+    </script>
+</body>
+</html>

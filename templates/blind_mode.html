@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+
+{% block title %}Blind Mode{% endblock %}
+
+{% block extra_css %}
+    <style>
+        body { font-family: -apple-system, sans-serif; background-color: #121212; color: #fff; text-align: center; margin: 0; padding-bottom: 50px; }
+        .navbar { background-color: #1e1e1e; padding: 15px 30px; display: flex; justify-content: space-between; border-bottom: 1px solid #333; margin-bottom: 40px; }
+        .navbar a { color: #fff; text-decoration: none; font-weight: bold; margin-right: 20px; }
+        .navbar a:hover, .active { color: #1db954; }
+
+        .matchup-container { display: flex; justify-content: center; align-items: center; gap: 40px; }
+        .song-card { background-color: #1e1e1e; padding: 20px; border-radius: 12px; width: 320px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
+
+        .mystery-cover { width: 100%; height: 320px; background-color: #2a2a2a; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 5em; cursor: pointer; transition: transform 0.2s; margin-bottom: 20px; }
+        .mystery-cover:hover { transform: scale(1.02); background-color: #333; }
+
+        .vote-btn { background-color: #1db954; color: white; border: none; padding: 16px; font-size: 1.2em; border-radius: 30px; cursor: pointer; width: 100%; font-weight: bold; }
+        .vs-text { font-size: 2.5em; font-weight: 900; color: #555; }
+
+        /* REVEAL MODAL */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 1000; justify-content: center; align-items: center; }
+        .modal { background-color: #1e1e1e; padding: 40px; border-radius: 12px; width: 600px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.8); }
+        .reveal-grid { display: flex; justify-content: space-between; margin-top: 20px; }
+        .reveal-card { width: 45%; }
+        .reveal-card img { width: 100%; border-radius: 8px; margin-bottom: 15px; }
+        .reveal-title { font-size: 1.2em; font-weight: bold; margin-bottom: 5px; }
+        .reveal-artist { color: #b3b3b3; font-size: 0.9em; margin-bottom: 10px; }
+        .next-btn { background-color: #1db954; color: white; border: none; padding: 15px 40px; font-size: 1.2em; border-radius: 30px; cursor: pointer; font-weight: bold; margin-top: 30px; }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+    <h1>Blind Audition</h1>
+    <p style="color: #888; margin-bottom: 40px;">Rely entirely on your ears. Visuals and biases are hidden.</p>
+
+    <div class="matchup-container">
+        <!-- Player 1 -->
+        <div class="song-card">
+            <div class="mystery-cover" id="btn1" onclick="toggleAudio('audio1', 'btn1')">▶</div>
+            <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 25px; color: #888;">Track A</div>
+            <audio id="audio1" src="{{ song1.audio_url }}"></audio>
+            <button class="vote-btn" onclick="submitBlindVote({{ song1.id }}, {{ song2.id }})">Vote Track A</button>
+        </div>
+
+        <div class="vs-text">VS</div>
+
+        <!-- Player 2 -->
+        <div class="song-card">
+            <div class="mystery-cover" id="btn2" onclick="toggleAudio('audio2', 'btn2')">▶</div>
+            <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 25px; color: #888;">Track B</div>
+            <audio id="audio2" src="{{ song2.audio_url }}"></audio>
+            <button class="vote-btn" onclick="submitBlindVote({{ song2.id }}, {{ song1.id }})">Vote Track B</button>
+        </div>
+    </div>
+
+    <!-- REVEAL MODAL -->
+    <div class="modal-overlay" id="reveal-modal">
+        <div class="modal">
+            <h2 style="margin-top: 0; color: #1db954;">The Reveal</h2>
+            <div class="reveal-grid">
+                <div class="reveal-card">
+                    <div style="color: #1db954; font-weight: bold; margin-bottom: 10px;">🏆 Winner</div>
+                    <img id="win-cover" src="">
+                    <div class="reveal-title" id="win-title"></div>
+                    <div class="reveal-artist" id="win-artist"></div>
+                    <div style="color: #1db954; font-weight: bold;" id="win-elo"></div>
+                </div>
+                <div class="reveal-card" style="opacity: 0.6;">
+                    <div style="color: #e22134; font-weight: bold; margin-bottom: 10px;">💀 Loser</div>
+                    <img id="lose-cover" src="">
+                    <div class="reveal-title" id="lose-title"></div>
+                    <div class="reveal-artist" id="lose-artist"></div>
+                    <div style="color: #e22134; font-weight: bold;" id="lose-elo"></div>
+                </div>
+            </div>
+            <button class="next-btn" onclick="location.reload()">Next Match</button>
+        </div>
+    </div>
+
+    <script>
+        const audio1 = document.getElementById('audio1');
+        const audio2 = document.getElementById('audio2');
+
+        function toggleAudio(targetId, btnId) {
+            const currentAudio = document.getElementById(targetId);
+            const currentBtn = document.getElementById(btnId);
+            const otherAudio = targetId === 'audio1' ? audio2 : audio1;
+            const otherBtn = targetId === 'audio1' ? document.getElementById('btn2') : document.getElementById('btn1');
+
+            if (currentAudio.paused) {
+                if (!otherAudio.paused) { otherAudio.pause(); otherBtn.innerText = '▶'; }
+                currentAudio.play(); currentBtn.innerText = '⏸';
+            } else {
+                currentAudio.pause(); currentBtn.innerText = '▶';
+            }
+        }
+        audio1.addEventListener('ended', () => document.getElementById('btn1').innerText = '▶');
+        audio2.addEventListener('ended', () => document.getElementById('btn2').innerText = '▶');
+
+        async function submitBlindVote(winnerId, loserId) {
+            audio1.pause(); audio2.pause();
+
+            const response = await fetch('/api/blind_vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ winner_id: winnerId, loser_id: loserId })
+            });
+            const data = await response.json();
+
+            // Populate and show the modal
+            document.getElementById('win-cover').src = data.winner.cover_url;
+            document.getElementById('win-title').innerText = data.winner.title;
+            document.getElementById('win-artist').innerText = data.winner.artist;
+            document.getElementById('win-elo').innerText = "Elo " + data.winner.elo_change;
+
+            document.getElementById('lose-cover').src = data.loser.cover_url;
+            document.getElementById('lose-title').innerText = data.loser.title;
+            document.getElementById('lose-artist').innerText = data.loser.artist;
+            document.getElementById('lose-elo').innerText = "Elo " + data.loser.elo_change;
+
+            document.getElementById('reveal-modal').style.display = 'flex';
+        }
+    </script>
+{% endblock %}

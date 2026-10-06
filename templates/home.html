@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+
+{% block title %}Song Ranker - Home{% endblock %}
+
+{% block extra_css %}
+<style>
+    .home-greeting { font-size: 3.5em; margin-top: 40px; margin-bottom: 50px; color: #1db954; font-weight: 900; letter-spacing: -1px; }
+
+    .section-title { font-size: 1.2em; font-weight: bold; margin-bottom: 20px; color: #888; text-align: left; max-width: 900px; margin-left: auto; margin-right: auto; text-transform: uppercase; letter-spacing: 1px; }
+
+    /* Game Modes Row */
+    .modes-grid { display: flex; justify-content: center; gap: 20px; max-width: 900px; margin: 0 auto 60px auto; }
+    .mode-card { flex: 1; background-color: #1e1e1e; padding: 35px 20px; border-radius: 12px; text-decoration: none; color: white; transition: transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid #333; }
+    .mode-card:hover { transform: translateY(-5px); box-shadow: 0 8px 24px rgba(29, 185, 84, 0.15); border-color: #1db954; }
+    .mode-icon { font-size: 3em; margin-bottom: 15px; }
+    .mode-title { font-size: 1.4em; font-weight: bold; margin-bottom: 10px; }
+    .mode-desc { font-size: 0.95em; color: #888; line-height: 1.4; }
+
+    /* Rankings Stack */
+    .rankings-stack { display: flex; flex-direction: column; gap: 15px; max-width: 900px; margin: 0 auto 60px auto; }
+    .rankings-showcase { display: flex; background-color: #1e1e1e; border-radius: 12px; overflow: hidden; text-decoration: none; color: white; transition: transform 0.2s ease, border-color 0.2s ease; border: 1px solid #333; height: 160px; }
+    .rankings-showcase:hover { transform: translateX(5px); border-color: #1db954; }
+
+    .rankings-info { padding: 30px; flex-grow: 1; text-align: left; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #2a2a2a; }
+    .rankings-info h3 { margin: 0 0 5px 0; font-size: 1.6em; color: #ffffff; }
+    .rankings-info p { margin: 0; color: #888; font-size: 0.95em; line-height: 1.4; }
+
+    .featured-data { width: 350px; display: flex; align-items: center; background-color: #1a1a1a; padding: 15px; position: relative; }
+    .featured-text { flex-grow: 1; padding-right: 15px; text-align: right; }
+    .featured-label { color: #1db954; font-size: 0.75em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+    .featured-title { font-weight: bold; font-size: 1.1em; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; margin-left: auto; }
+    .featured-sub { color: #888; font-size: 0.85em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; margin-left: auto; }
+
+    .top-cover-wrapper { width: 130px; height: 130px; flex-shrink: 0; background-color: #2a2a2a; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+    .top-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+    /* Search Bottom */
+    .home-search { max-width: 600px; margin: 0 auto 80px auto; }
+    .home-search .search-input { width: 100%; padding: 20px 30px; font-size: 1.2em; border-radius: 40px; text-align: center; border: 1px solid #333; background-color: #1e1e1e; color: white; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+    .home-search .search-input:focus { border-color: #1db954; }
+
+    /* Secret Dev Footer */
+    .dev-footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #222; }
+    .dev-link { color: #222; text-decoration: none; font-size: 0.8em; font-weight: bold; transition: color 0.3s; }
+    .dev-link:hover { color: #1db954; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="home-greeting">Song Ranker</div>
+
+    <div class="section-title">Game Modes</div>
+    <div class="modes-grid">
+        <a href="/vote" class="mode-card">
+            <div class="mode-icon">🔥</div>
+            <div class="mode-title">Standard Vote</div>
+            <div class="mode-desc">Head-to-head battles. Build your ultimate tier list match by match.</div>
+        </a>
+        <a href="/blind" class="mode-card">
+            <div class="mode-icon">🎧</div>
+            <div class="mode-title">Blind Audition</div>
+            <div class="mode-desc">No covers. No titles. Eliminate artist bias and vote purely on sound.</div>
+        </a>
+        <a href="/trivia" class="mode-card">
+            <div class="mode-icon">🧠</div>
+            <div class="mode-title">Trivia</div>
+            <div class="mode-desc">Test your knowledge. Guess the track and artist from a short snippet.</div>
+        </a>
+    </div>
+
+    <div class="section-title">Database Standings</div>
+    <div class="rankings-stack">
+
+        <!-- Top Tracks Showcase -->
+        <a href="/leaderboard" class="rankings-showcase">
+            <div class="rankings-info">
+                <h3>Top 20 Tracks</h3>
+                <p>The highest-rated individual songs across the entire database.</p>
+            </div>
+            <div class="featured-data">
+                <div class="featured-text">
+                    <div class="featured-label" style="color: #ffd21c">Current #1</div>
+                    <div class="featured-title">{{ top_song.title if top_song else 'N/A' }}</div>
+                    <div class="featured-sub">{{ top_song.artist if top_song else 'N/A' }}</div>
+                </div>
+                <div class="top-cover-wrapper">
+                    {% if top_song %}<img src="{{ top_song.cover_url }}" class="top-cover">{% endif %}
+                </div>
+            </div>
+        </a>
+
+        <!-- Top Artists Showcase -->
+        <a href="/artists" class="rankings-showcase">
+            <div class="rankings-info">
+                <h3>Top Artists</h3>
+                <p>Ranked by discography consistency and peak track performance.</p>
+            </div>
+            <div class="featured-data">
+                <div class="featured-text">
+                    <div class="featured-label" style="color: #5bc0de;">Current #1</div>
+                    <div class="featured-title">{{ top_artist.artist if top_artist else 'N/A' }}</div>
+                    <div class="featured-sub">Highest Avg. Score</div>
+                </div>
+                <div class="top-cover-wrapper">
+                    {% if top_artist %}<img src="{{ top_artist.cover_url }}" class="top-cover">{% endif %}
+                </div>
+            </div>
+        </a>
+
+        <!-- Top Albums Showcase -->
+        <a href="/albums" class="rankings-showcase">
+            <div class="rankings-info">
+                <h3>Top Albums</h3>
+                <p>The strongest cohesive projects based on average track Elo.</p>
+            </div>
+            <div class="featured-data">
+                <div class="featured-text">
+                    <div class="featured-label" style="color: #ffbf7f;">Current #1</div>
+                    <div class="featured-title">{{ top_album.album if top_album else 'N/A' }}</div>
+                    <div class="featured-sub">{{ top_album.artist if top_album else 'N/A' }}</div>
+                </div>
+                <div class="top-cover-wrapper">
+                    {% if top_album %}<img src="{{ top_album.cover_url }}" class="top-cover">{% endif %}
+                </div>
+            </div>
+        </a>
+
+    </div>
+
+    <form action="/search" method="GET" class="home-search">
+        <input type="text" name="q" class="search-input" placeholder="Search your database...">
+    </form>
+
+    <div class="dev-footer">
+        <a href="/dev/login" class="dev-link">SYSTEM ACCESS</a>
+    </div>
+{% endblock %}
