@@ -787,7 +787,8 @@ INSERT INTO "songs" VALUES(146,'The Other POV','Khloe Rose','https://is1-ssl.mzs
 INSERT INTO "songs" VALUES(147,'Permanently Bruised','Khloe Rose','https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/21/d3/ca/21d3ca82-5440-7b02-212c-38cbc076006d/196871290821.jpg/300x300bb.jpg','https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a3/79/5c/a3795c79-66a3-0609-f6b0-fc971d812278/mzaf_2603797128087249190.plus.aac.p.m4a',1200.0,0,'The In Between',1200.0,9999);
 INSERT INTO "songs" VALUES(148,'Starting Over','Khloe Rose','https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/21/d3/ca/21d3ca82-5440-7b02-212c-38cbc076006d/196871290821.jpg/300x300bb.jpg','https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/29/e5/40/29e5401f-711b-a696-44d7-2d846e87690b/mzaf_8979375967742730554.plus.aac.p.m4a',1200.0,0,'The In Between',1200.0,9999);
 INSERT INTO "songs" VALUES(149,'number one girl','ROSÉ','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/2d/14/66/2d14661b-345b-d0f3-4e86-56ef626e68aa/075679629203.jpg/300x300bb.jpg','https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8e/9f/c0/8e9fc022-999c-1c16-51c0-f45ebddda026/mzaf_8590681836583902002.plus.aac.p.m4a',1200.0,0,'rosie',1200.0,9999);
+INSERT INTO "songs" VALUES(150,'I Tried','Sadie Jean','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/c5/29/c0/c529c07d-75a5-0607-2bfa-28f71f4ef48b/1963623863133_cover.jpg/300x300bb.jpg','https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bc/51/52/bc515238-6929-4a48-9da7-141375d400e2/mzaf_14006897642750097913.plus.aac.p.m4a',1200.0,0,'Early Twenties Torture',1200.0,9999);
 DELETE FROM "sqlite_sequence";
-INSERT INTO "sqlite_sequence" VALUES('songs',149);
+INSERT INTO "sqlite_sequence" VALUES('songs',150);
 INSERT INTO "sqlite_sequence" VALUES('history',635);
 COMMIT;
