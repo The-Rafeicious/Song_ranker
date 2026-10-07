@@ -4,103 +4,170 @@
 
 {% block extra_css %}
     <style>
-        /* LIST STYLES */
-        h1 { margin-bottom: 30px; }
+        h1 { margin-bottom: 30px; font-size: 2.5em; font-weight: 900; }
+
+        .section-header {
+            text-align: left;
+            max-width: 750px;
+            margin: 40px auto 15px auto;
+            font-size: 1.1em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: bold;
+            color: #888;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+        }
+        /* Dynamically color the headers based on the section type */
+        .section-header.song { color: var(--color-song); border-bottom-color: rgba(29, 185, 84, 0.3); }
+        .section-header.artist { color: var(--color-artist); border-bottom-color: rgba(91, 155, 255, 0.3); }
+        .section-header.album { color: var(--color-album); border-bottom-color: rgba(191, 119, 255, 0.3); }
+
         .results-container {
-            max-width: 650px;
+            max-width: 750px;
             margin: 0 auto;
             text-align: left;
             background-color: #1e1e1e;
             border-radius: 12px;
-            padding: 20px;
+            padding: 10px 20px;
             box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
         }
+
         .row {
             display: flex;
             align-items: center;
-            padding: 15px 0;
+            padding: 15px 10px;
             border-bottom: 1px solid #333;
+            text-decoration: none;
+            color: white;
+            transition: background-color 0.2s, transform 0.2s;
+            border-radius: 8px;
         }
         .row:last-child { border-bottom: none; }
+        .row:hover { transform: translateX(5px); }
+
+        /* Subtle colored hover states */
+        .row.type-song:hover { background-color: var(--color-song-bg); }
+        .row.type-artist:hover { background-color: var(--color-artist-bg); }
+        .row.type-album:hover { background-color: var(--color-album-bg); }
+
         .cover-art {
-            width: 60px;
-            height: 60px;
+            width: 65px;
+            height: 65px;
             border-radius: 8px;
             object-fit: cover;
             margin-right: 20px;
             background-color: #2a2a2a;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
         }
+        .cover-art.artist-cover { border-radius: 50%; border: 2px solid var(--color-artist); }
+
         .info {
             flex-grow: 1;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 4px;
         }
         .title {
-            font-size: 1.2em;
+            font-size: 1.25em;
             font-weight: bold;
-            margin-bottom: 4px;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
         }
         .subtitle {
             color: #b3b3b3;
-            font-size: 0.9em;
+            font-size: 0.95em;
             white-space: nowrap;
             text-overflow: ellipsis;
             overflow: hidden;
         }
+
         .stats-col {
             text-align: right;
             margin-left: 15px;
         }
         .highlight-score {
             font-weight: bold;
-            color: #1db954;
-            font-size: 1.1em;
+            font-size: 1.2em;
         }
+        .row.type-song .highlight-score { color: var(--color-song); }
+
         .matches-played {
-            font-size: 0.8em;
+            font-size: 0.85em;
             color: #888;
             margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
-        .profile-link {
-            color: inherit;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
-        .profile-link:hover { color: #1db954; }
     </style>
 {% endblock %}
 
 {% block content %}
     <h1>Search Results for "{{ query }}"</h1>
 
-    <div class="results-container">
-        {% if songs %}
-            {% for song in songs %}
-            <div class="row">
-                <img src="{{ song.cover_url }}" alt="Cover" class="cover-art">
-                <div class="info">
-                    <a href="/song/{{ song.id }}" class="profile-link">
-                        <div class="title" title="{{ song.title }}">{{ song.title }}</div>
-                    </a>
-                    <div class="artist" title="{{ song.artist }}">
-                            <a href="/artist/{{ song.artist | urlencode }}" style="color: inherit; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#1db954'" onmouseout="this.style.color='inherit'">
-                            {{ song.artist }}
-                            </a>
-                            {% if song.album %} • {{ song.album }}{% endif %}
-                    </div>
-                </div>
-                <div class="stats-col">
-                    <div class="highlight-score">{{ song.elo_score|int }} Elo</div>
-                    <div class="matches-played">{{ song.matches_played }} Matches</div>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div style="text-align: center; color: #888; padding: 30px 0;">
-                No matches found in your database.
+    {% set result_state = namespace(found=false) %}
+
+    {% for section_title, items, type in sections %}
+        {% if items %}
+            {% set result_state.found = true %}
+            <div class="section-header {{ type }}">{{ section_title }}</div>
+            <div class="results-container">
+                {% for item in items %}
+                    {% if type == 'song' %}
+                        <a href="/song/{{ item.id }}" class="row type-song">
+                            <img src="{{ item.cover_url }}" alt="Cover" class="cover-art">
+                            <div class="info">
+                                <div class="title-wrap">
+                                    <div class="title">{{ item.title }}</div>
+                                    <span class="entity-badge badge-song" style="font-size: 0.7em; padding: 2px 6px; margin: 0;">Song</span>
+                                </div>
+                                <div class="subtitle">{{ item.artist }}{% if item.album and not ' - Single' in item.album %} • {{ item.album }}{% endif %}</div>
+                            </div>
+                            <div class="stats-col">
+                                <div class="highlight-score">{{ item.elo_score|int }} Elo</div>
+                                <div class="matches-played">{{ item.matches_played }} Matches</div>
+                            </div>
+                        </a>
+                    {% elif type == 'artist' %}
+                        <a href="/artist/{{ item.name | urlencode }}" class="row type-artist">
+                            <img src="{{ item.cover_url }}" alt="Cover" class="cover-art artist-cover">
+                            <div class="info">
+                                <div class="title-wrap">
+                                    <div class="title">{{ item.name }}</div>
+                                    <span class="entity-badge badge-artist" style="font-size: 0.7em; padding: 2px 6px; margin: 0;">Artist</span>
+                                </div>
+                            </div>
+                        </a>
+                    {% elif type == 'album' %}
+                        <a href="/album/{{ item.title | urlencode }}" class="row type-album">
+                            <img src="{{ item.cover_url }}" alt="Cover" class="cover-art">
+                            <div class="info">
+                                <div class="title-wrap">
+                                    <div class="title">{{ item.title }}</div>
+                                    <span class="entity-badge badge-album" style="font-size: 0.7em; padding: 2px 6px; margin: 0;">Album</span>
+                                </div>
+                                <div class="subtitle">{% if item.release_date %}Released {{ item.release_date }}{% else %}Album{% endif %}</div>
+                            </div>
+                        </a>
+                    {% endif %}
+                {% endfor %}
             </div>
         {% endif %}
-    </div>
+    {% endfor %}
+
+    {% if not result_state.found and query %}
+        <div class="results-container" style="margin-top: 30px;">
+            <div style="text-align: center; color: #888; padding: 30px 0; font-size: 1.1em;">
+                No matches found in your database.
+            </div>
+        </div>
+    {% endif %}
 {% endblock %}

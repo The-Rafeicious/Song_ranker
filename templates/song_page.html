@@ -1,131 +1,41 @@
 {% extends "base.html" %}
-
 {% block title %}{{ song.title }} - Song Ranker{% endblock %}
 
 {% block extra_css %}
 <style>
-    /* Profile Layout */
-    .profile-container {
-        max-width: 800px;
-        margin: 0 auto;
-        background-color: #1e1e1e;
-        border-radius: 12px;
-        padding: 40px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-        display: flex;
-        gap: 40px;
-        text-align: left;
-        margin-bottom: 20px;
-    }
-    .details-col { flex-grow: 1; }
-    .title { font-size: 2.5em; font-weight: 900; margin: 0 0 5px 0; line-height: 1.1; }
-    .artist { color: #b3b3b3; font-size: 1.2em; margin-bottom: 25px; }
+    .profile-container { max-width: 800px; margin: 0 auto; background: linear-gradient(180deg, #1e1e1e 0%, #121212 100%); border-radius: 16px; padding: 40px; box-shadow: 0 12px 30px rgba(0,0,0,0.6); display: flex; gap: 40px; text-align: left; margin-bottom: 30px; border: 1px solid #333; }
+    .details-col { flex-grow: 1; display: flex; flex-direction: column; justify-content: center; }
+    .title { font-size: 2.8em; font-weight: 900; margin: 0 0 10px 0; line-height: 1.1; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+    .metadata-row { font-size: 1.2em; margin-bottom: 15px; }
+    .genres-row { margin-bottom: 25px; }
 
-    /* Cover Art & Audio Overlay */
-    .cover-wrapper {
-        position: relative;
-        width: 250px;
-        height: 250px;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-        flex-shrink: 0;
-    }
-    .cover-art {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
-    .play-overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background-color: rgba(0,0,0,0.3);
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-size: 4em;
-        color: white;
-        opacity: 0;
-        cursor: pointer;
-        transition: opacity 0.2s ease, background-color 0.2s ease;
-    }
-    .play-overlay:hover, .play-overlay.playing {
-        opacity: 1;
-    }
-    .play-overlay.playing {
-        background-color: rgba(0,0,0,0.6);
-    }
+    .cover-wrapper { position: relative; width: 280px; height: 280px; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 24px rgba(0,0,0,0.6); flex-shrink: 0; }
+    .cover-art { width: 100%; height: 100%; object-fit: cover; }
+    .play-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: flex; justify-content: center; align-items: center; font-size: 4em; color: white; opacity: 0; cursor: pointer; transition: 0.2s; }
+    .play-overlay:hover, .play-overlay.playing { opacity: 1; background: rgba(0,0,0,0.6); }
 
-    /* Core Stats Grid */
-    .stats-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-        background-color: #2a2a2a;
-        padding: 20px;
-        border-radius: 8px;
-    }
-    .stat-box { display: flex; flex-direction: column; }
-    .stat-label { color: #888; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
-    .stat-value { font-size: 1.6em; font-weight: bold; color: #1db954; }
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; background: rgba(255,255,255,0.03); padding: 20px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+    .stat-label { color: #888; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; display: block; }
+    .stat-value { font-size: 1.6em; font-weight: bold; color: var(--color-song); }
     .stat-value.secondary { color: #ffffff; }
 
-    /* Trivia & Recognizability Container */
-    .trivia-container {
-        max-width: 800px;
-        margin: 0 auto 40px auto;
-        background-color: #1e1e1e;
-        border-radius: 12px;
-        padding: 25px 40px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        text-align: left;
-    }
-    .trivia-info h3 { margin: 0 0 5px 0; color: #1db954; font-size: 1.4em; }
-    .trivia-info p { margin: 0; color: #888; font-size: 0.95em; }
-    .trivia-score-box { text-align: right; }
-    .trivia-percent { font-size: 2.2em; font-weight: bold; color: #ffbf7f; line-height: 1; margin-bottom: 5px; }
-    
-    /* Match History Layout */
-    .history-container {
-        max-width: 800px;
-        margin: 0 auto;
-        background-color: #1e1e1e;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-    }
-    .history-row {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 15px 10px;
-        border-bottom: 1px solid #333;
-    }
+    .trivia-container, .history-container { max-width: 800px; margin: 0 auto 30px auto; background-color: #1e1e1e; border-radius: 12px; padding: 25px 40px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
+    .trivia-container { display: flex; justify-content: space-between; align-items: center; text-align: left; }
+    .history-row { display: flex; align-items: center; justify-content: space-between; padding: 15px 10px; border-bottom: 1px solid #333; }
     .history-row:last-child { border-bottom: none; }
     .side { display: flex; align-items: center; width: 45%; }
     .winner-side { justify-content: flex-end; text-align: right; }
-    .loser-side { justify-content: flex-start; text-align: left; opacity: 0.6; }
+    .loser-side { justify-content: flex-start; text-align: left; opacity: 0.7; }
     .hist-cover { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; margin: 0 15px; }
-    .song-text { overflow: hidden; white-space: nowrap; }
-    .hist-title { font-size: 1.1em; font-weight: bold; text-overflow: ellipsis; overflow: hidden; }
-    .winner-text { color: #1db954; }
-    .hist-artist { color: #b3b3b3; font-size: 0.85em; text-overflow: ellipsis; overflow: hidden; }
-    .vs-badge { background-color: #333; color: #888; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; }
+    .hist-title { font-size: 1.1em; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .winner-text { color: var(--color-song); }
 </style>
 {% endblock %}
 
 {% block content %}
     <div class="profile-container">
-        <!-- Cover Art & Audio Player -->
         <div class="cover-wrapper">
-            <img src="{{ song.cover_url }}" alt="Cover" class="cover-art">
+            <img src="{{ song.cover_url }}" class="cover-art">
             {% if song.audio_url %}
                 <div class="play-overlay" id="play-btn" onclick="toggleAudio()">▶</div>
                 <audio id="song-audio" src="{{ song.audio_url }}"></audio>
@@ -133,107 +43,82 @@
         </div>
 
         <div class="details-col">
+            <span class="entity-badge badge-song">Song</span>
             <h1 class="title">{{ song.title }}</h1>
-            <div class="artist">
-                <a href="/artist/{{ song.artist | urlencode }}" style="color: #1db954; text-decoration: none;">{{ song.artist }}</a>
-                {% if song.album %}• {{ song.album }}{% endif %}
+
+            <div class="metadata-row">
+                <a href="/artist/{{ song.artist | urlencode }}" class="link-artist">{{ song.artist }}</a>
+                {% if song.album and ' - Single' not in song.album %}
+                    <span style="color: #666; margin: 0 8px;">•</span>
+                    <a href="/album/{{ song.album | urlencode }}" class="link-album">{{ song.album }}</a>
+                {% endif %}
             </div>
 
+            {% if song.genres %}
+            <div class="genres-row">
+                {% for genre in song.genres.split(',') %}
+                    {% if genre.strip() %}
+                        <span class="entity-badge badge-genre">#{{ genre.strip() }}</span>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            {% endif %}
+
             <div class="stats-grid">
-                <div class="stat-box">
-                    <span class="stat-label">Current Elo</span>
-                    <span class="stat-value">{{ song.elo_score|int }}</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Current Rank</span>
-                    <span class="stat-value secondary">#{{ current_rank }}</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Highest Elo</span>
-                    <span class="stat-value" style="color: #b3b3b3;">{{ song.highest_elo|int if song.highest_elo else song.elo_score|int }}</span>
-                </div>
-                <div class="stat-box">
-                    <span class="stat-label">Peak Rank</span>
-                    <span class="stat-value secondary" style="color: #b3b3b3;">#{{ song.highest_rank if song.highest_rank and song.highest_rank != 9999 else current_rank }}</span>
-                </div>
-                <div class="stat-box" style="grid-column: 1 / -1; align-items: center; border-top: 1px solid #444; padding-top: 15px; margin-top: 5px;">
-                    <span class="stat-label">Total Matches Played</span>
-                    <span class="stat-value secondary" style="font-size: 1.2em;">{{ song.matches_played }}</span>
-                </div>
+                <div><span class="stat-label">Current Elo</span><span class="stat-value">{{ song.elo_score|int }}</span></div>
+                <div><span class="stat-label">Global Rank</span><span class="stat-value secondary">#{{ current_rank }}</span></div>
+                <div><span class="stat-label">Peak Elo</span><span class="stat-value" style="color: #b3b3b3;">{{ song.highest_elo|int if song.highest_elo else song.elo_score|int }}</span></div>
+                <div><span class="stat-label">Matches</span><span class="stat-value secondary">{{ song.matches_played }}</span></div>
             </div>
         </div>
     </div>
 
-    <!-- Dedicated Recognizability Container -->
     <div class="trivia-container">
-        <div class="trivia-info">
-            <h3>Recognizability</h3>
-            <p>How often this track's title and artist are correctly identified in the Trivia Mini-Game.</p>
+        <div>
+            <h3 style="margin: 0 0 5px 0; color: var(--color-genre);">Recognizability</h3>
+            <p style="margin: 0; color: #888;">Trivia Mini-Game accuracy</p>
         </div>
-        <div class="trivia-score-box">
+        <div style="text-align: right;">
             {% if song.trivia_attempts > 0 %}
-                <div class="trivia-percent">{{ ((song.trivia_correct / (song.trivia_attempts * 2)) * 100)|int }}%</div>
+                <div style="font-size: 2.2em; font-weight: bold; color: var(--color-genre);">{{ ((song.trivia_correct / (song.trivia_attempts * 2)) * 100)|int }}%</div>
                 <div style="color: #888; font-size: 0.85em; font-weight: bold;">{{ song.trivia_correct }} / {{ song.trivia_attempts * 2 }} PTS</div>
             {% else %}
-                <div class="trivia-percent" style="color: #555; font-size: 1.4em;">UNTESTED</div>
-                <div style="color: #888; font-size: 0.85em;">No trivia data yet</div>
+                <div style="color: #555; font-size: 1.4em; font-weight: bold;">UNTESTED</div>
             {% endif %}
         </div>
     </div>
 
-    <h2 style="margin: 40px 0 20px 0;">Last 5 Matches</h2>
-
     <div class="history-container">
+        <h3 style="margin-top: 0; text-transform: uppercase; color: #888; font-size: 1em;">Last 5 Matches</h3>
         {% for match in history %}
         <div class="history-row">
-            <!-- Winner Side -->
-            <div class="side winner-side">
-                <div class="song-text">
-                    <div class="hist-title winner-text" title="{{ match.winner_title }}">🏆 {{ match.winner_title }}</div>
-                    <div class="hist-artist">{{ match.winner_artist }}</div>
+            <a href="/song/{{ match.winner_id }}" class="side winner-side" style="text-decoration: none;">
+                <div>
+                    <div class="hist-title winner-text">🏆 {{ match.winner_title }}</div>
+                    <div style="color: #888; font-size: 0.85em;">{{ match.winner_artist }}</div>
                 </div>
-                <img src="{{ match.winner_cover }}" alt="Cover" class="hist-cover">
-            </div>
-
-            <div class="vs-badge">VS</div>
-
-            <!-- Loser Side -->
-            <div class="side loser-side">
-                <img src="{{ match.loser_cover }}" alt="Cover" class="hist-cover">
-                <div class="song-text">
-                    <div class="hist-title" title="{{ match.loser_title }}">{{ match.loser_title }}</div>
-                    <div class="hist-artist">{{ match.loser_artist }}</div>
+                <img src="{{ match.winner_cover }}" class="hist-cover">
+            </a>
+            <div style="background: #333; color: #888; padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold;">VS</div>
+            <a href="/song/{{ match.loser_id }}" class="side loser-side" style="text-decoration: none; color: white;">
+                <img src="{{ match.loser_cover }}" class="hist-cover">
+                <div>
+                    <div class="hist-title">{{ match.loser_title }}</div>
+                    <div style="color: #888; font-size: 0.85em;">{{ match.loser_artist }}</div>
                 </div>
-            </div>
+            </a>
         </div>
-        {% else %}
-        <div style="text-align: center; color: #888; padding: 20px 0;">No match history found for this song.</div>
         {% endfor %}
     </div>
 
     <script>
         const audio = document.getElementById('song-audio');
         const playBtn = document.getElementById('play-btn');
-
         function toggleAudio() {
             if (!audio) return;
-            
-            if (audio.paused) { 
-                audio.play(); 
-                playBtn.innerText = '⏸';
-                playBtn.classList.add('playing');
-            } else { 
-                audio.pause(); 
-                playBtn.innerText = '▶';
-                playBtn.classList.remove('playing');
-            }
+            if (audio.paused) { audio.play(); playBtn.innerText = '⏸'; playBtn.classList.add('playing'); }
+            else { audio.pause(); playBtn.innerText = '▶'; playBtn.classList.remove('playing'); }
         }
-        
-        if (audio) {
-            audio.addEventListener('ended', () => {
-                playBtn.innerText = '▶';
-                playBtn.classList.remove('playing');
-            });
-        }
+        if (audio) audio.addEventListener('ended', () => { playBtn.innerText = '▶'; playBtn.classList.remove('playing'); });
     </script>
 {% endblock %}

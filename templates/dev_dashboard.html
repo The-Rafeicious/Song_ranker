@@ -5,121 +5,285 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Developer Dashboard</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: #121212; color: #ffffff; margin: 0; padding-bottom: 50px; }
-        .navbar { background-color: #1e1e1e; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #333; margin-bottom: 30px; }
-        .navbar h2 { margin: 0; color: #1db954; }
-        .logout-btn { background-color: transparent; color: #888; border: 1px solid #888; padding: 8px 16px; border-radius: 20px; cursor: pointer; text-decoration: none; font-weight: bold; }
-        .logout-btn:hover { color: white; border-color: white; }
+        :root {
+            --bg-dark: #121212;
+            --bg-panel: #1e1e1e;
+            --bg-hover: #2a2a2a;
+            --spotify-green: #1db954;
+            --spotify-green-hover: #1ed760;
+            --text-main: #ffffff;
+            --text-muted: #b3b3b3;
+            --danger: #e22134;
+            --border-color: #333;
+        }
 
-        .container { max-width: 1000px; margin: 0 auto; padding: 0 20px; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
-        /* TABS */
-        .tab-container { display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-        .tab-btn { background: none; border: none; color: #888; font-size: 1.2em; font-weight: bold; cursor: pointer; padding: 10px 20px; }
-        .tab-btn.active { color: #1db954; border-bottom: 3px solid #1db954; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        /* SIDEBAR */
+        .sidebar { width: 260px; background-color: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px 0; }
+        .sidebar-header { padding: 0 20px 20px 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
+        .sidebar-header h2 { margin: 0; color: var(--spotify-green); font-size: 1.4em; }
+        .nav-menu { display: flex; flex-direction: column; flex-grow: 1; padding: 0 10px; gap: 5px; }
+        .nav-item { background: transparent; border: none; color: var(--text-muted); padding: 12px 15px; text-align: left; font-size: 1.05em; font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
+        .nav-item:hover { color: var(--text-main); background-color: var(--bg-hover); }
+        .nav-item.active { color: var(--spotify-green); background-color: rgba(29, 185, 84, 0.1); }
+        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
 
-        /* ADD TAB */
-        .search-bar { display: flex; gap: 10px; margin-bottom: 15px; }
-        .search-input { flex-grow: 1; padding: 15px; border-radius: 8px; border: 1px solid #333; background-color: #1e1e1e; color: white; font-size: 1.1em; outline: none; }
-        .action-btn { background-color: #1db954; color: white; border: none; padding: 15px 30px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1.1em; }
-        .action-btn:hover { background-color: #1ed760; }
-        .checkbox-container { margin-bottom: 30px; color: #888; font-size: 0.95em; display: flex; align-items: center; gap: 8px; }
+        /* MAIN CONTENT */
+        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; }
+        .view-section { display: none; animation: fadeIn 0.3s; }
+        .view-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-        .results-grid { display: flex; flex-direction: column; gap: 15px; }
-        .result-row { display: flex; align-items: center; background-color: #1e1e1e; padding: 15px; border-radius: 8px; }
-        .result-cover { width: 60px; height: 60px; border-radius: 4px; object-fit: cover; margin-right: 15px; background-color: #2a2a2a; }
-        .result-info { flex-grow: 1; }
-        .result-title { font-weight: bold; font-size: 1.1em; }
-        .result-artist { color: #888; font-size: 0.9em; }
-        .add-btn { background-color: transparent; border: 1px solid #1db954; color: #1db954; padding: 8px 16px; border-radius: 20px; cursor: pointer; font-weight: bold; transition: all 0.2s; }
-        .add-btn:hover:not(:disabled) { background-color: #1db954; color: white; }
+        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header-bar h1 { margin: 0; font-size: 2em; }
 
-        /* MANAGE TAB */
-        .filter-input { width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #333; background-color: #1e1e1e; color: white; margin-bottom: 20px; box-sizing: border-box; outline: none; }
-        table { width: 100%; border-collapse: collapse; background-color: #1e1e1e; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #333; }
-        th { background-color: #2a2a2a; color: #888; font-size: 0.9em; text-transform: uppercase; }
-        th.sortable { cursor: pointer; transition: color 0.2s; }
-        th.sortable:hover { color: #1db954; }
+        /* BUTTONS & INPUTS */
+        .btn-primary { background-color: var(--spotify-green); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1em; transition: 0.2s; }
+        .btn-primary:hover:not(:disabled) { background-color: var(--spotify-green-hover); }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-outline { background-color: transparent; color: var(--text-muted); border: 1px solid var(--text-muted); padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; text-decoration: none; text-align: center; }
+        .btn-outline:hover { color: white; border-color: white; }
+        .btn-danger { color: var(--danger); border-color: var(--danger); }
+        .btn-danger:hover { background-color: var(--danger); color: white; border-color: var(--danger); }
 
-        .table-cover { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
-        .action-icon { cursor: pointer; background: none; border: none; font-size: 1.2em; margin-right: 10px; }
+        .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
+        .text-input { flex-grow: 1; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-panel); color: white; font-size: 1.1em; outline: none; transition: border-color 0.2s; }
+        .text-input:focus { border-color: var(--spotify-green); }
 
-        /* MODAL */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; }
-        .modal { background-color: #1e1e1e; padding: 30px; border-radius: 12px; width: 500px; max-width: 90%; }
-        .modal h3 { margin-top: 0; }
+        /* UNIVERSAL SEARCH TOGGLES */
+        .toggle-group { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; background-color: var(--bg-panel); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
+        .toggle-label { color: var(--text-muted); font-size: 0.9em; font-weight: bold; display: flex; align-items: center; gap: 8px; cursor: pointer; }
+        .toggle-label input { accent-color: var(--spotify-green); width: 16px; height: 16px; cursor: pointer; }
+
+        /* TABLES & GRIDS */
+        .data-table { width: 100%; border-collapse: collapse; background-color: var(--bg-panel); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
+        .data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
+        .data-table th { background-color: #181818; color: var(--text-muted); font-size: 0.85em; text-transform: uppercase; user-select: none; }
+        .data-table th.sortable { cursor: pointer; transition: color 0.2s; }
+        .data-table th.sortable:hover { color: var(--text-main); }
+        .data-table tr:hover { background-color: rgba(255,255,255,0.02); }
+        .table-cover { width: 45px; height: 45px; border-radius: 4px; object-fit: cover; }
+        .type-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; background-color: #333; color: white; }
+        .type-badge.song { background-color: rgba(29, 185, 84, 0.2); color: var(--spotify-green); }
+        .type-badge.artist { background-color: rgba(66, 135, 245, 0.2); color: #4287f5; }
+        .type-badge.album { background-color: rgba(168, 66, 245, 0.2); color: #a842f5; }
+
+        .action-icon { cursor: pointer; background: none; border: none; font-size: 1.2em; margin-right: 10px; opacity: 0.7; transition: opacity 0.2s; }
+        .action-icon:hover { opacity: 1; }
+
+        /* UNIVERSAL SEARCH GRID */
+        .universal-results { display: flex; flex-direction: column; gap: 10px; }
+        .u-result-card { display: flex; align-items: center; background-color: var(--bg-panel); padding: 16px 20px; border-radius: 10px; border: 1px solid var(--border-color); transition: transform 0.15s ease, border-color 0.2s ease, background-color 0.2s ease; }
+        .u-result-card:hover { border-color: #444; background-color: #242424; transform: translateY(-1px); }
+        .u-info { flex-grow: 1; margin-left: 18px; }
+        .u-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+        .u-title { font-weight: 700; font-size: 1.15em; color: #fff; }
+        .u-cover-wrap { width: 52px; height: 52px; min-width: 52px; border-radius: 6px; overflow: hidden; background-color: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 1.5em; }
+        .u-cover-wrap img { width: 100%; height: 100%; object-fit: cover; }
+        .u-cover-wrap.circle { border-radius: 50%; }
+
+        /* Entity Badges */
+        .type-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
+        .type-badge.song   { background: rgba(29, 185, 84, 0.15); color: #1db954; border: 1px solid rgba(29, 185, 84, 0.3); }
+        .type-badge.artist { background: rgba(66, 135, 245, 0.15); color: #5b9bff; border: 1px solid rgba(66, 135, 245, 0.3); }
+        .type-badge.album  { background: rgba(168, 66, 245, 0.15); color: #bf77ff; border: 1px solid rgba(168, 66, 245, 0.3); }
+        .type-badge.genre  { background: rgba(255, 170, 0, 0.15); color: #ffb833; border: 1px solid rgba(255, 170, 0, 0.3); }
+
+        /* Metadata Chips */
+        .u-meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.88em; color: var(--text-muted); }
+        .chip { background: #2a2a2a; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; color: #ccc; }
+        .chip-elo { font-weight: bold; }
+        .chip-elo.s-tier { color: #ffd700; background: rgba(255, 215, 0, 0.12); }
+        .chip-elo.a-tier { color: #1db954; background: rgba(29, 185, 84, 0.12); }
+        .chip-elo.b-tier { color: #5b9bff; background: rgba(91, 155, 255, 0.12); }
+        .chip-elo.c-tier { color: #bbb; }
+
+        /* MODALS & TOASTS */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
+        .modal { background-color: var(--bg-panel); padding: 30px; border-radius: 12px; width: 500px; max-width: 90%; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
         .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; color: #888; margin-bottom: 5px; font-size: 0.9em; }
-        .form-group input { width: 100%; padding: 10px; border-radius: 6px; border: 1px solid #333; background-color: #2a2a2a; color: white; box-sizing: border-box; outline: none; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
-        .cancel-btn { background: transparent; border: none; color: #888; cursor: pointer; font-weight: bold; }
-        .cancel-btn:hover { color: white; }
+        .form-group label { display: block; color: var(--text-muted); margin-bottom: 5px; font-size: 0.9em; }
+        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
 
-        /* TOAST */
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background-color: #1db954; color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; opacity: 0; transition: all 0.3s ease; z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background-color: var(--spotify-green); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
         .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .toast.error { background-color: #e22134; }
+        .toast.error { background-color: var(--danger); }
+
+        /* SPINNER */
+        .spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; margin-right: 8px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-    <div class="navbar">
-        <h2>Developer Dashboard</h2>
-        <div>
-            <button class="logout-btn" style="margin-right: 10px; color: #1db954; border-color: #1db954;" onclick="syncDatabase()">Sync to GitHub</button>
-            <a href="/dev/logout" class="logout-btn">Lock Database</a>
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>⚙️ Dev Dashboard</h2>
+        </div>
+        <div class="nav-menu">
+            <button class="nav-item active" id="nav-overview" onclick="switchView('overview')">🔍 Universal Search</button>
+            <button class="nav-item" id="nav-add" onclick="switchView('add')">➕ Add Content</button>
+            <button class="nav-item" id="nav-songs" onclick="switchView('songs')">🎵 Manage Songs</button>
+            <button class="nav-item" id="nav-artists" onclick="switchView('artists')">👤 Manage Artists</button>
+            <button class="nav-item" id="nav-albums" onclick="switchView('albums')">💿 Manage Albums</button>
+            <button class="nav-item" id="nav-genres" onclick="switchView('genres')">🏷️ Manage Genres</button>
+        </div>
+        <div class="sidebar-footer">
+            <button id="sync-btn" class="btn-outline" onclick="syncDatabase()" style="color: var(--spotify-green); border-color: var(--spotify-green); display: flex; justify-content: center; align-items: center;">
+                <div class="spinner" id="sync-spinner"></div>
+                <span id="sync-text">Sync to GitHub</span>
+            </button>
+            <a href="/dev/logout" class="btn-outline btn-danger">Lock Database</a>
         </div>
     </div>
 
-    <div class="container">
-        <div class="tab-container">
-            <button class="tab-btn active" id="btn-add" onclick="switchTab('add')">Add Songs</button>
-            <button class="tab-btn" id="btn-manage" onclick="switchTab('manage')">Manage Database</button>
-        </div>
+    <!-- MAIN CONTENT -->
+    <div class="main-content">
 
-        <!-- ADD TAB -->
-        <div id="add-tab" class="tab-content active">
-            <div class="search-bar">
-                <input type="text" id="apple-search-input" class="search-input" placeholder="Enter song title, artist, or Apple Music link..." onkeypress="if(event.key === 'Enter') searchApple()">
-                <button class="action-btn" onclick="searchApple()">Search API</button>
+        <!-- UNIVERSAL SEARCH VIEW -->
+        <div id="view-overview" class="view-section active">
+            <div class="header-bar">
+                <h1>Universal Search</h1>
             </div>
-            <label class="checkbox-container">
-                <input type="checkbox" id="keep-search-box"> Keep search text and results after adding
-            </label>
-            <div id="loading" style="display: none; color: #888; text-align: center; margin: 20px 0;">Fetching from Apple Music...</div>
-            <div class="results-grid" id="apple-results"></div>
+
+            <input type="text" id="universal-search" class="text-input" placeholder="Search the entire database for anything..." style="width: 100%; box-sizing: border-box; margin-bottom: 15px;" onkeyup="runUniversalSearch()">
+
+            <div class="toggle-group">
+                <span style="color: white; font-weight: bold; margin-right: 10px;">Filters:</span>
+                <label class="toggle-label"><input type="checkbox" id="u-show-songs" checked onchange="runUniversalSearch()"> Songs</label>
+                <label class="toggle-label"><input type="checkbox" id="u-show-artists" checked onchange="runUniversalSearch()"> Artists</label>
+                <label class="toggle-label"><input type="checkbox" id="u-show-albums" checked onchange="runUniversalSearch()"> Albums</label>
+                <label class="toggle-label"><input type="checkbox" id="u-show-genres" checked onchange="runUniversalSearch()"> Genres</label>
+
+                <span style="color: white; font-weight: bold; margin-left: 20px; margin-right: 10px;">Display Data:</span>
+                <label class="toggle-label"><input type="checkbox" id="u-show-id" checked onchange="runUniversalSearch()"> IDs</label>
+                <label class="toggle-label"><input type="checkbox" id="u-show-cover" checked onchange="runUniversalSearch()"> Cover Art</label>
+                <label class="toggle-label"><input type="checkbox" id="u-show-stats" checked onchange="runUniversalSearch()"> Stats (Elo/Counts)</label>
+            </div>
+
+            <div class="universal-results" id="universal-results-container">
+                <div style="color: var(--text-muted); text-align: center; padding: 40px;">Type above to search across all tables.</div>
+            </div>
         </div>
 
-        <!-- MANAGE TAB -->
-        <div id="manage-tab" class="tab-content">
-            <input type="text" id="table-filter" class="filter-input" placeholder="Filter database by title, artist, or album..." onkeyup="filterTable()">
-            <table>
+        <!-- ADD CONTENT VIEW -->
+        <div id="view-add" class="view-section">
+            <div class="header-bar">
+                <h1>Add New Songs</h1>
+            </div>
+            <div class="search-bar">
+                <input type="text" id="apple-search-input" class="text-input" placeholder="Paste Apple Music link or search query..." onkeypress="if(event.key === 'Enter') searchApple()">
+                <button class="btn-primary" onclick="searchApple()">Search Apple API</button>
+            </div>
+            <div class="toggle-group" style="padding: 10px 15px;">
+                <label class="toggle-label"><input type="checkbox" id="keep-search-box"> Keep search text after adding</label>
+            </div>
+            <div id="loading" style="display: none; color: var(--text-muted); text-align: center; margin: 40px 0;">
+                <div class="spinner" style="display: inline-block; border-top-color: var(--spotify-green);"></div> Fetching data...
+            </div>
+            <div class="universal-results" id="apple-results"></div>
+        </div>
+
+        <!-- MANAGE SONGS VIEW -->
+        <div id="view-songs" class="view-section">
+            <div class="header-bar">
+                <h1>Manage Songs</h1>
+            </div>
+            <input type="text" id="song-filter" class="text-input" placeholder="Filter by title, artist, or album..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;" onkeyup="filterTable('manage-tbody', 'song-filter')">
+            <table class="data-table" id="songs-table">
                 <thead>
                     <tr>
-                        <th class="sortable" onclick="sortTable(0)">ID ↕</th>
+                        <th class="sortable" onclick="sortTable('songs-table', 0, true)">ID ↕</th>
                         <th>Cover</th>
-                        <th class="sortable" onclick="sortTable(2)">Title ↕</th>
-                        <th class="sortable" onclick="sortTable(3)">Artist ↕</th>
-                        <th class="sortable" onclick="sortTable(4)">Album ↕</th>
-                        <th class="sortable" onclick="sortTable(5)">Elo ↕</th>
+                        <th class="sortable" onclick="sortTable('songs-table', 2, false)">Title ↕</th>
+                        <th class="sortable" onclick="sortTable('songs-table', 3, false)">Artist ↕</th>
+                        <th class="sortable" onclick="sortTable('songs-table', 4, false)">Album ↕</th>
+                        <th class="sortable" onclick="sortTable('songs-table', 5, false)">Genres ↕</th>
+                        <th class="sortable" onclick="sortTable('songs-table', 5, true)">Elo ↕</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody id="manage-tbody">
                     {% for song in songs %}
-                    <tr id="row-{{ song.id }}">
-                        <td style="color: #888;">{{ song.id }}</td>
+                    <tr>
+                        <td style="color: var(--text-muted);">{{ song.id }}</td>
                         <td><img src="{{ song.cover_url }}" class="table-cover"></td>
-                        <td class="td-title">{{ song.title }}</td>
-                        <td class="td-artist">{{ song.artist }}</td>
-                        <td class="td-album">{{ song.album }}</td>
-                        <td>{{ song.elo_score|int }}</td>
+                        <td class="td-filter font-bold">{{ song.title }}</td>
+                        <td class="td-filter text-muted">{{ song.artist }}</td>
+                        <td class="td-filter text-muted">{{ song.album }}</td>
+                        <td class="td-filter text-muted">{{ song.genres or '' }}</td>
+                        <td style="color: var(--spotify-green); font-weight: bold;">{{ song.elo_score|int }}</td>
                         <td>
-                            <button class="action-icon" onclick='openEditModal({{ song.id }}, {{ song|tojson }})'>✏️</button>
-                            <button class="action-icon" onclick="deleteSong({{ song.id }})">🗑️</button>
+                            <button class="action-icon" onclick='openEditModal("song", {{ song.id }}, {{ song|tojson }})'>✏️</button>
+                            <button class="action-icon" onclick="deleteItem('song', {{ song.id }})">🗑️</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MANAGE ARTISTS VIEW -->
+        <div id="view-artists" class="view-section">
+            <div class="header-bar">
+                <h1>Manage Artists</h1>
+            </div>
+            <input type="text" id="artist-filter" class="text-input" placeholder="Filter artists..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;" onkeyup="filterTable('artists-tbody', 'artist-filter')">
+            <table class="data-table" id="artists-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" onclick="sortTable('artists-table', 0, true)">ID ↕</th>
+                        <th>Profile Picture</th>
+                        <th class="sortable" onclick="sortTable('artists-table', 2, false)">Name ↕</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="artists-tbody">
+                    {% for artist in artists %}
+                    <tr>
+                        <td style="color: var(--text-muted);">{{ artist.id }}</td>
+                        <td><img src="{{ artist.cover_url }}" class="table-cover" style="border-radius: 50%;"></td>
+                        <td class="td-filter font-bold" style="font-size: 1.1em;">{{ artist.name }}</td>
+                        <td>
+                            <button class="action-icon" onclick='openEditModal("artist", {{ artist.id }}, {{ artist|tojson }})'>✏️</button>
+                            <button class="action-icon" onclick="deleteItem('artist', {{ artist.id }})">🗑️</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- MANAGE ALBUMS VIEW -->
+        <div id="view-albums" class="view-section">
+            <div class="header-bar">
+                <h1>Manage Albums</h1>
+            </div>
+            <input type="text" id="album-filter" class="text-input" placeholder="Filter albums..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;" onkeyup="filterTable('albums-tbody', 'album-filter')">
+            <table class="data-table" id="albums-table">
+                <thead>
+                    <tr>
+                        <th class="sortable" onclick="sortTable('albums-table', 0, true)">ID ↕</th>
+                        <th>Cover</th>
+                        <th class="sortable" onclick="sortTable('albums-table', 2, false)">Title ↕</th>
+                        <th class="sortable" onclick="sortTable('albums-table', 3, false)">Release Date ↕</th>
+                        <th class="sortable" onclick="sortTable('albums-table', 4, true)">Songs ↕</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="albums-tbody">
+                    {% for album in albums %}
+                    <tr>
+                        <td style="color: var(--text-muted);">{{ album.id }}</td>
+                        <td><img src="{{ album.cover_url }}" class="table-cover"></td>
+                        <td class="td-filter font-bold">{{ album.title }}</td>
+                        <td class="td-filter text-muted">{{ album.release_date or 'N/A' }}</td>
+                        <td style="color: var(--spotify-green); font-weight: bold;">{{ album.song_count }}</td>
+                        <td>
+                            <button class="action-icon" onclick='openEditModal("album", {{ album.id }}, {{ album|tojson }})'>✏️</button>
+                            <button class="action-icon" onclick="deleteItem('album', {{ album.id }})">🗑️</button>
                         </td>
                     </tr>
                     {% endfor %}
@@ -128,71 +292,120 @@
         </div>
     </div>
 
-    <!-- EDIT MODAL -->
+    <!-- MANAGE GENRES VIEW -->
+    <div id="view-genres" class="view-section">
+        <div class="header-bar">
+            <h1>Manage Genres</h1>
+        </div>
+        <input type="text" id="genre-filter" class="text-input" placeholder="Filter genres..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;" onkeyup="filterTable('genres-tbody', 'genre-filter')">
+        <table class="data-table" id="genres-table">
+            <thead>
+                <tr>
+                    <th class="sortable" onclick="sortTable('genres-table', 0, true)">ID ↕</th>
+                    <th class="sortable" onclick="sortTable('genres-table', 1, false)">Name ↕</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="genres-tbody">
+                {% for genre in genres %}
+                <tr>
+                    <td style="color: var(--text-muted);">{{ genre.id }}</td>
+                    <td class="td-filter font-bold">
+                        <span class="type-badge song" style="font-size: 1em;">{{ genre.name }}</span>
+                    </td>
+                    <td>
+                        <button class="action-icon" onclick='openEditModal("genre", {{ genre.id }}, {{ genre|tojson }})'>✏️</button>
+                        <button class="action-icon" onclick="deleteItem('genre', {{ genre.id }})">🗑️</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- UNIVERSAL EDIT MODAL -->
     <div class="modal-overlay" id="edit-modal">
         <div class="modal">
-            <h3>Edit Song Data</h3>
+            <h3 id="modal-title" style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">Edit Data</h3>
+            <input type="hidden" id="edit-type">
             <input type="hidden" id="edit-id">
-            <div class="form-group">
-                <label>Title</label>
-                <input type="text" id="edit-title">
-            </div>
-            <div class="form-group">
-                <label>Artist</label>
-                <input type="text" id="edit-artist">
-            </div>
-            <div class="form-group">
-                <label>Album</label>
-                <input type="text" id="edit-album">
-            </div>
-            <div class="form-group">
-                <label>Cover Art URL</label>
-                <input type="text" id="edit-cover">
-            </div>
-            <div class="form-group">
-                <label>Audio Preview URL</label>
-                <input type="text" id="edit-audio">
-            </div>
+
+            <div id="fields-container"></div>
+
             <div class="modal-actions">
-                <button class="cancel-btn" onclick="closeEditModal()">Cancel</button>
-                <button class="action-btn" style="padding: 10px 20px;" onclick="saveEdit()">Save Changes</button>
+                <button class="btn-outline" style="border: none;" onclick="closeEditModal()">Cancel</button>
+                <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
             </div>
         </div>
     </div>
 
-    <!-- TOAST NOTIFICATION -->
     <div id="toast" class="toast">Action successful!</div>
 
     <script>
-        // --- PAGE LOAD & STATE MEMORY ---
+        // --- INJECT DATA FOR UNIVERSAL SEARCH ---
+        const dbData = {
+            songs: {{ songs | tojson | safe }},
+            artists: {{ artists | tojson | safe }},
+            albums: {{ albums | tojson | safe }},
+            genres: {{ genres | tojson | safe }}
+        };
+
+        // --- STATE MANAGEMENT ---
         window.addEventListener("beforeunload", () => {
-            sessionStorage.setItem("scrollPos", window.scrollY);
-            const activeTabBtn = document.querySelector('.tab-btn.active');
-            if (activeTabBtn) {
-                sessionStorage.setItem("activeTab", activeTabBtn.id === 'btn-add' ? 'add' : 'manage');
-            }
+            sessionStorage.setItem("activeView", document.querySelector('.view-section.active').id.replace('view-', ''));
+            sessionStorage.setItem("scrollPos", document.querySelector('.main-content').scrollTop);
+
+            // Save input states
+            sessionStorage.setItem("univSearchText", document.getElementById('universal-search').value);
+            sessionStorage.setItem("songFilterText", document.getElementById('song-filter').value);
+            sessionStorage.setItem("artistFilterText", document.getElementById('artist-filter').value);
+            sessionStorage.setItem("albumFilterText", document.getElementById('album-filter').value);
+            sessionStorage.setItem("appleSearchText", document.getElementById('apple-search-input').value);
         });
 
         window.addEventListener("load", () => {
+            // Restore View
+            const activeView = sessionStorage.getItem("activeView") || "overview";
+            switchView(activeView);
+
+            // Restore Scroll
             const scrollPos = sessionStorage.getItem("scrollPos");
-            if (scrollPos) window.scrollTo(0, parseInt(scrollPos));
+            if (scrollPos) document.querySelector('.main-content').scrollTo(0, parseInt(scrollPos));
 
-            const activeTab = sessionStorage.getItem("activeTab");
-            if (activeTab) switchTab(activeTab);
+            // Restore Inputs & Re-trigger filters
+            const restoreInput = (id, sessionKey, triggerFunc) => {
+                const val = sessionStorage.getItem(sessionKey);
+                if (val) {
+                    document.getElementById(id).value = val;
+                    triggerFunc();
+                }
+            };
 
-            const toastMsg = sessionStorage.getItem("pendingToast");
-            if (toastMsg) {
-                showToast(toastMsg);
+            restoreInput('universal-search', 'univSearchText', runUniversalSearch);
+            restoreInput('song-filter', 'songFilterText', () => filterTable('manage-tbody', 'song-filter'));
+            restoreInput('artist-filter', 'artistFilterText', () => filterTable('artists-tbody', 'artist-filter'));
+            restoreInput('album-filter', 'albumFilterText', () => filterTable('albums-tbody', 'album-filter'));
+
+            if (sessionStorage.getItem("appleSearchText")) {
+                document.getElementById('apple-search-input').value = sessionStorage.getItem("appleSearchText");
+                if (document.getElementById('keep-search-box').checked) searchApple();
+            }
+
+            // Restore Toast
+            const pendingToast = sessionStorage.getItem("pendingToast");
+            if (pendingToast) {
+                showToast(pendingToast);
                 sessionStorage.removeItem("pendingToast");
             }
         });
 
-        // --- UI LOGIC ---
-        function switchTab(tab) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tab + '-tab').classList.add('active');
-            document.getElementById('btn-' + tab).classList.add('active');
+        // --- UI ROUTING ---
+        function switchView(viewName) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+
+            document.getElementById('view-' + viewName).classList.add('active');
+            document.getElementById('nav-' + viewName).classList.add('active');
         }
 
         function showToast(message, isError = false) {
@@ -202,18 +415,183 @@
             setTimeout(() => toast.className = 'toast', 3000);
         }
 
-        // --- ADD LOGIC ---
-        function getExistingSongsSet() {
-            const rows = document.getElementById('manage-tbody').getElementsByTagName('tr');
-            const existing = new Set();
-            for (let i = 0; i < rows.length; i++) {
-                const title = rows[i].querySelector('.td-title').textContent.trim().toLowerCase();
-                const artist = rows[i].querySelector('.td-artist').textContent.trim().toLowerCase();
-                existing.add(`${title}|${artist}`);
-            }
-            return existing;
+        // --- UNIVERSAL SEARCH ENGINE ---
+        function runUniversalSearch() {
+        const rawQuery = document.getElementById('universal-search').value.trim().toLowerCase();
+        const container = document.getElementById('universal-results-container');
+
+        if (!rawQuery) {
+            container.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Type above to search across all tables.</div>';
+            return;
         }
 
+        // Split search query into individual words for loose/multi-keyword matching
+        const terms = rawQuery.split(/\s+/).filter(Boolean);
+        const matchesAllTerms = (targetStr) => {
+            const text = (targetStr || '').toLowerCase();
+            return terms.every(term => text.includes(term));
+        };
+
+        const showSongs = document.getElementById('u-show-songs') ? document.getElementById('u-show-songs').checked : true;
+        const showArtists = document.getElementById('u-show-artists') ? document.getElementById('u-show-artists').checked : true;
+        const showAlbums = document.getElementById('u-show-albums') ? document.getElementById('u-show-albums').checked : true;
+        const showGenres = document.getElementById('u-show-genres') ? document.getElementById('u-show-genres').checked : true;
+
+        const showId = document.getElementById('u-show-id').checked;
+        const showCover = document.getElementById('u-show-cover').checked;
+        const showStats = document.getElementById('u-show-stats').checked;
+
+        let results = [];
+
+        // 1. Search Songs (combines title, artist, album, genres)
+        if (showSongs && dbData.songs) {
+            dbData.songs.forEach(s => {
+                const searchable = `${s.title} ${s.artist || ''} ${s.album || ''} ${s.genres || ''}`;
+                if (matchesAllTerms(searchable)) results.push({ type: 'song', data: s });
+            });
+        }
+
+        // 2. Search Artists
+        if (showArtists && dbData.artists) {
+            dbData.artists.forEach(a => {
+                if (matchesAllTerms(a.name)) results.push({ type: 'artist', data: a });
+            });
+        }
+
+        // 3. Search Albums
+        if (showAlbums && dbData.albums) {
+            dbData.albums.forEach(al => {
+                const searchable = `${al.title} ${al.release_date || ''}`;
+                if (matchesAllTerms(searchable)) results.push({ type: 'album', data: al });
+            });
+        }
+
+        // 4. Search Genres
+        if (showGenres && dbData.genres) {
+            dbData.genres.forEach(g => {
+                if (matchesAllTerms(g.name)) results.push({ type: 'genre', data: g });
+            });
+        }
+
+        if (results.length === 0) {
+            container.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 40px;">No matches found across active tables.</div>';
+            return;
+        }
+
+        let html = '';
+        results.forEach(item => {
+            const type = item.type;
+            const d = item.data;
+            const title = (type === 'artist' || type === 'genre') ? d.name : d.title;
+
+            // Rich Cover Art handling
+            let coverHTML = '';
+            if (showCover) {
+                if (type === 'genre') {
+                    coverHTML = `<div class="u-cover-wrap"><span style="font-size: 1.2em;">🏷️</span></div>`;
+                } else if (d.cover_url) {
+                    const circleClass = type === 'artist' ? 'circle' : '';
+                    coverHTML = `<div class="u-cover-wrap ${circleClass}"><img src="${d.cover_url}" alt=""></div>`;
+                } else {
+                    const icon = type === 'artist' ? '👤' : (type === 'album' ? '💿' : '🎵');
+                    coverHTML = `<div class="u-cover-wrap"><span>${icon}</span></div>`;
+                }
+            }
+
+            // Contextual Info & Tags
+            let metaBadges = [];
+            if (showId) metaBadges.push(`<span class="chip">ID: ${d.id}</span>`);
+
+            if (type === 'song') {
+                if (d.artist) metaBadges.push(`<span>by <strong>${d.artist}</strong></span>`);
+                if (d.album) metaBadges.push(`<span class="chip">💿 ${d.album}</span>`);
+                if (d.genres) {
+                    d.genres.split(',').forEach(g => {
+                        if (g.trim()) metaBadges.push(`<span class="chip" style="color: #ffb833;">#${g.trim()}</span>`);
+                    });
+                }
+                if (showStats && d.elo_score) {
+                    const elo = Math.round(d.elo_score);
+                    let tier = elo >= 1600 ? 's-tier' : (elo >= 1400 ? 'a-tier' : (elo >= 1200 ? 'b-tier' : 'c-tier'));
+                    metaBadges.push(`<span class="chip chip-elo ${tier}">⚡ ${elo} Elo</span>`);
+                    if (d.matches_played !== undefined) metaBadges.push(`<span class="chip">${d.matches_played} matches</span>`);
+                }
+            } else if (type === 'artist') {
+                if (showStats && dbData.songs) {
+                    const count = dbData.songs.filter(s => s.artist && s.artist.toLowerCase().includes(d.name.toLowerCase())).length;
+                    metaBadges.push(`<span class="chip" style="color: #5b9bff;">🎵 ${count} Tracks</span>`);
+                }
+            } else if (type === 'album') {
+                if (d.release_date) metaBadges.push(`<span class="chip">📅 ${d.release_date}</span>`);
+                const songCount = d.song_count !== undefined ? d.song_count : (dbData.songs ? dbData.songs.filter(s => s.album === d.title).length : 0);
+                metaBadges.push(`<span class="chip" style="color: #bf77ff;">💿 ${songCount} Tracks</span>`);
+            } else if (type === 'genre') {
+                if (dbData.songs) {
+                    const count = dbData.songs.filter(s => s.genres && s.genres.toLowerCase().includes(d.name.toLowerCase())).length;
+                    metaBadges.push(`<span class="chip" style="color: #ffb833;">🏷️ Tagged in ${count} Songs</span>`);
+                }
+            }
+
+            html += `
+                <div class="u-result-card">
+                    ${coverHTML}
+                    <div class="u-info">
+                        <div class="u-header">
+                            <span class="u-title">${title}</span>
+                            <span class="type-badge ${type}">${type}</span>
+                        </div>
+                        <div class="u-meta-row">${metaBadges.join('')}</div>
+                    </div>
+                    <div style="display: flex; gap: 8px;">
+                        <button class="btn-outline" onclick='openEditModal("${type}", ${d.id}, ${JSON.stringify(d).replace(/'/g, "&#39;")})' style="padding: 7px 14px; font-size: 0.88em;">Edit</button>
+                        <button class="action-icon" onclick="deleteItem('${type}', ${d.id})" title="Delete">🗑️</button>
+                    </div>
+                </div>
+            `;
+        });
+
+        container.innerHTML = html;
+    }
+
+        // --- SORTING & FILTERING ---
+        let sortDirections = {};
+        function sortTable(tableId, colIndex, isNumeric) {
+            const tableBody = document.getElementById(tableId).querySelector('tbody');
+            const rows = Array.from(tableBody.rows);
+
+            sortDirections[tableId] = !sortDirections[tableId];
+            const isAsc = sortDirections[tableId];
+
+            rows.sort((a, b) => {
+                let valA = a.cells[colIndex].textContent.trim();
+                let valB = b.cells[colIndex].textContent.trim();
+
+                if (isNumeric) {
+                    return isAsc ? parseInt(valA || 0) - parseInt(valB || 0) : parseInt(valB || 0) - parseInt(valA || 0);
+                } else {
+                    return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+                }
+            });
+
+            tableBody.innerHTML = "";
+            rows.forEach(row => tableBody.appendChild(row));
+        }
+
+        function filterTable(tbodyId, inputId) {
+            const filter = document.getElementById(inputId).value.toLowerCase();
+            const rows = document.getElementById(tbodyId).getElementsByTagName('tr');
+
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].querySelectorAll('.td-filter');
+                let match = false;
+                cells.forEach(cell => {
+                    if (cell.textContent.toLowerCase().includes(filter)) match = true;
+                });
+                rows[i].style.display = match ? "" : "none";
+            }
+        }
+
+        // --- CRUD OPERATIONS ---
         async function searchApple() {
             const query = document.getElementById('apple-search-input').value.trim();
             if (!query) return;
@@ -227,28 +605,21 @@
 
                 if (data.error) throw new Error(data.error);
 
-                const existingSongs = getExistingSongsSet();
                 let html = '';
-
                 data.forEach((track) => {
-                    const trackKey = `${track.title.toLowerCase()}|${track.artist.toLowerCase()}`;
-
-                    // Filter out tracks that already exist in the database
-                    if (existingSongs.has(trackKey)) return;
-
                     html += `
-                        <div class="result-row">
-                            <img src="${track.cover_url}" class="result-cover">
-                            <div class="result-info">
-                                <div class="result-title">${track.title}</div>
-                                <div class="result-artist">${track.artist} • ${track.album}</div>
+                        <div class="u-result-card">
+                            <img src="${track.cover_url}" class="table-cover">
+                            <div class="u-info">
+                                <div class="u-title">${track.title}</div>
+                                <div class="u-meta">${track.artist} • ${track.album}</div>
                             </div>
-                            <button class="add-btn" onclick='addSong(${JSON.stringify(track).replace(/'/g, "&#39;")}, this)'>Add to DB</button>
+                            <button class="btn-outline" style="color: var(--spotify-green); border-color: var(--spotify-green);" onclick='addSong(${JSON.stringify(track).replace(/'/g, "&#39;")}, this)'>Add to DB</button>
                         </div>
                     `;
                 });
 
-                document.getElementById('apple-results').innerHTML = html || '<div style="color: #888;">No new results found. Matches may already be in your database.</div>';
+                document.getElementById('apple-results').innerHTML = html || '<div style="color: var(--text-muted);">No results found.</div>';
             } catch (err) {
                 showToast("Search failed: " + err.message, true);
             } finally {
@@ -270,11 +641,11 @@
                         showToast(result.message);
                         btnElement.innerText = "Added";
                         btnElement.disabled = true;
-                        btnElement.style.backgroundColor = "#333";
                         btnElement.style.borderColor = "#333";
-                        btnElement.style.color = "#888";
+                        btnElement.style.color = "var(--text-muted)";
                     } else {
                         sessionStorage.setItem("pendingToast", result.message);
+                        sessionStorage.removeItem("appleSearchText");
                         window.location.reload();
                     }
                 } else {
@@ -285,70 +656,34 @@
             }
         }
 
-        // --- MANAGE LOGIC ---
-        function filterTable() {
-            const filter = document.getElementById('table-filter').value.toLowerCase();
-            const rows = document.getElementById('manage-tbody').getElementsByTagName('tr');
-
-            for (let i = 0; i < rows.length; i++) {
-                const title = rows[i].querySelector('.td-title').textContent.toLowerCase();
-                const artist = rows[i].querySelector('.td-artist').textContent.toLowerCase();
-                const album = rows[i].querySelector('.td-album').textContent.toLowerCase();
-
-                if (title.includes(filter) || artist.includes(filter) || album.includes(filter)) {
-                    rows[i].style.display = "";
-                } else {
-                    rows[i].style.display = "none";
-                }
-            }
-        }
-
-        let sortDirection = false;
-        function sortTable(colIndex) {
-            const tableBody = document.getElementById("manage-tbody");
-            const rows = Array.from(tableBody.rows);
-            sortDirection = !sortDirection;
-
-            rows.sort((a, b) => {
-                let valA = a.cells[colIndex].textContent.trim();
-                let valB = b.cells[colIndex].textContent.trim();
-
-                // Sort numerically for ID (0) and Elo (5)
-                if (colIndex === 0 || colIndex === 5) {
-                    return sortDirection ? parseInt(valA) - parseInt(valB) : parseInt(valB) - parseInt(valA);
-                } else {
-                    return sortDirection ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                }
-            });
-
-            tableBody.innerHTML = "";
-            rows.forEach(row => tableBody.appendChild(row));
-        }
-
-        async function deleteSong(id) {
-            if (!confirm("Are you sure you want to delete this song? All history will be lost.")) return;
-
-            try {
-                const response = await fetch(`/api/dev/delete_song/${id}`, { method: 'DELETE' });
-                if (response.ok) {
-                    sessionStorage.setItem("pendingToast", "Song deleted.");
-                    window.location.reload();
-                } else {
-                    showToast("Failed to delete.", true);
-                }
-            } catch (err) {
-                showToast("Error deleting song.", true);
-            }
-        }
-
-        // --- EDIT LOGIC ---
-        function openEditModal(id, songData) {
+        function openEditModal(type, id, data) {
+            document.getElementById('edit-type').value = type;
             document.getElementById('edit-id').value = id;
-            document.getElementById('edit-title').value = songData.title;
-            document.getElementById('edit-artist').value = songData.artist;
-            document.getElementById('edit-album').value = songData.album || '';
-            document.getElementById('edit-cover').value = songData.cover_url || '';
-            document.getElementById('edit-audio').value = songData.audio_url || '';
+            document.getElementById('modal-title').innerText = `Edit ${type.charAt(0).toUpperCase() + type.slice(1)}`;
+
+            let fieldsHTML = '';
+            const createInput = (label, id, val) => `<div class="form-group"><label>${label}</label><input type="text" class="text-input" id="${id}" value="${val || ''}"></div>`;
+
+            if (type === 'song') {
+                fieldsHTML = createInput('Title', 'edit-title', data.title) +
+                             createInput('Artist (Comma Separated)', 'edit-artist', data.artist) +
+                             createInput('Album', 'edit-album', data.album) +
+                             createInput('Genres (Comma Separated)', 'edit-genres', data.genres) +
+                             createInput('Cover URL', 'edit-cover', data.cover_url) +
+                             createInput('Audio URL', 'edit-audio', data.audio_url);
+            } else if (type === 'artist') {
+                fieldsHTML = createInput('Name', 'edit-name', data.name) +
+                             createInput('Profile Picture URL', 'edit-cover', data.cover_url);
+            } else if (type === 'album') {
+                fieldsHTML = createInput('Title', 'edit-title', data.title) +
+                             createInput('Release Date', 'edit-date', data.release_date) +
+                             createInput('Cover URL', 'edit-cover', data.cover_url);
+            }
+            else if (type === 'genre') {
+                fieldsHTML = createInput('Name', 'edit-name', data.name);
+            }
+
+            document.getElementById('fields-container').innerHTML = fieldsHTML;
             document.getElementById('edit-modal').style.display = 'flex';
         }
 
@@ -357,48 +692,68 @@
         }
 
         async function saveEdit() {
+            const type = document.getElementById('edit-type').value;
             const id = document.getElementById('edit-id').value;
-            const payload = {
-                title: document.getElementById('edit-title').value,
-                artist: document.getElementById('edit-artist').value,
-                album: document.getElementById('edit-album').value,
-                cover_url: document.getElementById('edit-cover').value,
-                audio_url: document.getElementById('edit-audio').value
-            };
+            let payload = {};
+
+            if (type === 'song') {
+                payload = { title: document.getElementById('edit-title').value, artist: document.getElementById('edit-artist').value, album: document.getElementById('edit-album').value, genres: document.getElementById('edit-genres').value, cover_url: document.getElementById('edit-cover').value, audio_url: document.getElementById('edit-audio').value };
+            } else if (type === 'artist') {
+                payload = { name: document.getElementById('edit-name').value, cover_url: document.getElementById('edit-cover').value };
+            } else if (type === 'album') {
+                payload = { title: document.getElementById('edit-title').value, release_date: document.getElementById('edit-date').value, cover_url: document.getElementById('edit-cover').value };
+            }
+            else if (type === 'genre') {
+                payload = { name: document.getElementById('edit-name').value };
+            }
 
             try {
-                const response = await fetch(`/api/dev/edit_song/${id}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-
-                const result = await response.json();
-
+                const response = await fetch(`/api/dev/edit_${type}/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
                 if (response.ok) {
-                    sessionStorage.setItem("pendingToast", "Song updated successfully.");
+                    sessionStorage.setItem("pendingToast", `${type} updated successfully.`);
                     window.location.reload();
                 } else {
+                    const result = await response.json();
                     showToast(result.message || "Failed to update.", true);
                 }
-            } catch (err) {
-                showToast("Error updating song.", true);
-            }
+            } catch (err) { showToast("Error updating item.", true); }
+        }
+
+        async function deleteItem(type, id) {
+            const warnings = {
+                'song': 'Delete this song? Elo will be redistributed to maintain balance.',
+                'artist': 'Delete this artist? They will be removed from all associated songs.',
+                'album': 'Delete this album? Associated songs will lose their album connection.'
+            };
+            if (!confirm(warnings[type])) return;
+            try {
+                const response = await fetch(`/api/dev/delete_${type}/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    sessionStorage.setItem("pendingToast", "Deletion successful.");
+                    window.location.reload();
+                } else { showToast("Failed to delete.", true); }
+            } catch (err) { showToast("Error deleting item.", true); }
         }
 
         async function syncDatabase() {
-            showToast("Syncing to GitHub...");
+            const btn = document.getElementById('sync-btn');
+            const spinner = document.getElementById('sync-spinner');
+            const text = document.getElementById('sync-text');
+
+            btn.disabled = true;
+            spinner.style.display = 'block';
+            text.innerText = 'Syncing...';
+
             try {
                 const response = await fetch('/api/dev/sync', { method: 'POST' });
                 const result = await response.json();
-
-                if (response.ok) {
-                    showToast(result.message);
-                } else {
-                    showToast(result.message, true);
-                }
+                showToast(result.message, !response.ok);
             } catch (err) {
                 showToast("Error communicating with server.", true);
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                text.innerText = 'Sync to GitHub';
             }
         }
     </script>

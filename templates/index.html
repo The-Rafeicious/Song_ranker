@@ -4,75 +4,66 @@
 
 {% block extra_css %}
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            text-align: center;
-            padding: 0 0 50px 0;
-            margin: 0;
-        }
+        body { text-align: center; }
+
+        h1 { margin-bottom: 50px; font-size: 2.8em; font-weight: 900; letter-spacing: -1px; }
 
         /* FLOATING TOAST NOTIFICATION (LAST MATCH BANNER) */
         .last-vote-banner {
             position: fixed;
             bottom: 30px;
             right: 30px;
-            background-color: rgba(30, 30, 30, 0.95);
+            background: rgba(30, 30, 30, 0.95);
             backdrop-filter: blur(10px);
             border: 1px solid #333;
             border-radius: 12px;
-            padding: 15px 20px;
+            padding: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
             z-index: 1000;
             text-align: left;
-            min-width: 300px;
-            animation: slideUp 0.4s ease-out;
+            min-width: 320px;
+            animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
-        @keyframes slideUp {
-            from { transform: translateY(50px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
-        }
-        .text-green { color: #1db954; font-weight: bold; }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .text-green { color: var(--color-song); font-weight: bold; }
         .text-red { color: #e22134; font-weight: bold; }
+
         .banner-title {
-            color: #b3b3b3;
+            color: #888;
             font-size: 0.8em;
             text-transform: uppercase;
             letter-spacing: 1px;
+            font-weight: bold;
             margin-bottom: 12px;
             border-bottom: 1px solid #333;
             padding-bottom: 6px;
         }
-        .banner-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-            font-size: 0.95em;
-        }
-        .banner-song {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 140px;
-            margin-right: 15px;
-        }
+        .banner-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.95em; }
+        .banner-song { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; margin-right: 15px; }
 
         /* MATCHUP STYLES */
         .matchup-container {
             display: flex;
             justify-content: center;
             align-items: center;
-            gap: 40px;
+            gap: 50px;
             flex-wrap: wrap;
         }
+
         .song-card {
-            background-color: #1e1e1e;
-            padding: 20px;
-            border-radius: 12px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, #1e1e1e 100%);
+            padding: 25px;
+            border-radius: 16px;
             width: 320px;
-            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            border: 1px solid #333;
+            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s;
+        }
+        .song-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--color-song);
+            box-shadow: 0 15px 30px var(--color-song-bg);
         }
 
         /* INTERACTIVE COVER ART STYLES */
@@ -80,57 +71,44 @@
             position: relative;
             width: 100%;
             height: 320px;
-            margin-bottom: 20px;
+            margin-bottom: 25px;
             border-radius: 8px;
             overflow: hidden;
             background-color: #2a2a2a;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.6);
         }
-        .cover-art {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: opacity 0.2s, transform 0.2s;
-        }
-        .cover-container:hover .cover-art {
-            opacity: 0.5;
-            transform: scale(1.02);
-        }
+        .cover-art { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .cover-container:hover .cover-art { opacity: 0.4; transform: scale(1.05); }
+
         .play-overlay {
             position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            font-size: 4em;
-            color: rgba(255, 255, 255, 0.9);
+            font-size: 5em;
+            color: rgba(255, 255, 255, 0.95);
             text-shadow: 0 4px 12px rgba(0,0,0,0.8);
             pointer-events: none;
-            opacity: 0.8;
-            transition: opacity 0.2s;
+            opacity: 0;
+            transition: opacity 0.2s, transform 0.2s;
         }
-        .cover-container:hover .play-overlay {
-            opacity: 1;
-        }
+        .cover-container:hover .play-overlay, .play-overlay.playing { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
 
+        /* TEXT AND METADATA */
         .song-title {
             font-size: 1.6em;
-            font-weight: bold;
-            margin: 0 0 8px 0;
+            font-weight: 900;
+            margin: 0 0 10px 0;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
-        .song-artist {
-            color: #b3b3b3;
-            font-size: 1.1em;
-            margin-bottom: 25px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
+        .metadata-row { font-size: 1.05em; margin-bottom: 25px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+        /* BUTTONS */
         .vote-btn {
-            background-color: #1db954;
+            background-color: var(--color-song);
             color: white;
             border: none;
             padding: 16px 32px;
@@ -138,16 +116,15 @@
             border-radius: 30px;
             cursor: pointer;
             width: 100%;
-            font-weight: bold;
-            transition: background-color 0.2s;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: background-color 0.2s, transform 0.1s;
         }
         .vote-btn:hover { background-color: #1ed760; }
-        .vs-text {
-            font-size: 2.5em;
-            font-weight: 900;
-            color: #555555;
-            margin: 0 20px;
-        }
+        .vote-btn:active { transform: scale(0.98); }
+
+        .vs-text { font-size: 3em; font-weight: 900; color: #444; margin: 0 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
     </style>
 {% endblock %}
 
@@ -163,12 +140,19 @@
                 {% if song1.audio_url %}
                     <div class="play-overlay" id="btn1">▶</div>
                 {% else %}
-                    <div class="play-overlay" style="font-size: 1.5em; opacity: 0.5;">No Audio</div>
+                    <div class="play-overlay" style="font-size: 1.5em; opacity: 1;">No Audio</div>
                 {% endif %}
             </div>
 
             <div class="song-title" title="{{ song1.title }}">{{ song1.title }}</div>
-            <div class="song-artist" title="{{ song1.artist }}">{{ song1.artist }}</div>
+
+            <div class="metadata-row" title="{{ song1.artist }} - {{ song1.album }}">
+                <a href="/artist/{{ song1.artist | urlencode }}" class="link-artist">{{ song1.artist }}</a>
+                {% if song1.album and ' - Single' not in song1.album %}
+                    <span style="color: #666; margin: 0 6px;">•</span>
+                    <a href="/album/{{ song1.album | urlencode }}" class="link-album">{{ song1.album }}</a>
+                {% endif %}
+            </div>
 
             {% if song1.audio_url %}
                 <audio id="audio1" src="{{ song1.audio_url }}"></audio>
@@ -190,12 +174,19 @@
                 {% if song2.audio_url %}
                     <div class="play-overlay" id="btn2">▶</div>
                 {% else %}
-                    <div class="play-overlay" style="font-size: 1.5em; opacity: 0.5;">No Audio</div>
+                    <div class="play-overlay" style="font-size: 1.5em; opacity: 1;">No Audio</div>
                 {% endif %}
             </div>
 
             <div class="song-title" title="{{ song2.title }}">{{ song2.title }}</div>
-            <div class="song-artist" title="{{ song2.artist }}">{{ song2.artist }}</div>
+
+            <div class="metadata-row" title="{{ song2.artist }} - {{ song2.album }}">
+                <a href="/artist/{{ song2.artist | urlencode }}" class="link-artist">{{ song2.artist }}</a>
+                {% if song2.album and ' - Single' not in song2.album %}
+                    <span style="color: #666; margin: 0 6px;">•</span>
+                    <a href="/album/{{ song2.album | urlencode }}" class="link-album">{{ song2.album }}</a>
+                {% endif %}
+            </div>
 
             {% if song2.audio_url %}
                 <audio id="audio2" src="{{ song2.audio_url }}"></audio>
@@ -218,17 +209,17 @@
         <div class="banner-row">
             <div class="banner-song" title="{{ last_vote.winner_title }}">🏆 <strong>{{ last_vote.winner_title }}</strong></div>
             <div>
-                <span style="color: #888; text-decoration: line-through; font-size: 0.9em; margin-right: 4px;">{{ last_vote.winner_old }}</span>
-                <span>{{ last_vote.winner_new }}</span>
+                <span style="color: #666; text-decoration: line-through; font-size: 0.9em; margin-right: 4px;">{{ last_vote.winner_old }}</span>
+                <span style="font-weight: bold;">{{ last_vote.winner_new }}</span>
                 <span class="text-green" style="margin-left: 4px;">({{ last_vote.winner_change }})</span>
             </div>
         </div>
 
         <div class="banner-row" style="margin-bottom: 0;">
-            <div class="banner-song" title="{{ last_vote.loser_title }}">💀 <strong>{{ last_vote.loser_title }}</strong></div>
+            <div class="banner-song" title="{{ last_vote.loser_title }}">💀 <strong style="color: #aaa;">{{ last_vote.loser_title }}</strong></div>
             <div>
-                <span style="color: #888; text-decoration: line-through; font-size: 0.9em; margin-right: 4px;">{{ last_vote.loser_old }}</span>
-                <span>{{ last_vote.loser_new }}</span>
+                <span style="color: #666; text-decoration: line-through; font-size: 0.9em; margin-right: 4px;">{{ last_vote.loser_old }}</span>
+                <span style="font-weight: bold;">{{ last_vote.loser_new }}</span>
                 <span class="text-red" style="margin-left: 4px;">({{ last_vote.loser_change }})</span>
             </div>
         </div>
@@ -241,13 +232,15 @@
         const audio2 = document.getElementById('audio2');
         const volumeSlider = document.getElementById('global-volume');
 
-        if (audio1) audio1.volume = volumeSlider.value;
-        if (audio2) audio2.volume = volumeSlider.value;
+        if (audio1 && volumeSlider) audio1.volume = volumeSlider.value;
+        if (audio2 && volumeSlider) audio2.volume = volumeSlider.value;
 
-        volumeSlider.addEventListener('input', (e) => {
-            if (audio1) audio1.volume = e.target.value;
-            if (audio2) audio2.volume = e.target.value;
-        });
+        if (volumeSlider) {
+            volumeSlider.addEventListener('input', (e) => {
+                if (audio1) audio1.volume = e.target.value;
+                if (audio2) audio2.volume = e.target.value;
+            });
+        }
 
         function toggleAudio(targetId, btnId) {
             const currentAudio = document.getElementById(targetId);
@@ -261,17 +254,30 @@
             if (currentAudio.paused) {
                 if (otherAudio && !otherAudio.paused) {
                     otherAudio.pause();
-                    if (otherBtn) otherBtn.innerText = '▶';
+                    if (otherBtn) {
+                        otherBtn.innerText = '▶';
+                        otherBtn.classList.remove('playing');
+                    }
                 }
                 currentAudio.play();
                 currentBtn.innerText = '⏸';
+                currentBtn.classList.add('playing');
             } else {
                 currentAudio.pause();
                 currentBtn.innerText = '▶';
+                currentBtn.classList.remove('playing');
             }
         }
 
-        if (audio1) audio1.addEventListener('ended', () => document.getElementById('btn1').innerText = '▶');
-        if (audio2) audio2.addEventListener('ended', () => document.getElementById('btn2').innerText = '▶');
+        if (audio1) audio1.addEventListener('ended', () => {
+            const btn = document.getElementById('btn1');
+            btn.innerText = '▶';
+            btn.classList.remove('playing');
+        });
+        if (audio2) audio2.addEventListener('ended', () => {
+            const btn = document.getElementById('btn2');
+            btn.innerText = '▶';
+            btn.classList.remove('playing');
+        });
     </script>
 {% endblock %}

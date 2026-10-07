@@ -4,52 +4,48 @@
 
 {% block extra_css %}
 <style>
-    h1 { margin-bottom: 10px; }
-    .subtitle { color: #888; margin-bottom: 30px; }
+    .title-top { font-size: 3.5em; margin-top: 40px; margin-bottom: 20px; font-weight: 900; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(255, 184, 51, 0.2); }
+    .subtitle { color: #888; margin-bottom: 40px; font-size: 1.1em; }
 
     /* High Score Banner */
-    .high-score-banner { 
-        max-width: 660px; 
-        margin: 0 auto 40px auto; 
-        background-color: #1e1e1e; 
-        padding: 20px 40px; 
-        border-radius: 12px; 
-        display: flex; 
-        justify-content: space-between; 
-        align-items: center; 
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-        border: 1px solid #1db954;
+    .high-score-banner {
+        max-width: 900px; margin: 0 auto 50px auto;
+        background: linear-gradient(135deg, rgba(255, 184, 51, 0.1) 0%, #1e1e1e 100%);
+        padding: 30px 50px; border-radius: 16px; display: flex; justify-content: space-between; align-items: center;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5); border: 1px solid rgba(255, 184, 51, 0.3);
     }
-    .high-score-label { font-size: 1.2em; font-weight: bold; color: #1db954; text-transform: uppercase; letter-spacing: 1px; }
-    .high-score-value { font-size: 3em; font-weight: 900; color: white; line-height: 1; }
+    .high-score-label { font-size: 1.4em; font-weight: 900; color: var(--color-genre); text-transform: uppercase; letter-spacing: 1px; }
+    .high-score-value { font-size: 4em; font-weight: 900; color: white; line-height: 1; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
 
-    /* Results List */
-    .results-container { max-width: 700px; margin: 0 auto; text-align: left; background-color: #1e1e1e; border-radius: 12px; padding: 20px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); }
-    .row { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #333; }
+    /* Grid Layout for Top / Bottom */
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; max-width: 1100px; margin: 0 auto; }
+
+    .section-title { text-align: left; font-size: 1.2em; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; border-bottom: 2px solid; padding-bottom: 10px; }
+    .section-title.top { color: var(--color-song); border-color: var(--color-song-bg); }
+    .section-title.bottom { color: #e22134; border-color: rgba(226, 33, 52, 0.3); }
+
+    .results-container { text-align: left; background-color: #1e1e1e; border-radius: 12px; padding: 10px 20px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); }
+    .row { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #333; text-decoration: none; transition: background-color 0.2s, padding-left 0.2s; border-radius: 6px; color: white; }
     .row:last-child { border-bottom: none; }
-    
-    .rank { font-size: 1.5em; font-weight: bold; color: #555; width: 40px; text-align: center; margin-right: 15px; }
-    .cover-art { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; margin-right: 20px; background-color: #2a2a2a; }
-    
-    .info { flex-grow: 1; overflow: hidden; }
-    .title { font-size: 1.2em; font-weight: bold; margin-bottom: 4px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-    .title-link { color: inherit; text-decoration: none; transition: color 0.2s; }
-    .title-link:hover { color: #1db954; }
-    .artist { color: #b3b3b3; font-size: 0.9em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-    
-    .stats-col { text-align: right; margin-left: 15px; }
-    .highlight-score { font-weight: bold; font-size: 1.2em; }
-    /* Dynamic color based on score */
-    .score-high { color: #1db954; }
-    .score-mid { color: #ffbf7f; }
-    .score-low { color: #e22134; }
-    
-    .attempts-sub { font-size: 0.8em; color: #888; margin-top: 4px; }
+    .row:hover { background-color: #2a2a2a; padding-left: 10px; }
+
+    .rank { font-size: 1.2em; font-weight: 900; color: #555; width: 30px; text-align: center; margin-right: 15px; flex-shrink: 0; }
+    .cover-art { width: 50px; height: 50px; border-radius: 8px; object-fit: cover; margin-right: 15px; background-color: #2a2a2a; }
+
+    .info { flex-grow: 1; overflow: hidden; display: flex; flex-direction: column; justify-content: center; }
+    .title { font-size: 1.1em; font-weight: bold; margin-bottom: 4px; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .artist { color: #888; font-size: 0.85em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+
+    .stats-col { text-align: right; margin-left: 10px; }
+    .highlight-score { font-weight: 900; font-size: 1.3em; }
+    .highlight-score.top { color: var(--color-song); }
+    .highlight-score.bottom { color: #e22134; }
+    .attempts-sub { font-size: 0.75em; color: #666; font-weight: bold; text-transform: uppercase; margin-top: 4px; }
 </style>
 {% endblock %}
 
 {% block content %}
-    <h1>Trivia Statistics</h1>
+    <div class="title-top">Trivia Statistics</div>
     <div class="subtitle">Global high scores and track recognizability.</div>
 
     <div class="high-score-banner">
@@ -57,32 +53,51 @@
         <div class="high-score-value">{{ high_score }}</div>
     </div>
 
-    <div class="results-container">
-        {% for stat in stats %}
-        <div class="row">
-            <div class="rank">{{ loop.index }}</div>
-            <img src="{{ stat.cover_url }}" alt="Cover" class="cover-art">
-            <div class="info">
-                <a href="/song/{{ stat.id }}" class="title-link">
-                    <div class="title" title="{{ stat.title }}">{{ stat.title }}</div>
+    <div class="stats-grid">
+        <!-- Top 10 -->
+        <div>
+            <div class="section-title top">Most Recognized (Top 10)</div>
+            <div class="results-container">
+                {% for stat in top_stats %}
+                <a href="/song/{{ stat.id }}" class="row">
+                    <div class="rank">{{ loop.index }}</div>
+                    <img src="{{ stat.cover_url }}" alt="Cover" class="cover-art">
+                    <div class="info">
+                        <div class="title">{{ stat.title }}</div>
+                        <div class="artist">{{ stat.artist }}</div>
+                    </div>
+                    <div class="stats-col">
+                        <div class="highlight-score top">{{ stat.rec_score|int }}%</div>
+                        <div class="attempts-sub">{{ stat.trivia_correct }}/{{ stat.trivia_attempts * 2 }} Pts</div>
+                    </div>
                 </a>
-                <div class="artist" title="{{ stat.artist }}">
-                    <a href="/artist/{{ stat.artist | urlencode }}" style="color: inherit; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#1db954'" onmouseout="this.style.color='inherit'">
-                        {{ stat.artist }}
-                    </a>
-                </div>
-            </div>
-            <div class="stats-col">
-                <div class="highlight-score {% if stat.rec_score >= 80 %}score-high{% elif stat.rec_score >= 40 %}score-mid{% else %}score-low{% endif %}">
-                    {{ stat.rec_score|int }}%
-                </div>
-                <div class="attempts-sub">{{ stat.trivia_correct }} / {{ stat.trivia_attempts * 2 }} Pts</div>
+                {% else %}
+                <div style="text-align: center; color: #888; padding: 30px 0;">No data yet.</div>
+                {% endfor %}
             </div>
         </div>
-        {% else %}
-        <div style="text-align: center; color: #888; padding: 30px 0;">
-            No trivia data found. Go play the mini-game!
+
+        <!-- Bottom 10 -->
+        <div>
+            <div class="section-title bottom">Least Recognized (Bottom 10)</div>
+            <div class="results-container">
+                {% for stat in bottom_stats %}
+                <a href="/song/{{ stat.id }}" class="row">
+                    <div class="rank">{{ loop.index }}</div>
+                    <img src="{{ stat.cover_url }}" alt="Cover" class="cover-art">
+                    <div class="info">
+                        <div class="title">{{ stat.title }}</div>
+                        <div class="artist">{{ stat.artist }}</div>
+                    </div>
+                    <div class="stats-col">
+                        <div class="highlight-score bottom">{{ stat.rec_score|int }}%</div>
+                        <div class="attempts-sub">{{ stat.trivia_correct }}/{{ stat.trivia_attempts * 2 }} Pts</div>
+                    </div>
+                </a>
+                {% else %}
+                <div style="text-align: center; color: #888; padding: 30px 0;">No data yet.</div>
+                {% endfor %}
+            </div>
         </div>
-        {% endfor %}
     </div>
 {% endblock %}

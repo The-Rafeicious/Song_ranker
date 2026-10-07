@@ -3,13 +3,174 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Block for child templates to insert their own title -->
     <title>{% block title %}Song Ranker{% endblock %}</title>
 
-    <!-- Link to the universal CSS file -->
+    <!-- Universal Stylesheet -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 
-    <!-- Block for child templates to insert specific CSS -->
+    <style>
+        /* Modern, Slightly Larger Navbar */
+        .navbar {
+            background: rgba(30, 30, 30, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #2e2e2e;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+            margin-bottom: 40px;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .nav-left, .nav-right, .nav-center {
+            display: flex;
+            align-items: center;
+            gap: 25px;
+        }
+
+        .nav-center a {
+            font-size: 1.4em !important;
+            font-weight: 900 !important;
+            letter-spacing: -0.5px;
+            background: linear-gradient(90deg, #1db954, #5b9bff, #bf77ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            transition: filter 0.2s ease;
+        }
+        .nav-center a:hover {
+            filter: brightness(1.2);
+        }
+
+        .navbar a, .dropbtn {
+            color: #d1d1d1;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.05em;
+            transition: color 0.2s, transform 0.15s;
+        }
+        .navbar a:hover, .dropbtn:hover, .navbar .active, .dropbtn.dropdown-open {
+            color: #ffffff;
+        }
+
+        /* Dropdowns */
+        .dropdown {
+            position: relative;
+            display: inline-block;
+        }
+        .dropbtn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background-color: #202020;
+            min-width: 200px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+            z-index: 1000;
+            border-radius: 10px;
+            overflow: hidden;
+            text-align: left;
+            margin-top: 10px;
+            border: 1px solid #333;
+        }
+        .dropdown-content a {
+            color: #ccc;
+            padding: 14px 18px;
+            display: block;
+            font-size: 0.95em;
+            font-weight: 600;
+            border-bottom: 1px solid #282828;
+            transition: background 0.15s, color 0.15s, padding-left 0.15s;
+        }
+        .dropdown-content a:last-child { border-bottom: none; }
+        .dropdown-content a:hover {
+            background-color: #2c2c2c;
+            color: #1db954;
+            padding-left: 22px;
+        }
+        .dropdown-content.show { display: block; animation: dropFade 0.15s ease-out; }
+        @keyframes dropFade { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Collapsible Volume Slider */
+        .vol-slider-wrap {
+            width: 0;
+            overflow: hidden;
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s;
+            opacity: 0;
+            display: flex;
+            align-items: center;
+        }
+        .vol-slider-wrap.open {
+            width: 100px;
+            opacity: 1;
+            margin-left: 10px;
+        }
+
+        /* Search input */
+        .search-form { display: flex; align-items: center; }
+        .search-input {
+            padding: 10px 18px;
+            border-radius: 20px 0 0 20px;
+            border: 1px solid #383838;
+            border-right: none;
+            background-color: #242424;
+            color: white;
+            outline: none;
+            width: 220px;
+            font-size: 0.95em;
+            transition: width 0.2s ease, border-color 0.2s;
+        }
+        .search-input:focus {
+            width: 260px;
+            border-color: #1db954;
+        }
+        .search-btn {
+            padding: 10px 20px;
+            border-radius: 0 20px 20px 0;
+            border: 1px solid #1db954;
+            background-color: #1db954;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 0.95em;
+            transition: background-color 0.2s;
+        }
+        .search-btn:hover { background-color: #1ed760; }
+
+        /* Universal Dev Footer */
+        .universal-footer {
+            margin-top: 80px;
+            padding: 30px 20px;
+            border-top: 1px solid #1f1f1f;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .dev-secret-link {
+            color: #242424;
+            text-decoration: none;
+            font-size: 0.75em;
+            font-weight: 800;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            transition: color 0.3s ease;
+        }
+        .dev-secret-link:hover {
+            color: #1db954;
+        }
+    </style>
+
     {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -17,16 +178,15 @@
     <!-- UNIVERSAL NAVBAR -->
     <div class="navbar">
         <div class="nav-left">
-
             <!-- Modes Dropdown -->
             <div class="dropdown">
                 <button class="dropbtn {% if request.path in ['/blind', '/trivia', '/game'] %}active{% endif %}" onclick="toggleDropdown(event, 'modes-dropdown')">
                     Game Modes ▾
                 </button>
                 <div id="modes-dropdown" class="dropdown-content">
-                    <a href="/game">Standard Vote</a>
-                    <a href="/blind">Blind Audition</a>
-                    <a href="/trivia">Trivia Mini-Game</a>
+                    <a href="/game">🔥 Standard Vote</a>
+                    <a href="/blind">🎧 Blind Audition</a>
+                    <a href="/trivia">🧠 Trivia Mini-Game</a>
                 </div>
             </div>
 
@@ -36,10 +196,10 @@
                     Rankings ▾
                 </button>
                 <div id="rankings-dropdown" class="dropdown-content">
-                    <a href="/leaderboard">Top Tracks</a>
-                    <a href="/artists">Top Artists</a>
-                    <a href="/albums">Top Albums</a>
-                    <a href="/tiers">Visual Tier List</a>
+                    <a href="/leaderboard">🎵 Top Tracks</a>
+                    <a href="/artists">👤 Top Artists</a>
+                    <a href="/albums">💿 Top Albums</a>
+                    <a href="/tiers">🏆 Tier List</a>
                 </div>
             </div>
 
@@ -49,11 +209,11 @@
                     Stats ▾
                 </button>
                 <div id="stats-dropdown" class="dropdown-content">
-                    <a href="/history">Match History</a>
-                    <a href="/trivia_stats">Recognizability</a>
+                    <a href="/global_stats">📊 Global Stats</a>
+                    <a href="/history">📜 Match History</a>
+                    <a href="/trivia_stats">🎯 Recognizability</a>
                 </div>
             </div>
-
         </div>
 
         <div class="nav-center">
@@ -61,32 +221,38 @@
         </div>
 
         <div class="nav-right">
-            <!-- Universal Volume -->
+            <!-- Global Volume -->
+            <!-- Global Volume -->
             <div class="volume-container">
-                <span class="volume-icon" id="vol-icon">🔊</span>
-                <input type="range" id="global-volume" min="0" max="1" step="0.01" value="0.5">
+                <span class="volume-icon" id="vol-icon" style="cursor: pointer; user-select: none;">🔊</span>
+                <div class="vol-slider-wrap" id="vol-wrap">
+                    <input type="range" id="global-volume" min="0" max="1" step="0.01" value="0.5">
+                </div>
             </div>
+
             <!-- Universal Search -->
             <form action="/search" method="GET" class="search-form">
-                <input type="text" name="q" class="search-input" placeholder="Search songs, artists...">
+                <input type="text" name="q" class="search-input" placeholder="Search songs, artists, albums...">
                 <button type="submit" class="search-btn">Search</button>
             </form>
         </div>
     </div>
 
-    <!-- MAIN CONTENT INJECTED HERE -->
+    <!-- MAIN PAGE CONTENT -->
     {% block content %}{% endblock %}
 
-    <!-- DROPDOWN CLICK LOGIC -->
+    <!-- DISCREET FOOTER (DEV ACCESS) -->
+    <div class="universal-footer">
+        <a href="/dev/login" class="dev-secret-link">System Access</a>
+    </div>
+
+    <!-- SCRIPTS -->
     <script>
         function toggleDropdown(event, dropdownId) {
-            // Prevent the window click listener from immediately closing it
             event.stopPropagation();
-
             const targetMenu = document.getElementById(dropdownId);
-            const clickedBtn = event.target;
+            const clickedBtn = event.currentTarget;
 
-            // Close all menus first to prevent multiple being open at once
             document.querySelectorAll('.dropdown-content').forEach(menu => {
                 if (menu !== targetMenu) menu.classList.remove('show');
             });
@@ -94,36 +260,43 @@
                 if (btn !== clickedBtn) btn.classList.remove('dropdown-open');
             });
 
-            // Toggle the one we actually clicked
             targetMenu.classList.toggle('show');
             clickedBtn.classList.toggle('dropdown-open');
         }
 
-        // Close dropdowns if the user clicks anywhere else on the screen
         window.onclick = function(event) {
-            if (!event.target.matches('.dropbtn')) {
+            // Volume Slider Toggle
+            const volIcon = document.getElementById('vol-icon');
+            const volWrap = document.getElementById('vol-wrap');
+
+            volIcon.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent closing immediately
+                volWrap.classList.toggle('open');
+            });
+
+            // Hide slider if user clicks anywhere else
+            document.addEventListener('click', (e) => {
+                if (!e.target.closest('.volume-container')) {
+                    volWrap.classList.remove('open');
+                }
+            });
+            if (!event.target.closest('.dropdown')) {
                 document.querySelectorAll('.dropdown-content').forEach(menu => menu.classList.remove('show'));
                 document.querySelectorAll('.dropbtn').forEach(btn => btn.classList.remove('dropdown-open'));
             }
         }
 
-        // --- UNIVERSAL VOLUME LOGIC ---
+        // Global Volume Control
         document.addEventListener('DOMContentLoaded', () => {
             const volumeSlider = document.getElementById('global-volume');
             const volIcon = document.getElementById('vol-icon');
 
-            // 1. Load saved volume from local browser storage (default to 50%)
             let savedVolume = localStorage.getItem('siteVolume');
-            if (savedVolume !== null) {
-                volumeSlider.value = savedVolume;
-            } else {
-                savedVolume = 0.5;
-                volumeSlider.value = savedVolume;
-            }
+            savedVolume = (savedVolume !== null) ? parseFloat(savedVolume) : 0.5;
+            volumeSlider.value = savedVolume;
 
-            // Function to update the UI icon and apply volume to all audio tags
             function applyVolume(vol) {
-                if (vol == 0) volIcon.innerText = '🔇';
+                if (vol === 0) volIcon.innerText = '🔇';
                 else if (vol < 0.5) volIcon.innerText = '🔉';
                 else volIcon.innerText = '🔊';
 
@@ -132,14 +305,12 @@
                 });
             }
 
-            // 2. Apply the saved volume immediately on page load
             applyVolume(savedVolume);
 
-            // 3. Listen for the user dragging the slider
             volumeSlider.addEventListener('input', (e) => {
-                const newVol = e.target.value;
-                localStorage.setItem('siteVolume', newVol); // Save it permanently
-                applyVolume(newVol); // Apply it instantly
+                const newVol = parseFloat(e.target.value);
+                localStorage.setItem('siteVolume', newVol);
+                applyVolume(newVol);
             });
         });
     </script>

@@ -151,3 +151,48 @@ h2 { margin-top: 40px; margin-bottom: 20px; }
     cursor: pointer;
     border: none;
 }
+
+/* --- ENTITY COLORS & BADGES --- */
+:root {
+    --color-song: #1db954; /* Spotify Green */
+    --color-song-bg: rgba(29, 185, 84, 0.15);
+
+    --color-artist: #5b9bff; /* Blue */
+    --color-artist-bg: rgba(91, 155, 255, 0.15);
+
+    --color-album: #bf77ff; /* Purple */
+    --color-album-bg: rgba(191, 119, 255, 0.15);
+
+    --color-genre: #ffb833; /* Orange/Yellow */
+    --color-genre-bg: rgba(255, 184, 51, 0.15);
+}
+
+.entity-badge {
+    display: inline-block;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-decoration: none;
+    transition: transform 0.2s, filter 0.2s;
+    margin-right: 5px;
+    margin-bottom: 5px;
+}
+.entity-badge:hover { transform: translateY(-2px); filter: brightness(1.2); }
+
+.badge-song { color: var(--color-song); background-color: var(--color-song-bg); border: 1px solid var(--color-song); }
+.badge-artist { color: var(--color-artist); background-color: var(--color-artist-bg); border: 1px solid var(--color-artist); }
+.badge-album { color: var(--color-album); background-color: var(--color-album-bg); border: 1px solid var(--color-album); }
+.badge-genre { color: var(--color-genre); background-color: var(--color-genre-bg); border: 1px solid var(--color-genre); }
+
+/* Colored Links */
+.link-artist { color: var(--color-artist); text-decoration: none; font-weight: bold; transition: filter 0.2s; }
+.link-artist:hover { filter: brightness(1.3); text-decoration: underline; }
+
+.link-album { color: var(--color-album); text-decoration: none; font-weight: bold; transition: filter 0.2s; }
+.link-album:hover { filter: brightness(1.3); text-decoration: underline; }
+
+.link-song { color: var(--text-main); text-decoration: none; font-weight: bold; transition: color 0.2s; }
+.link-song:hover { color: var(--color-song); }

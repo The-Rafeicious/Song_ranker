@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Global Stats - Song Ranker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .title-top { font-size: 3.5em; margin-top: 40px; margin-bottom: 50px; font-weight: 900; letter-spacing: -1px; background: linear-gradient(90deg, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .section-wrapper { max-width: 950px; margin: 0 auto 50px auto; text-align: left; }
+    .section-header { font-size: 1.1em; font-weight: 900; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
+
+    /* Totals Grid */
+    .totals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .total-card { background-color: #1e1e1e; padding: 25px; border-radius: 12px; text-align: center; border: 1px solid #333; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
+    .total-num { font-size: 2.5em; font-weight: 900; margin-bottom: 5px; }
+    .total-label { color: #888; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
+
+    /* Superlatives Grid */
+    .fun-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .fun-card { display: flex; align-items: center; background-color: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; transition: transform 0.2s; text-decoration: none; color: white; }
+    .fun-card:hover { transform: translateY(-3px); border-color: #555; }
+    .fun-cover { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; margin-right: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+    .fun-info { flex-grow: 1; overflow: hidden; }
+    .fun-title { font-weight: bold; font-size: 1.1em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .fun-sub { color: #aaa; font-size: 0.85em; margin-top: 4px; }
+    .fun-label { font-size: 0.75em; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+
+    /* Matchups List */
+    .matchups-container { background-color: #1e1e1e; border-radius: 12px; padding: 10px 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
+    .matchup-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 10px; border-bottom: 1px solid #333; }
+    .matchup-row:last-child { border-bottom: none; }
+
+    .m-side { display: flex; align-items: center; width: 40%; text-decoration: none; color: white; transition: opacity 0.2s; }
+    .m-side:hover { opacity: 0.7; }
+    .m-left { justify-content: flex-end; text-align: right; }
+    .m-right { justify-content: flex-start; text-align: left; }
+
+    .m-cover { width: 55px; height: 55px; border-radius: 6px; object-fit: cover; margin: 0 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
+    .m-title { font-weight: bold; font-size: 1.1em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
+    .m-artist { color: #888; font-size: 0.85em; }
+
+    .m-center { width: 20%; text-align: center; display: flex; flex-direction: column; align-items: center; }
+    .m-count { font-size: 1.5em; font-weight: 900; color: white; }
+    .m-vs { color: #555; font-size: 0.8em; text-transform: uppercase; font-weight: bold; margin-top: 2px; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div class="title-top">Database Insights</div>
+
+    <!-- The Core Numbers -->
+    <div class="section-wrapper">
+        <div class="totals-grid">
+            <div class="total-card" style="border-bottom: 3px solid var(--color-song);">
+                <div class="total-num" style="color: var(--color-song);">{{ total_songs }}</div>
+                <div class="total-label">Total Songs</div>
+            </div>
+            <div class="total-card" style="border-bottom: 3px solid var(--color-artist);">
+                <div class="total-num" style="color: var(--color-artist);">{{ total_artists }}</div>
+                <div class="total-label">Total Artists</div>
+            </div>
+            <div class="total-card" style="border-bottom: 3px solid var(--color-album);">
+                <div class="total-num" style="color: var(--color-album);">{{ total_albums }}</div>
+                <div class="total-label">Total Albums</div>
+            </div>
+            <div class="total-card" style="border-bottom: 3px solid #ccc;">
+                <div class="total-num">{{ total_matches }}</div>
+                <div class="total-label">Votes Cast</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fun Highlights -->
+    <div class="section-wrapper">
+        <div class="section-header">Database Highlights</div>
+        <div class="fun-grid">
+            {% if most_played %}
+            <a href="/song/{{ most_played.id }}" class="fun-card">
+                <img src="{{ most_played.cover_url }}" class="fun-cover">
+                <div class="fun-info">
+                    <div class="fun-label" style="color: var(--color-song);">Most Played Track</div>
+                    <div class="fun-title">{{ most_played.title }}</div>
+                    <div class="fun-sub">{{ most_played.matches_played }} Matches</div>
+                </div>
+            </a>
+            {% endif %}
+
+            {% if prolific_artist %}
+            <a href="/artist/{{ prolific_artist.artist | urlencode }}" class="fun-card">
+                <img src="{{ prolific_artist.cover_url }}" class="fun-cover" style="border-radius: 50%;">
+                <div class="fun-info">
+                    <div class="fun-label" style="color: var(--color-artist);">Most Prolific Artist</div>
+                    <div class="fun-title">{{ prolific_artist.artist }}</div>
+                    <div class="fun-sub">{{ prolific_artist.track_count }} Tracks</div>
+                </div>
+            </a>
+            {% endif %}
+
+            {% if top_genre %}
+            <div class="fun-card">
+                <div class="fun-cover" style="background: var(--color-genre-bg); display: flex; align-items: center; justify-content: center; font-size: 2em; border: 1px solid rgba(255,184,51,0.3);">🏷️</div>
+                <div class="fun-info">
+                    <div class="fun-label" style="color: var(--color-genre);">Top Genre Tag</div>
+                    <div class="fun-title">{{ top_genre.name }}</div>
+                    <div class="fun-sub">Tagged {{ top_genre.tag_count }} Times</div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Rivalries -->
+    <div class="section-wrapper">
+        <div class="section-header">Biggest Rivalries (Most Frequent Matchups)</div>
+        <div class="matchups-container">
+            {% for m in matchups %}
+            <div class="matchup-row">
+                <a href="/song/{{ m.s1.id }}" class="m-side m-left">
+                    <div>
+                        <div class="m-title">{{ m.s1.title }}</div>
+                        <div class="m-artist">{{ m.s1.artist }}</div>
+                    </div>
+                    <img src="{{ m.s1.cover_url }}" class="m-cover">
+                </a>
+
+                <div class="m-center">
+                    <div class="m-count">{{ m.encounters }}</div>
+                    <div class="m-vs">Encounters</div>
+                </div>
+
+                <a href="/song/{{ m.s2.id }}" class="m-side m-right">
+                    <img src="{{ m.s2.cover_url }}" class="m-cover">
+                    <div>
+                        <div class="m-title">{{ m.s2.title }}</div>
+                        <div class="m-artist">{{ m.s2.artist }}</div>
+                    </div>
+                </a>
+            </div>
+            {% else %}
+            <div style="text-align: center; color: #888; padding: 20px;">No matchups recorded yet.</div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

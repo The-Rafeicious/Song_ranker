@@ -4,134 +4,276 @@
 
 {% block extra_css %}
 <style>
-    .home-greeting { font-size: 3.5em; margin-top: 40px; margin-bottom: 50px; color: #1db954; font-weight: 900; letter-spacing: -1px; }
+    /* Hero Section */
+    .hero-section { text-align: center; margin: 60px 0 70px 0; }
+    .hero-title {
+        font-size: 5em;
+        font-weight: 900;
+        margin: 0 0 15px 0;
+        letter-spacing: -2px;
+        background: linear-gradient(90deg, var(--color-song), var(--color-artist), var(--color-album), var(--color-song));
+        background-size: 300% 300%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: gradientShift 6s ease infinite;
+    }
+    @keyframes gradientShift { 0% {background-position: 0% 50%;} 50% {background-position: 100% 50%;} 100% {background-position: 0% 50%;} }
 
-    .section-title { font-size: 1.2em; font-weight: bold; margin-bottom: 20px; color: #888; text-align: left; max-width: 900px; margin-left: auto; margin-right: auto; text-transform: uppercase; letter-spacing: 1px; }
+    .hero-subtitle { color: #888; font-size: 1.2em; margin-bottom: 40px; font-weight: bold; }
 
-    /* Game Modes Row */
-    .modes-grid { display: flex; justify-content: center; gap: 20px; max-width: 900px; margin: 0 auto 60px auto; }
-    .mode-card { flex: 1; background-color: #1e1e1e; padding: 35px 20px; border-radius: 12px; text-decoration: none; color: white; transition: transform 0.2s ease, box-shadow 0.2s ease; border: 1px solid #333; }
-    .mode-card:hover { transform: translateY(-5px); box-shadow: 0 8px 24px rgba(29, 185, 84, 0.15); border-color: #1db954; }
-    .mode-icon { font-size: 3em; margin-bottom: 15px; }
-    .mode-title { font-size: 1.4em; font-weight: bold; margin-bottom: 10px; }
-    .mode-desc { font-size: 0.95em; color: #888; line-height: 1.4; }
+    .btn-massive {
+        display: inline-block;
+        background-color: var(--color-song);
+        color: white;
+        font-size: 1.5em;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        padding: 20px 50px;
+        border-radius: 40px;
+        text-decoration: none;
+        box-shadow: 0 10px 30px rgba(29, 185, 84, 0.4);
+        transition: transform 0.2s, box-shadow 0.2s, background-color 0.2s;
+    }
+    .btn-massive:hover {
+        transform: translateY(-5px) scale(1.02);
+        box-shadow: 0 15px 40px rgba(29, 185, 84, 0.6);
+        background-color: #1ed760;
+    }
 
-    /* Rankings Stack */
-    .rankings-stack { display: flex; flex-direction: column; gap: 15px; max-width: 900px; margin: 0 auto 60px auto; }
-    .rankings-showcase { display: flex; background-color: #1e1e1e; border-radius: 12px; overflow: hidden; text-decoration: none; color: white; transition: transform 0.2s ease, border-color 0.2s ease; border: 1px solid #333; height: 160px; }
-    .rankings-showcase:hover { transform: translateX(5px); border-color: #1db954; }
+    /* Section Structure */
+    .section-wrapper { max-width: 950px; margin: 0 auto 60px auto; text-align: left; }
+    .section-header { font-size: 1.1em; font-weight: 900; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+    .header-link { font-size: 0.8em; color: #888; text-decoration: none; transition: color 0.2s; }
+    .header-link:hover { color: white; }
 
-    .rankings-info { padding: 30px; flex-grow: 1; text-align: left; display: flex; flex-direction: column; justify-content: center; border-right: 1px solid #2a2a2a; }
-    .rankings-info h3 { margin: 0 0 5px 0; font-size: 1.6em; color: #ffffff; }
-    .rankings-info p { margin: 0; color: #888; font-size: 0.95em; line-height: 1.4; }
+    /* Game Modes Grid */
+    .modes-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .mode-card { background-color: #1e1e1e; padding: 30px 20px; border-radius: 12px; text-decoration: none; color: white; border: 1px solid #333; transition: 0.2s; text-align: center; }
+    .mode-card:hover { transform: translateY(-5px); background-color: #242424; border-color: var(--color-song); }
+    .mode-icon { font-size: 2.5em; margin-bottom: 15px; }
+    .mode-title { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
+    .mode-desc { font-size: 0.9em; color: #888; line-height: 1.4; }
 
-    .featured-data { width: 350px; display: flex; align-items: center; background-color: #1a1a1a; padding: 15px; position: relative; }
-    .featured-text { flex-grow: 1; padding-right: 15px; text-align: right; }
-    .featured-label { color: #1db954; font-size: 0.75em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
-    .featured-title { font-weight: bold; font-size: 1.1em; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 200px; margin-left: auto; }
-    .featured-sub { color: #888; font-size: 0.85em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px; margin-left: auto; }
+    /* Horizontal Scrollers */
+    .scroller {
+        display: flex;
+        gap: 20px;
+        overflow-x: auto;
+        padding-bottom: 15px;
+        /* Hide scrollbar for a cleaner look */
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+    .scroller::-webkit-scrollbar { display: none; }
 
-    .top-cover-wrapper { width: 130px; height: 130px; flex-shrink: 0; background-color: #2a2a2a; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-    .top-cover { width: 100%; height: 100%; object-fit: cover; display: block; }
+    .scroll-card {
+        flex: 0 0 320px;
+        background-color: #1e1e1e;
+        border-radius: 12px;
+        text-decoration: none;
+        color: white;
+        border: 1px solid #333;
+        transition: 0.2s;
+        scroll-snap-align: start;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+        overflow: hidden;
+    }
+    .scroll-card:hover { transform: translateY(-5px); }
 
-    /* Search Bottom */
+    /* Category specific hover borders */
+    .showcase-song .scroll-card:hover { border-color: var(--color-song); box-shadow: 0 10px 20px var(--color-song-bg); }
+    .showcase-artist .scroll-card:hover { border-color: var(--color-artist); box-shadow: 0 10px 20px var(--color-artist-bg); }
+    .showcase-album .scroll-card:hover { border-color: var(--color-album); box-shadow: 0 10px 20px var(--color-album-bg); }
+
+    /* Category specific header colors */
+    .showcase-song .section-header { color: var(--color-song); border-bottom-color: var(--color-song-bg); }
+    .showcase-artist .section-header { color: var(--color-artist); border-bottom-color: var(--color-artist-bg); }
+    .showcase-album .section-header { color: var(--color-album); border-bottom-color: var(--color-album-bg); }
+
+    .rank-badge { position: absolute; top: 10px; left: 10px; background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); color: white; width: 30px; height: 30px; display: flex; justify-content: center; align-items: center; border-radius: 50%; font-weight: 900; font-size: 1.1em; z-index: 10; }
+
+    .card-cover-wrap { width: 100%; aspect-ratio: 1; overflow: hidden; background-color: #2a2a2a; }
+    .card-cover-wrap img { width: 100%; height: 100%; object-fit: cover; }
+
+    .card-info { padding: 15px; display: flex; flex-direction: column; flex-grow: 1; }
+    .card-title { font-weight: bold; font-size: 1.1em; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .card-sub { color: #b3b3b3; font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 10px; }
+    .card-stat { margin-top: auto; font-weight: 900; font-size: 1.2em; }
+
+    /* Trivia Spotlight */
+    .spotlight-card {
+        display: flex;
+        background: linear-gradient(135deg, var(--color-genre-bg) 0%, #1e1e1e 100%);
+        border-radius: 12px;
+        border: 1px solid rgba(255, 184, 51, 0.3);
+        padding: 30px;
+        align-items: center;
+        gap: 30px;
+        text-decoration: none;
+        color: white;
+        transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .spotlight-card:hover { transform: translateY(-3px); box-shadow: 0 10px 25px var(--color-genre-bg); }
+    .spotlight-cover { width: 120px; height: 120px; border-radius: 8px; object-fit: cover; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
+
+    /* Search Bar Bottom */
     .home-search { max-width: 600px; margin: 0 auto 80px auto; }
     .home-search .search-input { width: 100%; padding: 20px 30px; font-size: 1.2em; border-radius: 40px; text-align: center; border: 1px solid #333; background-color: #1e1e1e; color: white; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
-    .home-search .search-input:focus { border-color: #1db954; }
-
-    /* Secret Dev Footer */
-    .dev-footer { text-align: center; margin-top: 50px; padding-top: 20px; border-top: 1px solid #222; }
-    .dev-link { color: #222; text-decoration: none; font-size: 0.8em; font-weight: bold; transition: color 0.3s; }
-    .dev-link:hover { color: #1db954; }
+    .home-search .search-input:focus { border-color: var(--color-song); }
 </style>
 {% endblock %}
 
 {% block content %}
-    <div class="home-greeting">Song Ranker</div>
-
-    <div class="section-title">Game Modes</div>
-    <div class="modes-grid">
-        <a href="/vote" class="mode-card">
-            <div class="mode-icon">🔥</div>
-            <div class="mode-title">Standard Vote</div>
-            <div class="mode-desc">Head-to-head battles. Build your ultimate tier list match by match.</div>
-        </a>
-        <a href="/blind" class="mode-card">
-            <div class="mode-icon">🎧</div>
-            <div class="mode-title">Blind Audition</div>
-            <div class="mode-desc">No covers. No titles. Eliminate artist bias and vote purely on sound.</div>
-        </a>
-        <a href="/trivia" class="mode-card">
-            <div class="mode-icon">🧠</div>
-            <div class="mode-title">Trivia</div>
-            <div class="mode-desc">Test your knowledge. Guess the track and artist from a short snippet.</div>
-        </a>
+    <div class="hero-section">
+        <h1 class="hero-title">Song Ranker</h1>
+        <div class="hero-subtitle">The ultimate tier list, decided by you.</div>
+        <a href="/game" class="btn-massive">Start Voting</a>
     </div>
 
-    <div class="section-title">Database Standings</div>
-    <div class="rankings-stack">
-
-        <!-- Top Tracks Showcase -->
-        <a href="/leaderboard" class="rankings-showcase">
-            <div class="rankings-info">
-                <h3>Top 20 Tracks</h3>
-                <p>The highest-rated individual songs across the entire database.</p>
-            </div>
-            <div class="featured-data">
-                <div class="featured-text">
-                    <div class="featured-label" style="color: #ffd21c">Current #1</div>
-                    <div class="featured-title">{{ top_song.title if top_song else 'N/A' }}</div>
-                    <div class="featured-sub">{{ top_song.artist if top_song else 'N/A' }}</div>
-                </div>
-                <div class="top-cover-wrapper">
-                    {% if top_song %}<img src="{{ top_song.cover_url }}" class="top-cover">{% endif %}
-                </div>
-            </div>
-        </a>
-
-        <!-- Top Artists Showcase -->
-        <a href="/artists" class="rankings-showcase">
-            <div class="rankings-info">
-                <h3>Top Artists</h3>
-                <p>Ranked by discography consistency and peak track performance.</p>
-            </div>
-            <div class="featured-data">
-                <div class="featured-text">
-                    <div class="featured-label" style="color: #5bc0de;">Current #1</div>
-                    <div class="featured-title">{{ top_artist.artist if top_artist else 'N/A' }}</div>
-                    <div class="featured-sub">Highest Avg. Score</div>
-                </div>
-                <div class="top-cover-wrapper">
-                    {% if top_artist %}<img src="{{ top_artist.cover_url }}" class="top-cover">{% endif %}
-                </div>
-            </div>
-        </a>
-
-        <!-- Top Albums Showcase -->
-        <a href="/albums" class="rankings-showcase">
-            <div class="rankings-info">
-                <h3>Top Albums</h3>
-                <p>The strongest cohesive projects based on average track Elo.</p>
-            </div>
-            <div class="featured-data">
-                <div class="featured-text">
-                    <div class="featured-label" style="color: #ffbf7f;">Current #1</div>
-                    <div class="featured-title">{{ top_album.album if top_album else 'N/A' }}</div>
-                    <div class="featured-sub">{{ top_album.artist if top_album else 'N/A' }}</div>
-                </div>
-                <div class="top-cover-wrapper">
-                    {% if top_album %}<img src="{{ top_album.cover_url }}" class="top-cover">{% endif %}
-                </div>
-            </div>
-        </a>
-
+    <!-- Game Modes -->
+    <div class="section-wrapper">
+        <div class="section-header">Ways to Play</div>
+        <div class="modes-grid">
+            <a href="/game" class="mode-card">
+                <div class="mode-icon">🔥</div>
+                <div class="mode-title">Standard Vote</div>
+                <div class="mode-desc">Head-to-head battles. Build your ultimate tier list match by match.</div>
+            </a>
+            <a href="/blind" class="mode-card">
+                <div class="mode-icon">🎧</div>
+                <div class="mode-title">Blind Audition</div>
+                <div class="mode-desc">No covers. No titles. Eliminate artist bias and vote purely on sound.</div>
+            </a>
+            <a href="/trivia" class="mode-card">
+                <div class="mode-icon">🧠</div>
+                <div class="mode-title">Trivia</div>
+                <div class="mode-desc">Test your knowledge. Guess the track and artist from a short snippet.</div>
+            </a>
+        </div>
     </div>
+
+    <!-- Top Tracks Scroller -->
+    <div class="section-wrapper showcase-song">
+        <div class="section-header">
+            Top Tracks
+            <a href="/leaderboard" class="header-link">View Full Leaderboard →</a>
+        </div>
+        <div class="scroller">
+            {% for song in top_songs %}
+            <a href="/song/{{ song.id }}" class="scroll-card">
+                <div class="rank-badge">{{ loop.index }}</div>
+                <div class="card-cover-wrap"><img src="{{ song.cover_url }}" alt="Cover"></div>
+                <div class="card-info">
+                    <div class="card-title">{{ song.title }}</div>
+                    <div class="card-sub">{{ song.artist }}</div>
+                    <div class="card-stat" style="color: var(--color-song);">{{ song.elo_score|int }} Elo</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Top Artists Scroller -->
+    <div class="section-wrapper showcase-artist">
+        <div class="section-header">
+            Top Artists
+            <a href="/artists" class="header-link">View Full Leaderboard →</a>
+        </div>
+        <div class="scroller">
+            {% for artist in top_artists %}
+            <a href="/artist/{{ artist.artist | urlencode }}" class="scroll-card">
+                <div class="rank-badge">{{ loop.index }}</div>
+                <div class="card-cover-wrap"><img src="{{ artist.cover_url }}" alt="Cover"></div>
+                <div class="card-info">
+                    <div class="card-title">{{ artist.artist }}</div>
+                    <div class="card-sub">{{ artist.song_count }} Tracks Ranked</div>
+                    <div class="card-stat" style="color: var(--color-artist);">{{ artist.impact_score|int }} Score</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Top Albums Scroller -->
+    <div class="section-wrapper showcase-album">
+        <div class="section-header">
+            Top Albums
+            <a href="/albums" class="header-link">View Full Leaderboard →</a>
+        </div>
+        <div class="scroller">
+            {% for album in top_albums %}
+            <a href="/album/{{ album.album | urlencode }}" class="scroll-card">
+                <div class="rank-badge">{{ loop.index }}</div>
+                <div class="card-cover-wrap"><img src="{{ album.cover_url }}" alt="Cover"></div>
+                <div class="card-info">
+                    <div class="card-title">{{ album.album }}</div>
+                    <div class="card-sub">{{ album.artist }}</div>
+                    <div class="card-stat" style="color: var(--color-album);">{{ album.impact_score|int }} Score</div>
+                </div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Trivia Spotlight -->
+    {% if trivia_spotlight %}
+    <div class="section-wrapper">
+        <div class="section-header" style="color: var(--color-genre); border-bottom-color: var(--color-genre-bg);">
+            Trivia Spotlight
+            <a href="/trivia_stats" class="header-link">View Recognizability Stats →</a>
+        </div>
+        <a href="/song/{{ trivia_spotlight.id }}" class="spotlight-card">
+            <img src="{{ trivia_spotlight.cover_url }}" class="spotlight-cover" alt="Cover">
+            <div style="flex-grow: 1;">
+                <div style="color: var(--color-genre); font-size: 0.85em; text-transform: uppercase; font-weight: bold; margin-bottom: 5px;">Most Recognized Track</div>
+                <div style="font-size: 1.8em; font-weight: 900; margin-bottom: 4px;">{{ trivia_spotlight.title }}</div>
+                <div style="color: #ccc; font-size: 1.1em;">{{ trivia_spotlight.artist }}</div>
+            </div>
+            <div style="text-align: right;">
+                <div style="font-size: 2.8em; font-weight: 900; color: var(--color-genre);">{{ trivia_spotlight.rec_score|int }}%</div>
+                <div style="color: #aaa; font-size: 0.9em; font-weight: bold; text-transform: uppercase;">Accuracy Rate</div>
+            </div>
+        </a>
+    </div>
+    {% endif %}
 
     <form action="/search" method="GET" class="home-search">
         <input type="text" name="q" class="search-input" placeholder="Search your database...">
     </form>
 
-    <div class="dev-footer">
-        <a href="/dev/login" class="dev-link">SYSTEM ACCESS</a>
-    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const scrollers = document.querySelectorAll('.scroller');
+
+            scrollers.forEach(scroller => {
+                let isPaused = false;
+                let scrollSpeed = 1; // Increase this number to make it scroll faster
+
+                // Pause auto-scrolling when the user is hovering or touching
+                scroller.addEventListener('mouseenter', () => isPaused = true);
+                scroller.addEventListener('mouseleave', () => isPaused = false);
+                scroller.addEventListener('touchstart', () => isPaused = true);
+                scroller.addEventListener('touchend', () => isPaused = false);
+
+                function autoScroll() {
+                    if (!isPaused) {
+                        scroller.scrollLeft += scrollSpeed;
+
+                        // If the scroller hits the far right edge, snap back to the start
+                        if (scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 1) {
+                            scroller.scrollLeft = 0;
+                        }
+                    }
+                    requestAnimationFrame(autoScroll);
+                }
+
+                // Trigger the scrolling loop
+                requestAnimationFrame(autoScroll);
+            });
+        });
+    </script>
+
 {% endblock %}

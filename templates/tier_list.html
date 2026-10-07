@@ -1,154 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Tier List</title>
-    <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            background-color: #121212;
-            color: #ffffff;
-            text-align: center;
-            margin: 0;
-            padding-bottom: 50px;
-        }
-        .navbar {
-            background-color: #1e1e1e;
-            padding: 15px 30px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            margin-bottom: 40px;
-        }
-        .nav-left { display: flex; align-items: center; gap: 20px; }
-        .nav-left a {
-            color: #ffffff;
-            text-decoration: none;
-            font-weight: bold;
-            transition: color 0.2s;
-        }
-        .nav-left a:hover, .nav-left .active { color: #1db954; }
+{% extends "base.html" %}
 
-        .nav-right { display: flex; align-items: center; gap: 20px; }
-        .search-form { display: flex; }
-        .search-input {
-            padding: 8px 15px;
-            border-radius: 20px 0 0 20px;
-            border: 1px solid #333;
-            background-color: #2a2a2a;
-            color: white;
-            outline: none;
-            width: 200px;
-        }
-        .search-btn {
-            padding: 8px 20px;
-            border-radius: 0 20px 20px 0;
-            border: none;
-            background-color: #1db954;
-            color: white;
-            font-weight: bold;
-            cursor: pointer;
-        }
+{% block title %}Visual Tier List - Song Ranker{% endblock %}
 
-        h1 { margin-bottom: 30px; }
+{% block extra_css %}
+<style>
+    .title-top { font-size: 3.5em; margin-top: 40px; margin-bottom: 50px; font-weight: 900; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(255, 255, 255, 0.1); }
+    
+    .tier-container { max-width: 1000px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+    
+    .tier-row { display: flex; background-color: #1e1e1e; border-radius: 12px; overflow: hidden; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); min-height: 120px; border: 1px solid #333; }
+    
+    .tier-label { width: 120px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 3em; font-weight: 900; color: #121212; flex-shrink: 0; text-shadow: 0 2px 4px rgba(255,255,255,0.3); }
+    .tier-subtext { font-size: 0.25em; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; margin-top: 5px; opacity: 0.8; }
+    
+    /* Sleek Tier Colors */
+    .tier-S { background: linear-gradient(135deg, #ff7f7f, #ff5050); }
+    .tier-A { background: linear-gradient(135deg, #ffbf7f, #ff9933); }
+    .tier-B { background: linear-gradient(135deg, #ffff7f, #e6e600); }
+    .tier-C { background: linear-gradient(135deg, #7fff7f, #33cc33); }
+    .tier-D { background: linear-gradient(135deg, #7fbfff, #3399ff); }
 
-        /* TIER LIST STYLES */
-        .tier-container {
-            max-width: 900px;
-            margin: 0 auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            padding: 0 20px;
-        }
-        .tier-row {
-            display: flex;
-            background-color: #1e1e1e;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
-            min-height: 80px;
-        }
-        .tier-label {
-            width: 100px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 2.5em;
-            font-weight: 900;
-            color: #121212;
-            flex-shrink: 0;
-        }
-        .tier-S { background-color: #ff7f7f; }
-        .tier-A { background-color: #ffbf7f; }
-        .tier-B { background-color: #ffff7f; }
-        .tier-C { background-color: #7fff7f; }
-        .tier-D { background-color: #7fbfff; }
+    .tier-songs { display: flex; flex-wrap: wrap; gap: 12px; padding: 20px; align-items: flex-start; flex-grow: 1; align-content: flex-start; }
+    
+    /* Neater Compact Chips instead of giant covers */
+    .song-chip { 
+        display: flex; align-items: center; background-color: #2a2a2a; border-radius: 40px; 
+        padding: 4px 12px 4px 4px; text-decoration: none; color: white; border: 1px solid #444; 
+        transition: transform 0.15s, background-color 0.15s, border-color 0.15s; 
+    }
+    .song-chip:hover { transform: translateY(-3px) scale(1.02); background-color: #333; border-color: #666; box-shadow: 0 4px 10px rgba(0,0,0,0.4); z-index: 10; }
+    
+    .chip-cover { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; margin-right: 10px; }
+    .chip-title { font-size: 0.9em; font-weight: bold; max-width: 150px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .empty-tier { color: #666; font-weight: bold; font-style: italic; align-self: center; margin-left: 20px; }
+</style>
+{% endblock %}
 
-        .tier-songs {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding: 10px;
-            align-items: flex-start;
-            flex-grow: 1;
-        }
-        .tier-song-img {
-            width: 60px;
-            height: 60px;
-            border-radius: 4px;
-            object-fit: cover;
-            background-color: #2a2a2a;
-            transition: transform 0.15s ease-in-out;
-            cursor: pointer;
-        }
-        .tier-song-img:hover {
-            transform: scale(1.15);
-            z-index: 10;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
-        }
-    </style>
-</head>
-<body>
-
-    <div class="navbar">
-        <div class="nav-left">
-            <a href="/">Home</a>
-            <a href="/blind">Blind Mode</a>
-            <a href="/trivia">Trivia</a>
-            <a href="/leaderboard">Top 20</a>
-            <a href="/artists">Artists</a>
-            <a href="/albums">Albums</a>
-            <a href="/tiers" class="active">Tier List</a>
-            <a href="/trivia_stats">Trivia Stats</a>
-            <a href="/history">History</a>
-            <a href="/dev/login">Dev</a>
-        </div>
-        <div class="nav-right">
-            <form action="/search" method="GET" class="search-form">
-                <input type="text" name="q" class="search-input" placeholder="Search songs, artists...">
-                <button type="submit" class="search-btn">Search</button>
-            </form>
-        </div>
-    </div>
-
-    <h1>Visual Tier List</h1>
+{% block content %}
+    <div class="title-top">Database Tier List</div>
 
     <div class="tier-container">
-        <!-- Loop through our dictionary of tiers -->
-        {% for tier_name, color_class in [('S (1600+)', 'tier-S'), ('A (1400+)', 'tier-A'), ('B (1200+)', 'tier-B'), ('C (1000+)', 'tier-C'), ('D (<1000)', 'tier-D')] %}
+        <!-- Loop through our dictionary of tiers with their dedicated visual mapping -->
+        {% for tier_id, data in [
+            ('S', {'name': 'S Tier', 'desc': '1600+ Elo', 'color': 'tier-S'}), 
+            ('A', {'name': 'A Tier', 'desc': '1400-1599', 'color': 'tier-A'}), 
+            ('B', {'name': 'B Tier', 'desc': '1200-1399', 'color': 'tier-B'}), 
+            ('C', {'name': 'C Tier', 'desc': '1000-1199', 'color': 'tier-C'}), 
+            ('D', {'name': 'D Tier', 'desc': '<1000 Elo', 'color': 'tier-D'})
+        ] %}
+        
         <div class="tier-row">
-            <div class="tier-label {{ color_class }}">{{ tier_name[0] }}</div>
+            <div class="tier-label {{ data.color }}">
+                {{ tier_id }}
+                <div class="tier-subtext">{{ data.desc }}</div>
+            </div>
             <div class="tier-songs">
-                {% for song in tiers[tier_name] %}
-                    <img src="{{ song.cover_url }}" alt="Cover" class="tier-song-img" title="{{ song.title }} by {{ song.artist }} (Elo: {{ song.elo_score|int }})">
-                {% endfor %}
+                {% if tiers[tier_id] %}
+                    {% for song in tiers[tier_id] %}
+                    <a href="/song/{{ song.id }}" class="song-chip" title="{{ song.artist }} • Elo: {{ song.elo_score|int }}">
+                        <img src="{{ song.cover_url }}" alt="Cover" class="chip-cover">
+                        <div class="chip-title">{{ song.title }}</div>
+                    </a>
+                    {% endfor %}
+                {% else %}
+                    <div class="empty-tier">No tracks have reached this tier yet.</div>
+                {% endif %}
             </div>
         </div>
         {% endfor %}
     </div>
-
-</body>
-</html>
+{% endblock %}

@@ -1,46 +1,112 @@
 {% extends "base.html" %}
 
-{% block title %}Song Trivia{% endblock %}
+{% block title %}Song Trivia - Song Ranker{% endblock %}
 
 {% block extra_css %}
     <style>
-        .trivia-container { max-width: 600px; margin: 0 auto; background-color: #1e1e1e; padding: 40px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); text-align: center; }
+        .trivia-container {
+            max-width: 650px;
+            margin: 0 auto;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, #1e1e1e 100%);
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 12px 24px rgba(0,0,0,0.5);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        /* Overlay Styles */
+        .overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(18, 18, 18, 0.85);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            text-align: center;
+        }
+
+        .overlay h1 { font-size: 3.5em; font-weight: 900; letter-spacing: -1px; color: white; margin: 0 0 10px 0; text-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+        .overlay h3 { color: var(--color-song); font-size: 1.3em; font-weight: bold; margin-bottom: 30px; }
+        .hint-text { color: #888; margin-top: 15px; font-size: 0.9em; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
 
         /* Stats Dashboard */
         .stats-dash { display: flex; justify-content: space-between; margin-bottom: 25px; border-bottom: 1px solid #333; padding-bottom: 15px; }
         .stat-block { flex: 1; }
         .stat-label { color: #888; font-size: 0.85em; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
-        .stat-value { font-size: 1.4em; font-weight: bold; color: #fff; }
-        .highlight-green { color: #1db954; }
-        .highlight-orange { color: #ffbf7f; }
+        .stat-value { font-size: 1.6em; font-weight: 900; color: #fff; }
+        .highlight-green { color: var(--color-song); }
+        .highlight-orange { color: var(--color-genre); }
 
         /* Timer Bar */
-        .timer-container { width: 100%; height: 8px; background-color: #333; border-radius: 4px; margin-bottom: 30px; overflow: hidden; position: relative; }
-        .timer-bar { height: 100%; width: 100%; background-color: #1db954; transition: width 0.1s linear, background-color 0.3s; }
+        .timer-container { width: 100%; height: 10px; background-color: #2a2a2a; border-radius: 5px; margin-bottom: 30px; overflow: hidden; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); }
+        .timer-bar { height: 100%; width: 100%; background-color: var(--color-song); transition: width 0.1s linear, background-color 0.3s; }
 
-        .mystery-cover { width: 250px; height: 250px; background-color: #2a2a2a; border-radius: 8px; display: flex; justify-content: center; align-items: center; font-size: 5em; cursor: pointer; margin: 0 auto 30px auto; object-fit: cover; transition: transform 0.2s;}
-        .mystery-cover:hover { transform: scale(1.02); }
+        .mystery-cover {
+            width: 250px; height: 250px;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            border-radius: 12px; display: flex; justify-content: center; align-items: center;
+            font-size: 5em; cursor: pointer; margin: 0 auto 30px auto; object-fit: cover;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+            border: 2px dashed #444;
+            color: rgba(255, 255, 255, 0.5);
+        }
+        .mystery-cover:hover { transform: scale(1.02); color: white; border-color: #666; }
 
         .form-group { text-align: left; margin-bottom: 20px; }
-        .form-group label { display: block; color: #888; margin-bottom: 8px; font-weight: bold; }
-        .guess-input { width: 100%; padding: 15px; border-radius: 8px; border: 1px solid #333; background-color: #2a2a2a; color: white; font-size: 1.1em; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
+        .form-group label { display: block; color: #888; margin-bottom: 8px; font-weight: bold; text-transform: uppercase; font-size: 0.85em; letter-spacing: 0.5px; }
+
+        .guess-input {
+            width: 100%; padding: 16px; border-radius: 10px; border: 1px solid #333;
+            background-color: #242424; color: white; font-size: 1.1em; box-sizing: border-box;
+            outline: none; transition: border-color 0.2s, box-shadow 0.2s; font-weight: bold;
+        }
         .guess-input:disabled { opacity: 0.5; cursor: not-allowed; }
-        .guess-input:focus { border-color: #1db954; }
-        .guess-input.correct { border-color: #1db954; background-color: rgba(29, 185, 84, 0.1); }
+        .guess-input:focus { border-color: var(--color-song); box-shadow: 0 0 10px var(--color-song-bg); }
+        .guess-input.correct { border-color: var(--color-song); background-color: var(--color-song-bg); }
         .guess-input.wrong { border-color: #e22134; background-color: rgba(226, 33, 52, 0.1); }
 
-        .submit-btn { background-color: #1db954; color: white; border: none; padding: 15px; font-size: 1.2em; border-radius: 8px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 10px; }
-        .submit-btn:disabled { background-color: #333; color: #888; cursor: not-allowed; }
+        .submit-btn {
+            background-color: var(--color-song); color: white; border: none; padding: 18px;
+            font-size: 1.2em; border-radius: 30px; cursor: pointer; width: 100%; font-weight: 900;
+            margin-top: 10px; text-transform: uppercase; letter-spacing: 1px;
+            transition: background-color 0.2s, transform 0.1s;
+        }
+        .submit-btn:hover { background-color: #1ed760; transform: translateY(-2px); }
+        .submit-btn:active { transform: translateY(0); }
+        .submit-btn:disabled { background-color: #333; color: #666; cursor: not-allowed; transform: none; }
 
-        .reveal-data { display: none; margin-top: 25px; padding-top: 25px; border-top: 1px solid #333; }
-        .game-over-text { color: #e22134; font-size: 1.8em; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; }
-        .actual-text { font-size: 1.5em; font-weight: bold; margin-bottom: 5px; }
-        .actual-sub { color: #b3b3b3; font-size: 1.1em; margin-bottom: 20px; }
+        .reveal-data { display: none; margin-top: 30px; padding-top: 30px; border-top: 1px solid #333; }
+        .game-over-text { color: #e22134; font-size: 2em; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; letter-spacing: -0.5px; }
+        .actual-text { font-size: 1.6em; font-weight: 900; margin-bottom: 5px; }
+        .actual-sub { color: #b3b3b3; font-size: 1.1em; font-weight: bold; margin-bottom: 25px; }
     </style>
 {% endblock %}
 
 {% block content %}
     <div class="trivia-container">
+
+        <!-- Start Screen Overlay -->
+        <div id="start-overlay" class="overlay">
+            <h1>Trivia Mode</h1>
+            <h3>Beat your High Score: {{ high_score }}</h3>
+            <button class="submit-btn" style="width: 250px;" onclick="initStart()">Start Game</button>
+            <div class="hint-text">(Press Enter)</div>
+        </div>
+
+        <!-- Pause Screen Overlay -->
+        <div id="pause-overlay" class="overlay" style="display: none;">
+            <h1>Paused</h1>
+            <h3>Take a breather.</h3>
+            <button class="submit-btn" style="width: 250px;" onclick="togglePause()">Resume Game</button>
+            <div class="hint-text">(Press ESC to resume)</div>
+        </div>
 
         <div class="stats-dash">
             <div class="stat-block">
@@ -61,8 +127,8 @@
             <div class="timer-bar" id="timer-bar"></div>
         </div>
 
-        <img class="mystery-cover" id="cover-art" src="" style="display: none;">
-        <div class="mystery-cover" id="play-btn" onclick="startGame()">▶</div>
+        <img class="mystery-cover" id="cover-art" src="" style="display: none; border: none; box-shadow: 0 10px 20px rgba(0,0,0,0.6);">
+        <div class="mystery-cover" id="play-btn" onclick="startGame()">🎵</div>
         <audio id="trivia-audio" src="{{ song.audio_url }}"></audio>
 
         <div id="guess-section">
@@ -79,126 +145,199 @@
 
         <div class="reveal-data" id="reveal-section">
             <div id="game-over-banner" class="game-over-text" style="display: none;">Streak Broken!</div>
-            <div style="color: #1db954; font-weight: bold; font-size: 1.2em; margin-bottom: 15px;" id="points-earned"></div>
+            <div style="color: var(--color-song); font-weight: 900; font-size: 1.2em; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px;" id="points-earned"></div>
             <div class="actual-text" id="actual-title"></div>
             <div class="actual-sub" id="actual-artist"></div>
             <button class="submit-btn" id="next-btn" onclick="location.reload()" style="background-color: #333;">Next Round</button>
         </div>
     </div>
 
-    <script>
-        const audio = document.getElementById('trivia-audio');
-        const playBtn = document.getElementById('play-btn');
-        const timerBar = document.getElementById('timer-bar');
-        const titleInput = document.getElementById('title-guess');
-        const artistInput = document.getElementById('artist-guess');
-        const actionBtn = document.getElementById('action-btn');
+<script>
+    const audio = document.getElementById('trivia-audio');
+    const playBtn = document.getElementById('play-btn');
+    const timerBar = document.getElementById('timer-bar');
+    const titleInput = document.getElementById('title-guess');
+    const artistInput = document.getElementById('artist-guess');
+    const actionBtn = document.getElementById('action-btn');
+    const startOverlay = document.getElementById('start-overlay');
+    const pauseOverlay = document.getElementById('pause-overlay');
+    const volumeSlider = document.getElementById('global-volume');
 
-        const SONG_ID = {{ song.id }};
-        let startTime = 0;
-        let gameActive = false;
+    // Sync global volume
+    if (audio && volumeSlider) audio.volume = volumeSlider.value;
+    if (volumeSlider) {
+        volumeSlider.addEventListener('input', (e) => {
+            if (audio) audio.volume = e.target.value;
+        });
+    }
 
-        function startGame() {
-            if (gameActive) return;
-            gameActive = true;
-            startTime = Date.now();
+    const SONG_ID = {{ song.id }};
+    let startTime = 0;
+    let gameActive = false;
+    let isStarting = false;
 
-            // Unlock Inputs
-            titleInput.disabled = false;
-            artistInput.disabled = false;
-            actionBtn.disabled = false;
-            actionBtn.innerText = "Submit Guess";
+    // Pause state variables
+    let isPaused = false;
+    let pauseTime = 0;
 
-            // Start Audio & Visuals
-            playBtn.innerText = "🎵";
+    // Check if we are seamlessly loading into the next round
+    window.onload = () => {
+        if (sessionStorage.getItem('autoStart') === 'true') {
+            sessionStorage.removeItem('autoStart');
+            startOverlay.style.display = 'none';
+            startGame(true); // true = instant start, no 1.5s delay
+        }
+    };
+
+    // Global Keybinds for Enter (Start) and Escape (Pause)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && startOverlay.style.display !== 'none') {
+            initStart();
+        } else if (e.key === 'Escape' && (gameActive || isPaused)) {
+            togglePause();
+        }
+    });
+
+    function initStart() {
+        startOverlay.style.display = 'none';
+        startGame(false);
+    }
+
+    function startGame(instant = false) {
+        if (gameActive || isStarting) return;
+        isStarting = true;
+
+        if (instant) {
+            beginRound();
+        } else {
+            playBtn.innerText = "Ready...";
             playBtn.style.cursor = "default";
+            playBtn.style.fontSize = "3em";
+            setTimeout(beginRound, 1500);
+        }
+    }
+
+    function beginRound() {
+        isStarting = false;
+        gameActive = true;
+        startTime = Date.now();
+
+        titleInput.disabled = false;
+        artistInput.disabled = false;
+        actionBtn.disabled = false;
+        actionBtn.innerText = "Submit Guess";
+
+        playBtn.innerText = "⏸";
+        playBtn.style.fontSize = "5em";
+        audio.play();
+        titleInput.focus();
+    }
+
+    function togglePause() {
+        if (!gameActive && !isPaused) return;
+
+        if (isPaused) {
+            isPaused = false;
+            pauseOverlay.style.display = 'none';
+            startTime += (Date.now() - pauseTime);
             audio.play();
             titleInput.focus();
-        }
-
-        // Sync visual timer bar with the audio element's playback
-        audio.addEventListener('timeupdate', () => {
-            if (!gameActive) return;
-            const percentage = 100 - ((audio.currentTime / audio.duration) * 100);
-            timerBar.style.width = percentage + '%';
-
-            if (percentage < 25) timerBar.style.backgroundColor = '#e22134'; // Turn red near end
-            else if (percentage < 50) timerBar.style.backgroundColor = '#ffbf7f'; // Turn orange in middle
-        });
-
-        // Trigger a timeout loss if the song finishes playing before they guess
-        audio.addEventListener('ended', () => {
-            if (gameActive) submitGuess(true);
-        });
-
-        // Allow pressing Enter in inputs to submit
-        titleInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') submitGuess(false); });
-        artistInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') submitGuess(false); });
-
-        async function submitGuess(isTimeout = false) {
-            if (!gameActive) return;
-            gameActive = false;
-
-            const timeTaken = (Date.now() - startTime) / 1000; // In seconds
+        } else {
+            isPaused = true;
+            pauseTime = Date.now();
+            pauseOverlay.style.display = 'flex';
             audio.pause();
-
-            actionBtn.innerText = isTimeout ? "Time's Up!" : "Checking...";
-            actionBtn.disabled = true;
-            titleInput.readOnly = true;
-            artistInput.readOnly = true;
-
-            const response = await fetch('/api/trivia_guess', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    song_id: SONG_ID,
-                    title_guess: titleInput.value,
-                    artist_guess: artistInput.value,
-                    time_taken: timeTaken,
-                    timeout: isTimeout
-                })
-            });
-            const data = await response.json();
-
-            // UI Reveal
-            playBtn.style.display = 'none';
-            const coverArt = document.getElementById('cover-art');
-            coverArt.src = data.cover_url;
-            coverArt.style.display = 'block';
-
-            // Grade Inputs Visually
-            titleInput.classList.add(data.title_correct ? 'correct' : 'wrong');
-            artistInput.classList.add(data.artist_correct ? 'correct' : 'wrong');
-
-            // Populate Data
-            document.getElementById('actual-title').innerText = data.actual_title;
-            document.getElementById('actual-artist').innerText = data.actual_artist;
-            document.getElementById('score-display').innerText = data.new_total;
-            document.getElementById('highscore-display').innerText = data.high_score;
-
-            if (data.new_high_score) {
-                document.getElementById('highscore-display').classList.add('highlight-green');
-            }
-
-            if (data.game_over) {
-                document.getElementById('game-over-banner').style.display = 'block';
-                document.getElementById('streak-display').innerText = "0 🔥";
-                document.getElementById('next-btn').innerText = "Restart Game";
-                document.getElementById('next-btn').style.backgroundColor = "#e22134";
-                if (isTimeout) document.getElementById('points-earned').innerText = "You ran out of time.";
-            } else {
-                let currentStreak = parseInt(document.getElementById('streak-display').innerText);
-                document.getElementById('streak-display').innerText = (currentStreak + 1) + " 🔥";
-                document.getElementById('points-earned').innerText = `+${data.points_earned} Points (Speed Bonus: ${data.speed_bonus})`;
-            }
-
-            actionBtn.style.display = 'none';
-            document.getElementById('reveal-section').style.display = 'block';
-
-            // Replay the first 3 seconds of the track as a reward/reminder during reveal
-            audio.currentTime = 0;
-            audio.play();
-            setTimeout(() => { audio.pause(); }, 3000);
         }
-    </script>
+    }
+
+    // Sync visual timer bar with the audio element's playback
+    audio.addEventListener('timeupdate', () => {
+        if (!gameActive || isPaused) return;
+        const percentage = 100 - ((audio.currentTime / audio.duration) * 100);
+        timerBar.style.width = percentage + '%';
+
+        if (percentage < 25) timerBar.style.backgroundColor = '#e22134';
+        else if (percentage < 50) timerBar.style.backgroundColor = 'var(--color-genre)';
+        else timerBar.style.backgroundColor = 'var(--color-song)';
+    });
+
+    audio.addEventListener('ended', () => {
+        if (gameActive) submitGuess(true);
+    });
+
+    titleInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitGuess(false); });
+    artistInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') submitGuess(false); });
+
+    async function submitGuess(isTimeout = false) {
+        if (!gameActive || isPaused) return;
+        gameActive = false;
+
+        const timeTaken = (Date.now() - startTime) / 1000;
+        audio.pause();
+
+        actionBtn.innerText = isTimeout ? "Time's Up!" : "Checking...";
+        actionBtn.disabled = true;
+        titleInput.readOnly = true;
+        artistInput.readOnly = true;
+
+        const response = await fetch('/api/trivia_guess', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                song_id: SONG_ID,
+                title_guess: titleInput.value,
+                artist_guess: artistInput.value,
+                time_taken: timeTaken,
+                timeout: isTimeout
+            })
+        });
+        const data = await response.json();
+
+        // UI Reveal
+        playBtn.style.display = 'none';
+        const coverArt = document.getElementById('cover-art');
+        coverArt.src = data.cover_url;
+        coverArt.style.display = 'block';
+
+        titleInput.classList.add(data.title_correct ? 'correct' : 'wrong');
+        artistInput.classList.add(data.artist_correct ? 'correct' : 'wrong');
+
+        document.getElementById('actual-title').innerText = data.actual_title;
+        document.getElementById('actual-artist').innerText = data.actual_artist;
+        document.getElementById('score-display').innerText = data.new_total;
+        document.getElementById('highscore-display').innerText = data.high_score;
+
+        if (data.new_high_score) {
+            document.getElementById('highscore-display').classList.add('highlight-green');
+        }
+
+        if (data.game_over) {
+            document.getElementById('game-over-banner').style.display = 'block';
+            document.getElementById('streak-display').innerText = "0 🔥";
+            document.getElementById('next-btn').innerText = "Restart Game";
+            document.getElementById('next-btn').style.backgroundColor = "#e22134";
+            if (isTimeout) document.getElementById('points-earned').innerText = "You ran out of time.";
+
+            sessionStorage.removeItem('autoStart');
+        } else {
+            let currentStreak = parseInt(document.getElementById('streak-display').innerText);
+            document.getElementById('streak-display').innerText = (currentStreak + 1) + " 🔥";
+            document.getElementById('points-earned').innerText = `+${data.points_earned} Points (Speed Bonus: ${data.speed_bonus})`;
+        }
+
+        actionBtn.style.display = 'none';
+        document.getElementById('reveal-section').style.display = 'block';
+
+        audio.currentTime = 0;
+        audio.play();
+
+        setTimeout(() => {
+            audio.pause();
+            if (!data.game_over) {
+                sessionStorage.setItem('autoStart', 'true');
+                location.reload();
+            }
+        }, 5500);
+    }
+</script>
 {% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ album_name }} - Song Ranker{% endblock %}
+
+{% block extra_css %}
+<style>
+    .album-header { display: flex; align-items: flex-end; background: linear-gradient(135deg, rgba(191,119,255,0.1) 0%, #1e1e1e 100%); padding: 40px; border-radius: 16px; margin-bottom: 40px; text-align: left; border: 1px solid rgba(191,119,255,0.2); }
+    .album-cover { width: 240px; height: 240px; border-radius: 8px; object-fit: cover; box-shadow: 0 0 30px rgba(191,119,255,0.3); margin-right: 40px; flex-shrink: 0; }
+    .album-title { font-size: 3.5em; font-weight: 900; margin: 0 0 10px 0; line-height: 1.1; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
+
+    .stat-group { display: flex; flex-direction: column; margin-right: 40px; }
+    .stat-label { color: #888; font-size: 0.85em; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
+    .stat-value { font-size: 1.8em; font-weight: bold; color: var(--color-album); }
+
+    .song-list { background-color: #1e1e1e; border-radius: 12px; padding: 10px 20px; text-align: left; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
+    .song-row { display: flex; align-items: center; padding: 15px 0; border-bottom: 1px solid #333; text-decoration: none; color: white; transition: 0.2s; border-radius: 6px; }
+    .song-row:last-child { border-bottom: none; }
+    .song-row:hover { background: rgba(29, 185, 84, 0.1); padding-left: 10px; }
+</style>
+{% endblock %}
+
+{% block content %}
+    <div style="max-width: 900px; margin: 0 auto;">
+        <div class="album-header">
+            <img src="{{ cover_url }}" class="album-cover">
+            <div>
+                <span class="entity-badge badge-album">Album</span>
+                <h1 class="album-title">{{ album_name }}</h1>
+                <div style="font-size: 1.2em; font-weight: bold; margin-bottom: 25px;">
+                    By <a href="/artist/{{ artist_name | urlencode }}" class="link-artist">{{ artist_name }}</a>
+                </div>
+
+                <div style="display: flex;">
+                    <div class="stat-group"><span class="stat-label">Impact Score</span><span class="stat-value">{{ impact_score|int }}</span></div>
+                    <div class="stat-group"><span class="stat-label">Total Tracks</span><span class="stat-value" style="color: white;">{{ song_count }}</span></div>
+                </div>
+            </div>
+        </div>
+
+        <h3 style="text-align: left; color: #888; text-transform: uppercase;">Ranked Tracklist</h3>
+        <div class="song-list">
+            {% for song in songs %}
+            <a href="/song/{{ song.id }}" class="song-row">
+                <div style="font-size: 1.2em; font-weight: bold; color: #555; width: 30px; text-align: center; margin-right: 15px;">{{ loop.index }}</div>
+                <div style="flex-grow: 1; font-weight: bold; font-size: 1.1em;">{{ song.title }}</div>
+                <div style="font-weight: bold; color: var(--color-song); font-size: 1.1em; padding-right: 15px;">{{ song.elo_score|int }}</div>
+            </a>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
