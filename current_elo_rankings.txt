@@ -60,158 +60,206 @@ Rank  | Elo    | Matches | Track
 56    | 1216   | 1       | somebody (eternity) by Kenzie Cait
 57    | 1216   | 9       | I Can't Hear It Now (from the series Arcane League of Legends) by Freya Ridings, Arcane, League of Legends Music
 58    | 1216   | 1       | Biggest Fan by Asha Banks
-59    | 1216   | 9       | Talk About It by Elle Coves
-60    | 1216   | 1       | Price Of Getting Older by Isabel Dumaa
-61    | 1216   | 1       | slower by Tate McRae
-62    | 1216   | 9       | do all my friends hate me? by Mckenna Grace
-63    | 1216   | 1       | That’s Just How You Feel by Sofia Camara
-64    | 1216   | 1       | Girl’s Just Flying by Maisie Peters
-65    | 1216   | 1       | Volcano by Maisie Peters
-66    | 1215   | 3       | buffalo by Kenzie Cait
-67    | 1215   | 9       | Stay by Gracie Abrams
-68    | 1215   | 1       | phantom pain by Kenzie Cait
-69    | 1215   | 1       | John Hughes Movie by Maisie Peters
-70    | 1215   | 1       | I’m Trying (Not Friends) by Maisie Peters
-71    | 1215   | 9       | what's your problem? by Tate McRae
-72    | 1215   | 3       | could’ve been crazy by Kenzie Cait
-73    | 1215   | 1       | Quarter Life Crisis by Isabel Dumaa
-74    | 1215   | 3       | The In Between by Khloe Rose
-75    | 1214   | 9       | Girl Of Your Dreams by Dylan
-76    | 1214   | 9       | You Signed Up For This by Maisie Peters
-77    | 1214   | 1       | Everything At Once by Isabel Dumaa
-78    | 1214   | 3       | misery by Kenzie Cait
-79    | 1214   | 9       | Fault Line by Elle Coves
-80    | 1214   | 9       | Hallucinating by Sofia Camara
-81    | 1214   | 9       | feel like shit by Tate McRae
-82    | 1213   | 9       | she's all i wanna be by Tate McRae
-83    | 1213   | 9       | Slow It Down by Benson Boone
-84    | 1213   | 1       | C'est La Vie by Isabel Dumaa
-85    | 1212   | 1       | Edgeways by Asha Banks
-86    | 1212   | 9       | Worst of You by Maisie Peters
-87    | 1212   | 3       | Don’t Take It Out On Me by Asha Banks
-88    | 1210   | 11      | Peace by Elle Coves
-89    | 1206   | 10      | EVIDENCE by Elle Coves
-90    | 1204   | 4       | congratulations by Kenzie Cait
-91    | 1203   | 10      | The Great Escape by Khloe Rose
-92    | 1203   | 10      | In The Kitchen by Reneé Rapp
-93    | 1202   | 4       | make me by Kenzie Cait
-94    | 1202   | 2       | cowgirl interlude by Kenzie Cait
-95    | 1202   | 6       | Free Now by Gracie Abrams
-96    | 1201   | 10      | 505 by Arctic Monkeys
-97    | 1201   | 2       | what i do best by Kenzie Cait
-98    | 1201   | 8       | Girl Down by Khloe Rose
-99    | 1200   | 2       | Boy by Maisie Peters
-100   | 1200   | 10      | Red Bottoms by ADÉLA
-101   | 1200   | 10      | Starlight by Sofia Camara
-102   | 1200   | 10      | Best Friend by Sofia Camara
-103   | 1200   | 2       | number one girl by ROSÉ
-104   | 1200   | 2       | six feet under by Kenzie Cait
-105   | 1200   | 2       | love me again by Kenzie Cait
-106   | 1200   | 0       | Enough For You by Isabel Dumaa
-107   | 1200   | 0       | Different by Isabel Dumaa
-108   | 1200   | 0       | You You You by Maisie Peters
-109   | 1200   | 0       | Audrey Hepburn by Maisie Peters
-110   | 1200   | 0       | Mary Janes by Maisie Peters
-111   | 1200   | 0       | Villain by Maisie Peters
-112   | 1200   | 0       | Psycho by Maisie Peters
-113   | 1200   | 0       | Outdoor Pool by Maisie Peters
-114   | 1199   | 10      | Ugly and Rotten by Mckenna Grace
-115   | 1199   | 2       | You Can’t Save Me by Sofia Camara
-116   | 1199   | 10      | you broke me first by Tate McRae
-117   | 1199   | 2       | I Tried by Sadie Jean
-118   | 1199   | 2       | Said It All by Sofia Camara
-119   | 1199   | 10      | The Time Of My Life by Benson Boone
-120   | 1198   | 2       | The Last Encounter by Sofia Camara
-121   | 1198   | 2       | the worst part by Kenzie Cait
-122   | 1197   | 4       | Fictional by Khloe Rose
-123   | 1197   | 2       | thank god by Kenzie Cait
-124   | 1197   | 10      | Hollow by Maisie Peters
-125   | 1196   | 10      | Flatlining by Grace Gachot
-126   | 1190   | 11      | Anything But by Asha Banks
-127   | 1188   | 9       | Marble Arch by Erin LeCount
-128   | 1187   | 9       | Watch by Maisie Peters
-129   | 1187   | 9       | Self Dysmorphia by Mckenna Grace
-130   | 1186   | 9       | Wildest Dreams by Taylor Swift
-131   | 1186   | 1       | If You Let Me (with Marcus Mumford) by Maisie Peters
-132   | 1186   | 9       | Feels Like by Gracie Abrams
-133   | 1186   | 9       | There It Goes by Maisie Peters
-134   | 1186   | 9       | Mount Olympus by Grace Gachot
-135   | 1185   | 11      | Sleeping With The Lights On by Jade LeMac
-136   | 1185   | 3       | summer home by Kenzie Cait
-137   | 1184   | 3       | twenty & alone by Kenzie Cait
-138   | 1184   | 1       | Talking To Strangers by Maisie Peters
-139   | 1184   | 9       | Just Keep Watching by Tate McRae
-140   | 1184   | 1       | Shoulda Known Better by Sofia Camara
-141   | 1184   | 7       | Better by Gracie Abrams
-142   | 1184   | 9       | tear myself apart by Tate McRae
-143   | 1184   | 1       | Brooklyn by Maisie Peters
-144   | 1184   | 9       | My Regards by Maisie Peters
-145   | 1184   | 1       | Love Him I Don’t by Maisie Peters
-146   | 1183   | 9       | run for the hills by Tate McRae
-147   | 1183   | 1       | Vampire Time by Maisie Peters
-148   | 1183   | 1       | Flat Earther by Maisie Peters
-149   | 1183   | 3       | rubberband by Tate McRae
-150   | 1183   | 1       | Tough Act by Maisie Peters
-151   | 1183   | 1       | best behavior by Kenzie Cait
-152   | 1182   | 5       | Anyways How You Been? by Sofia Camara
-153   | 1182   | 3       | innocence by Kenzie Cait
-154   | 1182   | 1       | Nothing Like Being In Love by Maisie Peters
-155   | 1182   | 1       | You Then Me Now by Maisie Peters
-156   | 1182   | 1       | Who You Are To Me Now by Asha Banks
-157   | 1181   | 9       | The End by Isabel Dumaa
-158   | 1181   | 9       | Questions by Maisie Peters
-159   | 1181   | 9       | Favourite Ex by Maisie Peters
-160   | 1180   | 9       | Nineteen by Dylan
-161   | 1180   | 9       | R U O K? by Freya Ridings
-162   | 1180   | 9       | r u ok by Tate McRae
-163   | 1180   | 9       | Rose Colored Eyes by Emyrson Flora
-164   | 1179   | 9       | we're not alike by Tate McRae
-165   | 1178   | 9       | The Last One by Maisie Peters
-166   | 1169   | 10      | Built To Be Bad by Grace Gachot
-167   | 1169   | 10      | White Keys by Dominic Fike
-168   | 1168   | 10      | NOBODY'S GIRL by Tate McRae
-169   | 1168   | 2       | The Other POV by Khloe Rose
-170   | 1168   | 10      | Better Now by Post Malone
-171   | 1168   | 2       | wish i loved you in the 90s by Tate McRae
-172   | 1168   | 4       | no duh by Kenzie Cait
-173   | 1168   | 10      | Look At Me Now by Maisie Peters
-174   | 1168   | 2       | Houses by Maisie Peters
-175   | 1167   | 10      | oh my by Alessi Rose
-176   | 1166   | 10      | Never Know Love by Bea
-177   | 1166   | 10      | No I'm not in love by Tate McRae
-178   | 1165   | 2       | good cry by Kenzie Cait
-179   | 1154   | 3       | bad ones by Tate McRae
-180   | 1154   | 9       | think later by Tate McRae
-181   | 1153   | 9       | Birthday by Maisie Peters
-182   | 1153   | 11      | The Smallest Man Who Ever Lived by Taylor Swift
-183   | 1153   | 9       | Beauty and a Beat (feat. Nicki Minaj) by Justin Bieber
-184   | 1153   | 11      | Best I'll Ever Sing by Maisie Peters
-185   | 1153   | 3       | sailor’s promise by Kenzie Cait
-186   | 1153   | 9       | ALICE by Erin LeCount
-187   | 1153   | 9       | Signs by Tate McRae
-188   | 1152   | 11      | I Am Digital, I Am Divine by Erin LeCount
-189   | 1152   | 9       | Bad by Dylan
-190   | 1152   | 9       | Dependent by Alessi Rose
-191   | 1152   | 9       | to love and to lose by Dylan
-192   | 1150   | 9       | the grudge by Olivia Rodrigo
-193   | 1150   | 11      | Better Alone by Benson Boone
-194   | 1149   | 9       | James Dean by Isabel Dumaa
-195   | 1142   | 10      | No Romeo by Dylan
-196   | 1139   | 10      | STORM II by GENER8ION, Yung Lean
-197   | 1138   | 4       | Starting Over by Khloe Rose
-198   | 1136   | 12      | I Love You, I'm Sorry by Gracie Abrams
-199   | 1135   | 10      | Cologne by Emyrson Flora
-200   | 1134   | 10      | Sorry by Nothing But Thieves
-201   | 1124   | 11      | Perfect Revenge by Dylan
-202   | 1123   | 9       | MACHINE GHOST by Erin LeCount
-203   | 1122   | 9       | AMERICAN DREAM by Erin LeCount
-204   | 1121   | 11      | Personal Best by Maisie Peters
-205   | 1119   | 11      | Say My Name In Your Sleep by Maisie Peters
-206   | 1119   | 9       | Sweet Fruit by Erin LeCount
-207   | 1116   | 10      | Ain't in LA by ADÉLA
-208   | 1107   | 10      | Kingmaker (with Julia Michaels) by Maisie Peters
-209   | 1093   | 9       | HAPPY by NF
-210   | 1092   | 9       | THE CINEMA by Erin LeCount
-211   | 1092   | 11      | Godspeed by Erin LeCount
-212   | 1080   | 10      | Liar Liar by Dylan, Bastille
-213   | 1075   | 10      | Friend by Benson Boone
+59    | 1216   | 1       | Villain by Maisie Peters
+60    | 1216   | 9       | Talk About It by Elle Coves
+61    | 1216   | 1       | Hit Me Where It Hurts by Elle Coves
+62    | 1216   | 1       | Price Of Getting Older by Isabel Dumaa
+63    | 1216   | 1       | slower by Tate McRae
+64    | 1216   | 9       | do all my friends hate me? by Mckenna Grace
+65    | 1216   | 1       | That’s Just How You Feel by Sofia Camara
+66    | 1216   | 1       | Girl’s Just Flying by Maisie Peters
+67    | 1216   | 1       | Volcano by Maisie Peters
+68    | 1216   | 1       | The Greatest Thing by Dylan
+69    | 1216   | 1       | i feel it all by Lexi Jayde
+70    | 1215   | 3       | buffalo by Kenzie Cait
+71    | 1215   | 9       | Stay by Gracie Abrams
+72    | 1215   | 1       | In The Stars by Benson Boone
+73    | 1215   | 1       | phantom pain by Kenzie Cait
+74    | 1215   | 1       | John Hughes Movie by Maisie Peters
+75    | 1215   | 1       | I’m Trying (Not Friends) by Maisie Peters
+76    | 1215   | 9       | what's your problem? by Tate McRae
+77    | 1215   | 3       | could’ve been crazy by Kenzie Cait
+78    | 1215   | 1       | Quarter Life Crisis by Isabel Dumaa
+79    | 1215   | 3       | The In Between by Khloe Rose
+80    | 1215   | 1       | Wanted Man by Benson Boone
+81    | 1214   | 9       | Girl Of Your Dreams by Dylan
+82    | 1214   | 9       | You Signed Up For This by Maisie Peters
+83    | 1214   | 1       | Everything At Once by Isabel Dumaa
+84    | 1214   | 3       | misery by Kenzie Cait
+85    | 1214   | 9       | Fault Line by Elle Coves
+86    | 1214   | 9       | Hallucinating by Sofia Camara
+87    | 1214   | 9       | feel like shit by Tate McRae
+88    | 1213   | 9       | she's all i wanna be by Tate McRae
+89    | 1213   | 9       | Slow It Down by Benson Boone
+90    | 1213   | 3       | Said It All by Sofia Camara
+91    | 1212   | 1       | Edgeways by Asha Banks
+92    | 1212   | 9       | Worst of You by Maisie Peters
+93    | 1212   | 3       | Don’t Take It Out On Me by Asha Banks
+94    | 1210   | 11      | Peace by Elle Coves
+95    | 1206   | 10      | EVIDENCE by Elle Coves
+96    | 1203   | 10      | The Great Escape by Khloe Rose
+97    | 1203   | 10      | In The Kitchen by Reneé Rapp
+98    | 1202   | 4       | make me by Kenzie Cait
+99    | 1202   | 2       | cowgirl interlude by Kenzie Cait
+100   | 1202   | 6       | Free Now by Gracie Abrams
+101   | 1201   | 10      | 505 by Arctic Monkeys
+102   | 1201   | 2       | what i do best by Kenzie Cait
+103   | 1201   | 8       | Girl Down by Khloe Rose
+104   | 1200   | 2       | Boy by Maisie Peters
+105   | 1200   | 10      | Red Bottoms by ADÉLA
+106   | 1200   | 10      | Starlight by Sofia Camara
+107   | 1200   | 10      | Best Friend by Sofia Camara
+108   | 1200   | 2       | number one girl by ROSÉ
+109   | 1200   | 2       | six feet under by Kenzie Cait
+110   | 1200   | 2       | love me again by Kenzie Cait
+111   | 1200   | 0       | Enough For You by Isabel Dumaa
+112   | 1200   | 0       | Different by Isabel Dumaa
+113   | 1200   | 0       | You You You by Maisie Peters
+114   | 1200   | 0       | Audrey Hepburn by Maisie Peters
+115   | 1200   | 0       | Mary Janes by Maisie Peters
+116   | 1200   | 0       | Psycho by Maisie Peters
+117   | 1200   | 0       | Outdoor Pool by Maisie Peters
+118   | 1200   | 0       | WHAT AM I DOING? by Elle Coves
+119   | 1200   | 0       | All Of America by Elle Coves
+120   | 1200   | 0       | Tightrope by Elle Coves
+121   | 1200   | 0       | Friend Of Mine by Elle Coves
+122   | 1200   | 0       | NIGHTS LIKE THESE by Benson Boone
+123   | 1200   | 0       | Young American Heart by Benson Boone
+124   | 1200   | 0       | Take Me Home by Benson Boone
+125   | 1200   | 0       | Man In Me by Benson Boone
+126   | 1200   | 0       | Mr Electric Blue by Benson Boone
+127   | 1200   | 0       | Mystical Magical by Benson Boone
+128   | 1200   | 0       | Sorry I'm Here For Someone Else by Benson Boone
+129   | 1200   | 0       | Reminds Me Of You by Benson Boone
+130   | 1200   | 0       | I Wanna Be The One You Call by Benson Boone
+131   | 1200   | 0       | There She Goes by Benson Boone
+132   | 1200   | 0       | My Greatest Fear by Benson Boone
+133   | 1200   | 0       | Drunk In My Mind by Benson Boone
+134   | 1200   | 0       | Be Someone by Benson Boone
+135   | 1200   | 0       | Cry by Benson Boone
+136   | 1200   | 0       | Beautiful Things by Benson Boone
+137   | 1200   | 0       | Hello Love by Benson Boone
+138   | 1200   | 0       | Intro by Benson Boone
+139   | 1200   | 0       | What Do You Want by Benson Boone
+140   | 1200   | 0       | Love Of Mine by Benson Boone
+141   | 1200   | 0       | Ghost Town by Benson Boone
+142   | 1200   | 0       | Pretty Slowly by Benson Boone
+143   | 1200   | 0       | Nothing Lasts Forever by Dylan
+144   | 1200   | 0       | Lovestruck by Dylan
+145   | 1200   | 0       | Treat You Bad by Dylan
+146   | 1200   | 0       | Blisters by Dylan
+147   | 1200   | 0       | Home Is Where The Heart Is by Dylan
+148   | 1200   | 0       | jeans by Lexi Jayde
+149   | 1200   | 0       | delusional by Lexi Jayde
+150   | 1200   | 0       | i've missed you longer by Lexi Jayde
+151   | 1200   | 0       | easier by Lexi Jayde
+152   | 1200   | 0       | sorry for you by Lexi Jayde
+153   | 1200   | 0       | when does it end? by Lexi Jayde
+154   | 1200   | 0       | i want him bad by Lexi Jayde
+155   | 1200   | 0       | cool girl, tough guy by Lexi Jayde
+156   | 1200   | 0       | wanna be by Lexi Jayde
+157   | 1200   | 0       | newbury park by Lexi Jayde
+158   | 1199   | 10      | Ugly and Rotten by Mckenna Grace
+159   | 1199   | 2       | You Can’t Save Me by Sofia Camara
+160   | 1199   | 10      | you broke me first by Tate McRae
+161   | 1199   | 2       | I Tried by Sadie Jean
+162   | 1199   | 10      | The Time Of My Life by Benson Boone
+163   | 1198   | 2       | The Last Encounter by Sofia Camara
+164   | 1198   | 2       | the worst part by Kenzie Cait
+165   | 1197   | 4       | Fictional by Khloe Rose
+166   | 1197   | 2       | thank god by Kenzie Cait
+167   | 1197   | 10      | Hollow by Maisie Peters
+168   | 1197   | 2       | C'est La Vie by Isabel Dumaa
+169   | 1196   | 10      | Flatlining by Grace Gachot
+170   | 1190   | 11      | Anything But by Asha Banks
+171   | 1188   | 9       | Marble Arch by Erin LeCount
+172   | 1188   | 5       | congratulations by Kenzie Cait
+173   | 1187   | 9       | Watch by Maisie Peters
+174   | 1187   | 9       | Self Dysmorphia by Mckenna Grace
+175   | 1186   | 9       | Wildest Dreams by Taylor Swift
+176   | 1186   | 9       | Feels Like by Gracie Abrams
+177   | 1186   | 9       | There It Goes by Maisie Peters
+178   | 1186   | 9       | Mount Olympus by Grace Gachot
+179   | 1185   | 11      | Sleeping With The Lights On by Jade LeMac
+180   | 1185   | 3       | summer home by Kenzie Cait
+181   | 1184   | 3       | twenty & alone by Kenzie Cait
+182   | 1184   | 1       | Talking To Strangers by Maisie Peters
+183   | 1184   | 9       | Just Keep Watching by Tate McRae
+184   | 1184   | 1       | Shoulda Known Better by Sofia Camara
+185   | 1184   | 7       | Better by Gracie Abrams
+186   | 1184   | 9       | tear myself apart by Tate McRae
+187   | 1184   | 1       | Brooklyn by Maisie Peters
+188   | 1184   | 9       | My Regards by Maisie Peters
+189   | 1184   | 1       | Love Him I Don’t by Maisie Peters
+190   | 1184   | 1       | Body by Elle Coves
+191   | 1184   | 1       | Forever and a Day by Benson Boone
+192   | 1183   | 9       | run for the hills by Tate McRae
+193   | 1183   | 1       | Vampire Time by Maisie Peters
+194   | 1183   | 1       | Flat Earther by Maisie Peters
+195   | 1183   | 3       | rubberband by Tate McRae
+196   | 1183   | 1       | Tough Act by Maisie Peters
+197   | 1183   | 1       | best behavior by Kenzie Cait
+198   | 1182   | 5       | Anyways How You Been? by Sofia Camara
+199   | 1182   | 3       | innocence by Kenzie Cait
+200   | 1182   | 1       | Nothing Like Being In Love by Maisie Peters
+201   | 1182   | 1       | You Then Me Now by Maisie Peters
+202   | 1182   | 1       | Who You Are To Me Now by Asha Banks
+203   | 1181   | 9       | The End by Isabel Dumaa
+204   | 1181   | 1       | Momma Song by Benson Boone
+205   | 1181   | 9       | Questions by Maisie Peters
+206   | 1181   | 9       | Favourite Ex by Maisie Peters
+207   | 1180   | 9       | Nineteen by Dylan
+208   | 1180   | 9       | R U O K? by Freya Ridings
+209   | 1180   | 9       | r u ok by Tate McRae
+210   | 1180   | 9       | Rose Colored Eyes by Emyrson Flora
+211   | 1179   | 9       | we're not alike by Tate McRae
+212   | 1170   | 2       | If You Let Me (with Marcus Mumford) by Maisie Peters
+213   | 1169   | 10      | Built To Be Bad by Grace Gachot
+214   | 1169   | 10      | White Keys by Dominic Fike
+215   | 1169   | 10      | the grudge by Olivia Rodrigo
+216   | 1168   | 10      | NOBODY'S GIRL by Tate McRae
+217   | 1168   | 10      | Better Now by Post Malone
+218   | 1168   | 2       | wish i loved you in the 90s by Tate McRae
+219   | 1168   | 4       | no duh by Kenzie Cait
+220   | 1168   | 10      | Look At Me Now by Maisie Peters
+221   | 1168   | 2       | Houses by Maisie Peters
+222   | 1167   | 10      | oh my by Alessi Rose
+223   | 1166   | 10      | Never Know Love by Bea
+224   | 1166   | 10      | No I'm not in love by Tate McRae
+225   | 1165   | 2       | good cry by Kenzie Cait
+226   | 1163   | 10      | The Last One by Maisie Peters
+227   | 1154   | 3       | bad ones by Tate McRae
+228   | 1154   | 3       | The Other POV by Khloe Rose
+229   | 1154   | 9       | think later by Tate McRae
+230   | 1153   | 9       | Birthday by Maisie Peters
+231   | 1153   | 11      | The Smallest Man Who Ever Lived by Taylor Swift
+232   | 1153   | 9       | Beauty and a Beat (feat. Nicki Minaj) by Justin Bieber
+233   | 1153   | 11      | Best I'll Ever Sing by Maisie Peters
+234   | 1153   | 3       | sailor’s promise by Kenzie Cait
+235   | 1153   | 9       | ALICE by Erin LeCount
+236   | 1153   | 9       | Signs by Tate McRae
+237   | 1152   | 11      | I Am Digital, I Am Divine by Erin LeCount
+238   | 1152   | 9       | Bad by Dylan
+239   | 1152   | 9       | Dependent by Alessi Rose
+240   | 1152   | 9       | to love and to lose by Dylan
+241   | 1150   | 11      | Better Alone by Benson Boone
+242   | 1149   | 9       | James Dean by Isabel Dumaa
+243   | 1142   | 10      | No Romeo by Dylan
+244   | 1139   | 10      | STORM II by GENER8ION, Yung Lean
+245   | 1138   | 4       | Starting Over by Khloe Rose
+246   | 1136   | 12      | I Love You, I'm Sorry by Gracie Abrams
+247   | 1135   | 10      | Cologne by Emyrson Flora
+248   | 1134   | 10      | Sorry by Nothing But Thieves
+249   | 1124   | 11      | Perfect Revenge by Dylan
+250   | 1123   | 9       | MACHINE GHOST by Erin LeCount
+251   | 1122   | 9       | AMERICAN DREAM by Erin LeCount
+252   | 1121   | 11      | Personal Best by Maisie Peters
+253   | 1119   | 11      | Say My Name In Your Sleep by Maisie Peters
+254   | 1119   | 9       | Sweet Fruit by Erin LeCount
+255   | 1116   | 10      | Ain't in LA by ADÉLA
+256   | 1107   | 10      | Kingmaker (with Julia Michaels) by Maisie Peters
+257   | 1093   | 9       | HAPPY by NF
+258   | 1092   | 9       | THE CINEMA by Erin LeCount
+259   | 1092   | 11      | Godspeed by Erin LeCount
+260   | 1080   | 10      | Liar Liar by Dylan, Bastille
+261   | 1075   | 10      | Friend by Benson Boone

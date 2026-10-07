@@ -180,13 +180,14 @@
         <div class="nav-left">
             <!-- Modes Dropdown -->
             <div class="dropdown">
-                <button class="dropbtn {% if request.path in ['/blind', '/trivia', '/game'] %}active{% endif %}" onclick="toggleDropdown(event, 'modes-dropdown')">
+                <button class="dropbtn {% if request.path in ['/blind', '/trivia', '/game', '/tournament'] %}active{% endif %}" onclick="toggleDropdown(event, 'modes-dropdown')">
                     Game Modes ▾
                 </button>
                 <div id="modes-dropdown" class="dropdown-content">
                     <a href="/game">🔥 Standard Vote</a>
                     <a href="/blind">🎧 Blind Audition</a>
                     <a href="/trivia">🧠 Trivia Mini-Game</a>
+                    <a href="/tournament">🏆 Tournament</a>
                 </div>
             </div>
 

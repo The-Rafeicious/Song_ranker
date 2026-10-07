@@ -1,0 +1,265 @@
+--- SONG RANKER DATABASE SNAPSHOT ---
+
+Rank  | Elo    | Peak Elo  | Peak Rank  | Matches | Recog % | Track Title                         | Artist                    | Album
+--------------------------------------------------------------------------------------------------------------------------------------------
+1     | 1332   | 1200      | 1          | 9       | 100%    | Siren sounds (bonus)                | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+2     | 1324   | 1200      | 2          | 8       | 100%    | Elvis Song                          | Maisie Peters             | You Signed Up For This
+3     | 1322   | 1322      | 3          | 10      | 100%    | bubblebath                          | Lexi Jayde                | LOVER GIRL
+4     | 1311   | 1200      | 4          | 9       | N/A     | Look @ You                          | Khloe Rose                | Look @ You - Single
+5     | 1308   | 1200      | 5          | 9       | 100%    | Bones and All                       | Mckenna Grace             | Bones and All - Single
+6     | 1307   | 1200      | 6          | 9       | 100%    | 2 hands                             | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+7     | 1294   | 1294      | 7          | 10      | 100%    | you're still mine                   | Lexi Jayde                | LOVER GIRL
+8     | 1289   | 1200      | 8          | 8       | 50%     | Here We Go Again                    | Sofia Camara              | Was I(t) Worth It?
+9     | 1286   | 1200      | 9          | 8       | 100%    | 808 HYMN                            | Erin LeCount              | PAREIDOLIA
+10    | 1280   | 1200      | 10         | 9       | 100%    | That Could Be Me                    | Alessi Rose               | Voyeur
+11    | 1274   | 1200      | 11         | 9       | N/A     | RUMOURS                             | Elle Coves                | RUMOURS - Single
+12    | 1274   | 1274      | 12         | 11      | N/A     | All American                        | Isabel Dumaa              | All American - Single
+13    | 1268   | 1268      | 15         | 10      | 100%    | Sunflower (Spider-Man: Into the ... | Post Malone, Swae Lee     | Sunflower (Spider-Man: Into the Spider-Verse) - Single
+14    | 1266   | 1266      | 15         | 10      | 75%     | Silver Spoon                        | Erin LeCount              | I Am Digital, I Am Divine
+15    | 1265   | 1200      | 15         | 10      | 100%    | Want Me                             | Baby Queen                | Quarter Life Crisis (Deluxe)
+16    | 1265   | 1265      | 15         | 10      | 100%    | Greenlight                          | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+17    | 1265   | 1200      | 17         | 10      | 100%    | Dover Beach                         | Baby Queen                | Dover Beach - Single
+18    | 1263   | 1263      | 18         | 12      | 75%     | Night at the Opera                  | Emei                      | Night at the Opera - Single
+19    | 1262   | 1200      | 19         | 10      | N/A     | Blue                                | Dylan                     | The Greatest Thing I’ll Never Learn
+20    | 1261   | 1261      | 19         | 10      | 100%    | Die For You                         | The Weeknd                | Starboy
+21    | 1260   | 1260      | 20         | 10      | N/A     | Who Do I Call Now? (Hellbent)       | Sofia Camara              | Was I(t) Worth It?
+22    | 1256   | 1200      | 22         | 10      | 100%    | Feels Like This                     | Maisie Peters             | Dressed Too Nice For A Jacket
+23    | 1251   | 1200      | 23         | 9       | 100%    | HORSESHOE                           | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+24    | 1250   | 1250      | 22         | 11      | N/A     | I’M THE ONE                         | Khloe Rose                | I’M THE ONE - Single
+25    | 1248   | 1200      | 25         | 9       | 100%    | Girls Like You                      | Sofia Camara              | Hard To Love
+26    | 1248   | 1200      | 26         | 9       | N/A     | Want You Now                        | Khloe Rose                | Want You Now - Single
+27    | 1248   | 1200      | 27         | 9       | 100%    | You Don't Know Me                   | Isabel Dumaa              | You Don’t Know Me - Single
+28    | 1248   | 1248      | 24         | 9       | N/A     | I miss you, I'm sorry               | Gracie Abrams             | minor
+29    | 1247   | 1200      | 29         | 9       | 100%    | Parking Lot                         | Sofia Camara              | Hard To Love
+30    | 1247   | 1200      | 30         | 9       | 100%    | Complicated                         | Sofia Camara              | Hard To Love
+31    | 1246   | 1200      | 31         | 5       | 100%    | Blowing Smoke                       | Gracie Abrams             | The Secret of Us
+32    | 1244   | 1200      | 32         | 9       | 100%    | TIT FOR TAT                         | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+33    | 1243   | 1243      | 33         | 11      | 100%    | Ballet Pumps                        | Bea                       | Ballet Pumps - Single
+34    | 1237   | 1200      | 34         | 10      | 100%    | Whatever Happens First              | Khloe Rose                | The In Between
+35    | 1234   | 1234      | 33         | 10      | 100%    | Molly                               | Emei                      | Molly - Single
+36    | 1234   | 1234      | 34         | 10      | N/A     | Every Life                          | Isabel LaRosa             | Promising Young Woman
+37    | 1234   | 1200      | 37         | 10      | 100%    | Like You Do                         | Khloe Rose                | The In Between
+38    | 1233   | 1233      | 36         | 10      | N/A     | LOSER!!                             | Mckenna Grace             | LOSER!! - Single
+39    | 1232   | 1232      | 38         | 2       | N/A     | downtown                            | Kenzie Cait               | sun kissed (deluxe)
+40    | 1232   | 1232      | 40         | 2       | 100%    | kissing call                        | Kenzie Cait               | sun kissed (deluxe)
+41    | 1232   | 1232      | 38         | 2       | N/A     | that girl                           | Kenzie Cait               | innocence
+42    | 1231   | 1200      | 42         | 10      | 100%    | back of my mind                     | Kenzie Cait               | back of my mind - Single
+43    | 1231   | 1231      | 42         | 10      | 100%    | Old Fashioned                       | Maisie Peters             | Florescence
+44    | 1230   | 1230      | 41         | 10      | 100%    | Come Back Home                      | Sofia Carson              | Purple Hearts (Original Soundtrack)
+45    | 1230   | 1230      | 42         | 10      | 100%    | Over                                | Khloe Rose                | Over - Single
+46    | 1229   | 1229      | 42         | 10      | 100%    | Blue Moon                           | Zara Larsson              | Midnight Sun
+47    | 1229   | 1200      | 47         | 10      | N/A     | under the mat                       | sombr                     | I Barely Know Her
+48    | 1228   | 1228      | 41         | 4       | N/A     | Permanently Bruised                 | Khloe Rose                | The In Between
+49    | 1220   | 1200      | 49         | 9       | N/A     | such a bitch!                       | Lexi Jayde                | LOVER GIRL
+50    | 1218   | 1218      | 47         | 11      | 100%    | I BELIEVE                           | Erin LeCount              | PAREIDOLIA
+51    | 1217   | 1217      | 49         | 11      | 100%    | DON’T YOU SEE ME TRYING?            | Erin LeCount              | PAREIDOLIA
+52    | 1217   | 1200      | 52         | 9       | 100%    | misunderstood                       | Lexi Jayde                | LOVER GIRL
+53    | 1217   | 1217      | 52         | 3       | 50%     | someday, someone                    | Kenzie Cait               | good luck, goodbye (over nostalgic edition)
+54    | 1217   | 1217      | 51         | 3       | 100%    | Ingrained (DNA)                     | Sofia Camara              | Hard To Love
+55    | 1217   | 1200      | 55         | 9       | 100%    | Nicole Kidman                       | ADÉLA                     | PRIMA
+56    | 1216   | 1216      | 51         | 1       | 100%    | somebody (eternity)                 | Kenzie Cait               | good luck, goodbye (over nostalgic edition)
+57    | 1216   | 1200      | 57         | 9       | 50%     | I Can't Hear It Now (from the se... | Freya Ridings, Arcane,... | Arcane League of Legends: Season 2 (Soundtrack from the Animated Series)
+58    | 1216   | 1216      | 46         | 1       | 100%    | Biggest Fan                         | Asha Banks                | Bottled Up
+59    | 1216   | 1216      | 59         | 1       | N/A     | Villain                             | Maisie Peters             | You Signed Up For This
+60    | 1216   | 1200      | 60         | 9       | 100%    | Talk About It                       | Elle Coves                | Talk About It - Single
+61    | 1216   | 1216      | 61         | 1       | N/A     | Hit Me Where It Hurts               | Elle Coves                | No Good At Hanging Up
+62    | 1216   | 1216      | 58         | 1       | 50%     | Price Of Getting Older              | Isabel Dumaa              | Just My Nature
+63    | 1216   | 1216      | 54         | 1       | N/A     | slower                              | Tate McRae                | TOO YOUNG TO BE SAD
+64    | 1216   | 1200      | 64         | 9       | 100%    | do all my friends hate me?          | Mckenna Grace             | do all my friends hate me? - Single
+65    | 1216   | 1216      | 51         | 1       | N/A     | That’s Just How You Feel            | Sofia Camara              | Hard To Love
+66    | 1216   | 1216      | 60         | 1       | 100%    | Girl’s Just Flying                  | Maisie Peters             | Florescence
+67    | 1216   | 1216      | 60         | 1       | 100%    | Volcano                             | Maisie Peters             | You Signed Up For This
+68    | 1216   | 1216      | 65         | 1       | N/A     | The Greatest Thing                  | Dylan                     | The Greatest Thing I’ll Never Learn
+69    | 1216   | 1216      | 64         | 1       | N/A     | i feel it all                       | Lexi Jayde                | LOVER GIRL
+70    | 1215   | 1215      | 66         | 3       | 100%    | buffalo                             | Kenzie Cait               | innocence
+71    | 1215   | 1200      | 71         | 9       | 100%    | Stay                                | Gracie Abrams             | Stay - Single
+72    | 1215   | 1215      | 72         | 1       | N/A     | In The Stars                        | Benson Boone              | Fireworks & Rollerblades
+73    | 1215   | 1215      | 64         | 1       | 100%    | phantom pain                        | Kenzie Cait               | innocence
+74    | 1215   | 1215      | 67         | 1       | N/A     | John Hughes Movie                   | Maisie Peters             | You Signed Up For This
+75    | 1215   | 1215      | 71         | 1       | 100%    | I’m Trying (Not Friends)            | Maisie Peters             | You Signed Up For This
+76    | 1215   | 1200      | 76         | 9       | 100%    | what's your problem?                | Tate McRae                | i used to think i could fly
+77    | 1215   | 1216      | 51         | 3       | 100%    | could’ve been crazy                 | Kenzie Cait               | sun kissed (deluxe)
+78    | 1215   | 1215      | 73         | 1       | 100%    | Quarter Life Crisis                 | Isabel Dumaa              | Just My Nature
+79    | 1215   | 1215      | 56         | 3       | 100%    | The In Between                      | Khloe Rose                | The In Between
+80    | 1215   | 1215      | 77         | 1       | N/A     | Wanted Man                          | Benson Boone              | American Heart
+81    | 1214   | 1200      | 81         | 9       | 100%    | Girl Of Your Dreams                 | Dylan                     | The Greatest Thing I’ll Never Learn
+82    | 1214   | 1214      | 59         | 9       | 100%    | You Signed Up For This              | Maisie Peters             | You Signed Up For This
+83    | 1214   | 1214      | 74         | 1       | N/A     | Everything At Once                  | Isabel Dumaa              | Just My Nature
+84    | 1214   | 1216      | 51         | 3       | N/A     | misery                              | Kenzie Cait               | sun kissed (deluxe)
+85    | 1214   | 1200      | 85         | 9       | N/A     | Fault Line                          | Elle Coves                | Fault Line - Single
+86    | 1214   | 1200      | 86         | 9       | 100%    | Hallucinating                       | Sofia Camara              | Still Somewhere Here
+87    | 1214   | 1200      | 87         | 9       | N/A     | feel like shit                      | Tate McRae                | i used to think i could fly
+88    | 1213   | 1200      | 88         | 9       | 100%    | she's all i wanna be                | Tate McRae                | i used to think i could fly
+89    | 1213   | 1200      | 89         | 9       | 100%    | Slow It Down                        | Benson Boone              | Fireworks & Rollerblades
+90    | 1213   | 1213      | 84         | 3       | 100%    | Said It All                         | Sofia Camara              | Was I(t) Worth It?
+91    | 1212   | 1212      | 67         | 1       | N/A     | Edgeways                            | Asha Banks                | Bottled Up
+92    | 1212   | 1200      | 92         | 9       | 100%    | Worst of You                        | Maisie Peters             | Worst of You - Single
+93    | 1212   | 1230      | 43         | 3       | 25%     | Don’t Take It Out On Me             | Asha Banks                | Bottled Up
+94    | 1210   | 1227      | 40         | 11      | N/A     | Peace                               | Elle Coves                | No Good At Hanging Up
+95    | 1206   | 1206      | 83         | 10      | 100%    | EVIDENCE                            | Elle Coves                | EVIDENCE - Single
+96    | 1203   | 1200      | 96         | 10      | 100%    | The Great Escape                    | Khloe Rose                | The Great Escape - Single
+97    | 1203   | 1203      | 86         | 10      | N/A     | In The Kitchen                      | Reneé Rapp                | Everything To Everyone (Deluxe)
+98    | 1202   | 1202      | 83         | 4       | N/A     | make me                             | Kenzie Cait               | good luck, goodbye (over nostalgic edition)
+99    | 1202   | 1202      | 88         | 2       | 100%    | cowgirl interlude                   | Kenzie Cait               | sun kissed (deluxe)
+100   | 1202   | 1200      | 100        | 6       | N/A     | Free Now                            | Gracie Abrams             | The Secret of Us
+101   | 1201   | 1201      | 73         | 10      | N/A     | 505                                 | Arctic Monkeys            | 505 - Single
+102   | 1201   | 1217      | 49         | 2       | 100%    | what i do best                      | Kenzie Cait               | innocence
+103   | 1201   | 1200      | 103        | 8       | 100%    | Girl Down                           | Khloe Rose                | Girl Down - Single
+104   | 1200   | 1200      | 97         | 2       | 100%    | Boy                                 | Maisie Peters             | You Signed Up For This
+105   | 1200   | 1200      | 99         | 10      | 75%     | Red Bottoms                         | ADÉLA                     | PRIMA
+106   | 1200   | 1214      | 59         | 10      | 100%    | Starlight                           | Sofia Camara              | Was I(t) Worth It?
+107   | 1200   | 1200      | 107        | 10      | 100%    | Best Friend                         | Sofia Camara              | Still Somewhere Here
+108   | 1200   | 1215      | 53         | 2       | 100%    | number one girl                     | ROSÉ                      | rosie
+109   | 1200   | 1216      | 51         | 2       | 100%    | six feet under                      | Kenzie Cait               | good luck, goodbye (over nostalgic edition)
+110   | 1200   | 1216      | 51         | 2       | 100%    | love me again                       | Kenzie Cait               | innocence
+111   | 1200   | 1200      | 111        | 0       | N/A     | Enough For You                      | Isabel Dumaa              | Just My Nature
+112   | 1200   | 1200      | 112        | 0       | 100%    | Different                           | Isabel Dumaa              | Just My Nature
+113   | 1200   | 1200      | 113        | 0       | N/A     | You You You                         | Maisie Peters             | Florescence
+114   | 1200   | 1200      | 114        | 0       | N/A     | Audrey Hepburn                      | Maisie Peters             | Florescence
+115   | 1200   | 1200      | 115        | 0       | 100%    | Mary Janes                          | Maisie Peters             | Florescence
+116   | 1200   | 1200      | 116        | 0       | 100%    | Psycho                              | Maisie Peters             | You Signed Up For This
+117   | 1200   | 1200      | 117        | 0       | 100%    | Outdoor Pool                        | Maisie Peters             | You Signed Up For This
+118   | 1200   | 1200      | 118        | 0       | N/A     | WHAT AM I DOING?                    | Elle Coves                | WHAT AM I DOING? - Single
+119   | 1200   | 1200      | 119        | 0       | N/A     | All Of America                      | Elle Coves                | No Good At Hanging Up
+120   | 1200   | 1200      | 120        | 0       | N/A     | Tightrope                           | Elle Coves                | No Good At Hanging Up
+121   | 1200   | 1200      | 121        | 0       | N/A     | Friend Of Mine                      | Elle Coves                | No Good At Hanging Up
+122   | 1200   | 1200      | 122        | 0       | N/A     | NIGHTS LIKE THESE                   | Benson Boone              | Walk Me Home...
+123   | 1200   | 1200      | 123        | 0       | N/A     | Young American Heart                | Benson Boone              | American Heart
+124   | 1200   | 1200      | 124        | 0       | N/A     | Take Me Home                        | Benson Boone              | American Heart
+125   | 1200   | 1200      | 125        | 0       | N/A     | Man In Me                           | Benson Boone              | American Heart
+126   | 1200   | 1200      | 126        | 0       | N/A     | Mr Electric Blue                    | Benson Boone              | American Heart
+127   | 1200   | 1200      | 127        | 0       | N/A     | Mystical Magical                    | Benson Boone              | American Heart
+128   | 1200   | 1200      | 128        | 0       | N/A     | Sorry I'm Here For Someone Else     | Benson Boone              | American Heart
+129   | 1200   | 1200      | 129        | 0       | N/A     | Reminds Me Of You                   | Benson Boone              | American Heart
+130   | 1200   | 1200      | 130        | 0       | N/A     | I Wanna Be The One You Call         | Benson Boone              | American Heart
+131   | 1200   | 1200      | 131        | 0       | N/A     | There She Goes                      | Benson Boone              | Fireworks & Rollerblades
+132   | 1200   | 1200      | 132        | 0       | N/A     | My Greatest Fear                    | Benson Boone              | Fireworks & Rollerblades
+133   | 1200   | 1200      | 133        | 0       | N/A     | Drunk In My Mind                    | Benson Boone              | Fireworks & Rollerblades
+134   | 1200   | 1200      | 134        | 0       | N/A     | Be Someone                          | Benson Boone              | Fireworks & Rollerblades
+135   | 1200   | 1200      | 135        | 0       | N/A     | Cry                                 | Benson Boone              | Fireworks & Rollerblades
+136   | 1200   | 1200      | 136        | 0       | N/A     | Beautiful Things                    | Benson Boone              | Fireworks & Rollerblades
+137   | 1200   | 1200      | 137        | 0       | N/A     | Hello Love                          | Benson Boone              | Fireworks & Rollerblades
+138   | 1200   | 1200      | 138        | 0       | N/A     | Intro                               | Benson Boone              | Fireworks & Rollerblades
+139   | 1200   | 1200      | 139        | 0       | N/A     | What Do You Want                    | Benson Boone              | Fireworks & Rollerblades
+140   | 1200   | 1200      | 140        | 0       | N/A     | Love Of Mine                        | Benson Boone              | Fireworks & Rollerblades
+141   | 1200   | 1200      | 141        | 0       | N/A     | Ghost Town                          | Benson Boone              | Fireworks & Rollerblades
+142   | 1200   | 1200      | 142        | 0       | N/A     | Pretty Slowly                       | Benson Boone              | Pretty Slowly - Single
+143   | 1200   | 1200      | 143        | 0       | N/A     | Nothing Lasts Forever               | Dylan                     | The Greatest Thing I’ll Never Learn
+144   | 1200   | 1200      | 144        | 0       | N/A     | Lovestruck                          | Dylan                     | The Greatest Thing I’ll Never Learn
+145   | 1200   | 1200      | 145        | 0       | N/A     | Treat You Bad                       | Dylan                     | The Greatest Thing I’ll Never Learn
+146   | 1200   | 1200      | 146        | 0       | N/A     | Blisters                            | Dylan                     | The Greatest Thing I’ll Never Learn
+147   | 1200   | 1200      | 147        | 0       | N/A     | Home Is Where The Heart Is          | Dylan                     | The Greatest Thing I’ll Never Learn
+148   | 1200   | 1200      | 148        | 0       | N/A     | jeans                               | Lexi Jayde                | LOVER GIRL
+149   | 1200   | 1200      | 149        | 0       | N/A     | delusional                          | Lexi Jayde                | LOVER GIRL
+150   | 1200   | 1200      | 150        | 0       | N/A     | i've missed you longer              | Lexi Jayde                | LOVER GIRL
+151   | 1200   | 1200      | 151        | 0       | N/A     | easier                              | Lexi Jayde                | LOVER GIRL
+152   | 1200   | 1200      | 152        | 0       | N/A     | sorry for you                       | Lexi Jayde                | LOVER GIRL
+153   | 1200   | 1200      | 153        | 0       | N/A     | when does it end?                   | Lexi Jayde                | LOVER GIRL
+154   | 1200   | 1200      | 154        | 0       | N/A     | i want him bad                      | Lexi Jayde                | LOVER GIRL
+155   | 1200   | 1200      | 155        | 0       | N/A     | cool girl, tough guy                | Lexi Jayde                | LOVER GIRL
+156   | 1200   | 1200      | 156        | 0       | N/A     | wanna be                            | Lexi Jayde                | LOVER GIRL
+157   | 1200   | 1200      | 157        | 0       | N/A     | newbury park                        | Lexi Jayde                | newbury park - Single
+158   | 1199   | 1200      | 100        | 10      | 100%    | Ugly and Rotten                     | Mckenna Grace             | Ugly and Rotten - Single
+159   | 1199   | 1216      | 51         | 2       | 83%     | You Can’t Save Me                   | Sofia Camara              | Hard To Love
+160   | 1199   | 1200      | 160        | 10      | 100%    | you broke me first                  | Tate McRae                | TOO YOUNG TO BE SAD
+161   | 1199   | 1215      | 53         | 2       | 50%     | I Tried                             | Sadie Jean                | Early Twenties Torture
+162   | 1199   | 1200      | 162        | 10      | 100%    | The Time Of My Life                 | Benson Boone              | The Time Of My Life - Single
+163   | 1198   | 1200      | 129        | 2       | 100%    | The Last Encounter                  | Sofia Camara              | Still Somewhere Here
+164   | 1198   | 1215      | 61         | 2       | N/A     | the worst part                      | Kenzie Cait               | innocence
+165   | 1197   | 1200      | 165        | 4       | 100%    | Fictional                           | Khloe Rose                | The In Between
+166   | 1197   | 1216      | 54         | 2       | 50%     | thank god                           | Kenzie Cait               | good luck, goodbye (over nostalgic edition)
+167   | 1197   | 1200      | 167        | 10      | 100%    | Hollow                              | Maisie Peters             | You Signed Up For This
+168   | 1197   | 1213      | 77         | 2       | N/A     | C'est La Vie                        | Isabel Dumaa              | Just My Nature
+169   | 1196   | 1200      | 169        | 10      | 100%    | Flatlining                          | Grace Gachot              | Flatlining - Single
+170   | 1190   | 1200      | 82         | 11      | 100%    | Anything But                        | Asha Banks                | Bottled Up
+171   | 1188   | 1200      | 171        | 9       | 100%    | Marble Arch                         | Erin LeCount              | I Am Digital, I Am Divine
+172   | 1188   | 1204      | 89         | 5       | 100%    | congratulations                     | Kenzie Cait               | good luck, goodbye (over nostalgic edition)
+173   | 1187   | 1200      | 132        | 9       | 50%     | Watch                               | Maisie Peters             | The Good Witch (Deluxe)
+174   | 1187   | 1200      | 174        | 9       | 100%    | Self Dysmorphia                     | Mckenna Grace             | Self Dysmorphia - Single
+175   | 1186   | 1200      | 175        | 9       | 100%    | Wildest Dreams                      | Taylor Swift              | 1989
+176   | 1186   | 1200      | 176        | 9       | 50%     | Feels Like                          | Gracie Abrams             | This Is What It Feels Like
+177   | 1186   | 1200      | 177        | 9       | 50%     | There It Goes                       | Maisie Peters             | The Good Witch (Deluxe)
+178   | 1186   | 1200      | 178        | 9       | N/A     | Mount Olympus                       | Grace Gachot              | Mount Olympus - Single
+179   | 1185   | 1200      | 143        | 11      | 50%     | Sleeping With The Lights On         | Jade LeMac                | It's Always At Night
+180   | 1185   | 1200      | 142        | 3       | 100%    | summer home                         | Kenzie Cait               | good luck, goodbye (over nostalgic edition)
+181   | 1184   | 1216      | 51         | 3       | N/A     | twenty & alone                      | Kenzie Cait               | good luck, goodbye (over nostalgic edition)
+182   | 1184   | 1200      | 182        | 1       | 100%    | Talking To Strangers                | Maisie Peters             | You Signed Up For This
+183   | 1184   | 1200      | 183        | 9       | 50%     | Just Keep Watching                  | Tate McRae                | Just Keep Watching - Single
+184   | 1184   | 1200      | 184        | 1       | 100%    | Shoulda Known Better                | Sofia Camara              | Was I(t) Worth It?
+185   | 1184   | 1200      | 142        | 7       | N/A     | Better                              | Gracie Abrams             | This Is What It Feels Like
+186   | 1184   | 1200      | 186        | 9       | 100%    | tear myself apart                   | Tate McRae                | all the things i never said
+187   | 1184   | 1200      | 187        | 1       | N/A     | Brooklyn                            | Maisie Peters             | You Signed Up For This
+188   | 1184   | 1200      | 188        | 9       | 100%    | My Regards                          | Maisie Peters             | Florescence
+189   | 1184   | 1200      | 189        | 1       | N/A     | Love Him I Don’t                    | Maisie Peters             | You Signed Up For This
+190   | 1184   | 1200      | 190        | 1       | N/A     | Body                                | Elle Coves                | No Good At Hanging Up
+191   | 1184   | 1200      | 191        | 1       | N/A     | Forever and a Day                   | Benson Boone              | Fireworks & Rollerblades
+192   | 1183   | 1200      | 192        | 9       | 100%    | run for the hills                   | Tate McRae                | THINK LATER
+193   | 1183   | 1200      | 193        | 1       | 0%      | Vampire Time                        | Maisie Peters             | Florescence
+194   | 1183   | 1200      | 194        | 1       | N/A     | Flat Earther                        | Maisie Peters             | Florescence
+195   | 1183   | 1216      | 45         | 3       | 100%    | rubberband                          | Tate McRae                | TOO YOUNG TO BE SAD
+196   | 1183   | 1200      | 196        | 1       | N/A     | Tough Act                           | Maisie Peters             | You Signed Up For This
+197   | 1183   | 1200      | 197        | 1       | 100%    | best behavior                       | Kenzie Cait               | sun kissed (deluxe)
+198   | 1182   | 1215      | 59         | 5       | 50%     | Anyways How You Been?               | Sofia Camara              | Was I(t) Worth It?
+199   | 1182   | 1215      | 63         | 3       | N/A     | innocence                           | Kenzie Cait               | innocence
+200   | 1182   | 1200      | 200        | 1       | 50%     | Nothing Like Being In Love          | Maisie Peters             | Florescence
+201   | 1182   | 1200      | 201        | 1       | N/A     | You Then Me Now                     | Maisie Peters             | Florescence
+202   | 1182   | 1200      | 202        | 1       | N/A     | Who You Are To Me Now               | Asha Banks                | Bottled Up
+203   | 1181   | 1200      | 203        | 9       | 0%      | The End                             | Isabel Dumaa              | Just My Nature
+204   | 1181   | 1200      | 204        | 1       | N/A     | Momma Song                          | Benson Boone              | American Heart
+205   | 1181   | 1200      | 205        | 9       | 100%    | Questions                           | Maisie Peters             | Florescence
+206   | 1181   | 1200      | 206        | 9       | N/A     | Favourite Ex                        | Maisie Peters             | Favourite Ex - Single
+207   | 1180   | 1200      | 207        | 9       | 100%    | Nineteen                            | Dylan                     | No Romeo
+208   | 1180   | 1200      | 208        | 9       | 100%    | R U O K?                            | Freya Ridings             | Mother Of Pearl
+209   | 1180   | 1200      | 209        | 9       | 75%     | r u ok                              | Tate McRae                | TOO YOUNG TO BE SAD
+210   | 1180   | 1200      | 210        | 9       | 100%    | Rose Colored Eyes                   | Emyrson Flora             | Aren't You Curious?
+211   | 1179   | 1200      | 211        | 9       | 100%    | we're not alike                     | Tate McRae                | THINK LATER
+212   | 1170   | 1200      | 212        | 2       | 50%     | If You Let Me (with Marcus Mumford) | Maisie Peters             | Florescence
+213   | 1169   | 1200      | 144        | 10      | N/A     | Built To Be Bad                     | Grace Gachot              | Built To Be Bad - Single
+214   | 1169   | 1200      | 214        | 10      | N/A     | White Keys                          | Dominic Fike              | White Keys - Single
+215   | 1169   | 1200      | 215        | 10      | N/A     | the grudge                          | Olivia Rodrigo            | GUTS
+216   | 1168   | 1200      | 216        | 10      | 100%    | NOBODY'S GIRL                       | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+217   | 1168   | 1200      | 217        | 10      | 100%    | Better Now                          | Post Malone               | beerbongs & bentleys
+218   | 1168   | 1200      | 218        | 2       | 100%    | wish i loved you in the 90s         | Tate McRae                | TOO YOUNG TO BE SAD
+219   | 1168   | 1200      | 133        | 4       | 100%    | no duh                              | Kenzie Cait               | good luck, goodbye (over nostalgic edition)
+220   | 1168   | 1200      | 220        | 10      | 100%    | Look At Me Now                      | Maisie Peters             | It's Your Bed Babe, It's Your Funeral
+221   | 1168   | 1200      | 221        | 2       | 100%    | Houses                              | Maisie Peters             | Florescence
+222   | 1167   | 1200      | 222        | 10      | 100%    | oh my                               | Alessi Rose               | for your validation
+223   | 1166   | 1200      | 223        | 10      | 100%    | Never Know Love                     | Bea                       | Never Know Love - Single
+224   | 1166   | 1200      | 224        | 10      | 100%    | No I'm not in love                  | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+225   | 1165   | 1200      | 225        | 2       | 100%    | good cry                            | Kenzie Cait               | sun kissed (deluxe)
+226   | 1163   | 1200      | 226        | 10      | 100%    | The Last One                        | Maisie Peters             | The Good Witch (Deluxe)
+227   | 1154   | 1200      | 227        | 3       | 100%    | bad ones                            | Tate McRae                | TOO YOUNG TO BE SAD
+228   | 1154   | 1200      | 228        | 3       | N/A     | The Other POV                       | Khloe Rose                | The In Between
+229   | 1154   | 1200      | 229        | 9       | 50%     | think later                         | Tate McRae                | THINK LATER
+230   | 1153   | 1200      | 230        | 9       | 50%     | Birthday                            | Maisie Peters             | Birthday - Single
+231   | 1153   | 1200      | 158        | 11      | 100%    | The Smallest Man Who Ever Lived     | Taylor Swift              | THE TORTURED POETS DEPARTMENT
+232   | 1153   | 1200      | 232        | 9       | 50%     | Beauty and a Beat (feat. Nicki M... | Justin Bieber             | Beauty and a Beat (feat. Nicki Minaj) - Single
+233   | 1153   | 1200      | 114        | 11      | 100%    | Best I'll Ever Sing                 | Maisie Peters             | Best I'll Ever Sing - Single
+234   | 1153   | 1200      | 234        | 3       | 100%    | sailor’s promise                    | Kenzie Cait               | sun kissed (deluxe)
+235   | 1153   | 1200      | 235        | 9       | 100%    | ALICE                               | Erin LeCount              | PAREIDOLIA
+236   | 1153   | 1200      | 236        | 9       | 50%     | Signs                               | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+237   | 1152   | 1200      | 237        | 11      | 100%    | I Am Digital, I Am Divine           | Erin LeCount              | I Am Digital, I Am Divine
+238   | 1152   | 1200      | 238        | 9       | 100%    | Bad                                 | Dylan                     | Bad - Single
+239   | 1152   | 1200      | 239        | 9       | N/A     | Dependent                           | Alessi Rose               | Dependent - Single
+240   | 1152   | 1200      | 240        | 9       | N/A     | to love and to lose                 | Dylan                     | to love and to lose - Single
+241   | 1150   | 1200      | 118        | 11      | 100%    | Better Alone                        | Benson Boone              | Walk Me Home...
+242   | 1149   | 1200      | 242        | 9       | 100%    | James Dean                          | Isabel Dumaa              | Reverie
+243   | 1142   | 1200      | 132        | 10      | 100%    | No Romeo                            | Dylan                     | No Romeo
+244   | 1139   | 1200      | 133        | 10      | 100%    | STORM II                            | GENER8ION, Yung Lean      | STORM - Single
+245   | 1138   | 1200      | 245        | 4       | 50%     | Starting Over                       | Khloe Rose                | The In Between
+246   | 1136   | 1200      | 246        | 12      | N/A     | I Love You, I'm Sorry               | Gracie Abrams             | The Secret of Us
+247   | 1135   | 1200      | 247        | 10      | 100%    | Cologne                             | Emyrson Flora             | Aren't You Curious?
+248   | 1134   | 1200      | 248        | 10      | N/A     | Sorry                               | Nothing But Thieves       | Sorry - Single
+249   | 1124   | 1200      | 201        | 11      | 100%    | Perfect Revenge                     | Dylan                     | Perfect Revenge - Single
+250   | 1123   | 1200      | 250        | 9       | N/A     | MACHINE GHOST                       | Erin LeCount              | PAREIDOLIA
+251   | 1122   | 1200      | 251        | 9       | N/A     | AMERICAN DREAM                      | Erin LeCount              | PAREIDOLIA
+252   | 1121   | 1200      | 138        | 11      | N/A     | Personal Best                       | Maisie Peters             | It's Your Bed Babe, It's Your Funeral
+253   | 1119   | 1200      | 253        | 11      | 100%    | Say My Name In Your Sleep           | Maisie Peters             | Florescence
+254   | 1119   | 1200      | 254        | 9       | 50%     | Sweet Fruit                         | Erin LeCount              | I Am Digital, I Am Divine
+255   | 1116   | 1200      | 255        | 10      | 100%    | Ain't in LA                         | ADÉLA                     | PRIMA
+256   | 1107   | 1200      | 256        | 10      | N/A     | Kingmaker (with Julia Michaels)     | Maisie Peters             | Florescence
+257   | 1093   | 1200      | 257        | 9       | 100%    | HAPPY                               | NF                        | HAPPY - Single
+258   | 1092   | 1200      | 258        | 9       | N/A     | THE CINEMA                          | Erin LeCount              | PAREIDOLIA
+259   | 1092   | 1200      | 185        | 11      | N/A     | Godspeed                            | Erin LeCount              | I Am Digital, I Am Divine
+260   | 1080   | 1200      | 260        | 10      | 0%      | Liar Liar                           | Dylan, Bastille           | Liar Liar - Single
+261   | 1075   | 1200      | 261        | 10      | 50%     | Friend                              | Benson Boone              | Fireworks & Rollerblades

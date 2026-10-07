@@ -130,13 +130,21 @@
             <button class="nav-item" id="nav-albums" onclick="switchView('albums')">💿 Manage Albums</button>
             <button class="nav-item" id="nav-genres" onclick="switchView('genres')">🏷️ Manage Genres</button>
         </div>
-        <div class="sidebar-footer">
-            <button id="sync-btn" class="btn-outline" onclick="syncDatabase()" style="color: var(--spotify-green); border-color: var(--spotify-green); display: flex; justify-content: center; align-items: center;">
-                <div class="spinner" id="sync-spinner"></div>
-                <span id="sync-text">Sync to GitHub</span>
-            </button>
-            <a href="/dev/logout" class="btn-outline btn-danger">Lock Database</a>
-        </div>
+        <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 12px;">
+        <!-- Export Button -->
+        <button id="export-btn" class="btn-outline" onclick="exportData()" style="color: #ffbf7f; border-color: #ffbf7f; display: flex; justify-content: center; align-items: center;">
+            <span id="export-text">Export to TXT</span>
+        </button>
+
+        <!-- Sync Button -->
+        <button id="sync-btn" class="btn-outline" onclick="syncDatabase()" style="color: var(--spotify-green); border-color: var(--spotify-green); display: flex; justify-content: center; align-items: center;">
+            <div class="spinner" id="sync-spinner"></div>
+            <span id="sync-text">Sync to GitHub</span>
+        </button>
+
+        <!-- Lock Database Button -->
+        <a href="/dev/logout" class="btn-outline btn-danger" style="text-align: center;">Lock Database</a>
+    </div>
     </div>
 
     <!-- MAIN CONTENT -->
@@ -754,6 +762,21 @@
                 btn.disabled = false;
                 spinner.style.display = 'none';
                 text.innerText = 'Sync to GitHub';
+            }
+        }
+
+        async function exportData() {
+            showToast("Generating snapshot...");
+            try {
+                const response = await fetch('/api/dev/export', { method: 'POST' });
+                const result = await response.json();
+                if (response.ok) {
+                    showToast(result.message);
+                } else {
+                    showToast(result.message, true);
+                }
+            } catch (err) {
+                showToast("Error generating export.", true);
             }
         }
     </script>

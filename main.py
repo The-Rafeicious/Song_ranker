@@ -102,6 +102,7 @@ def init_db():
             highest_elo REAL DEFAULT 1200,
             highest_rank INTEGER DEFAULT 9999,
             track_number INTEGER,
+            tournament_wins INTEGER DEFAULT 0,
             FOREIGN KEY(album_id) REFERENCES albums(id)
         );
 
@@ -132,8 +133,19 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             winner_id INTEGER,
             loser_id INTEGER,
+            is_tournament_match BOOLEAN DEFAULT 0,
             FOREIGN KEY(winner_id) REFERENCES songs(id),
             FOREIGN KEY(loser_id) REFERENCES songs(id)
+        );
+        
+        CREATE TABLE IF NOT EXISTS tournaments (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            size INTEGER NOT NULL,
+            scope_type TEXT NOT NULL,
+            scope_id INTEGER,
+            champion_id INTEGER,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(champion_id) REFERENCES songs(id)
         );
 
         CREATE TABLE IF NOT EXISTS global_stats (
@@ -147,20 +159,56 @@ def init_db():
 
 
 def export_rankings():
-    """Exports the current Elo leaderboard to a text file."""
+    """Exports a comprehensive database snapshot to a text file."""
     conn = get_db_connection()
     all_songs = conn.execute('''
                              SELECT s.title,
                                     s.elo_score,
+                                    s.highest_elo,
+                                    s.highest_rank,
                                     s.matches_played,
+                                    al.title                   as album,
+                                    COALESCE(ts.attempts, 0)   as t_attempts,
+                                    COALESCE(ts.correct, 0)    as t_correct,
                                     GROUP_CONCAT(a.name, ', ') as artist
                              FROM songs s
+                                      LEFT JOIN albums al ON s.album_id = al.id
                                       LEFT JOIN song_artists sa ON s.id = sa.song_id
                                       LEFT JOIN artists a ON sa.artist_id = a.id
+                                      LEFT JOIN trivia_stats ts ON s.id = ts.song_id
                              GROUP BY s.id
                              ORDER BY s.elo_score DESC
                              ''').fetchall()
     conn.close()
+
+    with open("database_snapshot.txt", "w", encoding="utf-8") as f:
+        f.write("--- SONG RANKER DATABASE SNAPSHOT ---\n\n")
+
+        # Define table headers and column widths
+        header = f"{'Rank':<5} | {'Elo':<6} | {'Peak Elo':<9} | {'Peak Rank':<10} | {'Matches':<7} | {'Recog %':<7} | {'Track Title':<35} | {'Artist':<25} | {'Album'}\n"
+        f.write(header)
+        f.write("-" * 140 + "\n")
+
+        for rank, song in enumerate(all_songs, 1):
+            elo = int(song['elo_score'])
+            peak_elo = int(song['highest_elo']) if song['highest_elo'] else elo
+            peak_rank = song['highest_rank'] if song['highest_rank'] and song['highest_rank'] != 9999 else rank
+
+            # Calculate Recognizability %
+            attempts = song['t_attempts']
+            if attempts > 0:
+                recog = f"{int((song['t_correct'] / (attempts * 2)) * 100)}%"
+            else:
+                recog = "N/A"
+
+            # Truncate long text strings to keep the table cleanly aligned
+            title = (song['title'][:32] + '...') if len(song['title']) > 35 else song['title']
+            artist = (song['artist'][:22] + '...') if song['artist'] and len(song['artist']) > 25 else (
+                        song['artist'] or 'Unknown')
+            album = song['album'] or 'Single / Unknown'
+
+            f.write(
+                f"{rank:<5} | {elo:<6} | {peak_elo:<9} | {peak_rank:<10} | {song['matches_played']:<7} | {recog:<7} | {title:<35} | {artist:<25} | {album}\n")
 
     with open("current_elo_rankings.txt", "w", encoding="utf-8") as f:
         f.write("--- CURRENT ELO RANKINGS ---\n\n")
@@ -405,9 +453,6 @@ def vote():
     conn.commit()
     conn.close()
 
-    if total_votes % 10 == 0:
-        export_rankings()
-
     session.pop('song1_id', None)
     session.pop('song2_id', None)
     return redirect(url_for('index'))
@@ -550,6 +595,186 @@ def api_trivia_guess():
         "new_high_score": new_high_score,
         "high_score": high_score
     })
+
+
+@app.route('/tournament')
+def tournament():
+    # Pass lists of artists and albums to the frontend so the user can select a specific scope
+    conn = get_db_connection()
+    artists = [dict(row) for row in
+               conn.execute('SELECT id, name FROM artists ORDER BY name COLLATE NOCASE').fetchall()]
+    albums = [dict(row) for row in conn.execute(
+        'SELECT id, title FROM albums WHERE title != "Unknown Album" AND title NOT LIKE "% - Single" ORDER BY title COLLATE NOCASE').fetchall()]
+    conn.close()
+
+    return render_template('tournament.html', artists=artists, albums=albums)
+
+
+@app.route('/api/generate_bracket')
+def api_generate_bracket():
+    size = request.args.get('size', 8, type=int)
+    scope = request.args.get('scope', 'global')
+    scope_id = request.args.get('scope_id', type=int)
+
+    conn = get_db_connection()
+
+    # Select random tracks based on the chosen scope to ensure tournaments stay fresh
+    if scope == 'artist' and scope_id:
+        query = '''
+                SELECT s.id, \
+                       s.title, \
+                       s.audio_url, \
+                       s.elo_score, \
+                       al.cover_url,
+                       (SELECT GROUP_CONCAT(a2.name, ', ') \
+                        FROM song_artists sa2 \
+                                 JOIN artists a2 ON sa2.artist_id = a2.id \
+                        WHERE sa2.song_id = s.id) as artist
+                FROM songs s
+                         JOIN song_artists sa ON s.id = sa.song_id
+                         LEFT JOIN albums al ON s.album_id = al.id
+                WHERE sa.artist_id = ?
+                ORDER BY RANDOM() \
+                LIMIT ? \
+                '''
+        params = (scope_id, size)
+    elif scope == 'album' and scope_id:
+        query = '''
+                SELECT s.id, \
+                       s.title, \
+                       s.audio_url, \
+                       s.elo_score, \
+                       al.cover_url,
+                       (SELECT GROUP_CONCAT(a2.name, ', ') \
+                        FROM song_artists sa2 \
+                                 JOIN artists a2 ON sa2.artist_id = a2.id \
+                        WHERE sa2.song_id = s.id) as artist
+                FROM songs s
+                         LEFT JOIN albums al ON s.album_id = al.id
+                WHERE s.album_id = ?
+                ORDER BY RANDOM() \
+                LIMIT ? \
+                '''
+        params = (scope_id, size)
+    else:
+        # Global Scope
+        query = '''
+                SELECT s.id, \
+                       s.title, \
+                       s.audio_url, \
+                       s.elo_score, \
+                       al.cover_url,
+                       (SELECT GROUP_CONCAT(a2.name, ', ') \
+                        FROM song_artists sa2 \
+                                 JOIN artists a2 ON sa2.artist_id = a2.id \
+                        WHERE sa2.song_id = s.id) as artist
+                FROM songs s
+                         LEFT JOIN albums al ON s.album_id = al.id
+                ORDER BY RANDOM() \
+                LIMIT ? \
+                '''
+        params = (size,)
+
+    songs = [dict(row) for row in conn.execute(query, params).fetchall()]
+    conn.close()
+
+    # Ensure we actually found enough tracks to fill the requested bracket size
+    if len(songs) < size:
+        return jsonify({'error': f'Not enough tracks found. Needed {size}, found {len(songs)}.'}), 400
+
+    # Sort the selected tracks by their Elo descending.
+    # This acts as our "Seeding" so the frontend can properly match the highest rated against the lowest rated.
+    songs.sort(key=lambda x: x['elo_score'], reverse=True)
+
+    return jsonify({'tracks': songs})
+
+
+@app.route('/api/tournament_vote', methods=['POST'])
+def api_tournament_vote():
+    data = request.json
+    winner_id = data.get('winner_id')
+    loser_id = data.get('loser_id')
+
+    conn = get_db_connection()
+    winner = conn.execute('SELECT elo_score FROM songs WHERE id = ?', (winner_id,)).fetchone()
+    loser = conn.execute('SELECT elo_score FROM songs WHERE id = ?', (loser_id,)).fetchone()
+
+    if not winner or not loser:
+        return jsonify({'error': 'Invalid song ID'}), 400
+
+    win_elo = winner['elo_score']
+    lose_elo = loser['elo_score']
+
+    # Standard Elo Calculation (K=32)
+    expected_win = 1 / (1 + 10 ** ((lose_elo - win_elo) / 400))
+    expected_lose = 1 / (1 + 10 ** ((win_elo - lose_elo) / 400))
+
+    new_win_elo = win_elo + 32 * (1 - expected_win)
+    new_lose_elo = lose_elo + 32 * (0 - expected_lose)
+
+    # Update Elos
+    conn.execute('''
+                 UPDATE songs
+                 SET elo_score      = ?,
+                     matches_played = matches_played + 1,
+                     highest_elo    = MAX(highest_elo, ?)
+                 WHERE id = ?
+                 ''', (new_win_elo, new_win_elo, winner_id))
+
+    conn.execute('''
+                 UPDATE songs
+                 SET elo_score      = ?,
+                     matches_played = matches_played + 1
+                 WHERE id = ?
+                 ''', (new_lose_elo, loser_id))
+
+    # Log the match in history, but flag it as a tournament matchup
+    conn.execute('''
+                 INSERT INTO history (winner_id, loser_id, is_tournament_match)
+                 VALUES (?, ?, 1)
+                 ''', (winner_id, loser_id))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({
+        'success': True,
+        'winner_change': round(new_win_elo - win_elo),
+        'loser_change': round(lose_elo - new_lose_elo)
+    })
+
+
+@app.route('/api/tournament_complete', methods=['POST'])
+def api_tournament_complete():
+    data = request.json
+    champion_id = data.get('champion_id')
+    size = data.get('size', 8)
+    scope = data.get('scope', 'global')
+    scope_id = data.get('scope_id')
+
+    # Convert empty scope_ids to None for SQL NULL insertion
+    if scope_id == "":
+        scope_id = None
+
+    conn = get_db_connection()
+
+    # Save the tournament record
+    conn.execute('''
+                 INSERT INTO tournaments (size, scope_type, scope_id, champion_id)
+                 VALUES (?, ?, ?, ?)
+                 ''', (size, scope, scope_id, champion_id))
+
+    # Add a trophy to the specific song
+    conn.execute('''
+                 UPDATE songs
+                 SET tournament_wins = tournament_wins + 1
+                 WHERE id = ?
+                 ''', (champion_id,))
+
+    conn.commit()
+    conn.close()
+
+    return jsonify({'success': True})
 
 
 # --- PUBLIC PAGES & LEADERBOARDS ---
@@ -1411,6 +1636,15 @@ def api_sync():
         return jsonify({"status": "success", "message": "Database synced to GitHub!"})
     return jsonify({"status": "error", "message": "Failed to sync to GitHub."}), 500
 
+@app.route('/api/dev/export', methods=['POST'])
+@admin_required
+def api_export():
+    """Endpoint to manually trigger a database text export."""
+    try:
+        export_rankings()
+        return jsonify({"status": "success", "message": "Database snapshot saved to txt file!"})
+    except Exception as e:
+        return jsonify({"status": "error", "message": f"Export failed: {str(e)}"}), 500
 
 # --- ENTRY POINT ---
 
