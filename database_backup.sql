@@ -28,8 +28,6 @@ INSERT INTO "albums" VALUES(20,'Was I(t) Worth It?','https://is1-ssl.mzstatic.co
 INSERT INTO "albums" VALUES(21,'Promising Young Woman','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/73/59/e3/7359e341-3cbe-6822-7260-50afccd5d218/196874484593.jpg/300x300bb.jpg',NULL);
 INSERT INTO "albums" VALUES(22,'The In Between','https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/21/d3/ca/21d3ca82-5440-7b02-212c-38cbc076006d/196871290821.jpg/300x300bb.jpg',NULL);
 INSERT INTO "albums" VALUES(23,'PAREIDOLIA','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/65/2a/a2/652aa2d9-7b79-e631-7575-d8c405aebb5a/5026854365138.jpg/300x300bb.jpg',NULL);
-INSERT INTO "albums" VALUES(24,'PAREIDOLIA - EP','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/6b/fe/64/6bfe6448-5c80-02e8-b6e5-1593fd196e2e/5026854619446.jpg/300x300bb.jpg',NULL);
-INSERT INTO "albums" VALUES(25,'MACHINE GHOST - Single','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/72/b2/37/72b237a9-224d-8572-8d86-0a1573464fb4/5021732961860.jpg/300x300bb.jpg',NULL);
 INSERT INTO "albums" VALUES(26,'Midnight Sun','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/fb/1d/2d/fb1d2d1c-0f79-53ad-ab9b-ac20918b5856/196873177199.jpg/300x300bb.jpg',NULL);
 INSERT INTO "albums" VALUES(27,'This Is What It Feels Like','https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/8d/1e/c1/8d1ec102-0521-d258-9ad0-7a1a7d95c80f/21UM1IM35894.rgb.jpg/300x300bb.jpg',NULL);
 INSERT INTO "albums" VALUES(28,'minor','https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/a2/54/c0/a254c01f-4e3c-0612-9e33-5d63d0128d70/20UMGIM54731.rgb.jpg/300x300bb.jpg',NULL);
@@ -63,10 +61,13 @@ INSERT INTO "albums" VALUES(60,'Night at the Opera - EP','https://is1-ssl.mzstat
 INSERT INTO "albums" VALUES(61,'Aren''t You Curious?','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/af/60/e4/af60e40f-30c4-59d9-3654-77ab52df1923/3587043.jpg/300x300bb.jpg',NULL);
 INSERT INTO "albums" VALUES(64,'Ballet Pumps - Single','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/ea/c1/04/eac10454-9d56-e8a6-77db-61d079ebbd0e/1200214836139.jpg/300x300bb.jpg',NULL);
 INSERT INTO "albums" VALUES(65,'Dover Beach - Single','https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/13/35/2d/13352de1-efdb-00bb-6e40-233297455a1c/21UMGIM23904.rgb.jpg/300x300bb.jpg',NULL);
-INSERT INTO "albums" VALUES(66,'Wildest Dreams - Single','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/81/3a/fa/813afa2e-a69c-8a18-48cd-7fae5743ab8f/763532206356_Cover.jpg/3https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/300x300bb.jpg00x300bb.jpg',NULL);
 INSERT INTO "albums" VALUES(67,'1989','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/89/4a/4a/894a4ab9-b0b0-9ea5-ca41-8da0b9b79453/14UMDIM03405.rgb.jpg/300x300bb.jpg',NULL);
 INSERT INTO "albums" VALUES(68,'THE TORTURED POETS DEPARTMENT','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/a8/45/fd/a845fd82-d5c1-bffe-806a-ed0700b1c589/24UMGIM29563.rgb.jpg/300x300bb.jpg',NULL);
 INSERT INTO "albums" VALUES(69,'Stay - Single','https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/1b/7e/4b/1b7e4b32-0e97-4ae7-a26d-fb7a8d9d865d/19UM1IM02330.rgb.jpg/300x300bb.jpg',NULL);
+INSERT INTO "albums" VALUES(72,'I Am Digital, I Am Divine','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/0f/cf/13/0fcf1332-bb4e-fc80-ffd6-f5edd2d6d304/5021732733283.jpg/300x300bb.jpg',NULL);
+INSERT INTO "albums" VALUES(73,'Mother Of Pearl','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/62/a1/5e/62a15e84-279a-59fe-2128-d702adf7772a/4099964220131.jpg/300x300bb.jpg',NULL);
+INSERT INTO "albums" VALUES(74,'Arcane League of Legends: Season 2 (Soundtrack from the Animated Series)','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/3a/dc/f13adc0b-2cf5-51ef-cee5-12efc83e6604/00823375145394_Cover.jpg/300x300bb.jpg',NULL);
+INSERT INTO "albums" VALUES(75,'Flatlining - Single','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/86/c6/b7/86c6b77e-d5a6-717a-6a69-8de27eaeeb55/5037300551173.jpg/300x300bb.jpg',NULL);
 CREATE TABLE artists
                        (
                            id        INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -119,6 +120,7 @@ INSERT INTO "artists" VALUES(43,'Erin LeCount','https://is1-ssl.mzstatic.com/ima
 INSERT INTO "artists" VALUES(44,'Zara Larsson','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/fb/1d/2d/fb1d2d1c-0f79-53ad-ab9b-ac20918b5856/196873177199.jpg/300x300bb.jpg');
 INSERT INTO "artists" VALUES(45,'ROSÉ','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/2d/14/66/2d14661b-345b-d0f3-4e86-56ef626e68aa/075679629203.jpg/300x300bb.jpg');
 INSERT INTO "artists" VALUES(46,'Sadie Jean','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/c5/29/c0/c529c07d-75a5-0607-2bfa-28f71f4ef48b/1963623863133_cover.jpg/300x300bb.jpg');
+INSERT INTO "artists" VALUES(47,'League of Legends Music','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f1/3a/dc/f13adc0b-2cf5-51ef-cee5-12efc83e6604/00823375145394_Cover.jpg/300x300bb.jpg');
 CREATE TABLE genres
                        (
                            id   INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -854,7 +856,6 @@ INSERT INTO "song_artists" VALUES(3,3);
 INSERT INTO "song_artists" VALUES(4,4);
 INSERT INTO "song_artists" VALUES(5,1);
 INSERT INTO "song_artists" VALUES(6,5);
-INSERT INTO "song_artists" VALUES(9,7);
 INSERT INTO "song_artists" VALUES(10,5);
 INSERT INTO "song_artists" VALUES(11,8);
 INSERT INTO "song_artists" VALUES(16,11);
@@ -864,7 +865,6 @@ INSERT INTO "song_artists" VALUES(19,12);
 INSERT INTO "song_artists" VALUES(20,13);
 INSERT INTO "song_artists" VALUES(20,14);
 INSERT INTO "song_artists" VALUES(21,15);
-INSERT INTO "song_artists" VALUES(22,4);
 INSERT INTO "song_artists" VALUES(23,16);
 INSERT INTO "song_artists" VALUES(23,17);
 INSERT INTO "song_artists" VALUES(25,19);
@@ -897,8 +897,6 @@ INSERT INTO "song_artists" VALUES(65,31);
 INSERT INTO "song_artists" VALUES(66,3);
 INSERT INTO "song_artists" VALUES(67,4);
 INSERT INTO "song_artists" VALUES(68,22);
-INSERT INTO "song_artists" VALUES(69,32);
-INSERT INTO "song_artists" VALUES(69,7);
 INSERT INTO "song_artists" VALUES(70,30);
 INSERT INTO "song_artists" VALUES(71,33);
 INSERT INTO "song_artists" VALUES(72,34);
@@ -944,18 +942,7 @@ INSERT INTO "song_artists" VALUES(118,1);
 INSERT INTO "song_artists" VALUES(119,40);
 INSERT INTO "song_artists" VALUES(122,24);
 INSERT INTO "song_artists" VALUES(123,24);
-INSERT INTO "song_artists" VALUES(126,43);
-INSERT INTO "song_artists" VALUES(127,43);
 INSERT INTO "song_artists" VALUES(128,43);
-INSERT INTO "song_artists" VALUES(129,43);
-INSERT INTO "song_artists" VALUES(130,43);
-INSERT INTO "song_artists" VALUES(131,43);
-INSERT INTO "song_artists" VALUES(132,43);
-INSERT INTO "song_artists" VALUES(133,43);
-INSERT INTO "song_artists" VALUES(134,43);
-INSERT INTO "song_artists" VALUES(135,43);
-INSERT INTO "song_artists" VALUES(136,43);
-INSERT INTO "song_artists" VALUES(137,43);
 INSERT INTO "song_artists" VALUES(138,44);
 INSERT INTO "song_artists" VALUES(139,30);
 INSERT INTO "song_artists" VALUES(140,30);
@@ -1040,6 +1027,22 @@ INSERT INTO "song_artists" VALUES(56,27);
 INSERT INTO "song_artists" VALUES(61,28);
 INSERT INTO "song_artists" VALUES(75,28);
 INSERT INTO "song_artists" VALUES(64,30);
+INSERT INTO "song_artists" VALUES(129,43);
+INSERT INTO "song_artists" VALUES(130,43);
+INSERT INTO "song_artists" VALUES(137,43);
+INSERT INTO "song_artists" VALUES(127,43);
+INSERT INTO "song_artists" VALUES(126,43);
+INSERT INTO "song_artists" VALUES(131,43);
+INSERT INTO "song_artists" VALUES(133,43);
+INSERT INTO "song_artists" VALUES(135,43);
+INSERT INTO "song_artists" VALUES(132,43);
+INSERT INTO "song_artists" VALUES(134,43);
+INSERT INTO "song_artists" VALUES(136,43);
+INSERT INTO "song_artists" VALUES(9,7);
+INSERT INTO "song_artists" VALUES(69,7);
+INSERT INTO "song_artists" VALUES(69,32);
+INSERT INTO "song_artists" VALUES(69,47);
+INSERT INTO "song_artists" VALUES(22,4);
 CREATE TABLE song_genres
                        (
                            song_id  INTEGER,
@@ -1071,7 +1074,7 @@ INSERT INTO "songs" VALUES(5,'Red Bottoms',1,'https://audio-ssl.itunes.apple.com
 INSERT INTO "songs" VALUES(6,'bubblebath',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/22/d4/d3/22d4d370-7fdf-cd16-9127-d62a085990af/mzaf_15771153292355716160.plus.aac.p.m4a',1.322084532691168078e+03,10,1.322084532691168078e+03,3,NULL);
 INSERT INTO "songs" VALUES(7,'RUMOURS',35,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/00/3e/f7/003ef7fc-12ec-7f9f-6e99-8e2b4d76df75/mzaf_13058887852492106177.plus.aac.p.m4a',1.274764207596372672e+03,9,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(8,'Peace',34,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/9a/c5/b3/9ac5b3ef-e63a-52af-3b96-9ae2e5e6b907/mzaf_9585219019451590211.plus.aac.p.m4a',1.210613831736015755e+03,11,1.227895723889201462e+03,40,NULL);
-INSERT INTO "songs" VALUES(9,'R U O K?',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/75/46/19/754619ee-7ba9-934b-7adf-388a06599b74/mzaf_14901412706683925792.plus.aac.p.m4a',1.18045536429072331e+03,9,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(9,'R U O K?',73,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/75/46/19/754619ee-7ba9-934b-7adf-388a06599b74/mzaf_14901412706683925792.plus.aac.p.m4a',1.18045536429072331e+03,9,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(10,'such a bitch!',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d3/04/52/d304524e-d6f0-f5dc-11d8-a270a27eb848/mzaf_935529863737176138.plus.aac.p.m4a',1.220757595388777873e+03,9,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(11,'Sleeping With The Lights On',6,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/20/47/2c/20472c9b-fbe9-2630-aaef-53f567ac63df/mzaf_533357270980800291.plus.aac.p.m4a',1.167718267614314754e+03,10,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(12,'Ballet Pumps',64,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ef/72/4d/ef724dfa-7e58-bb38-3753-b56ea6a2aebf/mzaf_18006332078707529180.plus.aac.p.m4a',1.243006192740076812e+03,11,1.243006192740076812e+03,33,NULL);
@@ -1083,7 +1086,7 @@ INSERT INTO "songs" VALUES(18,'Worst of You',3,'https://audio-ssl.itunes.apple.c
 INSERT INTO "songs" VALUES(19,'Old Fashioned',7,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a6/18/f5/a618f528-206e-dee9-1323-ead1cdfbed17/mzaf_15590249245658821732.plus.aac.p.m4a',1.215370915349834831e+03,9,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(20,'STORM II',8,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ba/ac/c9/baacc93a-973c-5431-e7bc-b93e35462684/mzaf_8102119711821122159.plus.aac.p.m4a',1.139692916840751196e+03,10,1200.0,133,NULL);
 INSERT INTO "songs" VALUES(21,'Hallucinating',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/8a/4a/8e/8a4a8e3b-2b4d-7bb8-6ec9-84c65ad40a2b/mzaf_9102781767778661369.plus.aac.p.m4a',1.214216413328219005e+03,9,1200.0,9999,NULL);
-INSERT INTO "songs" VALUES(22,'Flatlining',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ba/24/9b/ba249b30-c10c-6009-f0bd-a8546767740d/mzaf_14167633923881108382.plus.aac.p.m4a',1.19675742388060462e+03,10,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(22,'Flatlining',75,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ba/24/9b/ba249b30-c10c-6009-f0bd-a8546767740d/mzaf_14167633923881108382.plus.aac.p.m4a',1.19675742388060462e+03,10,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(23,'Beauty And A Beat',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ea/b4/da/eab4da01-c422-c640-1ac3-97d746c5871c/mzaf_12363686639555987211.plus.aac.p.m4a',1.153524057149516466e+03,9,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(24,'505',42,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d1/0d/ab/d10dabc8-cceb-e718-401f-01516b009460/mzaf_13845311225859403599.plus.aac.p.m4a',1.201881866180556245e+03,10,1.201881866180556245e+03,73,NULL);
 INSERT INTO "songs" VALUES(25,'Sorry',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/fb/9c/84/fb9c84cf-9e66-bcaa-83ec-3f43197d9afb/mzaf_11486308043736920298.plus.aac.p.m4a',1.134162377595311682e+03,10,1200.0,9999,NULL);
@@ -1129,7 +1132,7 @@ INSERT INTO "songs" VALUES(65,'HAPPY',3,'https://audio-ssl.itunes.apple.com/itun
 INSERT INTO "songs" VALUES(66,'Self Dysmorphia',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/28/d9/7f/28d97fc8-62c8-95c2-ee8a-2dfdc389acfc/mzaf_17691189172235525641.plus.aac.p.m4a',1.203203821604033692e+03,8,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(67,'Built To Be Bad',13,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d2/03/19/d20319c3-6040-948d-7a98-8c2090038665/mzaf_8092215444478295798.plus.aac.p.m4a',1.169656079872371719e+03,10,1200.0,144,NULL);
 INSERT INTO "songs" VALUES(68,'Friend',12,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/99/e9/2c/99e92c6a-ad63-8a5f-8297-bd08d01173f0/mzaf_5095105774310159634.plus.aac.p.m4a',1.090134364787268851e+03,9,1200.0,9999,NULL);
-INSERT INTO "songs" VALUES(69,'I Can''t Hear It Now - From The Series "Arcane League of Legends"',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0f/a0/73/0fa073f2-02aa-49c1-6bff-663352b245f6/mzaf_11055546624355752035.plus.aac.p.m4a',1.21668555863784718e+03,9,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(69,'I Can''t Hear It Now (from the series Arcane League of Legends)',74,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/0f/a0/73/0fa073f2-02aa-49c1-6bff-663352b245f6/mzaf_11055546624355752035.plus.aac.p.m4a',1.21668555863784718e+03,9,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(70,'I Love You, I''m Sorry',14,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b0/0a/62/b00a6291-5b46-dc48-db5e-e5146befeaa7/mzaf_2948722682094881951.plus.aac.p.m4a',1.150268778227992243e+03,11,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(71,'In The Kitchen',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/df/b2/bc/dfb2bc11-c388-18c9-6f35-f54a6e294fee/mzaf_3372525551418196959.plus.aac.p.m4a',1.203063140591121964e+03,10,1.203063140591121964e+03,86,NULL);
 INSERT INTO "songs" VALUES(72,'the grudge',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f7/74/66/f774669e-ebd7-2665-139b-d32c4a9c7daa/mzaf_772105004155624726.plus.aac.p.m4a',1.150836690396034327e+03,9,1200.0,9999,NULL);
@@ -1185,18 +1188,18 @@ INSERT INTO "songs" VALUES(122,'Like You Do',22,'https://audio-ssl.itunes.apple.
 INSERT INTO "songs" VALUES(123,'Whatever Happens First',22,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/1c/b6/a1/1cb6a1b6-e608-eae0-df32-7acf03a93b67/mzaf_2614965674017887946.plus.aac.p.m4a',1.237126224086833645e+03,10,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(124,'Rose Colored Eyes',61,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f7/f9/1a/f7f91a56-7c65-a53e-f989-cff605b9c442/mzaf_763935594816695503.plus.aac.p.m4a',1.180165198444072076e+03,9,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(125,'Cologne',61,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/a4/02/d4/a402d438-4939-e63d-35d9-47b3455bfcb4/mzaf_13391468548708315050.plus.aac.p.m4a',1.135388780100936402e+03,10,1200.0,9999,NULL);
-INSERT INTO "songs" VALUES(126,'808 HYMN',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8d/67/2b/8d672b14-e4ca-b0f4-699e-a46ac91f9eed/mzaf_6126628658475666826.plus.aac.p.m4a',1.286304462659965565e+03,8,1200.0,9999,NULL);
-INSERT INTO "songs" VALUES(127,'I BELIEVE',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d9/b9/0e/d9b90ea1-257a-1836-9cb4-82b55aea13da/mzaf_12266934759920228639.plus.aac.p.m4a',1.218436698403585979e+03,11,1.218436698403585979e+03,47,NULL);
+INSERT INTO "songs" VALUES(126,'808 HYMN',23,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8d/67/2b/8d672b14-e4ca-b0f4-699e-a46ac91f9eed/mzaf_6126628658475666826.plus.aac.p.m4a',1.286304462659965565e+03,8,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(127,'I BELIEVE',23,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/d9/b9/0e/d9b90ea1-257a-1836-9cb4-82b55aea13da/mzaf_12266934759920228639.plus.aac.p.m4a',1.218436698403585979e+03,11,1.218436698403585979e+03,47,NULL);
 INSERT INTO "songs" VALUES(128,'DON’T YOU SEE ME TRYING?',23,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/be/dd/35/bedd357f-7f1b-df0f-ec98-413f538efce5/mzaf_11939800261311862402.plus.aac.p.m4a',1.217643181160216046e+03,11,1.217643181160216046e+03,49,NULL);
-INSERT INTO "songs" VALUES(129,'AMERICAN DREAM',24,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/90/6b/73/906b7351-0129-02bf-19c1-434ba755d9f4/mzaf_3901552446296707843.plus.aac.p.m4a',1.122145876598883887e+03,9,1200.0,9999,NULL);
-INSERT INTO "songs" VALUES(130,'ALICE',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/06/1c/08/061c085b-c233-0a0b-0e86-21c664472b7a/mzaf_9535293181943938239.plus.aac.p.m4a',1.153307587653866449e+03,9,1200.0,9999,NULL);
-INSERT INTO "songs" VALUES(131,'Marble Arch',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/27/ea/f7/27eaf76b-5c1d-ff26-8f50-bad45aeeb84a/mzaf_11257365679245299458.plus.aac.p.m4a',1.188821187377217939e+03,9,1200.0,9999,NULL);
-INSERT INTO "songs" VALUES(132,'Godspeed',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/12/3d/b3/123db3ee-8e68-8130-9c59-d29191c4930c/mzaf_7747332508088805320.plus.aac.p.m4a',1.092317554228737663e+03,11,1200.0,185,NULL);
-INSERT INTO "songs" VALUES(133,'Silver Spoon',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/28/82/c9/2882c921-7b8a-c2d5-169b-98baba92e20b/mzaf_6438981248286949757.plus.aac.p.m4a',1.266635556359892234e+03,10,1.266635556359892234e+03,15,NULL);
-INSERT INTO "songs" VALUES(134,'I Am Digital, I Am Divine',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c5/ad/3d/c5ad3d34-98c8-1699-3c77-5be0a3321422/mzaf_7601926956208020930.plus.aac.p.m4a',1.152872463148502447e+03,11,1200.0,9999,NULL);
-INSERT INTO "songs" VALUES(135,'Sweet Fruit',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/64/4b/2c/644b2ce5-6d87-8688-814a-8279f6ea1dca/mzaf_1893647219411981901.plus.aac.p.m4a',1.119437287003910342e+03,9,1200.0,9999,NULL);
-INSERT INTO "songs" VALUES(136,'THE CINEMA',3,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/24/d0/49/24d049cd-db08-f6a7-9a9a-e91cbdfd842b/mzaf_1629385150254329167.plus.aac.p.m4a',1.09272860411825036e+03,9,1200.0,9999,NULL);
-INSERT INTO "songs" VALUES(137,'MACHINE GHOST',25,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/31/fb/66/31fb66da-a13f-b67b-2b88-bcee145890ea/mzaf_15986774945907420013.plus.aac.p.m4a',1.123516406407484964e+03,9,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(129,'AMERICAN DREAM',23,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/90/6b/73/906b7351-0129-02bf-19c1-434ba755d9f4/mzaf_3901552446296707843.plus.aac.p.m4a',1.122145876598883887e+03,9,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(130,'ALICE',23,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/06/1c/08/061c085b-c233-0a0b-0e86-21c664472b7a/mzaf_9535293181943938239.plus.aac.p.m4a',1.153307587653866449e+03,9,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(131,'Marble Arch',72,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/27/ea/f7/27eaf76b-5c1d-ff26-8f50-bad45aeeb84a/mzaf_11257365679245299458.plus.aac.p.m4a',1.188821187377217939e+03,9,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(132,'Godspeed',72,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/12/3d/b3/123db3ee-8e68-8130-9c59-d29191c4930c/mzaf_7747332508088805320.plus.aac.p.m4a',1.092317554228737663e+03,11,1200.0,185,NULL);
+INSERT INTO "songs" VALUES(133,'Silver Spoon',72,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/28/82/c9/2882c921-7b8a-c2d5-169b-98baba92e20b/mzaf_6438981248286949757.plus.aac.p.m4a',1.266635556359892234e+03,10,1.266635556359892234e+03,15,NULL);
+INSERT INTO "songs" VALUES(134,'I Am Digital, I Am Divine',72,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c5/ad/3d/c5ad3d34-98c8-1699-3c77-5be0a3321422/mzaf_7601926956208020930.plus.aac.p.m4a',1.152872463148502447e+03,11,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(135,'Sweet Fruit',72,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/64/4b/2c/644b2ce5-6d87-8688-814a-8279f6ea1dca/mzaf_1893647219411981901.plus.aac.p.m4a',1.119437287003910342e+03,9,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(136,'THE CINEMA',23,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/24/d0/49/24d049cd-db08-f6a7-9a9a-e91cbdfd842b/mzaf_1629385150254329167.plus.aac.p.m4a',1.09272860411825036e+03,9,1200.0,9999,NULL);
+INSERT INTO "songs" VALUES(137,'MACHINE GHOST',23,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/31/fb/66/31fb66da-a13f-b67b-2b88-bcee145890ea/mzaf_15986774945907420013.plus.aac.p.m4a',1.123516406407484964e+03,9,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(138,'Blue Moon',26,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/aa/d0/98/aad098e2-0676-fb5e-b904-450c36f669ee/mzaf_9834422766836628222.plus.aac.p.m4a',1.229936066591819326e+03,10,1.229936066591819326e+03,42,NULL);
 INSERT INTO "songs" VALUES(139,'Blowing Smoke',14,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e6/30/9f/e6309f55-0334-1dcc-ac1a-338b9da82bff/mzaf_13510998015819231555.plus.aac.p.m4a',1246.00476134929,5,1200.0,9999,NULL);
 INSERT INTO "songs" VALUES(140,'Free Now',14,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/fd/93/ca/fd93ca3a-d73e-844f-5880-c4afb2d85ce6/mzaf_7222176394875505075.plus.aac.p.m4a',1.202166650202220807e+03,6,1200.0,9999,NULL);
@@ -1443,8 +1446,8 @@ INSERT INTO "trivia_stats" VALUES(187,0,0);
 INSERT INTO "trivia_stats" VALUES(188,0,0);
 INSERT INTO "trivia_stats" VALUES(189,0,0);
 DELETE FROM "sqlite_sequence";
-INSERT INTO "sqlite_sequence" VALUES('albums',69);
-INSERT INTO "sqlite_sequence" VALUES('artists',46);
+INSERT INTO "sqlite_sequence" VALUES('albums',75);
+INSERT INTO "sqlite_sequence" VALUES('artists',47);
 INSERT INTO "sqlite_sequence" VALUES('history',708);
 INSERT INTO "sqlite_sequence" VALUES('genres',1);
 COMMIT;
