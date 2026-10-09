@@ -1343,7 +1343,7 @@ INSERT INTO "songs" VALUES(85,'TIT FOR TAT',18,'https://audio-ssl.itunes.apple.c
 INSERT INTO "songs" VALUES(86,'Signs',18,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ea/e4/b2/eae4b25d-4cb4-71f0-e081-820d2cb1895d/mzaf_2472521751920649341.plus.aac.p.m4a',1.153127194033166688e+03,9,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(87,'No I''m not in love',18,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b6/91/01/b69101c4-0bcf-7acd-3c50-c4be4a1b08b9/mzaf_18280999575148428746.plus.aac.p.m4a',1.166229090916991026e+03,10,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(88,'2 hands',18,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f0/6c/64/f06c6472-1145-fa05-0b82-47bc4f08d451/mzaf_14835865266443002831.plus.aac.p.m4a',1.307445798063893334e+03,9,1200.0,9999,NULL,0);
-INSERT INTO "songs" VALUES(89,'Siren sounds (bonus)',18,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bf/44/c5/bf44c598-c25c-b582-05ba-707cd332c5f1/mzaf_13490634454198054718.plus.aac.p.m4a',1.332388776327421737e+03,9,1200.0,9999,NULL,0);
+INSERT INTO "songs" VALUES(89,'Siren sounds (bonus)',18,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bf/44/c5/bf44c598-c25c-b582-05ba-707cd332c5f1/mzaf_13490634454198054718.plus.aac.p.m4a',1.332388776327421737e+03,9,1200.0,9999,NULL,1);
 INSERT INTO "songs" VALUES(90,'Just Keep Watching',125,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f1/29/27/f129275c-b8e8-e313-f3cd-a93ae234a6b5/mzaf_9933112702187355547.plus.aac.p.m4a',1.184654499253595532e+03,9,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(91,'we''re not alike',15,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/04/5a/b2/045ab26d-e3c4-cef4-7465-24f776cb7e34/mzaf_11959019501595183901.plus.aac.p.m4a',1.179176851289999376e+03,9,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(92,'HORSESHOE',18,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/37/63/a2/3763a25a-c296-74f6-c4ea-79b0f0cb26e9/mzaf_13940111237965673628.plus.aac.p.m4a',1.251190225251589481e+03,9,1200.0,9999,NULL,0);
@@ -1518,16 +1518,60 @@ INSERT INTO "songs" VALUES(261,'i want him bad',4,'https://audio-ssl.itunes.appl
 INSERT INTO "songs" VALUES(262,'cool girl, tough guy',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/78/75/ed/7875edc1-cdbe-ad34-c0e4-8a9d42bbb150/mzaf_8339064747188403809.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(263,'wanna be',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/ef/97/8d/ef978d0f-1b49-f0e2-30f7-0fcd991d8c59/mzaf_2858112720832867644.plus.aac.p.m4a',1.19926369320647791e+03,2,1216.0,66,NULL,0);
 INSERT INTO "songs" VALUES(264,'newbury park',133,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/d2/47/09/d2470913-0558-b2bb-538a-b956d3406114/mzaf_2093982330013254343.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
+CREATE TABLE tournament_entries (
+                tournament_id INTEGER NOT NULL,
+                song_id INTEGER NOT NULL,
+                seed INTEGER NOT NULL,
+                PRIMARY KEY (tournament_id, song_id),
+                UNIQUE (tournament_id, seed),
+                FOREIGN KEY(tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+                FOREIGN KEY(song_id) REFERENCES songs(id)
+            );
+INSERT INTO "tournament_entries" VALUES(2,89,1);
+INSERT INTO "tournament_entries" VALUES(2,88,2);
+INSERT INTO "tournament_entries" VALUES(2,93,3);
+INSERT INTO "tournament_entries" VALUES(2,92,4);
+INSERT INTO "tournament_entries" VALUES(2,85,5);
+INSERT INTO "tournament_entries" VALUES(2,84,6);
+INSERT INTO "tournament_entries" VALUES(2,87,7);
+INSERT INTO "tournament_entries" VALUES(2,86,8);
+CREATE TABLE tournament_matches (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                tournament_id INTEGER NOT NULL,
+                round_number INTEGER NOT NULL,
+                match_number INTEGER NOT NULL,
+                song1_id INTEGER NOT NULL,
+                song2_id INTEGER NOT NULL,
+                winner_id INTEGER,
+                loser_id INTEGER,
+                status TEXT NOT NULL DEFAULT 'pending',
+                points_awarded REAL NOT NULL DEFAULT 0,
+                played_at DATETIME,
+                UNIQUE (tournament_id, round_number, match_number),
+                FOREIGN KEY(tournament_id) REFERENCES tournaments(id) ON DELETE CASCADE,
+                FOREIGN KEY(song1_id) REFERENCES songs(id),
+                FOREIGN KEY(song2_id) REFERENCES songs(id),
+                FOREIGN KEY(winner_id) REFERENCES songs(id),
+                FOREIGN KEY(loser_id) REFERENCES songs(id)
+            );
+INSERT INTO "tournament_matches" VALUES(1,2,1,1,89,86,89,86,'completed',1.0,'2026-10-09 13:43:02');
+INSERT INTO "tournament_matches" VALUES(2,2,1,2,92,85,85,92,'completed',1.0,'2026-10-09 13:43:21');
+INSERT INTO "tournament_matches" VALUES(3,2,1,3,88,87,88,87,'completed',1.0,'2026-10-09 13:43:25');
+INSERT INTO "tournament_matches" VALUES(4,2,1,4,93,84,93,84,'completed',1.0,'2026-10-09 13:43:27');
+INSERT INTO "tournament_matches" VALUES(5,2,2,1,89,85,89,85,'completed',2.0,'2026-10-09 13:43:31');
+INSERT INTO "tournament_matches" VALUES(6,2,2,2,88,93,88,93,'completed',2.0,'2026-10-09 13:43:34');
+INSERT INTO "tournament_matches" VALUES(7,2,3,1,89,88,89,88,'completed',4.0,'2026-10-09 13:43:36');
 CREATE TABLE tournaments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             size INTEGER NOT NULL,
             scope_type TEXT NOT NULL,
             scope_id INTEGER,
             champion_id INTEGER,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, status TEXT NOT NULL DEFAULT 'completed', created_at DATETIME, updated_at DATETIME, completed_at DATETIME, current_round INTEGER NOT NULL DEFAULT 1, points_version INTEGER NOT NULL DEFAULT 1,
             FOREIGN KEY(champion_id) REFERENCES songs(id)
         );
-INSERT INTO "tournaments" VALUES(1,16,'artist',12,19,'2026-10-07 20:30:29');
+INSERT INTO "tournaments" VALUES(1,16,'artist',12,19,'2026-10-07 20:30:29','completed','2026-10-07 20:30:29',NULL,'2026-10-07 20:30:29',1,1);
+INSERT INTO "tournaments" VALUES(2,8,'album',18,89,'2026-10-09 13:42:46','completed','2026-10-09 13:42:46','2026-10-09 13:43:36','2026-10-09 13:43:36',3,1);
 CREATE TABLE trivia_stats
                        (
                            song_id  INTEGER PRIMARY KEY,
@@ -1796,10 +1840,16 @@ INSERT INTO "trivia_stats" VALUES(261,0,0);
 INSERT INTO "trivia_stats" VALUES(262,0,0);
 INSERT INTO "trivia_stats" VALUES(263,0,0);
 INSERT INTO "trivia_stats" VALUES(264,0,0);
+CREATE INDEX idx_tournament_matches_tournament_round
+                ON tournament_matches(tournament_id, round_number, match_number);
+CREATE INDEX idx_tournament_matches_winner ON tournament_matches(winner_id);
+CREATE INDEX idx_tournament_matches_loser ON tournament_matches(loser_id);
+CREATE INDEX idx_tournaments_status ON tournaments(status);
 DELETE FROM "sqlite_sequence";
 INSERT INTO "sqlite_sequence" VALUES('albums',135);
 INSERT INTO "sqlite_sequence" VALUES('artists',48);
 INSERT INTO "sqlite_sequence" VALUES('history',776);
 INSERT INTO "sqlite_sequence" VALUES('genres',3);
-INSERT INTO "sqlite_sequence" VALUES('tournaments',1);
+INSERT INTO "sqlite_sequence" VALUES('tournaments',2);
+INSERT INTO "sqlite_sequence" VALUES('tournament_matches',7);
 COMMIT;
