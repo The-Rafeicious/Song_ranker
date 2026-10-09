@@ -1,784 +1,187 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Developer Dashboard</title>
-    <style>
-        :root {
-            --bg-dark: #121212;
-            --bg-panel: #1e1e1e;
-            --bg-hover: #2a2a2a;
-            --spotify-green: #1db954;
-            --spotify-green-hover: #1ed760;
-            --text-main: #ffffff;
-            --text-muted: #b3b3b3;
-            --danger: #e22134;
-            --border-color: #333;
-        }
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Developer Console · Song Ranker</title>
+<style>
+:root{color-scheme:dark;--bg:#0b0d10;--panel:#12161c;--panel2:#171c24;--line:#252c36;--text:#edf1f7;--muted:#8e9aaa;--green:#65e6a4;--green2:#183c2d;--blue:#8cb8ff;--red:#ff7c85;--amber:#f6c66b;--radius:16px;--shadow:0 18px 50px #0005}*{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 80% -20%,#193a2b55,transparent 38%),var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--green);outline-offset:2px}a{color:var(--green);text-decoration:none}.app{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100vh}.sidebar{border-right:1px solid var(--line);background:#0d1014ee;padding:22px 15px;display:flex;flex-direction:column;gap:24px;position:sticky;top:0;height:100vh}.brand{display:flex;gap:12px;align-items:center;padding:0 8px}.brand-mark{width:40px;height:40px;border-radius:13px;background:linear-gradient(135deg,#85f4b5,#2e9c70);color:#062014;display:grid;place-items:center;font-weight:950;font-size:20px;box-shadow:0 7px 24px #42d99030}.brand strong{display:block;font-size:14px;letter-spacing:.02em}.brand small{display:block;color:var(--muted);font-size:11px;margin-top:2px}.nav-label{color:#657181;font-size:10px;font-weight:800;letter-spacing:.16em;padding:0 11px;margin:2px 0 7px;text-transform:uppercase}.nav{display:grid;gap:5px}.nav button{display:flex;gap:11px;align-items:center;text-align:left;width:100%;padding:11px 12px;border:1px solid transparent;border-radius:11px;background:transparent;color:#aeb7c4;transition:.18s}.nav button .ico{width:21px;text-align:center;font-size:16px}.nav button:hover{background:#ffffff08;color:var(--text)}.nav button.active{background:linear-gradient(100deg,#183d2d,#18312688);border-color:#2a654a;color:#dffff0}.nav button.active .ico{color:var(--green)}.side-bottom{margin-top:auto;display:grid;gap:9px}.side-note{border:1px solid var(--line);border-radius:12px;padding:12px;color:var(--muted);font-size:11px}.side-note b{color:var(--green);display:block;margin-bottom:4px}.main{min-width:0;padding:30px clamp(18px,3vw,44px) 54px;max-width:1600px;width:100%;margin:0 auto}.topbar{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:28px}.eyebrow{color:var(--green);font-size:10px;font-weight:850;letter-spacing:.17em;text-transform:uppercase}.page-title{font-size:clamp(25px,3vw,36px);line-height:1.15;letter-spacing:-.045em;margin:5px 0 7px}.page-sub{color:var(--muted);margin:0;max-width:720px}.top-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.pill{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--line);border-radius:999px;padding:7px 11px;color:#b5c0ce;font-size:11px;white-space:nowrap}.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 0 4px #65e6a412}.view{display:none}.view.active{display:block;animation:appear .22s ease}@keyframes appear{from{opacity:.45;transform:translateY(4px)}to{opacity:1;transform:none}}.grid{display:grid;gap:14px}.stats{grid-template-columns:repeat(4,minmax(0,1fr));margin-bottom:17px}.card{background:linear-gradient(145deg,#171c23,#11151a);border:1px solid var(--line);border-radius:var(--radius);padding:19px;min-width:0;box-shadow:0 5px 18px #0001}.stat-label{color:var(--muted);font-size:12px;display:flex;justify-content:space-between;gap:8px}.stat-number{font-size:30px;font-weight:800;letter-spacing:-.05em;margin:9px 0 2px}.stat-foot{color:#788595;font-size:11px}.section-head{display:flex;justify-content:space-between;align-items:end;gap:12px;margin:25px 0 13px}.section-head h2{font-size:17px;margin:0;letter-spacing:-.025em}.section-head p{margin:3px 0 0;color:var(--muted);font-size:12px}.two{grid-template-columns:minmax(0,1.1fr) minmax(300px,.9fr)}.three{grid-template-columns:repeat(3,minmax(0,1fr))}.panel-title{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}.panel-title h3{margin:0;font-size:14px}.panel-title span{color:var(--muted);font-size:11px}.btn{border:1px solid var(--line);border-radius:10px;padding:9px 12px;color:var(--text);background:#202630;transition:.16s;font-weight:650;font-size:12px}.btn:hover{filter:brightness(1.15);transform:translateY(-1px)}.btn.primary{background:var(--green);border-color:var(--green);color:#092416}.btn.soft{background:#182b23;border-color:#2b5741;color:var(--green)}.btn.danger{background:#351b21;border-color:#603039;color:#ffadb3}.btn.warn{background:#322918;border-color:#554221;color:#f8d591}.btn.ghost{background:transparent}.btn.small{padding:6px 9px;font-size:11px;border-radius:8px}.btn-row{display:flex;gap:7px;flex-wrap:wrap}.input,.select,.textarea{width:100%;border:1px solid #2b333f;background:#0d1116;color:var(--text);border-radius:10px;padding:10px 12px;min-width:0}.textarea{min-height:86px;resize:vertical}.field{display:grid;gap:6px;margin-bottom:12px}.field label{font-size:11px;color:#aab4c1;font-weight:700}.field .hint{color:#667383;font-size:10px;margin-top:-2px}.search-row{display:flex;gap:10px;align-items:center;margin-bottom:14px}.search-row .input{flex:1}.table-wrap{width:100%;overflow:auto;border:1px solid var(--line);border-radius:12px}.table{width:100%;border-collapse:collapse;min-width:680px}.table th{background:#171c23;color:#8793a2;font-size:10px;letter-spacing:.1em;text-transform:uppercase;text-align:left;padding:12px 14px;white-space:nowrap}.table th.sortable{cursor:pointer;user-select:none;transition:color .15s}.table th.sortable:hover{color:var(--green)}.table td{padding:12px 14px;border-top:1px solid #202630;color:#d9e0e9;vertical-align:middle}.table tr:hover td{background:#ffffff03}.entity{display:flex;align-items:center;gap:10px;min-width:170px}.cover{width:37px;height:37px;border-radius:8px;object-fit:cover;background:#222a33;flex:none}.cover-placeholder{display:grid;place-items:center;color:#8591a0}.entity strong{display:block;font-size:12px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.entity small{display:block;color:var(--muted);font-size:10px;margin-top:2px}.tag{display:inline-flex;border-radius:6px;padding:3px 7px;font-size:10px;font-weight:800;letter-spacing:.03em;background:#242b35;color:#c2cbd7}.tag.song{background:#19382b;color:#83edb3}.tag.artist{background:#1b2c43;color:#9dc5ff}.tag.album{background:#30233f;color:#d6a9ff}.tag.genre{background:#392e19;color:#f5cf7a}.muted{color:var(--muted)}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.empty{padding:35px;text-align:center;color:var(--muted)}.list{display:grid;gap:8px}.list-row{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid #252b34}.list-row:last-child{border:0}.list-row .grow{flex:1;min-width:0}.list-row strong{display:block;font-size:12px;overflow:hidden;text-overflow:ellipsis}.list-row small{color:var(--muted);font-size:10px}.list-row .right{font-weight:800;font-size:12px}.progress{height:5px;background:#252b34;border-radius:99px;overflow:hidden;margin-top:8px}.progress i{display:block;height:100%;background:var(--green);border-radius:99px}.notice{border:1px solid #334131;background:#17251d;border-radius:12px;padding:13px 15px;color:#c9e6d3;font-size:12px}.notice.warning{border-color:#5c4829;background:#292216;color:#f5d99d}.notice.danger{border-color:#61333a;background:#2b171b;color:#ffb8be}.results{display:grid;gap:8px}.result{display:flex;gap:12px;align-items:center;border:1px solid var(--line);border-radius:12px;background:#13181e;padding:12px}.result .grow{flex:1;min-width:0}.result strong{display:block}.result small{display:block;color:var(--muted);font-size:11px}.tool-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.tool-card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#11161c}.tool-card h3{margin:0 0 5px;font-size:14px}.tool-card p{margin:0 0 13px;color:var(--muted);font-size:11px}.output{white-space:pre-wrap;overflow-wrap:anywhere;background:#0b0f13;border:1px solid var(--line);border-radius:9px;padding:12px;margin-top:10px;color:#b8c4d1;font-size:11px;max-height:320px;overflow:auto}.divider{height:1px;background:var(--line);margin:15px 0}.modal-backdrop{position:fixed;inset:0;background:#050709c9;backdrop-filter:blur(7px);z-index:20;display:none;align-items:center;justify-content:center;padding:18px}.modal-backdrop.open{display:flex}.modal{width:min(680px,100%);max-height:90vh;overflow:auto;border:1px solid #333d49;background:#12171e;border-radius:18px;padding:22px;box-shadow:var(--shadow)}.modal-head{display:flex;justify-content:space-between;gap:14px;align-items:start;margin-bottom:18px}.modal-head h2{font-size:19px;margin:0}.modal-head p{font-size:11px;color:var(--muted);margin:4px 0}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 12px}.span2{grid-column:1/-1}.modal-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:20px}.toast{position:fixed;bottom:22px;right:22px;z-index:50;max-width:min(440px,calc(100vw - 36px));border:1px solid #315b45;background:#14291e;color:#c7ffde;padding:13px 16px;border-radius:12px;box-shadow:var(--shadow);opacity:0;transform:translateY(8px);pointer-events:none;transition:.2s}.toast.show{opacity:1;transform:none}.toast.error{border-color:#713942;background:#321a1f;color:#ffc0c5}.checkline{display:flex;gap:9px;align-items:flex-start;color:#c6cfda;font-size:12px;margin:10px 0}.checkline input{accent-color:var(--green);margin-top:3px}.hidden{display:none!important}.mobile-menu{display:none}.footnote{color:#657181;font-size:10px;margin-top:13px}.count{font-size:10px;color:#8793a2;background:#202630;border-radius:999px;padding:3px 7px}
+@media(max-width:1100px){.app{grid-template-columns:220px minmax(0,1fr)}.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.two{grid-template-columns:1fr}}@media(max-width:760px){.app{display:block}.sidebar{height:auto;position:relative;padding:14px;border-right:0;border-bottom:1px solid var(--line);gap:12px}.brand{padding:0 4px}.nav-label{display:none}.nav{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.nav button{padding:9px 7px;justify-content:center;flex-direction:column;gap:3px;text-align:center;font-size:10px}.nav button .ico{font-size:16px}.side-bottom{grid-template-columns:1fr 1fr;margin-top:0}.side-note{display:none}.main{padding:23px 14px 40px}.topbar{align-items:flex-start}.top-actions{justify-content:flex-end}.pill{display:none}.stats{gap:9px}.card{padding:14px}.stat-number{font-size:25px}.tool-grid,.three{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.span2{grid-column:auto}.section-head{align-items:flex-start;flex-direction:column}.search-row{align-items:stretch;flex-direction:column}.modal{padding:17px}}@media(max-width:390px){.nav{grid-template-columns:repeat(2,minmax(0,1fr))}.stats{grid-template-columns:1fr 1fr}}
 
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background-color: var(--bg-dark); color: var(--text-main); margin: 0; display: flex; height: 100vh; overflow: hidden; }
+/* Visual refresh: align the developer console with Song Ranker's public pages.
+   Presentation-only overrides; dashboard markup, data, and behaviour are unchanged. */
+:root{
+  color-scheme:dark;
+  --bg:#121212;
+  --panel:#1e1e1e;
+  --panel2:#242424;
+  --line:#333333;
+  --text:#f5f5f5;
+  --muted:#999999;
+  --green:#1db954;
+  --green2:#173b27;
+  --blue:#5b9bff;
+  --red:#e22134;
+  --amber:#f6c66b;
+  --radius:12px;
+  --shadow:0 8px 22px rgba(0,0,0,.28);
+}
+body{background:var(--bg);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+a{color:var(--green)}
+.sidebar{background:#151515;border-right-color:#2d2d2d}
+.brand-mark{background:var(--green);color:#071b0d;box-shadow:none;border-radius:10px}
+.brand strong{letter-spacing:0}
+.brand small{color:#929292}
+.nav-label{color:#777;letter-spacing:.12em}
+.nav button{color:#b8b8b8;border-radius:9px}
+.nav button:hover{background:#ffffff0a;color:#fff}
+.nav button.active{background:rgba(29,185,84,.12);border-color:rgba(29,185,84,.28);color:#f4fff7}
+.nav button.active .ico{color:var(--green)}
+.main{padding-top:34px}
+.eyebrow{color:var(--green);letter-spacing:.13em}
+.page-title{letter-spacing:-.035em}
+.page-sub{color:#a1a1a1}
+.pill{border-color:#393939;color:#c0c0c0;background:#1b1b1b}
+.dot{background:var(--green);box-shadow:0 0 0 4px rgba(29,185,84,.1)}
+.card{background:#1e1e1e;border-color:#303030;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.16)}
+.stat-number{letter-spacing:-.035em}
+.stat-foot{color:#8d8d8d}
+.section-head h2{letter-spacing:-.02em}
+.panel-title span,.section-head p{color:#929292}
+.btn{background:#292929;border-color:#414141;border-radius:9px;color:#f3f3f3}
+.btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+.btn.primary{background:var(--green);border-color:var(--green);color:#071b0d}
+.btn.soft{background:rgba(29,185,84,.12);border-color:rgba(29,185,84,.32);color:#8de5ad}
+.btn.danger{background:rgba(226,33,52,.12);border-color:rgba(226,33,52,.35);color:#ff9da7}
+.btn.warn{background:rgba(246,198,107,.1);border-color:rgba(246,198,107,.3);color:#f6d58e}
+.btn.ghost{background:transparent}
+.input,.select,.textarea{background:#151515;border-color:#3a3a3a;border-radius:9px;color:#f5f5f5}
+.input::placeholder,.textarea::placeholder{color:#777}
+.field label{color:#c1c1c1}
+.field .hint,.footnote{color:#858585}
+.table-wrap{border-color:#333;border-radius:10px}
+.table th{background:#252525;color:#a0a0a0}
+.table td{border-top-color:#303030;color:#e3e3e3}
+.table tr:hover td{background:#ffffff06}
+.cover{background:#292929}
+.tag{background:#2c2c2c;color:#d2d2d2}
+.tag.song{background:rgba(29,185,84,.14);color:#8de5ad}
+.tag.artist{background:rgba(91,155,255,.15);color:#9fc4ff}
+.tag.album{background:rgba(191,119,255,.15);color:#d6a9ff}
+.tag.genre{background:rgba(246,198,107,.14);color:#f5cf7a}
+.list-row{border-bottom-color:#333}
+.progress{background:#343434}
+.progress i{background:var(--green)}
+.notice{background:rgba(29,185,84,.09);border-color:rgba(29,185,84,.25);color:#c7e8d1}
+.notice.warning{background:rgba(246,198,107,.09);border-color:rgba(246,198,107,.27);color:#f0d9a4}
+.notice.danger{background:rgba(226,33,52,.09);border-color:rgba(226,33,52,.27);color:#ffb8be}
+.result{background:#202020;border-color:#333;border-radius:10px}
+.tool-card{background:#1b1b1b;border-color:#333;border-radius:12px}
+.output{background:#151515;border-color:#333;color:#c5c5c5}
+.count{background:#2b2b2b;color:#bcbcbc}
+.side-note{border-color:#333;color:#9b9b9b}
+.side-note b{color:var(--green)}
+.modal-backdrop{background:rgba(0,0,0,.76)}
+.modal{background:#1e1e1e;border-color:#3a3a3a;border-radius:14px}
+.toast{background:#173b27;border-color:#286a43;color:#d8ffe5}
+.toast.error{background:#351b20;border-color:#713942;color:#ffc0c5}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline-color:var(--green)}
+@media(max-width:760px){
+  .sidebar{background:#151515}
+  .nav button.active{background:rgba(29,185,84,.12)}
+  .main{padding-top:24px}
+}
 
-        /* SIDEBAR */
-        .sidebar { width: 260px; background-color: var(--bg-panel); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 20px 0; }
-        .sidebar-header { padding: 0 20px 20px 20px; border-bottom: 1px solid var(--border-color); margin-bottom: 20px; }
-        .sidebar-header h2 { margin: 0; color: var(--spotify-green); font-size: 1.4em; }
-        .nav-menu { display: flex; flex-direction: column; flex-grow: 1; padding: 0 10px; gap: 5px; }
-        .nav-item { background: transparent; border: none; color: var(--text-muted); padding: 12px 15px; text-align: left; font-size: 1.05em; font-weight: bold; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 10px; }
-        .nav-item:hover { color: var(--text-main); background-color: var(--bg-hover); }
-        .nav-item.active { color: var(--spotify-green); background-color: rgba(29, 185, 84, 0.1); }
-        .sidebar-footer { padding: 20px; border-top: 1px solid var(--border-color); display: flex; flex-direction: column; gap: 10px; }
-
-        /* MAIN CONTENT */
-        .main-content { flex-grow: 1; overflow-y: auto; padding: 40px; }
-        .view-section { display: none; animation: fadeIn 0.3s; }
-        .view-section.active { display: block; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
-        .header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .header-bar h1 { margin: 0; font-size: 2em; }
-
-        /* BUTTONS & INPUTS */
-        .btn-primary { background-color: var(--spotify-green); color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 1em; transition: 0.2s; }
-        .btn-primary:hover:not(:disabled) { background-color: var(--spotify-green-hover); }
-        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
-        .btn-outline { background-color: transparent; color: var(--text-muted); border: 1px solid var(--text-muted); padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: bold; text-decoration: none; text-align: center; }
-        .btn-outline:hover { color: white; border-color: white; }
-        .btn-danger { color: var(--danger); border-color: var(--danger); }
-        .btn-danger:hover { background-color: var(--danger); color: white; border-color: var(--danger); }
-
-        .search-bar { display: flex; gap: 10px; margin-bottom: 20px; }
-        .text-input { flex-grow: 1; padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); background-color: var(--bg-panel); color: white; font-size: 1.1em; outline: none; transition: border-color 0.2s; }
-        .text-input:focus { border-color: var(--spotify-green); }
-
-        /* UNIVERSAL SEARCH TOGGLES */
-        .toggle-group { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; background-color: var(--bg-panel); padding: 15px; border-radius: 8px; border: 1px solid var(--border-color); }
-        .toggle-label { color: var(--text-muted); font-size: 0.9em; font-weight: bold; display: flex; align-items: center; gap: 8px; cursor: pointer; }
-        .toggle-label input { accent-color: var(--spotify-green); width: 16px; height: 16px; cursor: pointer; }
-
-        /* TABLES & GRIDS */
-        .data-table { width: 100%; border-collapse: collapse; background-color: var(--bg-panel); border-radius: 8px; overflow: hidden; box-shadow: 0 4px 6px rgba(0,0,0,0.3); }
-        .data-table th, .data-table td { padding: 15px; text-align: left; border-bottom: 1px solid var(--border-color); }
-        .data-table th { background-color: #181818; color: var(--text-muted); font-size: 0.85em; text-transform: uppercase; user-select: none; }
-        .data-table th.sortable { cursor: pointer; transition: color 0.2s; }
-        .data-table th.sortable:hover { color: var(--text-main); }
-        .data-table tr:hover { background-color: rgba(255,255,255,0.02); }
-        .table-cover { width: 45px; height: 45px; border-radius: 4px; object-fit: cover; }
-        .type-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.8em; font-weight: bold; background-color: #333; color: white; }
-        .type-badge.song { background-color: rgba(29, 185, 84, 0.2); color: var(--spotify-green); }
-        .type-badge.artist { background-color: rgba(66, 135, 245, 0.2); color: #4287f5; }
-        .type-badge.album { background-color: rgba(168, 66, 245, 0.2); color: #a842f5; }
-
-        .action-icon { cursor: pointer; background: none; border: none; font-size: 1.2em; margin-right: 10px; opacity: 0.7; transition: opacity 0.2s; }
-        .action-icon:hover { opacity: 1; }
-
-        /* UNIVERSAL SEARCH GRID */
-        .universal-results { display: flex; flex-direction: column; gap: 10px; }
-        .u-result-card { display: flex; align-items: center; background-color: var(--bg-panel); padding: 16px 20px; border-radius: 10px; border: 1px solid var(--border-color); transition: transform 0.15s ease, border-color 0.2s ease, background-color 0.2s ease; }
-        .u-result-card:hover { border-color: #444; background-color: #242424; transform: translateY(-1px); }
-        .u-info { flex-grow: 1; margin-left: 18px; }
-        .u-header { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
-        .u-title { font-weight: 700; font-size: 1.15em; color: #fff; }
-        .u-cover-wrap { width: 52px; height: 52px; min-width: 52px; border-radius: 6px; overflow: hidden; background-color: #2a2a2a; display: flex; align-items: center; justify-content: center; font-size: 1.5em; }
-        .u-cover-wrap img { width: 100%; height: 100%; object-fit: cover; }
-        .u-cover-wrap.circle { border-radius: 50%; }
-
-        /* Entity Badges */
-        .type-badge { padding: 3px 8px; border-radius: 4px; font-size: 0.75em; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase; }
-        .type-badge.song   { background: rgba(29, 185, 84, 0.15); color: #1db954; border: 1px solid rgba(29, 185, 84, 0.3); }
-        .type-badge.artist { background: rgba(66, 135, 245, 0.15); color: #5b9bff; border: 1px solid rgba(66, 135, 245, 0.3); }
-        .type-badge.album  { background: rgba(168, 66, 245, 0.15); color: #bf77ff; border: 1px solid rgba(168, 66, 245, 0.3); }
-        .type-badge.genre  { background: rgba(255, 170, 0, 0.15); color: #ffb833; border: 1px solid rgba(255, 170, 0, 0.3); }
-
-        /* Metadata Chips */
-        .u-meta-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 0.88em; color: var(--text-muted); }
-        .chip { background: #2a2a2a; padding: 2px 8px; border-radius: 12px; font-size: 0.85em; color: #ccc; }
-        .chip-elo { font-weight: bold; }
-        .chip-elo.s-tier { color: #ffd700; background: rgba(255, 215, 0, 0.12); }
-        .chip-elo.a-tier { color: #1db954; background: rgba(29, 185, 84, 0.12); }
-        .chip-elo.b-tier { color: #5b9bff; background: rgba(91, 155, 255, 0.12); }
-        .chip-elo.c-tier { color: #bbb; }
-
-        /* MODALS & TOASTS */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(4px); }
-        .modal { background-color: var(--bg-panel); padding: 30px; border-radius: 12px; width: 500px; max-width: 90%; border: 1px solid var(--border-color); box-shadow: 0 10px 25px rgba(0,0,0,0.5); }
-        .form-group { margin-bottom: 15px; text-align: left; }
-        .form-group label { display: block; color: var(--text-muted); margin-bottom: 5px; font-size: 0.9em; }
-        .modal-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 25px; }
-
-        .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background-color: var(--spotify-green); color: white; padding: 15px 30px; border-radius: 30px; font-weight: bold; opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); z-index: 2000; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
-        .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
-        .toast.error { background-color: var(--danger); }
-
-        /* SPINNER */
-        .spinner { display: none; width: 16px; height: 16px; border: 2px solid rgba(255,255,255,0.3); border-radius: 50%; border-top-color: white; animation: spin 1s ease-in-out infinite; margin-right: 8px; }
-        @keyframes spin { to { transform: rotate(360deg); } }
-    </style>
+</style>
 </head>
 <body>
-
-    <!-- SIDEBAR -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <h2>⚙️ Dev Dashboard</h2>
-        </div>
-        <div class="nav-menu">
-            <button class="nav-item active" id="nav-overview" onclick="switchView('overview')">🔍 Universal Search</button>
-            <button class="nav-item" id="nav-add" onclick="switchView('add')">➕ Add Content</button>
-            <button class="nav-item" id="nav-songs" onclick="switchView('songs')">🎵 Manage Songs</button>
-            <button class="nav-item" id="nav-artists" onclick="switchView('artists')">👤 Manage Artists</button>
-            <button class="nav-item" id="nav-albums" onclick="switchView('albums')">💿 Manage Albums</button>
-            <button class="nav-item" id="nav-genres" onclick="switchView('genres')">🏷️ Manage Genres</button>
-        </div>
-        <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 12px;">
-        <!-- Export Button -->
-        <button id="export-btn" class="btn-outline" onclick="exportData()" style="color: #ffbf7f; border-color: #ffbf7f; display: flex; justify-content: center; align-items: center;">
-            <span id="export-text">Export to TXT</span>
-        </button>
-
-        <!-- Sync Button -->
-        <button id="sync-btn" class="btn-outline" onclick="syncDatabase()" style="color: var(--spotify-green); border-color: var(--spotify-green); display: flex; justify-content: center; align-items: center;">
-            <div class="spinner" id="sync-spinner"></div>
-            <span id="sync-text">Sync to GitHub</span>
-        </button>
-
-        <!-- Lock Database Button -->
-        <a href="/dev/logout" class="btn-outline btn-danger" style="text-align: center;">Lock Database</a>
-    </div>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div class="main-content">
-
-        <!-- UNIVERSAL SEARCH VIEW -->
-        <div id="view-overview" class="view-section active">
-            <div class="header-bar">
-                <h1>Universal Search</h1>
-            </div>
-
-            <input type="text" id="universal-search" class="text-input" placeholder="Search the entire database for anything..." style="width: 100%; box-sizing: border-box; margin-bottom: 15px;" onkeyup="runUniversalSearch()">
-
-            <div class="toggle-group">
-                <span style="color: white; font-weight: bold; margin-right: 10px;">Filters:</span>
-                <label class="toggle-label"><input type="checkbox" id="u-show-songs" checked onchange="runUniversalSearch()"> Songs</label>
-                <label class="toggle-label"><input type="checkbox" id="u-show-artists" checked onchange="runUniversalSearch()"> Artists</label>
-                <label class="toggle-label"><input type="checkbox" id="u-show-albums" checked onchange="runUniversalSearch()"> Albums</label>
-                <label class="toggle-label"><input type="checkbox" id="u-show-genres" checked onchange="runUniversalSearch()"> Genres</label>
-
-                <span style="color: white; font-weight: bold; margin-left: 20px; margin-right: 10px;">Display Data:</span>
-                <label class="toggle-label"><input type="checkbox" id="u-show-id" checked onchange="runUniversalSearch()"> IDs</label>
-                <label class="toggle-label"><input type="checkbox" id="u-show-cover" checked onchange="runUniversalSearch()"> Cover Art</label>
-                <label class="toggle-label"><input type="checkbox" id="u-show-stats" checked onchange="runUniversalSearch()"> Stats (Elo/Counts)</label>
-            </div>
-
-            <div class="universal-results" id="universal-results-container">
-                <div style="color: var(--text-muted); text-align: center; padding: 40px;">Type above to search across all tables.</div>
-            </div>
-        </div>
-
-        <!-- ADD CONTENT VIEW -->
-        <div id="view-add" class="view-section">
-            <div class="header-bar">
-                <h1>Add New Songs</h1>
-            </div>
-            <div class="search-bar">
-                <input type="text" id="apple-search-input" class="text-input" placeholder="Paste Apple Music link or search query..." onkeypress="if(event.key === 'Enter') searchApple()">
-                <button class="btn-primary" onclick="searchApple()">Search Apple API</button>
-            </div>
-            <div class="toggle-group" style="padding: 10px 15px;">
-                <label class="toggle-label"><input type="checkbox" id="keep-search-box"> Keep search text after adding</label>
-            </div>
-            <div id="loading" style="display: none; color: var(--text-muted); text-align: center; margin: 40px 0;">
-                <div class="spinner" style="display: inline-block; border-top-color: var(--spotify-green);"></div> Fetching data...
-            </div>
-            <div class="universal-results" id="apple-results"></div>
-        </div>
-
-        <!-- MANAGE SONGS VIEW -->
-        <div id="view-songs" class="view-section">
-            <div class="header-bar">
-                <h1>Manage Songs</h1>
-            </div>
-            <input type="text" id="song-filter" class="text-input" placeholder="Filter by title, artist, or album..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;" onkeyup="filterTable('manage-tbody', 'song-filter')">
-            <table class="data-table" id="songs-table">
-                <thead>
-                    <tr>
-                        <th class="sortable" onclick="sortTable('songs-table', 0, true)">ID ↕</th>
-                        <th>Cover</th>
-                        <th class="sortable" onclick="sortTable('songs-table', 2, false)">Title ↕</th>
-                        <th class="sortable" onclick="sortTable('songs-table', 3, false)">Artist ↕</th>
-                        <th class="sortable" onclick="sortTable('songs-table', 4, false)">Album ↕</th>
-                        <th class="sortable" onclick="sortTable('songs-table', 5, false)">Genres ↕</th>
-                        <th class="sortable" onclick="sortTable('songs-table', 5, true)">Elo ↕</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="manage-tbody">
-                    {% for song in songs %}
-                    <tr>
-                        <td style="color: var(--text-muted);">{{ song.id }}</td>
-                        <td><img src="{{ song.cover_url }}" class="table-cover"></td>
-                        <td class="td-filter font-bold">{{ song.title }}</td>
-                        <td class="td-filter text-muted">{{ song.artist }}</td>
-                        <td class="td-filter text-muted">{{ song.album }}</td>
-                        <td class="td-filter text-muted">{{ song.genres or '' }}</td>
-                        <td style="color: var(--spotify-green); font-weight: bold;">{{ song.elo_score|int }}</td>
-                        <td>
-                            <button class="action-icon" onclick='openEditModal("song", {{ song.id }}, {{ song|tojson }})'>✏️</button>
-                            <button class="action-icon" onclick="deleteItem('song', {{ song.id }})">🗑️</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- MANAGE ARTISTS VIEW -->
-        <div id="view-artists" class="view-section">
-            <div class="header-bar">
-                <h1>Manage Artists</h1>
-            </div>
-            <input type="text" id="artist-filter" class="text-input" placeholder="Filter artists..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;" onkeyup="filterTable('artists-tbody', 'artist-filter')">
-            <table class="data-table" id="artists-table">
-                <thead>
-                    <tr>
-                        <th class="sortable" onclick="sortTable('artists-table', 0, true)">ID ↕</th>
-                        <th>Profile Picture</th>
-                        <th class="sortable" onclick="sortTable('artists-table', 2, false)">Name ↕</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="artists-tbody">
-                    {% for artist in artists %}
-                    <tr>
-                        <td style="color: var(--text-muted);">{{ artist.id }}</td>
-                        <td><img src="{{ artist.cover_url }}" class="table-cover" style="border-radius: 50%;"></td>
-                        <td class="td-filter font-bold" style="font-size: 1.1em;">{{ artist.name }}</td>
-                        <td>
-                            <button class="action-icon" onclick='openEditModal("artist", {{ artist.id }}, {{ artist|tojson }})'>✏️</button>
-                            <button class="action-icon" onclick="deleteItem('artist', {{ artist.id }})">🗑️</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-
-        <!-- MANAGE ALBUMS VIEW -->
-        <div id="view-albums" class="view-section">
-            <div class="header-bar">
-                <h1>Manage Albums</h1>
-            </div>
-            <input type="text" id="album-filter" class="text-input" placeholder="Filter albums..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;" onkeyup="filterTable('albums-tbody', 'album-filter')">
-            <table class="data-table" id="albums-table">
-                <thead>
-                    <tr>
-                        <th class="sortable" onclick="sortTable('albums-table', 0, true)">ID ↕</th>
-                        <th>Cover</th>
-                        <th class="sortable" onclick="sortTable('albums-table', 2, false)">Title ↕</th>
-                        <th class="sortable" onclick="sortTable('albums-table', 3, false)">Release Date ↕</th>
-                        <th class="sortable" onclick="sortTable('albums-table', 4, true)">Songs ↕</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody id="albums-tbody">
-                    {% for album in albums %}
-                    <tr>
-                        <td style="color: var(--text-muted);">{{ album.id }}</td>
-                        <td><img src="{{ album.cover_url }}" class="table-cover"></td>
-                        <td class="td-filter font-bold">{{ album.title }}</td>
-                        <td class="td-filter text-muted">{{ album.release_date or 'N/A' }}</td>
-                        <td style="color: var(--spotify-green); font-weight: bold;">{{ album.song_count }}</td>
-                        <td>
-                            <button class="action-icon" onclick='openEditModal("album", {{ album.id }}, {{ album|tojson }})'>✏️</button>
-                            <button class="action-icon" onclick="deleteItem('album', {{ album.id }})">🗑️</button>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <!-- MANAGE GENRES VIEW -->
-    <div id="view-genres" class="view-section">
-        <div class="header-bar">
-            <h1>Manage Genres</h1>
-        </div>
-        <input type="text" id="genre-filter" class="text-input" placeholder="Filter genres..." style="width: 100%; box-sizing: border-box; margin-bottom: 20px;" onkeyup="filterTable('genres-tbody', 'genre-filter')">
-        <table class="data-table" id="genres-table">
-            <thead>
-                <tr>
-                    <th class="sortable" onclick="sortTable('genres-table', 0, true)">ID ↕</th>
-                    <th class="sortable" onclick="sortTable('genres-table', 1, false)">Name ↕</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody id="genres-tbody">
-                {% for genre in genres %}
-                <tr>
-                    <td style="color: var(--text-muted);">{{ genre.id }}</td>
-                    <td class="td-filter font-bold">
-                        <span class="type-badge song" style="font-size: 1em;">{{ genre.name }}</span>
-                    </td>
-                    <td>
-                        <button class="action-icon" onclick='openEditModal("genre", {{ genre.id }}, {{ genre|tojson }})'>✏️</button>
-                        <button class="action-icon" onclick="deleteItem('genre', {{ genre.id }})">🗑️</button>
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
-
-    <!-- UNIVERSAL EDIT MODAL -->
-    <div class="modal-overlay" id="edit-modal">
-        <div class="modal">
-            <h3 id="modal-title" style="margin-top: 0; border-bottom: 1px solid var(--border-color); padding-bottom: 15px;">Edit Data</h3>
-            <input type="hidden" id="edit-type">
-            <input type="hidden" id="edit-id">
-
-            <div id="fields-container"></div>
-
-            <div class="modal-actions">
-                <button class="btn-outline" style="border: none;" onclick="closeEditModal()">Cancel</button>
-                <button class="btn-primary" onclick="saveEdit()">Save Changes</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="toast" class="toast">Action successful!</div>
-
-    <script>
-        // --- INJECT DATA FOR UNIVERSAL SEARCH ---
-        const dbData = {
-            songs: {{ songs | tojson | safe }},
-            artists: {{ artists | tojson | safe }},
-            albums: {{ albums | tojson | safe }},
-            genres: {{ genres | tojson | safe }}
-        };
-
-        // --- STATE MANAGEMENT ---
-        window.addEventListener("beforeunload", () => {
-            sessionStorage.setItem("activeView", document.querySelector('.view-section.active').id.replace('view-', ''));
-            sessionStorage.setItem("scrollPos", document.querySelector('.main-content').scrollTop);
-
-            // Save input states
-            sessionStorage.setItem("univSearchText", document.getElementById('universal-search').value);
-            sessionStorage.setItem("songFilterText", document.getElementById('song-filter').value);
-            sessionStorage.setItem("artistFilterText", document.getElementById('artist-filter').value);
-            sessionStorage.setItem("albumFilterText", document.getElementById('album-filter').value);
-            sessionStorage.setItem("appleSearchText", document.getElementById('apple-search-input').value);
-        });
-
-        window.addEventListener("load", () => {
-            // Restore View
-            const activeView = sessionStorage.getItem("activeView") || "overview";
-            switchView(activeView);
-
-            // Restore Scroll
-            const scrollPos = sessionStorage.getItem("scrollPos");
-            if (scrollPos) document.querySelector('.main-content').scrollTo(0, parseInt(scrollPos));
-
-            // Restore Inputs & Re-trigger filters
-            const restoreInput = (id, sessionKey, triggerFunc) => {
-                const val = sessionStorage.getItem(sessionKey);
-                if (val) {
-                    document.getElementById(id).value = val;
-                    triggerFunc();
-                }
-            };
-
-            restoreInput('universal-search', 'univSearchText', runUniversalSearch);
-            restoreInput('song-filter', 'songFilterText', () => filterTable('manage-tbody', 'song-filter'));
-            restoreInput('artist-filter', 'artistFilterText', () => filterTable('artists-tbody', 'artist-filter'));
-            restoreInput('album-filter', 'albumFilterText', () => filterTable('albums-tbody', 'album-filter'));
-
-            if (sessionStorage.getItem("appleSearchText")) {
-                document.getElementById('apple-search-input').value = sessionStorage.getItem("appleSearchText");
-                if (document.getElementById('keep-search-box').checked) searchApple();
-            }
-
-            // Restore Toast
-            const pendingToast = sessionStorage.getItem("pendingToast");
-            if (pendingToast) {
-                showToast(pendingToast);
-                sessionStorage.removeItem("pendingToast");
-            }
-        });
-
-        // --- UI ROUTING ---
-        function switchView(viewName) {
-            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
-
-            document.getElementById('view-' + viewName).classList.add('active');
-            document.getElementById('nav-' + viewName).classList.add('active');
-        }
-
-        function showToast(message, isError = false) {
-            const toast = document.getElementById('toast');
-            toast.innerText = message;
-            toast.className = 'toast show' + (isError ? ' error' : '');
-            setTimeout(() => toast.className = 'toast', 3000);
-        }
-
-        // --- UNIVERSAL SEARCH ENGINE ---
-        function runUniversalSearch() {
-        const rawQuery = document.getElementById('universal-search').value.trim().toLowerCase();
-        const container = document.getElementById('universal-results-container');
-
-        if (!rawQuery) {
-            container.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 40px;">Type above to search across all tables.</div>';
-            return;
-        }
-
-        // Split search query into individual words for loose/multi-keyword matching
-        const terms = rawQuery.split(/\s+/).filter(Boolean);
-        const matchesAllTerms = (targetStr) => {
-            const text = (targetStr || '').toLowerCase();
-            return terms.every(term => text.includes(term));
-        };
-
-        const showSongs = document.getElementById('u-show-songs') ? document.getElementById('u-show-songs').checked : true;
-        const showArtists = document.getElementById('u-show-artists') ? document.getElementById('u-show-artists').checked : true;
-        const showAlbums = document.getElementById('u-show-albums') ? document.getElementById('u-show-albums').checked : true;
-        const showGenres = document.getElementById('u-show-genres') ? document.getElementById('u-show-genres').checked : true;
-
-        const showId = document.getElementById('u-show-id').checked;
-        const showCover = document.getElementById('u-show-cover').checked;
-        const showStats = document.getElementById('u-show-stats').checked;
-
-        let results = [];
-
-        // 1. Search Songs (combines title, artist, album, genres)
-        if (showSongs && dbData.songs) {
-            dbData.songs.forEach(s => {
-                const searchable = `${s.title} ${s.artist || ''} ${s.album || ''} ${s.genres || ''}`;
-                if (matchesAllTerms(searchable)) results.push({ type: 'song', data: s });
-            });
-        }
-
-        // 2. Search Artists
-        if (showArtists && dbData.artists) {
-            dbData.artists.forEach(a => {
-                if (matchesAllTerms(a.name)) results.push({ type: 'artist', data: a });
-            });
-        }
-
-        // 3. Search Albums
-        if (showAlbums && dbData.albums) {
-            dbData.albums.forEach(al => {
-                const searchable = `${al.title} ${al.release_date || ''}`;
-                if (matchesAllTerms(searchable)) results.push({ type: 'album', data: al });
-            });
-        }
-
-        // 4. Search Genres
-        if (showGenres && dbData.genres) {
-            dbData.genres.forEach(g => {
-                if (matchesAllTerms(g.name)) results.push({ type: 'genre', data: g });
-            });
-        }
-
-        if (results.length === 0) {
-            container.innerHTML = '<div style="color: var(--text-muted); text-align: center; padding: 40px;">No matches found across active tables.</div>';
-            return;
-        }
-
-        let html = '';
-        results.forEach(item => {
-            const type = item.type;
-            const d = item.data;
-            const title = (type === 'artist' || type === 'genre') ? d.name : d.title;
-
-            // Rich Cover Art handling
-            let coverHTML = '';
-            if (showCover) {
-                if (type === 'genre') {
-                    coverHTML = `<div class="u-cover-wrap"><span style="font-size: 1.2em;">🏷️</span></div>`;
-                } else if (d.cover_url) {
-                    const circleClass = type === 'artist' ? 'circle' : '';
-                    coverHTML = `<div class="u-cover-wrap ${circleClass}"><img src="${d.cover_url}" alt=""></div>`;
-                } else {
-                    const icon = type === 'artist' ? '👤' : (type === 'album' ? '💿' : '🎵');
-                    coverHTML = `<div class="u-cover-wrap"><span>${icon}</span></div>`;
-                }
-            }
-
-            // Contextual Info & Tags
-            let metaBadges = [];
-            if (showId) metaBadges.push(`<span class="chip">ID: ${d.id}</span>`);
-
-            if (type === 'song') {
-                if (d.artist) metaBadges.push(`<span>by <strong>${d.artist}</strong></span>`);
-                if (d.album) metaBadges.push(`<span class="chip">💿 ${d.album}</span>`);
-                if (d.genres) {
-                    d.genres.split(',').forEach(g => {
-                        if (g.trim()) metaBadges.push(`<span class="chip" style="color: #ffb833;">#${g.trim()}</span>`);
-                    });
-                }
-                if (showStats && d.elo_score) {
-                    const elo = Math.round(d.elo_score);
-                    let tier = elo >= 1600 ? 's-tier' : (elo >= 1400 ? 'a-tier' : (elo >= 1200 ? 'b-tier' : 'c-tier'));
-                    metaBadges.push(`<span class="chip chip-elo ${tier}">⚡ ${elo} Elo</span>`);
-                    if (d.matches_played !== undefined) metaBadges.push(`<span class="chip">${d.matches_played} matches</span>`);
-                }
-            } else if (type === 'artist') {
-                if (showStats && dbData.songs) {
-                    const count = dbData.songs.filter(s => s.artist && s.artist.toLowerCase().includes(d.name.toLowerCase())).length;
-                    metaBadges.push(`<span class="chip" style="color: #5b9bff;">🎵 ${count} Tracks</span>`);
-                }
-            } else if (type === 'album') {
-                if (d.release_date) metaBadges.push(`<span class="chip">📅 ${d.release_date}</span>`);
-                const songCount = d.song_count !== undefined ? d.song_count : (dbData.songs ? dbData.songs.filter(s => s.album === d.title).length : 0);
-                metaBadges.push(`<span class="chip" style="color: #bf77ff;">💿 ${songCount} Tracks</span>`);
-            } else if (type === 'genre') {
-                if (dbData.songs) {
-                    const count = dbData.songs.filter(s => s.genres && s.genres.toLowerCase().includes(d.name.toLowerCase())).length;
-                    metaBadges.push(`<span class="chip" style="color: #ffb833;">🏷️ Tagged in ${count} Songs</span>`);
-                }
-            }
-
-            html += `
-                <div class="u-result-card">
-                    ${coverHTML}
-                    <div class="u-info">
-                        <div class="u-header">
-                            <span class="u-title">${title}</span>
-                            <span class="type-badge ${type}">${type}</span>
-                        </div>
-                        <div class="u-meta-row">${metaBadges.join('')}</div>
-                    </div>
-                    <div style="display: flex; gap: 8px;">
-                        <button class="btn-outline" onclick='openEditModal("${type}", ${d.id}, ${JSON.stringify(d).replace(/'/g, "&#39;")})' style="padding: 7px 14px; font-size: 0.88em;">Edit</button>
-                        <button class="action-icon" onclick="deleteItem('${type}', ${d.id})" title="Delete">🗑️</button>
-                    </div>
-                </div>
-            `;
-        });
-
-        container.innerHTML = html;
-    }
-
-        // --- SORTING & FILTERING ---
-        let sortDirections = {};
-        function sortTable(tableId, colIndex, isNumeric) {
-            const tableBody = document.getElementById(tableId).querySelector('tbody');
-            const rows = Array.from(tableBody.rows);
-
-            sortDirections[tableId] = !sortDirections[tableId];
-            const isAsc = sortDirections[tableId];
-
-            rows.sort((a, b) => {
-                let valA = a.cells[colIndex].textContent.trim();
-                let valB = b.cells[colIndex].textContent.trim();
-
-                if (isNumeric) {
-                    return isAsc ? parseInt(valA || 0) - parseInt(valB || 0) : parseInt(valB || 0) - parseInt(valA || 0);
-                } else {
-                    return isAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
-                }
-            });
-
-            tableBody.innerHTML = "";
-            rows.forEach(row => tableBody.appendChild(row));
-        }
-
-        function filterTable(tbodyId, inputId) {
-            const filter = document.getElementById(inputId).value.toLowerCase();
-            const rows = document.getElementById(tbodyId).getElementsByTagName('tr');
-
-            for (let i = 0; i < rows.length; i++) {
-                const cells = rows[i].querySelectorAll('.td-filter');
-                let match = false;
-                cells.forEach(cell => {
-                    if (cell.textContent.toLowerCase().includes(filter)) match = true;
-                });
-                rows[i].style.display = match ? "" : "none";
-            }
-        }
-
-        // --- CRUD OPERATIONS ---
-        async function searchApple() {
-            const query = document.getElementById('apple-search-input').value.trim();
-            if (!query) return;
-
-            document.getElementById('loading').style.display = 'block';
-            document.getElementById('apple-results').innerHTML = '';
-
-            try {
-                const response = await fetch(`/api/dev/search_apple?q=${encodeURIComponent(query)}`);
-                const data = await response.json();
-
-                if (data.error) throw new Error(data.error);
-
-                let html = '';
-                data.forEach((track) => {
-                    html += `
-                        <div class="u-result-card">
-                            <img src="${track.cover_url}" class="table-cover">
-                            <div class="u-info">
-                                <div class="u-title">${track.title}</div>
-                                <div class="u-meta">${track.artist} • ${track.album}</div>
-                            </div>
-                            <button class="btn-outline" style="color: var(--spotify-green); border-color: var(--spotify-green);" onclick='addSong(${JSON.stringify(track).replace(/'/g, "&#39;")}, this)'>Add to DB</button>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('apple-results').innerHTML = html || '<div style="color: var(--text-muted);">No results found.</div>';
-            } catch (err) {
-                showToast("Search failed: " + err.message, true);
-            } finally {
-                document.getElementById('loading').style.display = 'none';
-            }
-        }
-
-        async function addSong(trackData, btnElement) {
-            try {
-                const response = await fetch('/api/dev/add_song', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(trackData)
-                });
-                const result = await response.json();
-
-                if (response.ok) {
-                    if (document.getElementById('keep-search-box').checked) {
-                        showToast(result.message);
-                        btnElement.innerText = "Added";
-                        btnElement.disabled = true;
-                        btnElement.style.borderColor = "#333";
-                        btnElement.style.color = "var(--text-muted)";
-                    } else {
-                        sessionStorage.setItem("pendingToast", result.message);
-                        sessionStorage.removeItem("appleSearchText");
-                        window.location.reload();
-                    }
-                } else {
-                    showToast(result.message, true);
-                }
-            } catch (err) {
-                showToast("Failed to add song.", true);
-            }
-        }
-
-        function openEditModal(type, id, data) {
-            document.getElementById('edit-type').value = type;
-            document.getElementById('edit-id').value = id;
-            document.getElementById('modal-title').innerText = `Edit ${type.charAt(0).toUpperCase() + type.slice(1)}`;
-
-            let fieldsHTML = '';
-            const createInput = (label, id, val) => `<div class="form-group"><label>${label}</label><input type="text" class="text-input" id="${id}" value="${val || ''}"></div>`;
-
-            if (type === 'song') {
-                fieldsHTML = createInput('Title', 'edit-title', data.title) +
-                             createInput('Artist (Comma Separated)', 'edit-artist', data.artist) +
-                             createInput('Album', 'edit-album', data.album) +
-                             createInput('Genres (Comma Separated)', 'edit-genres', data.genres) +
-                             createInput('Cover URL', 'edit-cover', data.cover_url) +
-                             createInput('Audio URL', 'edit-audio', data.audio_url);
-            } else if (type === 'artist') {
-                fieldsHTML = createInput('Name', 'edit-name', data.name) +
-                             createInput('Profile Picture URL', 'edit-cover', data.cover_url);
-            } else if (type === 'album') {
-                fieldsHTML = createInput('Title', 'edit-title', data.title) +
-                             createInput('Release Date', 'edit-date', data.release_date) +
-                             createInput('Cover URL', 'edit-cover', data.cover_url);
-            }
-            else if (type === 'genre') {
-                fieldsHTML = createInput('Name', 'edit-name', data.name);
-            }
-
-            document.getElementById('fields-container').innerHTML = fieldsHTML;
-            document.getElementById('edit-modal').style.display = 'flex';
-        }
-
-        function closeEditModal() {
-            document.getElementById('edit-modal').style.display = 'none';
-        }
-
-        async function saveEdit() {
-            const type = document.getElementById('edit-type').value;
-            const id = document.getElementById('edit-id').value;
-            let payload = {};
-
-            if (type === 'song') {
-                payload = { title: document.getElementById('edit-title').value, artist: document.getElementById('edit-artist').value, album: document.getElementById('edit-album').value, genres: document.getElementById('edit-genres').value, cover_url: document.getElementById('edit-cover').value, audio_url: document.getElementById('edit-audio').value };
-            } else if (type === 'artist') {
-                payload = { name: document.getElementById('edit-name').value, cover_url: document.getElementById('edit-cover').value };
-            } else if (type === 'album') {
-                payload = { title: document.getElementById('edit-title').value, release_date: document.getElementById('edit-date').value, cover_url: document.getElementById('edit-cover').value };
-            }
-            else if (type === 'genre') {
-                payload = { name: document.getElementById('edit-name').value };
-            }
-
-            try {
-                const response = await fetch(`/api/dev/edit_${type}/${id}`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
-                if (response.ok) {
-                    sessionStorage.setItem("pendingToast", `${type} updated successfully.`);
-                    window.location.reload();
-                } else {
-                    const result = await response.json();
-                    showToast(result.message || "Failed to update.", true);
-                }
-            } catch (err) { showToast("Error updating item.", true); }
-        }
-
-        async function deleteItem(type, id) {
-            const warnings = {
-                'song': 'Delete this song? Elo will be redistributed to maintain balance.',
-                'artist': 'Delete this artist? They will be removed from all associated songs.',
-                'album': 'Delete this album? Associated songs will lose their album connection.'
-            };
-            if (!confirm(warnings[type])) return;
-            try {
-                const response = await fetch(`/api/dev/delete_${type}/${id}`, { method: 'DELETE' });
-                if (response.ok) {
-                    sessionStorage.setItem("pendingToast", "Deletion successful.");
-                    window.location.reload();
-                } else { showToast("Failed to delete.", true); }
-            } catch (err) { showToast("Error deleting item.", true); }
-        }
-
-        async function syncDatabase() {
-            const btn = document.getElementById('sync-btn');
-            const spinner = document.getElementById('sync-spinner');
-            const text = document.getElementById('sync-text');
-
-            btn.disabled = true;
-            spinner.style.display = 'block';
-            text.innerText = 'Syncing...';
-
-            try {
-                const response = await fetch('/api/dev/sync', { method: 'POST' });
-                const result = await response.json();
-                showToast(result.message, !response.ok);
-            } catch (err) {
-                showToast("Error communicating with server.", true);
-            } finally {
-                btn.disabled = false;
-                spinner.style.display = 'none';
-                text.innerText = 'Sync to GitHub';
-            }
-        }
-
-        async function exportData() {
-            showToast("Generating snapshot...");
-            try {
-                const response = await fetch('/api/dev/export', { method: 'POST' });
-                const result = await response.json();
-                if (response.ok) {
-                    showToast(result.message);
-                } else {
-                    showToast(result.message, true);
-                }
-            } catch (err) {
-                showToast("Error generating export.", true);
-            }
-        }
-    </script>
+<script id="initial-data" type="application/json">{{ {'songs': songs, 'artists': artists, 'albums': albums, 'genres': genres}|tojson }}</script>
+<div class="app">
+<aside class="sidebar">
+  <div class="brand"><div class="brand-mark">SR</div><div><strong>Song Ranker</strong><small>Developer console · v2</small></div></div>
+  <div><div class="nav-label">Workspace</div><nav class="nav" aria-label="Developer sections">
+    <button class="active" data-view="overview"><span class="ico">◈</span>Overview</button>
+    <button data-view="library"><span class="ico">⌕</span>Library explorer</button>
+    <button data-view="add"><span class="ico">＋</span>Add / import</button>
+  </nav></div>
+  <div><div class="nav-label">Manage records</div><nav class="nav">
+    <button data-view="songs"><span class="ico">♫</span>Songs</button>
+    <button data-view="artists"><span class="ico">♙</span>Artists</button>
+    <button data-view="albums"><span class="ico">▤</span>Albums</button>
+    <button data-view="genres"><span class="ico">◇</span>Genres</button>
+  </nav></div>
+  <div><div class="nav-label">Operations</div><nav class="nav">
+    <button data-view="activity"><span class="ico">◷</span>Activity & history</button>
+    <button data-view="tournaments"><span class="ico">♜</span>Tournaments</button>
+    <button data-view="maintenance"><span class="ico">⚒</span>Database workshop</button>
+  </nav></div>
+  <div class="side-bottom"><button class="btn ghost" onclick="exportData()">⇩ Export snapshot</button><button class="btn soft" onclick="syncDatabase()">↥ Sync database</button><div class="side-note"><b>Careful hands mode</b>Destructive tools preview their impact and create backups where supported.</div><a class="btn ghost" href="/dev/logout" style="text-align:center">Lock console ↗</a></div>
+</aside>
+<main class="main">
+<header class="topbar"><div><div class="eyebrow" id="crumb">CONTROL ROOM / OVERVIEW</div><h1 class="page-title" id="page-title">Your library, at a glance.</h1><p class="page-sub" id="page-sub">A clearer command centre for the music catalogue, competition data, and maintenance tools.</p></div><div class="top-actions"><span class="pill"><i class="dot"></i> Admin session active</span><button class="btn" onclick="refreshCurrent()">↻ Refresh</button></div></header>
+<section class="view active" id="view-overview">
+  <div class="grid stats" id="overview-stats"><div class="card"><div class="stat-label">Songs <span>♫</span></div><div class="stat-number" id="stat-songs">—</div><div class="stat-foot">In your catalogue</div></div><div class="card"><div class="stat-label">Artists <span>♙</span></div><div class="stat-number" id="stat-artists">—</div><div class="stat-foot">Distinct artist records</div></div><div class="card"><div class="stat-label">Votes recorded <span>◷</span></div><div class="stat-number" id="stat-history">—</div><div class="stat-foot">Competition history rows</div></div><div class="card"><div class="stat-label">Tournaments <span>♜</span></div><div class="stat-number" id="stat-tournaments">—</div><div class="stat-foot">Saved brackets</div></div></div>
+  <div class="grid two"><div class="card"><div class="panel-title"><div><h3>Find anything</h3><span>Search songs, artists, albums, and genres together</span></div><span class="count" id="search-count">0 results</span></div><div class="search-row"><input id="quick-search" class="input" placeholder="Try a title, artist, album, or genre…" autocomplete="off"><button class="btn primary" onclick="runSearch('quick-search','quick-results')">Search</button></div><div class="results" id="quick-results"><div class="empty">Start typing to search your catalogue.</div></div></div>
+  <div class="card"><div class="panel-title"><div><h3>Database health</h3><span>Integrity and recent maintenance</span></div><button class="btn small" onclick="runIntegrityScan()">Run scan</button></div><div id="health-summary" class="notice">Checking database status…</div><div class="divider"></div><div class="panel-title"><h3>Recent admin changes</h3><button class="btn small ghost" onclick="go('maintenance')">View tools</button></div><div id="recent-audit" class="list"><div class="empty">Loading recent changes…</div></div></div></div>
+  <div class="section-head"><div><h2>Recent activity</h2><p>Latest interactions captured by the current database.</p></div><button class="btn" onclick="go('activity')">Open activity log →</button></div><div class="card" id="overview-activity"><div class="empty">Loading activity…</div></div>
+</section>
+<section class="view" id="view-library"><div class="card"><div class="panel-title"><div><h3>Library explorer</h3><span>One search surface across all core records</span></div><span class="count" id="library-count">0 records</span></div><div class="search-row"><input class="input" id="library-search" placeholder="Search every field shown…"><select class="select" id="library-type" style="max-width:180px"><option value="all">All record types</option><option value="song">Songs</option><option value="artist">Artists</option><option value="album">Albums</option><option value="genre">Genres</option></select><button class="btn" onclick="renderLibrary()">Apply</button></div><div id="library-results" class="results"></div></div></section>
+<section class="view" id="view-add"><div class="section-head" style="margin-top:0"><div><h2>Add music from Apple Music</h2><p>Search by title, artist, or paste an Apple Music track link. Review results before adding.</p></div></div><div class="grid two"><div class="card"><div class="panel-title"><h3>Search Apple Music</h3><span>External lookup</span></div><div class="field"><label for="apple-query">Search term or track URL</label><input id="apple-query" class="input" placeholder="Song title, artist, or https://music.apple.com/…"></div><div class="btn-row" style="align-items:center;gap:14px"><button class="btn primary" onclick="searchApple()">Search tracks</button><label class="checkline" style="margin:0;align-items:center"><input id="apple-keep-results" type="checkbox" checked> Keep results after adding songs</label></div><div id="apple-results" class="results" style="margin-top:15px"></div></div><div class="card"><h3 style="margin-top:0">Import checklist</h3><div class="list"><div class="list-row"><span class="tag song">01</span><div class="grow"><strong>Check the match</strong><small>Confirm title, primary artist, and album before adding.</small></div></div><div class="list-row"><span class="tag album">02</span><div class="grow"><strong>Library relationships</strong><small>Album and artist links are created or reused by the backend.</small></div></div><div class="list-row"><span class="tag genre">03</span><div class="grow"><strong>Genres</strong><small>Genres can be edited after import from the song record.</small></div></div></div><div class="notice warning" style="margin-top:15px">Adding a track changes the live library. Duplicate-title checks run on the server before insertion.</div></div></div></section>
+<section class="view" id="view-songs"><div class="card"><div class="panel-title"><div><h3>Song records</h3><span>Edit metadata and library relationships. Elo changes are handled separately.</span></div><span class="count" id="songs-count">0 songs</span></div><div class="search-row"><input class="input" id="songs-filter" placeholder="Filter by song, artist, album, genre, or ID…" oninput="renderTable('songs')"><button class="btn primary" onclick="go('add')">＋ Add song</button></div><div id="songs-table"></div></div></section>
+<section class="view" id="view-artists"><div class="card"><div class="panel-title"><div><h3>Artist records</h3><span>Names, artwork, and connected catalogue entries</span></div><span class="count" id="artists-count">0 artists</span></div><div class="search-row"><input class="input" id="artists-filter" placeholder="Filter artists…" oninput="renderTable('artists')"></div><div id="artists-table"></div><p class="footnote">New artist records are created when a song is imported or its artist relationship is edited.</p></div></section>
+<section class="view" id="view-albums"><div class="card"><div class="panel-title"><div><h3>Album records</h3><span>Album metadata and song associations</span></div><span class="count" id="albums-count">0 albums</span></div><div class="search-row"><input class="input" id="albums-filter" placeholder="Filter albums…" oninput="renderTable('albums')"></div><div id="albums-table"></div><p class="footnote">New album records are created when songs are added or assigned to an album.</p></div></section>
+<section class="view" id="view-genres"><div class="card"><div class="panel-title"><div><h3>Genre taxonomy</h3><span>Keep tags tidy and consistent</span></div><span class="count" id="genres-count">0 genres</span></div><div class="search-row"><input class="input" id="genres-filter" placeholder="Filter genres…" oninput="renderTable('genres')"></div><div id="genres-table"></div><p class="footnote">Genres are created through song relationships. Edit a song to assign one or more comma-separated genre names.</p></div></section>
+<section class="view" id="view-activity"><div class="grid two"><div class="card"><div class="panel-title"><div><h3>Vote and matchup history</h3><span>Most recent stored rows</span></div><button class="btn small" onclick="loadActivity()">Refresh</button></div><div id="activity-votes" class="list"><div class="empty">Loading history…</div></div></div><div class="card"><div class="panel-title"><div><h3>Trivia maintenance</h3><span>Correct or clear a song’s aggregate stats</span></div></div><div class="field"><label>Song</label><select id="trivia-song" class="select"></select></div><div class="form-grid"><div class="field"><label>Attempts</label><input id="trivia-attempts" type="number" min="0" class="input" value="0"></div><div class="field"><label>Correct</label><input id="trivia-correct" type="number" min="0" class="input" value="0"></div></div><div class="btn-row"><button class="btn primary" onclick="saveTriviaStats()">Save stats</button><button class="btn danger" onclick="deleteTriviaStats()">Clear stats</button></div><div class="divider"></div><div class="panel-title"><div><h3>Manual Elo correction</h3><span>Exceptional fix only, always logged</span></div></div><div class="field"><label>Song</label><select id="elo-song" class="select"></select></div><div class="field"><label>New Elo (0 to 5000)</label><input id="elo-value" type="number" min="0" max="5000" class="input" placeholder="e.g. 1200"></div><div class="field"><label>Reason for correction</label><textarea id="elo-reason" class="textarea" placeholder="Explain why this rating needs a manual correction"></textarea></div><button class="btn warn" onclick="correctSongElo()">Apply logged correction</button></div></div></section>
+<section class="view" id="view-tournaments"><div class="card"><div class="panel-title"><div><h3>Tournament archive</h3><span>Inspect stored tournament metadata and bracket size</span></div><button class="btn" onclick="loadActivity()">↻ Refresh</button></div><div class="notice warning" style="margin-bottom:14px">Deleting a tournament permanently removes its saved bracket and match records. Completed results may also be part of your historical record, so inspect before deleting.</div><div id="tournament-list" class="list"><div class="empty">Loading tournaments…</div></div></div></section>
+<section class="view" id="view-maintenance">
+  <div class="notice" style="margin-bottom:15px"><b>Database workshop</b> · Start with a backup before any destructive operation. Restoring a backup replaces the current database state.</div>
+  <div class="grid tool-grid">
+    <div class="tool-card"><h3>Database overview</h3><p>Counts, integrity status, relationship errors, recent events, and available backups.</p><div class="btn-row"><button class="btn primary" onclick="loadOverview()">Refresh overview</button><button class="btn" onclick="runIntegrityScan()">Integrity scan</button></div><div class="output" id="overview-output">Loading overview…</div></div>
+    <div class="tool-card"><h3>Back up database</h3><p>Create a point-in-time SQLite backup before repairs, restores, or resets.</p><button class="btn primary" onclick="createBackup()">Create backup now</button><div class="output" id="backup-output">No backup action yet.</div></div>
+    <div class="tool-card"><h3>Restore a backup</h3><p>Candidate backups are checked before restore. A safety backup is made first.</p><div class="field"><label>Backup file</label><select id="backup-select" class="select"><option value="">Load backups first</option></select></div><button class="btn warn" onclick="restoreBackup()">Restore selected backup</button><div class="output" id="restore-output">Restoring replaces current database contents.</div></div>
+    <div class="tool-card"><h3>Duplicate finder</h3><p>Find likely duplicate song titles, artist names, and album titles. Results are a review list, not automatic merges.</p><button class="btn" onclick="runIntegrityScan()">Scan duplicates</button><div class="output" id="duplicate-output">No scan run yet.</div></div>
+    <div class="tool-card"><h3>Reset competition data</h3><p>Keep songs, albums, artists, genres, and music links. Clear votes, ratings history, trivia totals, and tournament records.</p><button class="btn danger" onclick="previewReset()">Preview reset impact</button><div class="output" id="reset-preview">No reset preview yet.</div><div id="reset-confirm-area" class="hidden"><div class="field" style="margin-top:10px"><label>Type RESET COMPETITION to confirm</label><input id="reset-confirm" class="input" placeholder="RESET COMPETITION"></div><button class="btn danger" onclick="resetCompetition()">Back up and reset competition</button></div></div>
+    <div class="tool-card"><h3>Database consistency</h3><p>Run SQLite integrity and foreign-key checks, plus a duplicate scan for core names.</p><button class="btn" onclick="runIntegrityScan()">Run checks</button><div class="output" id="integrity-output">No integrity scan run yet.</div></div>
+    <div class="tool-card"><h3>Export and source sync</h3><p>Keep a text snapshot or run the configured database sync process.</p><div class="btn-row"><button class="btn" onclick="exportData()">Export to TXT</button><button class="btn soft" onclick="syncDatabase()">Sync database</button></div><div class="output" id="sync-output">Sync is a remote operation. Confirm your project’s configured Git credentials before using it.</div></div>
+    <div class="tool-card"><h3>Admin audit trail</h3><p>Recent changes made through supported admin tools.</p><div id="audit-full" class="output">Loading audit history…</div></div>
+  </div>
+  <div class="section-head"><div><h2>Activity event stream</h2><p>New interaction events are captured going forward where instrumentation is available.</p></div><button class="btn" onclick="loadActivity()">Refresh stream</button></div><div class="card" id="event-stream"><div class="empty">Loading events…</div></div>
+</section>
+</main></div>
+<div class="modal-backdrop" id="editor-backdrop" role="dialog" aria-modal="true" aria-labelledby="editor-title"><div class="modal"><div class="modal-head"><div><h2 id="editor-title">Edit record</h2><p id="editor-subtitle">Changes are saved to the live database.</p></div><button class="btn small" onclick="closeEditor()" aria-label="Close editor">✕</button></div><form id="editor-form" onsubmit="saveEditor(event)"><div id="editor-fields"></div><div class="modal-actions"><button type="button" class="btn ghost" onclick="closeEditor()">Cancel</button><button class="btn primary" type="submit">Save changes</button></div></form></div></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+const DATA=JSON.parse(document.getElementById('initial-data').textContent);let db={songs:DATA.songs||[],artists:DATA.artists||[],albums:DATA.albums||[],genres:DATA.genres||[]};let currentEditor=null;let overviewCache=null;let activityCache=null;let appleMatches=[];const tableSort={};
+const meta={overview:['CONTROL ROOM / OVERVIEW','Your library, at a glance.','A clearer command centre for the music catalogue, competition data, and maintenance tools.'],library:['WORKSPACE / EXPLORER','One search. Every core record.','Find the record you need, inspect its details, and jump straight into editing.'],add:['LIBRARY / IMPORT','Bring another track into the collection.','Search Apple Music, review the match, then add it to your own catalogue.'],songs:['RECORDS / SONGS','Tune the catalogue, not the algorithm.','Edit song metadata and relationships here. Ratings have their own logged maintenance workflow.'],artists:['RECORDS / ARTISTS','Artist directory','Clean up names and artwork while keeping track relationships visible.'],albums:['RECORDS / ALBUMS','Album catalogue','Manage release metadata and see how many songs are attached to each album.'],genres:['RECORDS / GENRES','Keep your taxonomy neat.','Genre names feed into browsing and statistics, so consistency pays off.'],activity:['OPERATIONS / ACTIVITY','Inspect the competition trail.','Review saved matchups, trivia aggregates, and make carefully logged maintenance corrections.'],tournaments:['OPERATIONS / TOURNAMENTS','Tournament archive','Inspect saved brackets and remove a tournament only when you are sure it should go.'],maintenance:['OPERATIONS / DATABASE WORKSHOP','Backups first. Then maintenance.','Integrity checks, duplicate review, backup restoration, and a library-preserving competition reset.']};
+const $=id=>document.getElementById(id);const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const num=v=>Number(v||0).toLocaleString();const img=(url,alt='')=>url?`<img class="cover" loading="lazy" src="${esc(url)}" alt="${esc(alt)}" onerror="this.style.display='none'">`:`<div class="cover cover-placeholder">♫</div>`;
+function toast(message,error=false){const el=$('toast');el.textContent=message;el.className='toast show'+(error?' error':'');clearTimeout(toast.timer);toast.timer=setTimeout(()=>el.className='toast',3500)}
+async function api(url,options={}){const res=await fetch(url,{credentials:'same-origin',headers:{'Content-Type':'application/json',...(options.headers||{})},...options});let data={};try{data=await res.json()}catch{}if(!res.ok)throw new Error(data.message||data.error||`Request failed (${res.status})`);return data}
+function go(view){if(!meta[view])return;document.querySelectorAll('.view').forEach(e=>e.classList.toggle('active',e.id===`view-${view}`));document.querySelectorAll('[data-view]').forEach(e=>e.classList.toggle('active',e.dataset.view===view));$('crumb').textContent=meta[view][0];$('page-title').textContent=meta[view][1];$('page-sub').textContent=meta[view][2];if(view==='overview')loadOverview();if(['songs','artists','albums','genres'].includes(view))renderTable(view);if(view==='library')renderLibrary();if(view==='activity'||view==='tournaments')loadActivity();if(view==='maintenance'){loadOverview();loadActivity()}if(view==='activity')populateSongSelects()}
+document.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>go(b.dataset.view)));$('quick-search').addEventListener('keydown',e=>{if(e.key==='Enter')runSearch('quick-search','quick-results')});$('library-search').addEventListener('input',renderLibrary);$('library-type').addEventListener('change',renderLibrary);
+function allRecords(){return [...db.songs.map(x=>({...x,_type:'song',_name:x.title,_sub:`${x.artist||'Unknown artist'} · ${x.album||'No album'}`})),...db.artists.map(x=>({...x,_type:'artist',_name:x.name,_sub:'Artist record'})),...db.albums.map(x=>({...x,_type:'album',_name:x.title,_sub:`${x.song_count??db.songs.filter(s=>s.album===x.title).length} songs`})),...db.genres.map(x=>({...x,_type:'genre',_name:x.name,_sub:'Genre tag'}))]}
+function resultCard(r){let id=r.id;let cover=r.cover_url||'';let type=r._type;let metaText=type==='song'?`${r.artist||'Unknown artist'} · ${r.album||'No album'} · Elo ${Math.round(r.elo_score||1200)}`:r._sub;return `<div class="result">${img(cover,r._name)}<div class="grow"><strong>${esc(r._name)}</strong><small>${esc(metaText||'')}</small></div><span class="tag ${type}">${type}</span><button class="btn small" onclick="editRecord('${type}',${Number(id)})">Open</button></div>`}
+function runSearch(inputId,targetId){const q=$(inputId).value.trim().toLowerCase();const results=allRecords().filter(r=>!q||[r._name,r._sub,r.title,r.name,r.artist,r.album,r.genres,r.id].some(v=>String(v??'').toLowerCase().includes(q))).slice(0,80);$(targetId).innerHTML=results.length?results.map(resultCard).join(''):'<div class="empty">No matching records. Try a shorter search.</div>';if(targetId==='quick-results')$('search-count').textContent=`${results.length} result${results.length===1?'':'s'}`}
+function renderLibrary(){const q=$('library-search').value.trim().toLowerCase(),type=$('library-type').value;const results=allRecords().filter(r=>(type==='all'||r._type===type)&&(!q||[r._name,r._sub,r.title,r.name,r.artist,r.album,r.genres,r.id].some(v=>String(v??'').toLowerCase().includes(q))));$('library-count').textContent=`${results.length} records`;$('library-results').innerHTML=results.length?results.slice(0,200).map(resultCard).join(''):'<div class="empty">No matching records.</div>'}
+function sortableHeader(type,label,key){const active=tableSort[type]?.key===key;const mark=active?(tableSort[type].dir===1?' ↑':' ↓'):' ↕';return `<th class="sortable" aria-label="Sort by ${label}" onclick="sortTable('${type}','${key}')">${label}${mark}</th>`}function sortTable(type,key){const old=tableSort[type];tableSort[type]={key,dir:old?.key===key?-old.dir:1};renderTable(type)}
+function renderTable(type){const rows=db[type]||[],filter=($(type+'-filter')?.value||'').toLowerCase();const filtered=rows.filter(r=>JSON.stringify(r).toLowerCase().includes(filter));const sort=tableSort[type];if(sort){filtered.sort((a,b)=>{const av=sort.key==='song_count'?(a.song_count??db.songs.filter(x=>x.album===a.title).length):sort.key==='linked_songs'?db.songs.filter(x=>(x.artist||'').toLowerCase().includes(String(x.name||'').toLowerCase())).length:a[sort.key];const bv=sort.key==='song_count'?(b.song_count??db.songs.filter(x=>x.album===b.title).length):b[sort.key];const an=Number(av),bn=Number(bv);let cmp=av==null?-1: bv==null?1:(!Number.isNaN(an)&&!Number.isNaN(bn)&&String(av).trim()!==''&&String(bv).trim()!==''?an-bn:String(av).localeCompare(String(bv),undefined,{numeric:true,sensitivity:'base'}));return cmp*sort.dir})}$(type+'-count').textContent=`${filtered.length} ${type}`;const target=$(type+'-table');if(!filtered.length){target.innerHTML='<div class="empty">No records match this filter.</div>';return}let html='<div class="table-wrap"><table class="table"><thead><tr>';if(type==='songs')html+=sortableHeader(type,'Song','title')+sortableHeader(type,'Album','album')+sortableHeader(type,'Elo','elo_score')+sortableHeader(type,'Matches','matches_played')+'<th>Actions</th>';if(type==='artists')html+=sortableHeader(type,'Artist','name')+sortableHeader(type,'Record ID','id')+'<th>Actions</th>';if(type==='albums')html+=sortableHeader(type,'Album','title')+sortableHeader(type,'Release date','release_date')+sortableHeader(type,'Songs','song_count')+'<th>Actions</th>';if(type==='genres')html+=sortableHeader(type,'Genre','name')+sortableHeader(type,'Record ID','id')+'<th>Actions</th>';html+='</tr></thead><tbody>';for(const r of filtered.slice(0,500)){if(type==='songs')html+=`<tr><td><div class="entity">${img(r.cover_url,r.title)}<div><strong>${esc(r.title)}</strong><small>${esc(r.artist||'Unknown artist')} · ID ${r.id}</small></div></div></td><td>${esc(r.album||'Unassigned')}<small class="muted" style="display:block">${esc(r.genres||'')}</small></td><td><b>${Math.round(r.elo_score||1200)}</b></td><td>${num(r.matches_played)}</td><td><div class="btn-row"><button class="btn small" onclick="editRecord('song',${r.id})">Edit</button><button class="btn small" onclick="openMaintenanceForSong(${r.id})">Stats</button><button class="btn small danger" onclick="deleteRecord('song',${r.id})">Delete</button></div></td></tr>`;else if(type==='artists')html+=`<tr><td><div class="entity">${img(r.cover_url,r.name)}<div><strong>${esc(r.name)}</strong><small>${db.songs.filter(s=>(s.artist||'').toLowerCase().includes(String(r.name||'').toLowerCase())).length} linked songs (approx.)</small></div></div></td><td class="mono">#${r.id}</td><td><div class="btn-row"><button class="btn small" onclick="editRecord('artist',${r.id})">Edit</button><button class="btn small danger" onclick="deleteRecord('artist',${r.id})">Delete</button></div></td></tr>`;else if(type==='albums')html+=`<tr><td><div class="entity">${img(r.cover_url,r.title)}<div><strong>${esc(r.title)}</strong><small>ID ${r.id}</small></div></div></td><td>${esc(r.release_date||'—')}</td><td>${num(r.song_count??db.songs.filter(s=>s.album===r.title).length)}</td><td><div class="btn-row"><button class="btn small" onclick="editRecord('album',${r.id})">Edit</button><button class="btn small danger" onclick="deleteRecord('album',${r.id})">Delete</button></div></td></tr>`;else html+=`<tr><td><strong>${esc(r.name)}</strong></td><td class="mono">#${r.id}</td><td><div class="btn-row"><button class="btn small" onclick="editRecord('genre',${r.id})">Edit</button><button class="btn small danger" onclick="deleteRecord('genre',${r.id})">Delete</button></div></td></tr>`}html+='</tbody></table></div>';target.innerHTML=html}
+function editorField(label,name,value,opts={}){let cls=opts.span?'span2':'';if(opts.textarea)return `<div class="field ${cls}"><label>${label}</label><textarea class="textarea" name="${name}" ${opts.required?'required':''}>${esc(value)}</textarea></div>`;return `<div class="field ${cls}"><label>${label}</label><input class="input" name="${name}" value="${esc(value)}" ${opts.required?'required':''} ${opts.type?`type="${opts.type}"`:''}></div>`}
+function editRecord(type,id){const row=(db[type==='song'?'songs':type==='artist'?'artists':type==='album'?'albums':'genres']||[]).find(r=>Number(r.id)===Number(id));if(!row)return toast('Record no longer exists in the current list. Refresh and try again.',true);currentEditor={type,id,row};$('editor-title').textContent=`Edit ${type}`;$('editor-subtitle').textContent=`Record #${id} · Changes save to the live database.`;let f='';if(type==='song'){f='<div class="form-grid">'+editorField('Song title','title',row.title,{required:true})+editorField('Artist(s), comma-separated','artist',row.artist||'',{required:true})+editorField('Album','album',row.album||'')+editorField('Genre(s), comma-separated','genres',row.genres||'')+editorField('Cover artwork URL','cover_url',row.cover_url||'',{span:true})+editorField('Audio preview URL','audio_url',row.audio_url||'',{span:true})+'</div><div class="notice warning">Elo and match counters are intentionally not edited here. Use the logged correction tool under Activity & history for exceptional Elo fixes.</div>'}else if(type==='artist'){f='<div class="form-grid">'+editorField('Artist name','name',row.name,{required:true})+editorField('Cover artwork URL','cover_url',row.cover_url||'',{span:true})+'</div>'}else if(type==='album'){f='<div class="form-grid">'+editorField('Album title','title',row.title,{required:true})+editorField('Release date','release_date',row.release_date||'')+editorField('Cover artwork URL','cover_url',row.cover_url||'',{span:true})+'</div>'}else{f='<div class="form-grid">'+editorField('Genre name','name',row.name,{required:true})+'</div>'}$('editor-fields').innerHTML=f;$('editor-backdrop').classList.add('open')}
+function closeEditor(){$('editor-backdrop').classList.remove('open');currentEditor=null}async function saveEditor(e){e.preventDefault();if(!currentEditor)return;const {type,id}=currentEditor;const data=Object.fromEntries(new FormData($('editor-form')).entries());let url;if(type==='song')url=`/api/dev/edit_song/${id}`;else url=`/api/dev/edit_${type}/${id}`;try{const res=await api(url,{method:'POST',body:JSON.stringify(data)});toast(res.message||'Record updated.');closeEditor();await reloadLibrary();renderTable(type==='song'?'songs':type==='artist'?'artists':type==='album'?'albums':'genres');if($('view-library').classList.contains('active'))renderLibrary();}catch(err){toast(err.message,true)}}
+async function deleteRecord(type,id){const key=type==='song'?'songs':type==='artist'?'artists':type==='album'?'albums':'genres';const row=(db[key]||[]).find(r=>Number(r.id)===Number(id));const name=row?(row.title||row.name):`ID ${id}`;const impact=type==='song'?'This also removes the song’s vote history and trivia row, and redistributes its Elo offset.':type==='artist'?'This removes artist links from songs.':type==='album'?'Songs will be left without this album assignment.':'This removes the genre links from songs.';if(!confirm(`Delete ${type} “${name}” (ID ${id})?\n\n${impact}\n\nThis cannot be undone unless you restore a backup.`))return;try{const res=await api(`/api/dev/delete_${type}/${id}`,{method:'DELETE'});toast(res.message||'Record deleted.');await reloadLibrary();renderTable(type==='song'?'songs':type==='artist'?'artists':type==='album'?'albums':'genres')}catch(err){toast(err.message,true)}}
+async function reloadLibrary(){const response=await fetch('/dev/dashboard',{credentials:'same-origin'});if(!response.ok)throw new Error('Could not refresh the library data.');const html=await response.text();const doc=new DOMParser().parseFromString(html,'text/html');const node=doc.getElementById('initial-data');if(!node)throw new Error('The refreshed library data was not found.');const data=JSON.parse(node.textContent);db={songs:data.songs||[],artists:data.artists||[],albums:data.albums||[],genres:data.genres||[]};populateSongSelects();renderTable('songs');renderTable('artists');renderTable('albums');renderTable('genres');renderLibrary()}
+async function searchApple(){const q=$('apple-query').value.trim();if(!q)return toast('Enter a search term or Apple Music track link.',true);$('apple-results').innerHTML='<div class="empty">Searching Apple Music…</div>';try{const data=await api('/api/dev/search_apple?q='+encodeURIComponent(q));if(data.error)throw new Error(data.error);if(!data.length){$('apple-results').innerHTML='<div class="empty">No results found. Try another query.</div>';return}appleMatches=data;$('apple-results').innerHTML=data.map((r,i)=>`<div class="result">${img(r.cover_url,r.title)}<div class="grow"><strong>${esc(r.title)}</strong><small>${esc(r.artist)} · ${esc(r.album||'Unknown album')}</small></div><button class="btn primary small" onclick="addSongFromApple(${i},this)">Add song</button></div>`).join('')}catch(e){$('apple-results').innerHTML=`<div class="notice danger">${esc(e.message)}</div>`}}
+async function addSongFromApple(index,button){const track=appleMatches[index];if(!track)return toast('That search result is no longer available.',true);const genres=prompt('Optional genres, separated by commas:','');if(genres===null)return;button.disabled=true;try{const res=await api('/api/dev/add_song',{method:'POST',body:JSON.stringify({...track,genres})});toast(res.message||'Song added.');await reloadLibrary();if($('apple-keep-results')?.checked){button.textContent='Added ✓';button.classList.remove('primary');button.classList.add('soft');button.disabled=true}else{$('apple-results').innerHTML='<div class="notice">Track added. You can continue importing or edit its details from Songs.</div>'}}catch(e){toast(e.message,true);button.disabled=false}}
+async function loadOverview(){try{const d=await api('/api/dev/overview');overviewCache=d;const c=d.counts||{};$('stat-songs').textContent=num(c.songs);$('stat-artists').textContent=num(c.artists);$('stat-history').textContent=num(c.history);$('stat-tournaments').textContent=num(c.tournaments);$('health-summary').className='notice'+(d.integrity==='ok'&&!d.foreign_key_errors?'':' warning');$('health-summary').innerHTML=`SQLite integrity: <b>${esc(d.integrity)}</b><br>Foreign-key issues: <b>${num(d.foreign_key_errors)}</b><br>Available backups: <b>${num((d.backups||[]).length)}</b>`;$('recent-audit').innerHTML=(d.recent_audit||[]).length?d.recent_audit.slice(0,6).map(a=>`<div class="list-row"><div class="grow"><strong>${esc(a.action)}</strong><small>${esc(a.created_at||'')} · ${esc(a.details||'')}</small></div></div>`).join(''):'<div class="empty">No admin changes logged yet.</div>';$('overview-output').textContent=JSON.stringify({counts:c,integrity:d.integrity,foreign_key_errors:d.foreign_key_errors,backups:d.backups},null,2);$('audit-full').textContent=(d.recent_audit||[]).map(a=>`#${a.id} · ${a.created_at} · ${a.action}\n${a.details||''}`).join('\n\n')||'No admin audit rows found.';const select=$('backup-select');select.innerHTML='<option value="">Choose a backup…</option>'+(d.backups||[]).map(b=>`<option value="${esc(b.name)}">${esc(b.name)} · ${num(Math.round(b.size/1024))} KB</option>`).join('');$('backup-select').dataset.loaded='1';}catch(e){$('health-summary').className='notice danger';$('health-summary').textContent=`Could not load database overview: ${e.message}`;$('overview-output').textContent=e.message}}
+async function createBackup(){try{const d=await api('/api/dev/backup',{method:'POST',body:'{}'});$('backup-output').textContent=`${d.message}\nFile: ${d.backup}`;toast(d.message);await loadOverview()}catch(e){$('backup-output').textContent=e.message;toast(e.message,true)}}
+async function restoreBackup(){const filename=$('backup-select').value;if(!filename)return toast('Choose a backup file first.',true);if(!confirm(`Restore ${filename}? The live database will be replaced. A safety backup is created before restoration.`))return;try{const d=await api('/api/dev/restore-backup',{method:'POST',body:JSON.stringify({filename})});$('restore-output').textContent=d.message;toast(d.message);await reloadLibrary();await loadOverview();await loadActivity()}catch(e){$('restore-output').textContent=e.message;toast(e.message,true)}}
+async function previewReset(){try{const d=await api('/api/dev/reset-preview');$('reset-preview').textContent='PRESERVED\n'+Object.entries(d.keep||{}).map(([k,v])=>`${k}: ${num(v)}`).join('\n')+'\n\nCLEARED\n'+Object.entries(d.clear||{}).map(([k,v])=>`${k}: ${num(v)}`).join('\n')+'\n\nA safety backup is created automatically.';$('reset-confirm-area').classList.remove('hidden');$('reset-confirm').value='';}catch(e){$('reset-preview').textContent=e.message;toast(e.message,true)}}async function resetCompetition(){if($('reset-confirm').value.trim()!=='RESET COMPETITION')return toast('The confirmation phrase does not match.',true);if(!confirm('Final check: reset competition data now? The music library will remain. A backup will be created first.'))return;try{const d=await api('/api/dev/reset-database',{method:'POST',body:JSON.stringify({confirmation:$('reset-confirm').value.trim()})});$('reset-preview').textContent=d.message+'\nBackup: '+d.backup;$('reset-confirm-area').classList.add('hidden');toast(d.message);await reloadLibrary();await loadOverview();await loadActivity()}catch(e){toast(e.message,true)}}
+async function runIntegrityScan(){try{const d=await api('/api/dev/integrity');$('integrity-output').textContent=JSON.stringify(d,null,2);$('duplicate-output').textContent=Object.entries(d.duplicates||{}).map(([t,rows])=>`${t}: ${rows.length} likely duplicate group(s)\n`+rows.map(r=>`  ${r.key} · count ${r.count} · IDs ${r.ids}`).join('\n')).join('\n\n')||'No duplicate groups returned.';toast('Integrity and duplicate scan complete.')}catch(e){$('integrity-output').textContent=e.message;$('duplicate-output').textContent=e.message;toast(e.message,true)}}
+async function loadActivity(){try{const d=await api('/api/dev/activity');activityCache=d;const votes=d.votes||[],tournaments=d.tournaments||[];const voteHtml=votes.map(v=>`<div class="list-row"><span class="tag ${v.mode==='tournament'?'album':'song'}">${esc(v.mode)}</span><div class="grow"><strong>${esc(v.winner||'Unknown')} <span class="muted">beat</span> ${esc(v.loser||'Unknown')}</strong><small>Match #${v.id} · ${esc(v.created_at||'Date not recorded')}</small></div></div>`).join('')||'<div class="empty">No stored vote history.</div>';$('activity-votes').innerHTML=voteHtml;$('overview-activity').innerHTML=voteHtml.slice(0,16000);$('event-stream').innerHTML=(overviewCache?.recent_events||[]).map(e=>`<div class="list-row"><span class="tag">${esc(e.event_type)}</span><div class="grow"><strong>Event #${e.id} · Song ${e.song_id??'—'}</strong><small>${esc(e.created_at||'')} · ${esc(e.details_json||'')}</small></div></div>`).join('')||'<div class="empty">No interaction events have been captured yet.</div>';$('tournament-list').innerHTML=tournaments.length?tournaments.map(t=>`<div class="list-row"><span class="tag album">#${t.id}</span><div class="grow"><strong>Tournament ${t.id} · ${esc(t.status||'status unknown')}</strong><small>${esc(t.scope_type||'all songs')} · ${num(t.size)} entrants · ${num(t.match_count)} saved matches · ${esc(t.created_at||t.timestamp||'')}</small></div><span class="muted">Champion ID ${t.champion_id??'—'}</span><button class="btn small danger" onclick="deleteTournament(${t.id})">Delete</button></div>`).join(''):'<div class="empty">No tournaments found.</div>';if(overviewCache){$('event-stream').innerHTML=(overviewCache.recent_events||[]).map(e=>`<div class="list-row"><span class="tag">${esc(e.event_type)}</span><div class="grow"><strong>Event #${e.id} · Song ${e.song_id??'—'}</strong><small>${esc(e.created_at||'')} · ${esc(e.details_json||'')}</small></div></div>`).join('')||'<div class="empty">No interaction events have been captured yet.</div>'}}catch(e){$('activity-votes').innerHTML=`<div class="notice danger">${esc(e.message)}</div>`}}
+async function deleteTournament(id){const item=(activityCache?.tournaments||[]).find(t=>Number(t.id)===Number(id));const status=item?.status||'unknown status';if(!confirm(`Delete tournament #${id} (${status}) and its saved bracket/matches? This cannot be undone without restoring a backup.`))return;try{const d=await api(`/api/dev/tournaments/${id}`,{method:'DELETE'});toast(d.message||'Tournament deleted.');await loadActivity();await loadOverview()}catch(e){toast(e.message,true)}}
+function populateSongSelects(){for(const id of ['trivia-song','elo-song']){const old=$(id).value;$(id).innerHTML=db.songs.map(s=>`<option value="${s.id}">#${s.id} · ${esc(s.title)} · ${esc(s.artist||'')}</option>`).join('');if(old)$(id).value=old}}
+function openMaintenanceForSong(id){go('activity');populateSongSelects();$('trivia-song').value=id;$('elo-song').value=id;const s=db.songs.find(x=>Number(x.id)===Number(id));if(s)$('elo-value').value=Math.round(s.elo_score||1200)}async function correctSongElo(){const song_id=$('elo-song').value,new_elo=$('elo-value').value,reason=$('elo-reason').value.trim();if(!reason)return toast('A reason is required for the audit log.',true);try{const d=await api('/api/dev/elo-correction',{method:'POST',body:JSON.stringify({song_id,new_elo,reason})});toast(d.message);$('elo-reason').value='';await reloadLibrary();await loadOverview()}catch(e){toast(e.message,true)}}async function saveTriviaStats(){const id=$('trivia-song').value;if(!id)return toast('Choose a song.',true);try{const d=await api(`/api/dev/trivia/${id}`,{method:'POST',body:JSON.stringify({attempts:$('trivia-attempts').value,correct:$('trivia-correct').value})});toast(d.message)}catch(e){toast(e.message,true)}}async function deleteTriviaStats(){const id=$('trivia-song').value;if(!id)return toast('Choose a song.',true);if(!confirm('Delete aggregate trivia stats for this song?'))return;try{const d=await api(`/api/dev/trivia/${id}`,{method:'DELETE'});toast(d.message)}catch(e){toast(e.message,true)}}
+async function syncDatabase(){if(!confirm('Run the configured database sync now?'))return;try{const d=await api('/api/dev/sync',{method:'POST',body:'{}'});$('sync-output').textContent=d.message;toast(d.message)}catch(e){$('sync-output').textContent=e.message;toast(e.message,true)}}async function exportData(){try{const d=await api('/api/dev/export',{method:'POST',body:'{}'});$('sync-output').textContent=d.message;toast(d.message)}catch(e){toast(e.message,true)}}function refreshCurrent(){reloadLibrary().then(()=>{loadOverview();loadActivity();toast('Console refreshed.')}).catch(e=>toast(e.message,true))}
+$('editor-backdrop').addEventListener('click',e=>{if(e.target===$('editor-backdrop'))closeEditor()});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeEditor()});
+(async function init(){populateSongSelects();renderTable('songs');renderTable('artists');renderTable('albums');renderTable('genres');renderLibrary();await loadOverview();await loadActivity()})();
+</script>
 </body>
 </html>

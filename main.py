@@ -7,6 +7,8 @@ import re
 import subprocess
 import sqlite3
 import os
+import json
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = "theandwasdwe"
@@ -232,11 +234,41 @@ def init_db():
         );
 
         CREATE TABLE IF NOT EXISTS global_stats (
-            key TEXT PRIMARY KEY, 
+            key TEXT PRIMARY KEY,
             value INTEGER
         );
+        CREATE TABLE IF NOT EXISTS interaction_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            event_type TEXT NOT NULL,
+            song_id INTEGER,
+            related_song_id INTEGER,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            details_json TEXT,
+            FOREIGN KEY(song_id) REFERENCES songs(id) ON DELETE SET NULL,
+            FOREIGN KEY(related_song_id) REFERENCES songs(id) ON DELETE SET NULL
+        );
+        CREATE TABLE IF NOT EXISTS elo_history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            winner_id INTEGER, loser_id INTEGER,
+            winner_before REAL, winner_after REAL,
+            loser_before REAL, loser_after REAL,
+            mode TEXT NOT NULL DEFAULT 'standard',
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY(winner_id) REFERENCES songs(id) ON DELETE SET NULL,
+            FOREIGN KEY(loser_id) REFERENCES songs(id) ON DELETE SET NULL
+        );
+        CREATE TABLE IF NOT EXISTS admin_audit_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            action TEXT NOT NULL, details TEXT,
+            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
+        );
+        CREATE INDEX IF NOT EXISTS idx_interaction_events_type_date ON interaction_events(event_type, created_at);
+        CREATE INDEX IF NOT EXISTS idx_elo_history_date ON elo_history(created_at);
     ''')
     ensure_tournament_schema(conn)
+    history_columns = {row['name'] for row in conn.execute('PRAGMA table_info(history)')}
+    if 'created_at' not in history_columns:
+        conn.execute('ALTER TABLE history ADD COLUMN created_at DATETIME')
     conn.execute('INSERT OR IGNORE INTO global_stats (key, value) VALUES ("trivia_high_score", 0)')
     conn.commit()
     conn.close()
@@ -388,6 +420,26 @@ def get_matchup(is_blind=False):
     return song1, song2
 
 
+def log_interaction(conn, event_type, song_id=None, related_song_id=None, details=None):
+    conn.execute('INSERT INTO interaction_events (event_type, song_id, related_song_id, details_json) VALUES (?, ?, ?, ?)',
+                 (event_type, song_id, related_song_id, json.dumps(details or {}, ensure_ascii=False)))
+
+
+def create_database_backup(prefix='song_ranker'):
+    if not os.path.exists(DB_NAME):
+        raise FileNotFoundError(f'Database not found: {DB_NAME}')
+    backup_dir = os.path.join(os.path.dirname(os.path.abspath(DB_NAME)), 'database_backups')
+    os.makedirs(backup_dir, exist_ok=True)
+    backup_path = os.path.join(backup_dir, f"{prefix}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.db")
+    source = sqlite3.connect(DB_NAME, timeout=30)
+    destination = sqlite3.connect(backup_path)
+    try:
+        source.backup(destination)
+    finally:
+        destination.close(); source.close()
+    return backup_path
+
+
 # --- CORE ROUTES ---
 
 @app.route('/')
@@ -532,7 +584,10 @@ def vote():
 
     conn.execute('UPDATE songs SET elo_score = ?, matches_played = matches_played + 1 WHERE id = ?',
                  (new_loser_elo, loser_id))
-    conn.execute('INSERT INTO history (winner_id, loser_id) VALUES (?, ?)', (winner_id, loser_id))
+    conn.execute('INSERT INTO history (winner_id, loser_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)', (winner_id, loser_id))
+    conn.execute('INSERT INTO elo_history (winner_id, loser_id, winner_before, winner_after, loser_before, loser_after, mode) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                 (winner_id, loser_id, winner['elo_score'], new_winner_elo, loser['elo_score'], new_loser_elo, 'standard'))
+    log_interaction(conn, 'vote', winner_id, loser_id, {'mode': 'standard'})
 
     total_votes = conn.execute('SELECT COUNT(*) FROM history').fetchone()[0]
     conn.commit()
@@ -576,7 +631,10 @@ def api_blind_vote():
 
     conn.execute('UPDATE songs SET elo_score = ?, matches_played = matches_played + 1 WHERE id = ?',
                  (new_loser_elo, loser_id))
-    conn.execute('INSERT INTO history (winner_id, loser_id) VALUES (?, ?)', (winner_id, loser_id))
+    conn.execute('INSERT INTO history (winner_id, loser_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)', (winner_id, loser_id))
+    conn.execute('INSERT INTO elo_history (winner_id, loser_id, winner_before, winner_after, loser_before, loser_after, mode) VALUES (?, ?, ?, ?, ?, ?, ?)',
+                 (winner_id, loser_id, winner['elo_score'], new_winner_elo, loser['elo_score'], new_loser_elo, 'blind'))
+    log_interaction(conn, 'vote', winner_id, loser_id, {'mode': 'blind'})
     conn.commit()
     conn.close()
 
@@ -663,6 +721,11 @@ def api_trivia_guess():
                           (correct_count, song_id))
     if cursor.rowcount == 0:
         conn.execute('INSERT INTO trivia_stats (song_id, attempts, correct) VALUES (?, 1, ?)', (song_id, correct_count))
+    log_interaction(conn, 'trivia_guess', song_id, details={
+        'title_correct': bool(title_match), 'artist_correct': bool(artist_match),
+        'correct_fields': int(correct_count), 'points': int(points),
+        'time_taken': round(time_taken, 2), 'timeout': bool(timeout)
+    })
 
     conn.commit()
     conn.close()
@@ -827,6 +890,7 @@ def api_tournament_vote():
         conn.execute('''UPDATE tournament_matches SET winner_id = ?, loser_id = ?, status = 'completed',
             points_awarded = ?, played_at = CURRENT_TIMESTAMP WHERE id = ?''',
             (winner_id, loser_id, points, match_id))
+        log_interaction(conn, 'tournament_vote', winner_id, loser_id, {'tournament_id': int(tournament_id), 'points_awarded': points})
         round_rows = conn.execute('''SELECT * FROM tournament_matches
             WHERE tournament_id = ? AND round_number = ? ORDER BY match_number''',
             (tournament_id, match['round_number'])).fetchall()
@@ -1321,9 +1385,39 @@ def global_stats():
                              LIMIT 1
                              ''').fetchone()
 
+    extra_stats = {
+        'genres_count': conn.execute('SELECT COUNT(*) FROM genres').fetchone()[0],
+        'songs_never_voted': conn.execute('SELECT COUNT(*) FROM songs WHERE COALESCE(matches_played,0)=0').fetchone()[0],
+        'songs_with_audio': conn.execute("SELECT COUNT(*) FROM songs WHERE COALESCE(audio_url,'') != ''").fetchone()[0],
+        'average_elo': round(conn.execute('SELECT COALESCE(AVG(elo_score),1200) FROM songs').fetchone()[0]),
+        'highest_elo': conn.execute('SELECT id,title,elo_score FROM songs ORDER BY elo_score DESC,title LIMIT 1').fetchone(),
+        'lowest_elo': conn.execute('SELECT id,title,elo_score FROM songs ORDER BY elo_score ASC,title LIMIT 1').fetchone(),
+        'most_wins': conn.execute('SELECT s.id,s.title,COUNT(h.id) AS wins FROM songs s JOIN history h ON h.winner_id=s.id GROUP BY s.id ORDER BY wins DESC LIMIT 1').fetchone(),
+        'trivia_attempts': conn.execute('SELECT COALESCE(SUM(attempts),0) FROM trivia_stats').fetchone()[0],
+        'trivia_correct': conn.execute('SELECT COALESCE(SUM(correct),0) FROM trivia_stats').fetchone()[0],
+        'tournaments_total': conn.execute('SELECT COUNT(*) FROM tournaments').fetchone()[0],
+        'tournaments_completed': conn.execute("SELECT COUNT(*) FROM tournaments WHERE status='completed' OR champion_id IS NOT NULL").fetchone()[0],
+        'recent_votes': conn.execute("SELECT COUNT(*) FROM history WHERE created_at >= datetime('now','-7 days')").fetchone()[0],
+        'events_tracked': conn.execute('SELECT COUNT(*) FROM interaction_events').fetchone()[0],
+        'top_trivia': conn.execute('''SELECT s.id,s.title,ts.attempts,ts.correct,ROUND(100.0*ts.correct/NULLIF(ts.attempts*2,0)) AS accuracy
+            FROM trivia_stats ts JOIN songs s ON s.id=ts.song_id WHERE ts.attempts>0 ORDER BY accuracy DESC,ts.attempts DESC LIMIT 1''').fetchone()
+    }
+    elo_distribution = [dict(r) for r in conn.execute('''SELECT CASE WHEN elo_score < 1000 THEN '< 1000'
+        WHEN elo_score < 1100 THEN '1000-1099' WHEN elo_score < 1200 THEN '1100-1199'
+        WHEN elo_score < 1300 THEN '1200-1299' WHEN elo_score < 1400 THEN '1300-1399' ELSE '1400+' END AS band,
+        COUNT(*) AS count FROM songs GROUP BY band ORDER BY MIN(elo_score)''').fetchall()]
+    genre_leaders = [dict(r) for r in conn.execute('SELECT g.name,COUNT(DISTINCT sg.song_id) AS songs FROM genres g JOIN song_genres sg ON sg.genre_id=g.id GROUP BY g.id ORDER BY songs DESC,g.name LIMIT 8').fetchall()]
+    top_albums_stats = [dict(r) for r in conn.execute('''SELECT al.id,al.title,al.cover_url,COUNT(s.id) AS songs,ROUND(AVG(s.elo_score)) AS avg_elo
+        FROM albums al JOIN songs s ON s.album_id=al.id WHERE al.title != 'Unknown Album' AND al.title NOT LIKE '% - Single'
+        GROUP BY al.id HAVING COUNT(s.id)>0 ORDER BY avg_elo DESC,songs DESC LIMIT 5''').fetchall()]
+    recent_activity = [dict(r) for r in conn.execute('''SELECT h.id,h.created_at,w.id AS winner_id,w.title AS winner_title,l.id AS loser_id,l.title AS loser_title
+        FROM history h LEFT JOIN songs w ON w.id=h.winner_id LEFT JOIN songs l ON l.id=h.loser_id ORDER BY h.id DESC LIMIT 8''').fetchall()]
     conn.close()
 
     return render_template('global_stats.html',
+                           extra_stats=extra_stats, elo_distribution=elo_distribution,
+                           genre_leaders=genre_leaders, top_albums_stats=top_albums_stats,
+                           recent_activity=recent_activity,
                            total_songs=total_songs,
                            total_artists=total_artists,
                            total_albums=total_albums,
@@ -1810,6 +1904,7 @@ def api_edit_song(song_id):
     conn.execute('DELETE FROM song_genres WHERE song_id = ?', (song_id,))
     link_genres_to_song(conn, song_id, genres)
 
+    conn.execute('INSERT INTO admin_audit_log (action, details) VALUES (?, ?)', ('song_edited', json.dumps({'song_id': song_id, 'title': title}, ensure_ascii=False)))
     conn.commit()
     conn.close()
 
@@ -1848,6 +1943,7 @@ def api_delete_song(song_id):
         adjustment = elo_difference / remaining_songs
         conn.execute('UPDATE songs SET elo_score = elo_score + ?', (adjustment,))
 
+    conn.execute('INSERT INTO admin_audit_log (action, details) VALUES (?, ?)', ('song_deleted', json.dumps({'song_id': song_id}, ensure_ascii=False)))
     conn.commit()
     conn.close()
     return jsonify({"status": "success", "message": "Song deleted. System Elo conserved."})
@@ -1860,6 +1956,7 @@ def api_edit_artist(artist_id):
     conn = get_db_connection()
     conn.execute('UPDATE artists SET name = ?, cover_url = ? WHERE id = ?',
                  (data.get('name', '').strip(), data.get('cover_url', ''), artist_id))
+    conn.execute('INSERT INTO admin_audit_log (action, details) VALUES (?, ?)', ('artist_edited', json.dumps({'artist_id': artist_id, 'name': data.get('name', '').strip()}, ensure_ascii=False)))
     conn.commit()
     conn.close()
     return jsonify({"status": "success", "message": "Artist updated successfully."})
@@ -1871,6 +1968,7 @@ def api_delete_artist(artist_id):
     conn = get_db_connection()
     conn.execute('DELETE FROM song_artists WHERE artist_id = ?', (artist_id,))
     conn.execute('DELETE FROM artists WHERE id = ?', (artist_id,))
+    conn.execute('INSERT INTO admin_audit_log (action, details) VALUES (?, ?)', ('artist_deleted', json.dumps({'artist_id': artist_id}, ensure_ascii=False)))
     conn.commit()
     conn.close()
     return jsonify({"status": "success", "message": "Artist deleted."})
@@ -1883,6 +1981,7 @@ def api_edit_album(album_id):
     conn = get_db_connection()
     conn.execute('UPDATE albums SET title = ?, cover_url = ?, release_date = ? WHERE id = ?',
                  (data.get('title', '').strip(), data.get('cover_url', ''), data.get('release_date', ''), album_id))
+    conn.execute('INSERT INTO admin_audit_log (action, details) VALUES (?, ?)', ('album_edited', json.dumps({'album_id': album_id, 'title': data.get('title', '').strip()}, ensure_ascii=False)))
     conn.commit()
     conn.close()
     return jsonify({"status": "success", "message": "Album updated successfully."})
@@ -1894,6 +1993,7 @@ def api_delete_album(album_id):
     conn = get_db_connection()
     conn.execute('UPDATE songs SET album_id = NULL WHERE album_id = ?', (album_id,))
     conn.execute('DELETE FROM albums WHERE id = ?', (album_id,))
+    conn.execute('INSERT INTO admin_audit_log (action, details) VALUES (?, ?)', ('album_deleted', json.dumps({'album_id': album_id}, ensure_ascii=False)))
     conn.commit()
     conn.close()
     return jsonify({"status": "success", "message": "Album deleted. Associated songs updated."})
@@ -1904,6 +2004,7 @@ def api_edit_genre(genre_id):
     data = request.json
     conn = get_db_connection()
     conn.execute('UPDATE genres SET name = ? WHERE id = ?', (data.get('name', '').strip(), genre_id))
+    conn.execute('INSERT INTO admin_audit_log (action, details) VALUES (?, ?)', ('genre_edited', json.dumps({'genre_id': genre_id, 'name': data.get('name', '').strip()}, ensure_ascii=False)))
     conn.commit()
     conn.close()
     return jsonify({"status": "success", "message": "Genre updated successfully."})
@@ -1914,9 +2015,200 @@ def api_delete_genre(genre_id):
     conn = get_db_connection()
     conn.execute('DELETE FROM song_genres WHERE genre_id = ?', (genre_id,))
     conn.execute('DELETE FROM genres WHERE id = ?', (genre_id,))
+    conn.execute('INSERT INTO admin_audit_log (action, details) VALUES (?, ?)', ('genre_deleted', json.dumps({'genre_id': genre_id}, ensure_ascii=False)))
     conn.commit()
     conn.close()
     return jsonify({"status": "success", "message": "Genre deleted."})
+
+
+@app.route('/api/dev/overview', methods=['GET'])
+@admin_required
+def api_dev_overview():
+    conn = get_db_connection()
+    tables = ['songs','artists','albums','genres','history','trivia_stats','tournaments','tournament_entries','tournament_matches','interaction_events','elo_history','admin_audit_log']
+    counts = {table: conn.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0] for table in tables}
+    integrity = conn.execute('PRAGMA integrity_check').fetchone()[0]
+    fk_errors = len(conn.execute('PRAGMA foreign_key_check').fetchall())
+    events = [dict(r) for r in conn.execute('SELECT id,event_type,song_id,related_song_id,created_at,details_json FROM interaction_events ORDER BY id DESC LIMIT 12').fetchall()]
+    audit = [dict(r) for r in conn.execute('SELECT id,action,details,created_at FROM admin_audit_log ORDER BY id DESC LIMIT 12').fetchall()]
+    conn.close()
+    backup_dir = os.path.join(os.path.dirname(os.path.abspath(DB_NAME)), 'database_backups')
+    backups=[]
+    if os.path.isdir(backup_dir):
+        for name in sorted(os.listdir(backup_dir), reverse=True)[:10]:
+            full=os.path.join(backup_dir,name)
+            if os.path.isfile(full) and name.endswith('.db'):
+                backups.append({'name':name,'size':os.path.getsize(full),'modified':datetime.fromtimestamp(os.path.getmtime(full)).isoformat(timespec='seconds')})
+    return jsonify({'counts':counts,'integrity':integrity,'foreign_key_errors':fk_errors,'recent_events':events,'recent_audit':audit,'backups':backups})
+
+
+@app.route('/api/dev/backup', methods=['POST'])
+@admin_required
+def api_dev_backup():
+    try:
+        path=create_database_backup('manual')
+        conn=get_db_connection(); conn.execute('INSERT INTO admin_audit_log (action,details) VALUES (?,?)',('backup_created',os.path.basename(path))); conn.commit(); conn.close()
+        return jsonify({'status':'success','message':'Database backup created.','backup':os.path.basename(path)})
+    except Exception as exc:
+        app.logger.exception('Backup failed'); return jsonify({'status':'error','message':f'Backup failed: {exc}'}),500
+
+
+@app.route('/api/dev/restore-backup', methods=['POST'])
+@admin_required
+def api_dev_restore_backup():
+    data = request.get_json(silent=True) or {}
+    name = os.path.basename(str(data.get('filename', '')))
+    if not name.endswith('.db') or not name.startswith(('manual_', 'pre_reset_', 'pre_restore_', 'song_ranker_')):
+        return jsonify({'status': 'error', 'message': 'Choose a valid Song Ranker backup file.'}), 400
+    backup_dir = os.path.join(os.path.dirname(os.path.abspath(DB_NAME)), 'database_backups')
+    source_path = os.path.join(backup_dir, name)
+    if not os.path.isfile(source_path):
+        return jsonify({'status': 'error', 'message': 'Backup file not found.'}), 404
+    try:
+        # Verify the candidate backup before touching the live database.
+        check = sqlite3.connect(source_path)
+        try:
+            result = check.execute('PRAGMA integrity_check').fetchone()[0]
+            if result != 'ok':
+                return jsonify({'status': 'error', 'message': f'Backup failed integrity check: {result}'}), 400
+        finally:
+            check.close()
+        current_backup = create_database_backup('pre_restore')
+        source = sqlite3.connect(source_path, timeout=30)
+        destination = sqlite3.connect(DB_NAME, timeout=30)
+        try:
+            source.backup(destination)
+            integrity = destination.execute('PRAGMA integrity_check').fetchone()[0]
+            if integrity != 'ok':
+                raise sqlite3.DatabaseError(f'Restored database failed integrity check: {integrity}')
+        finally:
+            destination.close(); source.close()
+        conn = get_db_connection()
+        conn.execute('INSERT INTO admin_audit_log (action, details) VALUES (?, ?)',
+                     ('backup_restored', json.dumps({'restored': name, 'pre_restore_backup': os.path.basename(current_backup)})))
+        conn.commit(); conn.close()
+        return jsonify({'status': 'success', 'message': f'Restored {name}. A safety backup was saved as {os.path.basename(current_backup)}.'})
+    except Exception as exc:
+        app.logger.exception('Backup restore failed')
+        return jsonify({'status': 'error', 'message': f'Restore failed: {exc}'}), 500
+
+
+@app.route('/api/dev/reset-preview', methods=['GET'])
+@admin_required
+def api_dev_reset_preview():
+    conn=get_db_connection()
+    keep={k:conn.execute(q).fetchone()[0] for k,q in {
+        'songs':'SELECT COUNT(*) FROM songs','artists':'SELECT COUNT(*) FROM artists','albums':'SELECT COUNT(*) FROM albums','genres':'SELECT COUNT(*) FROM genres',
+        'song_artist_links':'SELECT COUNT(*) FROM song_artists','song_genre_links':'SELECT COUNT(*) FROM song_genres'}.items()}
+    clear={k:conn.execute(q).fetchone()[0] for k,q in {
+        'votes_and_history':'SELECT COUNT(*) FROM history','trivia_stats':'SELECT COUNT(*) FROM trivia_stats','tournaments':'SELECT COUNT(*) FROM tournaments',
+        'tournament_matches':'SELECT COUNT(*) FROM tournament_matches','interaction_events':'SELECT COUNT(*) FROM interaction_events','elo_history':'SELECT COUNT(*) FROM elo_history'}.items()}
+    conn.close(); return jsonify({'keep':keep,'clear':clear})
+
+
+@app.route('/api/dev/reset-database', methods=['POST'])
+@admin_required
+def api_dev_reset_database():
+    data=request.get_json(silent=True) or {}
+    if data.get('confirmation') != 'RESET COMPETITION':
+        return jsonify({'status':'error','message':'Type RESET COMPETITION to confirm.'}),400
+    try:
+        backup_path=create_database_backup('pre_reset')
+        conn=get_db_connection(); conn.execute('PRAGMA foreign_keys=ON')
+        for table in ('tournament_matches','tournament_entries','tournaments','history','trivia_stats','interaction_events','elo_history'):
+            conn.execute(f'DELETE FROM {table}')
+        conn.execute('UPDATE songs SET elo_score=1200,matches_played=0,highest_elo=1200,highest_rank=9999,tournament_wins=0')
+        conn.execute('UPDATE global_stats SET value=0')
+        conn.execute("INSERT INTO global_stats (key,value) VALUES ('trivia_high_score',0) ON CONFLICT(key) DO UPDATE SET value=0")
+        conn.execute('INSERT INTO admin_audit_log (action,details) VALUES (?,?)',('competition_reset',json.dumps({'backup':os.path.basename(backup_path),'kept_library':True})))
+        conn.commit(); conn.close()
+        return jsonify({'status':'success','message':'Competition reset. Songs, albums, artists, genres, and their music links were kept.','backup':os.path.basename(backup_path)})
+    except Exception as exc:
+        app.logger.exception('Database reset failed'); return jsonify({'status':'error','message':f'Reset failed: {exc}'}),500
+
+
+@app.route('/api/dev/elo-correction', methods=['POST'])
+@admin_required
+def api_dev_elo_correction():
+    data = request.get_json(silent=True) or {}
+    try:
+        song_id = int(data.get('song_id'))
+        new_elo = float(data.get('new_elo'))
+    except (TypeError, ValueError):
+        return jsonify({'status': 'error', 'message': 'Enter a valid song ID and numeric Elo value.'}), 400
+    reason = str(data.get('reason', '')).strip()
+    if not reason:
+        return jsonify({'status': 'error', 'message': 'A reason is required for the audit log.'}), 400
+    if not 0 <= new_elo <= 5000:
+        return jsonify({'status': 'error', 'message': 'Elo must be between 0 and 5000.'}), 400
+    conn = get_db_connection()
+    song = conn.execute('SELECT id,title,elo_score FROM songs WHERE id=?', (song_id,)).fetchone()
+    if not song:
+        conn.close(); return jsonify({'status': 'error', 'message': 'Song not found.'}), 404
+    details = {'song_id': song_id, 'title': song['title'], 'old_elo': song['elo_score'], 'new_elo': new_elo, 'reason': reason}
+    conn.execute('UPDATE songs SET elo_score=? WHERE id=?', (new_elo, song_id))
+    conn.execute('INSERT INTO admin_audit_log (action,details) VALUES (?,?)', ('manual_elo_correction', json.dumps(details, ensure_ascii=False)))
+    conn.commit(); conn.close()
+    return jsonify({'status': 'success', 'message': f"Updated {song['title']} from {round(song['elo_score'])} to {round(new_elo)} Elo. The correction was logged."})
+
+
+@app.route('/api/dev/trivia/<int:song_id>', methods=['POST', 'DELETE'])
+@admin_required
+def api_dev_edit_trivia(song_id):
+    conn = get_db_connection()
+    if not conn.execute('SELECT id FROM songs WHERE id=?', (song_id,)).fetchone():
+        conn.close(); return jsonify({'status': 'error', 'message': 'Song not found.'}), 404
+    if request.method == 'DELETE':
+        conn.execute('DELETE FROM trivia_stats WHERE song_id=?', (song_id,))
+        conn.execute('INSERT INTO admin_audit_log (action,details) VALUES (?,?)', ('trivia_stats_deleted', str(song_id)))
+        conn.commit(); conn.close()
+        return jsonify({'status': 'success', 'message': 'Trivia statistics deleted for this song.'})
+    data = request.get_json(silent=True) or {}
+    try:
+        attempts = int(data.get('attempts', 0)); correct = int(data.get('correct', 0))
+    except (TypeError, ValueError):
+        conn.close(); return jsonify({'status': 'error', 'message': 'Attempts and correct must be whole numbers.'}), 400
+    if attempts < 0 or correct < 0 or correct > attempts * 2:
+        conn.close(); return jsonify({'status': 'error', 'message': 'Values must be non-negative and correct fields cannot exceed twice the attempts.'}), 400
+    conn.execute('INSERT INTO trivia_stats (song_id,attempts,correct) VALUES (?,?,?) ON CONFLICT(song_id) DO UPDATE SET attempts=excluded.attempts,correct=excluded.correct', (song_id, attempts, correct))
+    conn.execute('INSERT INTO admin_audit_log (action,details) VALUES (?,?)', ('trivia_stats_updated', json.dumps({'song_id': song_id, 'attempts': attempts, 'correct': correct})))
+    conn.commit(); conn.close()
+    return jsonify({'status': 'success', 'message': 'Trivia statistics updated and logged.'})
+
+
+@app.route('/api/dev/integrity', methods=['GET'])
+@admin_required
+def api_dev_integrity():
+    conn=get_db_connection(); integrity=[r[0] for r in conn.execute('PRAGMA integrity_check').fetchall()]
+    fk=[list(r) for r in conn.execute('PRAGMA foreign_key_check').fetchall()]
+    duplicates={}
+    for table,column in (('songs','title'),('artists','name'),('albums','title')):
+        duplicates[table]=[dict(r) for r in conn.execute(f'''SELECT LOWER(TRIM({column})) AS key,COUNT(*) AS count,GROUP_CONCAT(id) AS ids
+            FROM {table} GROUP BY LOWER(TRIM({column})) HAVING COUNT(*)>1 ORDER BY count DESC LIMIT 50''').fetchall()]
+    conn.close(); return jsonify({'integrity':integrity,'foreign_key_errors':fk,'duplicates':duplicates})
+
+
+@app.route('/api/dev/activity', methods=['GET'])
+@admin_required
+def api_dev_activity():
+    conn=get_db_connection()
+    votes=[dict(r) for r in conn.execute('''SELECT h.id,h.created_at,w.id AS winner_id,w.title AS winner,l.id AS loser_id,l.title AS loser,
+        CASE WHEN h.is_tournament_match THEN 'tournament' ELSE 'vote' END AS mode FROM history h
+        LEFT JOIN songs w ON w.id=h.winner_id LEFT JOIN songs l ON l.id=h.loser_id ORDER BY h.id DESC LIMIT 100''').fetchall()]
+    tournaments=[dict(r) for r in conn.execute('''SELECT t.id,t.size,t.scope_type,t.scope_id,t.champion_id,t.timestamp,t.status,t.created_at,t.completed_at,
+        (SELECT COUNT(*) FROM tournament_matches m WHERE m.tournament_id=t.id) AS match_count FROM tournaments t ORDER BY t.id DESC LIMIT 100''').fetchall()]
+    conn.close(); return jsonify({'votes':votes,'tournaments':tournaments})
+
+
+@app.route('/api/dev/tournaments/<int:tournament_id>', methods=['DELETE'])
+@admin_required
+def api_dev_delete_tournament(tournament_id):
+    conn=get_db_connection()
+    if not conn.execute('SELECT id FROM tournaments WHERE id=?',(tournament_id,)).fetchone():
+        conn.close(); return jsonify({'message':'Tournament not found.'}),404
+    conn.execute('DELETE FROM tournament_matches WHERE tournament_id=?',(tournament_id,)); conn.execute('DELETE FROM tournament_entries WHERE tournament_id=?',(tournament_id,)); conn.execute('DELETE FROM tournaments WHERE id=?',(tournament_id,))
+    conn.execute('INSERT INTO admin_audit_log (action,details) VALUES (?,?)',('tournament_deleted',str(tournament_id)))
+    conn.commit(); conn.close(); return jsonify({'status':'success','message':'Tournament and bracket records deleted.'})
 
 
 @app.route('/api/dev/sync', methods=['POST'])
