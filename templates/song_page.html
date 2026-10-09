@@ -48,6 +48,27 @@
     .appearance-info span,.appearance-info small { color:#888; font-size:.85em; }
     .no-tournaments { padding:22px; text-align:center; color:#888; background:rgba(255,255,255,.025); border-radius:9px; }
     @media(max-width:650px) { .profile-container { padding:22px; flex-direction:column; align-items:center; gap:22px; } .cover-wrapper { width:min(280px,100%); height:auto; aspect-ratio:1; } .details-col { width:100%; } .title { font-size:2.1em; } .trivia-container,.history-container { padding:20px; } .tournament-container { padding:20px; } .tournament-heading { flex-direction:column; } .tournament-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .tournament-appearance { flex-wrap:wrap; } .appearance-link { margin-left:48px; } }
+
+
+    /* Song page colour accents: matching the artist/album header glow */
+    .profile-container {
+        background: linear-gradient(135deg, rgba(29,185,84,0.13) 0%, #1e1e1e 58%, #121212 100%);
+        border: 1px solid rgba(29,185,84,0.28);
+        box-shadow: 0 0 30px rgba(29,185,84,0.10), 0 12px 30px rgba(0,0,0,0.6);
+    }
+    .cover-wrapper {
+        box-shadow: 0 0 30px rgba(29,185,84,0.22), 0 12px 24px rgba(0,0,0,0.6);
+    }
+    .trivia-container {
+        background: linear-gradient(135deg, rgba(242,196,76,0.12) 0%, #1e1e1e 62%, #171717 100%);
+        border: 1px solid rgba(242,196,76,0.28);
+        box-shadow: 0 0 28px rgba(242,196,76,0.09), 0 8px 16px rgba(0,0,0,0.4);
+    }
+    .trivia-container h3,
+    .trivia-container [style*="font-size: 2.2em"] {
+        color: #f2c44c !important;
+    }
+
 </style>
 {% endblock %}
 
