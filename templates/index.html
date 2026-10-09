@@ -148,7 +148,7 @@
 
             <div class="metadata-row" title="{{ song1.artist }} - {{ song1.album }}">
                 <a href="/artist/{{ song1.artist | urlencode }}" class="link-artist">{{ song1.artist }}</a>
-                {% if song1.album and ' - Single' not in song1.album %}
+                {% if song1.album and not song1.album_is_single %}
                     <span style="color: #666; margin: 0 6px;">•</span>
                     <a href="/album/{{ song1.album | urlencode }}" class="link-album">{{ song1.album }}</a>
                 {% endif %}
@@ -182,7 +182,7 @@
 
             <div class="metadata-row" title="{{ song2.artist }} - {{ song2.album }}">
                 <a href="/artist/{{ song2.artist | urlencode }}" class="link-artist">{{ song2.artist }}</a>
-                {% if song2.album and ' - Single' not in song2.album %}
+                {% if song2.album and not song2.album_is_single %}
                     <span style="color: #666; margin: 0 6px;">•</span>
                     <a href="/album/{{ song2.album | urlencode }}" class="link-album">{{ song2.album }}</a>
                 {% endif %}

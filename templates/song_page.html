@@ -29,6 +29,25 @@
     .hist-cover { width: 50px; height: 50px; border-radius: 6px; object-fit: cover; margin: 0 15px; }
     .hist-title { font-size: 1.1em; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .winner-text { color: var(--color-song); }
+    .tournament-container { max-width: 800px; margin: 0 auto 30px; padding: 28px 32px; border-radius: 14px; border: 1px solid rgba(191,119,255,.24); background: linear-gradient(145deg, rgba(191,119,255,.08), #1b1b1b 58%); text-align: left; }
+    .tournament-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:18px; }
+    .tournament-heading h2 { margin:4px 0 5px; font-size:1.55em; }
+    .tournament-heading p { margin:0; color:#888; font-size:.92em; }
+    .tournament-kicker { color:var(--color-album); font-size:.72em; font-weight:900; letter-spacing:1.5px; }
+    .tournament-link,.appearance-link { color:var(--color-album); text-decoration:none; font-weight:bold; white-space:nowrap; }
+    .tournament-link:hover,.appearance-link:hover { text-decoration:underline; }
+    .tournament-stats-grid { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; margin:22px 0 26px; }
+    .tournament-stat { padding:15px; background:rgba(255,255,255,.035); border:1px solid #303030; border-radius:10px; min-width:0; }
+    .tournament-stat strong { display:block; font-size:1.55em; color:#fff; }
+    .tournament-stat small { display:block; color:#888; margin-top:3px; }
+    .champion-stat strong { color:var(--color-album); }
+    .tournament-list-title { color:#aaa; text-transform:uppercase; font-size:.85em; letter-spacing:1px; }
+    .tournament-appearance { display:flex; align-items:center; gap:13px; padding:15px 0; border-top:1px solid #303030; }
+    .appearance-icon { font-size:1.5em; width:35px; text-align:center; }
+    .appearance-info { display:flex; flex-direction:column; gap:4px; flex:1; min-width:0; }
+    .appearance-info span,.appearance-info small { color:#888; font-size:.85em; }
+    .no-tournaments { padding:22px; text-align:center; color:#888; background:rgba(255,255,255,.025); border-radius:9px; }
+    @media(max-width:650px) { .profile-container { padding:22px; flex-direction:column; align-items:center; gap:22px; } .cover-wrapper { width:min(280px,100%); height:auto; aspect-ratio:1; } .details-col { width:100%; } .title { font-size:2.1em; } .trivia-container,.history-container { padding:20px; } .tournament-container { padding:20px; } .tournament-heading { flex-direction:column; } .tournament-stats-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } .tournament-appearance { flex-wrap:wrap; } .appearance-link { margin-left:48px; } }
 </style>
 {% endblock %}
 
@@ -48,7 +67,7 @@
 
             <div class="metadata-row">
                 <a href="/artist/{{ song.artist | urlencode }}" class="link-artist">{{ song.artist }}</a>
-                {% if song.album and ' - Single' not in song.album %}
+                {% if song.album and not song.album_is_single %}
                     <span style="color: #666; margin: 0 8px;">•</span>
                     <a href="/album/{{ song.album | urlencode }}" class="link-album">{{ song.album }}</a>
                 {% endif %}
@@ -87,6 +106,41 @@
             {% endif %}
         </div>
     </div>
+
+    <section class="tournament-container">
+        <div class="tournament-heading">
+            <div>
+                <span class="tournament-kicker">BRACKET HISTORY</span>
+                <h2>Tournament Record</h2>
+                <p>Performance in song tournaments, separate from regular Elo voting.</p>
+            </div>
+            <a class="tournament-link" href="/tournament_stats">Tournament leaderboard ↗</a>
+        </div>
+        <div class="tournament-stats-grid">
+            <div class="tournament-stat"><span class="stat-label">Points</span><strong>{{ '%.2f'|format(tournament_record.tournament_points or 0) }}</strong></div>
+            <div class="tournament-stat"><span class="stat-label">Match Win Rate</span><strong>{% if (tournament_record.matches_won + tournament_record.matches_lost) > 0 %}{{ ((tournament_record.matches_won / (tournament_record.matches_won + tournament_record.matches_lost)) * 100)|round|int }}%{% else %}N/A{% endif %}</strong><small>{{ tournament_record.matches_won }}W · {{ tournament_record.matches_lost }}L</small></div>
+            <div class="tournament-stat"><span class="stat-label">Appearances</span><strong>{{ tournament_record.tournaments_entered }}</strong></div>
+            <div class="tournament-stat champion-stat"><span class="stat-label">Championships</span><strong>🏆 {{ tournament_record.championships }}</strong></div>
+        </div>
+        <h3 class="tournament-list-title">Tournament appearances</h3>
+        {% if tournament_appearances %}
+            <div class="tournament-appearances">
+            {% for tournament in tournament_appearances %}
+                <article class="tournament-appearance">
+                    <div class="appearance-icon">{% if tournament.champion_id == song.id %}🏆{% elif tournament.status == 'completed' %}⚔️{% else %}⏳{% endif %}</div>
+                    <div class="appearance-info">
+                        <strong>{% if tournament.champion_id == song.id %}Champion{% elif tournament.status == 'completed' %}Tournament completed{% else %}Tournament in progress{% endif %}</strong>
+                        <span>{{ tournament.size }}-song · {{ tournament.scope_type|replace('_', ' ')|title }} bracket</span>
+                        <small>{{ tournament.matches_won }} wins · {{ tournament.matches_played }} matches · {{ '%.2f'|format(tournament.points_earned or 0) }} points</small>
+                    </div>
+                    <a href="/tournament_stats?tournament={{ tournament.id }}" class="appearance-link">View bracket ↗</a>
+                </article>
+            {% endfor %}
+            </div>
+        {% else %}
+            <div class="no-tournaments">No tournament appearances yet. This track is still waiting for its bracket debut.</div>
+        {% endif %}
+    </section>
 
     <div class="history-container">
         <h3 style="margin-top: 0; text-transform: uppercase; color: #888; font-size: 1em;">Last 5 Matches</h3>

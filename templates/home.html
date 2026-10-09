@@ -123,6 +123,15 @@
     .home-search { max-width: 600px; margin: 0 auto 80px auto; }
     .home-search .search-input { width: 100%; padding: 20px 30px; font-size: 1.2em; border-radius: 40px; text-align: center; border: 1px solid #333; background-color: #1e1e1e; color: white; box-sizing: border-box; outline: none; transition: border-color 0.2s; }
     .home-search .search-input:focus { border-color: var(--color-song); }
+    .tournament-spotlight { display:flex; align-items:center; gap:24px; padding:25px 30px; color:white; text-decoration:none; border-radius:14px; border:1px solid rgba(191,119,255,.3); background:linear-gradient(110deg,rgba(191,119,255,.13),#1e1e1e 65%); transition:transform .2s,border-color .2s; }
+    .tournament-spotlight:hover { transform:translateY(-3px); border-color:rgba(191,119,255,.65); }
+    .tournament-spotlight-icon { font-size:2.6em; flex-shrink:0; }
+    .tournament-spotlight-copy { flex:1; }
+    .tournament-spotlight-kicker { color:var(--color-album); font-size:.72em; font-weight:900; letter-spacing:1.5px; }
+    .tournament-spotlight h2 { margin:5px 0; font-size:1.5em; }
+    .tournament-spotlight p { color:#999; margin:0; }
+    .tournament-spotlight-arrow { color:var(--color-album); font-weight:900; white-space:nowrap; }
+    @media(max-width:650px) { .tournament-spotlight { align-items:flex-start; flex-wrap:wrap; padding:22px; gap:14px; } .tournament-spotlight-icon { font-size:2em; } .tournament-spotlight-copy { flex-basis:calc(100% - 60px); } .tournament-spotlight-arrow { margin-left:58px; } }
 </style>
 {% endblock %}
 
@@ -152,7 +161,24 @@
                 <div class="mode-title">Trivia</div>
                 <div class="mode-desc">Test your knowledge. Guess the track and artist from a short snippet.</div>
             </a>
+            <a href="/tournament" class="mode-card">
+                <div class="mode-icon">🏆</div>
+                <div class="mode-title">Tournament Bracket</div>
+                <div class="mode-desc">Build a knockout bracket and crown a champion from your favourite tracks.</div>
+            </a>
         </div>
+    </div>
+
+    <div class="section-wrapper tournament-spotlight-wrap">
+        <a href="/tournament_stats" class="tournament-spotlight">
+            <div class="tournament-spotlight-icon">🏆</div>
+            <div class="tournament-spotlight-copy">
+                <div class="tournament-spotlight-kicker">THE BRACKET HALL OF FAME</div>
+                <h2>Tournament Statistics</h2>
+                <p>See which songs survive the knockout rounds, stack up points, and become champions.</p>
+            </div>
+            <div class="tournament-spotlight-arrow">Explore stats ↗</div>
+        </a>
     </div>
 
     <!-- Top Tracks Scroller -->

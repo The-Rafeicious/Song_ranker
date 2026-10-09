@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}Tournament Statistics - Song Ranker{% endblock %}
+{% block extra_css %}
+<style>
+    .tour-page { max-width:1150px; margin:0 auto; text-align:left; }
+    .tour-hero { margin:35px 0 28px; padding:32px; border-radius:16px; border:1px solid rgba(191,119,255,.28); background:linear-gradient(125deg,rgba(191,119,255,.13),#1d1d1d 65%); }
+    .tour-kicker { color:var(--color-album); font-size:.75em; font-weight:900; letter-spacing:1.6px; }
+    .tour-hero h1 { font-size:2.8em; font-weight:900; margin:7px 0; letter-spacing:-1px; }
+    .tour-hero p { color:#999; margin:0; }
+    .tour-summary { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:12px; margin-bottom:36px; }
+    .summary-card { padding:18px; border-radius:12px; border:1px solid #303030; background:#1e1e1e; }
+    .summary-label { color:#888; font-size:.75em; font-weight:900; letter-spacing:.8px; text-transform:uppercase; }
+    .summary-value { display:block; font-size:2em; font-weight:900; margin-top:4px; }
+    .tour-section { margin:34px 0; }
+    .tour-section-head { display:flex; justify-content:space-between; align-items:end; gap:15px; margin-bottom:14px; }
+    .tour-section h2 { margin:0; font-size:1.5em; }
+    .tour-section-head p { margin:4px 0 0; color:#888; }
+    .tour-table-wrap { overflow-x:auto; border:1px solid #303030; border-radius:12px; background:#1d1d1d; }
+    .tour-table { width:100%; border-collapse:collapse; min-width:700px; }
+    .tour-table th { padding:14px 12px; color:#888; text-transform:uppercase; font-size:.72em; letter-spacing:.8px; text-align:right; border-bottom:1px solid #383838; }
+    .tour-table th:first-child,.tour-table th:nth-child(2) { text-align:left; }
+    .tour-table td { padding:12px; border-bottom:1px solid #2c2c2c; text-align:right; font-variant-numeric:tabular-nums; }
+    .tour-table tr:last-child td { border-bottom:0; }
+    .tour-table td:first-child { color:#666; width:42px; }
+    .tour-song { display:flex; align-items:center; gap:12px; text-align:left; min-width:210px; }
+    .tour-song img { width:48px; height:48px; object-fit:cover; border-radius:7px; background:#292929; }
+    .tour-song a { color:white; text-decoration:none; font-weight:800; }
+    .tour-song a:hover { color:var(--color-song); }
+    .tour-song small { display:block; color:#888; font-weight:normal; margin-top:3px; }
+    .points-cell { color:var(--color-album); font-weight:900; }
+    .tour-filter { padding:10px 14px; border-radius:9px; border:1px solid #383838; background:#1e1e1e; color:white; }
+    .tour-list { display:grid; gap:12px; }
+    .tournament-card { border:1px solid #303030; border-radius:12px; background:#1d1d1d; overflow:hidden; }
+    .tournament-card-head { display:flex; align-items:center; gap:15px; padding:18px; }
+    .tournament-medal { font-size:1.8em; }
+    .tournament-card-info { flex:1; min-width:0; }
+    .tournament-card-info strong { display:block; font-size:1.05em; }
+    .tournament-card-info small { display:block; color:#888; margin-top:5px; }
+    .status-pill { font-size:.72em; font-weight:900; text-transform:uppercase; letter-spacing:.6px; padding:5px 8px; border-radius:999px; background:#292929; color:#aaa; white-space:nowrap; }
+    .status-pill.completed { color:var(--color-song); background:var(--color-song-bg); }
+    .view-bracket { border:1px solid #454545; background:#262626; color:white; padding:9px 13px; border-radius:8px; cursor:pointer; font-weight:800; white-space:nowrap; }
+    .view-bracket:hover { border-color:var(--color-album); }
+    .bracket-detail { padding:0 18px 18px; }
+    .bracket-round { margin-top:12px; }
+    .bracket-round h4 { color:var(--color-album); text-transform:uppercase; letter-spacing:.8px; font-size:.78em; margin:0 0 8px; }
+    .bracket-match { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; padding:10px 12px; margin:6px 0; background:#252525; border-radius:8px; font-size:.9em; }
+    .bracket-match .winner { color:var(--color-song); font-weight:900; }
+    .bracket-match .loser { color:#888; }
+    .bracket-match .vs { color:#555; font-size:.75em; font-weight:900; }
+    .bracket-note { color:#888; padding:15px; border:1px dashed #383838; border-radius:8px; }
+    .tour-empty { color:#888; text-align:center; padding:28px; background:#1e1e1e; border-radius:12px; }
+    @media(max-width:760px) { .tour-hero { padding:24px; } .tour-hero h1 { font-size:2.1em; } .tour-summary { grid-template-columns:repeat(2,minmax(0,1fr)); } .tournament-card-head { flex-wrap:wrap; } .view-bracket { margin-left:45px; } .bracket-match { grid-template-columns:1fr; text-align:left; gap:5px; } .bracket-match .vs { display:none; } }
+</style>
+{% endblock %}
+{% block content %}
+<div class="tour-page">
+    <div class="tour-hero"><div class="tour-kicker">THE KNOCKOUT ARCHIVE</div><h1>Tournament Statistics</h1><p>Every bracket tells a story. Track tournament points, match wins, and the songs that reached the crown.</p></div>
+    <div class="tour-summary">
+        <div class="summary-card"><span class="summary-label">Tournaments</span><strong class="summary-value" id="sum-tournaments">…</strong></div>
+        <div class="summary-card"><span class="summary-label">Completed</span><strong class="summary-value" id="sum-completed">…</strong></div>
+        <div class="summary-card"><span class="summary-label">Songs with results</span><strong class="summary-value" id="sum-songs">…</strong></div>
+        <div class="summary-card"><span class="summary-label">Championships awarded</span><strong class="summary-value" id="sum-titles">…</strong></div>
+    </div>
+    <section class="tour-section">
+        <div class="tour-section-head"><div><h2>Tournament leaderboard</h2><p>Ranked by championships, points, win rate, and appearances.</p></div><select id="leader-sort" class="tour-filter" aria-label="Sort leaderboard"><option value="overall">Overall ranking</option><option value="points">Most points</option><option value="winrate">Best win rate</option><option value="appearances">Most appearances</option><option value="titles">Most championships</option></select></div>
+        <div class="tour-table-wrap"><table class="tour-table"><thead><tr><th>#</th><th>Song</th><th>Points</th><th>Win rate</th><th>Record</th><th>Entered</th><th>Titles</th></tr></thead><tbody id="leaderboard-body"><tr><td colspan="7" class="tour-empty">Loading tournament results…</td></tr></tbody></table></div>
+    </section>
+    <section class="tour-section" id="history-section">
+        <div class="tour-section-head"><div><h2>Bracket history</h2><p>Open any tournament to inspect the rounds and individual match results.</p></div></div>
+        <div id="tournament-list" class="tour-list"><div class="tour-empty">Loading tournament history…</div></div>
+    </section>
+</div>
+<script>
+(() => {
+    const $ = id => document.getElementById(id);
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+    let songs = [], tournaments = [];
+    const songById = new Map();
+    const fmtDate = value => { if (!value) return 'Date unavailable'; const d = new Date(value.replace(' ', 'T') + (value.endsWith('Z') ? '' : 'Z')); return Number.isNaN(d.getTime()) ? value : d.toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}); };
+    function renderLeaderboard() {
+        const mode = $('leader-sort').value;
+        const data = songs.filter(s => (s.tournaments_entered || 0) > 0 || (s.matches_played || 0) > 0 || (s.championships || 0) > 0);
+        if (mode === 'points') data.sort((a,b) => b.tournament_points-a.tournament_points || b.championships-a.championships);
+        else if (mode === 'winrate') data.sort((a,b) => (b.win_rate ?? -1)-(a.win_rate ?? -1) || b.matches_played-a.matches_played);
+        else if (mode === 'appearances') data.sort((a,b) => b.tournaments_entered-a.tournaments_entered || b.tournament_points-a.tournament_points);
+        else if (mode === 'titles') data.sort((a,b) => b.championships-a.championships || b.tournament_points-a.tournament_points);
+        else data.sort((a,b) => b.championships-a.championships || b.tournament_points-a.tournament_points || (b.win_rate ?? -1)-(a.win_rate ?? -1) || b.tournaments_entered-a.tournaments_entered);
+        $('leaderboard-body').innerHTML = data.length ? data.map((s,i) => `<tr><td>${i+1}</td><td><div class="tour-song"><img src="${esc(s.cover_url)}" alt="" onerror="this.style.visibility='hidden'"><div><a href="/song/${s.id}">${esc(s.title)}</a><small>${esc(s.artist || 'Unknown artist')}</small></div></div></td><td class="points-cell">${Number(s.tournament_points || 0).toFixed(2)}</td><td>${s.win_rate == null ? 'N/A' : `${Math.round(s.win_rate)}%`}</td><td>${s.matches_won || 0}W · ${s.matches_lost || 0}L</td><td>${s.tournaments_entered || 0}</td><td>${s.championships || 0}</td></tr>`).join('') : '<tr><td colspan="7" class="tour-empty">No tournament results have been recorded yet.</td></tr>';
+    }
+    function renderHistory() {
+        const host = $('tournament-list');
+        if (!tournaments.length) { host.innerHTML = '<div class="tour-empty">No tournaments saved yet. Start one from Tournament Bracket to begin the archive.</div>'; return; }
+        host.innerHTML = tournaments.map(t => {
+            const champ = songById.get(Number(t.champion_id));
+            const status = t.status || (t.champion_id ? 'completed' : 'legacy');
+            const label = status.replaceAll('_',' ');
+            const matches = `${t.matches_completed || 0}/${t.matches_created || 0} matches`;
+            return `<article class="tournament-card" id="tournament-${t.id}"><div class="tournament-card-head"><div class="tournament-medal">${status === 'completed' ? '🏆' : status === 'in_progress' ? '⚔️' : '📜'}</div><div class="tournament-card-info"><strong>${esc(t.size || '?')}-song tournament${champ ? ` · ${esc(champ.title)}` : ''}</strong><small>${esc((t.scope_type || 'global').replaceAll('_',' '))} bracket · ${esc(fmtDate(t.completed_at || t.created_at || t.timestamp))} · ${matches}${champ ? ` · Champion: ${esc(champ.title)}` : ''}</small></div><span class="status-pill ${status === 'completed' ? 'completed' : ''}">${esc(label)}</span><button class="view-bracket" data-tournament="${t.id}">View bracket</button></div><div class="bracket-detail" id="bracket-${t.id}" hidden></div></article>`;
+        }).join('');
+        host.querySelectorAll('.view-bracket').forEach(btn => btn.addEventListener('click', () => toggleBracket(btn.dataset.tournament, btn)));
+        const selected = new URLSearchParams(location.search).get('tournament');
+        if (selected) { const btn = host.querySelector(`[data-tournament="${CSS.escape(selected)}"]`); if (btn) { toggleBracket(selected, btn); setTimeout(() => $( `tournament-${selected}`).scrollIntoView({behavior:'smooth',block:'center'}), 150); } }
+    }
+    async function toggleBracket(id, button) {
+        const panel = $('bracket-' + id);
+        if (!panel.hidden) { panel.hidden = true; button.textContent = 'View bracket'; return; }
+        panel.hidden = false; button.textContent = 'Hide bracket';
+        if (panel.dataset.loaded === 'yes') return;
+        panel.innerHTML = '<div class="bracket-note">Loading bracket…</div>';
+        try {
+            const response = await fetch(`/api/tournaments/${id}`);
+            const data = await response.json();
+            if (!response.ok) throw new Error('Bracket unavailable');
+            const entries = new Map((data.entries || []).map(e => [Number(e.id), e]));
+            const matchRows = data.matches || [];
+            if (!entries.size || !matchRows.length) {
+                const champ = songById.get(Number(data.tournament?.champion_id));
+                panel.innerHTML = `<div class="bracket-note">This tournament predates detailed bracket tracking, so its individual match history was not saved.${champ ? ` Recorded champion: <a href="/song/${champ.id}" style="color:var(--color-song)">${esc(champ.title)}</a>.` : ''} No missing matches have been guessed.</div>`;
+            } else {
+                const rounds = [...new Set(matchRows.map(m => Number(m.round_number || 1)))].sort((a,b) => a-b);
+                panel.innerHTML = rounds.map(round => `<div class="bracket-round"><h4>${round === rounds.length ? 'Final / Championship round' : `Round ${round}`}</h4>${matchRows.filter(m => Number(m.round_number || 1) === round).map(m => { const a = entries.get(Number(m.song1_id)); const b = entries.get(Number(m.song2_id)); const winner = entries.get(Number(m.winner_id)); const loserId = Number(m.loser_id); const first = a || {title:`Song #${m.song1_id}`}; const second = b || {title:`Song #${m.song2_id}`}; return `<div class="bracket-match"><span class="${winner && Number(winner.id) === Number(first.id) ? 'winner' : 'loser'}">${esc(first.title)}</span><span class="vs">VS</span><span class="${winner && Number(winner.id) === Number(second.id) ? 'winner' : 'loser'}">${esc(second.title)}</span><small style="grid-column:1/-1;color:#777">${m.status === 'completed' ? `Winner: ${esc(winner?.title || 'Unknown')} · ${Number(m.points_awarded || 0).toFixed(2)} points` : 'Awaiting match'}</small></div>`; }).join('')}</div>`).join('');
+            }
+            panel.dataset.loaded = 'yes';
+        } catch (error) { panel.innerHTML = '<div class="bracket-note">Could not load this bracket. Please try again.</div>'; }
+    }
+    async function init() {
+        try {
+            const [statsResponse, historyResponse] = await Promise.all([fetch('/api/tournament_stats'), fetch('/api/tournaments')]);
+            if (!statsResponse.ok || !historyResponse.ok) throw new Error('Stats unavailable');
+            const stats = await statsResponse.json(), history = await historyResponse.json();
+            songs = stats.songs || []; tournaments = history.tournaments || [];
+            songs.forEach(s => songById.set(Number(s.id), s));
+            $('sum-tournaments').textContent = tournaments.length;
+            $('sum-completed').textContent = tournaments.filter(t => t.status === 'completed' || (!t.status && t.champion_id)).length;
+            $('sum-songs').textContent = songs.filter(s => s.tournaments_entered > 0 || s.matches_played > 0 || s.championships > 0).length;
+            $('sum-titles').textContent = songs.reduce((n,s) => n + Number(s.championships || 0), 0);
+            renderLeaderboard(); renderHistory();
+        } catch (error) {
+            $('leaderboard-body').innerHTML = '<tr><td colspan="7" class="tour-empty">Could not load tournament statistics.</td></tr>';
+            $('tournament-list').innerHTML = '<div class="tour-empty">Could not load tournament history.</div>';
+        }
+    }
+    $('leader-sort').addEventListener('change', renderLeaderboard);
+    init();
+})();
+</script>
+{% endblock %}

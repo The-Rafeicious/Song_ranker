@@ -20,6 +20,15 @@
         text-align: left;
     }
     .form-group { margin-bottom: 25px; }
+    #saved-tournaments { max-width: 760px; margin: 30px auto 0; text-align: left; }
+    .saved-tournament { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 20px; margin-top: 12px; background: #1e1e1e; border: 1px solid #333; border-radius: 12px; }
+    .saved-tournament-info { min-width: 0; }
+    .saved-tournament-title { font-weight: 900; color: white; margin-bottom: 5px; }
+    .saved-tournament-meta { color: #999; font-size: 0.9em; }
+    .resume-btn { flex: 0 0 auto; background: var(--color-song); color: white; border: 0; border-radius: 24px; padding: 12px 20px; font-weight: 900; cursor: pointer; }
+    .resume-btn:disabled { opacity: 0.5; cursor: wait; }
+    .match-error { color: #ff6675; font-weight: bold; margin: 20px auto; max-width: 700px; }
+    @media (max-width: 600px) { #setup-phase { padding: 24px; } .saved-tournament { align-items: flex-start; flex-direction: column; } .song-card { width: min(320px, 90vw); } .cover-container { height: 280px; } }
     .form-group label { display: block; color: #888; font-weight: 900; text-transform: uppercase; font-size: 0.9em; margin-bottom: 10px; }
     .form-select {
         width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333;
@@ -137,9 +146,16 @@
         <div id="setup-error" style="color: #e22134; margin-top: 15px; font-weight: bold; text-align: center; display: none;"></div>
     </div>
 
+    <div id="saved-tournaments" style="display: none;">
+        <h2 style="font-weight: 900; margin-bottom: 8px;">Continue a Tournament</h2>
+        <div style="color: #888;">Your unfinished brackets are saved, ready when you are.</div>
+        <div id="saved-tournament-list"></div>
+    </div>
+
     <!-- 2. MATCH PHASE -->
     <div id="match-phase">
         <div class="bracket-status" id="bracket-status">Round 1 - Match 1</div>
+        <div id="match-error" class="match-error" style="display: none;"></div>
 
         <div class="matchup-container">
             <!-- Track 1 -->
@@ -231,118 +247,138 @@
         document.getElementById('album-select-group').style.display = scope === 'album' ? 'block' : 'none';
     }
 
-    // Tournament State
+    // Persisted Tournament State
+    let currentTournamentId = null;
+    let currentTournament = null;
+    let tournamentTracks = {};
+    let tournamentMatches = [];
+    let activeMatch = null;
+    let isVoting = false;
     let tParams = { size: 8, scope: 'global', scope_id: null };
-    let matchups = [];       // Array of current round pairs: [[trackA, trackB], ...]
-    let nextRound = [];      // Array of tracks that won this round
-    let currentMatchIndex = 0;
-    let roundNum = 1;
 
-    // Mathematical Bracket Seeding (Prevents #1 and #2 from meeting until finals)
-    function generateSeeding(numTeams) {
-        let rounds = Math.log2(numTeams);
-        let bracket = [1, 2];
-        for (let r = 1; r < rounds; r++) {
-            let nextBracket = [];
-            let sum = Math.pow(2, r + 1) + 1;
-            for (let i = 0; i < bracket.length; i++) {
-                nextBracket.push(bracket[i]);
-                nextBracket.push(sum - bracket[i]);
-            }
-            bracket = nextBracket;
-        }
-        return bracket.map(seed => seed - 1); // 0-indexed for array access
+    function trackId(track) { return String(track.id); }
+
+    function showMatchError(message) {
+        const el = document.getElementById('match-error');
+        el.innerText = message || '';
+        el.style.display = message ? 'block' : 'none';
+    }
+
+    function getRoundName(totalTracksRemaining) {
+        if (totalTracksRemaining === 2) return 'Grand Final';
+        if (totalTracksRemaining === 4) return 'Semi-Finals';
+        if (totalTracksRemaining === 8) return 'Quarter-Finals';
+        return `Round ${activeMatch ? activeMatch.round_number : 1}`;
     }
 
     async function generateTournament() {
         const btn = document.getElementById('generate-btn');
         const err = document.getElementById('setup-error');
-
         btn.disabled = true;
-        btn.innerText = "Building Bracket...";
-        err.style.display = "none";
+        btn.innerText = 'Building Bracket...';
+        err.style.display = 'none';
 
-        tParams.size = parseInt(document.getElementById('t-size').value);
+        tParams.size = parseInt(document.getElementById('t-size').value, 10);
         tParams.scope = document.getElementById('t-scope').value;
+        tParams.scope_id = null;
         if (tParams.scope === 'artist') tParams.scope_id = document.getElementById('t-artist').value;
         if (tParams.scope === 'album') tParams.scope_id = document.getElementById('t-album').value;
 
-        const url = `/api/generate_bracket?size=${tParams.size}&scope=${tParams.scope}&scope_id=${tParams.scope_id || ''}`;
-
+        const url = `/api/generate_bracket?size=${tParams.size}&scope=${encodeURIComponent(tParams.scope)}&scope_id=${encodeURIComponent(tParams.scope_id || '')}`;
         try {
             const res = await fetch(url);
             const data = await res.json();
-
-            if (data.error) {
-                err.innerText = data.error;
-                err.style.display = "block";
-                btn.disabled = false;
-                btn.innerText = "Generate Bracket";
-                return;
-            }
-
-            // Apply standard bracket seeding to the sorted tracks
-            const tracks = data.tracks;
-            const seedOrder = generateSeeding(tParams.size);
-
-            matchups = [];
-            for (let i = 0; i < seedOrder.length; i += 2) {
-                matchups.push([tracks[seedOrder[i]], tracks[seedOrder[i+1]]]);
-            }
-
-            document.getElementById('setup-phase').style.display = "none";
-            document.getElementById('page-subtitle').style.display = "none";
-            document.getElementById('match-phase').style.display = "block";
-
-            renderMatch();
-
+            if (!res.ok || data.error) throw new Error(data.error || 'Could not create tournament.');
+            await loadTournament(data.tournament_id);
         } catch (e) {
-            err.innerText = "Network error occurred.";
-            err.style.display = "block";
+            err.innerText = e.message || 'Network error occurred.';
+            err.style.display = 'block';
             btn.disabled = false;
-            btn.innerText = "Generate Bracket";
+            btn.innerText = 'Generate Bracket';
         }
     }
 
-    function getRoundName(totalRemaining) {
-        if (totalRemaining === 2) return "Grand Final";
-        if (totalRemaining === 4) return "Semi-Finals";
-        if (totalRemaining === 8) return "Quarter-Finals";
-        return `Round ${roundNum}`;
+    async function loadTournament(tournamentId) {
+        showMatchError('');
+        const res = await fetch(`/api/tournaments/${tournamentId}`);
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Could not load this tournament.');
+
+        currentTournamentId = data.tournament.id;
+        currentTournament = data.tournament;
+        tournamentTracks = {};
+        data.entries.forEach(track => { tournamentTracks[trackId(track)] = track; });
+        tournamentMatches = data.matches || [];
+        tParams = {
+            size: data.tournament.size,
+            scope: data.tournament.scope_type,
+            scope_id: data.tournament.scope_id
+        };
+
+        if (data.tournament.status === 'completed') {
+            const champion = tournamentTracks[String(data.tournament.champion_id)];
+            if (champion) await showChampion(champion);
+            return;
+        }
+
+        document.getElementById('setup-phase').style.display = 'none';
+        document.getElementById('saved-tournaments').style.display = 'none';
+        document.getElementById('page-subtitle').style.display = 'none';
+        document.getElementById('page-title').innerText = 'Bracket Tournament';
+        document.getElementById('winner-phase').style.display = 'none';
+        document.getElementById('match-phase').style.display = 'block';
+        renderNextMatch();
     }
 
-    function renderMatch() {
-        const match = matchups[currentMatchIndex];
-        const t1 = match[0];
-        const t2 = match[1];
+    function renderNextMatch() {
+        // The database is the source of truth, so a refresh can never lose a vote.
+        const pending = tournamentMatches
+            .filter(match => match.status === 'pending')
+            .sort((a, b) => a.round_number - b.round_number || a.match_number - b.match_number);
 
-        // Update bracket text
-        const totalTracksRemaining = matchups.length * 2;
-        const roundText = getRoundName(totalTracksRemaining);
-        document.getElementById('bracket-status').innerText = `${roundText} - Match ${currentMatchIndex + 1}/${matchups.length}`;
+        if (!pending.length) {
+            const finalMatch = [...tournamentMatches].sort((a, b) => b.round_number - a.round_number || b.match_number - a.match_number)[0];
+            const champion = finalMatch && finalMatch.winner_id ? tournamentTracks[String(finalMatch.winner_id)] : null;
+            if (champion) finishTournament(champion);
+            else showMatchError('No pending matches were found for this tournament. Please return to the tournament list and try again.');
+            return;
+        }
 
-        // Populate Cards
-        document.getElementById('cover1').src = t1.cover_url;
-        document.getElementById('title1').innerText = t1.title;
-        document.getElementById('artist1').innerText = t1.artist;
-        audio1.src = t1.audio_url || "";
-        document.getElementById('btn1').style.opacity = t1.audio_url ? "0" : "0.5";
-        document.getElementById('btn1').innerText = t1.audio_url ? "▶" : "No Audio";
+        activeMatch = pending[0];
+        const t1 = tournamentTracks[String(activeMatch.song1_id)];
+        const t2 = tournamentTracks[String(activeMatch.song2_id)];
+        if (!t1 || !t2) {
+            showMatchError('A track for this match could not be loaded.');
+            return;
+        }
 
-        document.getElementById('cover2').src = t2.cover_url;
-        document.getElementById('title2').innerText = t2.title;
-        document.getElementById('artist2').innerText = t2.artist;
-        audio2.src = t2.audio_url || "";
-        document.getElementById('btn2').style.opacity = t2.audio_url ? "0" : "0.5";
-        document.getElementById('btn2').innerText = t2.audio_url ? "▶" : "No Audio";
-
+        const matchesInRound = tournamentMatches.filter(m => m.round_number === activeMatch.round_number);
+        const completedInRound = matchesInRound.filter(m => m.status === 'completed').length;
+        const totalTracksRemaining = matchesInRound.length * 2;
+        document.getElementById('bracket-status').innerText = `${getRoundName(totalTracksRemaining)} - Match ${completedInRound + 1}/${matchesInRound.length}`;
+        populateTrack(1, t1);
+        populateTrack(2, t2);
         if (volumeSlider) { audio1.volume = volumeSlider.value; audio2.volume = volumeSlider.value; }
-
         document.getElementById('vote-btn-1').disabled = false;
         document.getElementById('vote-btn-2').disabled = false;
+        isVoting = false;
+    }
+
+    function populateTrack(cardNumber, track) {
+        document.getElementById(`cover${cardNumber}`).src = track.cover_url || '';
+        document.getElementById(`title${cardNumber}`).innerText = track.title || 'Unknown track';
+        document.getElementById(`artist${cardNumber}`).innerText = track.artist || 'Unknown artist';
+        const audio = document.getElementById(`audio${cardNumber}`);
+        audio.src = track.audio_url || '';
+        const playButton = document.getElementById(`btn${cardNumber}`);
+        playButton.style.opacity = track.audio_url ? '0' : '0.5';
+        playButton.innerText = track.audio_url ? '▶' : 'No Audio';
+        playButton.classList.remove('playing');
     }
 
     async function castVote(winnerIndex) {
+        if (isVoting || !activeMatch || !currentTournamentId) return;
+        isVoting = true;
         document.getElementById('vote-btn-1').disabled = true;
         document.getElementById('vote-btn-2').disabled = true;
         audio1.pause(); audio2.pause();
@@ -350,58 +386,119 @@
         document.getElementById('btn2').innerText = '▶';
         document.getElementById('btn1').classList.remove('playing');
         document.getElementById('btn2').classList.remove('playing');
+        showMatchError('');
 
-        const match = matchups[currentMatchIndex];
-        const winner = match[winnerIndex];
-        const loser = match[winnerIndex === 0 ? 1 : 0];
-
-        // Send API Vote asynchronously
-        fetch('/api/tournament_vote', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ winner_id: winner.id, loser_id: loser.id })
-        });
-
-        // Progress Tournament State Locally
-        nextRound.push(winner);
-        currentMatchIndex++;
-
-        if (currentMatchIndex >= matchups.length) {
-            // Round is over
-            if (nextRound.length === 1) {
-                return finishTournament(nextRound[0]);
-            }
-
-            // Build next round matchups sequentially (winners of adjacent matches play each other)
-            matchups = [];
-            for (let i = 0; i < nextRound.length; i += 2) {
-                matchups.push([nextRound[i], nextRound[i+1]]);
-            }
-            nextRound = [];
-            currentMatchIndex = 0;
-            roundNum++;
+        const winner = tournamentTracks[String(winnerIndex === 0 ? activeMatch.song1_id : activeMatch.song2_id)];
+        const loser = tournamentTracks[String(winnerIndex === 0 ? activeMatch.song2_id : activeMatch.song1_id)];
+        try {
+            const res = await fetch('/api/tournament_vote', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    tournament_id: currentTournamentId,
+                    match_id: activeMatch.id,
+                    winner_id: winner.id,
+                    loser_id: loser.id
+                })
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || 'Could not save your vote.');
+            tournamentMatches = data.matches || tournamentMatches;
+            renderNextMatch();
+        } catch (e) {
+            isVoting = false;
+            document.getElementById('vote-btn-1').disabled = false;
+            document.getElementById('vote-btn-2').disabled = false;
+            showMatchError(`${e.message || 'Could not save your vote.'} Your choice has not been advanced. Please try again.`);
         }
-
-        renderMatch();
     }
 
     async function finishTournament(champion) {
-        document.getElementById('match-phase').style.display = "none";
-        document.getElementById('page-title').innerText = "Tournament Complete";
-
-        // Log the champion
-        await fetch('/api/tournament_complete', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ champion_id: champion.id, size: tParams.size, scope: tParams.scope, scope_id: tParams.scope_id })
-        });
-
-        document.getElementById('champ-cover').src = champion.cover_url;
-        document.getElementById('champ-title').innerText = champion.title;
-        document.getElementById('champ-artist').innerText = champion.artist;
-        document.getElementById('champ-elo').innerText = "Final Elo: " + parseInt(champion.elo_score);
-
-        document.getElementById('winner-phase').style.display = "block";
+        if (!currentTournamentId) return;
+        document.getElementById('vote-btn-1').disabled = true;
+        document.getElementById('vote-btn-2').disabled = true;
+        showMatchError('');
+        try {
+            const res = await fetch('/api/tournament_complete', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ tournament_id: currentTournamentId, champion_id: champion.id })
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || 'Could not complete tournament.');
+            await showChampion(champion);
+            loadSavedTournaments();
+        } catch (e) {
+            showMatchError(`${e.message || 'Could not complete tournament.'} Your results are saved. Refresh or resume this tournament to try again.`);
+        }
     }
+
+    async function showChampion(champion) {
+        audio1.pause(); audio2.pause();
+        document.getElementById('match-phase').style.display = 'none';
+        document.getElementById('setup-phase').style.display = 'none';
+        document.getElementById('saved-tournaments').style.display = 'none';
+        document.getElementById('page-title').innerText = 'Tournament Complete';
+        document.getElementById('page-subtitle').style.display = 'none';
+        document.getElementById('champ-cover').src = champion.cover_url || '';
+        document.getElementById('champ-title').innerText = champion.title || 'Unknown track';
+        document.getElementById('champ-artist').innerText = champion.artist || 'Unknown artist';
+        document.getElementById('champ-elo').innerText = 'Final Elo: ' + parseInt(champion.elo_score || 0, 10);
+        document.getElementById('winner-phase').style.display = 'block';
+    }
+
+    function describeTournament(tournament) {
+        const scopeNames = { global: 'Global', artist: 'Artist exclusive', album: 'Album exclusive' };
+        const done = tournament.matches_completed || 0;
+        const total = tournament.matches_created || tournament.size - 1;
+        return `${tournament.size} tracks · ${scopeNames[tournament.scope_type] || tournament.scope_type} · ${done}/${total} matches played`;
+    }
+
+    async function loadSavedTournaments() {
+        const section = document.getElementById('saved-tournaments');
+        const list = document.getElementById('saved-tournament-list');
+        try {
+            const res = await fetch('/api/tournaments');
+            const data = await res.json();
+            if (!res.ok) throw new Error('Could not load saved tournaments.');
+            const active = (data.tournaments || []).filter(t => t.status === 'in_progress');
+            list.innerHTML = '';
+            if (!active.length) { section.style.display = 'none'; return; }
+            active.forEach(tournament => {
+                const row = document.createElement('div');
+                row.className = 'saved-tournament';
+                const info = document.createElement('div');
+                info.className = 'saved-tournament-info';
+                const title = document.createElement('div');
+                title.className = 'saved-tournament-title';
+                title.innerText = `Tournament #${tournament.id}`;
+                const meta = document.createElement('div');
+                meta.className = 'saved-tournament-meta';
+                meta.innerText = describeTournament(tournament);
+                const button = document.createElement('button');
+                button.className = 'resume-btn';
+                button.innerText = 'Resume';
+                button.addEventListener('click', async () => {
+                    button.disabled = true;
+                    button.innerText = 'Loading...';
+                    try { await loadTournament(tournament.id); }
+                    catch (e) {
+                        button.disabled = false;
+                        button.innerText = 'Resume';
+                        alert(e.message || 'Could not resume tournament.');
+                    }
+                });
+                info.append(title, meta);
+                row.append(info, button);
+                list.appendChild(row);
+            });
+            section.style.display = 'block';
+        } catch (e) {
+            // Starting a new tournament remains available if the saved list cannot load.
+            section.style.display = 'none';
+        }
+    }
+
+    loadSavedTournaments();
 </script>
 {% endblock %}
