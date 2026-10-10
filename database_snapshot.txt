@@ -2,119 +2,119 @@
 
 Rank  | Elo    | Peak Elo  | Peak Rank  | Matches | Recog % | Track Title                         | Artist                    | Album
 --------------------------------------------------------------------------------------------------------------------------------------------
-1     | 1200   | 1200      | 1          | 0       | N/A     | Ain't in LA                         | ADÉLA                     | PRIMA
-2     | 1200   | 1200      | 2          | 0       | N/A     | Anything But                        | Asha Banks                | Bottled Up
-3     | 1200   | 1200      | 3          | 0       | N/A     | Bones and All                       | Mckenna Grace             | Bones and All - Single
-4     | 1200   | 1200      | 4          | 0       | N/A     | Mount Olympus                       | Grace Gachot              | Mount Olympus - Single
-5     | 1200   | 1200      | 5          | 0       | N/A     | Red Bottoms                         | ADÉLA                     | PRIMA
-6     | 1200   | 1200      | 6          | 0       | N/A     | bubblebath                          | Lexi Jayde                | LOVER GIRL
-7     | 1200   | 1200      | 7          | 0       | N/A     | RUMOURS                             | Elle Coves                | RUMOURS - Single
-8     | 1200   | 1200      | 8          | 0       | N/A     | Peace                               | Elle Coves                | No Good At Hanging Up
-9     | 1200   | 1200      | 9          | 0       | N/A     | R U O K?                            | Freya Ridings             | Mother Of Pearl
-10    | 1200   | 1200      | 10         | 0       | N/A     | such a bitch!                       | Lexi Jayde                | LOVER GIRL
-11    | 1200   | 1200      | 11         | 0       | N/A     | Sleeping With The Lights On         | Jade LeMac                | It's Always At Night
-12    | 1200   | 1200      | 12         | 0       | N/A     | Ballet Pumps                        | Bea                       | Ballet Pumps - Single
-13    | 1200   | 1200      | 13         | 0       | N/A     | EVIDENCE                            | Elle Coves                | EVIDENCE - Single
-14    | 1200   | 1200      | 14         | 0       | N/A     | Molly                               | Emei                      | Molly - Single
-15    | 1200   | 1200      | 15         | 0       | N/A     | All American                        | Isabel Dumaa              | All American - Single
-16    | 1200   | 1200      | 16         | 0       | N/A     | Feels Like This                     | Maisie Peters             | Dressed Too Nice For A Jacket
-17    | 1200   | 1200      | 17         | 0       | N/A     | Worst of You                        | Maisie Peters             | Worst of You - Single
-18    | 1200   | 1200      | 18         | 0       | N/A     | Old Fashioned                       | Maisie Peters             | Florescence
-19    | 1200   | 1200      | 19         | 0       | N/A     | STORM II                            | GENER8ION, Yung Lean      | STORM - Single
-20    | 1200   | 1200      | 20         | 0       | N/A     | Hallucinating                       | Sofia Camara              | Still Somewhere Here
-21    | 1200   | 1200      | 21         | 0       | N/A     | Flatlining                          | Grace Gachot              | Flatlining - Single
-22    | 1200   | 1200      | 22         | 0       | N/A     | Beauty and a Beat (feat. Nicki M... | Justin Bieber             | Beauty and a Beat (feat. Nicki Minaj) - Single
-23    | 1200   | 1200      | 23         | 0       | N/A     | 505                                 | Arctic Monkeys            | 505 - Single
-24    | 1200   | 1200      | 24         | 0       | N/A     | Sorry                               | Nothing But Thieves       | Sorry - Single
-25    | 1200   | 1200      | 25         | 0       | N/A     | back of my mind                     | Kenzie Cait               | back of my mind - Single
-26    | 1200   | 1200      | 26         | 0       | N/A     | oh my                               | Alessi Rose               | for your validation
-27    | 1200   | 1200      | 27         | 0       | N/A     | Dependent                           | Alessi Rose               | Dependent - Single
-28    | 1200   | 1200      | 28         | 0       | N/A     | The Time Of My Life                 | Benson Boone              | The Time Of My Life - Single
-29    | 1200   | 1200      | 29         | 0       | N/A     | Better Alone                        | Benson Boone              | Walk Me Home...
-30    | 1200   | 1200      | 30         | 0       | N/A     | to love and to lose                 | Dylan                     | to love and to lose - Single
-31    | 1200   | 1200      | 31         | 0       | N/A     | Bad                                 | Dylan                     | Bad - Single
-32    | 1200   | 1200      | 32         | 0       | N/A     | Perfect Revenge                     | Dylan                     | Perfect Revenge - Single
-33    | 1200   | 1200      | 33         | 0       | N/A     | Fault Line                          | Elle Coves                | Fault Line - Single
-34    | 1200   | 1200      | 34         | 0       | N/A     | Talk About It                       | Elle Coves                | Talk About It - Single
-35    | 1200   | 1200      | 35         | 0       | N/A     | The Great Escape                    | Khloe Rose                | The Great Escape - Single
-36    | 1200   | 1200      | 36         | 0       | N/A     | Want You Now                        | Khloe Rose                | Want You Now - Single
-37    | 1200   | 1200      | 37         | 0       | N/A     | Look @ You                          | Khloe Rose                | Look @ You - Single
-38    | 1200   | 1200      | 38         | 0       | N/A     | Over                                | Khloe Rose                | Over - Single
-39    | 1200   | 1200      | 39         | 0       | N/A     | Girl Down                           | Khloe Rose                | Girl Down - Single
-40    | 1200   | 1200      | 40         | 0       | N/A     | I’M THE ONE                         | Khloe Rose                | I’M THE ONE - Single
-41    | 1200   | 1200      | 41         | 0       | N/A     | Favourite Ex                        | Maisie Peters             | Favourite Ex - Single
-42    | 1200   | 1200      | 42         | 0       | N/A     | Best I'll Ever Sing                 | Maisie Peters             | Best I'll Ever Sing - Single
-43    | 1200   | 1200      | 43         | 0       | N/A     | Birthday                            | Maisie Peters             | Birthday - Single
-44    | 1200   | 1200      | 44         | 0       | N/A     | Look At Me Now                      | Maisie Peters             | It's Your Bed Babe, It's Your Funeral
-45    | 1200   | 1200      | 45         | 0       | N/A     | Personal Best                       | Maisie Peters             | It's Your Bed Babe, It's Your Funeral
-46    | 1200   | 1200      | 46         | 0       | N/A     | Ugly and Rotten                     | Mckenna Grace             | Ugly and Rotten - Single
-47    | 1200   | 1200      | 47         | 0       | N/A     | do all my friends hate me?          | Mckenna Grace             | do all my friends hate me? - Single
-48    | 1200   | 1200      | 48         | 0       | N/A     | LOSER!!                             | Mckenna Grace             | LOSER!! - Single
-49    | 1200   | 1200      | 49         | 0       | N/A     | Sunflower (Spider-Man: Into the ... | Post Malone, Swae Lee     | Sunflower (Spider-Man: Into the Spider-Verse) - Single
-50    | 1200   | 1200      | 50         | 0       | N/A     | Better Now                          | Post Malone               | beerbongs & bentleys
-51    | 1200   | 1200      | 51         | 0       | N/A     | You Don't Know Me                   | Isabel Dumaa              | You Don’t Know Me - Single
-52    | 1200   | 1200      | 52         | 0       | N/A     | James Dean                          | Isabel Dumaa              | Reverie
-53    | 1200   | 1200      | 53         | 0       | N/A     | Never Know Love                     | Bea                       | Never Know Love - Single
-54    | 1200   | 1200      | 54         | 0       | N/A     | Dover Beach                         | Baby Queen                | Dover Beach - Single
-55    | 1200   | 1200      | 55         | 0       | N/A     | Elvis Song                          | Maisie Peters             | You Signed Up For This
-56    | 1200   | 1200      | 56         | 0       | N/A     | That Could Be Me                    | Alessi Rose               | Voyeur
-57    | 1200   | 1200      | 57         | 0       | N/A     | Complicated                         | Sofia Camara              | Hard To Love
-58    | 1200   | 1200      | 58         | 0       | N/A     | you're still mine                   | Lexi Jayde                | LOVER GIRL
-59    | 1200   | 1200      | 59         | 0       | N/A     | Wildest Dreams                      | Taylor Swift              | 1989
-60    | 1200   | 1200      | 60         | 0       | N/A     | Die For You                         | The Weeknd                | Starboy
-61    | 1200   | 1200      | 61         | 0       | N/A     | Slow It Down                        | Benson Boone              | Fireworks & Rollerblades
-62    | 1200   | 1200      | 62         | 0       | N/A     | Stay                                | Gracie Abrams             | Stay - Single
-63    | 1200   | 1200      | 63         | 0       | N/A     | HAPPY                               | NF                        | HAPPY - Single
-64    | 1200   | 1200      | 64         | 0       | N/A     | Self Dysmorphia                     | Mckenna Grace             | Self Dysmorphia - Single
-65    | 1200   | 1200      | 65         | 0       | N/A     | Built To Be Bad                     | Grace Gachot              | Built To Be Bad - Single
-66    | 1200   | 1200      | 66         | 0       | N/A     | Friend                              | Benson Boone              | Fireworks & Rollerblades
-67    | 1200   | 1200      | 67         | 0       | N/A     | I Can't Hear It Now (from the se... | Freya Ridings, Arcane,... | Arcane League of Legends: Season 2 (Soundtrack from the Animated Series)
-68    | 1200   | 1200      | 68         | 0       | N/A     | I Love You, I'm Sorry               | Gracie Abrams             | The Secret of Us
-69    | 1200   | 1200      | 69         | 0       | N/A     | In The Kitchen                      | Reneé Rapp                | Everything To Everyone (Deluxe)
-70    | 1200   | 1200      | 70         | 0       | N/A     | the grudge                          | Olivia Rodrigo            | GUTS
-71    | 1200   | 1200      | 71         | 0       | N/A     | Want Me                             | Baby Queen                | Quarter Life Crisis (Deluxe)
-72    | 1200   | 1200      | 72         | 0       | N/A     | Blue                                | Dylan                     | The Greatest Thing I’ll Never Learn
-73    | 1200   | 1200      | 73         | 0       | N/A     | The Smallest Man Who Ever Lived     | Taylor Swift              | THE TORTURED POETS DEPARTMENT
-74    | 1200   | 1200      | 74         | 0       | N/A     | run for the hills                   | Tate McRae                | THINK LATER
-75    | 1200   | 1200      | 75         | 0       | N/A     | think later                         | Tate McRae                | THINK LATER
-76    | 1200   | 1200      | 76         | 0       | N/A     | r u ok                              | Tate McRae                | TOO YOUNG TO BE SAD
-77    | 1200   | 1200      | 77         | 0       | N/A     | you broke me first                  | Tate McRae                | TOO YOUNG TO BE SAD
-78    | 1200   | 1200      | 78         | 0       | N/A     | tear myself apart                   | Tate McRae                | all the things i never said
-79    | 1200   | 1200      | 79         | 0       | N/A     | what's your problem?                | Tate McRae                | i used to think i could fly
-80    | 1200   | 1200      | 80         | 0       | N/A     | she's all i wanna be                | Tate McRae                | i used to think i could fly
-81    | 1200   | 1200      | 81         | 0       | N/A     | feel like shit                      | Tate McRae                | i used to think i could fly
-82    | 1200   | 1200      | 82         | 0       | N/A     | NOBODY'S GIRL                       | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
-83    | 1200   | 1200      | 83         | 0       | N/A     | TIT FOR TAT                         | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
-84    | 1200   | 1200      | 84         | 0       | N/A     | Signs                               | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
-85    | 1200   | 1200      | 85         | 0       | N/A     | No I'm not in love                  | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
-86    | 1200   | 1200      | 86         | 0       | N/A     | 2 hands                             | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
-87    | 1200   | 1200      | 87         | 0       | N/A     | Siren sounds (bonus)                | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
-88    | 1200   | 1200      | 88         | 0       | N/A     | Just Keep Watching                  | Tate McRae                | Just Keep Watching - Single
-89    | 1200   | 1200      | 89         | 0       | N/A     | we're not alike                     | Tate McRae                | THINK LATER
-90    | 1200   | 1200      | 90         | 0       | N/A     | HORSESHOE                           | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
-91    | 1200   | 1200      | 91         | 0       | N/A     | Greenlight                          | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
-92    | 1200   | 1200      | 92         | 0       | N/A     | Watch                               | Maisie Peters             | The Good Witch (Deluxe)
-93    | 1200   | 1200      | 93         | 0       | N/A     | There It Goes                       | Maisie Peters             | The Good Witch (Deluxe)
-94    | 1200   | 1200      | 94         | 0       | N/A     | The Last One                        | Maisie Peters             | The Good Witch (Deluxe)
-95    | 1200   | 1200      | 95         | 0       | N/A     | You Signed Up For This              | Maisie Peters             | You Signed Up For This
-96    | 1200   | 1200      | 96         | 0       | N/A     | Hollow                              | Maisie Peters             | You Signed Up For This
-97    | 1200   | 1200      | 97         | 0       | N/A     | Say My Name In Your Sleep           | Maisie Peters             | Florescence
-98    | 1200   | 1200      | 98         | 0       | N/A     | Kingmaker (with Julia Michaels)     | Maisie Peters             | Florescence
-99    | 1200   | 1200      | 99         | 0       | N/A     | My Regards                          | Maisie Peters             | Florescence
-100   | 1200   | 1200      | 100        | 0       | N/A     | Questions                           | Maisie Peters             | Florescence
-101   | 1200   | 1200      | 101        | 0       | N/A     | Girl Of Your Dreams                 | Dylan                     | The Greatest Thing I’ll Never Learn
-102   | 1200   | 1200      | 102        | 0       | N/A     | Liar Liar                           | Dylan, Bastille           | Liar Liar - Single
-103   | 1200   | 1200      | 103        | 0       | N/A     | No Romeo                            | Dylan                     | No Romeo
-104   | 1200   | 1200      | 104        | 0       | N/A     | Nineteen                            | Dylan                     | No Romeo
-105   | 1200   | 1200      | 105        | 0       | N/A     | Starlight                           | Sofia Camara              | Was I(t) Worth It?
-106   | 1200   | 1200      | 106        | 0       | N/A     | Who Do I Call Now? (Hellbent)       | Sofia Camara              | Was I(t) Worth It?
-107   | 1200   | 1200      | 107        | 0       | N/A     | Here We Go Again                    | Sofia Camara              | Was I(t) Worth It?
-108   | 1200   | 1200      | 108        | 0       | N/A     | Parking Lot                         | Sofia Camara              | Hard To Love
-109   | 1200   | 1200      | 109        | 0       | N/A     | Girls Like You                      | Sofia Camara              | Hard To Love
-110   | 1200   | 1200      | 110        | 0       | N/A     | Best Friend                         | Sofia Camara              | Still Somewhere Here
-111   | 1200   | 1200      | 111        | 0       | N/A     | Come Back Home                      | Sofia Carson              | Purple Hearts (Original Soundtrack)
-112   | 1200   | 1200      | 112        | 0       | N/A     | under the mat                       | sombr                     | I Barely Know Her
-113   | 1200   | 1200      | 113        | 0       | N/A     | misunderstood                       | Lexi Jayde                | LOVER GIRL
+1     | 1216   | 1216      | 1          | 1       | N/A     | misunderstood                       | Lexi Jayde                | LOVER GIRL
+2     | 1200   | 1200      | 2          | 0       | N/A     | Ain't in LA                         | ADÉLA                     | PRIMA
+3     | 1200   | 1200      | 3          | 0       | N/A     | Anything But                        | Asha Banks                | Bottled Up
+4     | 1200   | 1200      | 4          | 0       | N/A     | Bones and All                       | Mckenna Grace             | Bones and All - Single
+5     | 1200   | 1200      | 5          | 0       | N/A     | Mount Olympus                       | Grace Gachot              | Mount Olympus - Single
+6     | 1200   | 1200      | 6          | 0       | N/A     | Red Bottoms                         | ADÉLA                     | PRIMA
+7     | 1200   | 1200      | 7          | 0       | N/A     | bubblebath                          | Lexi Jayde                | LOVER GIRL
+8     | 1200   | 1200      | 8          | 0       | N/A     | RUMOURS                             | Elle Coves                | RUMOURS - Single
+9     | 1200   | 1200      | 9          | 0       | N/A     | Peace                               | Elle Coves                | No Good At Hanging Up
+10    | 1200   | 1200      | 10         | 0       | N/A     | R U O K?                            | Freya Ridings             | Mother Of Pearl
+11    | 1200   | 1200      | 11         | 0       | N/A     | such a bitch!                       | Lexi Jayde                | LOVER GIRL
+12    | 1200   | 1200      | 12         | 0       | N/A     | Sleeping With The Lights On         | Jade LeMac                | It's Always At Night
+13    | 1200   | 1200      | 13         | 0       | N/A     | Ballet Pumps                        | Bea                       | Ballet Pumps - Single
+14    | 1200   | 1200      | 14         | 0       | N/A     | EVIDENCE                            | Elle Coves                | EVIDENCE - Single
+15    | 1200   | 1200      | 15         | 0       | N/A     | Molly                               | Emei                      | Molly - Single
+16    | 1200   | 1200      | 16         | 0       | N/A     | All American                        | Isabel Dumaa              | All American - Single
+17    | 1200   | 1200      | 17         | 0       | N/A     | Feels Like This                     | Maisie Peters             | Dressed Too Nice For A Jacket
+18    | 1200   | 1200      | 18         | 0       | N/A     | Worst of You                        | Maisie Peters             | Worst of You - Single
+19    | 1200   | 1200      | 19         | 0       | N/A     | Old Fashioned                       | Maisie Peters             | Florescence
+20    | 1200   | 1200      | 20         | 0       | N/A     | STORM II                            | GENER8ION, Yung Lean      | STORM - Single
+21    | 1200   | 1200      | 21         | 0       | N/A     | Hallucinating                       | Sofia Camara              | Still Somewhere Here
+22    | 1200   | 1200      | 22         | 0       | N/A     | Flatlining                          | Grace Gachot              | Flatlining - Single
+23    | 1200   | 1200      | 23         | 0       | N/A     | Beauty and a Beat (feat. Nicki M... | Justin Bieber             | Beauty and a Beat (feat. Nicki Minaj) - Single
+24    | 1200   | 1200      | 24         | 0       | N/A     | 505                                 | Arctic Monkeys            | 505 - Single
+25    | 1200   | 1200      | 25         | 0       | N/A     | Sorry                               | Nothing But Thieves       | Sorry - Single
+26    | 1200   | 1200      | 26         | 0       | N/A     | back of my mind                     | Kenzie Cait               | back of my mind - Single
+27    | 1200   | 1200      | 27         | 0       | N/A     | oh my                               | Alessi Rose               | oh my - Single
+28    | 1200   | 1200      | 28         | 0       | N/A     | Dependent                           | Alessi Rose               | Dependent - Single
+29    | 1200   | 1200      | 29         | 0       | N/A     | The Time Of My Life                 | Benson Boone              | The Time Of My Life - Single
+30    | 1200   | 1200      | 30         | 0       | N/A     | Better Alone                        | Benson Boone              | Walk Me Home...
+31    | 1200   | 1200      | 31         | 0       | N/A     | to love and to lose                 | Dylan                     | to love and to lose - Single
+32    | 1200   | 1200      | 32         | 0       | N/A     | Bad                                 | Dylan                     | Bad - Single
+33    | 1200   | 1200      | 33         | 0       | N/A     | Perfect Revenge                     | Dylan                     | Perfect Revenge - Single
+34    | 1200   | 1200      | 34         | 0       | N/A     | Fault Line                          | Elle Coves                | Fault Line - Single
+35    | 1200   | 1200      | 35         | 0       | N/A     | Talk About It                       | Elle Coves                | Talk About It - Single
+36    | 1200   | 1200      | 36         | 0       | N/A     | The Great Escape                    | Khloe Rose                | The Great Escape - Single
+37    | 1200   | 1200      | 37         | 0       | N/A     | Want You Now                        | Khloe Rose                | Want You Now - Single
+38    | 1200   | 1200      | 38         | 0       | N/A     | Look @ You                          | Khloe Rose                | Look @ You - Single
+39    | 1200   | 1200      | 39         | 0       | N/A     | Over                                | Khloe Rose                | Over - Single
+40    | 1200   | 1200      | 40         | 0       | N/A     | Girl Down                           | Khloe Rose                | Girl Down - Single
+41    | 1200   | 1200      | 41         | 0       | N/A     | I’M THE ONE                         | Khloe Rose                | I’M THE ONE - Single
+42    | 1200   | 1200      | 42         | 0       | N/A     | Favourite Ex                        | Maisie Peters             | Favourite Ex - Single
+43    | 1200   | 1200      | 43         | 0       | N/A     | Best I'll Ever Sing                 | Maisie Peters             | Best I'll Ever Sing - Single
+44    | 1200   | 1200      | 44         | 0       | N/A     | Birthday                            | Maisie Peters             | Birthday - Single
+45    | 1200   | 1200      | 45         | 0       | N/A     | Look At Me Now                      | Maisie Peters             | It's Your Bed Babe, It's Your Funeral
+46    | 1200   | 1200      | 46         | 0       | N/A     | Personal Best                       | Maisie Peters             | It's Your Bed Babe, It's Your Funeral
+47    | 1200   | 1200      | 47         | 0       | N/A     | Ugly and Rotten                     | Mckenna Grace             | Ugly and Rotten - Single
+48    | 1200   | 1200      | 48         | 0       | N/A     | do all my friends hate me?          | Mckenna Grace             | do all my friends hate me? - Single
+49    | 1200   | 1200      | 49         | 0       | N/A     | LOSER!!                             | Mckenna Grace             | LOSER!! - Single
+50    | 1200   | 1200      | 50         | 0       | N/A     | Sunflower (Spider-Man: Into the ... | Post Malone, Swae Lee     | Sunflower (Spider-Man: Into the Spider-Verse) - Single
+51    | 1200   | 1200      | 51         | 0       | N/A     | Better Now                          | Post Malone               | beerbongs & bentleys
+52    | 1200   | 1200      | 52         | 0       | N/A     | You Don't Know Me                   | Isabel Dumaa              | You Don’t Know Me - Single
+53    | 1200   | 1200      | 53         | 0       | N/A     | James Dean                          | Isabel Dumaa              | Reverie
+54    | 1200   | 1200      | 54         | 0       | N/A     | Never Know Love                     | Bea                       | Never Know Love - Single
+55    | 1200   | 1200      | 55         | 0       | N/A     | Dover Beach                         | Baby Queen                | Dover Beach - Single
+56    | 1200   | 1200      | 56         | 0       | N/A     | Elvis Song                          | Maisie Peters             | You Signed Up For This
+57    | 1200   | 1200      | 57         | 0       | N/A     | That Could Be Me                    | Alessi Rose               | Voyeur
+58    | 1200   | 1200      | 58         | 0       | N/A     | Complicated                         | Sofia Camara              | Hard To Love
+59    | 1200   | 1200      | 59         | 0       | N/A     | you're still mine                   | Lexi Jayde                | LOVER GIRL
+60    | 1200   | 1200      | 60         | 0       | N/A     | Wildest Dreams                      | Taylor Swift              | 1989
+61    | 1200   | 1200      | 61         | 0       | N/A     | Die For You                         | The Weeknd                | Starboy
+62    | 1200   | 1200      | 62         | 0       | N/A     | Slow It Down                        | Benson Boone              | Fireworks & Rollerblades
+63    | 1200   | 1200      | 63         | 0       | N/A     | Stay                                | Gracie Abrams             | Stay - Single
+64    | 1200   | 1200      | 64         | 0       | N/A     | HAPPY                               | NF                        | HAPPY - Single
+65    | 1200   | 1200      | 65         | 0       | N/A     | Self Dysmorphia                     | Mckenna Grace             | Self Dysmorphia - Single
+66    | 1200   | 1200      | 66         | 0       | N/A     | Built To Be Bad                     | Grace Gachot              | Built To Be Bad - Single
+67    | 1200   | 1200      | 67         | 0       | N/A     | Friend                              | Benson Boone              | Fireworks & Rollerblades
+68    | 1200   | 1200      | 68         | 0       | N/A     | I Can't Hear It Now (from the se... | Freya Ridings, Arcane,... | Arcane League of Legends: Season 2 (Soundtrack from the Animated Series)
+69    | 1200   | 1200      | 69         | 0       | N/A     | I Love You, I'm Sorry               | Gracie Abrams             | The Secret of Us
+70    | 1200   | 1200      | 70         | 0       | N/A     | In The Kitchen                      | Reneé Rapp                | Everything To Everyone (Deluxe)
+71    | 1200   | 1200      | 71         | 0       | N/A     | the grudge                          | Olivia Rodrigo            | GUTS
+72    | 1200   | 1200      | 72         | 0       | N/A     | Want Me                             | Baby Queen                | Quarter Life Crisis (Deluxe)
+73    | 1200   | 1200      | 73         | 0       | N/A     | Blue                                | Dylan                     | The Greatest Thing I’ll Never Learn
+74    | 1200   | 1200      | 74         | 0       | N/A     | The Smallest Man Who Ever Lived     | Taylor Swift              | THE TORTURED POETS DEPARTMENT
+75    | 1200   | 1200      | 75         | 0       | N/A     | run for the hills                   | Tate McRae                | THINK LATER
+76    | 1200   | 1200      | 76         | 0       | N/A     | think later                         | Tate McRae                | THINK LATER
+77    | 1200   | 1200      | 77         | 0       | N/A     | r u ok                              | Tate McRae                | TOO YOUNG TO BE SAD
+78    | 1200   | 1200      | 78         | 0       | N/A     | you broke me first                  | Tate McRae                | TOO YOUNG TO BE SAD
+79    | 1200   | 1200      | 79         | 0       | N/A     | tear myself apart                   | Tate McRae                | all the things i never said
+80    | 1200   | 1200      | 80         | 0       | N/A     | what's your problem?                | Tate McRae                | i used to think i could fly
+81    | 1200   | 1200      | 81         | 0       | N/A     | she's all i wanna be                | Tate McRae                | i used to think i could fly
+82    | 1200   | 1200      | 82         | 0       | N/A     | feel like shit                      | Tate McRae                | i used to think i could fly
+83    | 1200   | 1200      | 83         | 0       | N/A     | NOBODY'S GIRL                       | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+84    | 1200   | 1200      | 84         | 0       | N/A     | TIT FOR TAT                         | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+85    | 1200   | 1200      | 85         | 0       | N/A     | Signs                               | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+86    | 1200   | 1200      | 86         | 0       | N/A     | No I'm not in love                  | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+87    | 1200   | 1200      | 87         | 0       | N/A     | 2 hands                             | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+88    | 1200   | 1200      | 88         | 0       | N/A     | Siren sounds (bonus)                | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+89    | 1200   | 1200      | 89         | 0       | N/A     | Just Keep Watching                  | Tate McRae                | Just Keep Watching - Single
+90    | 1200   | 1200      | 90         | 0       | N/A     | we're not alike                     | Tate McRae                | THINK LATER
+91    | 1200   | 1200      | 91         | 0       | N/A     | HORSESHOE                           | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+92    | 1200   | 1200      | 92         | 0       | N/A     | Greenlight                          | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+93    | 1200   | 1200      | 93         | 0       | N/A     | Watch                               | Maisie Peters             | The Good Witch (Deluxe)
+94    | 1200   | 1200      | 94         | 0       | N/A     | There It Goes                       | Maisie Peters             | The Good Witch (Deluxe)
+95    | 1200   | 1200      | 95         | 0       | N/A     | The Last One                        | Maisie Peters             | The Good Witch (Deluxe)
+96    | 1200   | 1200      | 96         | 0       | N/A     | You Signed Up For This              | Maisie Peters             | You Signed Up For This
+97    | 1200   | 1200      | 97         | 0       | 100%    | Hollow                              | Maisie Peters             | You Signed Up For This
+98    | 1200   | 1200      | 98         | 0       | N/A     | Say My Name In Your Sleep           | Maisie Peters             | Florescence
+99    | 1200   | 1200      | 99         | 0       | N/A     | Kingmaker (with Julia Michaels)     | Maisie Peters             | Florescence
+100   | 1200   | 1200      | 100        | 0       | N/A     | My Regards                          | Maisie Peters             | Florescence
+101   | 1200   | 1200      | 101        | 0       | N/A     | Questions                           | Maisie Peters             | Florescence
+102   | 1200   | 1200      | 102        | 0       | N/A     | Girl Of Your Dreams                 | Dylan                     | The Greatest Thing I’ll Never Learn
+103   | 1200   | 1200      | 103        | 0       | N/A     | Liar Liar                           | Dylan, Bastille           | Liar Liar - Single
+104   | 1200   | 1200      | 104        | 0       | N/A     | No Romeo                            | Dylan                     | No Romeo
+105   | 1200   | 1200      | 105        | 0       | N/A     | Nineteen                            | Dylan                     | No Romeo
+106   | 1200   | 1200      | 106        | 0       | N/A     | Starlight                           | Sofia Camara              | Was I(t) Worth It?
+107   | 1200   | 1200      | 107        | 0       | N/A     | Who Do I Call Now? (Hellbent)       | Sofia Camara              | Was I(t) Worth It?
+108   | 1200   | 1200      | 108        | 0       | N/A     | Here We Go Again                    | Sofia Camara              | Was I(t) Worth It?
+109   | 1200   | 1200      | 109        | 0       | N/A     | Parking Lot                         | Sofia Camara              | Hard To Love
+110   | 1200   | 1200      | 110        | 0       | N/A     | Girls Like You                      | Sofia Camara              | Hard To Love
+111   | 1200   | 1200      | 111        | 0       | N/A     | Best Friend                         | Sofia Camara              | Still Somewhere Here
+112   | 1200   | 1200      | 112        | 0       | N/A     | Come Back Home                      | Sofia Carson              | Purple Hearts (Original Soundtrack)
+113   | 1200   | 1200      | 113        | 0       | N/A     | under the mat                       | sombr                     | I Barely Know Her
 114   | 1200   | 1200      | 114        | 0       | N/A     | The End                             | Isabel Dumaa              | Just My Nature
 115   | 1200   | 1200      | 115        | 0       | N/A     | Night at the Opera                  | Emei                      | Night at the Opera - Single
 116   | 1200   | 1200      | 116        | 0       | N/A     | Nicole Kidman                       | ADÉLA                     | PRIMA
@@ -253,35 +253,141 @@ Rank  | Elo    | Peak Elo  | Peak Rank  | Matches | Recog % | Track Title       
 249   | 1200   | 1200      | 249        | 0       | N/A     | Blisters                            | Dylan                     | The Greatest Thing I’ll Never Learn
 250   | 1200   | 1200      | 250        | 0       | N/A     | Home Is Where The Heart Is          | Dylan                     | The Greatest Thing I’ll Never Learn
 251   | 1200   | 1200      | 251        | 0       | N/A     | jeans                               | Lexi Jayde                | LOVER GIRL
-252   | 1200   | 1200      | 252        | 0       | N/A     | delusional                          | Lexi Jayde                | LOVER GIRL
-253   | 1200   | 1200      | 253        | 0       | N/A     | i've missed you longer              | Lexi Jayde                | LOVER GIRL
-254   | 1200   | 1200      | 254        | 0       | N/A     | i feel it all                       | Lexi Jayde                | LOVER GIRL
-255   | 1200   | 1200      | 255        | 0       | N/A     | easier                              | Lexi Jayde                | LOVER GIRL
-256   | 1200   | 1200      | 256        | 0       | N/A     | sorry for you                       | Lexi Jayde                | LOVER GIRL
-257   | 1200   | 1200      | 257        | 0       | N/A     | when does it end?                   | Lexi Jayde                | LOVER GIRL
-258   | 1200   | 1200      | 258        | 0       | N/A     | i want him bad                      | Lexi Jayde                | LOVER GIRL
-259   | 1200   | 1200      | 259        | 0       | N/A     | cool girl, tough guy                | Lexi Jayde                | LOVER GIRL
-260   | 1200   | 1200      | 260        | 0       | N/A     | wanna be                            | Lexi Jayde                | LOVER GIRL
-261   | 1200   | 1200      | 261        | 0       | N/A     | newbury park                        | Lexi Jayde                | newbury park - Single
-262   | 1200   | 1200      | 262        | 0       | N/A     | The Chapel                          | Déyyess                   | The Chapel - Single
-263   | 1200   | 1200      | 263        | 0       | N/A     | stupid                              | Tate McRae                | all the things i never said
-264   | 1200   | 1200      | 264        | 0       | N/A     | happy face                          | Tate McRae                | all the things i never said
-265   | 1200   | 1200      | 265        | 0       | N/A     | that way                            | Tate McRae                | all the things i never said
-266   | 1200   | 1200      | 266        | 0       | N/A     | all my friends are fake             | Tate McRae                | all the things i never said
-267   | 1200   | 1200      | 267        | 0       | N/A     | Nostalgic                           | Sofia Camara              | Still Somewhere Here
-268   | 1200   | 1200      | 268        | 0       | N/A     | Unlike You                          | Sofia Camara              | Still Somewhere Here
-269   | 1200   | 1200      | 269        | 0       | N/A     | Lay In It Lonely                    | Sofia Camara              | Still Somewhere Here
-270   | 1200   | 1200      | 270        | 0       | N/A     | Love Like This                      | Emyrson Flora             | Aren't You Curious?
-271   | 1200   | 1200      | 271        | 0       | N/A     | Ever Again                          | Emyrson Flora             | Aren't You Curious?
-272   | 1200   | 1200      | 272        | 0       | N/A     | Read Your Mind                      | Emyrson Flora             | Aren't You Curious?
-273   | 1200   | 1200      | 273        | 0       | N/A     | Handsome Assassin                   | Emyrson Flora             | Aren't You Curious?
-274   | 1200   | 1200      | 274        | 0       | N/A     | Curious                             | Emyrson Flora             | Aren't You Curious?
-275   | 1200   | 1200      | 275        | 0       | N/A     | i2u                                 | Emyrson Flora             | Aren't You Curious?
-276   | 1200   | 1200      | 276        | 0       | N/A     | air                                 | Emyrson Flora             | every song is about you
-277   | 1200   | 1200      | 277        | 0       | N/A     | double down                         | Emyrson Flora             | every song is about you
-278   | 1200   | 1200      | 278        | 0       | N/A     | every song is about you             | Emyrson Flora             | every song is about you
-279   | 1200   | 1200      | 279        | 0       | N/A     | for keeps                           | Emyrson Flora             | every song is about you
-280   | 1200   | 1200      | 280        | 0       | N/A     | naive                               | Emyrson Flora             | every song is about you
-281   | 1200   | 1200      | 281        | 0       | N/A     | Die Next To You                     | Emyrson Flora             | Die Next To You - Single
-282   | 1200   | 1200      | 282        | 0       | N/A     | One Touch                           | Emyrson Flora, TWINSICK   | One Touch - Single
-283   | 1200   | 1200      | 283        | 0       | N/A     | drive by (bonus track)              | Emyrson Flora             | drive by (bonus track) - Single
+252   | 1200   | 1200      | 252        | 0       | N/A     | i've missed you longer              | Lexi Jayde                | LOVER GIRL
+253   | 1200   | 1200      | 253        | 0       | N/A     | i feel it all                       | Lexi Jayde                | LOVER GIRL
+254   | 1200   | 1200      | 254        | 0       | N/A     | easier                              | Lexi Jayde                | LOVER GIRL
+255   | 1200   | 1200      | 255        | 0       | N/A     | sorry for you                       | Lexi Jayde                | LOVER GIRL
+256   | 1200   | 1200      | 256        | 0       | N/A     | when does it end?                   | Lexi Jayde                | LOVER GIRL
+257   | 1200   | 1200      | 257        | 0       | N/A     | i want him bad                      | Lexi Jayde                | LOVER GIRL
+258   | 1200   | 1200      | 258        | 0       | N/A     | cool girl, tough guy                | Lexi Jayde                | LOVER GIRL
+259   | 1200   | 1200      | 259        | 0       | N/A     | wanna be                            | Lexi Jayde                | LOVER GIRL
+260   | 1200   | 1200      | 260        | 0       | N/A     | newbury park                        | Lexi Jayde                | newbury park - Single
+261   | 1200   | 1200      | 261        | 0       | N/A     | The Chapel                          | Déyyess                   | The Chapel - Single
+262   | 1200   | 1200      | 262        | 0       | N/A     | stupid                              | Tate McRae                | all the things i never said
+263   | 1200   | 1200      | 263        | 0       | N/A     | happy face                          | Tate McRae                | all the things i never said
+264   | 1200   | 1200      | 264        | 0       | N/A     | that way                            | Tate McRae                | all the things i never said
+265   | 1200   | 1200      | 265        | 0       | N/A     | all my friends are fake             | Tate McRae                | all the things i never said
+266   | 1200   | 1200      | 266        | 0       | N/A     | Nostalgic                           | Sofia Camara              | Still Somewhere Here
+267   | 1200   | 1200      | 267        | 0       | N/A     | Unlike You                          | Sofia Camara              | Still Somewhere Here
+268   | 1200   | 1200      | 268        | 0       | N/A     | Lay In It Lonely                    | Sofia Camara              | Still Somewhere Here
+269   | 1200   | 1200      | 269        | 0       | N/A     | Love Like This                      | Emyrson Flora             | Aren't You Curious?
+270   | 1200   | 1200      | 270        | 0       | N/A     | Ever Again                          | Emyrson Flora             | Aren't You Curious?
+271   | 1200   | 1200      | 271        | 0       | N/A     | Read Your Mind                      | Emyrson Flora             | Aren't You Curious?
+272   | 1200   | 1200      | 272        | 0       | N/A     | Handsome Assassin                   | Emyrson Flora             | Aren't You Curious?
+273   | 1200   | 1200      | 273        | 0       | N/A     | Curious                             | Emyrson Flora             | Aren't You Curious?
+274   | 1200   | 1200      | 274        | 0       | N/A     | i2u                                 | Emyrson Flora             | Aren't You Curious?
+275   | 1200   | 1200      | 275        | 0       | N/A     | air                                 | Emyrson Flora             | every song is about you
+276   | 1200   | 1200      | 276        | 0       | N/A     | double down                         | Emyrson Flora             | every song is about you
+277   | 1200   | 1200      | 277        | 0       | N/A     | every song is about you             | Emyrson Flora             | every song is about you
+278   | 1200   | 1200      | 278        | 0       | N/A     | for keeps                           | Emyrson Flora             | every song is about you
+279   | 1200   | 1200      | 279        | 0       | N/A     | naive                               | Emyrson Flora             | every song is about you
+280   | 1200   | 1200      | 280        | 0       | N/A     | Die Next To You                     | Emyrson Flora             | Die Next To You - Single
+281   | 1200   | 1200      | 281        | 0       | N/A     | One Touch                           | Emyrson Flora, TWINSICK   | One Touch - Single
+282   | 1200   | 1200      | 282        | 0       | N/A     | drive by (bonus track)              | Emyrson Flora             | drive by (bonus track) - Single
+283   | 1200   | 1200      | 283        | 0       | N/A     | go away                             | Tate McRae                | i used to think i could fly
+284   | 1200   | 1200      | 284        | 0       | N/A     | boy x                               | Tate McRae                | i used to think i could fly
+285   | 1200   | 1200      | 285        | 0       | N/A     | don't come back                     | Tate McRae                | i used to think i could fly
+286   | 1200   | 1200      | 286        | 0       | N/A     | hate myself                         | Tate McRae                | i used to think i could fly
+287   | 1200   | 1200      | 287        | 0       | N/A     | what would you do?                  | Tate McRae                | i used to think i could fly
+288   | 1200   | 1200      | 288        | 0       | N/A     | chaotic                             | Tate McRae                | i used to think i could fly
+289   | 1200   | 1200      | 289        | 0       | N/A     | you're so cool                      | Tate McRae                | i used to think i could fly
+290   | 1200   | 1200      | 290        | 0       | N/A     | i'm so gone                         | Tate McRae                | i used to think i could fly
+291   | 1200   | 1200      | 291        | 0       | N/A     | i still say goodnight               | Tate McRae                | i used to think i could fly
+292   | 1200   | 1200      | 292        | 0       | N/A     | TRYING ON SHOES                     | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+293   | 1200   | 1200      | 293        | 0       | N/A     | Revolving door                      | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+294   | 1200   | 1200      | 294        | 0       | N/A     | Like I do                           | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+295   | 1200   | 1200      | 295        | 0       | N/A     | Purple lace bra                     | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+296   | 1200   | 1200      | 296        | 0       | N/A     | Dear god                            | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+297   | 1200   | 1200      | 297        | 0       | N/A     | Means I care                        | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+298   | 1200   | 1200      | 298        | 0       | N/A     | Sports car                          | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+299   | 1200   | 1200      | 299        | 0       | N/A     | Miss possessive                     | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+300   | 1200   | 1200      | 300        | 0       | N/A     | ANYTHING BUT LOVE                   | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+301   | 1200   | 1200      | 301        | 0       | N/A     | bloodonmyhands (feat. Flo Milli)    | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+302   | 1200   | 1200      | 302        | 0       | N/A     | It's ok I'm ok                      | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+303   | 1200   | 1200      | 303        | 0       | N/A     | Nostalgia                           | Tate McRae                | SO CLOSE TO WHAT??? (deluxe)
+304   | 1200   | 1200      | 304        | 0       | N/A     | stay done                           | Tate McRae                | THINK LATER
+305   | 1200   | 1200      | 305        | 0       | N/A     | exes                                | Tate McRae                | THINK LATER
+306   | 1200   | 1200      | 306        | 0       | N/A     | greedy                              | Tate McRae                | THINK LATER
+307   | 1200   | 1200      | 307        | 0       | N/A     | guilty conscience                   | Tate McRae                | THINK LATER
+308   | 1200   | 1200      | 308        | 0       | N/A     | hurt my feelings                    | Tate McRae                | THINK LATER
+309   | 1200   | 1200      | 309        | 0       | N/A     | cut my hair                         | Tate McRae                | THINK LATER
+310   | 1200   | 1200      | 310        | 0       | N/A     | plastic palm trees                  | Tate McRae                | THINK LATER
+311   | 1200   | 1200      | 311        | 0       | N/A     | grave                               | Tate McRae                | THINK LATER
+312   | 1200   | 1200      | 312        | 0       | N/A     | messier                             | Tate McRae                | THINK LATER
+313   | 1200   | 1200      | 313        | 0       | N/A     | calgary                             | Tate McRae                | THINK LATER
+314   | 1200   | 1200      | 314        | 0       | N/A     | want that too                       | Tate McRae                | THINK LATER
+315   | 1200   | 1200      | 315        | 0       | N/A     | Skin                                | Alessi Rose               | Skin - Single
+316   | 1200   | 1200      | 316        | 0       | N/A     | Take It or Leave It                 | Alessi Rose               | Voyeur
+317   | 1200   | 1200      | 317        | 0       | N/A     | Stella                              | Alessi Rose               | Voyeur
+318   | 1200   | 1200      | 318        | 0       | N/A     | Dumb Girl                           | Alessi Rose               | Voyeur
+319   | 1200   | 1200      | 319        | 0       | N/A     | Same Mouth                          | Alessi Rose               | Voyeur
+320   | 1200   | 1200      | 320        | 0       | N/A     | Everything Anything                 | Alessi Rose               | Voyeur
+321   | 1200   | 1200      | 321        | 0       | N/A     | RIP                                 | Alessi Rose               | Voyeur
+322   | 1200   | 1200      | 322        | 0       | N/A     | Bittersweet                         | Alessi Rose               | Voyeur
+323   | 1200   | 1200      | 323        | 0       | N/A     | crushing                            | sombr                     | I Barely Know Her
+324   | 1200   | 1200      | 324        | 0       | N/A     | 12 to 12                            | sombr                     | I Barely Know Her
+325   | 1200   | 1200      | 325        | 0       | N/A     | back to friends                     | sombr                     | I Barely Know Her
+326   | 1200   | 1200      | 326        | 0       | N/A     | dime                                | sombr                     | I Barely Know Her
+327   | 1200   | 1200      | 327        | 0       | N/A     | i wish i knew how to quit you       | sombr                     | I Barely Know Her
+328   | 1200   | 1200      | 328        | 0       | N/A     | undressed                           | sombr                     | I Barely Know Her
+329   | 1200   | 1200      | 329        | 0       | N/A     | we never dated                      | sombr                     | I Barely Know Her
+330   | 1200   | 1200      | 330        | 0       | N/A     | come closer                         | sombr                     | I Barely Know Her
+331   | 1200   | 1200      | 331        | 0       | N/A     | canal street                        | sombr                     | I Barely Know Her
+332   | 1200   | 1200      | 332        | 0       | N/A     | would've been you                   | sombr                     | would've been you - Single
+333   | 1200   | 1200      | 333        | 0       | N/A     | Potential                           | sombr                     | Potential - Single
+334   | 1200   | 1200      | 334        | 0       | N/A     | We’re Not In Love                   | SIENNA SPIRO              | Visitor (Deluxe)
+335   | 1200   | 1200      | 335        | 0       | N/A     | He’s Not My Baby, I’m His           | SIENNA SPIRO              | Visitor (Deluxe)
+336   | 1200   | 1200      | 336        | 0       | N/A     | Pure                                | SIENNA SPIRO              | Visitor (Deluxe)
+337   | 1200   | 1200      | 337        | 0       | N/A     | Great Expectation                   | SIENNA SPIRO              | Visitor (Deluxe)
+338   | 1200   | 1200      | 338        | 0       | N/A     | The Visitor                         | SIENNA SPIRO              | Visitor (Deluxe)
+339   | 1200   | 1200      | 339        | 0       | N/A     | Die On This Hill                    | SIENNA SPIRO              | Visitor (Deluxe)
+340   | 1200   | 1200      | 340        | 0       | N/A     | You Stole The Show                  | SIENNA SPIRO              | Visitor (Deluxe)
+341   | 1200   | 1200      | 341        | 0       | N/A     | MAYBE.                              | SIENNA SPIRO              | Visitor (Deluxe)
+342   | 1200   | 1200      | 342        | 0       | N/A     | This Is My House                    | SIENNA SPIRO              | Visitor (Deluxe)
+343   | 1200   | 1200      | 343        | 0       | N/A     | Time, You & Me                      | SIENNA SPIRO              | Visitor (Deluxe)
+344   | 1200   | 1200      | 344        | 0       | N/A     | Mono No Aware                       | SIENNA SPIRO              | Visitor (Deluxe)
+345   | 1200   | 1200      | 345        | 0       | N/A     | Simple Like 17                      | Sadie Jean                | Simple Like 17 (Deluxe)
+346   | 1200   | 1200      | 346        | 0       | N/A     | Locksmith                           | Sadie Jean                | Simple Like 17 (Deluxe)
+347   | 1200   | 1200      | 347        | 0       | N/A     | WYD Now?                            | Sadie Jean                | Simple Like 17 (Deluxe)
+348   | 1200   | 1200      | 348        | 0       | N/A     | Just Because                        | Sadie Jean                | Simple Like 17 (Deluxe)
+349   | 1200   | 1200      | 349        | 0       | N/A     | You Don’t                           | Sadie Jean                | Simple Like 17 (Deluxe)
+350   | 1200   | 1200      | 350        | 0       | N/A     | Lights On                           | Sadie Jean                | Simple Like 17 (Deluxe)
+351   | 1200   | 1200      | 351        | 0       | N/A     | October 25th                        | Sadie Jean                | Simple Like 17 (Deluxe)
+352   | 1200   | 1200      | 352        | 0       | N/A     | Good to Know                        | Sadie Jean                | Simple Like 17 (Deluxe)
+353   | 1200   | 1200      | 353        | 0       | N/A     | Shut Up About It                    | Sadie Jean                | Simple Like 17 (Deluxe)
+354   | 1200   | 1200      | 354        | 0       | N/A     | Aisle 6                             | Sadie Jean                | Simple Like 17 (Deluxe)
+355   | 1200   | 1200      | 355        | 0       | N/A     | Move On First                       | Sadie Jean                | Early Twenties Torture
+356   | 1200   | 1200      | 356        | 0       | N/A     | Slow Burn                           | Sadie Jean                | Early Twenties Torture
+357   | 1200   | 1200      | 357        | 0       | N/A     | The One That I Want (But I Don’t... | Sadie Jean                | Early Twenties Torture
+358   | 1200   | 1200      | 358        | 0       | N/A     | Out Of My Body                      | Sadie Jean                | Early Twenties Torture
+359   | 1200   | 1200      | 359        | 0       | N/A     | She's Dating My Boyfriend           | Sadie Jean                | Early Twenties Torture
+360   | 1200   | 1200      | 360        | 0       | N/A     | Know You Forever                    | Sadie Jean                | Early Twenties Torture
+361   | 1200   | 1200      | 361        | 0       | N/A     | Somebody's Everything               | Sadie Jean                | Early Twenties Torture
+362   | 1200   | 1200      | 362        | 0       | N/A     | I Miss My Friend                    | Sadie Jean                | Early Twenties Torture
+363   | 1200   | 1200      | 363        | 0       | N/A     | See you on Sunday                   | Sadie Jean                | Early Twenties Torture
+364   | 1200   | 1200      | 364        | 0       | N/A     | This Time Around                    | Sadie Jean                | Early Twenties Torture
+365   | 1200   | 1200      | 365        | 0       | N/A     | I Don't Know Better                 | Sadie Jean                | Early Twenties Torture
+366   | 1200   | 1200      | 366        | 0       | N/A     | Good Ones                           | Sadie Jean                | Good Ones - Single
+367   | 1200   | 1200      | 367        | 0       | N/A     | Would You Go Down On A Girl?        | Déyyess                   | Would You Go Down On A Girl? (Deluxe)
+368   | 1200   | 1200      | 368        | 0       | N/A     | Fame is a Gun                       | Addison Rae               | Addison
+369   | 1200   | 1200      | 369        | 0       | N/A     | Money is Everything                 | Addison Rae               | Addison
+370   | 1200   | 1200      | 370        | 0       | N/A     | New York                            | Addison Rae               | Addison
+371   | 1200   | 1200      | 371        | 0       | N/A     | Diet Pepsi                          | Addison Rae               | Addison
+372   | 1200   | 1200      | 372        | 0       | N/A     | Aquamarine                          | Addison Rae               | Addison
+373   | 1200   | 1200      | 373        | 0       | N/A     | Headphones On                       | Addison Rae               | Addison
+374   | 1200   | 1200      | 374        | 0       | N/A     | Times Like These                    | Addison Rae               | Addison
+375   | 1200   | 1200      | 375        | 0       | N/A     | Summer Forever                      | Addison Rae               | Addison
+376   | 1200   | 1200      | 376        | 0       | N/A     | In The Rain                         | Addison Rae               | Addison
+377   | 1200   | 1200      | 377        | 0       | N/A     | High Fashion                        | Addison Rae               | Addison
+378   | 1200   | 1200      | 378        | 0       | N/A     | Sue me                              | Audrey Hobert             | Who's the Clown?
+379   | 1200   | 1200      | 379        | 0       | N/A     | Phoebe                              | Audrey Hobert             | Who's the Clown?
+380   | 1200   | 1200      | 380        | 0       | N/A     | Shooting star                       | Audrey Hobert             | Who's the Clown?
+381   | 1200   | 1200      | 381        | 0       | N/A     | Thirst Trap                         | Audrey Hobert             | Who's the Clown?
+382   | 1200   | 1200      | 382        | 0       | N/A     | Sex and the city                    | Audrey Hobert             | Who's the Clown?
+383   | 1200   | 1200      | 383        | 0       | N/A     | Chateau                             | Audrey Hobert             | Who's the Clown?
+384   | 1200   | 1200      | 384        | 0       | N/A     | Wet Hair                            | Audrey Hobert             | Who's the Clown?
+385   | 1200   | 1200      | 385        | 0       | N/A     | Drive                               | Audrey Hobert             | Who's the Clown?
+386   | 1200   | 1200      | 386        | 0       | N/A     | Don't go back to his ass            | Audrey Hobert             | Who's the Clown?
+387   | 1200   | 1200      | 387        | 0       | N/A     | Bowling alley                       | Audrey Hobert             | Who's the Clown?
+388   | 1200   | 1200      | 388        | 0       | N/A     | Silver Jubilee                      | Audrey Hobert             | Who's the Clown?
+389   | 1184   | 1200      | 389        | 1       | N/A     | delusional                          | Lexi Jayde                | LOVER GIRL

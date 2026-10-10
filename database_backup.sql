@@ -1,56 +1,4 @@
 BEGIN TRANSACTION;
-CREATE TABLE admin_audit_log (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            action TEXT NOT NULL, details TEXT,
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
-        );
-INSERT INTO "admin_audit_log" VALUES(1,'song_edited','{"song_id": 265, "title": "The Chapel"}','2026-10-09 14:58:28');
-INSERT INTO "admin_audit_log" VALUES(2,'album_deleted','{"album_id": 136}','2026-10-09 14:59:06');
-INSERT INTO "admin_audit_log" VALUES(3,'competition_reset','{"backup": "pre_reset_20261009_160301.db", "kept_library": true}','2026-10-09 15:03:01');
-INSERT INTO "admin_audit_log" VALUES(4,'song_edited','{"song_id": 267, "title": "happy face"}','2026-10-09 15:20:38');
-INSERT INTO "admin_audit_log" VALUES(5,'song_edited','{"song_id": 266, "title": "stupid"}','2026-10-09 15:20:44');
-INSERT INTO "admin_audit_log" VALUES(6,'song_edited','{"song_id": 268, "title": "that way"}','2026-10-09 15:20:50');
-INSERT INTO "admin_audit_log" VALUES(7,'song_edited','{"song_id": 269, "title": "all my friends are fake"}','2026-10-09 15:21:48');
-INSERT INTO "admin_audit_log" VALUES(8,'album_deleted','{"album_id": 138}','2026-10-09 15:22:04');
-INSERT INTO "admin_audit_log" VALUES(9,'song_edited','{"song_id": 270, "title": "Nostalgic"}','2026-10-09 15:27:18');
-INSERT INTO "admin_audit_log" VALUES(10,'song_edited','{"song_id": 271, "title": "Unlike You"}','2026-10-09 15:27:25');
-INSERT INTO "admin_audit_log" VALUES(11,'song_edited','{"song_id": 272, "title": "Lay In It Lonely"}','2026-10-09 15:27:32');
-INSERT INTO "admin_audit_log" VALUES(12,'album_deleted','{"album_id": 139}','2026-10-09 15:27:43');
-INSERT INTO "admin_audit_log" VALUES(13,'song_edited','{"song_id": 286, "title": "drive by (bonus track)"}','2026-10-09 15:39:49');
-INSERT INTO "admin_audit_log" VALUES(14,'song_edited','{"song_id": 283, "title": "naive"}','2026-10-09 15:39:57');
-INSERT INTO "admin_audit_log" VALUES(15,'song_edited','{"song_id": 282, "title": "for keeps"}','2026-10-09 15:40:02');
-INSERT INTO "admin_audit_log" VALUES(16,'song_edited','{"song_id": 281, "title": "every song is about you"}','2026-10-09 15:40:06');
-INSERT INTO "admin_audit_log" VALUES(17,'song_edited','{"song_id": 280, "title": "double down"}','2026-10-09 15:40:11');
-INSERT INTO "admin_audit_log" VALUES(18,'song_edited','{"song_id": 279, "title": "air"}','2026-10-09 15:40:15');
-INSERT INTO "admin_audit_log" VALUES(19,'album_deleted','{"album_id": 140}','2026-10-09 15:42:26');
-INSERT INTO "admin_audit_log" VALUES(20,'album_deleted','{"album_id": 143}','2026-10-09 15:42:29');
-INSERT INTO "admin_audit_log" VALUES(21,'song_edited','{"song_id": 88, "title": "2 hands"}','2026-10-09 15:55:43');
-INSERT INTO "admin_audit_log" VALUES(22,'album_edited','{"album_id": 67, "title": "1989 (ts)"}','2026-10-09 15:57:36');
-INSERT INTO "admin_audit_log" VALUES(23,'album_edited','{"album_id": 67, "title": "1989"}','2026-10-09 15:57:55');
-INSERT INTO "admin_audit_log" VALUES(24,'song_edited','{"song_id": 302, "title": "Sports car"}','2026-10-09 16:07:26');
-INSERT INTO "admin_audit_log" VALUES(25,'song_edited','{"song_id": 299, "title": "Purple lace bra"}','2026-10-09 16:07:31');
-INSERT INTO "admin_audit_log" VALUES(26,'song_edited','{"song_id": 307, "title": "Nostalgia"}','2026-10-09 16:07:34');
-INSERT INTO "admin_audit_log" VALUES(27,'song_edited','{"song_id": 303, "title": "Miss possessive"}','2026-10-09 16:07:38');
-INSERT INTO "admin_audit_log" VALUES(28,'song_edited','{"song_id": 301, "title": "Means I care"}','2026-10-09 16:07:42');
-INSERT INTO "admin_audit_log" VALUES(29,'song_edited','{"song_id": 300, "title": "Dear god"}','2026-10-09 16:07:45');
-INSERT INTO "admin_audit_log" VALUES(30,'album_deleted','{"album_id": 146}','2026-10-09 16:08:21');
-INSERT INTO "admin_audit_log" VALUES(31,'album_edited','{"album_id": 18, "title": "SO CLOSE TO WHAT??? (deluxe)"}','2026-10-09 16:14:05');
-INSERT INTO "admin_audit_log" VALUES(32,'artist_edited','{"artist_id": 35, "name": "Tate McRae"}','2026-10-09 16:14:15');
-INSERT INTO "admin_audit_log" VALUES(33,'song_edited','{"song_id": 27, "title": "oh my"}','2026-10-09 16:19:18');
-INSERT INTO "admin_audit_log" VALUES(34,'album_deleted','{"album_id": 41}','2026-10-09 16:19:33');
-INSERT INTO "admin_audit_log" VALUES(35,'album_edited','{"album_id": 119, "title": "I Barely Know Her"}','2026-10-09 16:25:39');
-INSERT INTO "admin_audit_log" VALUES(36,'song_edited','{"song_id": 345, "title": "MAYBE."}','2026-10-09 16:35:29');
-INSERT INTO "admin_audit_log" VALUES(37,'song_edited','{"song_id": 344, "title": "You Stole The Show"}','2026-10-09 16:35:44');
-INSERT INTO "admin_audit_log" VALUES(38,'album_deleted','{"album_id": 153}','2026-10-09 16:35:50');
-INSERT INTO "admin_audit_log" VALUES(39,'album_deleted','{"album_id": 152}','2026-10-09 16:35:52');
-INSERT INTO "admin_audit_log" VALUES(40,'song_edited','{"song_id": 376, "title": "Aquamarine"}','2026-10-09 17:24:04');
-INSERT INTO "admin_audit_log" VALUES(41,'song_edited','{"song_id": 375, "title": "Diet Pepsi"}','2026-10-09 17:24:08');
-INSERT INTO "admin_audit_log" VALUES(42,'song_edited','{"song_id": 377, "title": "Headphones On"}','2026-10-09 17:24:12');
-INSERT INTO "admin_audit_log" VALUES(43,'song_edited','{"song_id": 381, "title": "High Fashion"}','2026-10-09 17:24:17');
-INSERT INTO "admin_audit_log" VALUES(44,'album_deleted','{"album_id": 161}','2026-10-09 17:27:01');
-INSERT INTO "admin_audit_log" VALUES(45,'album_deleted','{"album_id": 160}','2026-10-09 17:27:03');
-INSERT INTO "admin_audit_log" VALUES(46,'album_deleted','{"album_id": 158}','2026-10-09 17:27:05');
-INSERT INTO "admin_audit_log" VALUES(47,'album_deleted','{"album_id": 159}','2026-10-09 17:27:07');
 CREATE TABLE albums
                        (
                            id           INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -229,16 +177,6 @@ INSERT INTO "artists" VALUES(50,'TWINSICK','https://is1-ssl.mzstatic.com/image/t
 INSERT INTO "artists" VALUES(51,'SIENNA SPIRO','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f4/e5/61/f4e561f5-3e73-68c7-7ca4-295ac5a063ed/26UMGIM51351.rgb.jpg/300x300bb.jpg');
 INSERT INTO "artists" VALUES(52,'Addison Rae','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/cf/4a/e3/cf4ae3c9-3420-6021-f059-cc6c87cf11b2/196872958249.jpg/300x300bb.jpg');
 INSERT INTO "artists" VALUES(53,'Audrey Hobert','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/4f/22/e9/4f22e913-135c-4381-71e6-943166042ac0/196873025001.jpg/300x300bb.jpg');
-CREATE TABLE elo_history (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            winner_id INTEGER, loser_id INTEGER,
-            winner_before REAL, winner_after REAL,
-            loser_before REAL, loser_after REAL,
-            mode TEXT NOT NULL DEFAULT 'standard',
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY(winner_id) REFERENCES songs(id) ON DELETE SET NULL,
-            FOREIGN KEY(loser_id) REFERENCES songs(id) ON DELETE SET NULL
-        );
 CREATE TABLE genres
                        (
                            id   INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -257,74 +195,11 @@ CREATE TABLE history
                        (
                            id        INTEGER PRIMARY KEY AUTOINCREMENT,
                            winner_id INTEGER,
-                           loser_id  INTEGER, is_tournament_match BOOLEAN DEFAULT 0, created_at DATETIME,
+                           loser_id  INTEGER, is_tournament_match BOOLEAN DEFAULT 0, created_at DATETIME, mode TEXT NOT NULL DEFAULT 'standard', winner_before REAL, winner_after REAL, loser_before REAL, loser_after REAL,
                            FOREIGN KEY (winner_id) REFERENCES songs (id),
                            FOREIGN KEY (loser_id) REFERENCES songs (id)
                        );
-CREATE TABLE interaction_events (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            event_type TEXT NOT NULL,
-            song_id INTEGER,
-            related_song_id INTEGER,
-            created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-            details_json TEXT,
-            FOREIGN KEY(song_id) REFERENCES songs(id) ON DELETE SET NULL,
-            FOREIGN KEY(related_song_id) REFERENCES songs(id) ON DELETE SET NULL
-        );
-INSERT INTO "interaction_events" VALUES(1,'tournament_vote',310,78,'2026-10-09 18:05:25','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(2,'tournament_vote',316,91,'2026-10-09 18:06:21','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(3,'tournament_vote',81,304,'2026-10-09 18:06:46','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(4,'tournament_vote',297,162,'2026-10-09 18:07:10','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(5,'tournament_vote',309,290,'2026-10-09 18:07:54','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(6,'tournament_vote',315,313,'2026-10-09 18:08:01','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(7,'tournament_vote',85,83,'2026-10-09 18:08:34','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(8,'tournament_vote',294,266,'2026-10-09 18:09:00','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(9,'tournament_vote',289,318,'2026-10-09 18:09:15','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(10,'tournament_vote',312,317,'2026-10-09 18:09:55','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(11,'tournament_vote',82,292,'2026-10-09 18:10:26','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(12,'tournament_vote',302,267,'2026-10-09 18:10:36','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(13,'tournament_vote',291,86,'2026-10-09 18:11:08','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(14,'tournament_vote',89,295,'2026-10-09 18:11:11','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(15,'tournament_vote',293,268,'2026-10-09 18:11:48','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(16,'tournament_vote',287,311,'2026-10-09 18:12:06','{"tournament_id": 3, "points_awarded": 0.2258}');
-INSERT INTO "interaction_events" VALUES(17,'tournament_vote',310,316,'2026-10-09 18:12:44','{"tournament_id": 3, "points_awarded": 0.4516}');
-INSERT INTO "interaction_events" VALUES(18,'tournament_vote',81,297,'2026-10-09 18:13:14','{"tournament_id": 3, "points_awarded": 0.4516}');
-INSERT INTO "interaction_events" VALUES(19,'tournament_vote',309,315,'2026-10-09 18:13:23','{"tournament_id": 3, "points_awarded": 0.4516}');
-INSERT INTO "interaction_events" VALUES(20,'tournament_vote',85,294,'2026-10-09 18:13:50','{"tournament_id": 3, "points_awarded": 0.4516}');
-INSERT INTO "interaction_events" VALUES(21,'tournament_vote',289,312,'2026-10-09 18:14:39','{"tournament_id": 3, "points_awarded": 0.4516}');
-INSERT INTO "interaction_events" VALUES(22,'tournament_vote',82,302,'2026-10-09 18:15:21','{"tournament_id": 3, "points_awarded": 0.4516}');
-INSERT INTO "interaction_events" VALUES(23,'tournament_vote',89,291,'2026-10-09 18:16:07','{"tournament_id": 3, "points_awarded": 0.4516}');
-INSERT INTO "interaction_events" VALUES(24,'tournament_vote',287,293,'2026-10-09 18:16:44','{"tournament_id": 3, "points_awarded": 0.4516}');
-INSERT INTO "interaction_events" VALUES(25,'tournament_vote',310,81,'2026-10-09 18:17:08','{"tournament_id": 3, "points_awarded": 0.9032}');
-INSERT INTO "interaction_events" VALUES(26,'tournament_vote',85,309,'2026-10-09 18:17:48','{"tournament_id": 3, "points_awarded": 0.9032}');
-INSERT INTO "interaction_events" VALUES(27,'tournament_vote',289,82,'2026-10-09 18:19:02','{"tournament_id": 3, "points_awarded": 0.9032}');
-INSERT INTO "interaction_events" VALUES(28,'tournament_vote',287,89,'2026-10-09 18:20:00','{"tournament_id": 3, "points_awarded": 0.9032}');
-INSERT INTO "interaction_events" VALUES(29,'tournament_vote',310,85,'2026-10-09 18:20:42','{"tournament_id": 3, "points_awarded": 1.8065}');
-INSERT INTO "interaction_events" VALUES(30,'tournament_vote',287,289,'2026-10-09 18:21:02','{"tournament_id": 3, "points_awarded": 1.8065}');
-INSERT INTO "interaction_events" VALUES(31,'tournament_vote',310,287,'2026-10-09 18:21:44','{"tournament_id": 3, "points_awarded": 3.6129}');
-INSERT INTO "interaction_events" VALUES(32,'tournament_vote',277,125,'2026-10-09 18:33:34','{"tournament_id": 4, "points_awarded": 1.0}');
-INSERT INTO "interaction_events" VALUES(33,'trivia_guess',98,NULL,'2026-10-09 18:34:37','{"title_correct": true, "artist_correct": true, "correct_fields": 2, "points": 272, "time_taken": 8.13, "timeout": false}');
-INSERT INTO "interaction_events" VALUES(34,'tournament_vote',275,278,'2026-10-09 18:35:36','{"tournament_id": 4, "points_awarded": 1.0}');
-INSERT INTO "interaction_events" VALUES(35,'tournament_vote',124,274,'2026-10-09 18:36:20','{"tournament_id": 4, "points_awarded": 1.0}');
-INSERT INTO "interaction_events" VALUES(36,'tournament_vote',276,273,'2026-10-09 18:36:55','{"tournament_id": 4, "points_awarded": 1.0}');
-INSERT INTO "interaction_events" VALUES(37,'tournament_vote',277,275,'2026-10-09 18:37:56','{"tournament_id": 4, "points_awarded": 2.0}');
-INSERT INTO "interaction_events" VALUES(38,'tournament_vote',124,276,'2026-10-09 18:38:00','{"tournament_id": 4, "points_awarded": 2.0}');
-INSERT INTO "interaction_events" VALUES(39,'tournament_vote',277,124,'2026-10-09 18:39:26','{"tournament_id": 4, "points_awarded": 4.0}');
-INSERT INTO "interaction_events" VALUES(40,'tournament_vote',196,349,'2026-10-10 11:04:23','{"tournament_id": 5, "points_awarded": 0.4667}');
-INSERT INTO "interaction_events" VALUES(41,'tournament_vote',21,162,'2026-10-10 11:05:26','{"tournament_id": 5, "points_awarded": 0.4667}');
-INSERT INTO "interaction_events" VALUES(42,'tournament_vote',58,207,'2026-10-10 11:05:55','{"tournament_id": 5, "points_awarded": 0.4667}');
-INSERT INTO "interaction_events" VALUES(43,'tournament_vote',300,220,'2026-10-10 11:07:37','{"tournament_id": 5, "points_awarded": 0.4667}');
-INSERT INTO "interaction_events" VALUES(44,'tournament_vote',159,270,'2026-10-10 11:08:23','{"tournament_id": 5, "points_awarded": 0.4667}');
-INSERT INTO "interaction_events" VALUES(45,'tournament_vote',299,118,'2026-10-10 11:09:35','{"tournament_id": 5, "points_awarded": 0.4667}');
-INSERT INTO "interaction_events" VALUES(46,'tournament_vote',125,290,'2026-10-10 11:10:47','{"tournament_id": 5, "points_awarded": 0.4667}');
-INSERT INTO "interaction_events" VALUES(47,'tournament_vote',328,387,'2026-10-10 11:11:37','{"tournament_id": 5, "points_awarded": 0.4667}');
-INSERT INTO "interaction_events" VALUES(48,'tournament_vote',21,196,'2026-10-10 11:12:05','{"tournament_id": 5, "points_awarded": 0.9333}');
-INSERT INTO "interaction_events" VALUES(49,'tournament_vote',58,300,'2026-10-10 11:12:52','{"tournament_id": 5, "points_awarded": 0.9333}');
-INSERT INTO "interaction_events" VALUES(50,'tournament_vote',299,159,'2026-10-10 11:13:41','{"tournament_id": 5, "points_awarded": 0.9333}');
-INSERT INTO "interaction_events" VALUES(51,'tournament_vote',328,125,'2026-10-10 11:14:42','{"tournament_id": 5, "points_awarded": 0.9333}');
-INSERT INTO "interaction_events" VALUES(52,'tournament_vote',58,21,'2026-10-10 11:15:37','{"tournament_id": 5, "points_awarded": 1.8667}');
-INSERT INTO "interaction_events" VALUES(53,'tournament_vote',328,299,'2026-10-10 11:16:14','{"tournament_id": 5, "points_awarded": 1.8667}');
-INSERT INTO "interaction_events" VALUES(54,'tournament_vote',328,58,'2026-10-10 11:17:19','{"tournament_id": 5, "points_awarded": 3.7333}');
+INSERT INTO "history" VALUES(777,115,255,0,'2026-10-10 13:43:13','standard',1200.0,1216.0,1200.0,1184.0);
 CREATE TABLE song_artists
                        (
                            song_id   INTEGER,
@@ -833,7 +708,7 @@ INSERT INTO "songs" VALUES(70,'I Love You, I''m Sorry',14,'https://audio-ssl.itu
 INSERT INTO "songs" VALUES(71,'In The Kitchen',124,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/df/b2/bc/dfb2bc11-c388-18c9-6f35-f54a6e294fee/mzaf_3372525551418196959.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(72,'the grudge',123,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/67/da/8f/67da8f46-8226-ef68-e080-b563f965ca89/mzaf_12801115022614946651.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(73,'Want Me',135,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b0/ba/c1/b0bac191-b270-878f-1551-4ea2344de9ee/mzaf_17142934557600317640.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
-INSERT INTO "songs" VALUES(74,'Blue',52,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/75/9c/35/759c351f-8f8e-f67e-2ce2-f0b483a071ed/mzaf_6046491680264922571.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
+INSERT INTO "songs" VALUES(74,'Blue',52,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/75/9c/35/759c351f-8f8e-f67e-2ce2-f0b483a071ed/mzaf_6046491680264922571.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,1);
 INSERT INTO "songs" VALUES(75,'The Smallest Man Who Ever Lived',68,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/14/99/62/14996231-3ff8-6664-a166-018ba8ec21f9/mzaf_11499160420272106652.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(76,'run for the hills',15,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/aa/26/3e/aa263e8c-cee8-1ef7-3ad8-f02534641bc3/mzaf_6227127211792705200.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(77,'think later',15,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/b8/5f/e6/b85fe628-2933-7a6d-187b-2c159e96ced3/mzaf_13561753141181769567.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
@@ -874,7 +749,7 @@ INSERT INTO "songs" VALUES(111,'Girls Like You',11,'https://audio-ssl.itunes.app
 INSERT INTO "songs" VALUES(112,'Best Friend',109,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/6a/29/50/6a295049-cf38-0ce0-a03b-66a057df47e6/mzaf_1638930831823960757.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(113,'Come Back Home',122,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/16/89/22/168922e6-6627-01df-c3ff-e3478723e0bc/mzaf_5487046430018302701.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(114,'under the mat',119,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b4/f4/f3/b4f4f3d8-5599-1d0c-354d-6c4ef8fdfb5e/mzaf_13053364187938086597.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
-INSERT INTO "songs" VALUES(115,'misunderstood',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f2/b1/63/f2b163df-07c3-abcf-16ae-040142be1824/mzaf_5847602903177674747.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
+INSERT INTO "songs" VALUES(115,'misunderstood',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f2/b1/63/f2b163df-07c3-abcf-16ae-040142be1824/mzaf_5847602903177674747.plus.aac.p.m4a',1216.0,1,1216.0,1,NULL,0);
 INSERT INTO "songs" VALUES(116,'The End',80,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4e/76/19/4e7619c5-9e0b-0dfc-f607-4822126718ac/mzaf_148892102921960025.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(117,'Night at the Opera',111,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ee/2b/ce/ee2bcec6-d7a7-4642-6043-82dc9bd3c3d2/mzaf_6145024786054129953.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(118,'Nicole Kidman',1,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/76/bf/8b/76bf8bad-7dff-5adc-7a2f-05c4b03e1e86/mzaf_11974986281424556101.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
@@ -1013,7 +888,7 @@ INSERT INTO "songs" VALUES(251,'Treat You Bad',52,'https://audio-ssl.itunes.appl
 INSERT INTO "songs" VALUES(252,'Blisters',52,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/e5/c4/1e/e5c41e5a-7998-03f9-e9ea-ee53462fc0d7/mzaf_17497978889683714210.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(253,'Home Is Where The Heart Is',52,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/55/97/e6/5597e612-dd5c-596c-b46f-142e83a9bd97/mzaf_12006429336656656194.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(254,'jeans',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/17/f5/60/17f56070-c676-07bc-5c05-24b03ad7dd88/mzaf_9090510237733213864.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
-INSERT INTO "songs" VALUES(255,'delusional',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7c/fc/42/7cfc42e1-5e6a-2caf-a540-6f8b00bb06f5/mzaf_13245456260836000510.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
+INSERT INTO "songs" VALUES(255,'delusional',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7c/fc/42/7cfc42e1-5e6a-2caf-a540-6f8b00bb06f5/mzaf_13245456260836000510.plus.aac.p.m4a',1184.0,1,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(256,'i''ve missed you longer',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/94/7f/d7/947fd79c-c0a9-7cf7-59af-6835d6e82e27/mzaf_13305143277240821193.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(257,'i feel it all',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f2/b6/7d/f2b67dc9-5097-ca51-9b23-0fe8ea64763f/mzaf_5408236316460621246.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(258,'easier',4,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c5/a0/d0/c5a0d05a-fb5a-777f-5fb9-54f5820e34f1/mzaf_5628439566568550762.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
@@ -1216,13 +1091,21 @@ INSERT INTO "tournament_entries" VALUES(5,58,13);
 INSERT INTO "tournament_entries" VALUES(5,125,14);
 INSERT INTO "tournament_entries" VALUES(5,159,15);
 INSERT INTO "tournament_entries" VALUES(5,196,16);
-CREATE TABLE tournament_matches (
+INSERT INTO "tournament_entries" VALUES(7,74,1);
+INSERT INTO "tournament_entries" VALUES(7,362,2);
+INSERT INTO "tournament_entries" VALUES(7,48,3);
+INSERT INTO "tournament_entries" VALUES(7,360,4);
+INSERT INTO "tournament_entries" VALUES(7,117,5);
+INSERT INTO "tournament_entries" VALUES(7,158,6);
+INSERT INTO "tournament_entries" VALUES(7,134,7);
+INSERT INTO "tournament_entries" VALUES(7,392,8);
+CREATE TABLE "tournament_matches" (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tournament_id INTEGER NOT NULL,
                 round_number INTEGER NOT NULL,
                 match_number INTEGER NOT NULL,
-                song1_id INTEGER NOT NULL,
-                song2_id INTEGER NOT NULL,
+                song1_id INTEGER,
+                song2_id INTEGER,
                 winner_id INTEGER,
                 loser_id INTEGER,
                 status TEXT NOT NULL DEFAULT 'pending',
@@ -1288,18 +1171,26 @@ INSERT INTO "tournament_matches" VALUES(57,5,2,4,125,328,328,125,'completed',0.9
 INSERT INTO "tournament_matches" VALUES(58,5,3,1,21,58,58,21,'completed',1.8667,'2026-10-10 11:15:37');
 INSERT INTO "tournament_matches" VALUES(59,5,3,2,299,328,328,299,'completed',1.8667,'2026-10-10 11:16:14');
 INSERT INTO "tournament_matches" VALUES(60,5,4,1,58,328,328,58,'completed',3.7333,'2026-10-10 11:17:19');
+INSERT INTO "tournament_matches" VALUES(65,7,1,1,74,392,74,392,'completed',1.0,'2026-10-10 12:22:57');
+INSERT INTO "tournament_matches" VALUES(66,7,1,2,360,117,117,360,'completed',1.0,'2026-10-10 12:22:05');
+INSERT INTO "tournament_matches" VALUES(67,7,1,3,362,134,134,362,'completed',1.0,'2026-10-10 12:23:13');
+INSERT INTO "tournament_matches" VALUES(68,7,1,4,48,158,158,48,'completed',1.0,'2026-10-10 12:23:53');
+INSERT INTO "tournament_matches" VALUES(69,7,2,1,74,117,74,117,'completed',2.0,'2026-10-10 12:24:59');
+INSERT INTO "tournament_matches" VALUES(70,7,2,2,134,158,134,158,'completed',2.0,'2026-10-10 12:25:16');
+INSERT INTO "tournament_matches" VALUES(71,7,3,1,74,134,74,134,'completed',4.0,'2026-10-10 12:26:10');
 CREATE TABLE tournaments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             size INTEGER NOT NULL,
             scope_type TEXT NOT NULL,
             scope_id INTEGER,
             champion_id INTEGER,
-            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, status TEXT NOT NULL DEFAULT 'completed', created_at DATETIME, updated_at DATETIME, completed_at DATETIME, current_round INTEGER NOT NULL DEFAULT 1, points_version INTEGER NOT NULL DEFAULT 1,
+            timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, status TEXT NOT NULL DEFAULT 'completed', created_at DATETIME, updated_at DATETIME, completed_at DATETIME, current_round INTEGER NOT NULL DEFAULT 1, points_version INTEGER NOT NULL DEFAULT 1, is_blind BOOLEAN NOT NULL DEFAULT 0,
             FOREIGN KEY(champion_id) REFERENCES songs(id)
         );
-INSERT INTO "tournaments" VALUES(3,32,'artist',35,310,'2026-10-09 18:05:05','completed','2026-10-09 18:05:05','2026-10-09 18:21:44','2026-10-09 18:21:44',5,1);
-INSERT INTO "tournaments" VALUES(4,8,'album',61,277,'2026-10-09 18:33:18','completed','2026-10-09 18:33:18','2026-10-09 18:39:26','2026-10-09 18:39:26',3,1);
-INSERT INTO "tournaments" VALUES(5,16,'global',NULL,328,'2026-10-10 11:03:12','completed','2026-10-10 11:03:12','2026-10-10 11:17:19','2026-10-10 11:17:19',4,1);
+INSERT INTO "tournaments" VALUES(3,32,'artist',35,310,'2026-10-09 18:05:05','completed','2026-10-09 18:05:05','2026-10-09 18:21:44','2026-10-09 18:21:44',5,1,0);
+INSERT INTO "tournaments" VALUES(4,8,'album',61,277,'2026-10-09 18:33:18','completed','2026-10-09 18:33:18','2026-10-09 18:39:26','2026-10-09 18:39:26',3,1,0);
+INSERT INTO "tournaments" VALUES(5,16,'global',NULL,328,'2026-10-10 11:03:12','completed','2026-10-10 11:03:12','2026-10-10 11:17:19','2026-10-10 11:17:19',4,1,0);
+INSERT INTO "tournaments" VALUES(7,8,'global',NULL,74,'2026-10-10 12:21:41','completed','2026-10-10 12:21:41','2026-10-10 12:26:12','2026-10-10 12:26:12',3,1,1);
 CREATE TABLE trivia_stats
                        (
                            song_id  INTEGER PRIMARY KEY,
@@ -1308,147 +1199,22 @@ CREATE TABLE trivia_stats
                            FOREIGN KEY (song_id) REFERENCES songs (id)
                        );
 INSERT INTO "trivia_stats" VALUES(98,1,2);
-INSERT INTO "trivia_stats" VALUES(266,0,0);
-INSERT INTO "trivia_stats" VALUES(267,0,0);
-INSERT INTO "trivia_stats" VALUES(268,0,0);
-INSERT INTO "trivia_stats" VALUES(269,0,0);
-INSERT INTO "trivia_stats" VALUES(270,0,0);
-INSERT INTO "trivia_stats" VALUES(271,0,0);
-INSERT INTO "trivia_stats" VALUES(272,0,0);
-INSERT INTO "trivia_stats" VALUES(273,0,0);
-INSERT INTO "trivia_stats" VALUES(274,0,0);
-INSERT INTO "trivia_stats" VALUES(275,0,0);
-INSERT INTO "trivia_stats" VALUES(276,0,0);
-INSERT INTO "trivia_stats" VALUES(277,0,0);
-INSERT INTO "trivia_stats" VALUES(278,0,0);
-INSERT INTO "trivia_stats" VALUES(279,0,0);
-INSERT INTO "trivia_stats" VALUES(280,0,0);
-INSERT INTO "trivia_stats" VALUES(281,0,0);
-INSERT INTO "trivia_stats" VALUES(282,0,0);
-INSERT INTO "trivia_stats" VALUES(283,0,0);
-INSERT INTO "trivia_stats" VALUES(284,0,0);
-INSERT INTO "trivia_stats" VALUES(285,0,0);
-INSERT INTO "trivia_stats" VALUES(286,0,0);
-INSERT INTO "trivia_stats" VALUES(287,0,0);
-INSERT INTO "trivia_stats" VALUES(288,0,0);
-INSERT INTO "trivia_stats" VALUES(289,0,0);
-INSERT INTO "trivia_stats" VALUES(290,0,0);
-INSERT INTO "trivia_stats" VALUES(291,0,0);
-INSERT INTO "trivia_stats" VALUES(292,0,0);
-INSERT INTO "trivia_stats" VALUES(293,0,0);
-INSERT INTO "trivia_stats" VALUES(294,0,0);
-INSERT INTO "trivia_stats" VALUES(295,0,0);
-INSERT INTO "trivia_stats" VALUES(296,0,0);
-INSERT INTO "trivia_stats" VALUES(297,0,0);
-INSERT INTO "trivia_stats" VALUES(298,0,0);
-INSERT INTO "trivia_stats" VALUES(299,0,0);
-INSERT INTO "trivia_stats" VALUES(300,0,0);
-INSERT INTO "trivia_stats" VALUES(301,0,0);
-INSERT INTO "trivia_stats" VALUES(302,0,0);
-INSERT INTO "trivia_stats" VALUES(303,0,0);
-INSERT INTO "trivia_stats" VALUES(304,0,0);
-INSERT INTO "trivia_stats" VALUES(305,0,0);
-INSERT INTO "trivia_stats" VALUES(306,0,0);
-INSERT INTO "trivia_stats" VALUES(307,0,0);
-INSERT INTO "trivia_stats" VALUES(308,0,0);
-INSERT INTO "trivia_stats" VALUES(309,0,0);
-INSERT INTO "trivia_stats" VALUES(310,0,0);
-INSERT INTO "trivia_stats" VALUES(311,0,0);
-INSERT INTO "trivia_stats" VALUES(312,0,0);
-INSERT INTO "trivia_stats" VALUES(313,0,0);
-INSERT INTO "trivia_stats" VALUES(314,0,0);
-INSERT INTO "trivia_stats" VALUES(315,0,0);
-INSERT INTO "trivia_stats" VALUES(316,0,0);
-INSERT INTO "trivia_stats" VALUES(317,0,0);
-INSERT INTO "trivia_stats" VALUES(318,0,0);
-INSERT INTO "trivia_stats" VALUES(319,0,0);
-INSERT INTO "trivia_stats" VALUES(320,0,0);
-INSERT INTO "trivia_stats" VALUES(321,0,0);
-INSERT INTO "trivia_stats" VALUES(322,0,0);
-INSERT INTO "trivia_stats" VALUES(323,0,0);
-INSERT INTO "trivia_stats" VALUES(324,0,0);
-INSERT INTO "trivia_stats" VALUES(325,0,0);
-INSERT INTO "trivia_stats" VALUES(326,0,0);
-INSERT INTO "trivia_stats" VALUES(327,0,0);
-INSERT INTO "trivia_stats" VALUES(328,0,0);
-INSERT INTO "trivia_stats" VALUES(329,0,0);
-INSERT INTO "trivia_stats" VALUES(330,0,0);
-INSERT INTO "trivia_stats" VALUES(331,0,0);
-INSERT INTO "trivia_stats" VALUES(332,0,0);
-INSERT INTO "trivia_stats" VALUES(333,0,0);
-INSERT INTO "trivia_stats" VALUES(334,0,0);
-INSERT INTO "trivia_stats" VALUES(335,0,0);
-INSERT INTO "trivia_stats" VALUES(336,0,0);
-INSERT INTO "trivia_stats" VALUES(337,0,0);
-INSERT INTO "trivia_stats" VALUES(338,0,0);
-INSERT INTO "trivia_stats" VALUES(339,0,0);
-INSERT INTO "trivia_stats" VALUES(340,0,0);
-INSERT INTO "trivia_stats" VALUES(341,0,0);
-INSERT INTO "trivia_stats" VALUES(342,0,0);
-INSERT INTO "trivia_stats" VALUES(343,0,0);
-INSERT INTO "trivia_stats" VALUES(344,0,0);
-INSERT INTO "trivia_stats" VALUES(345,0,0);
-INSERT INTO "trivia_stats" VALUES(346,0,0);
-INSERT INTO "trivia_stats" VALUES(347,0,0);
-INSERT INTO "trivia_stats" VALUES(348,0,0);
-INSERT INTO "trivia_stats" VALUES(349,0,0);
-INSERT INTO "trivia_stats" VALUES(350,0,0);
-INSERT INTO "trivia_stats" VALUES(351,0,0);
-INSERT INTO "trivia_stats" VALUES(352,0,0);
-INSERT INTO "trivia_stats" VALUES(353,0,0);
-INSERT INTO "trivia_stats" VALUES(354,0,0);
-INSERT INTO "trivia_stats" VALUES(355,0,0);
-INSERT INTO "trivia_stats" VALUES(356,0,0);
-INSERT INTO "trivia_stats" VALUES(357,0,0);
-INSERT INTO "trivia_stats" VALUES(358,0,0);
-INSERT INTO "trivia_stats" VALUES(359,0,0);
-INSERT INTO "trivia_stats" VALUES(360,0,0);
-INSERT INTO "trivia_stats" VALUES(361,0,0);
-INSERT INTO "trivia_stats" VALUES(362,0,0);
-INSERT INTO "trivia_stats" VALUES(363,0,0);
-INSERT INTO "trivia_stats" VALUES(364,0,0);
-INSERT INTO "trivia_stats" VALUES(365,0,0);
-INSERT INTO "trivia_stats" VALUES(366,0,0);
-INSERT INTO "trivia_stats" VALUES(367,0,0);
-INSERT INTO "trivia_stats" VALUES(368,0,0);
-INSERT INTO "trivia_stats" VALUES(369,0,0);
-INSERT INTO "trivia_stats" VALUES(370,0,0);
-INSERT INTO "trivia_stats" VALUES(371,0,0);
-INSERT INTO "trivia_stats" VALUES(372,0,0);
-INSERT INTO "trivia_stats" VALUES(373,0,0);
-INSERT INTO "trivia_stats" VALUES(374,0,0);
-INSERT INTO "trivia_stats" VALUES(375,0,0);
-INSERT INTO "trivia_stats" VALUES(376,0,0);
-INSERT INTO "trivia_stats" VALUES(377,0,0);
-INSERT INTO "trivia_stats" VALUES(378,0,0);
-INSERT INTO "trivia_stats" VALUES(379,0,0);
-INSERT INTO "trivia_stats" VALUES(380,0,0);
-INSERT INTO "trivia_stats" VALUES(381,0,0);
-INSERT INTO "trivia_stats" VALUES(382,0,0);
-INSERT INTO "trivia_stats" VALUES(383,0,0);
-INSERT INTO "trivia_stats" VALUES(384,0,0);
-INSERT INTO "trivia_stats" VALUES(385,0,0);
-INSERT INTO "trivia_stats" VALUES(386,0,0);
-INSERT INTO "trivia_stats" VALUES(387,0,0);
-INSERT INTO "trivia_stats" VALUES(388,0,0);
-INSERT INTO "trivia_stats" VALUES(389,0,0);
-INSERT INTO "trivia_stats" VALUES(390,0,0);
-INSERT INTO "trivia_stats" VALUES(391,0,0);
-INSERT INTO "trivia_stats" VALUES(392,0,0);
+CREATE INDEX idx_tournaments_status ON tournaments(status);
 CREATE INDEX idx_tournament_matches_tournament_round
                 ON tournament_matches(tournament_id, round_number, match_number);
 CREATE INDEX idx_tournament_matches_winner ON tournament_matches(winner_id);
 CREATE INDEX idx_tournament_matches_loser ON tournament_matches(loser_id);
-CREATE INDEX idx_tournaments_status ON tournaments(status);
-CREATE INDEX idx_interaction_events_type_date ON interaction_events(event_type, created_at);
-CREATE INDEX idx_elo_history_date ON elo_history(created_at);
+CREATE INDEX history_winner ON history(winner_id,id);
+CREATE INDEX history_loser ON history(loser_id,id);
+CREATE INDEX songs_album ON songs(album_id);
+CREATE INDEX song_artists_artist ON song_artists(artist_id,song_id);
+CREATE INDEX song_genres_genre ON song_genres(genre_id,song_id);
 DELETE FROM "sqlite_sequence";
 INSERT INTO "sqlite_sequence" VALUES('albums',162);
 INSERT INTO "sqlite_sequence" VALUES('artists',53);
-INSERT INTO "sqlite_sequence" VALUES('history',776);
+INSERT INTO "sqlite_sequence" VALUES('history',777);
 INSERT INTO "sqlite_sequence" VALUES('genres',3);
-INSERT INTO "sqlite_sequence" VALUES('tournaments',5);
-INSERT INTO "sqlite_sequence" VALUES('tournament_matches',60);
-INSERT INTO "sqlite_sequence" VALUES('admin_audit_log',47);
-INSERT INTO "sqlite_sequence" VALUES('interaction_events',54);
+INSERT INTO "sqlite_sequence" VALUES('tournaments',7);
+INSERT INTO "sqlite_sequence" VALUES('tournament_matches',71);
 COMMIT;
+PRAGMA user_version=4;
