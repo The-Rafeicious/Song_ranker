@@ -310,6 +310,21 @@ INSERT INTO "interaction_events" VALUES(36,'tournament_vote',276,273,'2026-10-09
 INSERT INTO "interaction_events" VALUES(37,'tournament_vote',277,275,'2026-10-09 18:37:56','{"tournament_id": 4, "points_awarded": 2.0}');
 INSERT INTO "interaction_events" VALUES(38,'tournament_vote',124,276,'2026-10-09 18:38:00','{"tournament_id": 4, "points_awarded": 2.0}');
 INSERT INTO "interaction_events" VALUES(39,'tournament_vote',277,124,'2026-10-09 18:39:26','{"tournament_id": 4, "points_awarded": 4.0}');
+INSERT INTO "interaction_events" VALUES(40,'tournament_vote',196,349,'2026-10-10 11:04:23','{"tournament_id": 5, "points_awarded": 0.4667}');
+INSERT INTO "interaction_events" VALUES(41,'tournament_vote',21,162,'2026-10-10 11:05:26','{"tournament_id": 5, "points_awarded": 0.4667}');
+INSERT INTO "interaction_events" VALUES(42,'tournament_vote',58,207,'2026-10-10 11:05:55','{"tournament_id": 5, "points_awarded": 0.4667}');
+INSERT INTO "interaction_events" VALUES(43,'tournament_vote',300,220,'2026-10-10 11:07:37','{"tournament_id": 5, "points_awarded": 0.4667}');
+INSERT INTO "interaction_events" VALUES(44,'tournament_vote',159,270,'2026-10-10 11:08:23','{"tournament_id": 5, "points_awarded": 0.4667}');
+INSERT INTO "interaction_events" VALUES(45,'tournament_vote',299,118,'2026-10-10 11:09:35','{"tournament_id": 5, "points_awarded": 0.4667}');
+INSERT INTO "interaction_events" VALUES(46,'tournament_vote',125,290,'2026-10-10 11:10:47','{"tournament_id": 5, "points_awarded": 0.4667}');
+INSERT INTO "interaction_events" VALUES(47,'tournament_vote',328,387,'2026-10-10 11:11:37','{"tournament_id": 5, "points_awarded": 0.4667}');
+INSERT INTO "interaction_events" VALUES(48,'tournament_vote',21,196,'2026-10-10 11:12:05','{"tournament_id": 5, "points_awarded": 0.9333}');
+INSERT INTO "interaction_events" VALUES(49,'tournament_vote',58,300,'2026-10-10 11:12:52','{"tournament_id": 5, "points_awarded": 0.9333}');
+INSERT INTO "interaction_events" VALUES(50,'tournament_vote',299,159,'2026-10-10 11:13:41','{"tournament_id": 5, "points_awarded": 0.9333}');
+INSERT INTO "interaction_events" VALUES(51,'tournament_vote',328,125,'2026-10-10 11:14:42','{"tournament_id": 5, "points_awarded": 0.9333}');
+INSERT INTO "interaction_events" VALUES(52,'tournament_vote',58,21,'2026-10-10 11:15:37','{"tournament_id": 5, "points_awarded": 1.8667}');
+INSERT INTO "interaction_events" VALUES(53,'tournament_vote',328,299,'2026-10-10 11:16:14','{"tournament_id": 5, "points_awarded": 1.8667}');
+INSERT INTO "interaction_events" VALUES(54,'tournament_vote',328,58,'2026-10-10 11:17:19','{"tournament_id": 5, "points_awarded": 3.7333}');
 CREATE TABLE song_artists
                        (
                            song_id   INTEGER,
@@ -1071,7 +1086,7 @@ INSERT INTO "songs" VALUES(324,'Everything Anything',10,'https://audio-ssl.itune
 INSERT INTO "songs" VALUES(325,'RIP',10,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/cd/8b/66/cd8b6663-5162-e5b7-7e44-53835a2c1a33/mzaf_9667714778809559725.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(326,'Bittersweet',10,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/60/4c/42/604c42f1-01db-7fea-ed8c-791c527f1c7b/mzaf_2791186069039455608.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(327,'crushing',119,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f6/69/4f/f6694ff7-3d80-3eb3-9d05-2d4d4dd90f76/mzaf_132967799259881760.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
-INSERT INTO "songs" VALUES(328,'12 to 12',119,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ae/f2/fa/aef2fa6c-dc8c-9b55-b132-c4f635142f7a/mzaf_17478163518271954609.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
+INSERT INTO "songs" VALUES(328,'12 to 12',119,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/ae/f2/fa/aef2fa6c-dc8c-9b55-b132-c4f635142f7a/mzaf_17478163518271954609.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,1);
 INSERT INTO "songs" VALUES(329,'back to friends',119,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/7b/04/67/7b046721-ad6e-9936-d5b4-36f04b77b3ad/mzaf_51886226813941489.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(330,'dime',119,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/bf/4a/e7/bf4ae726-ef2d-f5d9-f360-68ef13260001/mzaf_8737283176024845226.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
 INSERT INTO "songs" VALUES(331,'i wish i knew how to quit you',119,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/df/f2/69/dff269af-0af7-5ae7-979c-b8e7b439f768/mzaf_8688056024717183660.plus.aac.p.m4a',1200.0,0,1200.0,9999,NULL,0);
@@ -1185,6 +1200,22 @@ INSERT INTO "tournament_entries" VALUES(4,275,5);
 INSERT INTO "tournament_entries" VALUES(4,273,6);
 INSERT INTO "tournament_entries" VALUES(4,274,7);
 INSERT INTO "tournament_entries" VALUES(4,277,8);
+INSERT INTO "tournament_entries" VALUES(5,349,1);
+INSERT INTO "tournament_entries" VALUES(5,270,2);
+INSERT INTO "tournament_entries" VALUES(5,290,3);
+INSERT INTO "tournament_entries" VALUES(5,207,4);
+INSERT INTO "tournament_entries" VALUES(5,300,5);
+INSERT INTO "tournament_entries" VALUES(5,387,6);
+INSERT INTO "tournament_entries" VALUES(5,299,7);
+INSERT INTO "tournament_entries" VALUES(5,21,8);
+INSERT INTO "tournament_entries" VALUES(5,162,9);
+INSERT INTO "tournament_entries" VALUES(5,118,10);
+INSERT INTO "tournament_entries" VALUES(5,328,11);
+INSERT INTO "tournament_entries" VALUES(5,220,12);
+INSERT INTO "tournament_entries" VALUES(5,58,13);
+INSERT INTO "tournament_entries" VALUES(5,125,14);
+INSERT INTO "tournament_entries" VALUES(5,159,15);
+INSERT INTO "tournament_entries" VALUES(5,196,16);
 CREATE TABLE tournament_matches (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 tournament_id INTEGER NOT NULL,
@@ -1242,6 +1273,21 @@ INSERT INTO "tournament_matches" VALUES(42,4,1,4,276,273,276,273,'completed',1.0
 INSERT INTO "tournament_matches" VALUES(43,4,2,1,277,275,277,275,'completed',2.0,'2026-10-09 18:37:56');
 INSERT INTO "tournament_matches" VALUES(44,4,2,2,124,276,124,276,'completed',2.0,'2026-10-09 18:38:00');
 INSERT INTO "tournament_matches" VALUES(45,4,3,1,277,124,277,124,'completed',4.0,'2026-10-09 18:39:26');
+INSERT INTO "tournament_matches" VALUES(46,5,1,1,349,196,196,349,'completed',0.4667,'2026-10-10 11:04:23');
+INSERT INTO "tournament_matches" VALUES(47,5,1,2,21,162,21,162,'completed',0.4667,'2026-10-10 11:05:26');
+INSERT INTO "tournament_matches" VALUES(48,5,1,3,207,58,58,207,'completed',0.4667,'2026-10-10 11:05:55');
+INSERT INTO "tournament_matches" VALUES(49,5,1,4,300,220,300,220,'completed',0.4667,'2026-10-10 11:07:37');
+INSERT INTO "tournament_matches" VALUES(50,5,1,5,270,159,159,270,'completed',0.4667,'2026-10-10 11:08:23');
+INSERT INTO "tournament_matches" VALUES(51,5,1,6,299,118,299,118,'completed',0.4667,'2026-10-10 11:09:35');
+INSERT INTO "tournament_matches" VALUES(52,5,1,7,290,125,125,290,'completed',0.4667,'2026-10-10 11:10:47');
+INSERT INTO "tournament_matches" VALUES(53,5,1,8,387,328,328,387,'completed',0.4667,'2026-10-10 11:11:37');
+INSERT INTO "tournament_matches" VALUES(54,5,2,1,196,21,21,196,'completed',0.9333,'2026-10-10 11:12:05');
+INSERT INTO "tournament_matches" VALUES(55,5,2,2,58,300,58,300,'completed',0.9333,'2026-10-10 11:12:52');
+INSERT INTO "tournament_matches" VALUES(56,5,2,3,159,299,299,159,'completed',0.9333,'2026-10-10 11:13:41');
+INSERT INTO "tournament_matches" VALUES(57,5,2,4,125,328,328,125,'completed',0.9333,'2026-10-10 11:14:42');
+INSERT INTO "tournament_matches" VALUES(58,5,3,1,21,58,58,21,'completed',1.8667,'2026-10-10 11:15:37');
+INSERT INTO "tournament_matches" VALUES(59,5,3,2,299,328,328,299,'completed',1.8667,'2026-10-10 11:16:14');
+INSERT INTO "tournament_matches" VALUES(60,5,4,1,58,328,328,58,'completed',3.7333,'2026-10-10 11:17:19');
 CREATE TABLE tournaments (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             size INTEGER NOT NULL,
@@ -1253,6 +1299,7 @@ CREATE TABLE tournaments (
         );
 INSERT INTO "tournaments" VALUES(3,32,'artist',35,310,'2026-10-09 18:05:05','completed','2026-10-09 18:05:05','2026-10-09 18:21:44','2026-10-09 18:21:44',5,1);
 INSERT INTO "tournaments" VALUES(4,8,'album',61,277,'2026-10-09 18:33:18','completed','2026-10-09 18:33:18','2026-10-09 18:39:26','2026-10-09 18:39:26',3,1);
+INSERT INTO "tournaments" VALUES(5,16,'global',NULL,328,'2026-10-10 11:03:12','completed','2026-10-10 11:03:12','2026-10-10 11:17:19','2026-10-10 11:17:19',4,1);
 CREATE TABLE trivia_stats
                        (
                            song_id  INTEGER PRIMARY KEY,
@@ -1400,8 +1447,8 @@ INSERT INTO "sqlite_sequence" VALUES('albums',162);
 INSERT INTO "sqlite_sequence" VALUES('artists',53);
 INSERT INTO "sqlite_sequence" VALUES('history',776);
 INSERT INTO "sqlite_sequence" VALUES('genres',3);
-INSERT INTO "sqlite_sequence" VALUES('tournaments',4);
-INSERT INTO "sqlite_sequence" VALUES('tournament_matches',45);
+INSERT INTO "sqlite_sequence" VALUES('tournaments',5);
+INSERT INTO "sqlite_sequence" VALUES('tournament_matches',60);
 INSERT INTO "sqlite_sequence" VALUES('admin_audit_log',47);
-INSERT INTO "sqlite_sequence" VALUES('interaction_events',39);
+INSERT INTO "sqlite_sequence" VALUES('interaction_events',54);
 COMMIT;
