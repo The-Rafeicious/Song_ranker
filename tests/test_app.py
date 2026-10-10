@@ -20,7 +20,7 @@ class AppChecks(unittest.TestCase):
   with self.c.session_transaction() as s:s['is_admin']=True
  def test_all_pages_and_entities(self):
   data=collection()
-  paths=['/','/game','/leaderboard','/artists','/albums','/search','/history','/global_stats','/trivia','/trivia_stats','/tournament','/tournament_stats','/tiers','/tags','/dev/login']
+  paths=['/','/game','/leaderboard','/artists','/albums','/search','/history','/global_stats','/trivia','/trivia_stats','/tournament','/tournament_stats','/artist_stats','/album_stats','/tags','/dev/login']
   from urllib.parse import quote
   paths+=['/song/'+str(data['songs'][0]['id']),'/artist/'+quote(data['artists'][0]['name']),'/album/'+quote(data['albums'][0]['title']),'/tag/'+quote(data['tags'][0]['name'])]
   self.admin();paths+=['/dev/dashboard']

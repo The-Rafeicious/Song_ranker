@@ -1,235 +1,26 @@
-{% extends "base.html" %}
-
-{% block title %}Global Stats - Song Ranker{% endblock %}
-
-{% block extra_css %}
-<style>
-    .title-top { font-size: 3.5em; margin-top: 40px; margin-bottom: 50px; font-weight: 900; letter-spacing: -1px; background: linear-gradient(90deg, #fff, #aaa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-
-    .section-wrapper { max-width: 950px; margin: 0 auto 50px auto; text-align: left; }
-    .section-header { font-size: 1.1em; font-weight: 900; color: #666; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; border-bottom: 1px solid #333; padding-bottom: 10px; }
-
-    /* Totals Grid */
-    .totals-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
-    .total-card { background-color: #1e1e1e; padding: 25px; border-radius: 12px; text-align: center; border: 1px solid #333; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
-    .total-num { font-size: 2.5em; font-weight: 900; margin-bottom: 5px; }
-    .total-label { color: #888; font-size: 0.9em; text-transform: uppercase; letter-spacing: 1px; font-weight: bold; }
-
-    /* Superlatives Grid */
-    .fun-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-    .fun-card { display: flex; align-items: center; background-color: #1e1e1e; padding: 20px; border-radius: 12px; border: 1px solid #333; transition: transform 0.2s; text-decoration: none; color: white; }
-    .fun-card:hover { transform: translateY(-3px); border-color: #555; }
-    .fun-cover { width: 70px; height: 70px; border-radius: 8px; object-fit: cover; margin-right: 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-    .fun-info { flex-grow: 1; overflow: hidden; }
-    .fun-title { font-weight: bold; font-size: 1.1em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-    .fun-sub { color: #aaa; font-size: 0.85em; margin-top: 4px; }
-    .fun-label { font-size: 0.75em; text-transform: uppercase; font-weight: bold; margin-bottom: 5px; }
-
-    /* Matchups List */
-    .matchups-container { background-color: #1e1e1e; border-radius: 12px; padding: 10px 20px; box-shadow: 0 8px 16px rgba(0,0,0,0.4); }
-    .matchup-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 10px; border-bottom: 1px solid #333; }
-    .matchup-row:last-child { border-bottom: none; }
-
-    .m-side { display: flex; align-items: center; width: 40%; text-decoration: none; color: white; transition: opacity 0.2s; }
-    .m-side:hover { opacity: 0.7; }
-    .m-left { justify-content: flex-end; text-align: right; }
-    .m-right { justify-content: flex-start; text-align: left; }
-
-    .m-cover { width: 55px; height: 55px; border-radius: 6px; object-fit: cover; margin: 0 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-    .m-title { font-weight: bold; font-size: 1.1em; white-space: nowrap; text-overflow: ellipsis; overflow: hidden; }
-    .m-artist { color: #888; font-size: 0.85em; }
-
-    .m-center { width: 20%; text-align: center; display: flex; flex-direction: column; align-items: center; }
-    .m-count { font-size: 1.5em; font-weight: 900; color: white; }
-    .m-vs { color: #555; font-size: 0.8em; text-transform: uppercase; font-weight: bold; margin-top: 2px; }
-
-    .insight-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(190px,1fr)); gap:14px; }
-    .insight-card { background:#1e1e1e; border:1px solid #333; border-radius:12px; padding:20px; min-height:95px; }
-    .insight-value { font-size:1.8em; font-weight:900; margin:8px 0 4px; }
-    .insight-label { color:#999; font-size:.82em; text-transform:uppercase; letter-spacing:.8px; font-weight:800; }
-    .insight-note { color:#888; font-size:.88em; }
-    .two-col { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:20px; }
-    .rank-list { background:#1e1e1e; border:1px solid #333; border-radius:12px; padding:8px 18px; }
-    .rank-row { display:flex; justify-content:space-between; align-items:center; gap:14px; padding:14px 2px; border-bottom:1px solid #303030; }
-    .rank-row:last-child { border-bottom:0; }
-    .rank-name { color:#fff; font-weight:750; text-decoration:none; }
-    .rank-meta { color:#888; font-size:.85em; margin-top:3px; }
-    .rank-value { color:#1db954; font-weight:900; white-space:nowrap; }
-    .bar-list { background:#1e1e1e; border:1px solid #333; border-radius:12px; padding:20px; }
-    .bar-row { margin:12px 0 17px; }
-    .bar-label { display:flex; justify-content:space-between; gap:10px; color:#bbb; font-size:.9em; margin-bottom:7px; }
-    .bar-track { height:9px; background:#303030; border-radius:99px; overflow:hidden; }
-    .bar-fill { height:100%; background:linear-gradient(90deg,#1db954,#9be8b5); border-radius:99px; }
-    .activity-row { display:flex; align-items:center; justify-content:space-between; gap:12px; padding:13px 4px; border-bottom:1px solid #303030; }
-    .activity-row:last-child { border-bottom:0; }
-    .activity-row a { color:white; text-decoration:none; font-weight:700; }
-    .activity-date { color:#777; font-size:.8em; white-space:nowrap; }
-    @media(max-width:650px) { .title-top {font-size:2.4em;} .totals-grid {grid-template-columns:repeat(2,1fr);} .fun-grid {grid-template-columns:1fr;} .activity-row {align-items:flex-start; flex-direction:column;} }
-
-</style>
-{% endblock %}
-
+{% extends 'base.html' %}
+{% from 'components.html' import stat, art %}
+{% block title %}Global Stats · Song Ranker{% endblock %}
+{% block page_kind %}global_stats{% endblock %}
 {% block content %}
-    <div class="title-top">Database Insights</div>
-
-    <!-- The Core Numbers -->
-    <div class="section-wrapper">
-        <div class="totals-grid">
-            <div class="total-card" style="border-bottom: 3px solid var(--color-song);">
-                <div class="total-num" style="color: var(--color-song);">{{ total_songs }}</div>
-                <div class="total-label">Total Songs</div>
-            </div>
-            <div class="total-card" style="border-bottom: 3px solid var(--color-artist);">
-                <div class="total-num" style="color: var(--color-artist);">{{ total_artists }}</div>
-                <div class="total-label">Total Artists</div>
-            </div>
-            <div class="total-card" style="border-bottom: 3px solid var(--color-album);">
-                <div class="total-num" style="color: var(--color-album);">{{ total_albums }}</div>
-                <div class="total-label">Total Albums</div>
-            </div>
-            <div class="total-card" style="border-bottom: 3px solid #ccc;">
-                <div class="total-num">{{ total_matches }}</div>
-                <div class="total-label">Votes Cast</div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Fun Highlights -->
-    <div class="section-wrapper">
-        <div class="section-header">Database Highlights</div>
-        <div class="fun-grid">
-            {% if most_played %}
-            <a href="/song/{{ most_played.id }}" class="fun-card">
-                <img src="{{ most_played.cover_url }}" class="fun-cover">
-                <div class="fun-info">
-                    <div class="fun-label" style="color: var(--color-song);">Most Played Track</div>
-                    <div class="fun-title">{{ most_played.title }}</div>
-                    <div class="fun-sub">{{ most_played.matches_played }} Matches</div>
-                </div>
-            </a>
-            {% endif %}
-
-            {% if prolific_artist %}
-            <a href="/artist/{{ prolific_artist.artist | urlencode }}" class="fun-card">
-                <img src="{{ prolific_artist.cover_url }}" class="fun-cover" style="border-radius: 50%;">
-                <div class="fun-info">
-                    <div class="fun-label" style="color: var(--color-artist);">Most Prolific Artist</div>
-                    <div class="fun-title">{{ prolific_artist.artist }}</div>
-                    <div class="fun-sub">{{ prolific_artist.track_count }} Tracks</div>
-                </div>
-            </a>
-            {% endif %}
-
-            {% if top_genre %}
-            <div class="fun-card">
-                <div class="fun-cover" style="background: var(--color-genre-bg); display: flex; align-items: center; justify-content: center; font-size: 2em; border: 1px solid rgba(255,184,51,0.3);">🏷️</div>
-                <div class="fun-info">
-                    <div class="fun-label" style="color: var(--color-genre);">Top Genre Tag</div>
-                    <div class="fun-title">{{ top_genre.name }}</div>
-                    <div class="fun-sub">Tagged {{ top_genre.tag_count }} Times</div>
-                </div>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- Rivalries -->
-    <div class="section-wrapper">
-        <div class="section-header">Biggest Rivalries (Most Frequent Matchups)</div>
-        <div class="matchups-container">
-            {% for m in matchups %}
-            <div class="matchup-row">
-                <a href="/song/{{ m.s1.id }}" class="m-side m-left">
-                    <div>
-                        <div class="m-title">{{ m.s1.title }}</div>
-                        <div class="m-artist">{{ m.s1.artist }}</div>
-                    </div>
-                    <img src="{{ m.s1.cover_url }}" class="m-cover">
-                </a>
-
-                <div class="m-center">
-                    <div class="m-count">{{ m.encounters }}</div>
-                    <div class="m-vs">Encounters</div>
-                </div>
-
-                <a href="/song/{{ m.s2.id }}" class="m-side m-right">
-                    <img src="{{ m.s2.cover_url }}" class="m-cover">
-                    <div>
-                        <div class="m-title">{{ m.s2.title }}</div>
-                        <div class="m-artist">{{ m.s2.artist }}</div>
-                    </div>
-                </a>
-            </div>
-            {% else %}
-            <div style="text-align: center; color: #888; padding: 20px;">No matchups recorded yet.</div>
-            {% endfor %}
-        </div>
-    </div>
-
-    <div class="section-wrapper">
-        <div class="section-header">The wider picture</div>
-        <div class="insight-grid">
-            <div class="insight-card"><div class="insight-label">Genres in the library</div><div class="insight-value">{{ extra_stats.genres_count }}</div><div class="insight-note">Distinct genre tags</div></div>
-            <div class="insight-card"><div class="insight-label">Average song Elo</div><div class="insight-value">{{ extra_stats.average_elo }}</div><div class="insight-note">Library-wide rating average</div></div>
-            <div class="insight-card"><div class="insight-label">Never voted on</div><div class="insight-value">{{ extra_stats.songs_never_voted }}</div><div class="insight-note">Songs waiting for their first face-off</div></div>
-            <div class="insight-card"><div class="insight-label">With audio preview</div><div class="insight-value">{{ extra_stats.songs_with_audio }}</div><div class="insight-note">Ready for audio-based play</div></div>
-            <div class="insight-card"><div class="insight-label">Votes in last 7 days</div><div class="insight-value">{{ extra_stats.recent_votes }}</div><div class="insight-note">Based on timestamped vote history</div></div>
-        </div>
-    </div>
-
-    <div class="section-wrapper">
-        <div class="section-header">Records & bragging rights</div>
-        <div class="two-col">
-            <div class="rank-list">
-                <div class="rank-row"><div><div class="insight-label">Highest current Elo</div>{% if extra_stats.highest_elo %}<a class="rank-name" href="/song/{{ extra_stats.highest_elo.id }}">{{ extra_stats.highest_elo.title }}</a>{% else %}<span class="rank-name">No songs yet</span>{% endif %}</div><div class="rank-value">{% if extra_stats.highest_elo %}{{ extra_stats.highest_elo.elo_score|int }}{% endif %}</div></div>
-                <div class="rank-row"><div><div class="insight-label">Lowest current Elo</div>{% if extra_stats.lowest_elo %}<a class="rank-name" href="/song/{{ extra_stats.lowest_elo.id }}">{{ extra_stats.lowest_elo.title }}</a>{% else %}<span class="rank-name">No songs yet</span>{% endif %}</div><div class="rank-value">{% if extra_stats.lowest_elo %}{{ extra_stats.lowest_elo.elo_score|int }}{% endif %}</div></div>
-                <div class="rank-row"><div><div class="insight-label">Most recorded wins</div>{% if extra_stats.most_wins %}<a class="rank-name" href="/song/{{ extra_stats.most_wins.id }}">{{ extra_stats.most_wins.title }}</a>{% else %}<span class="rank-name">No wins recorded yet</span>{% endif %}</div><div class="rank-value">{% if extra_stats.most_wins %}{{ extra_stats.most_wins.wins }} wins{% endif %}</div></div>
-                <div class="rank-row"><div><div class="insight-label">Tournament shelf</div><div class="rank-name">{{ extra_stats.tournaments_completed }} completed</div><div class="rank-meta">{{ extra_stats.tournaments_total }} tournaments recorded overall</div></div><div class="rank-value">🏆</div></div>
-            </div>
-            <div class="rank-list">
-                <div class="section-header" style="margin:8px 0 4px;">Trivia corner</div>
-                <div class="rank-row"><div><div class="insight-label">Questions attempted</div><div class="rank-name">{{ extra_stats.trivia_attempts }}</div></div></div>
-                <div class="rank-row"><div><div class="insight-label">Correct title/artist fields</div><div class="rank-name">{{ extra_stats.trivia_correct }}</div></div></div>
-                <div class="rank-row"><div><div class="insight-label">Top recognition rate</div>{% if extra_stats.top_trivia %}<div class="rank-name"><a class="rank-name" href="/song/{{ extra_stats.top_trivia.id }}">{{ extra_stats.top_trivia.title }}</a></div><div class="rank-meta">{{ extra_stats.top_trivia.correct }} correct fields across {{ extra_stats.top_trivia.attempts }} attempts</div>{% else %}<div class="rank-name">No trivia attempts yet</div>{% endif %}</div><div class="rank-value">{% if extra_stats.top_trivia %}{{ extra_stats.top_trivia.accuracy or 0 }}%{% endif %}</div></div>
-            </div>
-        </div>
-    </div>
-
-    <div class="section-wrapper">
-        <div class="section-header">Rating distribution</div>
-        <div class="bar-list">
-            {% set max_band = elo_distribution|map(attribute='count')|max if elo_distribution else 1 %}
-            {% for band in elo_distribution %}
-            <div class="bar-row"><div class="bar-label"><span>{{ band.band }} Elo</span><strong>{{ band.count }} songs</strong></div><div class="bar-track"><div class="bar-fill" style="width: {{ (band.count / max_band * 100) if max_band else 0 }}%;"></div></div></div>
-            {% else %}<div style="color:#888">Add songs to build the distribution.</div>{% endfor %}
-        </div>
-    </div>
-
-    <div class="section-wrapper">
-        <div class="section-header">Genre footprint</div>
-        <div class="bar-list">
-            {% set max_genre = genre_leaders|map(attribute='songs')|max if genre_leaders else 1 %}
-            {% for genre in genre_leaders %}
-            <div class="bar-row"><div class="bar-label"><span>{{ genre.name }}</span><strong>{{ genre.songs }} songs</strong></div><div class="bar-track"><div class="bar-fill" style="width: {{ (genre.songs / max_genre * 100) if max_genre else 0 }}%;"></div></div></div>
-            {% else %}<div style="color:#888">No genre tags yet.</div>{% endfor %}
-        </div>
-    </div>
-
-    <div class="section-wrapper">
-        <div class="section-header">Highest-rated albums by average song Elo</div>
-        <div class="rank-list">
-            {% for album in top_albums_stats %}
-            <div class="rank-row"><div style="display:flex;align-items:center;gap:12px;min-width:0;">{% if album.cover_url %}<img src="{{ album.cover_url }}" class="m-cover" style="margin:0;">{% endif %}<div><a class="rank-name" href="/album/{{ album.id }}">{{ album.title }}</a><div class="rank-meta">{{ album.songs }} tracks</div></div></div><div class="rank-value">{{ album.avg_elo or 0 }} avg Elo</div></div>
-            {% else %}<div style="padding:20px;color:#888">No eligible albums to rank yet.</div>{% endfor %}
-        </div>
-    </div>
-
-    <div class="section-wrapper">
-        <div class="section-header">Recent voting activity</div>
-        <div class="rank-list">
-            {% for activity in recent_activity %}
-            <div class="activity-row"><div><a href="/song/{{ activity.winner_id }}">{{ activity.winner_title or 'Deleted song' }}</a> <span style="color:#777">beat</span> <a href="/song/{{ activity.loser_id }}">{{ activity.loser_title or 'Deleted song' }}</a></div><div class="activity-date">{{ activity.created_at or 'Date not recorded' }}</div></div>
-            {% else %}<div style="padding:20px;color:#888">No voting history yet. Your first vote will start the chronicle.</div>{% endfor %}
-        </div>
-    </div>
+<div class="page-head"><h1 class="song">Global Stats</h1></div>
+<div class="stats">{{ stat('Songs',total_songs) }}{{ stat('Artists',total_artists,'artist') }}{{ stat('Albums',total_albums,'album') }}{{ stat('Votes',total_matches,'blind') }}</div>
+<div class="stats-columns">
+<section class="panel"><div class="section-head"><h2 class="song">Elo Distribution</h2><strong class="song">{{ extra_stats.average_elo }} avg</strong></div>
+{% set max_count = (elo_distribution|map(attribute='count')|max) if elo_distribution else 1 %}
+{% for band in elo_distribution %}<div class="distribution-row"><span>{{ band.band }}</span><div class="distribution-bar"><span style="width:{{ 100*band.count/(max_count or 1) }}%"></span></div><strong>{{ band.count }}</strong></div>{% else %}<div class="empty">No tracks</div>{% endfor %}
+<div class="mini-stats collection-mini"><div><b>{{ extra_stats.songs_never_voted }}</b><small>Unplayed tracks</small></div><div><b>{{ extra_stats.recent_votes }}</b><small>Votes this week</small></div><div><b>{{ extra_stats.songs_with_audio }}</b><small>Audio previews</small></div></div></section>
+<section class="panel"><div class="section-head"><h2>Collection Records</h2></div>
+{% for label, row, value in [('Highest Elo',extra_stats.highest_elo,extra_stats.highest_elo.elo_score|default(0)|round|int),('Lowest Elo',extra_stats.lowest_elo,extra_stats.lowest_elo.elo_score|default(0)|round|int),('Most Wins',extra_stats.most_wins,extra_stats.most_wins.wins|default(0)),('Most Played',most_played,most_played.matches_played|default(0))] %}
+{% if row %}<a class="record-row" href="{{ url_for('song_page',song_id=row.id) }}"><div><small>{{ label }}</small><strong>{{ row.title }}</strong></div><b class="song">{{ value }}</b></a>{% endif %}{% endfor %}
+{% if prolific_artist %}<a class="record-row" href="{{ url_for('artist_page',artist_name=prolific_artist.artist) }}"><div><small>Most Prolific Artist</small><strong class="artist">{{ prolific_artist.artist }}</strong></div><b class="artist">{{ prolific_artist.track_count }} tracks</b></a>{% endif %}
+{% if top_genre %}<a class="record-row" href="{{ url_for('search',type='tags',q=top_genre.name) }}"><div><small>Most Used Tag</small><strong class="tag"># {{ top_genre.name }}</strong></div><b class="tag">{{ top_genre.tag_count }}</b></a>{% endif %}</section>
+<section class="panel recognition-panel"><div class="section-head"><h2 class="recognition">Recognisability</h2><a class="recognition" href="/trivia_stats">View stats ↗</a></div><div class="feature-row"><div><strong>{{ extra_stats.trivia_attempts }} attempts</strong><p>{{ extra_stats.trivia_correct }} / {{ extra_stats.trivia_attempts*2 }} points</p></div><strong class="big recognition">{{ ((100*extra_stats.trivia_correct/(extra_stats.trivia_attempts*2))|round|int|string)+'%' if extra_stats.trivia_attempts else '—' }}</strong></div>
+{% if extra_stats.top_trivia %}<a class="record-row" href="{{ url_for('song_page',song_id=extra_stats.top_trivia.id) }}"><div><small>Most Recognised</small><strong>{{ extra_stats.top_trivia.title }}</strong></div><b class="recognition">{{ extra_stats.top_trivia.accuracy|int }}%</b></a>{% endif %}</section>
+<section class="panel tournament-panel"><div class="section-head"><h2 class="tournament">Tournaments</h2><a class="tournament" href="/tournament_stats">View stats ↗</a></div><div class="mini-stats collection-mini"><div><b class="tournament">{{ extra_stats.tournaments_total }}</b><small>Brackets</small></div><div><b class="tournament">{{ extra_stats.tournaments_completed }}</b><small>Completed</small></div><div><b class="tournament">{{ extra_stats.tournaments_total-extra_stats.tournaments_completed }}</b><small>Unfinished</small></div></div></section>
+<section class="panel"><div class="section-head"><h2>Frequent Matchups</h2><a href="/history">Match history ↗</a></div>{% for match in matchups %}<div class="rivalry"><div class="match-row">{% for row in [match.s1,match.s2] %}{% if loop.index==2 %}<span class="vs-small">VS</span>{% endif %}<a class="match-song" href="{{ url_for('song_page',song_id=row.id) }}">{{ art(row.cover_url) }}<div><strong>{{ row.title }}</strong><small>{{ row.artist or '' }}</small></div></a>{% endfor %}</div><small>{{ match.encounters }} encounters</small></div>{% else %}<div class="empty">No matchups yet</div>{% endfor %}</section>
+<section class="panel"><div class="section-head"><h2 class="album">Album Averages</h2><a class="album" href="/albums">Rankings ↗</a></div>{% for row in top_albums_stats %}<a class="compact-track" href="{{ url_for('album_page',album_title=row.title) }}">{{ art(row.cover_url) }}<span class="compact-copy"><strong>{{ row.title }}</strong><small>{{ row.songs }} tracks</small></span><span class="compact-score album"><b>{{ row.avg_elo|int }}</b><small>Average Elo</small></span></a>{% else %}<div class="empty">No albums</div>{% endfor %}</section>
+</div>
+<section class="panel spaced-panel"><div class="section-head"><h2 class="tag">Top Tags</h2><a class="tag" href="/search?type=tags">All {{ extra_stats.genres_count }} tags ↗</a></div><div class="tag-cloud">{% for tag in genre_leaders %}<a class="tag-chip" href="{{ url_for('search',type='tags',q=tag.name) }}"># {{ tag.name }}<strong>{{ tag.songs }}</strong></a>{% else %}<span class="muted">No tags</span>{% endfor %}</div></section>
+<section class="panel spaced-panel"><div class="section-head"><h2>Recent Activity</h2><a href="/history">View all ↗</a></div>{% for row in recent_activity %}<div class="activity-row"><small>{{ (row.created_at or '')[:10] }}</small><a class="song" href="{{ url_for('song_page',song_id=row.winner_id) }}">{{ row.winner_title }}</a><span class="muted">beat</span><a href="{{ url_for('song_page',song_id=row.loser_id) }}">{{ row.loser_title }}</a></div>{% else %}<div class="empty">No votes yet</div>{% endfor %}</section>
 {% endblock %}

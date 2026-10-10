@@ -5,6 +5,7 @@ import sqlite3
 import os
 from datetime import datetime
 
+from track_numbers import parse_track_number, check_track_position, track_position_conflicts, TrackNumberConflict
 from services import app, DB_NAME, DEV_PIN, admin_required, get_db_connection, git_push, init_db, export_rankings, create_database_backup, get_or_create_album, link_artists_to_song, link_genres_to_song
 @app.route('/dev/login', methods=['GET', 'POST'])
 def dev_login():
@@ -29,170 +30,169 @@ def dev_dashboard():
     return render_template('app_page.html', page='dev')
 
 
+def apple_metadata(track):
+    """Use existing library fields; do not invent positions for multi-disc releases."""
+    disc_count = track.get('discCount', 1) or 1
+    disc_number = track.get('discNumber', 1) or 1
+    source_number = track.get('trackNumber')
+    try:
+        number = parse_track_number(source_number) if int(disc_count) == 1 and int(disc_number) == 1 else None
+    except (ValueError, TypeError):
+        number = None
+    return {
+        'title': track.get('trackName', 'Unknown'),
+        'artist': track.get('artistName', 'Unknown'),
+        'album': track.get('collectionName', ''),
+        'cover_url': track.get('artworkUrl100', '').replace('100x100bb', '300x300bb'),
+        'audio_url': track.get('previewUrl', ''),
+        'track_number': number,
+        'release_date': (track.get('releaseDate') or '')[:10],
+        'genres': track.get('primaryGenreName', ''),
+        'source_track_number': source_number, 'disc_number': disc_number, 'disc_count': disc_count
+    }
+
+
+def apple_lookup_url(link):
+    from urllib.parse import urlsplit, parse_qs, urlencode
+    parsed = urlsplit(link)
+    if parsed.hostname not in ('music.apple.com', 'www.music.apple.com'):
+        raise ValueError('Invalid Apple Music link.')
+    track_id = (parse_qs(parsed.query).get('i') or [None])[0]
+    album_id = re.search(r'(?:id)?(\d+)/?$', parsed.path)
+    identifier = track_id if track_id and track_id.isdigit() else (album_id.group(1) if album_id else None)
+    if not identifier:
+        raise ValueError('Invalid Apple Music link.')
+    region = parsed.path.strip('/').split('/')[0]
+    params = {'id': identifier, 'entity': 'song', 'limit': 200}
+    if re.fullmatch(r'[a-zA-Z]{2}', region):
+        params['country'] = region.lower()
+    return 'https://itunes.apple.com/lookup?' + urlencode(params)
+
+
 @app.route('/api/dev/search_apple')
 @admin_required
 def api_search_apple():
-    """Queries Apple Music for a text search or direct link and returns JSON."""
     query = request.args.get('q', '').strip()
     if not query:
         return jsonify([])
-
-    if "music.apple.com" in query:
-        match = re.search(r'[?&]i=(\d+)', query)
-        if not match:
-            return jsonify({"error": "Invalid link"}), 400
-        url = f"https://itunes.apple.com/lookup?id={match.group(1)}"
-    else:
-        from urllib.parse import urlencode
-        url = 'https://itunes.apple.com/search?' + urlencode({'term':query,'entity':'song','limit':10,'explicit':'Yes'})
-
     try:
+        if 'music.apple.com' in query:
+            url = apple_lookup_url(query)
+        else:
+            from urllib.parse import urlencode
+            url = 'https://itunes.apple.com/search?' + urlencode({'term':query,'entity':'song','limit':10,'explicit':'Yes'})
         response = requests.get(url, timeout=5).json()
-        results = []
-        for track in response.get('results', []):
-            results.append({
-                'title': track.get('trackName', 'Unknown'),
-                'artist': track.get('artistName', 'Unknown'),
-                'album': track.get('collectionName', ''),
-                'cover_url': track.get('artworkUrl100', '').replace('100x100bb', '300x300bb'),
-                'audio_url': track.get('previewUrl', '')
-            })
-        return jsonify(results)
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        return jsonify([apple_metadata(track) for track in response.get('results', [])
+                        if track.get('trackName') and track.get('kind', 'song') == 'song'])
+    except ValueError as exc:
+        return jsonify({'error': str(exc)}), 400
+    except Exception as exc:
+        return jsonify({'error': str(exc)}), 500
+
+
+def song_metadata(data):
+    title = str(data.get('title') or '').strip()
+    if 'music.apple.com' in title:
+        tracks = requests.get(apple_lookup_url(title), timeout=5).json().get('results', [])
+        tracks = [t for t in tracks if t.get('trackName') and t.get('kind', 'song') == 'song']
+        if len(tracks) != 1:
+            raise ValueError('Use Apple Music search to choose a song from this album link.')
+        imported = apple_metadata(tracks[0])
+        # A metadata refresh must retain custom tags and an explicitly supplied
+        # position when Apple cannot provide an album-wide position.
+        genre_names = [g.strip() for g in (str(data.get('genres') or '') + ',' + imported['genres']).split(',') if g.strip()]
+        retained = {}
+        for name in genre_names:
+            retained.setdefault(name.casefold(), name)
+        imported['genres'] = ', '.join(retained.values())
+        if imported['track_number'] is None and data.get('track_number') not in (None, ''):
+            imported['track_number'] = data['track_number']
+        data = {**data, **imported}
+        title = str(data.get('title') or '').strip()
+    if not title:
+        raise ValueError('Title is required.')
+    release_date = str(data.get('release_date') or '').strip()
+    if release_date:
+        try:
+            release_date = datetime.strptime(release_date, '%Y-%m-%d').date().isoformat()
+        except ValueError:
+            raise ValueError('Invalid release date.')
+    return {**data, 'title': title, 'artist':str(data.get('artist') or '').strip(),
+            'album':str(data.get('album') or '').strip() or f'{title} - Single',
+            'cover_url':data.get('cover_url') or '', 'audio_url':data.get('audio_url') or '',
+            'genres':str(data.get('genres') or '').strip(), 'release_date':release_date}
+
+
+def write_song(data, song_id=None):
+    """Resolve metadata and check the final album slot in one transaction."""
+    conn = get_db_connection()
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        old = conn.execute('SELECT * FROM songs WHERE id=?', (song_id,)).fetchone() if song_id is not None else None
+        if song_id is not None and not old:
+            conn.rollback()
+            return jsonify({'message':'Song not found.'}), 404
+        number = parse_track_number(data.get('track_number', old['track_number'] if old else None))
+        if song_id is None:
+            existing = conn.execute('''SELECT s.id FROM songs s JOIN song_artists sa ON s.id=sa.song_id
+                JOIN artists a ON sa.artist_id=a.id WHERE s.title=? COLLATE NOCASE AND a.name LIKE ?''',
+                (data['title'], f"%{data['artist'][:10]}%")).fetchone()
+            if existing:
+                conn.rollback()
+                return jsonify({'message':f"'{data['title']}' by {data['artist']} already exists."}), 400
+        album_id = get_or_create_album(conn, data['album'], data['cover_url'], data['release_date'])
+        check_track_position(conn, album_id, number, song_id)
+        if song_id is None:
+            cursor = conn.execute('''INSERT INTO songs (title,album_id,audio_url,track_number,elo_score,matches_played)
+                VALUES (?,?,?,?,1200,0)''', (data['title'],album_id,data['audio_url'],number))
+            song_id = cursor.lastrowid
+            message = f"Added '{data['title']}'"
+        else:
+            conn.execute('''UPDATE songs SET title=?,album_id=?,audio_url=?,track_number=? WHERE id=?''',
+                (data['title'],album_id,data['audio_url'],number,song_id))
+            conn.execute('DELETE FROM song_artists WHERE song_id=?',(song_id,))
+            conn.execute('DELETE FROM song_genres WHERE song_id=?',(song_id,))
+            message = 'Song updated successfully.'
+        link_artists_to_song(conn, song_id, data['artist'], default_cover=data['cover_url'])
+        link_genres_to_song(conn, song_id, data['genres'])
+        conn.commit()
+        return jsonify({'status':'success','message':message,'song_id':song_id,
+                        'updated_song':{'title':data['title'],'artist':data['artist'],'cover_url':data['cover_url']}})
+    except TrackNumberConflict as exc:
+        conn.rollback()
+        return jsonify({'message':str(exc)}),409
+    except (ValueError,TypeError) as exc:
+        conn.rollback()
+        return jsonify({'message':str(exc)}),400
+    except sqlite3.IntegrityError as exc:
+        conn.rollback()
+        return jsonify({'message':str(exc)}),409
+    finally:
+        conn.close()
 
 
 @app.route('/api/dev/add_song', methods=['POST'])
 @admin_required
 def api_add_song():
-    """Adds a new song, creating and linking albums/artists in the relational database."""
-    data = request.json
-    title = data.get('title', '').strip()
-    artist = data.get('artist', '').strip()
-    album = data.get('album', '').strip()
-    if not album:
-        album = f"{title} - Single"
-    cover_url = data.get('cover_url', '')
-    audio_url = data.get('audio_url', '')
-
-    conn = get_db_connection()
-
-    # Check for duplicate track by same title & primary artist
-    existing = conn.execute('''
-                            SELECT s.id
-                            FROM songs s
-                                     JOIN song_artists sa ON s.id = sa.song_id
-                                     JOIN artists a ON sa.artist_id = a.id
-                            WHERE s.title = ? COLLATE NOCASE
-                              AND a.name LIKE ?
-                            ''', (title, f"%{artist[:10]}%")).fetchone()
-
-    if existing:
-        conn.close()
-        return jsonify({"status": "error", "message": f"'{title}' by {artist} already exists."}), 400
-
-    # 1. Resolve Album
-    album_id = get_or_create_album(conn, album, cover_url)
-
-    # 2. Insert Song
-    cursor = conn.execute('''
-                          INSERT INTO songs (title, album_id, audio_url, elo_score, matches_played)
-                          VALUES (?, ?, ?, 1200, 0)
-                          ''', (title, album_id, audio_url))
-    song_id = cursor.lastrowid
-
-    # 3. Resolve & Link Artists
-    link_artists_to_song(conn, song_id, artist, default_cover=cover_url)
-
-    genres = data.get('genres', '').strip()
-    link_genres_to_song(conn, song_id, genres)
-
-    # 4. Initialize Trivia Stats row
-
-
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "success", "message": f"Added '{title}'"})
+    try:
+        data = song_metadata(request.get_json(silent=True) or {})
+    except ValueError as exc:
+        return jsonify({'message':str(exc)}),400
+    except requests.RequestException:
+        return jsonify({'message':'Apple Music lookup unavailable.'}),502
+    return write_song(data)
 
 
 @app.route('/api/dev/edit_song/<int:song_id>', methods=['POST'])
 @admin_required
 def api_edit_song(song_id):
-    """Updates an existing song and re-links its relational dependencies."""
-    data = request.json
-    title = data.get('title', '').strip()
-    artist = data.get('artist', '').strip()
-    album = data.get('album', '').strip()
-    cover_url = data.get('cover_url', '')
-    audio_url = data.get('audio_url', '')
-
-    # Intercept Apple Music links pasted into the title box
-    if "music.apple.com" in title:
-        match = re.search(r'[?&]i=(\d+)', title)
-        if not match:
-            return jsonify({"status": "error", "message": "Invalid Apple Music link."}), 400
-
-        lookup_url = f"https://itunes.apple.com/lookup?id={match.group(1)}"
-        try:
-            response = requests.get(lookup_url, timeout=5).json()
-            if response['resultCount'] > 0:
-                track = response['results'][0]
-                title = track.get('trackName', 'Unknown')
-                artist = track.get('artistName', 'Unknown')
-                album = track.get('collectionName', '')
-                cover_url = track.get('artworkUrl100', '').replace('100x100bb', '300x300bb')
-                audio_url = track.get('previewUrl', '')
-            else:
-                return jsonify({"status": "error", "message": "Link returned no data."}), 400
-        except Exception as e:
-            return jsonify({"status": "error", "message": str(e)}), 500
-
-    if not album:
-        album = f"{title} - Single"
-
-    if not title:
-        return jsonify({'message':'Title is required.'}),400
     try:
-        track_number=int(data['track_number']) if data.get('track_number') not in ('',None) else None
-        if track_number is not None and track_number<0: raise ValueError()
-    except (ValueError,TypeError): return jsonify({'message':'Invalid track number.'}),400
-    conn = get_db_connection()
-    if not conn.execute('SELECT 1 FROM songs WHERE id=?',(song_id,)).fetchone():
-        conn.close(); return jsonify({'message':'Song not found.'}),404
-    conn.execute('UPDATE songs SET track_number=? WHERE id=?',(track_number,song_id))
-
-    # 1. Update/Link Album
-    album_id = get_or_create_album(conn, album, cover_url)
-
-    # 2. Update Core Song Row
-    conn.execute('''
-                 UPDATE songs
-                 SET title     = ?,
-                     album_id  = ?,
-                     audio_url = ?
-                 WHERE id = ?
-                 ''', (title, album_id, audio_url, song_id))
-
-    # 3. Refresh Artist Links (remove old associations and apply new ones)
-    conn.execute('DELETE FROM song_artists WHERE song_id = ?', (song_id,))
-    link_artists_to_song(conn, song_id, artist, default_cover=cover_url)
-
-    genres = data.get('genres', '').strip()
-    conn.execute('DELETE FROM song_genres WHERE song_id = ?', (song_id,))
-    link_genres_to_song(conn, song_id, genres)
-
-    conn.commit()
-    conn.close()
-
-    return jsonify({
-        "status": "success",
-        "message": "Song updated successfully.",
-        "updated_song": {
-            "title": title,
-            "artist": artist,
-            "cover_url": cover_url
-        }
-    })
+        data = song_metadata(request.get_json(silent=True) or {})
+    except ValueError as exc:
+        return jsonify({'message':str(exc)}),400
+    except requests.RequestException:
+        return jsonify({'message':'Apple Music lookup unavailable.'}),502
+    return write_song(data, song_id)
 
 
 @app.route('/api/dev/delete_song/<int:song_id>', methods=['DELETE'])
@@ -507,7 +507,8 @@ def api_dev_integrity():
     for table,column in (('songs','title'),('artists','name'),('albums','title')):
         duplicates[table]=[dict(r) for r in conn.execute(f'''SELECT LOWER(TRIM({column})) AS key,COUNT(*) AS count,GROUP_CONCAT(id) AS ids
             FROM {table} GROUP BY LOWER(TRIM({column})) HAVING COUNT(*)>1 ORDER BY count DESC LIMIT 50''').fetchall()]
-    conn.close(); return jsonify({'integrity':integrity,'foreign_key_errors':fk,'duplicates':duplicates})
+    conflicts=track_position_conflicts(conn)
+    conn.close(); return jsonify({'integrity':integrity,'foreign_key_errors':fk,'duplicates':duplicates,'track_number_conflicts':conflicts})
 
 
 @app.route('/api/dev/activity', methods=['GET'])

@@ -249,6 +249,8 @@ def init_db():
 
     ''')
     ensure_tournament_schema(conn)
+    from track_numbers import ensure_track_position_checks
+    ensure_track_position_checks(conn)
     history_columns = {row['name'] for row in conn.execute('PRAGMA table_info(history)')}
     if 'created_at' not in history_columns:
         conn.execute('ALTER TABLE history ADD COLUMN created_at DATETIME')
@@ -434,7 +436,7 @@ def create_database_backup(prefix='song_ranker'):
     return backup_path
 
 
-def get_or_create_album(conn, album_title, cover_url=None):
+def get_or_create_album(conn, album_title, cover_url=None, release_date=None):
     """Retrieves an existing album or creates one, updating artwork if missing."""
     title_clean = album_title.strip() if album_title else "Unknown Album"
     album_row = conn.execute('SELECT id, cover_url FROM albums WHERE title = ? COLLATE NOCASE',
@@ -448,6 +450,8 @@ def get_or_create_album(conn, album_title, cover_url=None):
         cursor = conn.execute('INSERT INTO albums (title, cover_url) VALUES (?, ?)', (title_clean, cover_url))
         album_id = cursor.lastrowid
 
+    if release_date:
+        conn.execute("UPDATE albums SET release_date=? WHERE id=? AND COALESCE(release_date,'')=''",(release_date,album_id))
     return album_id
 
 

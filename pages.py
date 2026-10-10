@@ -44,32 +44,14 @@ def search():
     return render_template('app_page.html', page='search')
 
 
-@app.route('/tiers')
-def tier_list():
-    conn = get_db_connection()
-    songs = conn.execute('''
-                         SELECT s.id,
-                                s.title,
-                                s.elo_score,
-                                al.cover_url,
-                                (SELECT GROUP_CONCAT(a2.name, ', ')
-                                 FROM song_artists sa2
-                                          JOIN artists a2 ON sa2.artist_id = a2.id
-                                 WHERE sa2.song_id = s.id) as artist
-                         FROM songs s
-                                  LEFT JOIN albums al ON s.album_id = al.id
-                         ORDER BY s.elo_score DESC
-                         ''').fetchall()
-    conn.close()
+@app.route('/artist_stats')
+def artist_performance():
+    return render_template('app_page.html', page='performance_artists')
 
-    tiers = {
-        'S': [s for s in songs if s['elo_score'] >= 1600],
-        'A': [s for s in songs if 1400 <= s['elo_score'] < 1600],
-        'B': [s for s in songs if 1200 <= s['elo_score'] < 1400],
-        'C': [s for s in songs if 1000 <= s['elo_score'] < 1200],
-        'D': [s for s in songs if s['elo_score'] < 1000]
-    }
-    return render_template('tier_list.html', tiers=tiers)
+
+@app.route('/album_stats')
+def album_performance():
+    return render_template('app_page.html', page='performance_albums')
 
 
 @app.route('/history')
@@ -340,60 +322,24 @@ def album_page(album_title):
 
 @app.route('/tags')
 def tags_index():
-    """Browse all genre tags and the number of songs attached to each."""
-    conn = get_db_connection()
-    tags = conn.execute('''
-        SELECT g.id, g.name, COUNT(DISTINCT sg.song_id) AS song_count,
-               ROUND(AVG(s.elo_score)) AS average_elo
-        FROM genres g
-        LEFT JOIN song_genres sg ON sg.genre_id = g.id
-        LEFT JOIN songs s ON s.id = sg.song_id
-        GROUP BY g.id
-        ORDER BY song_count DESC, g.name COLLATE NOCASE ASC
-    ''').fetchall()
-    conn.close()
-    return render_template('tags_index.html', tags=tags)
+    """The top ten tags, ranked by the shared library impact score."""
+    return render_template('tags_index.html')
 
 
 @app.route('/tag/<path:tag_name>')
 def tag_page(tag_name):
-    """Show all ranked songs attached to a genre/tag, using the library's real data."""
+    """A tag's profile and linked tracks, using the shared collection data."""
     conn = get_db_connection()
-    tag = conn.execute('SELECT id, name FROM genres WHERE name = ? COLLATE NOCASE', (tag_name,)).fetchone()
-    if not tag:
+    try:
+        tag = conn.execute(
+            'SELECT id, name FROM genres WHERE name = ? COLLATE NOCASE',
+            (tag_name,)
+        ).fetchone()
+    finally:
         conn.close()
+    if not tag:
         return "Tag not found.", 404
-
-    songs = conn.execute('''
-        SELECT s.id, s.title, s.elo_score, s.matches_played, s.audio_url,
-               al.title AS album, al.cover_url,
-               (SELECT GROUP_CONCAT(a.name, ', ')
-                FROM song_artists sa JOIN artists a ON a.id = sa.artist_id
-                WHERE sa.song_id = s.id) AS artist,
-               (SELECT GROUP_CONCAT(g2.name, ', ')
-                FROM song_genres sg2 JOIN genres g2 ON g2.id = sg2.genre_id
-                WHERE sg2.song_id = s.id) AS genres
-        FROM song_genres sg
-        JOIN songs s ON s.id = sg.song_id
-        LEFT JOIN albums al ON al.id = s.album_id
-        WHERE sg.genre_id = ?
-        ORDER BY s.elo_score DESC, s.title COLLATE NOCASE ASC
-    ''', (tag['id'],)).fetchall()
-
-    related_tags = conn.execute('''
-        SELECT DISTINCT g2.name
-        FROM song_genres sg
-        JOIN song_genres sg2 ON sg.song_id = sg2.song_id AND sg2.genre_id != sg.genre_id
-        JOIN genres g2 ON g2.id = sg2.genre_id
-        WHERE sg.genre_id = ?
-        ORDER BY g2.name COLLATE NOCASE
-        LIMIT 12
-    ''', (tag['id'],)).fetchall()
-    conn.close()
-    average_elo = round(sum(song['elo_score'] for song in songs) / len(songs)) if songs else 0
-    return render_template('tag_page.html', tag=tag, songs=songs,
-                           song_count=len(songs), average_elo=average_elo,
-                           related_tags=related_tags)
+    return render_template('tag_page.html', tag=tag)
 
 
 @app.route('/trivia_stats')
