@@ -1,65 +1,59 @@
 {% extends "base.html" %}
-
 {% block title %}Match History - Song Ranker{% endblock %}
-
 {% block extra_css %}
-    <style>
-        .title-top { font-size: 3.5em; margin-top: 40px; margin-bottom: 50px; font-weight: 900; letter-spacing: -1px; text-shadow: 0 2px 10px rgba(255, 255, 255, 0.1); }
-        .history-container { max-width: 900px; margin: 0 auto; background-color: #1e1e1e; border-radius: 12px; padding: 10px 20px; box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4); }
-
-        .history-row { display: flex; align-items: center; justify-content: space-between; padding: 20px 10px; border-bottom: 1px solid #333; }
-        .history-row:last-child { border-bottom: none; }
-
-        .side { display: flex; align-items: center; width: 45%; text-decoration: none; transition: transform 0.2s, opacity 0.2s; border-radius: 8px; padding: 10px; }
-        .side:hover { background-color: #2a2a2a; transform: translateY(-2px); }
-
-        .winner-side { justify-content: flex-end; text-align: right; }
-        .loser-side { justify-content: flex-start; text-align: left; opacity: 0.7; }
-        .loser-side:hover { opacity: 1; }
-
-        .cover-art { width: 60px; height: 60px; border-radius: 8px; object-fit: cover; background-color: #2a2a2a; margin: 0 15px; box-shadow: 0 4px 8px rgba(0,0,0,0.3); }
-
-        .song-text { overflow: hidden; white-space: nowrap; }
-        .title { font-size: 1.15em; font-weight: bold; text-overflow: ellipsis; overflow: hidden; color: white; margin-bottom: 4px; }
-        .winner-text { color: var(--color-song); font-weight: 900; }
-        .artist { color: #888; font-size: 0.9em; text-overflow: ellipsis; overflow: hidden; }
-
-        .vs-badge { background-color: #111; color: #666; padding: 6px 12px; border-radius: 6px; font-size: 0.9em; font-weight: 900; border: 1px solid #333; }
-    </style>
+<style>
+.history-page { width:min(100% - 32px, 980px); margin:0 auto; text-align:left; }
+.history-page h1 { margin:22px 0 8px; font-size:clamp(2rem,4vw,3rem); letter-spacing:-.7px; }
+.history-intro { color:var(--text-muted); margin:0 0 24px; }
+.history-container { background:var(--surface-1); border:1px solid #2d2d2d; border-radius:15px; padding:8px 18px; box-shadow:0 12px 30px rgba(0,0,0,.22); }
+.history-row { display:grid; grid-template-columns:minmax(0,1fr) 100px minmax(0,1fr); gap:10px; align-items:center; padding:14px 0; border-bottom:1px solid var(--line-soft); }
+.history-row:last-child { border-bottom:0; }
+.history-mode { grid-column:1 / -1; display:flex; justify-content:center; min-width:0; }
+.side { display:flex; align-items:center; gap:10px; min-width:0; padding:7px; border-radius:9px; text-decoration:none; transition:background .16s,opacity .16s; }
+.side:hover { background:#292929; }
+.winner-side { justify-content:flex-end; text-align:right; }
+.loser-side { justify-content:flex-start; text-align:left; opacity:.82; }
+.loser-side:hover { opacity:1; }
+.cover-art { width:54px; height:54px; flex:0 0 54px; border-radius:8px; object-fit:cover; background:#292929; }
+.song-text { min-width:0; }
+.title { font-size:1rem; font-weight:800; overflow-wrap:anywhere; color:#f5f5f5; line-height:1.3; }
+.winner-text { color:var(--color-song); }
+.artist { color:#929292; font-size:.83rem; overflow-wrap:anywhere; margin-top:3px; }
+.vs-badge { justify-self:center; background:#111; color:#888; padding:6px 10px; border-radius:7px; font-size:.76rem; font-weight:900; border:1px solid #333; }
+.history-empty { text-align:center; color:#929292; padding:34px 12px; }
+@media(max-width:620px) {
+ .history-page { width:calc(100% - 22px); }
+ .history-container { padding:5px 8px; }
+ .history-row { grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:3px; padding:12px 0; }
+ .history-mode { grid-column:1 / -1; }
+ .side { padding:5px 2px; gap:5px; }
+ .cover-art { width:32px; height:32px; flex-basis:32px; }
+ .title { font-size:.78rem; }
+ .artist { font-size:.69rem; }
+ .vs-badge { padding:4px 5px; font-size:.65rem; }
+ .mode-pill { font-size:.6rem; padding:4px 7px; }
+}
+</style>
 {% endblock %}
-
 {% block content %}
-    <div class="title-top">Recent Match History</div>
-
-    <div class="history-container">
-        {% for match in history %}
-        <div class="history-row">
-
-            <!-- Winner Side -->
-            <a href="/song/{{ match.winner_id }}" class="side winner-side">
-                <div class="song-text">
-                    <div class="title winner-text" title="{{ match.winner_title }}">🏆 {{ match.winner_title }}</div>
-                    <div class="artist">{{ match.winner_artist }}</div>
-                </div>
-                <img src="{{ match.winner_cover }}" alt="Cover" class="cover-art" style="border: 2px solid var(--color-song);">
-            </a>
-
-            <div class="vs-badge">VS</div>
-
-            <!-- Loser Side -->
-            <a href="/song/{{ match.loser_id }}" class="side loser-side">
-                <img src="{{ match.loser_cover }}" alt="Cover" class="cover-art">
-                <div class="song-text">
-                    <div class="title" title="{{ match.loser_title }}">{{ match.loser_title }}</div>
-                    <div class="artist">{{ match.loser_artist }}</div>
-                </div>
-            </a>
-
-        </div>
-        {% else %}
-        <div style="text-align: center; color: #888; padding: 30px 0;">
-            No match history found. Start voting!
-        </div>
-        {% endfor %}
-    </div>
+<div class="history-page">
+  <h1>Recent Match History</h1>
+  <p class="history-intro">Every result links to both song profiles. Match mode is labelled separately so it never crowds the song details.</p>
+  <div class="history-container">
+    {% for match in history %}
+    <article class="history-row">
+      <div class="history-mode"><span class="mode-pill {% if match.mode == 'blind' %}blind{% else %}nonblind{% endif %}">{% if match.mode == 'blind' %}BLIND MATCH{% else %}NON-BLIND MATCH{% endif %}</span></div>
+      <a href="/song/{{ match.winner_id }}" class="side winner-side" aria-label="Winning song: {{ match.winner_title }}">
+        <div class="song-text"><div class="title winner-text" title="{{ match.winner_title }}">🏆 {{ match.winner_title }}</div><div class="artist">{{ match.winner_artist or 'Unknown artist' }}</div></div>
+        <img src="{{ match.winner_cover or '' }}" alt="" class="cover-art" loading="lazy">
+      </a>
+      <div class="vs-badge" aria-hidden="true">VS</div>
+      <a href="/song/{{ match.loser_id }}" class="side loser-side" aria-label="Other song: {{ match.loser_title }}">
+        <img src="{{ match.loser_cover or '' }}" alt="" class="cover-art" loading="lazy">
+        <div class="song-text"><div class="title" title="{{ match.loser_title }}">{{ match.loser_title }}</div><div class="artist">{{ match.loser_artist or 'Unknown artist' }}</div></div>
+      </a>
+    </article>
+    {% else %}<div class="history-empty">No match history found yet. Start voting to create the first result.</div>{% endfor %}
+  </div>
+</div>
 {% endblock %}

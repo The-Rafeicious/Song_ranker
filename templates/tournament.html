@@ -20,15 +20,6 @@
         text-align: left;
     }
     .form-group { margin-bottom: 25px; }
-    #saved-tournaments { max-width: 760px; margin: 30px auto 0; text-align: left; }
-    .saved-tournament { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 20px; margin-top: 12px; background: #1e1e1e; border: 1px solid #333; border-radius: 12px; }
-    .saved-tournament-info { min-width: 0; }
-    .saved-tournament-title { font-weight: 900; color: white; margin-bottom: 5px; }
-    .saved-tournament-meta { color: #999; font-size: 0.9em; }
-    .resume-btn { flex: 0 0 auto; background: var(--color-song); color: white; border: 0; border-radius: 24px; padding: 12px 20px; font-weight: 900; cursor: pointer; }
-    .resume-btn:disabled { opacity: 0.5; cursor: wait; }
-    .match-error { color: #ff6675; font-weight: bold; margin: 20px auto; max-width: 700px; }
-    @media (max-width: 600px) { #setup-phase { padding: 24px; } .saved-tournament { align-items: flex-start; flex-direction: column; } .song-card { width: min(320px, 90vw); } .cover-container { height: 280px; } }
     .form-group label { display: block; color: #888; font-weight: 900; text-transform: uppercase; font-size: 0.9em; margin-bottom: 10px; }
     .form-select {
         width: 100%; padding: 15px; border-radius: 10px; border: 1px solid #333;
@@ -45,43 +36,23 @@
     .start-btn:hover { background-color: #1ed760; transform: translateY(-2px); box-shadow: 0 8px 16px rgba(29, 185, 84, 0.3); }
     .start-btn:disabled { background-color: #333; color: #666; cursor: not-allowed; transform: none; box-shadow: none; }
 
+    #saved-tournaments { max-width: 760px; margin: 30px auto 0; text-align: left; }
+    .saved-tournament { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 16px 20px; margin-top: 12px; background: #1e1e1e; border: 1px solid #333; border-radius: 12px; }
+    .saved-tournament-info { min-width: 0; }
+    .saved-tournament-title { font-weight: 900; color: white; margin-bottom: 5px; }
+    .saved-tournament-meta { color: #999; font-size: 0.9em; }
+    .resume-btn { flex: 0 0 auto; background: var(--color-song); color: white; border: 0; border-radius: 24px; padding: 12px 20px; font-weight: 900; cursor: pointer; }
+    .resume-btn:disabled { opacity: 0.5; cursor: wait; }
+    .match-error { color: #ff6675; font-weight: bold; margin: 20px auto; max-width: 700px; }
+
     /* --- MATCH PHASE --- */
     #match-phase { display: none; }
-
     .bracket-status {
         background-color: #1a1a1a; border: 1px solid #333; padding: 15px 30px;
         border-radius: 30px; display: inline-block; margin-bottom: 40px;
         font-weight: 900; color: white; font-size: 1.2em; text-transform: uppercase; letter-spacing: 2px;
         box-shadow: 0 4px 10px rgba(0,0,0,0.5);
     }
-
-    .matchup-container { display: flex; justify-content: center; align-items: center; gap: 50px; flex-wrap: wrap; }
-
-    .song-card {
-        background: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, #1e1e1e 100%);
-        padding: 25px; border-radius: 16px; width: 320px; border: 1px solid #333;
-        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5); transition: transform 0.2s, border-color 0.2s;
-    }
-    .song-card:hover { transform: translateY(-5px); border-color: var(--color-song); box-shadow: 0 15px 30px var(--color-song-bg); }
-
-    .cover-container {
-        position: relative; width: 100%; height: 320px; margin-bottom: 25px;
-        border-radius: 8px; overflow: hidden; background-color: #2a2a2a;
-        cursor: pointer; box-shadow: 0 8px 16px rgba(0,0,0,0.6);
-    }
-    .cover-art { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.2s, transform 0.3s; }
-    .cover-container:hover .cover-art { opacity: 0.4; transform: scale(1.05); }
-
-    .play-overlay {
-        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-        font-size: 5em; color: rgba(255, 255, 255, 0.95); text-shadow: 0 4px 12px rgba(0,0,0,0.8);
-        pointer-events: none; opacity: 0; transition: 0.2s;
-    }
-    .cover-container:hover .play-overlay, .play-overlay.playing { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
-
-    .song-title { font-size: 1.6em; font-weight: 900; margin: 0 0 10px 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .song-artist { color: #b3b3b3; font-size: 1.1em; margin-bottom: 25px; font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .vs-text { font-size: 3em; font-weight: 900; color: #444; margin: 0 10px; text-shadow: 0 2px 4px rgba(0,0,0,0.5); }
 
     /* --- WINNER PHASE --- */
     #winner-phase { display: none; margin-top: 20px; animation: slideUp 0.5s ease-out; }
@@ -95,7 +66,8 @@
     .champ-cover { width: 300px; height: 300px; border-radius: 12px; object-fit: cover; box-shadow: 0 10px 30px rgba(0,0,0,0.8); margin-bottom: 25px; border: 4px solid var(--color-song); }
     .champ-title { font-size: 2.2em; font-weight: 900; margin: 0 0 5px 0; }
     .champ-artist { color: #ccc; font-size: 1.2em; font-weight: bold; margin-bottom: 20px; }
-    .champ-elo { font-size: 1.5em; font-weight: 900; color: var(--color-song); }
+
+    @media (max-width: 600px) { #setup-phase { padding: 24px; } .saved-tournament { align-items: flex-start; flex-direction: column; } .song-card { width: min(320px, 90vw); } .cover-container { height: 280px; } }
 </style>
 {% endblock %}
 
@@ -142,6 +114,17 @@
             </select>
         </div>
 
+        <div class="form-group" style="display: flex; justify-content: space-between; align-items: center; background: #242424; padding: 18px 20px; border-radius: 10px; border: 1px solid #333;">
+            <div style="text-align: left;">
+                <label style="margin: 0; font-size: 1.1em; color: white;">Blind Mode</label>
+                <div style="color: #888; font-size: 0.85em; margin-top: 4px; font-weight: normal;">Hide song identities during matchups</div>
+            </div>
+            <label class="switch">
+                <input type="checkbox" id="t-blind">
+                <span class="slider"></span>
+            </label>
+        </div>
+
         <button class="start-btn" id="generate-btn" onclick="generateTournament()">Generate Bracket</button>
         <div id="setup-error" style="color: #e22134; margin-top: 15px; font-weight: bold; text-align: center; display: none;"></div>
     </div>
@@ -160,29 +143,69 @@
         <div class="matchup-container">
             <!-- Track 1 -->
             <div class="song-card">
-                <div class="cover-container" onclick="toggleAudio('audio1', 'btn1')">
-                    <img id="cover1" src="" class="cover-art">
-                    <div class="play-overlay" id="btn1">▶</div>
+                <!-- Standard UI -->
+                <div id="s1-standard">
+                    <div class="cover-container" onclick="toggleAudio('audio1', 'btn1')">
+                        <img id="cover1" src="" class="cover-art">
+                        <div class="play-overlay" id="btn1">▶</div>
+                    </div>
+                    <div class="song-title" id="title1"></div>
+                    <div class="song-artist" id="artist1"></div>
                 </div>
-                <div class="song-title" id="title1"></div>
-                <div class="song-artist" id="artist1"></div>
+                <!-- Blind UI -->
+                <div id="s1-blind" style="display: none;">
+                    <div class="mystery-cover" id="blind-btn1" onclick="toggleAudio('audio1', 'blind-btn1')">?</div>
+                    <div class="track-label">Track A</div>
+                </div>
+
                 <audio id="audio1" src=""></audio>
-                <button class="start-btn" id="vote-btn-1" onclick="castVote(0)">Vote</button>
+                <button class="vote-btn" id="vote-btn-1" onclick="castVote(0)">Vote</button>
             </div>
 
             <div class="vs-text">VS</div>
 
             <!-- Track 2 -->
             <div class="song-card">
-                <div class="cover-container" onclick="toggleAudio('audio2', 'btn2')">
-                    <img id="cover2" src="" class="cover-art">
-                    <div class="play-overlay" id="btn2">▶</div>
+                <!-- Standard UI -->
+                <div id="s2-standard">
+                    <div class="cover-container" onclick="toggleAudio('audio2', 'btn2')">
+                        <img id="cover2" src="" class="cover-art">
+                        <div class="play-overlay" id="btn2">▶</div>
+                    </div>
+                    <div class="song-title" id="title2"></div>
+                    <div class="song-artist" id="artist2"></div>
                 </div>
-                <div class="song-title" id="title2"></div>
-                <div class="song-artist" id="artist2"></div>
+                <!-- Blind UI -->
+                <div id="s2-blind" style="display: none;">
+                    <div class="mystery-cover" id="blind-btn2" onclick="toggleAudio('audio2', 'blind-btn2')">?</div>
+                    <div class="track-label">Track B</div>
+                </div>
+
                 <audio id="audio2" src=""></audio>
-                <button class="start-btn" id="vote-btn-2" onclick="castVote(1)">Vote</button>
+                <button class="vote-btn" id="vote-btn-2" onclick="castVote(1)">Vote</button>
             </div>
+        </div>
+    </div>
+
+    <!-- REVEAL MODAL (Uses styles moved to style.css) -->
+    <div class="modal-overlay" id="reveal-modal">
+        <div class="modal">
+            <div class="modal-title">The Reveal</div>
+            <div class="reveal-grid">
+                <div class="reveal-card winner">
+                    <div style="color: var(--color-song); font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">🏆 Winner</div>
+                    <img id="win-cover" src="">
+                    <div class="reveal-title" id="win-title"></div>
+                    <div class="reveal-artist" id="win-artist"></div>
+                </div>
+                <div class="reveal-card loser">
+                    <div style="color: #e22134; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px;">💀 Loser</div>
+                    <img id="lose-cover" src="">
+                    <div class="reveal-title" id="lose-title"></div>
+                    <div class="reveal-artist" id="lose-artist"></div>
+                </div>
+            </div>
+            <button class="next-btn" onclick="nextMatchAfterReveal()">Next Match</button>
         </div>
     </div>
 
@@ -194,7 +217,6 @@
             <img id="champ-cover" src="" class="champ-cover">
             <div class="champ-title" id="champ-title"></div>
             <div class="champ-artist" id="champ-artist"></div>
-            <div class="champ-elo" id="champ-elo"></div>
         </div>
         <button class="start-btn" onclick="location.reload()" style="max-width: 300px; margin-top: 40px;">Play Again</button>
     </div>
@@ -216,15 +238,19 @@
     function toggleAudio(targetId, btnId) {
         const currentAudio = document.getElementById(targetId);
         const currentBtn = document.getElementById(btnId);
+        const isBlindBtn = btnId.includes('blind');
+
         const otherAudio = targetId === 'audio1' ? audio2 : audio1;
-        const otherBtn = targetId === 'audio1' ? document.getElementById('btn2') : document.getElementById('btn1');
+        const otherBtn = targetId === 'audio1'
+            ? document.getElementById(isBlindBtn ? 'blind-btn2' : 'btn2')
+            : document.getElementById(isBlindBtn ? 'blind-btn1' : 'btn1');
 
         if (!currentAudio.src || currentAudio.src.endsWith('null')) return;
 
         if (currentAudio.paused) {
             if (!otherAudio.paused) {
                 otherAudio.pause();
-                otherBtn.innerText = '▶';
+                otherBtn.innerText = isBlindBtn ? '?' : '▶';
                 otherBtn.classList.remove('playing');
             }
             currentAudio.play();
@@ -232,13 +258,19 @@
             currentBtn.classList.add('playing');
         } else {
             currentAudio.pause();
-            currentBtn.innerText = '▶';
+            currentBtn.innerText = isBlindBtn ? '?' : '▶';
             currentBtn.classList.remove('playing');
         }
     }
 
-    audio1.addEventListener('ended', () => { document.getElementById('btn1').innerText = '▶'; document.getElementById('btn1').classList.remove('playing'); });
-    audio2.addEventListener('ended', () => { document.getElementById('btn2').innerText = '▶'; document.getElementById('btn2').classList.remove('playing'); });
+    audio1.addEventListener('ended', () => {
+        document.getElementById('btn1').innerText = '▶'; document.getElementById('btn1').classList.remove('playing');
+        document.getElementById('blind-btn1').innerText = '?'; document.getElementById('blind-btn1').classList.remove('playing');
+    });
+    audio2.addEventListener('ended', () => {
+        document.getElementById('btn2').innerText = '▶'; document.getElementById('btn2').classList.remove('playing');
+        document.getElementById('blind-btn2').innerText = '?'; document.getElementById('blind-btn2').classList.remove('playing');
+    });
 
     // UI Toggles
     function toggleScopeInputs() {
@@ -284,7 +316,9 @@
         if (tParams.scope === 'artist') tParams.scope_id = document.getElementById('t-artist').value;
         if (tParams.scope === 'album') tParams.scope_id = document.getElementById('t-album').value;
 
-        const url = `/api/generate_bracket?size=${tParams.size}&scope=${encodeURIComponent(tParams.scope)}&scope_id=${encodeURIComponent(tParams.scope_id || '')}`;
+        const isBlind = document.getElementById('t-blind').checked;
+
+        const url = `/api/generate_bracket?size=${tParams.size}&scope=${encodeURIComponent(tParams.scope)}&scope_id=${encodeURIComponent(tParams.scope_id || '')}&is_blind=${isBlind}`;
         try {
             const res = await fetch(url);
             const data = await res.json();
@@ -324,17 +358,16 @@
         document.getElementById('setup-phase').style.display = 'none';
         document.getElementById('saved-tournaments').style.display = 'none';
         document.getElementById('page-subtitle').style.display = 'none';
-        document.getElementById('page-title').innerText = 'Bracket Tournament';
+        document.getElementById('page-title').innerText = currentTournament.is_blind ? 'Blind Tournament' : 'Bracket Tournament';
         document.getElementById('winner-phase').style.display = 'none';
         document.getElementById('match-phase').style.display = 'block';
         renderNextMatch();
     }
 
     function renderNextMatch() {
-        // The database is the source of truth, so a refresh can never lose a vote.
         const pending = tournamentMatches
             .filter(match => match.status === 'pending')
-            .sort((a, b) => a.round_number - b.round_number || a.match_number - b.match_number);
+            .sort((a, b) => a.round_number - b.round_number); // Group by round
 
         if (!pending.length) {
             const finalMatch = [...tournamentMatches].sort((a, b) => b.round_number - a.round_number || b.match_number - a.match_number)[0];
@@ -344,7 +377,13 @@
             return;
         }
 
-        activeMatch = pending[0];
+        // Get all matches in the earliest pending round
+        const currentRound = pending[0].round_number;
+        const pendingInRound = pending.filter(m => m.round_number === currentRound);
+
+        // Randomize the match selection so the bracket paths are obscured
+        activeMatch = pendingInRound[Math.floor(Math.random() * pendingInRound.length)];
+
         const t1 = tournamentTracks[String(activeMatch.song1_id)];
         const t2 = tournamentTracks[String(activeMatch.song2_id)];
         if (!t1 || !t2) {
@@ -356,8 +395,18 @@
         const completedInRound = matchesInRound.filter(m => m.status === 'completed').length;
         const totalTracksRemaining = matchesInRound.length * 2;
         document.getElementById('bracket-status').innerText = `${getRoundName(totalTracksRemaining)} - Match ${completedInRound + 1}/${matchesInRound.length}`;
+
         populateTrack(1, t1);
         populateTrack(2, t2);
+
+        // --- BLIND MODE VISUAL TOGGLE ---
+        const isBlind = currentTournament.is_blind;
+        document.getElementById('s1-standard').style.display = isBlind ? 'none' : 'block';
+        document.getElementById('s1-blind').style.display = isBlind ? 'block' : 'none';
+        document.getElementById('s2-standard').style.display = isBlind ? 'none' : 'block';
+        document.getElementById('s2-blind').style.display = isBlind ? 'block' : 'none';
+        // --------------------------------
+
         if (volumeSlider) { audio1.volume = volumeSlider.value; audio2.volume = volumeSlider.value; }
         document.getElementById('vote-btn-1').disabled = false;
         document.getElementById('vote-btn-2').disabled = false;
@@ -368,12 +417,21 @@
         document.getElementById(`cover${cardNumber}`).src = track.cover_url || '';
         document.getElementById(`title${cardNumber}`).innerText = track.title || 'Unknown track';
         document.getElementById(`artist${cardNumber}`).innerText = track.artist || 'Unknown artist';
+
         const audio = document.getElementById(`audio${cardNumber}`);
         audio.src = track.audio_url || '';
+
+        // Handle standard play button
         const playButton = document.getElementById(`btn${cardNumber}`);
         playButton.style.opacity = track.audio_url ? '0' : '0.5';
         playButton.innerText = track.audio_url ? '▶' : 'No Audio';
         playButton.classList.remove('playing');
+
+        // Handle blind play button
+        const blindButton = document.getElementById(`blind-btn${cardNumber}`);
+        blindButton.style.opacity = track.audio_url ? '1' : '0.5';
+        blindButton.innerText = track.audio_url ? '?' : 'No Audio';
+        blindButton.classList.remove('playing');
     }
 
     async function castVote(winnerIndex) {
@@ -382,14 +440,17 @@
         document.getElementById('vote-btn-1').disabled = true;
         document.getElementById('vote-btn-2').disabled = true;
         audio1.pause(); audio2.pause();
-        document.getElementById('btn1').innerText = '▶';
-        document.getElementById('btn2').innerText = '▶';
-        document.getElementById('btn1').classList.remove('playing');
-        document.getElementById('btn2').classList.remove('playing');
+
+        // Reset all play buttons
+        document.getElementById('btn1').innerText = '▶'; document.getElementById('btn1').classList.remove('playing');
+        document.getElementById('btn2').innerText = '▶'; document.getElementById('btn2').classList.remove('playing');
+        document.getElementById('blind-btn1').innerText = '?'; document.getElementById('blind-btn1').classList.remove('playing');
+        document.getElementById('blind-btn2').innerText = '?'; document.getElementById('blind-btn2').classList.remove('playing');
         showMatchError('');
 
         const winner = tournamentTracks[String(winnerIndex === 0 ? activeMatch.song1_id : activeMatch.song2_id)];
         const loser = tournamentTracks[String(winnerIndex === 0 ? activeMatch.song2_id : activeMatch.song1_id)];
+
         try {
             const res = await fetch('/api/tournament_vote', {
                 method: 'POST',
@@ -403,14 +464,34 @@
             });
             const data = await res.json();
             if (!res.ok || data.error) throw new Error(data.error || 'Could not save your vote.');
+
             tournamentMatches = data.matches || tournamentMatches;
-            renderNextMatch();
+
+            if (currentTournament.is_blind) {
+                // Populate and show the Reveal Modal if it is a blind tournament
+                document.getElementById('win-cover').src = winner.cover_url || '';
+                document.getElementById('win-title').innerText = winner.title || 'Unknown track';
+                document.getElementById('win-artist').innerText = winner.artist || 'Unknown artist';
+
+                document.getElementById('lose-cover').src = loser.cover_url || '';
+                document.getElementById('lose-title').innerText = loser.title || 'Unknown track';
+                document.getElementById('lose-artist').innerText = loser.artist || 'Unknown artist';
+
+                document.getElementById('reveal-modal').style.display = 'flex';
+            } else {
+                renderNextMatch();
+            }
         } catch (e) {
             isVoting = false;
             document.getElementById('vote-btn-1').disabled = false;
             document.getElementById('vote-btn-2').disabled = false;
             showMatchError(`${e.message || 'Could not save your vote.'} Your choice has not been advanced. Please try again.`);
         }
+    }
+
+    function nextMatchAfterReveal() {
+        document.getElementById('reveal-modal').style.display = 'none';
+        renderNextMatch();
     }
 
     async function finishTournament(champion) {
@@ -443,7 +524,6 @@
         document.getElementById('champ-cover').src = champion.cover_url || '';
         document.getElementById('champ-title').innerText = champion.title || 'Unknown track';
         document.getElementById('champ-artist').innerText = champion.artist || 'Unknown artist';
-        document.getElementById('champ-elo').innerText = 'Final Elo: ' + parseInt(champion.elo_score || 0, 10);
         document.getElementById('winner-phase').style.display = 'block';
     }
 
@@ -451,7 +531,8 @@
         const scopeNames = { global: 'Global', artist: 'Artist exclusive', album: 'Album exclusive' };
         const done = tournament.matches_completed || 0;
         const total = tournament.matches_created || tournament.size - 1;
-        return `${tournament.size} tracks · ${scopeNames[tournament.scope_type] || tournament.scope_type} · ${done}/${total} matches played`;
+        const mode = tournament.is_blind ? 'Blind' : 'Standard';
+        return `${tournament.size} tracks · ${mode} · ${scopeNames[tournament.scope_type] || tournament.scope_type} · ${done}/${total} matches`;
     }
 
     async function loadSavedTournaments() {
@@ -494,7 +575,6 @@
             });
             section.style.display = 'block';
         } catch (e) {
-            // Starting a new tournament remains available if the saved list cannot load.
             section.style.display = 'none';
         }
     }

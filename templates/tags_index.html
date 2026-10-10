@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Genre Tags · Song Ranker{% endblock %}
+{% block extra_css %}
+<style>
+.tags-page { width:min(100% - 32px,980px); margin:0 auto; text-align:left; }
+.tags-hero { padding:clamp(20px,4vw,34px); border-radius:16px; border:1px solid rgba(242,196,76,.24); background:linear-gradient(120deg,rgba(242,196,76,.1),#1b1b1b 65%); margin-bottom:24px; }
+.tags-hero .kicker { color:var(--color-genre); font-size:.72rem; font-weight:900; letter-spacing:1.4px; text-transform:uppercase; }
+.tags-hero h1 { margin:8px 0; font-size:clamp(2rem,5vw,3rem); }
+.tags-hero p { margin:0; color:#aaa; line-height:1.6; }
+.tags-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; }
+.tag-card { min-width:0; display:flex; flex-direction:column; gap:8px; padding:17px; border:1px solid #303030; border-radius:12px; background:#191919; text-decoration:none; color:#f5f5f5; transition:transform .16s,border-color .16s,background .16s; }
+.tag-card:hover { transform:translateY(-2px); border-color:rgba(242,196,76,.5); background:#202020; }
+.tag-card-name { color:#f2cf70; font-weight:850; font-size:1.05rem; overflow-wrap:anywhere; }
+.tag-card-meta { color:#929292; font-size:.82rem; }
+.tags-empty { color:#888; padding:28px; text-align:center; }
+@media(max-width:560px) { .tags-page { width:calc(100% - 22px); } .tags-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; } .tag-card { padding:13px; } }
+</style>
+{% endblock %}
+{% block content %}
+<main class="tags-page">
+  <section class="tags-hero"><span class="kicker">Explore the library</span><h1>Genre Tags</h1><p>Browse songs by their linked genres and tags. Choose any tag to see its songs ranked by current Elo.</p></section>
+  <section class="tags-grid">
+    {% for tag in tags %}<a class="tag-card" href="/tag/{{ tag.name|urlencode }}"><span class="tag-card-name">#{{ tag.name }}</span><span class="tag-card-meta">{{ tag.song_count }} song{{ '' if tag.song_count == 1 else 's' }} · Avg Elo {{ tag.average_elo or 0 }}</span></a>
+    {% else %}<div class="tags-empty">No genre tags have been added yet.</div>{% endfor %}
+  </section>
+</main>
+{% endblock %}

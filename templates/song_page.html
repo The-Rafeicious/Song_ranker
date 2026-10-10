@@ -69,6 +69,46 @@
         color: #f2c44c !important;
     }
 
+
+    .profile-container { max-width: 900px; padding: 24px 28px; gap: 26px; margin-bottom: 12px; align-items: center; }
+    .cover-wrapper { width: 210px; height: 210px; border-radius: 12px; }
+    .details-col { min-width:0; }
+    .title { font-size: clamp(1.8rem, 3.2vw, 2.5rem); overflow-wrap:anywhere; margin-bottom:8px; }
+    .metadata-row { font-size:1rem; line-height:1.55; white-space:normal; overflow-wrap:anywhere; margin-bottom:12px; }
+    .genres-row { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:0; }
+    .genres-row .entity-badge { margin:0; font-size:.76rem; padding:5px 9px; }
+    .song-stats-row { max-width:900px; margin:0 auto 28px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:10px; }
+    .song-stat { min-width:0; padding:15px 17px; border-radius:11px; background:linear-gradient(180deg,#202020,#181818); border:1px solid rgba(29,185,84,.16); text-align:left; }
+    .song-stat .stat-label { font-size:.72rem; letter-spacing:.7px; }
+    .song-stat .stat-value { display:block; font-size:1.55rem; overflow-wrap:anywhere; }
+    .song-stat .stat-value.secondary { color:#f2f2f2; }
+    .trivia-container,.history-container,.tournament-container { max-width:900px; }
+    .history-container .history-row { display:grid; grid-template-columns:minmax(0,1fr) 100px minmax(0,1fr); align-items:center; gap:10px; }
+    .history-container .side { width:auto; flex:initial; padding:7px; min-width:0; }
+    .history-container .winner-side { justify-content:flex-end; }
+    .history-container .loser-side { justify-content:flex-start; }
+    .history-container .side > div { min-width:0; overflow:hidden; }
+    .history-container .hist-title { overflow-wrap:anywhere; white-space:normal; }
+    .history-container .hist-cover { flex:0 0 44px; width:44px; height:44px; margin:0 10px; }
+    .history-mode { grid-column:1 / -1; display:flex; justify-content:center; min-width:0; }
+    @media(max-width:650px) {
+      .profile-container { padding:18px; gap:17px; align-items:center; }
+      .cover-wrapper { width:128px; height:128px; }
+      .details-col { width:100%; }
+      .title { font-size:1.55rem; }
+      .entity-badge.badge-song { font-size:.68rem; padding:3px 8px; }
+      .song-stats-row { grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin-bottom:22px; }
+      .song-stat { padding:12px; }
+      .song-stat .stat-value { font-size:1.3rem; }
+      .history-container .history-row { grid-template-columns:minmax(0,1fr) auto minmax(0,1fr); gap:5px; }
+      .history-container .side { padding:4px !important; }
+      .history-container .hist-cover { width:30px; height:30px; flex-basis:30px; margin:0 5px; }
+      .history-container .hist-title { font-size:.78rem; }
+      .history-container .side div[style] { font-size:.72rem !important; }
+      .history-mode { grid-column:1 / -1; }
+      .mode-pill { font-size:.62rem; padding:4px 7px; }
+    }
+
 </style>
 {% endblock %}
 
@@ -95,22 +135,23 @@
             </div>
 
             {% if song.genres %}
-            <div class="genres-row">
+            <div class="genres-row" aria-label="Song genres">
                 {% for genre in song.genres.split(',') %}
                     {% if genre.strip() %}
-                        <span class="entity-badge badge-genre">#{{ genre.strip() }}</span>
+                        <a class="entity-badge badge-genre tag-link" href="/tag/{{ genre.strip()|urlencode }}">#{{ genre.strip() }}</a>
                     {% endif %}
                 {% endfor %}
             </div>
             {% endif %}
 
-            <div class="stats-grid">
-                <div><span class="stat-label">Current Elo</span><span class="stat-value">{{ song.elo_score|int }}</span></div>
-                <div><span class="stat-label">Global Rank</span><span class="stat-value secondary">#{{ current_rank }}</span></div>
-                <div><span class="stat-label">Peak Elo</span><span class="stat-value" style="color: #b3b3b3;">{{ song.highest_elo|int if song.highest_elo else song.elo_score|int }}</span></div>
-                <div><span class="stat-label">Matches</span><span class="stat-value secondary">{{ song.matches_played }}</span></div>
-            </div>
         </div>
+    </div>
+
+    <div class="song-stats-row" aria-label="Song ranking statistics">
+        <div class="song-stat"><span class="stat-label">Current Elo</span><span class="stat-value">{{ song.elo_score|int }}</span></div>
+        <div class="song-stat"><span class="stat-label">Global Rank</span><span class="stat-value secondary">#{{ current_rank }}</span></div>
+        <div class="song-stat"><span class="stat-label">Peak Elo</span><span class="stat-value secondary">{{ song.highest_elo|int if song.highest_elo else song.elo_score|int }}</span></div>
+        <div class="song-stat"><span class="stat-label">Matches</span><span class="stat-value secondary">{{ song.matches_played }}</span></div>
     </div>
 
     <div class="trivia-container">
@@ -167,6 +208,7 @@
         <h3 style="margin-top: 0; text-transform: uppercase; color: #888; font-size: 1em;">Last 5 Matches</h3>
         {% for match in history %}
         <div class="history-row">
+            <div class="history-mode"><span class="mode-pill {% if match.mode == 'blind' %}blind{% else %}nonblind{% endif %}">{% if match.mode == 'blind' %}BLIND MATCH{% else %}NON-BLIND MATCH{% endif %}</span></div>
             <a href="/song/{{ match.winner_id }}" class="side winner-side" style="text-decoration: none;">
                 <div>
                     <div class="hist-title winner-text">🏆 {{ match.winner_title }}</div>

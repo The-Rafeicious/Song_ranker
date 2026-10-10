@@ -143,7 +143,8 @@ def ensure_tournament_schema(conn):
         'updated_at': 'DATETIME',
         'completed_at': 'DATETIME',
         'current_round': 'INTEGER NOT NULL DEFAULT 1',
-        'points_version': 'INTEGER NOT NULL DEFAULT 1'
+        'points_version': 'INTEGER NOT NULL DEFAULT 1',
+        'is_blind': 'BOOLEAN NOT NULL DEFAULT 0'
     }
     for name, declaration in additions.items():
         if name not in columns:
@@ -219,6 +220,7 @@ def init_db():
             winner_id INTEGER,
             loser_id INTEGER,
             is_tournament_match BOOLEAN DEFAULT 0,
+            mode TEXT NOT NULL DEFAULT 'standard',
             FOREIGN KEY(winner_id) REFERENCES songs(id),
             FOREIGN KEY(loser_id) REFERENCES songs(id)
         );
@@ -269,6 +271,27 @@ def init_db():
     history_columns = {row['name'] for row in conn.execute('PRAGMA table_info(history)')}
     if 'created_at' not in history_columns:
         conn.execute('ALTER TABLE history ADD COLUMN created_at DATETIME')
+    if 'mode' not in history_columns:
+        conn.execute("ALTER TABLE history ADD COLUMN mode TEXT NOT NULL DEFAULT 'standard'")
+    # Preserve legacy blind/non-blind labels from elo_history where the old schema
+    # stored mode separately. Match by song pair and closest timestamp.
+    conn.execute('''
+        UPDATE history
+        SET mode = (
+            SELECT eh.mode
+            FROM elo_history eh
+            WHERE eh.winner_id = history.winner_id
+              AND eh.loser_id = history.loser_id
+            ORDER BY eh.created_at DESC
+            LIMIT 1
+        )
+        WHERE EXISTS (
+            SELECT 1
+            FROM elo_history eh
+            WHERE eh.winner_id = history.winner_id
+              AND eh.loser_id = history.loser_id
+        )
+    ''')
     conn.execute('INSERT OR IGNORE INTO global_stats (key, value) VALUES ("trivia_high_score", 0)')
     conn.commit()
     conn.close()
@@ -365,6 +388,34 @@ def get_song_full(song_id, conn):
         LEFT JOIN trivia_stats ts ON s.id = ts.song_id
         WHERE s.id = ?
     ''', (song_id,)).fetchone()
+
+
+
+def fetch_match_history(conn, song_id=None, limit=50):
+    """Fetch match rows with both linked songs and their artists in one shared query.
+
+    Passing a song ID scopes results to matches involving that song; omitting it
+    returns the site's recent match feed. Mode is stored on history itself.
+    """
+    return conn.execute('''
+        SELECT h.id, h.mode, h.created_at,
+               w.id AS winner_id, w.title AS winner_title, wal.cover_url AS winner_cover,
+               (SELECT GROUP_CONCAT(a.name, ', ')
+                FROM song_artists sa JOIN artists a ON a.id = sa.artist_id
+                WHERE sa.song_id = w.id) AS winner_artist,
+               l.id AS loser_id, l.title AS loser_title, lal.cover_url AS loser_cover,
+               (SELECT GROUP_CONCAT(a.name, ', ')
+                FROM song_artists sa JOIN artists a ON a.id = sa.artist_id
+                WHERE sa.song_id = l.id) AS loser_artist
+        FROM history h
+        JOIN songs w ON h.winner_id = w.id
+        LEFT JOIN albums wal ON wal.id = w.album_id
+        JOIN songs l ON h.loser_id = l.id
+        LEFT JOIN albums lal ON lal.id = l.album_id
+        WHERE (? IS NULL OR h.winner_id = ? OR h.loser_id = ?)
+        ORDER BY h.id DESC
+        LIMIT ?
+    ''', (song_id, song_id, song_id, max(1, min(int(limit), 500)))).fetchall()
 
 
 def get_matchup(is_blind=False):
@@ -527,90 +578,25 @@ def home():
 
 @app.route('/game')
 def index():
-    conn = get_db_connection()
-    if 'song1_id' in session and 'song2_id' in session:
-        song1 = get_song_full(session['song1_id'], conn)
-        song2 = get_song_full(session['song2_id'], conn)
+    # Always attempt to fetch a matchup with audio first so the blind toggle works seamlessly
+    song1, song2 = get_matchup(is_blind=True)
 
-        if song1 and song2:
-            conn.close()
-            return render_template('index.html', song1=song1, song2=song2, last_vote=session.get('last_vote'))
-
-    conn.close()
-    song1, song2 = get_matchup(is_blind=False)
+    # Fallback if there are no audio tracks available
+    if not song1 or not song2:
+        song1, song2 = get_matchup(is_blind=False)
 
     if not song1 or not song2:
         return "<h1>Not enough songs in the database. Add at least two!</h1>"
 
-    session['song1_id'] = song1['id']
-    session['song2_id'] = song2['id']
-    last_vote = session.pop('last_vote', None)
-
-    return render_template('index.html', song1=song1, song2=song2, last_vote=last_vote)
+    return render_template('index.html', song1=song1, song2=song2)
 
 
-@app.route('/vote', methods=['POST'])
-def vote():
-    winner_id = request.form['winner_id']
-    loser_id = request.form['loser_id']
-
-    conn = get_db_connection()
-    winner = get_song_full(winner_id, conn)
-    loser = get_song_full(loser_id, conn)
-
-    new_winner_elo, new_loser_elo = calculate_new_elo(winner['elo_score'], loser['elo_score'])
-    winner_new_rank = conn.execute('SELECT COUNT(*) + 1 FROM songs WHERE elo_score > ?', (new_winner_elo,)).fetchone()[
-        0]
-
-    session['last_vote'] = {
-        'winner_title': winner['title'],
-        'winner_old': int(winner['elo_score']),
-        'winner_new': int(new_winner_elo),
-        'winner_change': f"+{int(new_winner_elo - winner['elo_score'])}",
-        'loser_title': loser['title'],
-        'loser_old': int(loser['elo_score']),
-        'loser_new': int(new_loser_elo),
-        'loser_change': f"{int(new_loser_elo - loser['elo_score'])}"
-    }
-
-    conn.execute('''
-                 UPDATE songs
-                 SET elo_score      = ?,
-                     matches_played = matches_played + 1,
-                     highest_elo    = CASE WHEN ? > highest_elo THEN ? ELSE highest_elo END,
-                     highest_rank   = CASE WHEN ? < highest_rank OR highest_rank = 9999 THEN ? ELSE highest_rank END
-                 WHERE id = ?
-                 ''', (new_winner_elo, new_winner_elo, new_winner_elo, winner_new_rank, winner_new_rank, winner_id))
-
-    conn.execute('UPDATE songs SET elo_score = ?, matches_played = matches_played + 1 WHERE id = ?',
-                 (new_loser_elo, loser_id))
-    conn.execute('INSERT INTO history (winner_id, loser_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)', (winner_id, loser_id))
-    conn.execute('INSERT INTO elo_history (winner_id, loser_id, winner_before, winner_after, loser_before, loser_after, mode) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                 (winner_id, loser_id, winner['elo_score'], new_winner_elo, loser['elo_score'], new_loser_elo, 'standard'))
-    log_interaction(conn, 'vote', winner_id, loser_id, {'mode': 'standard'})
-
-    total_votes = conn.execute('SELECT COUNT(*) FROM history').fetchone()[0]
-    conn.commit()
-    conn.close()
-
-    session.pop('song1_id', None)
-    session.pop('song2_id', None)
-    return redirect(url_for('index'))
-
-
-@app.route('/blind')
-def blind_mode():
-    song1, song2 = get_matchup(is_blind=True)
-    if not song1 or not song2:
-        return "Not enough songs with audio previews to play Blind Mode."
-    return render_template('blind_mode.html', song1=song1, song2=song2)
-
-
-@app.route('/api/blind_vote', methods=['POST'])
-def api_blind_vote():
+@app.route('/api/vote', methods=['POST'])
+def api_vote():
     data = request.json
     winner_id = data['winner_id']
     loser_id = data['loser_id']
+    mode = data.get('mode', 'standard')  # Accepts toggle state from frontend
 
     conn = get_db_connection()
     winner = get_song_full(winner_id, conn)
@@ -631,10 +617,17 @@ def api_blind_vote():
 
     conn.execute('UPDATE songs SET elo_score = ?, matches_played = matches_played + 1 WHERE id = ?',
                  (new_loser_elo, loser_id))
-    conn.execute('INSERT INTO history (winner_id, loser_id, created_at) VALUES (?, ?, CURRENT_TIMESTAMP)', (winner_id, loser_id))
-    conn.execute('INSERT INTO elo_history (winner_id, loser_id, winner_before, winner_after, loser_before, loser_after, mode) VALUES (?, ?, ?, ?, ?, ?, ?)',
-                 (winner_id, loser_id, winner['elo_score'], new_winner_elo, loser['elo_score'], new_loser_elo, 'blind'))
-    log_interaction(conn, 'vote', winner_id, loser_id, {'mode': 'blind'})
+    # Store mode with the match row so history views never have to guess which
+    # Elo-history entry belongs to a particular vote.
+    mode = 'blind' if str(mode).lower() == 'blind' else 'standard'
+    conn.execute('INSERT INTO history (winner_id, loser_id, created_at, mode) VALUES (?, ?, CURRENT_TIMESTAMP, ?)',
+                 (winner_id, loser_id, mode))
+
+    # Logs the dynamic mode ('standard' or 'blind')
+    conn.execute(
+        'INSERT INTO elo_history (winner_id, loser_id, winner_before, winner_after, loser_before, loser_after, mode) VALUES (?, ?, ?, ?, ?, ?, ?)',
+        (winner_id, loser_id, winner['elo_score'], new_winner_elo, loser['elo_score'], new_loser_elo, mode))
+    log_interaction(conn, 'vote', winner_id, loser_id, {'mode': mode})
     conn.commit()
     conn.close()
 
@@ -763,6 +756,7 @@ def api_generate_bracket():
     size = request.args.get('size', 8, type=int)
     scope = request.args.get('scope', 'global')
     scope_id = request.args.get('scope_id', type=int)
+    is_blind = request.args.get('is_blind', 'false').lower() == 'true'
     if size not in (8, 16, 32):
         return jsonify({'error': 'Tournament size must be 8, 16, or 32.'}), 400
     if scope not in ('global', 'artist', 'album'):
@@ -801,9 +795,9 @@ def api_generate_bracket():
         songs.sort(key=lambda song: song['elo_score'], reverse=True)
 
         cursor = conn.execute('''INSERT INTO tournaments
-            (size, scope_type, scope_id, status, created_at, updated_at, current_round, points_version)
-            VALUES (?, ?, ?, 'in_progress', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 1)''',
-            (size, scope, scope_id))
+                    (size, scope_type, scope_id, status, created_at, updated_at, current_round, points_version, is_blind)
+                    VALUES (?, ?, ?, 'in_progress', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 1, ?)''',
+                              (size, scope, scope_id, is_blind))
         tournament_id = cursor.lastrowid
         for seed, song in enumerate(songs, start=1):
             conn.execute('INSERT INTO tournament_entries (tournament_id, song_id, seed) VALUES (?, ?, ?)',
@@ -867,7 +861,7 @@ def api_tournament_vote():
     conn = get_db_connection()
     try:
         conn.execute('BEGIN IMMEDIATE')
-        tournament = conn.execute('SELECT size, status FROM tournaments WHERE id = ?', (tournament_id,)).fetchone()
+        tournament = conn.execute('SELECT size, status, is_blind FROM tournaments WHERE id = ?', (tournament_id,)).fetchone()
         match = conn.execute('SELECT * FROM tournament_matches WHERE id = ? AND tournament_id = ?',
                              (match_id, tournament_id)).fetchone()
         if not tournament:
@@ -890,7 +884,11 @@ def api_tournament_vote():
         conn.execute('''UPDATE tournament_matches SET winner_id = ?, loser_id = ?, status = 'completed',
             points_awarded = ?, played_at = CURRENT_TIMESTAMP WHERE id = ?''',
             (winner_id, loser_id, points, match_id))
-        log_interaction(conn, 'tournament_vote', winner_id, loser_id, {'tournament_id': int(tournament_id), 'points_awarded': points})
+        log_interaction(conn, 'tournament_vote', winner_id, loser_id, {
+            'tournament_id': int(tournament_id),
+            'points_awarded': points,
+            'is_blind': bool(tournament['is_blind'])
+        })
         round_rows = conn.execute('''SELECT * FROM tournament_matches
             WHERE tournament_id = ? AND round_number = ? ORDER BY match_number''',
             (tournament_id, match['round_number'])).fetchall()
@@ -923,11 +921,11 @@ def api_tournaments_list():
     conn = get_db_connection()
     try:
         rows = conn.execute('''SELECT t.id, t.size, t.scope_type, t.scope_id, t.status,
-            t.champion_id, t.created_at, t.updated_at, t.completed_at,
-            (SELECT COUNT(*) FROM tournament_matches tm WHERE tm.tournament_id = t.id AND tm.status = 'completed') AS matches_completed,
-            (SELECT COUNT(*) FROM tournament_matches tm WHERE tm.tournament_id = t.id) AS matches_created
-            FROM tournaments t ORDER BY CASE t.status WHEN 'in_progress' THEN 0 ELSE 1 END,
-            COALESCE(t.updated_at, t.timestamp) DESC''').fetchall()
+                    t.champion_id, t.created_at, t.updated_at, t.completed_at, t.is_blind,
+                    (SELECT COUNT(*) FROM tournament_matches tm WHERE tm.tournament_id = t.id AND tm.status = 'completed') AS matches_completed,
+                    (SELECT COUNT(*) FROM tournament_matches tm WHERE tm.tournament_id = t.id) AS matches_created
+                    FROM tournaments t ORDER BY CASE t.status WHEN 'in_progress' THEN 0 ELSE 1 END,
+                    COALESCE(t.updated_at, t.timestamp) DESC''').fetchall()
         return jsonify({'tournaments': [dict(row) for row in rows]})
     finally:
         conn.close()
@@ -1273,21 +1271,7 @@ def tier_list():
 @app.route('/history')
 def history():
     conn = get_db_connection()
-    # Fetch last 50 matches, ensuring we grab the IDs so we can link to them
-    history_data = conn.execute('''
-        SELECT h.id, 
-               w.id as winner_id, w.title as winner_title, aw.cover_url as winner_cover,
-               (SELECT GROUP_CONCAT(a2.name, ', ') FROM song_artists sa2 JOIN artists a2 ON sa2.artist_id = a2.id WHERE sa2.song_id = w.id) as winner_artist,
-               l.id as loser_id, l.title as loser_title, al.cover_url as loser_cover,
-               (SELECT GROUP_CONCAT(a2.name, ', ') FROM song_artists sa2 JOIN artists a2 ON sa2.artist_id = a2.id WHERE sa2.song_id = l.id) as loser_artist
-        FROM history h
-        JOIN songs w ON h.winner_id = w.id
-        JOIN songs l ON h.loser_id = l.id
-        LEFT JOIN albums aw ON w.album_id = aw.id
-        LEFT JOIN albums al ON l.album_id = al.id
-        ORDER BY h.id DESC
-        LIMIT 50
-    ''').fetchall()
+    history_data = fetch_match_history(conn, limit=50)
     conn.close()
     return render_template('history.html', history=history_data)
 
@@ -1440,32 +1424,7 @@ def song_page(song_id):
     current_rank = conn.execute('SELECT COUNT(*) + 1 FROM songs WHERE elo_score > ?', (song['elo_score'],)).fetchone()[
         0]
 
-    history_data = conn.execute('''
-                                SELECT h.id,
-                                       w.id                      as winner_id,
-                                       w.title                   as winner_title,
-                                       wal.cover_url             as winner_cover,
-                                       (SELECT GROUP_CONCAT(a.name, ', ')
-                                        FROM song_artists sa
-                                                 JOIN artists a ON sa.artist_id = a.id
-                                        WHERE sa.song_id = w.id) as winner_artist,
-                                       l.id                      as loser_id,
-                                       l.title                   as loser_title,
-                                       lal.cover_url             as loser_cover,
-                                       (SELECT GROUP_CONCAT(a.name, ', ')
-                                        FROM song_artists sa
-                                                 JOIN artists a ON sa.artist_id = a.id
-                                        WHERE sa.song_id = l.id) as loser_artist
-                                FROM history h
-                                         JOIN songs w ON h.winner_id = w.id
-                                         LEFT JOIN albums wal ON w.album_id = wal.id
-                                         JOIN songs l ON h.loser_id = l.id
-                                         LEFT JOIN albums lal ON l.album_id = lal.id
-                                WHERE h.winner_id = ?
-                                   OR h.loser_id = ?
-                                ORDER BY h.id DESC
-                                LIMIT 5
-                                ''', (song_id, song_id)).fetchall()
+    history_data = fetch_match_history(conn, song_id=song_id, limit=5)
 
     tournament_record = conn.execute('''
         SELECT
@@ -1608,6 +1567,64 @@ def album_page(album_title):
                            worst_song=songs[-1],
                            impact_score=impact_score,
                            songs=songs)
+
+
+@app.route('/tags')
+def tags_index():
+    """Browse all genre tags and the number of songs attached to each."""
+    conn = get_db_connection()
+    tags = conn.execute('''
+        SELECT g.id, g.name, COUNT(DISTINCT sg.song_id) AS song_count,
+               ROUND(AVG(s.elo_score)) AS average_elo
+        FROM genres g
+        LEFT JOIN song_genres sg ON sg.genre_id = g.id
+        LEFT JOIN songs s ON s.id = sg.song_id
+        GROUP BY g.id
+        ORDER BY song_count DESC, g.name COLLATE NOCASE ASC
+    ''').fetchall()
+    conn.close()
+    return render_template('tags_index.html', tags=tags)
+
+
+@app.route('/tag/<path:tag_name>')
+def tag_page(tag_name):
+    """Show all ranked songs attached to a genre/tag, using the library's real data."""
+    conn = get_db_connection()
+    tag = conn.execute('SELECT id, name FROM genres WHERE name = ? COLLATE NOCASE', (tag_name,)).fetchone()
+    if not tag:
+        conn.close()
+        return "Tag not found.", 404
+
+    songs = conn.execute('''
+        SELECT s.id, s.title, s.elo_score, s.matches_played, s.audio_url,
+               al.title AS album, al.cover_url,
+               (SELECT GROUP_CONCAT(a.name, ', ')
+                FROM song_artists sa JOIN artists a ON a.id = sa.artist_id
+                WHERE sa.song_id = s.id) AS artist,
+               (SELECT GROUP_CONCAT(g2.name, ', ')
+                FROM song_genres sg2 JOIN genres g2 ON g2.id = sg2.genre_id
+                WHERE sg2.song_id = s.id) AS genres
+        FROM song_genres sg
+        JOIN songs s ON s.id = sg.song_id
+        LEFT JOIN albums al ON al.id = s.album_id
+        WHERE sg.genre_id = ?
+        ORDER BY s.elo_score DESC, s.title COLLATE NOCASE ASC
+    ''', (tag['id'],)).fetchall()
+
+    related_tags = conn.execute('''
+        SELECT DISTINCT g2.name
+        FROM song_genres sg
+        JOIN song_genres sg2 ON sg.song_id = sg2.song_id AND sg2.genre_id != sg.genre_id
+        JOIN genres g2 ON g2.id = sg2.genre_id
+        WHERE sg.genre_id = ?
+        ORDER BY g2.name COLLATE NOCASE
+        LIMIT 12
+    ''', (tag['id'],)).fetchall()
+    conn.close()
+    average_elo = round(sum(song['elo_score'] for song in songs) / len(songs)) if songs else 0
+    return render_template('tag_page.html', tag=tag, songs=songs,
+                           song_count=len(songs), average_elo=average_elo,
+                           related_tags=related_tags)
 
 
 @app.route('/trivia_stats')
@@ -2193,7 +2210,7 @@ def api_dev_integrity():
 def api_dev_activity():
     conn=get_db_connection()
     votes=[dict(r) for r in conn.execute('''SELECT h.id,h.created_at,w.id AS winner_id,w.title AS winner,l.id AS loser_id,l.title AS loser,
-        CASE WHEN h.is_tournament_match THEN 'tournament' ELSE 'vote' END AS mode FROM history h
+        CASE WHEN h.is_tournament_match THEN 'tournament' WHEN h.mode = 'blind' THEN 'blind' ELSE 'non-blind' END AS mode FROM history h
         LEFT JOIN songs w ON w.id=h.winner_id LEFT JOIN songs l ON l.id=h.loser_id ORDER BY h.id DESC LIMIT 100''').fetchall()]
     tournaments=[dict(r) for r in conn.execute('''SELECT t.id,t.size,t.scope_type,t.scope_id,t.champion_id,t.timestamp,t.status,t.created_at,t.completed_at,
         (SELECT COUNT(*) FROM tournament_matches m WHERE m.tournament_id=t.id) AS match_count FROM tournaments t ORDER BY t.id DESC LIMIT 100''').fetchall()]
