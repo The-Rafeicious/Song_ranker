@@ -215,7 +215,7 @@ def init_db():
             PRIMARY KEY (song_id, genre_id)
         );
 
-        CREATE TABLE IF NOT EXISTS trivia_stats (
+        CREATE TABLE IF NOT EXISTS trivia_legacy (
             song_id INTEGER PRIMARY KEY,
             attempts INTEGER DEFAULT 0,
             correct INTEGER DEFAULT 0,
@@ -226,7 +226,6 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             winner_id INTEGER,
             loser_id INTEGER,
-            is_tournament_match BOOLEAN DEFAULT 0,
             mode TEXT NOT NULL DEFAULT 'standard',
             FOREIGN KEY(winner_id) REFERENCES songs(id),
             FOREIGN KEY(loser_id) REFERENCES songs(id)
@@ -249,6 +248,8 @@ def init_db():
 
     ''')
     ensure_tournament_schema(conn)
+    from mode_schema import ensure_mode_schema
+    ensure_mode_schema(conn)
     from track_numbers import ensure_track_position_checks
     ensure_track_position_checks(conn)
     history_columns = {row['name'] for row in conn.execute('PRAGMA table_info(history)')}
@@ -339,7 +340,7 @@ def is_close_match(guess, actual, threshold=0.75):
     return SequenceMatcher(None, g, a).ratio() >= threshold
 
 
-SONG_SELECT = "SELECT s.*, al.cover_url, al.title as album,\n               CASE WHEN LOWER(TRIM(COALESCE(al.title, ''))) LIKE '% - single' THEN 1 ELSE 0 END AS album_is_single,\n               COALESCE(ts.attempts, 0) as trivia_attempts,\n               COALESCE(ts.correct, 0) as trivia_correct,\n               (SELECT GROUP_CONCAT(a2.name, ', ') FROM song_artists sa2 JOIN artists a2 ON sa2.artist_id = a2.id WHERE sa2.song_id = s.id) as artist,\n               (SELECT GROUP_CONCAT(g2.name, ', ') FROM song_genres sg2 JOIN genres g2 ON sg2.genre_id = g2.id WHERE sg2.song_id = s.id) as genres\n        FROM songs s\n        LEFT JOIN albums al ON s.album_id = al.id\n        LEFT JOIN trivia_stats ts ON s.id = ts.song_id"
+SONG_SELECT = "SELECT s.*, al.cover_url, al.title as album,\n               CASE WHEN LOWER(TRIM(COALESCE(al.title, ''))) LIKE '% - single' THEN 1 ELSE 0 END AS album_is_single,\n               COALESCE(ts.attempts, 0) as trivia_attempts,\n               COALESCE(ts.correct, 0) as trivia_correct, COALESCE(ts.available_points,0) as available_points,\n               (SELECT GROUP_CONCAT(a2.name, ', ') FROM song_artists sa2 JOIN artists a2 ON sa2.artist_id = a2.id WHERE sa2.song_id = s.id) as artist,\n               (SELECT GROUP_CONCAT(g2.name, ', ') FROM song_genres sg2 JOIN genres g2 ON sg2.genre_id = g2.id WHERE sg2.song_id = s.id) as genres\n        FROM songs s\n        LEFT JOIN albums al ON s.album_id = al.id\n        LEFT JOIN trivia_stats ts ON s.id = ts.song_id"
 
 def fetch_songs(conn, *, song_id=None, audio_only=False):
     """Consistent song, artist, release and trivia metadata in one query."""
@@ -386,39 +387,12 @@ def fetch_match_history(conn, song_id=None, limit=50):
 
 
 def get_matchup(is_blind=False):
-    """Unified song selection logic utilizing the relational database."""
+    from selection import choose_match
     conn = get_db_connection()
-
-    songs = fetch_songs(conn, audio_only=is_blind)
-    conn.close()
-
-    if len(songs) < 2:
-        return None, None
-
-    elos = sorted([s['elo_score'] for s in songs])
-    mid = len(elos) // 2
-
-    if mid > 0:
-        bottom_avg = sum(elos[:mid]) / mid
-        top_avg = sum(elos[mid:]) / (len(elos) - mid)
-        threshold = max((top_avg - bottom_avg) * 0.25, 50)
-    else:
-        threshold = 50
-
-    def pick_weighted(pool):
-        weights = [1.0 / (s['matches_played'] + 1) for s in pool]
-        return random.choices(pool, weights=weights, k=1)[0]
-
-    song1 = pick_weighted(songs)
-    pool2 = [s for s in songs if s['id'] != song1['id'] and abs(s['elo_score'] - song1['elo_score']) <= threshold]
-
-    if not pool2:
-        songs_except_1 = [s for s in songs if s['id'] != song1['id']]
-        songs_except_1.sort(key=lambda x: abs(x['elo_score'] - song1['elo_score']))
-        pool2 = songs_except_1[:15]
-
-    song2 = pick_weighted(pool2)
-    return song1, song2
+    try:
+        return choose_match(fetch_songs(conn, audio_only=is_blind))
+    finally:
+        conn.close()
 
 
 def create_database_backup(prefix='song_ranker'):

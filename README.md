@@ -1,89 +1,96 @@
-# Song Ranker — approved V3 implementation
+# Song Ranker V3.2
 
-## Run locally
+Run locally with `python -m pip install -r requirements.txt`, then `python main.py`.
+Open http://127.0.0.1:5000. Your existing System Access PIN is unchanged.
 
-Unzip the project, open a terminal in the `Song_ranker` folder, then run:
+## Installing this update
 
-```sh
-python -m pip install -r requirements.txt
-python main.py
-```
+1. Stop Song Ranker.
+2. Copy the contents of this update's `Song_ranker` folder into your existing
+   V3.1.4 `Song_ranker` folder, replacing the matching files together.
+3. Keep your own `song_ranker_v2.db` and `database_backups` folder. This update
+   deliberately contains no database.
+4. Start `python main.py`. The first start saves a `pre_upgrade_*.db` backup
+   and upgrades the live database to schema 5. Refresh the browser afterward.
 
-Open http://127.0.0.1:5000. Your existing System Access PIN still works.
+Use Dev > Database to restore a backup; restoring an earlier relational database
+runs the appropriate migration again. Keep a copy of the old application if you
+want to roll back both the code and its pre-upgrade database together.
 
-When installing this over your existing project, keep your own live
-`song_ranker_v2.db` if you have added votes or tracks since uploading the ZIP.
-The first startup migrates that database after saving a safety backup.
-Stop the app before replacing files. Keep the new Python modules and the
-entire `templates` and `static` folders together.
+## V3.2 changes
 
-## Changes
+### Dev
 
-- Approved V3 colours, navigation, scrolling home shelves, song details,
-  separate rankings, search and developer dashboard.
-- Rankings heading and category links centred; no tier-list link on those
-  pages. The tier list remains available from the main navigation.
-- Voting shows Elo only after a committed vote. Blind votes reveal the artwork,
-  title, artists and proper album in the same cards.
-- Cover-art playback, shared volume, outside-click/Escape dismissal and
-  proper album metadata in voting. Singles stay in the library and out of album
-  counts, album rankings and voting's album line.
-- Related song/artist/album/tag search, editable records, Apple Music imports,
-  retained suggestions, column filters, sorting, pagination, selectable columns
-  and 32-character table labels with full-value hover text.
-- Trivia, tournaments, resume, tournament statistics, histories, genres,
-  artist/album pages, tier list, backup, restore, reset, corrections, exports
-  and Git sync remain available.
+Bulk edits let you select songs by title, artist, album, tag or `#ID`, select all
+matching songs, move them to an existing album, and add or remove existing tags.
+Selections persist while filtering. Album moves are atomic: duplicate track
+positions cancel the whole move. You can explicitly clear selected track numbers
+instead. Actual album track numbers and gaps remain valid; nothing renumbers them.
 
-## Code
+Trivia maintenance has separate song/artist/album counts, album attempts and legacy
+totals. Sparse manual corrections preserve saved rounds. Best player score and
+best streak are editable. Completed brackets can have their final and bronze
+winners corrected; the saved deciding matches, placements and derived rankings
+are updated together. Unfinished bracket qualifiers cannot be rewritten this way.
 
-`main.py` is the entry point. `services.py` contains shared database access,
-metadata queries, Elo calculation, backups and exports. `catalog.py` handles
-library projections and impact scores. `pages.py`, `games.py` and `dev.py`
-contain their respective routes. `database.py` owns the versioned migration.
+### Standard voting
 
-Artist and album impact is consistently `1200 + sum(song Elo - 1200)`.
-Each song contributes once, including collaborations.
+Random selection softly favours songs with fewer votes and similar match counts.
+A broad preference around a 110-Elo difference reduces repetitive near-identical
+matches and huge mismatches. Every eligible song still has a chance; no hard Elo
+band excludes tracks. Blind mode still requires previews. Elo remains hidden
+until voting; winner playback, score animation and silent automatic next matches
+remain unchanged.
 
-The application reads its database relative to its own folder rather than the
-terminal's current directory. Optional environment overrides are
-`SONG_RANKER_DB`, `SONG_RANKER_PIN` and `SONG_RANKER_SECRET`.
-Git sync uses the existing `origin/main` configuration. Startup pulls updates
-when this project folder is an existing Git checkout, and keeps local database
-files. Restart after an update to load changed Python modules.
+### Tournaments
 
-## Database
+Weighted sampling gives less-played tournament songs a little more opportunity.
+The draw uses noisy Elo seeding, with selected previous champions spread across
+opposite halves and quarter-brackets. Champions are not guaranteed a place in
+every draw. Global, artist, album and tag-group scopes are supported; scoped
+selection has a searchable picker and track counts.
 
-The included active database preserves the supplied 389 songs, 51 artists,
-114 releases (57 proper albums), one regular match, four tournaments,
-64 entries, 60 bracket matches and the existing trivia totals.
+New tournaments have a bronze playoff between the semifinal losers, before the
+final. First, second, third and fourth are retained. Champion points still total
+7 for any supported size; bronze earns half the semifinal's points. Tournament
+results never change standard Elo. Old or already-running brackets finish using
+their original structure; no third place is invented for them.
 
-A vote now writes its mode, timestamp and before/after Elo into `history` once.
-The generic interaction log, admin audit log and duplicate Elo log are removed.
-Unused zero-attempt trivia rows are removed; new imports do not create them.
-Tournament entries and matches remain separate because they support results,
-resume and archives. Rating counters and peaks are kept because old history
-is incomplete. Song deletion retains completed bracket structure and protects
-unfinished brackets from becoming unplayable.
+### Trivia
 
-The migration runs once and does not overwrite existing match-mode labels.
-Ambiguous old Elo entries, if encountered, are kept separately instead of being
-assigned to the wrong vote. Restores validate and migrate a temporary copy
-before replacing the live database, and save a pre-restore backup.
+The player earns up to **1 point per round**: song 0.50, album 0.30, artist 0.20,
+with a modest speed factor from 75% to 100%. Without a proper album, the two
+remaining weights scale proportionally to a maximum of 1. Singles and unknown
+albums do not get an album field. This makes artist-only answers worth less than
+song-only answers and keeps scores compact.
 
-`database_backups` contains the original pre-reset backup and a pre-upgrade copy
-of the uploaded active database. `legacy_data/song_ranker.db` is the older
-flat-schema database with 186 songs and 701 history records; it is preserved
-separately and is not silently merged into the active database.
-Historical command-line tools are retained in `legacy_tools` for reference.
+Nonempty answers are checked on blur or Enter, turn green/red, and flip quickly
+to the canonical answer. The existing fuzzy typo matcher remains. A checked
+field locks for that round. Filled but unchecked fields are graded when the
+30-second timer expires or Reveal is pressed. Pause/Resume and Escape pause are
+retained. A partially correct round keeps the streak; an entirely wrong round
+ends it. Successful rounds continue automatically after the reveal. Failed
+rounds have a Restart button.
 
-## Validation
+Recognition is separate from the player's weighted score: **each correct field
+is one recognition point**, against the fields available in that round. Saved
+rounds retain the three correctness flags, field timings, score and streak.
+`trivia_stats` is now a derived view, avoiding a second running totals table.
+Older combined trivia results are kept as legacy totals because their original
+field breakdown was never recorded. The old high score stays visible as a
+legacy record; the new scoring scale starts its own high-score record. Highest
+streak starts accumulating in V3.2 because it was not previously stored.
 
-See `VALIDATION.md`. To rerun the backend tests:
+### Stats and the existing design
 
-```sh
-python tests/test_app.py
-```
+Recognisability shows field accuracy, best score, best streak and recent rounds.
+Song/group profiles, global stats, search badges, tournament stats and artist/album
+performance rankings use the new denominators and actual podiums. Podium and
+third-place categories are added to the existing rankings. The approved colours,
+shared banner, home shelves, cover-art previews, separate Top/Bottom rankings,
+proper-album counts, tag pages and Dev table column controls are retained.
 
-The test suite works on temporary copies and never changes your live database.
-Apple Music search, streamed artwork and preview audio require internet access.
+The unused tournament flag has been removed from standard match history. Any
+old flagged history rows retain their meaning as `legacy_tournament` instead of
+being discarded. Standard votes, tournaments and trivia remain separate records.
+The visual tier-list page stays removed; global Elo distribution stays available.

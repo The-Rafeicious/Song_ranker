@@ -1,6 +1,7 @@
 from flask import render_template, request, session, jsonify
 import random
 
+from selection import tournament_tracks
 from services import app, get_db_connection, calculate_new_elo, is_close_match, get_song_full, get_matchup
 @app.route('/game')
 def index():
@@ -46,99 +47,6 @@ def api_matchup():
     return jsonify({'songs':[{k:v for k,v in dict(s).items() if k not in ('elo_score','highest_elo','highest_rank','matches_played')} for s in (a,b)]})
 
 
-@app.route('/trivia')
-def trivia_mode():
-    conn = get_db_connection()
-    high_score_row = conn.execute('SELECT value FROM global_stats WHERE key = "trivia_high_score"').fetchone()
-    high_score = high_score_row['value'] if high_score_row else 0
-
-    if 'trivia_score' not in session: session['trivia_score'] = 0
-    if 'trivia_streak' not in session: session['trivia_streak'] = 0
-
-    pool = conn.execute('''
-                        SELECT s.id, s.audio_url, COALESCE(ts.attempts, 0) as trivia_attempts
-                        FROM songs s
-                                 LEFT JOIN trivia_stats ts ON s.id = ts.song_id
-                        WHERE s.audio_url IS NOT NULL
-                          AND s.audio_url != ""
-                        ORDER BY trivia_attempts ASC, RANDOM()
-                            LIMIT 30
-                        ''').fetchall()
-    conn.close()
-
-    if not pool:
-        return "No songs with audio previews available to play Trivia."
-
-    song = random.choice(pool)
-    return render_template('trivia_mode.html', song=song, score=session['trivia_score'],
-                           streak=session['trivia_streak'], high_score=high_score)
-
-
-@app.route('/api/trivia_guess', methods=['POST'])
-def api_trivia_guess():
-    data = request.json
-    song_id = data['song_id']
-    time_taken = float(data.get('time_taken', 30.0))
-    timeout = data.get('timeout', False)
-
-    conn = get_db_connection()
-    song = get_song_full(song_id, conn)
-
-    title_match = False if timeout else is_close_match(data.get('title_guess', ''), song['title'])
-    artist_match = False if timeout else is_close_match(data.get('artist_guess', ''), song['artist'])
-
-    correct_count = sum([title_match, artist_match])
-    points = 0
-    speed_bonus = 0
-    game_over = False
-
-    if correct_count > 0:
-        points += (correct_count * 100)
-        speed_bonus = max(0, int((1.0 - (time_taken / 30.0)) * 100))
-        points += speed_bonus
-        session['trivia_streak'] = session.get('trivia_streak', 0) + 1
-        session['trivia_score'] = session.get('trivia_score', 0) + points
-    else:
-        game_over = True
-
-    final_score = session.get('trivia_score', 0)
-    high_score_row = conn.execute('SELECT value FROM global_stats WHERE key = "trivia_high_score"').fetchone()
-    high_score = high_score_row['value'] if high_score_row else 0
-
-    new_high_score = False
-    if final_score > high_score:
-        conn.execute('UPDATE global_stats SET value = ? WHERE key = "trivia_high_score"', (final_score,))
-        high_score = final_score
-        new_high_score = True
-
-    if game_over:
-        session['trivia_score'] = 0
-        session['trivia_streak'] = 0
-
-    cursor = conn.execute('UPDATE trivia_stats SET attempts = attempts + 1, correct = correct + ? WHERE song_id = ?',
-                          (correct_count, song_id))
-    if cursor.rowcount == 0:
-        conn.execute('INSERT INTO trivia_stats (song_id, attempts, correct) VALUES (?, 1, ?)', (song_id, correct_count))
-
-
-    conn.commit()
-    conn.close()
-
-    return jsonify({
-        "actual_title": song['title'],
-        "actual_artist": song['artist'],
-        "cover_url": song['cover_url'],
-        "points_earned": points,
-        "speed_bonus": speed_bonus,
-        "new_total": final_score,
-        "title_correct": title_match,
-        "artist_correct": artist_match,
-        "game_over": game_over,
-        "new_high_score": new_high_score,
-        "high_score": high_score
-    })
-
-
 @app.route('/tournament')
 def tournament():
     # Pass lists of artists and albums to the frontend so the user can select a specific scope
@@ -160,44 +68,35 @@ def api_generate_bracket():
     is_blind = request.args.get('is_blind', 'false').lower() == 'true'
     if size not in (8, 16, 32):
         return jsonify({'error': 'Tournament size must be 8, 16, or 32.'}), 400
-    if scope not in ('global', 'artist', 'album'):
+    if scope not in ('global', 'artist', 'album', 'tag'):
         return jsonify({'error': 'Invalid tournament scope.'}), 400
     if scope != 'global' and not scope_id:
-        return jsonify({'error': 'An artist or album must be selected.'}), 400
+        return jsonify({'error': 'Select an artist, album or tag.'}), 400
 
     conn = get_db_connection()
     try:
-        if scope == 'artist':
-            query = '''SELECT s.id, s.title, s.audio_url, s.elo_score, al.cover_url,
-                (SELECT GROUP_CONCAT(a2.name, ', ') FROM song_artists sa2
-                 JOIN artists a2 ON sa2.artist_id = a2.id WHERE sa2.song_id = s.id) AS artist
-                FROM songs s JOIN song_artists sa ON s.id = sa.song_id
-                LEFT JOIN albums al ON s.album_id = al.id
-                WHERE sa.artist_id = ? ORDER BY RANDOM() LIMIT ?'''
-            params = (scope_id, size)
-        elif scope == 'album':
-            query = '''SELECT s.id, s.title, s.audio_url, s.elo_score, al.cover_url,
-                (SELECT GROUP_CONCAT(a2.name, ', ') FROM song_artists sa2
-                 JOIN artists a2 ON sa2.artist_id = a2.id WHERE sa2.song_id = s.id) AS artist
-                FROM songs s LEFT JOIN albums al ON s.album_id = al.id
-                WHERE s.album_id = ? ORDER BY RANDOM() LIMIT ?'''
-            params = (scope_id, size)
-        else:
-            query = '''SELECT s.id, s.title, s.audio_url, s.elo_score, al.cover_url,
-                (SELECT GROUP_CONCAT(a2.name, ', ') FROM song_artists sa2
-                 JOIN artists a2 ON sa2.artist_id = a2.id WHERE sa2.song_id = s.id) AS artist
-                FROM songs s LEFT JOIN albums al ON s.album_id = al.id
-                ORDER BY RANDOM() LIMIT ?'''
-            params = (size,)
-
-        songs = [dict(row) for row in conn.execute(query, params).fetchall()]
-        if len(songs) < size:
-            return jsonify({'error': f'Not enough tracks found. Needed {size}, found {len(songs)}.'}), 400
-        songs.sort(key=lambda song: song['elo_score'], reverse=True)
+        conditions=[];params=[]
+        if scope=='artist':
+            conditions.append('EXISTS(SELECT 1 FROM song_artists sa WHERE sa.song_id=s.id AND sa.artist_id=?)');params.append(scope_id)
+        elif scope=='album':
+            conditions.append('s.album_id=?');params.append(scope_id)
+        elif scope=='tag':
+            conditions.append('EXISTS(SELECT 1 FROM song_genres sg WHERE sg.song_id=s.id AND sg.genre_id=?)');params.append(scope_id)
+        if is_blind:
+            conditions.append("COALESCE(s.audio_url,'')!=''")
+        where=' WHERE '+' AND '.join(conditions) if conditions else ''
+        pool=[dict(r) for r in conn.execute("""SELECT s.id,s.title,s.audio_url,s.elo_score,al.cover_url,
+            (SELECT GROUP_CONCAT(a.name,', ') FROM song_artists sa JOIN artists a ON a.id=sa.artist_id WHERE sa.song_id=s.id) artist,
+            (SELECT COUNT(*) FROM tournament_matches tm WHERE tm.status='completed' AND (tm.winner_id=s.id OR tm.loser_id=s.id)) tournament_matches,
+            (SELECT COUNT(*) FROM tournaments t WHERE t.status='completed' AND t.champion_id=s.id) championships
+            FROM songs s LEFT JOIN albums al ON al.id=s.album_id"""+where,params)]
+        if len(pool)<size:
+            return jsonify(error=f'Not enough eligible tracks. Needed {size}, found {len(pool)}.'),400
+        songs=tournament_tracks(pool,size)
 
         cursor = conn.execute('''INSERT INTO tournaments
-                    (size, scope_type, scope_id, status, created_at, updated_at, current_round, points_version, is_blind)
-                    VALUES (?, ?, ?, 'in_progress', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 1, ?)''',
+                    (size, scope_type, scope_id, status, created_at, updated_at, current_round, points_version, is_blind, playoff_enabled)
+                    VALUES (?, ?, ?, 'in_progress', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 1, ?, 1)''',
                               (size, scope, scope_id, is_blind))
         tournament_id = cursor.lastrowid
         for seed, song in enumerate(songs, start=1):
@@ -238,7 +137,7 @@ def _tournament_seed_order(size):
 
 def _tournament_matches(conn, tournament_id):
     rows = conn.execute('''SELECT id, tournament_id, round_number, match_number,
-        song1_id, song2_id, winner_id, loser_id, status, points_awarded, played_at
+        song1_id, song2_id, winner_id, loser_id, status, points_awarded, played_at, match_type
         FROM tournament_matches WHERE tournament_id = ?
         ORDER BY round_number, match_number''', (tournament_id,)).fetchall()
     return [dict(row) for row in rows]
@@ -262,7 +161,7 @@ def api_tournament_vote():
     conn = get_db_connection()
     try:
         conn.execute('BEGIN IMMEDIATE')
-        tournament = conn.execute('SELECT size, status, is_blind FROM tournaments WHERE id = ?', (tournament_id,)).fetchone()
+        tournament = conn.execute('SELECT size, status, is_blind, playoff_enabled FROM tournaments WHERE id = ?', (tournament_id,)).fetchone()
         match = conn.execute('SELECT * FROM tournament_matches WHERE id = ? AND tournament_id = ?',
                              (match_id, tournament_id)).fetchone()
         if not tournament:
@@ -281,15 +180,21 @@ def api_tournament_vote():
             conn.rollback()
             return jsonify({'error': 'Winner and loser must be the two songs in this match.'}), 400
 
-        points = _round_points(tournament['size'], match['round_number'])
+        final_round=tournament['size'].bit_length()-1
+        if tournament['playoff_enabled'] and match['match_type']=='bracket' and match['round_number']==final_round:
+            bronze=conn.execute("SELECT status FROM tournament_matches WHERE tournament_id=? AND match_type='third_place'",(tournament_id,)).fetchone()
+            if not bronze or bronze['status']!='completed':
+                return jsonify(error='Play the third-place playoff before the final.'),409
+        points = (_round_points(tournament['size'],final_round-1)*.5
+                  if match['match_type']=='third_place' else _round_points(tournament['size'], match['round_number']))
         conn.execute('''UPDATE tournament_matches SET winner_id = ?, loser_id = ?, status = 'completed',
             points_awarded = ?, played_at = CURRENT_TIMESTAMP WHERE id = ?''',
             (winner_id, loser_id, points, match_id))
 
         round_rows = conn.execute('''SELECT * FROM tournament_matches
-            WHERE tournament_id = ? AND round_number = ? ORDER BY match_number''',
+            WHERE tournament_id = ? AND round_number = ? AND match_type='bracket' ORDER BY match_number''',
             (tournament_id, match['round_number'])).fetchall()
-        if all(row['status'] == 'completed' or row['id'] == match_id for row in round_rows):
+        if match['match_type']=='bracket' and all(row['status'] == 'completed' or row['id'] == match_id for row in round_rows):
             winners = [winner_id if row['id'] == match_id else row['winner_id'] for row in round_rows]
             if len(winners) > 1:
                 next_round = match['round_number'] + 1
@@ -298,6 +203,9 @@ def api_tournament_vote():
                         (tournament_id, round_number, match_number, song1_id, song2_id)
                         VALUES (?, ?, ?, ?, ?)''',
                         (tournament_id, next_round, (i // 2) + 1, winners[i], winners[i + 1]))
+                if tournament['playoff_enabled'] and next_round==final_round:
+                    losers=[row['loser_id'] for row in conn.execute("SELECT loser_id FROM tournament_matches WHERE tournament_id=? AND round_number=? AND match_type='bracket' ORDER BY match_number",(tournament_id,match['round_number']))]
+                    conn.execute("INSERT OR IGNORE INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id,match_type) VALUES(?,?,0,?,?,'third_place')",(tournament_id,final_round,losers[0],losers[1]))
                 conn.execute('UPDATE tournaments SET current_round = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
                              (next_round, tournament_id))
             else:
@@ -318,7 +226,7 @@ def api_tournaments_list():
     conn = get_db_connection()
     try:
         rows = conn.execute('''SELECT t.id, t.size, t.scope_type, t.scope_id, t.status,
-                    t.champion_id, t.created_at, t.updated_at, t.completed_at, t.is_blind,
+                    t.champion_id, t.created_at, t.updated_at, t.completed_at, t.is_blind, t.playoff_enabled,t.runner_up_id,t.third_place_id,t.fourth_place_id,
                     (SELECT COUNT(*) FROM tournament_matches tm WHERE tm.tournament_id = t.id AND tm.status = 'completed') AS matches_completed,
                     (SELECT COUNT(*) FROM tournament_matches tm WHERE tm.tournament_id = t.id) AS matches_created
                     FROM tournaments t ORDER BY CASE t.status WHEN 'in_progress' THEN 0 ELSE 1 END,
@@ -356,38 +264,15 @@ def tournament_stats_page():
 @app.route('/api/tournament_stats', methods=['GET'])
 def api_tournament_stats():
     """Tournament-only leaderboard; regular Elo and history are not involved."""
-    conn = get_db_connection()
-    try:
-        rows = conn.execute('''
-            SELECT s.id, s.title, al.cover_url,
-                (SELECT GROUP_CONCAT(a.name, ', ') FROM song_artists sa
-                 JOIN artists a ON a.id = sa.artist_id WHERE sa.song_id = s.id) AS artist,
-                (SELECT COUNT(*) FROM tournament_entries te WHERE te.song_id = s.id) AS tournaments_entered,
-                (SELECT COUNT(*) FROM tournament_matches tm WHERE tm.winner_id = s.id) AS matches_won,
-                (SELECT COUNT(*) FROM tournament_matches tm WHERE tm.loser_id = s.id) AS matches_lost,
-                (SELECT COALESCE(SUM(tm.points_awarded), 0) FROM tournament_matches tm
-                 WHERE tm.winner_id = s.id) AS tournament_points,
-                (SELECT COUNT(*) FROM tournaments t WHERE t.champion_id = s.id AND t.status = 'completed') AS championships
-            FROM songs s LEFT JOIN albums al ON al.id = s.album_id
-            ORDER BY championships DESC, tournament_points DESC,
-                CASE WHEN (SELECT COUNT(*) FROM tournament_matches tm
-                           WHERE tm.winner_id = s.id OR tm.loser_id = s.id) = 0 THEN -1.0
-                     ELSE CAST((SELECT COUNT(*) FROM tournament_matches tm WHERE tm.winner_id = s.id) AS REAL)
-                          / (SELECT COUNT(*) FROM tournament_matches tm
-                             WHERE tm.winner_id = s.id OR tm.loser_id = s.id) END DESC,
-                tournaments_entered DESC, s.title COLLATE NOCASE
-        ''').fetchall()
-        result = []
-        for row in rows:
-            item = dict(row)
-            played = item['matches_won'] + item['matches_lost']
-            item['matches_played'] = played
-            item['win_rate'] = round(item['matches_won'] * 100 / played, 2) if played else None
-            item['tournament_points'] = round(item['tournament_points'], 4)
-            result.append(item)
-        return jsonify({'songs': result})
-    finally:
-        conn.close()
+    from catalog import collection, ranked
+    rows=[]
+    for song in ranked(collection(),'songs'):
+        played=song['tournament_wins']+song['tournament_losses']
+        rows.append({**{key:song[key] for key in ('id','title','artist','cover_url','championships','runner_ups','third_places','fourth_places','podiums','top_four_finishes','tournament_points')},'tournaments_entered':song['tournament_appearances'],
+                     'matches_won':song['tournament_wins'],'matches_lost':song['tournament_losses'],
+                     'matches_played':played,'win_rate':round(100*song['tournament_wins']/played,2) if played else None})
+    rows.sort(key=lambda r:(-r['championships'],-r['tournament_points'],r['title']))
+    return jsonify(songs=rows)
 
 
 @app.route('/api/tournament_complete', methods=['POST'])
@@ -415,15 +300,16 @@ def api_tournament_complete():
             return jsonify({'error': 'Tournament is not in progress.'}), 409
         pending = conn.execute('''SELECT COUNT(*) FROM tournament_matches
             WHERE tournament_id = ? AND status != 'completed' ''', (tournament_id,)).fetchone()[0]
-        final_match = conn.execute('''SELECT winner_id FROM tournament_matches
-            WHERE tournament_id = ? ORDER BY round_number DESC, match_number ASC LIMIT 1''',
+        final_match = conn.execute('''SELECT winner_id,loser_id FROM tournament_matches
+            WHERE tournament_id = ? AND match_type='bracket' ORDER BY round_number DESC, match_number ASC LIMIT 1''',
             (tournament_id,)).fetchone()
         if pending or not final_match or final_match['winner_id'] != champion_id:
             conn.rollback()
             return jsonify({'error': 'All matches must be complete and champion must be the final winner.'}), 409
-        conn.execute('''UPDATE tournaments SET champion_id = ?, status = 'completed',
+        bronze=conn.execute("SELECT winner_id,loser_id FROM tournament_matches WHERE tournament_id=? AND match_type='third_place' AND status='completed'",(tournament_id,)).fetchone()
+        conn.execute('''UPDATE tournaments SET runner_up_id=?,third_place_id=?,fourth_place_id=?,champion_id = ?, status = 'completed',
             completed_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP WHERE id = ?''',
-            (champion_id, tournament_id))
+            (final_match['loser_id'],bronze['winner_id'] if bronze else None,bronze['loser_id'] if bronze else None,champion_id, tournament_id))
         conn.execute('UPDATE songs SET tournament_wins = tournament_wins + 1 WHERE id = ?', (champion_id,))
         conn.commit()
         return jsonify({'success': True})

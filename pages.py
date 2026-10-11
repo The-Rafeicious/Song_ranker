@@ -164,12 +164,15 @@ def global_stats():
         'lowest_elo': conn.execute('SELECT id,title,elo_score FROM songs ORDER BY elo_score ASC,title LIMIT 1').fetchone(),
         'most_wins': conn.execute('SELECT s.id,s.title,COUNT(h.id) AS wins FROM songs s JOIN history h ON h.winner_id=s.id GROUP BY s.id ORDER BY wins DESC LIMIT 1').fetchone(),
         'trivia_attempts': conn.execute('SELECT COALESCE(SUM(attempts),0) FROM trivia_stats').fetchone()[0],
+        'trivia_available': conn.execute('SELECT COALESCE(SUM(available_points),0) FROM trivia_stats').fetchone()[0],
+        'trivia_high_score': conn.execute("SELECT COALESCE(MAX(value),0) FROM global_stats WHERE key='trivia_high_score'").fetchone()[0],
+        'trivia_high_streak': conn.execute("SELECT COALESCE(MAX(value),0) FROM global_stats WHERE key='trivia_high_streak'").fetchone()[0],
         'trivia_correct': conn.execute('SELECT COALESCE(SUM(correct),0) FROM trivia_stats').fetchone()[0],
         'tournaments_total': conn.execute('SELECT COUNT(*) FROM tournaments').fetchone()[0],
         'tournaments_completed': conn.execute("SELECT COUNT(*) FROM tournaments WHERE status='completed' OR champion_id IS NOT NULL").fetchone()[0],
         'recent_votes': conn.execute("SELECT COUNT(*) FROM history WHERE created_at >= datetime('now','-7 days')").fetchone()[0],
         
-        'top_trivia': conn.execute('''SELECT s.id,s.title,ts.attempts,ts.correct,ROUND(100.0*ts.correct/NULLIF(ts.attempts*2,0)) AS accuracy
+        'top_trivia': conn.execute('''SELECT s.id,s.title,ts.attempts,ts.correct,ROUND(100.0*ts.correct/NULLIF(ts.available_points,0)) AS accuracy
             FROM trivia_stats ts JOIN songs s ON s.id=ts.song_id WHERE ts.attempts>0 ORDER BY accuracy DESC,ts.attempts DESC LIMIT 1''').fetchone()
     }
     elo_distribution = [dict(r) for r in conn.execute('''SELECT CASE WHEN elo_score < 1000 THEN '< 1000'
@@ -344,33 +347,18 @@ def tag_page(tag_name):
 
 @app.route('/trivia_stats')
 def trivia_stats():
-    conn = get_db_connection()
-
-    # Base query for trivia stats
-    base_query = '''
-                 SELECT s.id, \
-                        s.title, \
-                        al.cover_url,
-                        (SELECT GROUP_CONCAT(a2.name, ', ') \
-                         FROM song_artists sa2 \
-                                  JOIN artists a2 ON sa2.artist_id = a2.id \
-                         WHERE sa2.song_id = s.id)                                   as artist,
-                        ts.attempts                                                  as trivia_attempts, \
-                        ts.correct                                                   as trivia_correct,
-                        ROUND((CAST(ts.correct AS FLOAT) / (ts.attempts * 2)) * 100) as rec_score
-                 FROM songs s
-                          JOIN trivia_stats ts ON s.id = ts.song_id
-                          LEFT JOIN albums al ON s.album_id = al.id
-                 WHERE ts.attempts > 0 \
-                 '''
-
-    # Split into Top 10 and Bottom 10
-    top_stats = conn.execute(base_query + ' ORDER BY rec_score DESC, ts.attempts DESC LIMIT 10').fetchall()
-    bottom_stats = conn.execute(base_query + ' ORDER BY rec_score ASC, ts.attempts DESC LIMIT 10').fetchall()
-
-    high_score_row = conn.execute('SELECT MAX(value) FROM global_stats WHERE key = "trivia_high_score"').fetchone()
-    high_score = high_score_row[0] if high_score_row and high_score_row[0] else 0
-
-    conn.close()
-    return render_template('trivia_stats.html', top_stats=top_stats, bottom_stats=bottom_stats, high_score=high_score)
-
+    from catalog import collection, ranked
+    from trivia import round_points
+    data=collection()
+    rows=[{**r,'trivia_attempts':r['attempts'],'trivia_correct':r['correct'],
+           'rec_score':round(100*r['correct']/r['available_points'])} for r in ranked(data,'songs') if r['available_points']>0]
+    top=sorted(rows,key=lambda r:(-r['rec_score'],-r['attempts'],r['title']))[:10]
+    bottom=sorted(rows,key=lambda r:(r['rec_score'],-r['attempts'],r['title']))[:10]
+    lookup={s['id']:s for s in rows}
+    recent=[{**r,'song':lookup.get(r['song_id']),'points':round_points(r)} for r in data['trivia_rounds']]
+    fields=[]
+    for name,label,attempts in [('title','Song','new_attempts'),('artist','Artist','new_attempts'),('album','Album','album_attempts')]:
+        total=sum(s.get(attempts,0) for s in rows);correct=sum(s.get(name+'_correct',0) for s in rows)
+        fields.append(dict(name=label,attempts=total,correct=correct,accuracy=round(100*correct/total) if total else None))
+    return render_template('trivia_stats.html',top_stats=top,bottom_stats=bottom,records=data['global_stats'],fields=fields,recent=recent,
+                           legacy_attempts=sum(s.get('legacy_attempts',0) for s in rows))

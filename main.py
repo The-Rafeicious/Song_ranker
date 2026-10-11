@@ -3,7 +3,8 @@ page, game and developer routes are registered by their respective modules.
 """
 from services import app, init_db, git_pull, ROOT
 import pages  # Registers page and library routes.
-import games  # Registers voting, trivia and tournament routes.
+import trivia  # Registers field-by-field trivia routes.
+import games  # Registers voting and tournament routes.
 import dev    # Registers authenticated database tools.
 
 init_db()

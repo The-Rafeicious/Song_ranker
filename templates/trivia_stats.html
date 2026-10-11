@@ -1,13 +1,15 @@
 {% extends 'base.html' %}
-{% from 'components.html' import song %}
+{% from 'components.html' import song, stat %}
 {% block title %}Recognisability · Song Ranker{% endblock %}
 {% block page_kind %}recognition_stats{% endblock %}
 {% block content %}
 <div class="page-head"><h1 class="recognition">Recognisability</h1><a class="btn" href="/trivia">Play Trivia →</a></div>
-<section class="panel recognition-panel feature-row recognition-high"><h2 class="recognition">🏆 Trivia High Score</h2><strong class="big recognition">{{ high_score }}</strong></section>
+<div class="stats">{{ stat('Best player score',records.get('trivia_high_score',0)|round(2),'recognition') }}{{ stat('Best streak',records.get('trivia_high_streak',0)|int,'recognition') }}{% for field in fields %}{{ stat(field.name+' accuracy',(field.accuracy|string)+'%' if field.accuracy is not none else '—','recognition') }}{% endfor %}</div>
 <div class="stats-columns">
 {% for heading, rows in [('Most Recognised',top_stats),('Least Recognised',bottom_stats)] %}
 <section class="panel recognition-panel"><div class="section-head"><h2 class="recognition">{{ heading }}</h2><small>{{ rows|length }} tracks</small></div>
-{% for row in rows %}{{ song(row,(row.rec_score|int|string)+'%',(row.trivia_correct|string)+' / '+((row.trivia_attempts*2)|string)+' points · '+(row.trivia_attempts|string)+' attempts',loop.index) }}{% else %}<div class="empty">No attempts yet</div>{% endfor %}
-</section>{% endfor %}
-</div>{% endblock %}
+{% for row in rows %}{{ song(row,(row.rec_score|int|string)+'%',(row.trivia_correct|string)+' / '+(row.available_points|string)+' fields · '+(row.trivia_attempts|string)+' attempts',loop.index) }}{% else %}<div class="empty">No attempts yet</div>{% endfor %}
+</section>{% endfor %}</div>
+<section class="panel recognition-panel spaced-panel"><div class="section-head"><h2 class="recognition">Field Records</h2></div><div class="mini-stats collection-mini">{% for field in fields %}<div><b class="recognition">{{ field.correct }} / {{ field.attempts }}</b><small>{{ field.name }}</small></div>{% endfor %}</div>{% if legacy_attempts %}<small class="muted">{{ legacy_attempts }} legacy attempts retain their original combined points.</small>{% endif %}</section>
+<section class="panel recognition-panel spaced-panel"><div class="section-head"><h2 class="recognition">Recent Trivia</h2><small>Last 100 rounds</small></div>{% for row in recent %}<div class="trivia-history-row"><div>{% if row.song %}<a class="song" href="/song/{{ row.song_id }}"><strong>{{ row.song.title }}</strong></a><small class="artist"> · {{ row.song.artist }}</small>{% endif %}<div class="field-history">{% for field,label in [('title','Song'),('artist','Artist'),('album','Album')] %}{% set result=row[field+'_correct'] %}<span class="{{ 'yes' if result else 'no' if result is not none else 'muted' }}">{{ '✓' if result else '×' if result is not none else '—' }} {{ label }}</span>{% endfor %}</div></div><div><strong class="recognition">+{{ row.points|round(2) }}</strong><small> · {{ row.user_score_after|round(2) }} score · {{ row.streak_after }} streak</small></div></div>{% else %}<div class="empty">No V3.2 rounds yet</div>{% endfor %}{% if records.get('trivia_legacy_high_score') %}<p class="muted">Legacy best score: {{ records.trivia_legacy_high_score|round(2) }}</p>{% endif %}</section>
+{% endblock %}

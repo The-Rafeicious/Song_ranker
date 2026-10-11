@@ -215,12 +215,14 @@ def api_delete_song(song_id):
 
     conn.execute('DELETE FROM song_artists WHERE song_id = ?', (song_id,))
     conn.execute('DELETE FROM song_genres WHERE song_id = ?', (song_id,))
-    conn.execute('DELETE FROM trivia_stats WHERE song_id = ?', (song_id,))
+    conn.execute('DELETE FROM trivia_rounds WHERE song_id = ?', (song_id,))
+    conn.execute('DELETE FROM trivia_legacy WHERE song_id=?',(song_id,))
     conn.execute('DELETE FROM history WHERE winner_id = ? OR loser_id = ?', (song_id, song_id))
     conn.execute('DELETE FROM tournament_entries WHERE song_id=?',(song_id,))
     for column in ('song1_id','song2_id','winner_id','loser_id'):
         conn.execute(f'UPDATE tournament_matches SET {column}=NULL WHERE {column}=?',(song_id,))
-    conn.execute('UPDATE tournaments SET champion_id=NULL WHERE champion_id=?',(song_id,))
+    for column in ('champion_id','runner_up_id','third_place_id','fourth_place_id'):
+        conn.execute(f'UPDATE tournaments SET {column}=NULL WHERE {column}=?',(song_id,))
     conn.execute('DELETE FROM songs WHERE id = ?', (song_id,))
 
     remaining_songs = conn.execute('SELECT COUNT(*) FROM songs').fetchone()[0]
@@ -428,29 +430,64 @@ def api_dev_reset_preview():
         'song_artist_links':'SELECT COUNT(*) FROM song_artists','song_genre_links':'SELECT COUNT(*) FROM song_genres'}.items()}
     clear={k:conn.execute(q).fetchone()[0] for k,q in {
         'votes_and_history':'SELECT COUNT(*) FROM history','trivia_stats':'SELECT COUNT(*) FROM trivia_stats','tournaments':'SELECT COUNT(*) FROM tournaments',
-        'tournament_matches':'SELECT COUNT(*) FROM tournament_matches'}.items()}
+        'tournament_matches':'SELECT COUNT(*) FROM tournament_matches','trivia_rounds':'SELECT COUNT(*) FROM trivia_rounds'}.items()}
     conn.close(); return jsonify({'keep':keep,'clear':clear})
+
+
+def reset_competition_data(scope):
+    """Keep the library and reset only the requested competition records."""
+    conn=None
+    try:
+        backup_path=create_database_backup('pre_reset_'+scope)
+        conn=get_db_connection()
+        conn.execute('BEGIN IMMEDIATE')
+        if scope in ('all','matches'):
+            conn.execute('DELETE FROM history')
+            if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='legacy_elo_changes'").fetchone():
+                conn.execute('DELETE FROM legacy_elo_changes')
+            conn.execute('UPDATE songs SET elo_score=1200,matches_played=0,highest_elo=1200,highest_rank=9999')
+        if scope in ('all','trivia'):
+            conn.execute('DELETE FROM trivia_rounds')
+            conn.execute('DELETE FROM trivia_legacy')
+            conn.execute("UPDATE global_stats SET value=0 WHERE key IN ('trivia_high_score','trivia_high_streak','trivia_legacy_high_score')")
+            conn.execute("INSERT INTO global_stats(key,value) VALUES('trivia_scoring_version',2) ON CONFLICT(key) DO UPDATE SET value=2")
+        if scope in ('all','tournaments'):
+            for table in ('tournament_matches','tournament_entries','tournaments'):
+                conn.execute(f'DELETE FROM {table}')
+            conn.execute('UPDATE songs SET tournament_wins=0')
+        if scope=='all':
+            conn.execute("UPDATE global_stats SET value=CASE WHEN key='trivia_scoring_version' THEN 2 ELSE 0 END")
+        conn.commit()
+        if scope in ('all','trivia'):
+            for key in ('trivia_score','trivia_streak','trivia_round_token','trivia_scoring_version'):
+                session.pop(key,None)
+        labels={'all':'All competition data','matches':'Elo and match history','trivia':'Trivia history and records','tournaments':'Tournament history and records'}
+        return jsonify(status='success',message=labels[scope]+' reset. Music library kept.',backup=os.path.basename(backup_path))
+    except Exception:
+        if conn:conn.rollback()
+        app.logger.exception('Competition reset failed')
+        return jsonify(message='Could not reset these records.'),500
+    finally:
+        if conn:conn.close()
+
+
+@app.route('/api/dev/reset-history/<scope>',methods=['POST'])
+@admin_required
+def api_dev_reset_history(scope):
+    if scope not in ('matches','trivia','tournaments'):
+        return jsonify(message='Choose match, trivia or tournament history.'),400
+    phrases={'matches':'RESET MATCHES','trivia':'RESET TRIVIA','tournaments':'RESET TOURNAMENTS'}
+    if (request.get_json(silent=True) or {}).get('confirmation')!=phrases[scope]:
+        return jsonify(message='Type '+phrases[scope]+' to confirm.'),400
+    return reset_competition_data(scope)
 
 
 @app.route('/api/dev/reset-database', methods=['POST'])
 @admin_required
 def api_dev_reset_database():
-    data=request.get_json(silent=True) or {}
-    if data.get('confirmation') != 'RESET COMPETITION':
-        return jsonify({'status':'error','message':'Type RESET COMPETITION to confirm.'}),400
-    try:
-        backup_path=create_database_backup('pre_reset')
-        conn=get_db_connection(); conn.execute('PRAGMA foreign_keys=ON')
-        for table in ('tournament_matches','tournament_entries','tournaments','history','trivia_stats'):
-            conn.execute(f'DELETE FROM {table}')
-        conn.execute('UPDATE songs SET elo_score=1200,matches_played=0,highest_elo=1200,highest_rank=9999,tournament_wins=0')
-        conn.execute('UPDATE global_stats SET value=0')
-        conn.execute("INSERT INTO global_stats (key,value) VALUES ('trivia_high_score',0) ON CONFLICT(key) DO UPDATE SET value=0")
-
-        conn.commit(); conn.close()
-        return jsonify({'status':'success','message':'Competition reset. Songs, albums, artists, genres, and their music links were kept.','backup':os.path.basename(backup_path)})
-    except Exception as exc:
-        app.logger.exception('Database reset failed'); return jsonify({'status':'error','message':f'Reset failed: {exc}'}),500
+    if (request.get_json(silent=True) or {}).get('confirmation') != 'RESET COMPETITION':
+        return jsonify(message='Type RESET COMPETITION to confirm.'),400
+    return reset_competition_data('all')
 
 
 @app.route('/api/dev/elo-correction', methods=['POST'])
@@ -481,21 +518,21 @@ def api_dev_edit_trivia(song_id):
     if not conn.execute('SELECT id FROM songs WHERE id=?', (song_id,)).fetchone():
         conn.close(); return jsonify({'status': 'error', 'message': 'Song not found.'}), 404
     if request.method == 'DELETE':
-        conn.execute('DELETE FROM trivia_stats WHERE song_id=?', (song_id,))
+        conn.execute('DELETE FROM trivia_rounds WHERE song_id=?', (song_id,))
+        conn.execute('DELETE FROM trivia_legacy WHERE song_id=?',(song_id,))
 
         conn.commit(); conn.close()
         return jsonify({'status': 'success', 'message': 'Trivia statistics deleted for this song.'})
-    data = request.get_json(silent=True) or {}
+    from trivia import edit_trivia_totals
     try:
-        attempts = int(data.get('attempts', 0)); correct = int(data.get('correct', 0))
-    except (TypeError, ValueError):
-        conn.close(); return jsonify({'status': 'error', 'message': 'Attempts and correct must be whole numbers.'}), 400
-    if attempts < 0 or correct < 0 or correct > attempts * 2:
-        conn.close(); return jsonify({'status': 'error', 'message': 'Values must be non-negative and correct fields cannot exceed twice the attempts.'}), 400
-    conn.execute('INSERT INTO trivia_stats (song_id,attempts,correct) VALUES (?,?,?) ON CONFLICT(song_id) DO UPDATE SET attempts=excluded.attempts,correct=excluded.correct', (song_id, attempts, correct))
-
-    conn.commit(); conn.close()
-    return jsonify({'status': 'success', 'message': 'Trivia statistics updated.'})
+        edit_trivia_totals(conn,song_id,request.get_json(silent=True) or {})
+        conn.commit()
+        return jsonify(status='success',message='Trivia statistics updated.')
+    except (ValueError,TypeError) as exc:
+        conn.rollback()
+        return jsonify(message=str(exc)),400
+    finally:
+        conn.close()
 
 
 @app.route('/api/dev/integrity', methods=['GET'])
@@ -516,7 +553,7 @@ def api_dev_integrity():
 def api_dev_activity():
     conn=get_db_connection()
     votes=[dict(r) for r in conn.execute('''SELECT h.id,h.created_at,w.id AS winner_id,w.title AS winner,l.id AS loser_id,l.title AS loser,
-        CASE WHEN h.is_tournament_match THEN 'tournament' WHEN h.mode = 'blind' THEN 'blind' WHEN h.mode = 'standard' THEN 'non-blind' ELSE 'unknown' END AS mode FROM history h
+        CASE WHEN h.mode='legacy_tournament' THEN 'legacy tournament' WHEN h.mode = 'blind' THEN 'blind' WHEN h.mode = 'standard' THEN 'non-blind' ELSE 'unknown' END AS mode FROM history h
         LEFT JOIN songs w ON w.id=h.winner_id LEFT JOIN songs l ON l.id=h.loser_id ORDER BY h.id DESC LIMIT 100''').fetchall()]
     tournaments=[dict(r) for r in conn.execute('''SELECT t.id,t.size,t.scope_type,t.scope_id,t.champion_id,t.timestamp,t.status,t.created_at,t.completed_at,
         (SELECT COUNT(*) FROM tournament_matches m WHERE m.tournament_id=t.id) AS match_count FROM tournaments t ORDER BY t.id DESC LIMIT 100''').fetchall()]
@@ -554,3 +591,89 @@ def api_export():
     except Exception as e:
         return jsonify({"status": "error", "message": f"Export failed: {str(e)}"}), 500
 
+
+@app.route('/api/dev/bulk_songs', methods=['POST'])
+@admin_required
+def api_dev_bulk_songs():
+    data=request.get_json(silent=True) or {}
+    conn=get_db_connection()
+    try:
+        ids=list(dict.fromkeys(int(i) for i in data.get('song_ids',[])))
+        if not ids: raise ValueError('Select at least one song.')
+        conn.execute('BEGIN IMMEDIATE')
+        placeholders=','.join('?' for _ in ids)
+        rows=conn.execute(f'SELECT id,title,album_id,track_number FROM songs WHERE id IN ({placeholders})',ids).fetchall()
+        if len(rows)!=len(ids): raise ValueError('One of the selected songs no longer exists.')
+        action=data.get('action')
+        if action=='move_album':
+            album_id=int(data.get('album_id'))
+            if not conn.execute('SELECT 1 FROM albums WHERE id=?',(album_id,)).fetchone(): raise ValueError('Choose an existing album.')
+            clear=data.get('clear_track_numbers') is True
+            occupied={r['track_number']:r['title'] for r in conn.execute(f'SELECT title,track_number FROM songs WHERE album_id=? AND id NOT IN ({placeholders}) AND track_number IS NOT NULL',[album_id]+ids)}
+            if not clear:
+                for row in rows:
+                    n=row['track_number']
+                    if n is not None and n in occupied: raise ValueError(f"Track {n} conflicts: {row['title']} / {occupied[n]}. Clear selected track numbers or edit their positions first.")
+                    if n is not None: occupied[n]=row['title']
+            # Release positions first, then restore them atomically in the destination.
+            conn.execute(f'UPDATE songs SET track_number=NULL WHERE id IN ({placeholders})',ids)
+            for row in rows:
+                conn.execute('UPDATE songs SET album_id=?,track_number=? WHERE id=?',(album_id,None if clear else row['track_number'],row['id']))
+        elif action in ('add_tags','remove_tags'):
+            tags=list(dict.fromkeys(int(i) for i in data.get('tag_ids',[])))
+            if not tags: raise ValueError('Choose at least one tag.')
+            if any(not conn.execute('SELECT 1 FROM genres WHERE id=?',(i,)).fetchone() for i in tags): raise ValueError('A selected tag no longer exists.')
+            for song_id in ids:
+                for tag_id in tags:
+                    if action=='add_tags': conn.execute('INSERT OR IGNORE INTO song_genres(song_id,genre_id) VALUES(?,?)',(song_id,tag_id))
+                    else: conn.execute('DELETE FROM song_genres WHERE song_id=? AND genre_id=?',(song_id,tag_id))
+        else: raise ValueError('Choose a bulk action.')
+        conn.commit()
+        return jsonify(status='success',message=f'Updated {len(ids)} songs.',updated=len(ids))
+    except (ValueError,TypeError,sqlite3.IntegrityError) as exc:
+        conn.rollback()
+        return jsonify(message=str(exc)),400
+    finally: conn.close()
+
+
+@app.route('/api/dev/trivia-records', methods=['POST'])
+@admin_required
+def api_dev_trivia_records():
+    import math
+    data=request.get_json(silent=True) or {}
+    try:
+        score=float(data['high_score']);streak=int(data['high_streak'])
+        if not math.isfinite(score) or score<0 or streak<0: raise ValueError()
+    except (KeyError,ValueError,TypeError): return jsonify(message='Use a non-negative score and whole-number streak.'),400
+    conn=get_db_connection()
+    try:
+        for key,value in [('trivia_high_score',score),('trivia_high_streak',streak)]:
+            conn.execute('INSERT INTO global_stats(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value',(key,value))
+        conn.commit()
+        return jsonify(status='success',message='Trivia records updated.')
+    finally: conn.close()
+
+@app.route('/api/dev/tournaments/<int:tournament_id>/placements', methods=['POST'])
+@admin_required
+def api_dev_tournament_placements(tournament_id):
+    data=request.get_json(silent=True) or {};conn=get_db_connection()
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        tournament=conn.execute('SELECT * FROM tournaments WHERE id=?',(tournament_id,)).fetchone()
+        if not tournament or tournament['status']!='completed': raise ValueError('Finish this tournament before correcting its podium.')
+        final=conn.execute("SELECT * FROM tournament_matches WHERE tournament_id=? AND match_type='bracket' ORDER BY round_number DESC LIMIT 1",(tournament_id,)).fetchone()
+        bronze=conn.execute("SELECT * FROM tournament_matches WHERE tournament_id=? AND match_type='third_place'",(tournament_id,)).fetchone()
+        if not final or final['status']!='completed': raise ValueError('This legacy bracket has no saved final to edit.')
+        champion=int(data.get('champion_id'));third=int(data.get('third_place_id')) if bronze else None
+        for match,winner in [(final,champion)]+([(bronze,third)] if bronze else []):
+            if winner not in (match['song1_id'],match['song2_id']) or winner is None: raise ValueError('Select a participant from each saved match.')
+            loser=match['song2_id'] if winner==match['song1_id'] else match['song1_id']
+            conn.execute('UPDATE tournament_matches SET winner_id=?,loser_id=? WHERE id=?',(winner,loser,match['id']))
+        runner=final['song2_id'] if champion==final['song1_id'] else final['song1_id']
+        fourth=(bronze['song2_id'] if third==bronze['song1_id'] else bronze['song1_id']) if bronze else None
+        conn.execute('UPDATE tournaments SET champion_id=?,runner_up_id=?,third_place_id=?,fourth_place_id=?,updated_at=CURRENT_TIMESTAMP WHERE id=?',(champion,runner,third,fourth,tournament_id))
+        conn.execute("UPDATE songs SET tournament_wins=(SELECT COUNT(*) FROM tournaments t WHERE t.champion_id=songs.id AND t.status='completed')")
+        conn.commit();return jsonify(status='success',message='Podium and deciding match results updated.')
+    except (ValueError,TypeError) as exc:
+        conn.rollback();return jsonify(message=str(exc)),400
+    finally:conn.close()

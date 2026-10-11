@@ -10,7 +10,7 @@ def proper_album(album):
 
 TOURNAMENT_TOTALS = ('tournament_wins', 'tournament_losses', 'tournament_points',
                      'championships', 'runner_ups', 'semifinals',
-                     'top_four_finishes', 'tournament_appearances')
+                     'top_four_finishes', 'tournament_appearances', 'third_places', 'fourth_places', 'podiums')
 
 
 def song_performance(data):
@@ -18,7 +18,7 @@ def song_performance(data):
     result = {s['id']: {key: 0 for key in TOURNAMENT_TOTALS} for s in data['songs']}
     brackets = {t['id']: t for t in data.get('tournaments', [])}
     appearances = defaultdict(set)
-    placements = {key: set() for key in ('championships', 'runner_ups', 'semifinals')}
+    placements = {key: set() for key in ('championships', 'runner_ups', 'semifinals', 'third_places', 'fourth_places')}
     for entry in data.get('tournament_entries', []):
         if entry['song_id'] in result and entry['tournament_id'] in brackets:
             appearances[entry['song_id']].add(entry['tournament_id'])
@@ -27,6 +27,9 @@ def song_performance(data):
         if t.get('status') == 'completed' and champion in result:
             placements['championships'].add((t['id'], champion))
             appearances[champion].add(t['id'])
+        if t.get('status') == 'completed':
+            for key,column in [('runner_ups','runner_up_id'),('third_places','third_place_id'),('fourth_places','fourth_place_id')]:
+                if t.get(column) in result: placements[key].add((t['id'],t[column]))
     for match in data.get('tournament_matches', []):
         t = brackets.get(match['tournament_id'])
         if not t:
@@ -44,6 +47,8 @@ def song_performance(data):
             size = int(t.get('size') or 0)
             if size >= 2 and size & (size - 1) == 0:
                 final_round = size.bit_length() - 1
+                if match.get('match_type','bracket') != 'bracket':
+                    continue
                 if match.get('round_number') == final_round:
                     placements['runner_ups'].add((t['id'], loser))
                 elif size >= 4 and match.get('round_number') == final_round - 1:
@@ -53,6 +58,8 @@ def song_performance(data):
             result[song_id][key] += 1
     for _, song_id in set().union(*placements.values()):
         result[song_id]['top_four_finishes'] += 1
+    for _,song_id in placements['championships'] | placements['runner_ups'] | placements['third_places']:
+        result[song_id]['podiums'] += 1
     for song_id, stats in result.items():
         stats['tournament_appearances'] = len(appearances[song_id])
     return result
@@ -63,21 +70,24 @@ def aggregate_performance(songs):
     songs = list({s['id']: s for s in songs}.values())
     attempts = sum(int(s.get('attempts') or 0) for s in songs)
     correct = sum(int(s.get('correct') or 0) for s in songs)
+    available = sum(int(s.get('available_points',2*int(s.get('attempts') or 0)) or 0) for s in songs)
     return {
         **{key: sum(s.get(key) or 0 for s in songs) for key in TOURNAMENT_TOTALS},
         'recognition_attempts': attempts,
         'recognition_correct': correct,
         'tested_tracks': sum(int(s.get('attempts') or 0) > 0 for s in songs),
-        'recognition_score': 100 * correct / (2 * attempts) if attempts else None,
+        'recognition_score': 100 * correct / available if available else None,
     }
 
 
 def collection():
     conn = get_db_connection()
     try:
-        data = {'songs':[dict(r) for r in conn.execute('SELECT s.*,COALESCE(ts.attempts,0) AS attempts,COALESCE(ts.correct,0) AS correct FROM songs s LEFT JOIN trivia_stats ts ON ts.song_id=s.id')]}
+        data = {'songs':[dict(r) for r in conn.execute('SELECT s.*,COALESCE(ts.attempts,0) AS attempts,COALESCE(ts.correct,0) AS correct,COALESCE(ts.available_points,0) AS available_points,COALESCE(ts.legacy_attempts,0) AS legacy_attempts,COALESCE(ts.legacy_correct,0) AS legacy_correct,COALESCE(ts.new_attempts,0) AS new_attempts,COALESCE(ts.title_correct,0) AS title_correct,COALESCE(ts.artist_correct,0) AS artist_correct,COALESCE(ts.album_attempts,0) AS album_attempts,COALESCE(ts.album_correct,0) AS album_correct FROM songs s LEFT JOIN trivia_stats ts ON ts.song_id=s.id')]}
         for key, table in [('artists','artists'),('albums','albums'),('tags','genres'),('history','history'),('tournaments','tournaments'),('tournament_entries','tournament_entries'),('tournament_matches','tournament_matches')]:
             data[key]=[dict(r) for r in conn.execute(f'SELECT * FROM {table}')]
+        data['trivia_rounds']=[dict(r) for r in conn.execute('SELECT * FROM trivia_rounds WHERE completed_at IS NOT NULL ORDER BY id DESC LIMIT 100')]
+        data['global_stats']=dict(conn.execute('SELECT key,value FROM global_stats'))
         artist_links, tag_links = defaultdict(list), defaultdict(list)
         for row in conn.execute('SELECT * FROM song_artists'):artist_links[row['song_id']].append(row['artist_id'])
         for row in conn.execute('SELECT * FROM song_genres'):tag_links[row['song_id']].append(row['genre_id'])
