@@ -216,7 +216,7 @@ def api_delete_song(song_id):
     conn.execute('DELETE FROM song_artists WHERE song_id = ?', (song_id,))
     conn.execute('DELETE FROM song_genres WHERE song_id = ?', (song_id,))
     conn.execute('DELETE FROM trivia_rounds WHERE song_id = ?', (song_id,))
-    conn.execute('DELETE FROM trivia_legacy WHERE song_id=?',(song_id,))
+    conn.execute('DELETE FROM trivia_adjustments WHERE song_id=?',(song_id,))
     conn.execute('DELETE FROM history WHERE winner_id = ? OR loser_id = ?', (song_id, song_id))
     conn.execute('DELETE FROM tournament_entries WHERE song_id=?',(song_id,))
     for column in ('song1_id','song2_id','winner_id','loser_id'):
@@ -448,8 +448,8 @@ def reset_competition_data(scope):
             conn.execute('UPDATE songs SET elo_score=1200,matches_played=0,highest_elo=1200,highest_rank=9999')
         if scope in ('all','trivia'):
             conn.execute('DELETE FROM trivia_rounds')
-            conn.execute('DELETE FROM trivia_legacy')
-            conn.execute("UPDATE global_stats SET value=0 WHERE key IN ('trivia_high_score','trivia_high_streak','trivia_legacy_high_score')")
+            conn.execute('DELETE FROM trivia_adjustments')
+            conn.execute("UPDATE global_stats SET value=0 WHERE key IN ('trivia_high_score','trivia_high_streak')")
             conn.execute("INSERT INTO global_stats(key,value) VALUES('trivia_scoring_version',2) ON CONFLICT(key) DO UPDATE SET value=2")
         if scope in ('all','tournaments'):
             for table in ('tournament_matches','tournament_entries','tournaments'):
@@ -519,7 +519,7 @@ def api_dev_edit_trivia(song_id):
         conn.close(); return jsonify({'status': 'error', 'message': 'Song not found.'}), 404
     if request.method == 'DELETE':
         conn.execute('DELETE FROM trivia_rounds WHERE song_id=?', (song_id,))
-        conn.execute('DELETE FROM trivia_legacy WHERE song_id=?',(song_id,))
+        conn.execute('DELETE FROM trivia_adjustments WHERE song_id=?',(song_id,))
 
         conn.commit(); conn.close()
         return jsonify({'status': 'success', 'message': 'Trivia statistics deleted for this song.'})

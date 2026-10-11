@@ -1,23 +1,31 @@
-"""V3.2 mode schema. Trivia summaries are views, not duplicate result logs."""
+"""V3.2.4 mode schema. Trivia summaries are views, not duplicate result logs."""
 
 
 def ensure_mode_schema(conn):
     objects = {r['name']: r['type'] for r in conn.execute(
         "SELECT name,type FROM sqlite_master WHERE type IN ('table','view')")}
+    if objects.get('trivia_stats') == 'view':
+        conn.execute('DROP VIEW trivia_stats')
+    # Only detailed V3.2 results and their sparse manual corrections remain.
+    conn.execute('''CREATE TABLE IF NOT EXISTS trivia_adjustments (
+        song_id INTEGER PRIMARY KEY REFERENCES songs(id) ON DELETE CASCADE,
+        new_attempts_delta INTEGER NOT NULL DEFAULT 0,
+        title_correct_delta INTEGER NOT NULL DEFAULT 0,
+        artist_correct_delta INTEGER NOT NULL DEFAULT 0,
+        album_attempts_delta INTEGER NOT NULL DEFAULT 0,
+        album_correct_delta INTEGER NOT NULL DEFAULT 0)''')
+    if objects.get('trivia_legacy') == 'table':
+        old_columns = {r['name'] for r in conn.execute('PRAGMA table_info(trivia_legacy)')}
+        deltas = ('new_attempts_delta','title_correct_delta','artist_correct_delta',
+                  'album_attempts_delta','album_correct_delta')
+        if set(deltas) <= old_columns:
+            columns = ','.join(deltas)
+            conn.execute(f'INSERT OR IGNORE INTO trivia_adjustments(song_id,{columns}) '
+                         f'SELECT song_id,{columns} FROM trivia_legacy WHERE '+
+                         ' OR '.join(f'{name}!=0' for name in deltas))
+        conn.execute('DROP TABLE trivia_legacy')
     if objects.get('trivia_stats') == 'table':
-        if objects.get('trivia_legacy') == 'table':
-            if conn.execute('SELECT COUNT(*) FROM trivia_legacy').fetchone()[0]:
-                raise ValueError('Both legacy trivia tables contain data; migration stopped safely.')
-            conn.execute('DROP TABLE trivia_legacy')
-        conn.execute('ALTER TABLE trivia_stats RENAME TO trivia_legacy')
-    conn.execute('''CREATE TABLE IF NOT EXISTS trivia_legacy (
-        song_id INTEGER PRIMARY KEY REFERENCES songs(id),
-        attempts INTEGER NOT NULL DEFAULT 0, correct INTEGER NOT NULL DEFAULT 0)''')
-    cols = {r['name'] for r in conn.execute('PRAGMA table_info(trivia_legacy)')}
-    for name in ('new_attempts_delta', 'title_correct_delta', 'artist_correct_delta',
-                 'album_attempts_delta', 'album_correct_delta'):
-        if name not in cols:
-            conn.execute(f'ALTER TABLE trivia_legacy ADD COLUMN {name} INTEGER NOT NULL DEFAULT 0')
+        conn.execute('DROP TABLE trivia_stats')
     conn.execute('''CREATE TABLE IF NOT EXISTS trivia_rounds (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         token TEXT NOT NULL UNIQUE,
@@ -40,20 +48,18 @@ def ensure_mode_schema(conn):
             SUM(COALESCE(album_correct,0)) AS album_correct
           FROM trivia_rounds WHERE completed_at IS NOT NULL GROUP BY song_id
         ), totals AS (
-          SELECT s.id AS song_id,COALESCE(l.attempts,0) AS legacy_attempts,
-            COALESCE(l.correct,0) AS legacy_correct,
-            COALESCE(r.new_attempts,0)+COALESCE(l.new_attempts_delta,0) AS new_attempts,
+          SELECT s.id AS song_id,COALESCE(r.new_attempts,0)+COALESCE(l.new_attempts_delta,0) AS new_attempts,
             COALESCE(r.title_correct,0)+COALESCE(l.title_correct_delta,0) AS title_correct,
             COALESCE(r.artist_correct,0)+COALESCE(l.artist_correct_delta,0) AS artist_correct,
             COALESCE(r.album_attempts,0)+COALESCE(l.album_attempts_delta,0) AS album_attempts,
             COALESCE(r.album_correct,0)+COALESCE(l.album_correct_delta,0) AS album_correct
-          FROM songs s LEFT JOIN trivia_legacy l ON l.song_id=s.id
+          FROM songs s LEFT JOIN trivia_adjustments l ON l.song_id=s.id
           LEFT JOIN recent r ON r.song_id=s.id
-        ) SELECT *,legacy_attempts+new_attempts AS attempts,
-          legacy_correct+title_correct+artist_correct+album_correct AS correct,
-          2*(legacy_attempts+new_attempts)+album_attempts AS available_points,
+        ) SELECT *,new_attempts AS attempts,
+          title_correct+artist_correct+album_correct AS correct,
+          2*new_attempts+album_attempts AS available_points,
           new_attempts AS title_attempts,new_attempts AS artist_attempts
-          FROM totals WHERE legacy_attempts+new_attempts>0''')
+          FROM totals WHERE new_attempts>0''')
     cols = {r['name'] for r in conn.execute('PRAGMA table_info(history)')}
     if 'is_tournament_match' in cols:
         conn.execute("UPDATE history SET mode='legacy_tournament' WHERE is_tournament_match=1")
@@ -69,7 +75,8 @@ def ensure_mode_schema(conn):
         if name not in cols:
             conn.execute(f'ALTER TABLE tournaments ADD COLUMN {name} {declaration}')
     if not conn.execute("SELECT 1 FROM global_stats WHERE key='trivia_scoring_version'").fetchone():
-        conn.execute("INSERT OR IGNORE INTO global_stats(key,value) SELECT 'trivia_legacy_high_score',value FROM global_stats WHERE key='trivia_high_score'")
         conn.execute("INSERT INTO global_stats(key,value) VALUES('trivia_high_score',0) ON CONFLICT(key) DO UPDATE SET value=0")
         conn.execute("INSERT INTO global_stats(key,value) VALUES('trivia_scoring_version',2)")
     conn.execute("INSERT OR IGNORE INTO global_stats(key,value) VALUES('trivia_high_streak',0)")
+
+    conn.execute("DELETE FROM global_stats WHERE key='trivia_legacy_high_score'")

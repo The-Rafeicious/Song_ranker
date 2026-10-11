@@ -215,13 +215,6 @@ def init_db():
             PRIMARY KEY (song_id, genre_id)
         );
 
-        CREATE TABLE IF NOT EXISTS trivia_legacy (
-            song_id INTEGER PRIMARY KEY,
-            attempts INTEGER DEFAULT 0,
-            correct INTEGER DEFAULT 0,
-            FOREIGN KEY(song_id) REFERENCES songs(id)
-        );
-
         CREATE TABLE IF NOT EXISTS history (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             winner_id INTEGER,

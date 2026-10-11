@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify, abort
 
 from services import app, get_db_connection, fetch_match_history
-from catalog import collection, ranked, proper_album
+from catalog import collection, ranked, proper_album, song_performance
 @app.route('/')
 def home():
     return render_template('app_page.html', page='home')
@@ -60,6 +60,41 @@ def history():
     history_data = fetch_match_history(conn, limit=50)
     conn.close()
     return render_template('history.html', history=history_data)
+
+
+def global_mode_details(conn):
+    """Current field accuracy and saved podiums, derived without extra counters."""
+    fields = []
+    for key, label, denominator in [('title', 'Song', 'new_attempts'),
+                                     ('artist', 'Artist', 'new_attempts'),
+                                     ('album', 'Album', 'album_attempts')]:
+        row = conn.execute(f'SELECT COALESCE(SUM({key}_correct),0) correct, '
+                           f'COALESCE(SUM({denominator}),0) attempts FROM trivia_stats').fetchone()
+        fields.append(dict(label=label, correct=row['correct'], attempts=row['attempts'],
+                           accuracy=round(100*row['correct']/row['attempts'],1) if row['attempts'] else None))
+    tournaments = [dict(row) for row in conn.execute('SELECT * FROM tournaments')]
+    matches = [dict(row) for row in conn.execute('SELECT * FROM tournament_matches')]
+    songs = [dict(row) for row in conn.execute('SELECT id,title FROM songs')]
+    performance = song_performance(dict(songs=songs, tournaments=tournaments, tournament_matches=matches))
+    leaders = sorted([dict(song, **performance[song['id']]) for song in songs
+                      if performance[song['id']]['championships']],
+                     key=lambda row: (-row['championships'], -row['tournament_points'], row['title']))[:3]
+    completed = [t for t in tournaments if t['status']=='completed']
+    latest = max(completed, key=lambda t:(t.get('completed_at') or t.get('created_at') or '',t['id']), default=None)
+    by_id = {song['id']:song for song in songs}
+    podium = [dict(place=place, **by_id[latest[column]])
+              for place,column in [(1,'champion_id'),(2,'runner_up_id'),(3,'third_place_id')]
+              if latest and latest.get(column) in by_id]
+    return dict(trivia_fields=fields,
+                trivia_tested=conn.execute('SELECT COUNT(*) FROM trivia_stats WHERE attempts>0').fetchone()[0],
+                trivia_over_ninety=conn.execute('SELECT COUNT(*) FROM trivia_stats WHERE 100.0*correct/NULLIF(available_points,0)>90').fetchone()[0],
+                tournaments_completed=len(completed),
+                tournament_matches=sum(row['tournament_wins'] for row in performance.values()),
+                tournament_points=round(sum(row['tournament_points'] for row in performance.values()),2),
+                tournament_places=[dict(label=label, count=sum(row[key] for row in performance.values()))
+                                   for key,label in [('championships','First place'),('runner_ups','Second place'),('third_places','Third place')]],
+                tournament_leaders=leaders, latest_podium=podium,
+                latest_tournament_id=latest['id'] if latest else None)
 
 
 @app.route('/global_stats')
@@ -162,14 +197,13 @@ def global_stats():
         'average_elo': round(conn.execute('SELECT COALESCE(AVG(elo_score),1200) FROM songs').fetchone()[0]),
         'highest_elo': conn.execute('SELECT id,title,elo_score FROM songs ORDER BY elo_score DESC,title LIMIT 1').fetchone(),
         'lowest_elo': conn.execute('SELECT id,title,elo_score FROM songs ORDER BY elo_score ASC,title LIMIT 1').fetchone(),
-        'most_wins': conn.execute('SELECT s.id,s.title,COUNT(h.id) AS wins FROM songs s JOIN history h ON h.winner_id=s.id GROUP BY s.id ORDER BY wins DESC LIMIT 1').fetchone(),
+        'most_wins': conn.execute("SELECT s.id,s.title,COUNT(h.id) AS wins FROM songs s JOIN history h ON h.winner_id=s.id WHERE h.mode IN ('standard','blind') GROUP BY s.id ORDER BY wins DESC LIMIT 1").fetchone(),
         'trivia_attempts': conn.execute('SELECT COALESCE(SUM(attempts),0) FROM trivia_stats').fetchone()[0],
         'trivia_available': conn.execute('SELECT COALESCE(SUM(available_points),0) FROM trivia_stats').fetchone()[0],
         'trivia_high_score': conn.execute("SELECT COALESCE(MAX(value),0) FROM global_stats WHERE key='trivia_high_score'").fetchone()[0],
         'trivia_high_streak': conn.execute("SELECT COALESCE(MAX(value),0) FROM global_stats WHERE key='trivia_high_streak'").fetchone()[0],
         'trivia_correct': conn.execute('SELECT COALESCE(SUM(correct),0) FROM trivia_stats').fetchone()[0],
         'tournaments_total': conn.execute('SELECT COUNT(*) FROM tournaments').fetchone()[0],
-        'tournaments_completed': conn.execute("SELECT COUNT(*) FROM tournaments WHERE status='completed' OR champion_id IS NOT NULL").fetchone()[0],
         'recent_votes': conn.execute("SELECT COUNT(*) FROM history WHERE created_at >= datetime('now','-7 days')").fetchone()[0],
         
         'top_trivia': conn.execute('''SELECT s.id,s.title,ts.attempts,ts.correct,ROUND(100.0*ts.correct/NULLIF(ts.available_points,0)) AS accuracy
@@ -185,10 +219,21 @@ def global_stats():
         GROUP BY al.id HAVING COUNT(s.id)>0 ORDER BY avg_elo DESC,songs DESC LIMIT 5''').fetchall()]
     recent_activity = [dict(r) for r in conn.execute('''SELECT h.id,h.created_at,w.id AS winner_id,w.title AS winner_title,l.id AS loser_id,l.title AS loser_title
         FROM history h LEFT JOIN songs w ON w.id=h.winner_id LEFT JOIN songs l ON l.id=h.loser_id ORDER BY h.id DESC LIMIT 8''').fetchall()]
+    from catalog import voting_records, summarize_votes
+    song_votes = voting_records(conn)
+    voting = summarize_votes(list(song_votes.values()))
+    titles = {row['id']: row['title'] for row in conn.execute('SELECT id,title FROM songs')}
+    voting_leaders = {}
+    for mode,prefix in [('overall',''),('standard','standard_'),('blind','blind_')]:
+        eligible = [(sid,v) for sid,v in song_votes.items() if v[prefix+'matches']]
+        eligible.sort(key=lambda pair:(-pair[1][prefix+'win_rate'],-pair[1][prefix+'matches'],titles[pair[0]]))
+        voting_leaders[mode]=[dict(id=sid,title=titles[sid],wins=v[prefix+'wins'],
+            losses=v[prefix+'losses'],win_rate=round(v[prefix+'win_rate'],1)) for sid,v in eligible[:3]]
+    extra_stats.update(global_mode_details(conn))
     conn.close()
 
     return render_template('global_stats.html',
-                           extra_stats=extra_stats, elo_distribution=elo_distribution,
+                           extra_stats=extra_stats, elo_distribution=elo_distribution, voting=voting, voting_leaders=voting_leaders,
                            genre_leaders=genre_leaders, top_albums_stats=top_albums_stats,
                            recent_activity=recent_activity,
                            total_songs=total_songs,
@@ -360,5 +405,4 @@ def trivia_stats():
     for name,label,attempts in [('title','Song','new_attempts'),('artist','Artist','new_attempts'),('album','Album','album_attempts')]:
         total=sum(s.get(attempts,0) for s in rows);correct=sum(s.get(name+'_correct',0) for s in rows)
         fields.append(dict(name=label,attempts=total,correct=correct,accuracy=round(100*correct/total) if total else None))
-    return render_template('trivia_stats.html',top_stats=top,bottom_stats=bottom,records=data['global_stats'],fields=fields,recent=recent,
-                           legacy_attempts=sum(s.get('legacy_attempts',0) for s in rows))
+    return render_template('trivia_stats.html',top_stats=top,bottom_stats=bottom,records=data['global_stats'],fields=fields,recent=recent)

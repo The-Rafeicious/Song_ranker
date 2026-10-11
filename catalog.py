@@ -9,8 +9,7 @@ def proper_album(album):
 
 
 TOURNAMENT_TOTALS = ('tournament_wins', 'tournament_losses', 'tournament_points',
-                     'championships', 'runner_ups', 'semifinals',
-                     'top_four_finishes', 'tournament_appearances', 'third_places', 'fourth_places', 'podiums')
+                     'championships', 'runner_ups', 'tournament_appearances', 'third_places', 'fourth_places', 'podiums')
 
 
 def song_performance(data):
@@ -18,7 +17,7 @@ def song_performance(data):
     result = {s['id']: {key: 0 for key in TOURNAMENT_TOTALS} for s in data['songs']}
     brackets = {t['id']: t for t in data.get('tournaments', [])}
     appearances = defaultdict(set)
-    placements = {key: set() for key in ('championships', 'runner_ups', 'semifinals', 'third_places', 'fourth_places')}
+    placements = {key: set() for key in ('championships', 'runner_ups', 'third_places', 'fourth_places')}
     for entry in data.get('tournament_entries', []):
         if entry['song_id'] in result and entry['tournament_id'] in brackets:
             appearances[entry['song_id']].add(entry['tournament_id'])
@@ -51,13 +50,9 @@ def song_performance(data):
                     continue
                 if match.get('round_number') == final_round:
                     placements['runner_ups'].add((t['id'], loser))
-                elif size >= 4 and match.get('round_number') == final_round - 1:
-                    placements['semifinals'].add((t['id'], loser))
     for key, finishes in placements.items():
         for _, song_id in finishes:
             result[song_id][key] += 1
-    for _, song_id in set().union(*placements.values()):
-        result[song_id]['top_four_finishes'] += 1
     for _,song_id in placements['championships'] | placements['runner_ups'] | placements['third_places']:
         result[song_id]['podiums'] += 1
     for song_id, stats in result.items():
@@ -73,6 +68,7 @@ def aggregate_performance(songs):
     available = sum(int(s.get('available_points',2*int(s.get('attempts') or 0)) or 0) for s in songs)
     return {
         **{key: sum(s.get(key) or 0 for s in songs) for key in TOURNAMENT_TOTALS},
+        'voting': summarize_votes([s.get('voting',{}) for s in songs]),
         'recognition_attempts': attempts,
         'recognition_correct': correct,
         'tested_tracks': sum(int(s.get('attempts') or 0) > 0 for s in songs),
@@ -80,10 +76,41 @@ def aggregate_performance(songs):
     }
 
 
+def voting_records(conn):
+    """One result per song appearance; only labelled standard/blind votes count."""
+    result = {r['id']: {'standard_wins':0,'standard_losses':0,'blind_wins':0,'blind_losses':0}
+              for r in conn.execute('SELECT id FROM songs')}
+    query = '''WITH valid AS (
+        SELECT h.winner_id,h.loser_id,h.mode FROM history h
+        JOIN songs w ON w.id=h.winner_id JOIN songs l ON l.id=h.loser_id
+        WHERE h.mode IN ('standard','blind') AND h.winner_id!=h.loser_id
+      ), appearances AS (
+        SELECT winner_id song_id,mode,1 won FROM valid
+        UNION ALL SELECT loser_id,mode,0 FROM valid
+      ) SELECT song_id,mode,SUM(won) wins,COUNT(*)-SUM(won) losses
+        FROM appearances GROUP BY song_id,mode'''
+    for row in conn.execute(query):
+        result[row['song_id']][row['mode']+'_wins']=row['wins']
+        result[row['song_id']][row['mode']+'_losses']=row['losses']
+    return {sid: summarize_votes([counts]) for sid,counts in result.items()}
+
+
+def summarize_votes(records):
+    totals={key:sum(record.get(key,0) for record in records)
+            for key in ('standard_wins','standard_losses','blind_wins','blind_losses')}
+    totals.update(wins=totals['standard_wins']+totals['blind_wins'],
+                  losses=totals['standard_losses']+totals['blind_losses'])
+    for prefix in ('','standard_','blind_'):
+        wins,losses=totals[prefix+'wins'],totals[prefix+'losses']
+        totals[prefix+'matches']=wins+losses
+        totals[prefix+'win_rate']=100*wins/(wins+losses) if wins+losses else None
+    return totals
+
+
 def collection():
     conn = get_db_connection()
     try:
-        data = {'songs':[dict(r) for r in conn.execute('SELECT s.*,COALESCE(ts.attempts,0) AS attempts,COALESCE(ts.correct,0) AS correct,COALESCE(ts.available_points,0) AS available_points,COALESCE(ts.legacy_attempts,0) AS legacy_attempts,COALESCE(ts.legacy_correct,0) AS legacy_correct,COALESCE(ts.new_attempts,0) AS new_attempts,COALESCE(ts.title_correct,0) AS title_correct,COALESCE(ts.artist_correct,0) AS artist_correct,COALESCE(ts.album_attempts,0) AS album_attempts,COALESCE(ts.album_correct,0) AS album_correct FROM songs s LEFT JOIN trivia_stats ts ON ts.song_id=s.id')]}
+        data = {'songs':[dict(r) for r in conn.execute('SELECT s.*,COALESCE(ts.attempts,0) AS attempts,COALESCE(ts.correct,0) AS correct,COALESCE(ts.available_points,0) AS available_points,COALESCE(ts.new_attempts,0) AS new_attempts,COALESCE(ts.title_correct,0) AS title_correct,COALESCE(ts.artist_correct,0) AS artist_correct,COALESCE(ts.album_attempts,0) AS album_attempts,COALESCE(ts.album_correct,0) AS album_correct FROM songs s LEFT JOIN trivia_stats ts ON ts.song_id=s.id')]}
         for key, table in [('artists','artists'),('albums','albums'),('tags','genres'),('history','history'),('tournaments','tournaments'),('tournament_entries','tournament_entries'),('tournament_matches','tournament_matches')]:
             data[key]=[dict(r) for r in conn.execute(f'SELECT * FROM {table}')]
         data['trivia_rounds']=[dict(r) for r in conn.execute('SELECT * FROM trivia_rounds WHERE completed_at IS NOT NULL ORDER BY id DESC LIMIT 100')]
@@ -96,8 +123,9 @@ def collection():
         data['history'].sort(key=lambda r:r['id'],reverse=True)
         data['tournaments'].sort(key=lambda r:r['id'],reverse=True)
         performance = song_performance(data)
+        voting = voting_records(conn)
         for song in data['songs']:
-            song.update(performance[song['id']])
+            song.update(performance[song['id']], voting=voting[song['id']])
         return data
     finally: conn.close()
 

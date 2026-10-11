@@ -268,7 +268,7 @@ def api_tournament_stats():
     rows=[]
     for song in ranked(collection(),'songs'):
         played=song['tournament_wins']+song['tournament_losses']
-        rows.append({**{key:song[key] for key in ('id','title','artist','cover_url','championships','runner_ups','third_places','fourth_places','podiums','top_four_finishes','tournament_points')},'tournaments_entered':song['tournament_appearances'],
+        rows.append({**{key:song[key] for key in ('id','title','artist','cover_url','championships','runner_ups','third_places','fourth_places','podiums','tournament_points')},'tournaments_entered':song['tournament_appearances'],
                      'matches_won':song['tournament_wins'],'matches_lost':song['tournament_losses'],
                      'matches_played':played,'win_rate':round(100*song['tournament_wins']/played,2) if played else None})
     rows.sort(key=lambda r:(-r['championships'],-r['tournament_points'],r['title']))

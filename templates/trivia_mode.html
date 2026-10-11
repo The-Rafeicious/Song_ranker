@@ -1,5 +1,17 @@
 {% extends 'base.html' %}
 {% block title %}Trivia · Song Ranker{% endblock %}
 {% block page_kind %}trivia{% endblock %}
-{% block content %}<div id="trivia-root" class="trivia-game"><div class="empty" role="status">Loading trivia…</div></div>{% endblock %}
-{% block extra_js %}<script src="{{url_for('static',filename='js/trivia.js',v='3.2.2')}}" defer></script>{% endblock %}
+{% block content %}
+<div id="trivia-root" class="trivia-game"><div class="empty" role="status">Loading trivia…</div></div>
+<noscript><p class="error">Enable JavaScript to play Trivia.</p></noscript>
+{% endblock %}
+{% block extra_js %}
+<script>
+window.addEventListener('error',function(event){
+  if(event.target?.tagName==='SCRIPT'&&event.target.src.includes('/static/js/trivia.js')){
+    document.getElementById('trivia-root').innerHTML='<div class="panel recognition-panel trivia-load-error"><p class="error" role="alert">Trivia script is missing or could not load. Restore static/js/trivia.js from the V3.2.5 update, then reload.</p><a class="btn recognition" href="/trivia">Reload trivia ↻</a></div>';
+  }
+},true);
+</script>
+<script src="{{url_for('static',filename='js/trivia.js',v='3.2.5')}}" defer></script>
+{% endblock %}

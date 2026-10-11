@@ -2,6 +2,7 @@
 import time
 import uuid
 import random
+import re
 from urllib.parse import quote
 from flask import request, session, jsonify, render_template
 from services import app, get_db_connection, get_song_full, is_close_match
@@ -26,7 +27,7 @@ def round_points(row):
 
 
 def score_state(conn):
-    keys = dict(conn.execute("SELECT key,value FROM global_stats WHERE key IN ('trivia_high_score','trivia_high_streak','trivia_legacy_high_score')"))
+    keys = dict(conn.execute("SELECT key,value FROM global_stats WHERE key IN ('trivia_high_score','trivia_high_streak')"))
     if session.get('trivia_scoring_version') != 2:
         session.update(trivia_score=0, trivia_streak=0, trivia_scoring_version=2)
     return {'score': session.get('trivia_score', 0), 'streak': session.get('trivia_streak', 0),
@@ -44,11 +45,28 @@ def actual_answers(conn, song):
     return {'title': song['title'], 'artist': song['artist'] or '', 'album': song['album'] or ''}, artists
 
 
+def trivia_match(guess, actual, field):
+    """Bracketed additions are optional; the meaningful base must still match."""
+    if field not in ('title', 'album'):
+        return is_close_match(guess, actual)
+    def base(value):
+        # Innermost groups first so nested credits/edition notes are safe.
+        value = str(value or '')
+        for _ in range(8):
+            stripped = re.sub(r'\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\}', ' ', value)
+            if stripped == value:
+                break
+            value = stripped
+        return ' '.join(value.split())
+    canonical = base(actual)
+    return is_close_match(base(guess), canonical) if canonical else is_close_match(guess, actual)
+
+
 def grade(conn, row, field, guess, song, seconds):
     if row[field+'_correct'] is not None or field == 'album' and not row['album_available']:
         return
     answers, artists = actual_answers(conn, song)
-    correct = is_close_match(str(guess or ''), answers[field])
+    correct = trivia_match(str(guess or ''), answers[field], field)
     if field == 'artist':
         correct = correct or any(is_close_match(str(guess or ''), artist) for artist in artists)
     conn.execute(f'UPDATE trivia_rounds SET {field}_correct=?,{field}_seconds=? WHERE id=?',
@@ -208,19 +226,21 @@ def edit_trivia_totals(conn,song_id,data):
     """Sparse manual deltas preserve the detailed history instead of rewriting it."""
     totals=conn.execute('SELECT * FROM trivia_stats WHERE song_id=?',(song_id,)).fetchone()
     totals=dict(totals) if totals else {}
-    names=['legacy_attempts','legacy_correct','new_attempts','title_correct','artist_correct','album_attempts','album_correct']
-    if 'attempts' in data and 'legacy_attempts' not in data:
-        data={**data,'legacy_attempts':int(data['attempts'])-totals.get('new_attempts',0),
-              'legacy_correct':int(data.get('correct',0))-sum(totals.get(f+'_correct',0) for f in FIELDS)}
+    names=['new_attempts','title_correct','artist_correct','album_attempts','album_correct']
+    if set(data)-set(names):
+        raise ValueError('Use song, artist and album field counts; legacy totals are no longer supported.')
     values={name:int(data.get(name,totals.get(name,0))) for name in names}
-    if any(v<0 for v in values.values()) or values['legacy_correct']>2*values['legacy_attempts'] or any(values[f+'_correct']>values['new_attempts'] for f in ('title','artist')) or values['album_attempts']>values['new_attempts'] or values['album_correct']>values['album_attempts']:
+    if any(v<0 for v in values.values()) or any(values[f+'_correct']>values['new_attempts'] for f in ('title','artist')) or values['album_attempts']>values['new_attempts'] or values['album_correct']>values['album_attempts']:
         raise ValueError('Correct counts cannot exceed the available field attempts.')
     raw=conn.execute('''SELECT COUNT(*) new_attempts,COALESCE(SUM(title_correct),0) title_correct,
         COALESCE(SUM(artist_correct),0) artist_correct,COALESCE(SUM(album_available),0) album_attempts,
         COALESCE(SUM(album_correct),0) album_correct FROM trivia_rounds WHERE song_id=? AND completed_at IS NOT NULL''',(song_id,)).fetchone()
     delta_names=['new_attempts','title_correct','artist_correct','album_attempts','album_correct']
-    params=[song_id,values['legacy_attempts'],values['legacy_correct']]+[values[n]-raw[n] for n in delta_names]
-    conn.execute('''INSERT INTO trivia_legacy(song_id,attempts,correct,new_attempts_delta,title_correct_delta,artist_correct_delta,album_attempts_delta,album_correct_delta)
-        VALUES(?,?,?,?,?,?,?,?) ON CONFLICT(song_id) DO UPDATE SET attempts=excluded.attempts,correct=excluded.correct,
+    deltas=[values[n]-raw[n] for n in delta_names]
+    if not any(deltas):
+        conn.execute('DELETE FROM trivia_adjustments WHERE song_id=?',(song_id,))
+        return
+    conn.execute('''INSERT INTO trivia_adjustments(song_id,new_attempts_delta,title_correct_delta,artist_correct_delta,album_attempts_delta,album_correct_delta)
+        VALUES(?,?,?,?,?,?) ON CONFLICT(song_id) DO UPDATE SET
         new_attempts_delta=excluded.new_attempts_delta,title_correct_delta=excluded.title_correct_delta,
-        artist_correct_delta=excluded.artist_correct_delta,album_attempts_delta=excluded.album_attempts_delta,album_correct_delta=excluded.album_correct_delta''',params)
+        artist_correct_delta=excluded.artist_correct_delta,album_attempts_delta=excluded.album_attempts_delta,album_correct_delta=excluded.album_correct_delta''',[song_id]+deltas)

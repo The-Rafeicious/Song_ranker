@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime
 import sqlite3
 
-SCHEMA_VERSION = 5
+SCHEMA_VERSION = 6
 
 def migrate(filename):
     path = Path(filename)

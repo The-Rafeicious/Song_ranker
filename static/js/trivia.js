@@ -1,10 +1,18 @@
+window.songRankerTriviaLoaded=true;
 (async()=>{
 const $=s=>document.querySelector(s),root=$('#trivia-root');
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const order=['title','artist','album'],names={title:'Song',artist:'Artist',album:'Album'},colours={title:'song',artist:'artist',album:'album'},weights={title:50,artist:20,album:30};
 let state,active=false,busy=false,paused=false,tick,nextTimer,anchor=0,baseElapsed=0,generation=0;
 const pending=new Map(),animations=new Set();
-async function api(path,data){const r=await fetch(path,{method:data===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data)});const result=await r.json();if(!r.ok)throw Error(result.message||'Could not save this round.');return result}
+async function api(path,data){
+ const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),12000);
+ try{const r=await fetch(path,{method:data===undefined?'GET':'POST',headers:{'Content-Type':'application/json'},body:data===undefined?undefined:JSON.stringify(data),signal:controller.signal});let result;
+ try{result=await r.json()}catch{throw Error(`Trivia request failed (HTTP ${r.status}). Check the app terminal, then retry.`)}
+ if(!r.ok)throw Error(result.message||'Could not save this round.');return result;
+ }catch(e){if(e.name==='AbortError')throw Error('Trivia request timed out. Retry the round.');throw e}
+ finally{clearTimeout(timeout)}
+}
 const path=action=>'/api/trivia/'+state.token+'/'+action;
 const audio=()=>$('#trivia-audio');
 const fields=()=>order.filter(f=>state.fields[f]);
@@ -44,7 +52,7 @@ async function load(auto=false){
   $('#trivia-start').onclick=()=>active?pause():start();$('#trivia-guesses').onsubmit=e=>e.preventDefault();
   audio().addEventListener('ended',()=>{if(active&&!paused&&remaining()<=0)finish()});audio().addEventListener('error',()=>{if(active&&!paused)pause();error(Error('Preview unavailable. Try resuming this round.'))});
   tick=setInterval(updateTimer,100);if(active&&!paused){state=await api(path('pause'),{paused:true});sync(state);setEnabled()}if(auto)await start();
- }catch(e){root.innerHTML='<div class="empty error">'+esc(e.message)+'</div>'}
+ }catch(e){clearInterval(tick);root.innerHTML='<div class="panel recognition-panel trivia-load-error"><p class="error" role="alert">'+esc(e.message)+'</p><button class="btn recognition" id="trivia-retry">Retry trivia ↻</button></div>';$('#trivia-retry').onclick=()=>load(false)}
 }
 function updateTimer(){if(!active||paused||busy)return;const left=remaining();$('#trivia-seconds').textContent=Math.ceil(left)+'s';$('#trivia-timer-bar').style.width=100*left/30+'%';if(left<=0)finish()}
 async function start(){if(busy||state.completed)return;busy=true;setEnabled();try{volume();const s=await api(path(paused?'pause':'start'),paused?{paused:false}:{});sync(s);active=true;paused=false;await audio().play();setEnabled();fields().map(f=>$('#guess-'+f)).find(n=>!n.readOnly)?.focus()}catch(e){audio().pause();if(state.started){try{sync(await api(path('pause'),{paused:true}));active=true}catch(_){}}error(e)}finally{busy=false;setEnabled()}}
