@@ -3,13 +3,13 @@
 {% block title %}Match History · Song Ranker{% endblock %}
 {% block page_kind %}history{% endblock %}
 {% block content %}
-<div class="page-head"><h1>Match History</h1><div class="pill-nav" aria-label="Match filter"><button class="pill active" data-history="all" aria-pressed="true">All</button><button class="pill" data-history="blind" aria-pressed="false">Blind</button><button class="pill" data-history="standard" aria-pressed="false">Non-blind</button></div></div>
-<section class="panel" id="all-history">
+<div class="page-head"><h1 class="standard">Match History</h1><div class="pill-nav" aria-label="Match filter"><button class="pill active" data-history="all" aria-pressed="true">All</button><button class="pill" data-history="blind" aria-pressed="false">Blind</button><button class="pill" data-history="standard" aria-pressed="false">Non-blind</button></div></div>
+<section class="panel stats-glow glow-voting" id="all-history">
 {% for match in history %}
 <article class="match-row" data-match-mode="{{ match.mode }}">
 <div class="match-mode"><span class="badge {{ 'blind' if match.mode=='blind' else 'standard' }}">{{ 'Blind' if match.mode=='blind' else 'Non-blind' if match.mode=='standard' else 'Unknown' }}</span><small>{{ (match.created_at or '')[:10] }}</small></div>
-<a class="match-song" href="{{ url_for('song_page',song_id=match.winner_id) }}" aria-label="Winner: {{ match.winner_title }}">{{ art(match.winner_cover) }}<div><strong class="song">{{ match.winner_title }}</strong><small>{{ match.winner_artist or '' }}</small></div></a><span class="vs-small">VS</span>
-<a class="match-song" href="{{ url_for('song_page',song_id=match.loser_id) }}">{{ art(match.loser_cover) }}<div><strong>{{ match.loser_title }}</strong><small>{{ match.loser_artist or '' }}</small></div></a>
+<a class="match-song match-winner" href="{{ url_for('song_page',song_id=match.winner_id) }}" aria-label="Winner: {{ match.winner_title }}">{{ art(match.winner_cover) }}<div><strong class="song">{{ match.winner_title }}</strong><small>{{ match.winner_artist or '' }}</small></div></a><span class="vs-small">VS</span>
+<a class="match-song match-loser" aria-label="Loser: {{ match.loser_title }}" href="{{ url_for('song_page',song_id=match.loser_id) }}">{{ art(match.loser_cover) }}<div><strong class="loss">{{ match.loser_title }}</strong><small>{{ match.loser_artist or '' }}</small></div></a>
 </article>{% endfor %}
 <div class="empty" id="history-empty" {% if history %}hidden{% endif %}>No matches</div>
 </section>{% endblock %}

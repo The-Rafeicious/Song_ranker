@@ -297,16 +297,16 @@ def artist_page(artist_name):
 
     conn.close()
 
-    if not songs:
+    if not artist_data:
         return "Artist not found.", 404
 
     song_count = len(songs)
-    best_song = songs[0]
-    worst_song = songs[-1]
-    avg_elo = sum(s['elo_score'] for s in songs) / song_count
+    best_song = songs[0] if songs else None
+    worst_song = songs[-1] if songs else None
+    avg_elo = sum(s['elo_score'] for s in songs) / song_count if song_count else 1200
     impact_score = 1200 + sum(s['elo_score'] - 1200 for s in songs)
 
-    pfp_url = artist_data['cover_url'] if artist_data and artist_data['cover_url'] else best_song['cover_url']
+    pfp_url = artist_data['cover_url'] or (best_song['cover_url'] if best_song else None)
 
     return render_template('artist_page.html',
                            artist_name=artist_name,
@@ -343,17 +343,14 @@ def album_page(album_title):
                          ''', (album_data['id'],)).fetchall()
     conn.close()
 
-    if not songs:
-        return "No songs found for this album.", 404
-
     song_count = len(songs)
 
     # Calculate Impact Score: Average Elo + (Total Songs * 5)
-    avg_elo = sum(s['elo_score'] for s in songs) / song_count
+    avg_elo = sum(s['elo_score'] for s in songs) / song_count if song_count else 1200
     impact_score = 1200 + sum(s['elo_score'] - 1200 for s in songs)
 
     # Use the primary artist of the highest-ranked song to represent the album's artist
-    artist_name = songs[0]['artist']
+    artist_name = songs[0]['artist'] if songs else ''
 
     return render_template('album_page.html',
                            album_name=album_data['title'],
@@ -362,8 +359,8 @@ def album_page(album_title):
                            artist_name=artist_name,
                            song_count=song_count,
                            avg_elo=avg_elo,
-                           best_song=songs[0],
-                           worst_song=songs[-1],
+                           best_song=songs[0] if songs else None,
+                           worst_song=songs[-1] if songs else None,
                            impact_score=impact_score,
                            songs=songs)
 
@@ -404,5 +401,7 @@ def trivia_stats():
     fields=[]
     for name,label,attempts in [('title','Song','new_attempts'),('artist','Artist','new_attempts'),('album','Album','album_attempts')]:
         total=sum(s.get(attempts,0) for s in rows);correct=sum(s.get(name+'_correct',0) for s in rows)
-        fields.append(dict(name=label,attempts=total,correct=correct,accuracy=round(100*correct/total) if total else None))
-    return render_template('trivia_stats.html',top_stats=top,bottom_stats=bottom,records=data['global_stats'],fields=fields,recent=recent)
+        fields.append(dict(key=name,kind={'title':'song','artist':'artist','album':'album'}[name],name=label,attempts=total,correct=correct,missed=max(0,total-correct),accuracy=round(100*correct/total) if total else None))
+    return render_template('trivia_stats.html',top_stats=top,bottom_stats=bottom,records=data['global_stats'],fields=fields,recent=recent,
+                           summary=dict(rounds=sum(r['attempts'] for r in rows),tested=len(rows)),
+                           artist_map={a['id']:a for a in data['artists']})

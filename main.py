@@ -2,9 +2,11 @@
 page, game and developer routes are registered by their respective modules.
 """
 from services import app, init_db, git_pull, ROOT
+import apple_access  # Registers streamed preview diagnostics and request safeguards.
 import pages  # Registers page and library routes.
 import trivia  # Registers field-by-field trivia routes.
 import games  # Registers voting and tournament routes.
+import metadata_tools  # Registers fill-only metadata scans.
 import dev    # Registers authenticated database tools.
 
 init_db()

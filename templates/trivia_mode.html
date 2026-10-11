@@ -9,9 +9,9 @@
 <script>
 window.addEventListener('error',function(event){
   if(event.target?.tagName==='SCRIPT'&&event.target.src.includes('/static/js/trivia.js')){
-    document.getElementById('trivia-root').innerHTML='<div class="panel recognition-panel trivia-load-error"><p class="error" role="alert">Trivia script is missing or could not load. Restore static/js/trivia.js from the V3.2.5 update, then reload.</p><a class="btn recognition" href="/trivia">Reload trivia ↻</a></div>';
+    document.getElementById('trivia-root').innerHTML='<div class="panel recognition-panel trivia-load-error"><p class="error" role="alert">Trivia script is missing or could not load. Restore static/js/trivia.js from your installed update, then reload.</p><a class="btn recognition" href="/trivia">Reload trivia ↻</a></div>';
   }
 },true);
 </script>
-<script src="{{url_for('static',filename='js/trivia.js',v='3.2.5')}}" defer></script>
+<script src="{{url_for('static',filename='js/trivia.js',v='3.2.7')}}" defer></script>
 {% endblock %}

@@ -182,7 +182,8 @@ def init_db():
 
         CREATE TABLE IF NOT EXISTS genres (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            name TEXT NOT NULL UNIQUE
+            name TEXT NOT NULL UNIQUE,
+            description TEXT NOT NULL DEFAULT ''
         );
 
         CREATE TABLE IF NOT EXISTS songs (

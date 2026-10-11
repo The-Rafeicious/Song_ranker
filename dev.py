@@ -5,6 +5,7 @@ import sqlite3
 import os
 from datetime import datetime
 
+from apple_access import apple_lookup, AppleRequestError
 from track_numbers import parse_track_number, check_track_position, track_position_conflicts, TrackNumberConflict
 from services import app, DB_NAME, DEV_PIN, admin_required, get_db_connection, git_push, init_db, export_rankings, create_database_backup, get_or_create_album, link_artists_to_song, link_genres_to_song
 @app.route('/dev/login', methods=['GET', 'POST'])
@@ -81,9 +82,11 @@ def api_search_apple():
         else:
             from urllib.parse import urlencode
             url = 'https://itunes.apple.com/search?' + urlencode({'term':query,'entity':'song','limit':10,'explicit':'Yes'})
-        response = requests.get(url, timeout=5).json()
+        response = apple_lookup(url)
         return jsonify([apple_metadata(track) for track in response.get('results', [])
                         if track.get('trackName') and track.get('kind', 'song') == 'song'])
+    except AppleRequestError as exc:
+        return exc.response()
     except ValueError as exc:
         return jsonify({'error': str(exc)}), 400
     except Exception as exc:
@@ -93,7 +96,7 @@ def api_search_apple():
 def song_metadata(data):
     title = str(data.get('title') or '').strip()
     if 'music.apple.com' in title:
-        tracks = requests.get(apple_lookup_url(title), timeout=5).json().get('results', [])
+        tracks = apple_lookup(apple_lookup_url(title)).get('results', [])
         tracks = [t for t in tracks if t.get('trackName') and t.get('kind', 'song') == 'song']
         if len(tracks) != 1:
             raise ValueError('Use Apple Music search to choose a song from this album link.')
@@ -178,6 +181,8 @@ def api_add_song():
         data = song_metadata(request.get_json(silent=True) or {})
     except ValueError as exc:
         return jsonify({'message':str(exc)}),400
+    except AppleRequestError as exc:
+        return exc.response()
     except requests.RequestException:
         return jsonify({'message':'Apple Music lookup unavailable.'}),502
     return write_song(data)
@@ -190,6 +195,8 @@ def api_edit_song(song_id):
         data = song_metadata(request.get_json(silent=True) or {})
     except ValueError as exc:
         return jsonify({'message':str(exc)}),400
+    except AppleRequestError as exc:
+        return exc.response()
     except requests.RequestException:
         return jsonify({'message':'Apple Music lookup unavailable.'}),502
     return write_song(data, song_id)
@@ -299,12 +306,17 @@ def api_edit_genre(genre_id):
     data = request.json
     if not str(data.get('name','')).strip():
         return jsonify({'message':'A name is required.'}),400
+    description = data.get('description')
+    if description is not None and (not isinstance(description, str) or len(description) > 2000):
+        return jsonify({'message':'Tag info must be text, up to 2,000 characters.'}),400
     conn = get_db_connection()
     if not conn.execute('SELECT 1 FROM genres WHERE id=?',(genre_id,)).fetchone():
         conn.close(); return jsonify({'message':'Record not found.'}),404
     if conn.execute('SELECT 1 FROM genres WHERE LOWER(name)=LOWER(?) AND id!=?',(data['name'].strip(),genre_id)).fetchone():
         conn.close(); return jsonify({'message':'Tag already exists.'}),400
     conn.execute('UPDATE genres SET name = ? WHERE id = ?', (data.get('name', '').strip(), genre_id))
+    if description is not None:
+        conn.execute('UPDATE genres SET description=? WHERE id=?', (description.strip(), genre_id))
 
     conn.commit()
     conn.close()

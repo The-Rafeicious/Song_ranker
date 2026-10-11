@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime
 import sqlite3
 
-SCHEMA_VERSION = 6
+SCHEMA_VERSION = 7
 
 def migrate(filename):
     path = Path(filename)
@@ -78,6 +78,8 @@ def migrate(filename):
         conn.execute('CREATE INDEX IF NOT EXISTS song_genres_genre ON song_genres(genre_id,song_id)')
         from mode_schema import ensure_mode_schema
         ensure_mode_schema(conn)
+        if 'genres' in tables and 'description' not in {r['name'] for r in conn.execute('PRAGMA table_info(genres)')}:
+            conn.execute("ALTER TABLE genres ADD COLUMN description TEXT NOT NULL DEFAULT ''")
         conn.execute(f'PRAGMA user_version={SCHEMA_VERSION}')
         conn.commit()
         conn.execute('VACUUM')

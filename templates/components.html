@@ -5,5 +5,5 @@
 <span class="small-art{% if circle %} circle{% endif %}" aria-hidden="true">♫{% if url %}<img src="{{ url }}" alt="" loading="lazy" onerror="this.hidden=true">{% endif %}</span>
 {%- endmacro %}
 {% macro song(row, score='', detail='', rank='') -%}
-<a class="compact-track" href="{{ url_for('song_page', song_id=row.id) }}">{% if rank %}<span class="compact-rank">{{ rank }}</span>{% endif %}{{ art(row.cover_url|default('')) }}<span class="compact-copy"><strong>{{ row.title }}</strong><small>{{ row.artist|default('') or '' }}</small></span><span class="compact-score"><b>{{ score }}</b>{% if detail %}<small>{{ detail }}</small>{% endif %}</span></a>
+<a class="compact-track" href="{{ url_for('song_page', song_id=row.id) }}">{% if rank %}<span class="compact-rank">{{ rank }}</span>{% endif %}{{ art(row.cover_url|default('')) }}<span class="compact-copy"><strong class="song" title="{{ row.title }}">{{ row.title }}</strong><small class="artist">{{ row.artist|default('') or '' }}</small></span><span class="compact-score"><b>{{ score }}</b>{% if detail %}<small>{{ detail }}</small>{% endif %}</span></a>
 {%- endmacro %}

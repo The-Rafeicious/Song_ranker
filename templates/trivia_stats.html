@@ -1,15 +1,55 @@
 {% extends 'base.html' %}
-{% from 'components.html' import song, stat %}
+{% from 'components.html' import song, stat, art %}
 {% block title %}Recognisability · Song Ranker{% endblock %}
 {% block page_kind %}recognition_stats{% endblock %}
 {% block content %}
-<div class="page-head"><h1 class="recognition">Recognisability</h1><a class="btn" href="/trivia">Play Trivia →</a></div>
-<div class="stats">{{ stat('Best player score',records.get('trivia_high_score',0)|round(2),'recognition') }}{{ stat('Best streak',records.get('trivia_high_streak',0)|int,'recognition') }}{% for field in fields %}{{ stat(field.name+' accuracy',(field.accuracy|string)+'%' if field.accuracy is not none else '—','recognition') }}{% endfor %}</div>
-<div class="stats-columns">
+<div class="page-head"><h1 class="recognition">Recognisability</h1><a class="btn recognition" href="/trivia">Play Trivia →</a></div>
+<div class="stats trivia-stats-summary">
+  {{ stat('Best player score',records.get('trivia_high_score',0)|round(2),'recognition') }}
+  {{ stat('Best streak 🔥',records.get('trivia_high_streak',0)|int,'recognition') }}
+  {{ stat('Rounds',summary.rounds,'recognition') }}
+  {{ stat('Tested tracks',summary.tested,'recognition') }}
+</div>
+<section class="trivia-field-records" aria-label="Field accuracy">
+{% for field in fields %}
+  <article class="panel recognition-panel stats-glow glow-recognition trivia-field-record" data-trivia-field="{{ field.key }}">
+    <div class="section-head"><h2 class="{{ field.kind }}">{{ field.name }}</h2><span class="recognition">{{ field.correct }} / {{ field.attempts }}</span></div>
+    <strong class="recognition field-accuracy">{{ (field.accuracy|string)+'%' if field.accuracy is not none else '—' }}</strong>
+    <small class="muted">Accuracy</small>
+    <div class="progress" role="progressbar" aria-label="{{ field.name }} accuracy" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ [100,field.accuracy or 0]|min }}"><span style="width:{{ [100,field.accuracy or 0]|min }}%"></span></div>
+    <div class="field-totals"><span class="recognition">{{ field.correct }} correct</span><span class="loss">{{ field.missed }} missed</span></div>
+  </article>
+{% endfor %}
+</section>
+<div class="stats-columns trivia-ranking-columns">
 {% for heading, rows in [('Most Recognised',top_stats),('Least Recognised',bottom_stats)] %}
-<section class="panel recognition-panel"><div class="section-head"><h2 class="recognition">{{ heading }}</h2><small>{{ rows|length }} tracks</small></div>
-{% for row in rows %}{{ song(row,(row.rec_score|int|string)+'%',(row.trivia_correct|string)+' / '+(row.available_points|string)+' fields · '+(row.trivia_attempts|string)+' attempts',loop.index) }}{% else %}<div class="empty">No attempts yet</div>{% endfor %}
-</section>{% endfor %}</div>
-<section class="panel recognition-panel spaced-panel"><div class="section-head"><h2 class="recognition">Field Records</h2></div><div class="mini-stats collection-mini">{% for field in fields %}<div><b class="recognition">{{ field.correct }} / {{ field.attempts }}</b><small>{{ field.name }}</small></div>{% endfor %}</div></section>
-<section class="panel recognition-panel spaced-panel"><div class="section-head"><h2 class="recognition">Recent Trivia</h2><small>Last 100 rounds</small></div>{% for row in recent %}<div class="trivia-history-row"><div>{% if row.song %}<a class="song" href="/song/{{ row.song_id }}"><strong>{{ row.song.title }}</strong></a><small class="artist"> · {{ row.song.artist }}</small>{% endif %}<div class="field-history">{% for field,label in [('title','Song'),('artist','Artist'),('album','Album')] %}{% set result=row[field+'_correct'] %}<span class="{{ 'yes' if result else 'no' if result is not none else 'muted' }}">{{ '✓' if result else '×' if result is not none else '—' }} {{ label }}</span>{% endfor %}</div></div><div><strong class="recognition">+{{ row.points|round(2) }}</strong><small> · {{ row.user_score_after|round(2) }} score · {{ row.streak_after }} streak</small></div></div>{% else %}<div class="empty">No rounds yet</div>{% endfor %}</section>
+  <section class="panel recognition-panel stats-glow glow-recognition"><div class="section-head"><h2 class="recognition">{{ heading }}</h2><small>{{ rows|length }} tracks</small></div>
+  {% for row in rows %}{{ song(row,(row.rec_score|int|string)+'%',(row.trivia_correct|string)+' / '+(row.available_points|string)+' fields · '+(row.trivia_attempts|string)+' rounds',loop.index) }}{% else %}<div class="empty">No attempts yet</div>{% endfor %}
+  </section>
+{% endfor %}
+</div>
+<section class="panel recognition-panel stats-glow glow-recognition spaced-panel trivia-recent">
+  <div class="section-head"><h2 class="recognition">Recent Trivia</h2><small>{{ recent|length }} {{ 'round' if recent|length==1 else 'rounds' }}</small></div>
+  <div class="trivia-history-list" tabindex="0" aria-label="Recent trivia rounds">
+  {% for row in recent %}
+    <article class="trivia-history-row" data-trivia-round="{{ row.id }}">
+      <div class="trivia-history-track">
+        {% if row.song %}<a class="trivia-history-art" href="/song/{{ row.song_id }}" aria-label="{{ row.song.title }}">{{ art(row.song.cover_url) }}</a>{% endif %}
+        <div class="compact-copy">
+          {% if row.song %}
+          <a class="song trivia-history-title" title="{{ row.song.title }}" href="/song/{{ row.song_id }}">{{ row.song.title }}</a>
+          <div class="metadata trivia-history-meta">{% for aid in row.song.artist_ids %}{% set artist=artist_map.get(aid) %}{% if artist %}<a class="artist" href="{{ url_for('artist_page',artist_name=artist.name) }}">{{ artist.name }}</a>{% endif %}{% endfor %}{% if row.song.album and not row.song.album_is_single %}<a class="album" href="{{ url_for('album_page',album_title=row.song.album) }}">{{ row.song.album }}</a>{% endif %}</div>
+          {% else %}<span class="muted">Deleted track</span>{% endif %}
+          <div class="field-history">
+          {% for field,label in [('title','Song'),('artist','Artist'),('album','Album')] %}{% set result=row[field+'_correct'] %}
+            <span class="{{ 'yes' if result else 'no' if result is not none else 'not-played' }}" aria-label="{{ label }}: {{ 'correct' if result else 'missed' if result is not none else 'not applicable' }}">{{ '✓' if result else '×' if result is not none else '—' }} {{ label }}</span>
+          {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="trivia-history-result"><strong class="recognition">+{{ row.points|round(2) }}</strong><small>{{ (row.user_score_after or 0)|round(2) }} score · {{ row.streak_after or 0 }} 🔥</small><time data-timestamp="{{ row.completed_at or '' }}">Round #{{ row.id }}</time></div>
+    </article>
+  {% else %}<div class="empty">No rounds yet</div>{% endfor %}
+  </div>
+</section>
 {% endblock %}
