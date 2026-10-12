@@ -14,7 +14,7 @@
     </div>{% endfor %}
   </div>
 </section>
-<div class="stats-columns">
+<div class="stats-columns global-details special-global-records">
   <section class="panel stats-glow glow-standard">
     <div class="section-head"><h2 class="standard">Elo Distribution</h2><strong class="standard">{{ extra_stats.average_elo }} avg</strong></div>
     {% set max_count = (elo_distribution|map(attribute='count')|max) if elo_distribution else 1 %}
@@ -43,6 +43,11 @@
     {% if extra_stats.latest_podium %}<div class="section-head podium-mini-head"><h3 class="tournament">Latest Podium</h3><a class="tournament" href="/tournament?tournament={{ extra_stats.latest_tournament_id }}">#{{ extra_stats.latest_tournament_id }} ↗</a></div><div class="global-podium">{% for row in extra_stats.latest_podium %}<a class="song" href="/song/{{ row.id }}"><b class="tournament">{{ ['🥇','🥈','🥉'][row.place-1] }}</b><strong title="{{ row.title }}">{{ row.title }}</strong></a>{% endfor %}</div>{% endif %}
     {% for row in extra_stats.tournament_leaders %}<a class="record-row" href="/song/{{ row.id }}"><div><small>{{ 'Most Championships' if loop.first else 'Champion' }}</small><strong class="song" title="{{ row.title }}">{{ row.title }}</strong></div><b class="tournament">{{ row.championships }} 🏆</b></a>{% endfor %}
   </section>
+{% set guess = extra_stats.special_modes.guesser %}{% set shelf = extra_stats.special_modes.shelves %}
+
+  <section class="panel special-panel guesser"><div class="section-head"><h2 class="guesser">Elo Guesser</h2><a class="guesser" href="/elo_guesser_stats">Stats ↗</a></div><div class="mini-stats"><div><b class="guesser">{{ guess.correct }}</b><small>Correct picks · {{ guess.rounds }} questions</small></div><div><b class="guesser">{{ guess.best_streak }} 🔥</b><small>Best streak</small></div><div><b class="guesser">{{ (guess.accuracy|round(1)) ~ '%' if guess.accuracy is not none else '—' }}</b><small>Accuracy</small></div></div></section>
+  <section class="panel special-panel shelves"><div class="section-head"><h2 class="shelves">Album Shelves</h2><a class="shelves" href="/album_shelves_stats">Stats ↗</a></div><div class="mini-stats"><div><b class="shelves">{{ shelf.rounds }}</b><small>Rounds · {{ shelf.perfect }} perfect</small></div><div><b class="shelves">{{ shelf.points|round(2) }}</b><small>Points</small></div><div><b class="shelves">{{ (shelf.accuracy|round(1)) ~ '%' if shelf.accuracy is not none else '—' }}</b><small>Points earned</small></div></div></section>
+
   <section class="panel stats-glow glow-voting">
     <div class="section-head"><h2 class="standard">Frequent Matchups</h2><a class="standard" href="/history">Match history ↗</a></div>
     {% for match in matchups %}<div class="rivalry"><div class="match-row">{% for row in [match.s1,match.s2] %}{% if loop.index==2 %}<span class="vs-small">VS</span>{% endif %}<a class="match-song song" href="{{ url_for('song_page',song_id=row.id) }}">{{ art(row.cover_url) }}<div><strong class="song" title="{{ row.title }}">{{ row.title }}</strong><small>{{ row.artist or '' }}</small></div></a>{% endfor %}</div><small>{{ match.encounters }} encounters</small></div>{% else %}<div class="empty">No matchups yet</div>{% endfor %}

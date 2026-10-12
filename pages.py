@@ -46,12 +46,14 @@ def search():
 
 @app.route('/artist_stats')
 def artist_performance():
-    return render_template('app_page.html', page='performance_artists')
+    mode='trivia' if request.args.get('metric','recognition')=='recognition' else 'tournament'
+    return render_template('app_page.html', page='mode_rankings_'+mode,ranking_entity='artists')
 
 
 @app.route('/album_stats')
 def album_performance():
-    return render_template('app_page.html', page='performance_albums')
+    mode='trivia' if request.args.get('metric','recognition')=='recognition' else 'tournament'
+    return render_template('app_page.html', page='mode_rankings_'+mode,ranking_entity='albums')
 
 
 @app.route('/history')
@@ -230,6 +232,8 @@ def global_stats():
         voting_leaders[mode]=[dict(id=sid,title=titles[sid],wins=v[prefix+'wins'],
             losses=v[prefix+'losses'],win_rate=round(v[prefix+'win_rate'],1)) for sid,v in eligible[:3]]
     extra_stats.update(global_mode_details(conn))
+    from special_modes import special_records
+    extra_stats['special_modes']=special_records(conn)[1]
     conn.close()
 
     return render_template('global_stats.html',

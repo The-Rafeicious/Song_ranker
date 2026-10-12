@@ -1,20 +1,26 @@
-# V3.2.5.1 validation
+# V3.3 validation
 
-- 53 backend tests pass, including nine new checks for rolling-window admission,
-  spacing/range reservations, Retry-After parsing, cache reuse, busy requests,
-  HTTP 429 cooldowns, HTML/transport errors, streamed bytes/range headers,
-  connection closure, refusal/missing/invalid audio and forbidden redirects.
-- 235 interface assertions pass: 27 focused hotfix checks, 58 existing mode
-  checks, 63 V3.2.4 checks, 66 V3.2.5 styling checks and 21 tests loading actual
-  HTTP-served script assets. Hotfix cases cover loading/playing feedback,
-  diagnostics without blind-answer leakage, cooldowns, stopped album/podium
-  queues, Dev search errors/deduplication and trivia timing after media readiness.
-- Backend Apple responses are mocked; UI media/layout are simulated with jsdom.
-  The user's actual Apple restriction and real-device streaming/appearance were
-  not reproduced or verified. A successful test is not a promise of unblocking.
-- Syntax, SQLite integrity/foreign keys, unchanged supplied database checksum
-  and ZIP integrity pass. Tests use copies; the patch contains no database,
-  stored request logs or cached audio. Existing schema 6 is unchanged.
-- Apple's current primary documentation was checked for the free Search API's
-  approximate 20-calls-per-minute guidance and metadata caching recommendation:
-  https://performance-partners.apple.com/search-api
+- **87 backend tests passed**, including existing voting, trivia, tournament,
+  catalogue, metadata and Dev tests plus 14 new-mode tests.
+- **73 interface assertions passed** against a Flask app running on a copied
+  database. Checks cover Guesser/voting tab switching, hidden/revealed ratings,
+  independent writes, ten-track shelves, keyboard controls, preview cycling and
+  pause, scoring, next round, new stats/rankings, profiles, home/global records,
+  Dev search/reset controls and the footer.
+- JavaScript syntax checks and parsing of both shared stylesheets passed.
+- Schema-8 migration preserves existing domain records and makes a pre-upgrade
+  backup. Repeating migration does not change the database again. Integrity and
+  foreign-key checks passed on test databases.
+- New modes reject forged/repeated answers and invalid track placements, use
+  frozen answer facts, handle unequal shelf sizes and position gaps, exclude
+  singles from shelving, and keep completed scoring after song deletion.
+- Reset/delete tests verify authentication, backup creation and isolation from
+  other modes and music records.
+- The original supplied database was not migrated or edited while building this
+  update. All tests use temporary/copied databases. No database, SQL snapshot or
+  personal test results are included in the release ZIP.
+
+Graphical browser rendering and real Apple playback were unavailable. Interface
+checks use DOM rendering and mocked media events; they verify the logic and
+structure, not actual sound output or pixel-level spacing. Existing Apple
+throttling/preview error handling has its own regression coverage and is retained.

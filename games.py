@@ -1,10 +1,11 @@
-from flask import render_template, request, session, jsonify
+from flask import render_template, request, session, jsonify, redirect
 import random
 
 from selection import tournament_tracks
 from services import app, get_db_connection, calculate_new_elo, is_close_match, get_song_full, get_matchup
 @app.route('/game')
 def index():
+    if request.args.get('mode')=='guesser':return redirect('/elo_guesser')
     return render_template('app_page.html', page='standard')
 
 
@@ -15,6 +16,8 @@ def api_vote():
         winner_id, loser_id = int(data['winner_id']), int(data['loser_id'])
     except (KeyError, ValueError, TypeError):
         return jsonify({'message':'Choose two valid songs.'}),400
+    if data.get('mode','standard') not in ('standard','blind'):
+        return jsonify({'message':'This endpoint is only for standard or blind votes.'}),400
     if winner_id == loser_id:
         return jsonify({'message':'Songs must be different.'}),400
     conn = get_db_connection()

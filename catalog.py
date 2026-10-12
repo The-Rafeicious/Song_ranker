@@ -122,10 +122,13 @@ def collection():
             song.update(artist_ids=artist_links[song['id']],tag_ids=tag_links[song['id']])
         data['history'].sort(key=lambda r:r['id'],reverse=True)
         data['tournaments'].sort(key=lambda r:r['id'],reverse=True)
+        from special_modes import special_records
+        special,summary,_,_=special_records(conn)
+        data['special_modes']=summary
         performance = song_performance(data)
         voting = voting_records(conn)
         for song in data['songs']:
-            song.update(performance[song['id']], voting=voting[song['id']])
+            song.update(performance[song['id']], voting=voting[song['id']], **special[song['id']])
         return data
     finally: conn.close()
 

@@ -12,6 +12,12 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent
 app = Flask(__name__)
 app.secret_key = os.environ.get('SONG_RANKER_SECRET', 'theandwasdwe')
+from version import APP_VERSION
+
+@app.context_processor
+def project_version():
+    return dict(app_version=APP_VERSION)
+
 DB_NAME = os.environ.get('SONG_RANKER_DB', str(ROOT / 'song_ranker_v2.db'))
 DEV_PIN = os.environ.get('SONG_RANKER_PIN', '9042')
 
@@ -244,6 +250,8 @@ def init_db():
     ensure_tournament_schema(conn)
     from mode_schema import ensure_mode_schema
     ensure_mode_schema(conn)
+    from special_schema import ensure_special_schema
+    ensure_special_schema(conn)
     from track_numbers import ensure_track_position_checks
     ensure_track_position_checks(conn)
     history_columns = {row['name'] for row in conn.execute('PRAGMA table_info(history)')}

@@ -339,7 +339,7 @@ def api_delete_genre(genre_id):
 @admin_required
 def api_dev_overview():
     conn = get_db_connection()
-    tables = ['songs','artists','albums','genres','history','trivia_stats','tournaments','tournament_entries','tournament_matches']
+    tables = ['songs','artists','albums','genres','history','trivia_stats','tournaments','tournament_entries','tournament_matches','elo_guess_rounds','album_shelf_rounds','album_shelf_items']
     counts = {table: conn.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0] for table in tables}
     integrity = conn.execute('PRAGMA integrity_check').fetchone()[0]
     fk_errors = len(conn.execute('PRAGMA foreign_key_check').fetchall())
@@ -442,7 +442,7 @@ def api_dev_reset_preview():
         'song_artist_links':'SELECT COUNT(*) FROM song_artists','song_genre_links':'SELECT COUNT(*) FROM song_genres'}.items()}
     clear={k:conn.execute(q).fetchone()[0] for k,q in {
         'votes_and_history':'SELECT COUNT(*) FROM history','trivia_stats':'SELECT COUNT(*) FROM trivia_stats','tournaments':'SELECT COUNT(*) FROM tournaments',
-        'tournament_matches':'SELECT COUNT(*) FROM tournament_matches','trivia_rounds':'SELECT COUNT(*) FROM trivia_rounds'}.items()}
+        'tournament_matches':'SELECT COUNT(*) FROM tournament_matches','trivia_rounds':'SELECT COUNT(*) FROM trivia_rounds','elo_guesses':'SELECT COUNT(*) FROM elo_guess_rounds WHERE completed_at IS NOT NULL','shelf_rounds':'SELECT COUNT(*) FROM album_shelf_rounds WHERE completed_at IS NOT NULL'}.items()}
     conn.close(); return jsonify({'keep':keep,'clear':clear})
 
 
@@ -467,13 +467,19 @@ def reset_competition_data(scope):
             for table in ('tournament_matches','tournament_entries','tournaments'):
                 conn.execute(f'DELETE FROM {table}')
             conn.execute('UPDATE songs SET tournament_wins=0')
+        if scope in ('all','guesser'):
+            conn.execute('DELETE FROM elo_guess_rounds')
+        if scope in ('all','shelves'):
+            conn.execute('DELETE FROM album_shelf_rounds')
         if scope=='all':
             conn.execute("UPDATE global_stats SET value=CASE WHEN key='trivia_scoring_version' THEN 2 ELSE 0 END")
         conn.commit()
         if scope in ('all','trivia'):
             for key in ('trivia_score','trivia_streak','trivia_round_token','trivia_scoring_version'):
                 session.pop(key,None)
-        labels={'all':'All competition data','matches':'Elo and match history','trivia':'Trivia history and records','tournaments':'Tournament history and records'}
+        if scope in ('all','guesser'):session.pop('guess_token',None)
+        if scope in ('all','shelves'):session.pop('shelf_token',None)
+        labels={'guesser':'Elo Guesser history','shelves':'Album Shelves history','all':'All competition data','matches':'Elo and match history','trivia':'Trivia history and records','tournaments':'Tournament history and records'}
         return jsonify(status='success',message=labels[scope]+' reset. Music library kept.',backup=os.path.basename(backup_path))
     except Exception:
         if conn:conn.rollback()
@@ -486,12 +492,28 @@ def reset_competition_data(scope):
 @app.route('/api/dev/reset-history/<scope>',methods=['POST'])
 @admin_required
 def api_dev_reset_history(scope):
-    if scope not in ('matches','trivia','tournaments'):
-        return jsonify(message='Choose match, trivia or tournament history.'),400
-    phrases={'matches':'RESET MATCHES','trivia':'RESET TRIVIA','tournaments':'RESET TOURNAMENTS'}
+    if scope not in ('matches','trivia','tournaments','guesser','shelves'):
+        return jsonify(message='Choose match, trivia, tournament, Elo Guesser or Album Shelves history.'),400
+    phrases={'guesser':'RESET GUESSER','shelves':'RESET SHELVES','matches':'RESET MATCHES','trivia':'RESET TRIVIA','tournaments':'RESET TOURNAMENTS'}
     if (request.get_json(silent=True) or {}).get('confirmation')!=phrases[scope]:
         return jsonify(message='Type '+phrases[scope]+' to confirm.'),400
     return reset_competition_data(scope)
+
+
+@app.route('/api/dev/special-round/<mode>/<int:round_id>',methods=['POST'])
+@admin_required
+def delete_special_round(mode,round_id):
+    table={'guesser':'elo_guess_rounds','shelves':'album_shelf_rounds'}.get(mode)
+    if not table:return jsonify(message='Unknown mode.'),400
+    backup=create_database_backup('manual_mode_delete')
+    conn=get_db_connection()
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        deleted=conn.execute(f'DELETE FROM {table} WHERE id=?',(round_id,)).rowcount
+        if not deleted:return jsonify(message='Round not found.'),404
+        conn.commit()
+        return jsonify(message='Round deleted. Other modes and music kept.',backup=os.path.basename(backup))
+    finally:conn.close()
 
 
 @app.route('/api/dev/reset-database', methods=['POST'])

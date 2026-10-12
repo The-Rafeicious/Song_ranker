@@ -3,7 +3,7 @@ from pathlib import Path
 from datetime import datetime
 import sqlite3
 
-SCHEMA_VERSION = 7
+SCHEMA_VERSION = 8
 
 def migrate(filename):
     path = Path(filename)
@@ -80,6 +80,8 @@ def migrate(filename):
         ensure_mode_schema(conn)
         if 'genres' in tables and 'description' not in {r['name'] for r in conn.execute('PRAGMA table_info(genres)')}:
             conn.execute("ALTER TABLE genres ADD COLUMN description TEXT NOT NULL DEFAULT ''")
+        from special_schema import ensure_special_schema
+        ensure_special_schema(conn)
         conn.execute(f'PRAGMA user_version={SCHEMA_VERSION}')
         conn.commit()
         conn.execute('VACUUM')
