@@ -1,6 +1,7 @@
-"""Bounded in-memory lookup caching and streamed Apple preview diagnostics.
+"""Bounded in-memory lookup/preview caching and streamed Apple diagnostics.
 
-No audio files, request logs or database counters are stored. Search/lookup and
+At most ten complete previews live in page-scoped RAM for ten minutes; no audio files,
+request logs or database counters are stored. Search/lookup and
 preview media have separate safeguards; Apple's published search limit does not
 specify a preview-CDN quota.
 """
@@ -162,6 +163,122 @@ def apple_lookup(url):
         lookup_lock.release()
 
 
+class PreviewMemoryCache:
+    """Ten RAM previews; page/pair invalidation also rejects late downloads."""
+    def __init__(self, limit=10, ttl=600, max_bytes=4*1024*1024, clock=time.monotonic):
+        self.limit, self.ttl, self.max_bytes, self.clock = limit, ttl, max_bytes, clock
+        self.entries=OrderedDict()
+        self.reservations=OrderedDict()
+        self.closed_pages=OrderedDict()
+        self.lock=Lock()
+
+    def _expire(self):
+        now=self.clock()
+        for key,entry in list(self.entries.items()):
+            if entry[0]<=now:del self.entries[key]
+        for key,entry in list(self.reservations.items()):
+            if entry[1]<=now:del self.reservations[key]
+        for page,expires in list(self.closed_pages.items()):
+            if expires<=now:del self.closed_pages[page]
+
+    def reserve(self, key):
+        with self.lock:
+            self._expire()
+            if key not in self.reservations:self.reservations[key]=(object(),self.clock()+self.ttl)
+            self.reservations.move_to_end(key)
+            while len(self.reservations)>128:self.reservations.popitem(last=False)
+            return self.reservations[key][0]
+
+    def discard(self, page, song_ids=None, close=False):
+        with self.lock:
+            self._expire();removed=0
+            for mapping in (self.entries,self.reservations):
+                for key in list(mapping):
+                    if isinstance(key,tuple) and key[0]==page and (song_ids is None or key[1] in song_ids):
+                        del mapping[key]
+                        if mapping is self.entries:removed+=1
+            if close:
+                self.closed_pages[page]=self.clock()+self.ttl
+                self.closed_pages.move_to_end(page)
+                while len(self.closed_pages)>128:self.closed_pages.popitem(last=False)
+            return removed
+
+    def get(self, key):
+        with self.lock:
+            self._expire()
+            entry=self.entries.get(key)
+            if entry is None:return None
+            self.entries.move_to_end(key)
+            return entry[1],entry[2]
+
+    def put(self, key, body, content_type, reservation=None):
+        if not body or len(body)>self.max_bytes:return False
+        with self.lock:
+            self._expire()
+            if isinstance(key,tuple) and key[0] in self.closed_pages:return False
+            if reservation is not None and self.reservations.get(key,(None,))[0] is not reservation:return False
+            self.entries[key]=(self.clock()+self.ttl,body,content_type)
+            self.entries.move_to_end(key)
+            while len(self.entries)>self.limit:self.entries.popitem(last=False)
+        return True
+
+
+preview_cache=PreviewMemoryCache()
+
+
+@app.route('/api/previews/cache',methods=['POST'])
+def api_preview_cache():
+    data=request.get_json(silent=True)
+    if not isinstance(data,dict):return AppleRequestError('Invalid preview cache request.',400).response()
+    page=data.get('page');action=data.get('action')
+    if not isinstance(page,str) or not re.fullmatch(r'[A-Za-z0-9_-]{1,64}',page):
+        return AppleRequestError('Invalid preview page.',400).response()
+    if action=='clear':removed=preview_cache.discard(page,close=True)
+    elif action=='forget':
+        ids=data.get('song_ids')
+        if not isinstance(ids,list) or len(ids)>10 or any(type(i) is not int or i<=0 for i in ids):
+            return AppleRequestError('Invalid preview songs.',400).response()
+        removed=preview_cache.discard(page,set(ids))
+    else:return AppleRequestError('Invalid preview cache action.',400).response()
+    response=jsonify(cleared=removed);response.headers['Cache-Control']='no-store'
+    return response
+
+
+def complete_preview(status, headers, length):
+    expected=headers.get('Content-Length')
+    if expected is not None:
+        try:
+            if int(expected)!=length:return False
+        except (ValueError,TypeError):return False
+    if status==200:return True
+    match=re.fullmatch(r'bytes (\d+)-(\d+)/(\d+)',headers.get('Content-Range',''))
+    return bool(status==206 and match and int(match[1])==0 and
+                int(match[2])+1==int(match[3])==length)
+
+
+def cached_preview_response(body, content_type, byte_range):
+    length=len(body);status=200;start=0;end=length-1
+    if byte_range:
+        first,last=byte_range[6:].split('-',1)
+        if first:
+            start=int(first);end=min(length-1,int(last)) if last else length-1
+        else:
+            amount=int(last);start=max(0,length-amount)
+            if amount<=0:start=length
+        if start>=length or end<start:
+            response=AppleRequestError('Unsupported preview byte range.',416).response()
+            response.headers['Content-Range']=f'bytes */{length}'
+            return response
+        status=206
+    response=Response(body[start:end+1],status=status,content_type=content_type)
+    response.headers['Content-Length']=end-start+1
+    response.headers['Accept-Ranges']='bytes'
+    response.headers['Cache-Control']='no-store'
+    response.headers['X-Preview-Cache']='hit'
+    if status==206:response.headers['Content-Range']=f'bytes {start}-{end}/{length}'
+    return response
+
+
 def apple_preview_url(url):
     try:
         parsed=urlsplit(url)
@@ -211,13 +328,24 @@ def api_preview(song_id):
     url=row['audio_url']
     if not apple_preview_url(url):
         return AppleRequestError('This preview is not an Apple media URL.',400).response()
+    page=request.args.get('page','')
+    if page and not re.fullmatch(r'[A-Za-z0-9_-]{1,64}',page):
+        return AppleRequestError('Invalid preview page.',400).response()
+    cache_key=(page,song_id,url) if page else url
+    byte_range=request.headers.get('Range')
+    if byte_range and not re.fullmatch(r'bytes=(?:\d+-\d*|-\d+)',byte_range):
+        return AppleRequestError('Unsupported preview byte range.',416).response()
+    cached=preview_cache.get(cache_key)
+    if cached is not None:
+        remember(song_id,'cached')
+        return cached_preview_response(*cached,byte_range)
+    reservation=preview_cache.reserve(cache_key)
     play=request.args.get('play','')
     key=(song_id,play) if re.fullmatch(r'[A-Za-z0-9_-]{1,64}',play) else None
     upstream=None
     try:
         preview_gate.admit(key)
         headers={'Accept':'audio/*,application/octet-stream;q=0.9,*/*;q=0.5','Accept-Encoding':'identity'}
-        byte_range=request.headers.get('Range')
         if byte_range:
             if not re.fullmatch(r'bytes=(?:\d+-\d*|-\d+)',byte_range):
                 raise AppleRequestError('Unsupported preview byte range.',416)
@@ -242,17 +370,28 @@ def api_preview(song_id):
         remember(song_id,'streaming',upstream_status=upstream.status_code)
         stream=upstream
         def chunks():
+            parts=[];length=0;cacheable=True;finished=False
             try:
-                yield from stream.iter_content(chunk_size=16384)
+                for chunk in stream.iter_content(chunk_size=16384):
+                    if not chunk:continue
+                    length+=len(chunk)
+                    if cacheable:
+                        if length<=preview_cache.max_bytes:parts.append(chunk)
+                        else:cacheable=False;parts.clear()
+                    yield chunk
+                finished=True
             except requests.RequestException:
                 remember(song_id,'unavailable','Preview stream was interrupted. Check the connection, then retry.')
             finally:
                 stream.close()
+                if finished and cacheable and complete_preview(stream.status_code,stream.headers,length):
+                    preview_cache.put(cache_key,b''.join(parts),stream.headers.get('Content-Type','application/octet-stream'),reservation)
         response=Response(stream_with_context(chunks()),status=stream.status_code)
         for name in ('Content-Type','Content-Length','Content-Range','Accept-Ranges'):
             if name in stream.headers:
                 response.headers[name]=stream.headers[name]
         response.headers['Cache-Control']='no-store'
+        response.headers['X-Preview-Cache']='miss'
         response.call_on_close(stream.close)
         return response
     except requests.RequestException:

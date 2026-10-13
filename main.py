@@ -6,6 +6,7 @@ import apple_access  # Registers streamed preview diagnostics and request safegu
 import pages  # Registers page and library routes.
 import trivia  # Registers field-by-field trivia routes.
 import special_modes  # Registers independent Elo Guesser and Album Shelves.
+import overall  # Registers derived, calibrated Overall scores; no stored counters.
 import games  # Registers voting and tournament routes.
 import metadata_tools  # Registers fill-only metadata scans.
 import dev    # Registers authenticated database tools.

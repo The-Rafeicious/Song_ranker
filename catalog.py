@@ -107,9 +107,10 @@ def summarize_votes(records):
     return totals
 
 
-def collection():
+def collection(include_overall_sources=False):
     conn = get_db_connection()
     try:
+        conn.execute('BEGIN')  # Read one consistent snapshot, including optional Overall inputs.
         data = {'songs':[dict(r) for r in conn.execute('SELECT s.*,COALESCE(ts.attempts,0) AS attempts,COALESCE(ts.correct,0) AS correct,COALESCE(ts.available_points,0) AS available_points,COALESCE(ts.new_attempts,0) AS new_attempts,COALESCE(ts.title_correct,0) AS title_correct,COALESCE(ts.artist_correct,0) AS artist_correct,COALESCE(ts.album_attempts,0) AS album_attempts,COALESCE(ts.album_correct,0) AS album_correct FROM songs s LEFT JOIN trivia_stats ts ON ts.song_id=s.id')]}
         for key, table in [('artists','artists'),('albums','albums'),('tags','genres'),('history','history'),('tournaments','tournaments'),('tournament_entries','tournament_entries'),('tournament_matches','tournament_matches')]:
             data[key]=[dict(r) for r in conn.execute(f'SELECT * FROM {table}')]
@@ -129,6 +130,11 @@ def collection():
         voting = voting_records(conn)
         for song in data['songs']:
             song.update(performance[song['id']], voting=voting[song['id']], **special[song['id']])
+        if include_overall_sources:
+            data['overall_sources']={
+                'trivia_stats':[dict(r) for r in conn.execute('SELECT * FROM trivia_stats')],
+                'trivia_rounds':[dict(r) for r in conn.execute('SELECT song_id,album_available,title_correct,artist_correct,album_correct FROM trivia_rounds WHERE completed_at IS NOT NULL')],
+            }
         return data
     finally: conn.close()
 

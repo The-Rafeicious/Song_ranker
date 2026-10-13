@@ -5,6 +5,7 @@
 {% block content %}
 <div class="page-head"><h1 class="standard">Global Stats</h1></div>
 <div class="stats">{{ stat('Songs',total_songs) }}{{ stat('Artists',total_artists,'artist') }}{{ stat('Albums',total_albums,'album') }}{{ stat('Votes',total_matches,'standard') }}</div>
+<section id="overall-global" class="panel overall-panel"><h2 class="overall">Overall Stats</h2><div class="empty" role="status">Calculating…</div></section>
 <section class="panel stats-glow glow-voting win-record-panel spaced-panel">
   <div class="section-head"><h2 class="standard">Voting Results</h2><a class="standard" href="/history">Match history ↗</a></div>
   <div class="win-rate-grid">

@@ -277,3 +277,6 @@ a.shelf-card:hover,a.mode-card:hover,a.result-card:hover{text-decoration:none}
 
 /* V3.2.7.1: entity names belong beside their artwork, above metadata. */
 #main .song-profile:not(.profile-tag) .profile-page-title{text-align:left;min-width:0;max-width:100%;line-height:1.3}
+
+/* V3.3.5.1: artist queues keep circular artwork and cover controls. */
+.profile-artist .album-cover-player .cover-button,.profile-artist .album-cover-player .art-wrap{border-radius:50%}

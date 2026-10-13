@@ -23,7 +23,7 @@ window.SpecialModes=(()=>{
    const audio=document.createElement('audio');audio.id='answer-snippet';audio.preload='none';audio.dataset.song=String(song.id);audio.volume=Number($('#volume-range')?.value??.5);
    audio.src=window.PreviewPlayback?.source(song.id,song.audio_url)||song.audio_url;U.main.append(audio);reveal.audio=audio;let timer=null;
    const pause=()=>{clearTimeout(timer);audio.pause();};
-   audio.addEventListener('playing',()=>{clearTimeout(timer);timer=setTimeout(pause,ms);});
+   audio.addEventListener('playing',()=>{clearTimeout(timer);timer=setTimeout(()=>window.PreviewPlayback?window.PreviewPlayback.fadeOut(audio,600):pause(),Math.max(0,ms-600));});
    audio.addEventListener('timeupdate',()=>{if(audio.currentTime>=ms/1000)pause();});
    audio.addEventListener('pause',()=>clearTimeout(timer));
    const playing=window.PreviewPlayback?window.PreviewPlayback.play(audio):audio.play();
@@ -34,45 +34,27 @@ window.SpecialModes=(()=>{
  }
  // One buffered answer ahead; playback starts only when its card is revealed.
  const shelfClips={current:null,next:null,outgoing:new Set()};
- function discardClip(audio){if(!audio)return;audio.pause();audio.removeAttribute('src');audio.load();audio.remove();}
+ function discardClip(audio){if(!audio)return;if(window.PreviewPlayback)window.PreviewPlayback.release(audio);else{audio.pause();audio.removeAttribute('src');audio.load();audio.remove()}}
  function cancelShelfClips(){discardClip(shelfClips.current);discardClip(shelfClips.next);shelfClips.outgoing.forEach(discardClip);shelfClips.current=null;shelfClips.next=null;shelfClips.outgoing.clear();}
  function answerAudio(song,buffered=false){
    const audio=document.createElement('audio');audio.id=buffered?'shelf-buffered-snippet':'answer-snippet';audio.preload=buffered?'auto':'none';audio.dataset.song=String(song.id);audio.volume=0;
    audio.src=window.PreviewPlayback?.source(song.id,song.audio_url)||song.audio_url;U.main.append(audio);window.PreviewPlayback?.bind(audio);return audio;
  }
- function fadeClip(audio,incoming,generation){
-   if(!audio)return;const started=performance.now(),initial=audio.volume;
-   function step(now){
-     if(generation!==reveal.generation||reveal.closed||!audio.isConnected)return;
-     const t=Math.min(1,(now-started)/180),volume=Number($('#volume-range')?.value??.5);audio.volume=incoming?volume*t:initial*(1-t);
-     if(t<1)requestAnimationFrame(step);else if(!incoming){discardClip(audio);shelfClips.outgoing.delete(audio);}
-   }
-   requestAnimationFrame(step);
- }
- function retireShelfClip(generation){const previous=shelfClips.current;shelfClips.current=null;if(previous){previous.id='outgoing-snippet';shelfClips.outgoing.add(previous);fadeClip(previous,false,generation);}}
+ function retireShelfClip(generation){const previous=shelfClips.current;shelfClips.current=null;if(previous){shelfClips.outgoing.add(previous);window.PreviewPlayback?.retire(previous);if(window.PreviewPlayback)window.PreviewPlayback.fadeOut(previous);else discardClip(previous)}}
  async function shelfAnswerAudio(song,nextSong,generation){
    if(generation!==reveal.generation||reveal.closed)return;
-   if(!song?.audio_url||window.PreviewPlayback?.blocked()){discardClip(shelfClips.next);shelfClips.next=null;retireShelfClip(generation);return;}
-   let audio=shelfClips.next?.dataset.song===String(song.id)?shelfClips.next:answerAudio(song);if(shelfClips.next&&shelfClips.next!==audio)discardClip(shelfClips.next);shelfClips.next=null;
-   const previous=shelfClips.current;if(previous)previous.id='outgoing-snippet';audio.id='answer-snippet';audio.volume=0;shelfClips.current=audio;
-   if(previous)shelfClips.outgoing.add(previous);
+   if(!song?.audio_url||window.PreviewPlayback?.blocked())return;
+   const previous=shelfClips.current;let audio=shelfClips.next?.dataset.song===String(song.id)?shelfClips.next:answerAudio(song);if(shelfClips.next&&shelfClips.next!==audio)discardClip(shelfClips.next);shelfClips.next=null;
+   if(previous){previous.id='outgoing-snippet';shelfClips.outgoing.add(previous)}audio.id='answer-snippet';audio.volume=0;
    try{
-     if(audio.error)throw Error('Buffered preview unavailable');
-     const playing=Promise.resolve(window.PreviewPlayback?window.PreviewPlayback.play(audio):audio.play());
-     playing.then(()=>{if(generation!==reveal.generation||reveal.closed||!audio.isConnected)audio.pause();}).catch(()=>{});
+     const playing=Promise.resolve(window.PreviewPlayback?window.PreviewPlayback.play(audio):audio.play());playing.catch(()=>{});
      const ready=await Promise.race([playing.then(()=>true),revealDelay(3000,generation).then(()=>false)]);
-     if(!ready||generation!==reveal.generation||reveal.closed||!audio.isConnected){if(!ready&&generation===reveal.generation&&!reveal.closed){window.PreviewPlayback?.problem(audio).catch(()=>{});const note=$('#reveal-audio-note');if(note)note.textContent='Preview unavailable';}if(shelfClips.current===audio)shelfClips.current=null;discardClip(audio);fadeClip(previous,false,generation);return;}
-     fadeClip(audio,true,generation);fadeClip(previous,false,generation);
-     // Space admissions above the preview gate's minimum gap; no retries or extra lookups.
-     if(nextSong?.audio_url)revealDelay(650,generation).then(active=>{
-       if(!active||shelfClips.current!==audio||window.PreviewPlayback?.blocked())return;
-       const buffered=answerAudio(nextSong,true);shelfClips.next=buffered;buffered.load();
-     });
-   }catch(error){
-     if(shelfClips.current===audio)shelfClips.current=null;discardClip(audio);fadeClip(previous,false,generation);
-     if(generation===reveal.generation&&!reveal.closed){const note=$('#reveal-audio-note');if(note)note.textContent=error.name==='PreviewBlockedError'?'Audio paused by preview limits':'Preview unavailable';}
-   }
+     if(!ready||generation!==reveal.generation||reveal.closed||!audio.isConnected){window.PreviewPlayback?.abandon(audio);discardClip(audio);const note=$('#reveal-audio-note');if(note&&generation===reveal.generation)note.textContent='Preview unavailable';return}
+     shelfClips.current=audio;audio.loop=true;if(previous){window.PreviewPlayback?.retire(previous);previous.addEventListener('pause',()=>shelfClips.outgoing.delete(previous),{once:true})}
+     if(nextSong?.audio_url)revealDelay(650,generation).then(active=>{if(!active||shelfClips.current!==audio||window.PreviewPlayback?.blocked())return;const buffered=answerAudio(nextSong,true);shelfClips.next=buffered;window.PreviewPlayback?.prime(buffered);if(!window.PreviewPlayback)buffered.load()});
+   }catch(error){window.PreviewPlayback?.abandon(audio);discardClip(audio);if(generation===reveal.generation&&!reveal.closed){const note=$('#reveal-audio-note');if(note)note.textContent=error.name==='PreviewBlockedError'?'Audio paused by preview limits':'Preview unavailable'}}
  }
+
  function percentageStat(label,right,total,mode){
    const value=total?100*right/total:null;
    return `<div class="stat ${mode} percentage-stat"><span class="stat-label">${label}</span><strong class="stat-value">${pct(right,total)}</strong>${value===null?'<small>Not tested yet</small>':`<div class="progress" role="progressbar" aria-label="${esc(label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Number(value.toFixed(1))}"><span style="width:${Math.min(100,value)}%"></span></div><small>${num(right).replace(/\.00$/,'')} / ${num(total).replace(/\.00$/,'')}</small>`}</div>`;
@@ -95,9 +77,9 @@ window.SpecialModes=(()=>{
  function guessCounters(records){return `<div class="stats guess-records">${U.stat('Correct picks',records.correct||0,'guesser')}${U.stat('Accuracy',pct(records.correct,records.rounds),'guesser')}${U.stat('Current streak',(records.streak||0)+' 🔥','guesser')}${U.stat('Best streak',(records.best_streak||0)+' 🔥','guesser')}</div>`;}
  function artistLinks(s){return (s.artists||[]).map(a=>`<a class="artist" href="/artist/${encodeURIComponent(a.name)}" title="${esc(a.name)}">${esc(a.name)}</a>`).join('<span class="muted">, </span>');}
  async function loadGuess(){
-   cancelReveal();reveal.closed=false;const requestId=++guessRequest;guessBusy=true;guess=null;U.cancelTransition();U.stopAudio();U.pageTone('guesser');document.body.classList.add('game-page');const release=U.holdHeight();
+   cancelReveal();reveal.closed=false;const requestId=++guessRequest;guessBusy=true;guess=null;U.cancelTransition();U.stopAudio();U.pageTone('guesser');document.body.classList.add('game-page');const release=U.holdHeight(),oldPair=$$('audio[data-preview-pair]');
    U.main.innerHTML=gameTabs()+'<div class="empty" role="status">Loading pair…</div>';
-   try{const result=await U.api('/api/elo-guesser/round',{});if(requestId!==guessRequest||document.body.dataset.tone!=='guesser')return;guess={...result,answered:false};renderGuess();}
+   try{await window.PreviewPlayback?.forgetPair(oldPair);if(requestId!==guessRequest||reveal.closed)return;const result=await U.api('/api/elo-guesser/round',{});if(requestId!==guessRequest||document.body.dataset.tone!=='guesser')return;guess={...result,answered:false};renderGuess();}
    catch(error){if(requestId===guessRequest&&document.body.dataset.tone==='guesser')U.main.innerHTML=gameTabs()+`<div class="empty error" role="alert">${esc(error.message)}</div><div class="next-area"><button class="btn" data-guess-next>Retry</button></div>`;}
    finally{if(requestId===guessRequest)guessBusy=false;release();}
  }
@@ -108,14 +90,14 @@ window.SpecialModes=(()=>{
      const cover=U.mediaButton({...song,name:song.title,artist:song.artists.map(a=>a.name).join(', ')},'guess-audio-'+i,false,!guess.answered);
      return `${i?'<span class="vs-circle">VS</span>':''}<article class="game-card ${guess.answered?(high?'guess-right-card':'guess-wrong-card'):''}"><div class="match-cover">${cover}${overlay}</div><h2><a class="song" title="${esc(song.title)}" href="/song/${song.id}">${esc(song.title)}</a></h2><div class="game-meta"><div class="game-artists">${artistLinks(song)}</div>${song.album&&!/\s-\s*single\s*$/i.test(song.album)?`<a class="album" title="${esc(song.album)}" href="/album/${encodeURIComponent(song.album)}">${esc(song.album)}</a>`:''}</div><button class="btn primary vote-btn" data-guess-pick="${song.id}" ${guess.answered?'disabled':''}>${guess.answered?(chosen?guess.result.correct?'✓ Correct · +1':'✕ Wrong pick':high?'✓ Correct answer':'Lower Elo'):'Higher Elo'}</button></article>`;
    }).join('')}</div>${guess.answered?`<section class="panel guess-feedback ${guess.result.correct?'guess-success':'guess-failure'}" role="status"><strong>${guess.result.correct?'✓ Correct · +1 point':'✕ Incorrect · +0 points · streak reset'}</strong><span>Next pair automatically…</span><small id="reveal-audio-note"></small></section>`:''}`;
-   U.attachPlayers();if(guess.answered)$$('.match-cover .cover-button').forEach(b=>b.disabled=true);release();
+   U.attachPlayers();window.PreviewPlayback?.preloadPair([$('#guess-audio-0'),$('#guess-audio-1')]);if(guess.answered)$$('.match-cover .cover-button').forEach(b=>b.disabled=true);release();
  }
 
  async function answerGuess(id){
    if(guessBusy||!guess||guess.answered)return;guessBusy=true;$$('[data-guess-pick]').forEach(b=>b.disabled=true);
    let saved=false;
    try{
-     const result=await U.api('/api/elo-guesser/answer',{token:guess.token,song_id:id});saved=true;U.stopAudio();cancelReveal();
+     const result=await U.api('/api/elo-guesser/answer',{token:guess.token,song_id:id});saved=true;window.PreviewPlayback?.hold();cancelReveal();
      guess.answered=true;guess.chosen=id;guess.result=result;guess.records=result.records;renderGuess();
      const generation=reveal.generation,correct=guess.songs[result.ratings[0]>result.ratings[1]?0:1];snippet(correct,2800,generation);
      U.refreshData().catch(()=>U.toast('Answer saved; collection refresh unavailable'));
@@ -124,33 +106,39 @@ window.SpecialModes=(()=>{
    finally{guessBusy=false;}
  }
 
- function stopShelf(){previewGeneration++;loopRequested=false;playingSlot=null;clearTimeout(previewTimer);const a=$('#shelf-preview-audio');if(a)a.pause();markPlayback();}
+ let shelfPrimeTimer=null;
+ function stopShelf(keepAudio=false){previewGeneration++;loopRequested=false;playingSlot=null;clearTimeout(previewTimer);clearTimeout(shelfPrimeTimer);const a=$('#shelf-preview-audio');if(a&&!keepAudio){if(window.PreviewPlayback)window.PreviewPlayback.cancel(a);else a.pause()}markPlayback();}
  function markPlayback(){
    $$('[data-shelf-slot]').forEach(row=>{row.classList.toggle('selected',Number(row.dataset.shelfSlot)===selectedSlot);row.classList.toggle('is-playing',Number(row.dataset.shelfSlot)===playingSlot&&loopRequested);});
    const button=$('[data-shelf-play]');if(button){button.textContent=loopRequested?'Ⅱ Pause previews':'▶ Play previews';button.setAttribute('aria-pressed',String(loopRequested));}
  }
  async function playShelf(slot){
    if(!shelf)return;const available=shelf.songs.filter(s=>s.audio_url);if(!available.length)return;
-   let s=available.find(s=>s.slot===slot)||available[0];const a=$('#shelf-preview-audio');if(!a)return;
-   const generation=++previewGeneration;clearTimeout(previewTimer);a.pause();a.currentTime=0;selectedSlot=s.slot;playingSlot=s.slot;loopRequested=true;
-   a.src=window.PreviewPlayback?.source(s.id,s.audio_url)||s.audio_url;a.volume=Number($('#volume-range')?.value??.5);markPlayback();
-   $('#shelf-preview-info').textContent=s.title;
-   try{await (window.PreviewPlayback?window.PreviewPlayback.play(a):a.play());}
-   catch(error){if(generation!==previewGeneration)return;stopShelf();U.toast(error.name==='PreviewBlockedError'?error.message:'Preview unavailable. Choose another track.');}
+   const s=available.find(s=>s.slot===slot)||available[0],generation=++previewGeneration;let a=$('#shelf-preview-audio');if(!a)return;
+   clearTimeout(previewTimer);clearTimeout(shelfPrimeTimer);selectedSlot=s.slot;loopRequested=true;
+   const url=window.PreviewPlayback?.source(s.id,s.audio_url)||s.audio_url,old=a;
+   if(window.PreviewPlayback)a=window.PreviewPlayback.replace(a,url);else{a.pause();a.src=url;a.currentTime=0}
+   if(a!==old)delete a.dataset.shelfBound;bindShelfAudio();markPlayback();
+   try{await (window.PreviewPlayback?window.PreviewPlayback.play(a):a.play());if(generation!==previewGeneration||!loopRequested)return;playingSlot=s.slot;$('#shelf-preview-info').textContent=s.title;markPlayback();
+     previewTimer=setTimeout(advanceShelf,Math.max(0,10-a.currentTime)*1000);
+     shelfPrimeTimer=setTimeout(()=>{if(generation!==previewGeneration||!loopRequested)return;const at=available.findIndex(item=>item.slot===s.slot),next=available[(at+1)%available.length];window.PreviewPlayback?.prime(window.PreviewPlayback.source(next.id,next.audio_url))},650);
+   }catch(error){if(generation!==previewGeneration||error.name==='AbortError')return;stopShelf();U.toast(error.name==='PreviewBlockedError'?error.message:'Preview unavailable. Choose another track.');}
  }
  function advanceShelf(){
-   if(!loopRequested||!shelf)return;clearTimeout(previewTimer);const available=shelf.songs.filter(s=>s.audio_url),at=available.findIndex(s=>s.slot===playingSlot);
+   if(!loopRequested||!shelf||window.PreviewPlayback?.isPending())return;clearTimeout(previewTimer);const available=shelf.songs.filter(s=>s.audio_url),at=available.findIndex(s=>s.slot===playingSlot);
    if(available.length)playShelf(available[(at+1)%available.length].slot);
  }
  function bindShelfAudio(){
-   const a=$('#shelf-preview-audio');
-   a.addEventListener('playing',()=>{clearTimeout(previewTimer);if(loopRequested)previewTimer=setTimeout(advanceShelf,Math.max(0,10-a.currentTime)*1000);markPlayback();});
-   a.addEventListener('timeupdate',()=>{if(loopRequested&&a.currentTime>=10)advanceShelf();});
-   a.addEventListener('ended',advanceShelf);
-   a.addEventListener('waiting',()=>clearTimeout(previewTimer));
-   a.addEventListener('pause',()=>{clearTimeout(previewTimer);if(a.paused)$$('[data-shelf-slot]').forEach(row=>row.classList.remove('is-playing'));});
-   a.addEventListener('error',()=>{if(loopRequested){stopShelf();U.toast('Preview unavailable. Try another track.');}});
+   const a=$('#shelf-preview-audio');if(a.dataset.shelfBound)return;a.dataset.shelfBound='true';
+   const current=()=>a===$('#shelf-preview-audio')&&loopRequested;
+   a.addEventListener('playing',()=>{if(current()){clearTimeout(previewTimer);previewTimer=setTimeout(advanceShelf,Math.max(0,10-a.currentTime)*1000)}markPlayback()});
+   a.addEventListener('timeupdate',()=>{if(current()&&a.currentTime>=10)advanceShelf()});
+   a.addEventListener('ended',()=>{if(current())advanceShelf()});
+   a.addEventListener('waiting',()=>{if(current())clearTimeout(previewTimer)});
+   a.addEventListener('pause',()=>{if(a!==$('#shelf-preview-audio'))return;clearTimeout(previewTimer);if(a.paused)$$('[data-shelf-slot]').forEach(row=>row.classList.remove('is-playing'))});
+   a.addEventListener('error',()=>{if(current()&&!window.PreviewPlayback?.isPending()){stopShelf();U.toast('Preview unavailable. Try another track.')}});
  }
+
  async function loadShelf(fresh=false){
    if(shelfBusy)return;shelfBusy=true;cancelReveal();reveal.closed=false;stopShelf();U.stopAudio();shelf=null;selectedSlot=null;U.pageTone('shelves');document.body.classList.remove('game-page');
    const generation=reveal.generation,release=U.holdHeight();U.main.innerHTML='<div class="page-head"><h1 class="shelves">Album Shelves</h1></div><div id="shelf-content"><div class="empty" role="status">Loading shelves…</div></div>';
@@ -222,7 +210,7 @@ window.SpecialModes=(()=>{
 
  async function checkShelf(){
    if(shelfBusy||!shelf||shelf.answered||shelf.pool.length)return;const current=shelf,generation=reveal.generation;shelfBusy=true;$('[data-shelf-check]').disabled=true;let saved=false;
-   try{const result=await U.api('/api/album-shelves/answer',{token:current.token,placements:current.placements});saved=true;current.answered=true;current.result=result;if(shelf!==current||generation!==reveal.generation||reveal.closed)return;stopShelf();U.stopAudio();cancelReveal();renderShelfBoard();$('[data-shelf-play]').disabled=true;
+   try{const result=await U.api('/api/album-shelves/answer',{token:current.token,placements:current.placements});saved=true;current.answered=true;current.result=result;if(shelf!==current||generation!==reveal.generation||reveal.closed)return;stopShelf(true);window.PreviewPlayback?.hold();cancelReveal();renderShelfBoard();$('[data-shelf-play]').disabled=true;
      U.refreshData().catch(()=>U.toast('Round saved; collection refresh unavailable'));await revealShelfRound();
    }catch(error){U.toast(error.message);if(!saved&&$('[data-shelf-check]'))$('[data-shelf-check]').disabled=false;}
    finally{if(!saved)shelfBusy=false;}
@@ -242,11 +230,12 @@ window.SpecialModes=(()=>{
  let rankingState=null,devRecordMode='guesser';
  function renderModeRanking(mode,init=false){
    if(init){const p=new URLSearchParams(location.search),context=$('#mode-ranking-context')?JSON.parse($('#mode-ranking-context').textContent):{};rankingState={mode,type:context.entity||(['songs','artists','albums'].includes(p.get('entity'))?p.get('entity'):'songs'),metric:p.get('metric')||metrics(mode)[0][0],bottom:p.get('view')==='bottom'};}
+   const rankingPercent=(right,total)=>total?(100*right/total).toFixed(2)+'%':'—';
    const r=rankingState,list=metrics(mode),m=list.find(m=>m[0]===r.metric)||list[0];r.metric=m[0];const tone=mode==='trivia'?'recognition':mode;U.pageTone(tone);document.body.classList.add('rankings-page','performance-page');
    const eligible=entityRows(mode,r.type).filter(row=>mode==='guesser'?row.guess_attempts:mode==='shelves'?row.shelf_attempts:mode==='trivia'?row.recognition_score:row.tournament_appearances).filter(row=>rankingValue(row,m)!==null);
    eligible.sort((a,b)=>rankingValue(b,m)-rankingValue(a,m)||(b.guess_attempts||b.shelf_attempts||b.tournament_appearances||0)-(a.guess_attempts||a.shelf_attempts||a.tournament_appearances||0)||a.name.localeCompare(b.name));
    const rows=(r.bottom?[...eligible].reverse():eligible).slice(0,20),titles={guesser:'Elo Guesser',shelves:'Album Shelves',trivia:'Recognisability',tournament:'Tournament'};
-   U.main.innerHTML=`<div class="page-head"><h1 class="${tone}">${titles[mode]} Rankings</h1></div><div class="pill-nav special-rank-tabs">${['songs','artists','albums'].map(type=>`<button class="pill ${r.type===type?'active':''}" data-special-entity="${type}" aria-pressed="${r.type===type}">${type[0].toUpperCase()+type.slice(1)}</button>`).join('')}</div><div class="pill-nav performance-metrics">${list.map(metric=>`<button class="pill ${r.metric===metric[0]?'active':''}" data-special-metric="${metric[0]}" aria-pressed="${r.metric===metric[0]}">${metric[1]}</button>`).join('')}</div><div class="ranking-switch pill-nav"><button class="pill ${r.bottom?'':'active'}" data-special-view="top">Top twenty</button><button class="pill ${r.bottom?'active':''}" data-special-view="bottom">Bottom twenty</button></div><div class="leaderboard">${rows.map((row,i)=>`<article class="leader-row" style="${U.rankGlow(i,r.bottom,tone)}"><span class="leader-rank">${r.bottom?eligible.length-i:['🥇','🥈','🥉'][i]||i+1}</span><a href="${U.urlFor(r.type,row)}" aria-label="${esc(row.name)}">${U.artwork(row,r.type)}</a><div class="special-rank-copy"><a class="leader-title ${U.colour(r.type)}" href="${U.urlFor(r.type,row)}" title="${esc(row.name)}">${esc(row.name)}</a><div class="leader-meta">${mode==='guesser'?`${row.guess_correct} / ${row.guess_attempts} correct appearances`:mode==='shelves'?`${row.shelf_attempts} appearances · ${pct(row.shelf_order_right,row.shelf_order_pairs)} track order`:mode==='trivia'?`${row.recognition_correct} / ${row.recognition_score} recognised fields`:`${row.championships} first · ${row.runner_ups} second · ${row.third_places} third`}</div></div><div class="leader-score ${tone}">${m[4]==='percentage'||m[4]==='trivia'?Number(rankingValue(row,m).toFixed(1))+'%':m[4]==='decimal'?num(rankingValue(row,m)):rankingValue(row,m)}<small>${m[1]}</small></div></article>`).join('')||'<div class="empty">No results for this category yet</div>'}</div>`;
+   U.main.innerHTML=`<div class="page-head"><h1 class="${tone}">${titles[mode]} Rankings</h1></div><div class="pill-nav special-rank-tabs">${['songs','artists','albums'].map(type=>`<button class="pill ${r.type===type?'active':''}" data-special-entity="${type}" aria-pressed="${r.type===type}">${type[0].toUpperCase()+type.slice(1)}</button>`).join('')}</div><div class="pill-nav performance-metrics">${list.map(metric=>`<button class="pill ${r.metric===metric[0]?'active':''}" data-special-metric="${metric[0]}" aria-pressed="${r.metric===metric[0]}">${metric[1]}</button>`).join('')}</div><div class="ranking-switch pill-nav"><button class="pill ${r.bottom?'':'active'}" data-special-view="top">Top twenty</button><button class="pill ${r.bottom?'active':''}" data-special-view="bottom">Bottom twenty</button></div><div class="leaderboard">${rows.map((row,i)=>`<article class="leader-row" style="${U.rankGlow(i,r.bottom,tone)}"><span class="leader-rank">${r.bottom?eligible.length-i:['🥇','🥈','🥉'][i]||i+1}</span><a href="${U.urlFor(r.type,row)}" aria-label="${esc(row.name)}">${U.artwork(row,r.type)}</a><div class="special-rank-copy"><a class="leader-title ${U.colour(r.type)}" href="${U.urlFor(r.type,row)}" title="${esc(row.name)}">${esc(row.name)}</a><div class="leader-meta">${mode==='guesser'?`${row.guess_correct} / ${row.guess_attempts} correct appearances`:mode==='shelves'?`${row.shelf_attempts} appearances · ${rankingPercent(row.shelf_order_right,row.shelf_order_pairs)} track order`:mode==='trivia'?`${row.recognition_correct} / ${row.recognition_score} recognised fields`:`${row.championships} first · ${row.runner_ups} second · ${row.third_places} third`}</div></div><div class="leader-score ${tone}">${m[4]==='percentage'||m[4]==='trivia'?rankingValue(row,m).toFixed(2)+'%':m[4]==='decimal'?num(rankingValue(row,m)):rankingValue(row,m)}<small>${m[1]}</small></div></article>`).join('')||'<div class="empty">No results for this category yet</div>'}</div>`;
    history.replaceState({},'',`/mode_rankings/${mode}?entity=${r.type}&metric=${r.metric}&view=${r.bottom?'bottom':'top'}`);
  }
  async function renderStats(mode){
@@ -308,6 +297,7 @@ window.SpecialModes=(()=>{
    }
    const row=e.target.closest('[data-shelf-slot]');if(row&&e.target===row&&['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();shiftShelf(Number(row.dataset.shelfSlot),e.key==='ArrowUp'?-1:1);}
  });
+ document.addEventListener('preview-blocked',()=>{stopShelf();cancelShelfClips();reveal.audio?.pause()});
  window.addEventListener('pagehide',()=>{reveal.closed=true;cancelReveal();stopShelf();});
  window.addEventListener('pageshow',e=>{if(e.persisted&&U){reveal.closed=false;guessBusy=false;shelfBusy=false;if(document.body.dataset.page==='guesser')loadGuess();if(document.body.dataset.page==='shelves'){if(shelf?.answered){if(!shelf.revealComplete){shelf.revealed.clear();renderShelfBoard();shelfBusy=true;revealShelfRound().catch(error=>U.toast(error.message));}}else loadShelf();}}});
  return {bindUI:ui=>U=ui,panels,homeSummary,homeBanners,loadGuess,loadShelf,renderStats,renderModeRanking,renderDevRecords,cancelGuess:()=>{guessRequest++;guessBusy=false;},totals};
