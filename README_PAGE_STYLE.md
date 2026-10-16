@@ -683,3 +683,92 @@ Tournament pink directly. Profile-scoped value rules must beat that rule, while
 labels stay muted and Blind subgroups keep their mint section colour. Top key
 stats retain their existing entity/Elo colours. Review the actual CSS load order
 when verifying semantic colours, including expanded/open inset groups.
+
+
+## Standard Voting Stats — V3.4.12
+
+`/voting_stats` reports Standard Vote's Non-blind and Blind history. Use the
+shared mode_stats template macros, joined metrics, record rows and artwork,
+plus shared VS geometry. Keep a dedicated read-only reader and one consistent
+SELECT snapshot. The page loads its own composition CSS only on this route;
+no extra client controller or scoring counters are needed.
+
+Order: overview/mode mix → Non-blind/Blind comparison → activity → coverage →
+shared current Elo distribution → saved Elo movement/gaps → track Elo movement
+→ track records → across-mode rate differences → frequent matchups → upsets →
+artist records → proper-album records → tag records → paged recent votes.
+Major panels occupy full rows. Lists show at most five records; recent votes
+show ten per page. Keep the data visible rather than adding metric tabs or
+expansion controls. Add the page to Stats navigation and profile voting links.
+
+Combined voting/Elo panels use orange; Blind comparison insets, figures and
+result labels use mint. Entity names keep green/blue/purple/amber and losing
+match names use danger red. Use quiet divided metric rows and existing soft
+surface glows, with readable empty/unknown states. Side-by-side comparisons
+stack below 1050 px. Record results move below copy on phones; compact VS rows
+stack artwork/name on each side of a central VS separator below 600 px, keeping
+both covers, ratings, mode and dates. Category artist art remains circular.
+All six fixed artwork constraints must agree.
+
+Shared Elo is the current combined rating across both voting modes, not a
+separate mode rating. Match gaps, gains, upsets and win rates use saved history;
+never substitute today's Elo for missing snapshots. Skip self-pairs and missing
+participant IDs, retain unavailable track identities without broken links, and
+keep unknown rates unavailable. Collection rates pool saved track appearances.
+Use short units/labels on the page and document less obvious denominators,
+UTC activity days, sample minimums, streak eligibility and Elo spread in notes.
+The recent-history mode filter and pagination do not change lifetime panels.
+
+
+## Game screens — V3.4.13
+
+Standard Vote (Non-blind and Blind), Trivia, Tournament, Elo Guesser and Album
+Shelves share game-only `gameplay.css` and `gameplay.js`, included only on those
+five routes. Keep the established stylesheet order and approved baseline last.
+The game stylesheet owns play-screen composition, controls and outcome states;
+`GameplayUI` owns the Tournament scope menu. Game modules still own requests,
+selection, scoring, reveal sequencing and audio handoffs. Rankings, profiles,
+Search and dashboards do not load these game assets.
+
+Keep mode-coloured headings, primary actions, focus and VS indicators. Entity
+names remain green/blue/purple, Elo orange, Tournament points pink and Shelves
+points mauve. Winner/correct cards use green borders and the shared soft glow;
+loser/incorrect cards use danger red. Result buttons remain legible when locked.
+Anonymous covers follow the current mode, including pink in blind tournaments.
+Covers remain square, with a 355 px maximum on pair games and 230 px on Shelves;
+constrain all six child artwork dimensions together. Touch play/pause overlays
+remain visible without hover. Below 700 px, pair games stack with a centred VS.
+Retain the automatic next-round timing and offer an explicit Next action too.
+
+Tournament setup uses native radio groups in quiet inset choice cards for
+8/16/32 tracks and Non-blind/Blind type. Scope uses a styled button/listbox for
+Whole library, Artist, Album and Tag, followed by the existing searchable scope
+picker. Keep eligibility counts, disabled ineligible results, selected state and
+start readiness visible. Both bracket types retain Tournament pink. The popup
+has 54 px rows, arrows/Home/End/typeahead/Enter/Space, Escape focus restoration,
+natural Tab exit, outside dismissal and upward opening near the viewport edge.
+Do not change tournament seeding, size eligibility, points or saved brackets.
+
+Trivia keeps current and best run figures beside the cover on desktop, with
+gold values and readable wrapping. Below 760 px, put the 200 px square cover
+above the two metric columns. Use entity-coloured field labels, consistent
+correct/error accents and at least 16 px inputs. Reveal answers is an explicit
+touch action calling the existing round-finish path; keep start/pause, timing,
+field checking, scoring and automatic progression intact.
+
+Shelves placement menus and up/down actions remain non-drag alternatives with
+44–46 px targets, readable menus and bounded/upward popups. Three shelves stack
+below 1050 px; two stack on smaller tablets. Use larger square album artwork,
+quiet aubergine borders and mauve mode figures. After reveals, correct actual
+track numbers are green; incorrect submitted positions remain red beside them.
+Both use the same compact 14 px/900 type, with a full accessible position label.
+
+Reveal albums in their displayed order, with tracks in each album's actual
+track-number order. Count each revealed track's saved points on that album's
+cover only. When that album's last reveal finishes, add its unrounded subtotal
+to the main score, finish that count, then reveal the next album. Show progress
+and Added to total on completed album covers. Handle zero totals and two/three
+albums; final displayed points equal the saved result. Count animations and
+pending transfers must stop on cancellation/page exit. Reduced motion removes
+flips/pulses/count animation while retaining the same sequence. Scoring,
+per-track denominators, preview buffering and fades remain unchanged.

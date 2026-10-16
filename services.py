@@ -363,21 +363,22 @@ def get_song_full(song_id, conn):
 
 
 def fetch_match_history(conn, song_id=None, limit=50):
-    """Fetch match rows with both linked songs and their artists in one shared query.
+    """Fetch recent matches with the rich song records used by shared VS rows.
 
     Passing a song ID scopes results to matches involving that song; omitting it
-    returns the site's recent match feed. Mode is stored on history itself.
+    returns the site's recent match feed. Saved Elo belongs to each match, while
+    linked song/album/artist metadata comes from the current catalogue. Older
+    history without rating snapshots falls back to explicitly labelled current
+    Elo in the template. This reader never changes the database.
     """
-    return conn.execute('''
-        SELECT h.id, h.mode, h.created_at,
-               w.id AS winner_id, w.title AS winner_title, wal.cover_url AS winner_cover,
-               (SELECT GROUP_CONCAT(a.name, ', ')
-                FROM song_artists sa JOIN artists a ON a.id = sa.artist_id
-                WHERE sa.song_id = w.id) AS winner_artist,
-               l.id AS loser_id, l.title AS loser_title, lal.cover_url AS loser_cover,
-               (SELECT GROUP_CONCAT(a.name, ', ')
-                FROM song_artists sa JOIN artists a ON a.id = sa.artist_id
-                WHERE sa.song_id = l.id) AS loser_artist
+    from catalog import versus_metadata
+
+    rows = [dict(row) for row in conn.execute('''
+        SELECT h.*,
+               w.title AS winner_title, w.elo_score AS winner_elo, wal.cover_url AS winner_cover,
+               wal.id AS winner_album_id, wal.title AS winner_album_title,
+               l.title AS loser_title, l.elo_score AS loser_elo, lal.cover_url AS loser_cover,
+               lal.id AS loser_album_id, lal.title AS loser_album_title
         FROM history h
         JOIN songs w ON h.winner_id = w.id
         LEFT JOIN albums wal ON wal.id = w.album_id
@@ -386,7 +387,34 @@ def fetch_match_history(conn, song_id=None, limit=50):
         WHERE (? IS NULL OR h.winner_id = ? OR h.loser_id = ?)
         ORDER BY h.id DESC
         LIMIT ?
-    ''', (song_id, song_id, song_id, max(1, min(int(limit), 500)))).fetchall()
+    ''', (song_id, song_id, song_id, max(1, min(int(limit), 500))))]
+
+    # Read actual relationships instead of splitting comma-delimited artist
+    # names. Batch only the displayed tracks, below SQLite's legacy bind limit.
+    song_ids = sorted({row[side + '_id'] for row in rows for side in ('winner', 'loser')})
+    artists = {sid: [] for sid in song_ids}
+    for start in range(0, len(song_ids), 500):
+        batch = song_ids[start:start + 500]
+        for artist in conn.execute('''
+            SELECT DISTINCT sa.song_id, a.id, a.name
+            FROM song_artists sa JOIN artists a ON a.id = sa.artist_id
+            WHERE sa.song_id IN (''' + ','.join('?' for _ in batch) + ')', batch):
+            artists[artist['song_id']].append(dict(artist))
+
+    songs = {}
+    for row in rows:
+        for side in ('winner', 'loser'):
+            sid = row[side + '_id']
+            if sid not in songs:
+                album = dict(id=row[side + '_album_id'], title=row[side + '_album_title'],
+                             cover_url=row[side + '_cover'])
+                songs[sid] = dict(id=sid, title=row[side + '_title'], elo_score=row[side + '_elo'],
+                                  **versus_metadata(album, artists[sid]))
+            row[side + '_song'] = songs[sid]
+            row[side + '_artist'] = ', '.join(a['name'] for a in songs[sid]['artist_links'])
+            row.setdefault(side + '_before', None)
+            row.setdefault(side + '_after', None)
+    return rows
 
 
 def get_matchup(is_blind=False):

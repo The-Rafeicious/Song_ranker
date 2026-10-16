@@ -6,7 +6,7 @@ patches under V3.4. Earlier two-part foundational release notes are retained.
 
 | Release | Notes |
 | --- | --- |
-| V3.4 (includes V3.4.8) | [V3_4_UPDATE.md](V3_4_UPDATE.md) |
+| V3.4 (includes V3.4.13) | [V3_4_UPDATE.md](V3_4_UPDATE.md) |
 | V3.3.5 (includes V3.3.5.1) | [V3_3_5_UPDATE.md](V3_3_5_UPDATE.md) |
 | V3.3.4 | [V3_3_4_UPDATE.md](V3_3_4_UPDATE.md) |
 | V3.3.3 | [V3_3_3_UPDATE.md](V3_3_3_UPDATE.md) |

@@ -188,3 +188,95 @@ reference is in `README_PAGE_STYLE.md`.
   a ResizeObserver and fixed two-row CSS fallback handle browser layout.
 - Eight edited files packaged. Supplied database bytes remain unchanged; no
   backend, scoring, security or dependency files changed; audio-controller logic is unchanged.
+
+
+## V3.4.12
+
+- Full Python suite: 165 tests passed (18 new voting-report tests). Fixtures
+  cover both modes/other-mode exclusion, bad pairs, saved before/after ratings,
+  equal ratings and upset denominators, gaps, zero-sum deltas, missing/invalid
+  snapshots, deleted tracks, reversed pairs, sample minimums, pooled collection
+  rates, singles/unknown albums, chronological runs, UTC/future/undated activity,
+  lifetime totals over 100 rows, history filtering/pagination, SELECT-only reads,
+  legacy schemas without rating columns, non-finite/current rating boundaries,
+  escaping and populated/empty/missing-track template rendering.
+- Copied supplied data reconciles to 419 votes: 251 Non-blind, 168 Blind; all 419
+  have complete usable rating snapshots. There are 98 lower-rated wins among
+  283 unequal-Elo votes, 136 level-Elo votes and 419 surviving tracks voted.
+  Current rating bands sum to the number of finite catalogue ratings.
+- All five tested Voting Stats history-query states return 200. Home, Global
+  Stats, a mode board, a song profile and Search still return 200 and do not load
+  voting_stats.css. The new page is linked from navigation/profile voting panels.
+- 805 selector/cascade checks passed on actual rendered page markup across
+  320/360/390/430/640/900/1440 px rules. They verify orange/mint metric colours
+  and agreement of all six artwork dimensions. Reviewed the shared record
+  reflow, stacked compact VS rows, count/label wrapping and 44 px actions.
+- Existing 80 profile, 80 Search and 347 ranking assertions passed. Edited
+  JavaScript passes syntax checks. Nine audio/controller functions still match
+  the supplied baseline; game, scoring, audio-controller and security logic are unchanged.
+- Native browser screenshots, actual font/viewport overflow, assistive technology
+  and physical-phone interaction remain unverified. CSS checks use a selector
+  engine/media-rule evaluation, not browser paint.
+- Fourteen changed/new files packaged. Database bytes match the supplied V3.4.8
+  archive; the page reads a caller-owned snapshot and adds no schema or counters.
+
+
+## V3.4.12.1
+
+- Reproduced the populated `/history` failure on a copy of the supplied data:
+  Jinja raised `UndefinedError: 'sqlite3.Row object' has no attribute
+  'winner_song'`. The History query returned the old flat shape while the
+  existing shared VS-row template required nested song metadata.
+- Full Python suite: **175 tests passed**, including ten History regressions.
+  Coverage includes populated Non-blind/Blind rows, newest-first ordering,
+  saved Elo/deltas rather than current ratings, empty state, correct escaped
+  song/album/artist links, artist commas/duplicates, missing metadata, partial
+  snapshots, legacy history without snapshot columns, song scope, limits,
+  deleted tracks, 1,000 distinct tracks under a 999-variable SQLite limit,
+  SELECT-only reads, allowed-phone/denied-device access and connection cleanup.
+- Twelve copied-data page reads return HTTP 200: History, Voting Stats, Global
+  Stats, Home, Search and a song profile for both loopback and the configured
+  phone address. History renders fifty rows, both modes and saved Elo. A denied
+  device still receives 403; the allowed phone still cannot access Dev login.
+- The integration copy is byte-for-byte unchanged after these reads. The source
+  database also matches the supplied V3.4.8 ZIP. No database, private key,
+  dependency, security, template, CSS or JavaScript files are in this patch.
+- Phone checks use Flask's simulated direct-client address; physical Wi-Fi or
+  phone-browser behavior was not tested. No presentation changes are included.
+
+Apply the eight edited/new files over **V3.4.12**, restart and refresh History.
+
+
+## V3.4.13
+
+- **175 Python tests pass** on isolated databases. Existing **347 ranking,
+  80 Search and 80 profile assertions pass**. All edited/new JavaScript parses.
+- New **173 gameplay assertions** use real game scripts with jsdom, explicit
+  HTTP/media fixtures and a controlled clock. Cover blind identity hiding,
+  duplicate-vote protection, saved Elo/deltas, manual/automatic next cancellation,
+  bracket size/type eligibility and unchanged API parameters, failed-start retry,
+  custom menu keyboard/focus/outside/viewport behavior, Trivia start/pause/reveal,
+  non-drag shelf placement/order, two/three album reveal order, per-album points,
+  deferred main-score updates, zero/fractional points, cancellation during rows
+  and transfers, reduced motion, escaped links and final saved totals.
+  Run `node tests/test_gameplay.js` with jsdom available to Node (QA only).
+- **2,832 selector/cascade checks pass** across thirteen rendered game states at
+  320/360/390/430/700/760/1050/1440 px. They use the actual stylesheet order and
+  verify semantic link/value/outcome colours, equal child-art constraints, Trivia
+  square cover dimensions, pair-game stacking, matching red/green position type,
+  mode primary buttons and touch/menu sizes. No shared existing CSS was changed.
+- **124 controlled audio/controller assertions pass**: 84 engine/queue/reveal/
+  Trivia checks and 40 pair/cache/artist checks. The old test harness was adapted
+  to load the current profile renderer. Playback engines and audio handoff
+  functions are unchanged; count-up gained an optional cancellation guard.
+- **34 computer/simulated-phone page and asset reads return HTTP 200**. New game
+  assets/body scope are present only on the five play routes and absent from
+  Home, Search, History, Voting Stats, rankings and profiles. Allowed-phone Dev
+  denial and disallowed-device denial remain 403. These reads leave the copied
+  database byte-for-byte unchanged; the source matches the supplied V3.4.8 ZIP.
+- Browser paint, actual wrapping/viewport overflow, native assistive technology,
+  physical-phone controls and audio playback remain unverified: no working
+  browser executable is available. DOM, timing and media checks use fixtures;
+  CSS checks evaluate selectors/media rules rather than painted layout.
+- Thirteen edited/new files packaged over V3.4.12.1. No database/private key,
+  backend, requirements, scoring, security or preview-engine files are included.

@@ -929,3 +929,126 @@ Apply over **V3.4.10.2**, restart and hard-refresh. Footer: **V3.4.11**.
   audio controllers and security are unchanged.
 
 Apply over **V3.4.11**, restart and hard-refresh. Footer: **V3.4.11.1**.
+
+
+## V3.4.12 — Standard Voting Stats
+
+- Added **Stats → Voting Stats** (`/voting_stats`) for Non-blind and Blind votes,
+  with a Stats entry point in entity-profile Voting Record panels. Main figures
+  come first, followed by activity, coverage, shared Elo distribution, movement,
+  records, matchups, collection summaries and paged history. Reuses the accepted
+  dashboard components, semantic colours, joined rows, soft glows and phone rules.
+- Overview includes total votes, mode split and voted tracks; comparison cards
+  show mode totals, track coverage, active days, lower-rated win rate and average
+  winner Elo gain. Combined figures are orange, Blind figures mint; entity names
+  keep their colours. No redundant global 50% win rate or constant mean Elo.
+- Added rolling 7/30-day totals, a 14-day Non-blind/Blind activity chart, busiest
+  day, first/latest vote and votes per active day. Days are UTC; displayed match
+  times use the existing local-time formatter. Undated/future timestamps remain
+  in lifetime totals but do not enter dated activity windows.
+- Current Elo uses the shared catalogue rating after both voting modes (and any
+  manual corrections). Shows median, high/low, spread and 50-point bands from
+  1000 to below 1400, with lower/upper tails. Band membership uses exact saved
+  values, not rounded display values. Spread is population standard deviation;
+  the report deliberately omits the usually fixed global average.
+- Elo gains/drops and track net movement use saved before/after snapshots, not
+  recalculation from current ratings or today's K factor. Usable complete changes
+  must be finite with a non-negative winner gain and loser drop. Missing/bad
+  snapshots retain the vote but stay out of movement averages/net totals.
+  Track net changes are saved deltas only, not current Elo minus a presumed 1200.
+- A lower-rated win is an upset when the saved winner-before rating is below
+  loser-before. Upset rates exclude level-Elo and missing-before comparisons;
+  ties still count in vote totals and gap bands. Five largest upsets and the
+  largest winner-gain match show saved values and mode. No theoretical win
+  probabilities, causal Blind effects or invented past ratings are presented.
+- Track records include current Elo/peak, wins, win rate (five appearances
+  minimum), activity and longest recorded win runs. A run follows that track's
+  chronological appearances, unaffected by other tracks' intervening votes;
+  any undated/future appearance makes that track's run unavailable. Mode-rate
+  differences require three appearances in each mode and show percentage points
+  (Blind minus Non-blind), not a claim that Blind caused the difference.
+- Frequent matchups combine reversed pairs and show both win counts plus mode
+  counts. Artist/album/tag records show most appearances and best win rates
+  (five appearances minimum). They pool linked-track wins/losses; an internal
+  collection match contributes two appearances, one win and one loss.
+  Collaborations/tags can contribute to multiple linked collections. Singles
+  and unknown albums stay outside proper-album records.
+- Aggregates read the entire standard/blind history, with no recent-100 cap.
+  Self-pairs and missing participant IDs are excluded; saved deleted-track IDs
+  retain their historical vote and snapshots without broken profile links. Live
+  track/collection records count surviving track appearances even if an opponent
+  was removed. A short notice identifies incomplete or unavailable identities.
+- Recent votes have ten rows per page and All/Non-blind/Blind controls affecting
+  only that list. Desktop VS rows use the shared mirrored geometry; phones stack
+  the sides for readable names/ratings. Long names truncate with complete title
+  attributes; saved counts and ratings keep their own space.
+- Updated README, styling guidance and release index. No schema migration,
+  dependency, game, scoring, audio-controller or LAN-security change.
+
+Apply over **V3.4.11.1**, restart and hard-refresh. Footer: **V3.4.12**.
+Validation and native-visual limitations are recorded in `VALIDATION.md`.
+
+
+## V3.4.12.1 — Match History server error
+
+- Fixed `/history` returning HTTP 500 when matches exist. The shared VS-row
+  template expects `winner_song` / `loser_song`, but the History reader still
+  returned the older flat fields. The reader now provides both complete song
+  records and saved before/after Elo, retaining the existing flat fields.
+- Artist links use actual relationships, preserving names containing commas
+  and deduplicating collaborators. Shared metadata rules keep proper album
+  links, artwork fallbacks and song/artist links consistent with other VS rows.
+- Older history without rating snapshots renders explicitly labelled current
+  Elo; partial snapshots retain the existing after-match label. Newest-first
+  ordering, the fifty-match page limit and mode filters stay as before.
+- Reads share one snapshot and connections close even if loading fails. Added
+  populated/empty/legacy route regressions, relationship and limit checks,
+  read-only verification and allowed-phone/denied-device checks.
+- The reproduced failure was a data/template mismatch, unrelated to phone
+  security. No access-control, layout, scoring, schema or dependency changes.
+  The supplied database remains byte-for-byte unchanged.
+
+Apply over **V3.4.12**, restart the app and refresh History. Footer: **V3.4.12.1**.
+This package contains edited/new files only. See `VALIDATION.md` for checks.
+
+
+## V3.4.13 — Game-mode styling and clearer play controls
+
+- Reviewed Standard Vote (Non-blind/Blind), Trivia, Tournament, Elo Guesser and
+  Album Shelves together. Added shared game-only composition and control styles
+  following the approved type, dark surfaces, corners, glows and semantic palette.
+  Headings, primary actions, focus and anonymous covers use the active mode;
+  entity links keep their own colours, Elo stays orange, and outcomes use
+  green/red. Result controls retain legible text when disabled.
+- Pair games retain large square covers, consistent metadata and fixed-space
+  outcomes. Narrow screens stack the cards around a centred VS. Play/pause
+  overlays remain visible on touch. Standard/Tournament/Guesser results offer
+  an explicit Next action alongside their existing automatic progression.
+- Tournament setup replaces the size dropdown and blind checkbox with clear
+  radio choices: 8/16/32 tracks and Non-blind/Blind. Added a styled scope popup
+  with descriptions, a selected check, keyboard navigation, focus restoration,
+  outside dismissal and viewport-aware opening. Searchable artist/album/tag
+  choices retain eligibility, previews-only Blind counts and selected states.
+  A short readiness line explains available tracks; failed generation restores
+  the Start action. Saved tournament resume links and bracket APIs are preserved.
+- Trivia uses readable gold run metrics and entity-coloured field labels, with
+  consistent danger feedback and a larger phone cover above the metrics. Added
+  Reveal answers for touch, using the existing finish/scoring path. Pause locks
+  this action until resumed; round timing and existing field checks are unchanged.
+- Shelves uses matching square album art, clearer preview controls, larger
+  placement menus and up/down targets, viewport-aware menu opening and tablet
+  stacking. Correct actual track numbers are green; incorrect submitted
+  positions remain red. Both use identical compact 14 px type.
+- Shelves now reveals one displayed album at a time. Its cover counts each
+  revealed track's saved points, then transfers that completed album subtotal
+  into the main score before moving to the next album. Added visible album/
+  track progress and transfer feedback. Supports two/three albums and zero-point
+  albums; keeps unrounded points until display and reconciles to the saved total.
+  Cancellation stops counts/transfers, and reduced motion skips visual animation.
+- New assets load only on the five game routes. No backend, database migration,
+  scoring, ranking, Overall, security, dependency or audio-engine change.
+  Preview buffering, crossfades, loops and saved-result calculations are retained.
+
+Apply over **V3.4.12.1**, restart and hard-refresh computer/phone browsers.
+Footer: **V3.4.13**. Edited/new files only; retain the database and private key.
+Validation details and browser-check limits are in `VALIDATION.md`.

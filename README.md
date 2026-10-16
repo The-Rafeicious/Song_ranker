@@ -2,8 +2,16 @@
 
 A personal music library with voting, trivia, tournaments and knowledge games,
 hosted on your computer and usable from an allowed phone on trusted private
-Wi-Fi. Current release: **V3.4.8**, database schema **8**. Release-specific
+Wi-Fi. Current release: **V3.4.13**, database schema **8**. Release-specific
 changes live in [update_logs](update_logs/README.md).
+
+## Voting statistics
+
+Open **Stats → Voting Stats** (`/voting_stats`) for Non-blind and Blind totals,
+shared Elo distribution, saved rating changes/upsets, activity, track and
+collection records, frequent matchups and paged voting history. The page reads
+saved history without changing scores. The history filter affects the recent
+votes list; the dashboard always covers both voting modes.
 
 ## Run on your computer and phone
 

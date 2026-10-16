@@ -42,7 +42,7 @@ window.ProfileUI=(()=>{
    const fields=tracks.reduce((n,s)=>n+U.available(s),0),votes=U.aggregateVotes(tracks),tested=tracks.filter(s=>U.available(s)>0).length;
    const ranking=(mode,tone)=>link(tone,`/mode_rankings/${mode}?entity=${type}`,'Rankings');
    const voteBreakdown=['standard','blind'].map(mode=>{const prefix=mode+'_';return `<div class="profile-inset ${mode}" style="--section-color:var(--${mode})">${rate(mode==='standard'?'Non-blind':'Blind',votes[prefix+'wins'],votes[prefix+'matches'])}</div>`}).join('');
-   const voting=panel('standard','Voting Record',joined([[votes.wins,'Wins'],[votes.losses,'Losses'],[votes.matches,type==='songs'?'Matches':'Track appearances']])+rate('Win rate',votes.wins,votes.matches)+extra('Voting breakdown',`<div class="profile-detail-grid">${voteBreakdown}</div>`),link('standard','/history','History'));
+   const voting=panel('standard','Voting Record',joined([[votes.wins,'Wins'],[votes.losses,'Losses'],[votes.matches,type==='songs'?'Matches':'Track appearances']])+rate('Win rate',votes.wins,votes.matches)+extra('Voting breakdown',`<div class="profile-detail-grid">${voteBreakdown}</div>`),link('standard','/voting_stats','Stats')+link('standard','/history','History'));
    const fieldRows=[['title','Song'],['artist','Artist'],['album','Album']].map(([key,label])=>{
      const available=tracks.reduce((n,s)=>n+Number(key==='album'?s.album_attempts||0:s.new_attempts??s.attempts??0),0),correct=tracks.reduce((n,s)=>n+Number(s[key+'_correct']||0),0);
      return `<div class="profile-inset" style="--section-color:var(--recognition)">${rate(label+' fields',correct,available)}</div>`;

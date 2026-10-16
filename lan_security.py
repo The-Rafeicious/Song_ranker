@@ -9,7 +9,7 @@ from urllib.parse import urlsplit
 
 from flask import abort, jsonify, request, session
 
-DEFAULT_ALLOWED_IPS = '10.103.199.228'  # Phone address from the supplied launcher.
+DEFAULT_ALLOWED_IPS = '10.104.13.115'  # Phone address from the supplied launcher.
 MAX_REQUEST_BYTES = 4 * 1024 * 1024
 WRITE_GET_ENDPOINTS = frozenset(('api_generate_bracket', 'api_trivia_round'))
 

@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+{% from 'components.html' import art %}
+{% from 'mode_stats_components.html' import figure, rate, number, progress, metadata, saved_date %}
+{% block title %}Voting Stats · Song Ranker{% endblock %}
+{% block page_kind %}voting_stats{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{url_for('static',filename='css/mode_stats.css',v=app_version)}}"><link rel="stylesheet" href="{{url_for('static',filename='css/voting_stats.css',v=app_version)}}">{% endblock %}
+
+{% macro tracks(rows, metric) -%}
+<ol class="mode-stats-list mode-stats-dense">{% for row in rows %}<li class="mode-stats-row">
+  <span class="mode-stats-art">{{ art(row.cover_url) }}</span><div class="mode-stats-copy"><a class="song mode-stats-name" href="{{url_for('song_page',song_id=row.id)}}" title="{{row.title}}">{{row.title}}</a>{{ metadata(row) }}</div>
+  <div class="mode-stats-result"><strong>{% if metric=='elo' %}{{ number(row.elo_score|round(1)) }}{% elif metric=='net' %}{{ '%+.2f'|format(row.net) }}{% elif metric=='rate' %}{{ rate(row.win_rate) }}{% elif metric=='run' %}{{row.best_run}}{% elif metric=='lift' %}{{ '%+.1f'|format(row.blind_lift) }}<small> pp</small>{% else %}{{row[metric]}}{% endif %}</strong>
+    <span>{{ 'Current Elo' if metric=='elo' else 'Saved Elo net' if metric=='net' else 'Win rate' if metric=='rate' else 'Wins in a row' if metric=='run' else 'Blind minus Non-blind' if metric=='lift' else 'Wins' if metric=='wins' else 'Appearances' }}</span>
+    {% if metric=='lift' %}<span class="standard">Non-blind {{rate(row.standard_rate)}} · {{row.standard_matches}} votes</span><span class="blind">Blind {{rate(row.blind_rate)}} · {{row.blind_matches}} votes</span>{% else %}<span>{{row.wins}}W · {{row.losses}}L{% if metric=='elo' and row.highest_elo is not none %} · {{number(row.highest_elo|round(1))}} peak{% endif %}{% if metric=='net' %} · {{row.snapshots}} rated appearances{% endif %}</span>{% endif %}
+  </div>
+</li>{% else %}<li class="empty">No qualifying records yet.</li>{% endfor %}</ol>
+{%- endmacro %}
+{% macro side(song, position, before=none, after=none, outcome='', wins=none) -%}
+{% if position=='right' %}<span class="versus-art versus-art-right">{{art(song.cover_url)}}</span>{% endif %}
+<div class="versus-copy versus-copy-{{position}}"{% if outcome %} data-outcome="{{outcome}}"{% endif %}>
+  {% if song.id is not none %}<a class="versus-title song" href="{{url_for('song_page',song_id=song.id)}}" title="{{song.title}}">{{song.title}}</a>{% else %}<strong class="versus-title muted">{{song.title}}</strong>{% endif %}
+  {{metadata(song)}}
+  {% if wins is not none %}<div class="versus-rating"><strong>{{wins}} wins</strong></div>{% elif before is not none or after is not none %}<div class="versus-rating"><span>Elo</span><strong>{{ number(before|round(1)) if before is not none else '—' }} → {{ number(after|round(1)) if after is not none else '—' }}</strong>{% if before is not none and after is not none %}<span class="{{'song' if after>=before else 'loss'}}">{{'%+.2f'|format(after-before)}}</span>{% endif %}</div>{% else %}<div class="versus-rating muted">Elo not saved</div>{% endif %}
+</div>
+{% if position=='left' %}<span class="versus-art versus-art-left">{{art(song.cover_url)}}</span>{% endif %}
+{%- endmacro %}
+{% macro match(row) -%}
+<article class="versus-row history-match dashboard-surface" data-match-mode="{{row.mode}}" aria-label="{{'Blind' if row.mode=='blind' else 'Non-blind'}}: {{row.winner.title}} versus {{row.loser.title}}">
+  {{ side(row.winner,'left',row.winner_before,row.winner_after,'winner') }}
+  <div class="versus-center"><strong class="versus-label">VS</strong><span class="voting-match-mode {{row.mode}}">{{'Blind' if row.mode=='blind' else 'Non-blind'}}</span><span class="versus-date">{{saved_date(row.date)}}</span>{% if row.gap is not none %}<span class="versus-date">{{number(row.gap|round(1))}} Elo gap</span>{% endif %}</div>
+  {{ side(row.loser,'right',row.loser_before,row.loser_after,'loser') }}
+</article>
+{%- endmacro %}
+{% macro category_records(rows,kind,metric) -%}
+<ol class="mode-stats-list mode-stats-dense">{% for row in rows %}<li class="mode-stats-row">
+  <span class="mode-stats-art">{% if kind=='tag' %}<span class="small-art voting-tag-art" aria-hidden="true">#</span>{% else %}{{art(row.cover_url,kind=='artist')}}{% endif %}</span><div class="mode-stats-copy">
+    {% if kind=='artist' %}{% set href=url_for('artist_page',artist_name=row.name) %}{% elif kind=='album' %}{% set href=url_for('album_page',album_title=row.name) %}{% else %}{% set href=url_for('tag_page',tag_name=row.name) %}{% endif %}
+    <a class="{{kind}} mode-stats-name" href="{{href}}" title="{{row.name}}">{{row.name}}</a><span>{{row.tested}} voted tracks</span>
+  </div><div class="mode-stats-result"><strong>{{rate(row.win_rate) if metric=='rate' else row.matches}}</strong><span>{{'Win rate' if metric=='rate' else 'Track appearances'}}</span><span>{{row.wins}}W · {{row.losses}}L</span><span><span class="standard">{{row.standard}} Non-blind</span> · <span class="blind">{{row.blind}} Blind</span></span></div>
+</li>{% else %}<li class="empty">No qualifying records yet.</li>{% endfor %}</ol>
+{%- endmacro %}
+
+{% block content %}
+<div class="voting-stats-page mode-stats-page">
+  <div class="page-head"><h1 class="standard">Voting Stats</h1><a class="btn standard" href="{{url_for('index')}}">Play Standard Vote →</a></div>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-overview">
+    <div class="section-head"><h2 class="standard" id="vote-overview">Voting overview</h2></div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Recorded votes',summary.matches)}}{{figure('Non-blind',modes[0].matches)}}{{figure('Blind',modes[1].matches)}}{{figure('Tracks voted',coverage.voted)}}</dl>
+    <div class="mode-stats-inset"><h3>Voting mix</h3><div class="mode-stats-stacked" role="img" aria-label="Non-blind {{modes[0].matches}}, Blind {{modes[1].matches}}">{% for mode in modes %}<span class="{{mode.mode}}" style="width:{{mode.share or 0}}%"></span>{% endfor %}</div><ul class="mode-stats-legend">{% for mode in modes %}<li class="{{mode.mode}}"><i></i>{{mode.title}} · {{rate(mode.share)}}</li>{% endfor %}</ul></div>
+    {% if summary.removed or summary.skipped or summary.undated %}<p class="mode-stats-caption">{% if summary.removed %}{{summary.removed}} votes include unavailable tracks. {% endif %}{% if summary.skipped %}{{summary.skipped}} incomplete or self-pair records excluded. {% endif %}{% if summary.undated %}{{summary.undated}} votes have no usable date.{% endif %}</p>{% endif %}
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-modes">
+    <div class="section-head"><h2 class="standard" id="vote-modes">Non-blind &amp; Blind</h2></div>
+    <div class="mode-stats-comparisons">{% for mode in modes %}<div class="mode-stats-inset voting-mode-{{mode.mode}}"><div class="section-head"><h3>{{mode.title}}</h3><a class="{{mode.mode}}" href="/game?mode={{mode.mode}}">Play ↗</a></div><dl class="joined-metrics mode-stats-small-metrics">{{figure('Votes',mode.matches)}}{{figure('Tracks voted',mode.tracks)}}{{figure('Active days',mode.active_days)}}</dl><div class="voting-mini-pair"><div><strong>{{rate(mode.upset_rate)}}</strong><span>Lower-rated picks</span><small>{{mode.upsets}} / {{mode.unequal}} unequal-Elo votes</small></div><div><strong>{{number(mode.avg_gain)}}</strong><span>Average winner gain</span><small>{{mode.snapshots}} saved rating changes</small></div></div></div>{% endfor %}</div>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-activity">
+    <div class="section-head"><h2 class="standard" id="vote-activity">Voting activity</h2></div>
+    <dl class="joined-metrics mode-stats-metrics">{{figure('Active days',summary.active_days)}}{{figure('Busiest day votes',activity_summary.busiest_votes)}}{{figure('Votes / active day',number(activity_summary.avg_day))}}</dl>
+    <div class="mode-stats-comparisons">{% for window in windows %}<div class="mode-stats-inset"><h3>Last {{window.days}} days</h3><dl class="joined-metrics mode-stats-small-metrics">{{figure('Votes',window.matches)}}{{figure('Non-blind',window.standard)}}{{figure('Blind',window.blind)}}</dl></div>{% endfor %}</div>
+    <div class="mode-stats-inset"><h3>Last 14 days · UTC</h3><ul class="voting-day-list">{% for day in activity %}<li><time datetime="{{day.date}}">{{day.date[5:]}}</time><div class="mode-stats-stacked" role="img" aria-label="{{day.date}}: {{day.standard}} Non-blind, {{day.blind}} Blind"><span class="standard" style="width:{{100*day.standard/activity_summary.max_day if activity_summary.max_day else 0}}%"></span><span class="blind" style="width:{{100*day.blind/activity_summary.max_day if activity_summary.max_day else 0}}%"></span></div><span>{{day.standard+day.blind}}</span></li>{% endfor %}</ul><ul class="mode-stats-legend"><li class="standard"><i></i>Non-blind</li><li class="blind"><i></i>Blind</li></ul></div>
+    <p class="mode-stats-caption">Busiest date: {{activity_summary.busiest_day}} UTC · First vote: {{saved_date(activity_summary.first)}} · Latest: {{saved_date(activity_summary.latest)}}</p>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-coverage">
+    <div class="section-head"><h2 class="standard" id="vote-coverage">Collection coverage</h2></div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Both modes',coverage.both)}}{{figure('Non-blind only',coverage.standard_only)}}{{figure('Blind only',coverage.blind_only)}}{{figure('Not voted',coverage.unplayed)}}</dl>
+    <div class="mode-stats-inset mode-stats-rate"><h3>Tracks with a saved vote</h3><strong class="mode-stats-primary">{{rate(coverage.share)}}</strong>{{progress('Current tracks voted',coverage.share)}}<p>{{coverage.voted}} / {{coverage.total}} current tracks</p></div>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-distribution">
+    <div class="section-head"><h2 class="standard" id="vote-distribution">Shared Elo distribution</h2><a class="standard" href="/leaderboard">Rankings ↗</a></div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Median Elo',number(distribution.median))}}{{figure('Highest Elo',number(distribution.highest))}}{{figure('Lowest Elo',number(distribution.lowest))}}{{figure('Elo spread',number(distribution.spread))}}</dl>
+    <div class="mode-stats-inset"><ul class="voting-bands">{% for band in distribution.bands %}<li><strong>{{band.label}}</strong>{{progress(band.label,band.share)}}<span>{{band.count}} tracks · {{rate(band.share)}}</span></li>{% endfor %}</ul><p class="mode-stats-caption">{{distribution.rated}} current ratings · {{coverage.unplayed}} tracks without saved votes{% if distribution.unavailable %} · {{distribution.unavailable}} unavailable ratings{% endif %}</p></div>
+    <div class="mode-stats-inset"><h3>Voted-track Elo leaders</h3>{{tracks(leaders,'elo')}}</div>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-movement">
+    <div class="section-head"><h2 class="standard" id="vote-movement">Elo movement &amp; rating gaps</h2></div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Average winner gain',number(movement.avg_gain))}}{{figure('Largest winner gain',number(movement.largest_gain))}}{{figure('Upset rate',rate(summary.upset_rate))}}{{figure('Saved rating changes',summary.snapshots)}}</dl>
+    <div class="mode-stats-inset"><dl class="joined-metrics mode-stats-small-metrics" data-columns="4">{{figure('Total winner gain',number(movement.total))}}{{figure('Average rating gap',number(summary.avg_gap))}}{{figure('Largest upset gap',number(movement.largest_upset))}}{{figure('Level-Elo votes',summary.level)}}</dl></div>
+    <div class="voting-gap-list">{% for gap in gaps %}<div class="mode-stats-inset voting-gap"><h3>{{gap.label}} <small>Elo apart</small></h3><div><strong>{{rate(gap.upset_rate)}}</strong>{{progress(gap.label+' upset rate',gap.upset_rate)}}</div><p>{{gap.matches}} votes · {{gap.upsets}} lower-rated wins{% if gap.level %} · {{gap.level}} level-Elo votes{% endif %}</p></div>{% endfor %}</div>
+    {% if movement.missing %}<p class="mode-stats-caption">{{movement.missing}} votes lack complete, usable before/after ratings.</p>{% endif %}
+    {% if gains %}<div class="mode-stats-inset"><h3>Largest winner gain match</h3>{{match(gains[0])}}</div>{% endif %}
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-track-movement">
+    <div class="section-head"><h2 class="standard" id="vote-track-movement">Saved Elo movement by track</h2></div>
+    <div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3>Largest net gains</h3>{{tracks(gain_tracks,'net')}}</div><div class="mode-stats-inset"><h3>Largest net drops</h3>{{tracks(loss_tracks,'net')}}</div></div>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-records">
+    <div class="section-head"><h2 class="standard" id="vote-records">Track records</h2></div>
+    <div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3>Most wins</h3>{{tracks(most_wins,'wins')}}</div><div class="mode-stats-inset"><h3>Best win rates · 5+ appearances</h3>{{tracks(best_rates,'rate')}}</div><div class="mode-stats-inset"><h3>Most played</h3>{{tracks(most_played,'matches')}}</div><div class="mode-stats-inset"><h3>Longest recorded win runs</h3>{{tracks(runs,'run')}}</div></div>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-differences">
+    <div class="section-head"><h2 class="standard" id="vote-differences">Win rates across modes</h2></div>
+    <p class="mode-stats-caption">Tracks with 3+ appearances in each mode.</p><div class="mode-stats-comparisons"><div class="mode-stats-inset voting-mode-blind"><h3>Higher win rate in Blind</h3>{{tracks(blind_lift,'lift')}}</div><div class="mode-stats-inset"><h3>Higher win rate in Non-blind</h3>{{tracks(standard_lift,'lift')}}</div></div>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-pairs">
+    <div class="section-head"><h2 class="standard" id="vote-pairs">Frequent matchups</h2></div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="2">{{figure('Different pairs',unique_pairs)}}{{figure('Repeated pairs',repeated_pairs)}}</dl>
+    <div class="voting-match-list">{% for pair in pairs %}<article class="versus-row frequent-pair">{{side(pair.first,'left',wins=pair.first_wins)}}<div class="versus-center"><strong class="versus-label">VS</strong><span class="versus-count standard"><b>{{pair.matches}}</b><small>votes</small></span><span class="versus-date"><span class="standard">{{pair.standard}} Non-blind</span> · <span class="blind">{{pair.blind}} Blind</span></span></div>{{side(pair.second,'right',wins=pair.second_wins)}}</article>{% else %}<div class="empty">No repeated matchups yet.</div>{% endfor %}</div>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-upsets">
+    <div class="section-head"><h2 class="standard" id="vote-upsets">Biggest upsets</h2></div><div class="voting-match-list">{% for row in upsets %}{{match(row)}}{% else %}<div class="empty">No lower-rated wins with saved ratings yet.</div>{% endfor %}</div>
+  </section>
+  {% for category in categories %}<section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-{{category.kind}}"><div class="section-head"><h2 class="standard" id="vote-{{category.kind}}">{{category.title}}</h2></div><div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3>Most appearances</h3>{{category_records(category.most,category.kind,'matches')}}</div><div class="mode-stats-inset"><h3>Best win rates · 5+ appearances</h3>{{category_records(category.best,category.kind,'rate')}}</div></div></section>{% endfor %}
+  <section class="panel dashboard-surface mode-stats-panel" id="voting-history" aria-labelledby="vote-history-title">
+    <div class="section-head"><h2 class="standard" id="vote-history-title">Recent votes</h2></div>
+    <nav class="pill-nav voting-history-filter" aria-label="Recent vote type">{% for key,label in [('all','All'),('standard','Non-blind'),('blind','Blind')] %}<a class="pill {{key}}{% if history_mode==key %} active{% endif %}" href="{{url_for('voting_stats',history_mode=key)}}#voting-history"{% if history_mode==key %} aria-current="page"{% endif %}>{{label}}</a>{% endfor %}</nav>
+    <div class="voting-match-list">{% for row in history %}{{match(row)}}{% else %}<div class="empty">No saved votes for this mode yet.</div>{% endfor %}</div>
+    <nav class="voting-pagination" aria-label="Voting history pages">{% if history_page>1 %}<a class="btn standard" href="{{url_for('voting_stats',history_mode=history_mode,history_page=history_page-1)}}#voting-history">← Newer</a>{% endif %}<span>{{history_start}}–{{history_end}} of {{history_total}} · Page {{history_page}} / {{history_pages}}</span>{% if history_page<history_pages %}<a class="btn standard" href="{{url_for('voting_stats',history_mode=history_mode,history_page=history_page+1)}}#voting-history">Older →</a>{% endif %}</nav>
+  </section>
+</div>
+{% endblock %}

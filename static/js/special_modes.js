@@ -84,8 +84,8 @@ window.SpecialModes=(()=>{
      const high=guess.answered&&guess.result.ratings[i]>guess.result.ratings[1-i],chosen=guess.chosen===song.id;
      const overlay=guess.answered?`<div class="score-reveal guess-elo ${high?'score-win':'score-loss'}"><small>${high?'Higher Elo':'Lower Elo'}</small><strong>${Math.round(guess.result.ratings[i])}</strong><b>${high?'✓ Correct answer':chosen?'✕ Your pick':''}</b></div>`:'';
      const cover=U.mediaButton({...song,name:song.title,artist:song.artists.map(a=>a.name).join(', ')},'guess-audio-'+i,false,!guess.answered);
-     return `${i?'<span class="vs-circle">VS</span>':''}<article class="game-card ${guess.answered?(high?'guess-right-card':'guess-wrong-card'):''}"><div class="match-cover">${cover}${overlay}</div><h2><a class="song" title="${esc(song.title)}" href="/song/${song.id}">${esc(song.title)}</a></h2><div class="game-meta"><div class="game-artists">${artistLinks(song)}</div>${song.album&&!/\s-\s*single\s*$/i.test(song.album)?`<a class="album" title="${esc(song.album)}" href="/album/${encodeURIComponent(song.album)}">${esc(song.album)}</a>`:''}</div><button class="btn primary vote-btn" data-guess-pick="${song.id}" ${guess.answered?'disabled':''}>${guess.answered?(chosen?guess.result.correct?'✓ Correct · +1':'✕ Wrong pick':high?'✓ Correct answer':'Lower Elo'):'Higher Elo'}</button></article>`;
-   }).join('')}</div>${guess.answered?`<section class="panel guess-feedback ${guess.result.correct?'guess-success':'guess-failure'}" role="status"><strong>${guess.result.correct?'✓ Correct · +1 point':'✕ Incorrect · +0 points · streak reset'}</strong><span>Next pair automatically…</span><small id="reveal-audio-note"></small></section>`:''}`;
+     return `${i?'<span class="vs-circle">VS</span>':''}<article class="game-card dashboard-surface ${guess.answered?(high?'guess-right-card':'guess-wrong-card'):''}"><div class="match-cover">${cover}${overlay}</div><h2><a class="song" title="${esc(song.title)}" href="/song/${song.id}">${esc(song.title)}</a></h2><div class="game-meta"><div class="game-artists">${artistLinks(song)}</div>${song.album&&song.album.trim().toLowerCase()!=='unknown album'&&!/\s-\s*single\s*$/i.test(song.album)?`<a class="album" title="${esc(song.album)}" href="/album/${encodeURIComponent(song.album)}">${esc(song.album)}</a>`:''}</div><button class="btn primary vote-btn" data-guess-pick="${song.id}" ${guess.answered?'disabled':''}>${guess.answered?(chosen?guess.result.correct?'✓ Correct · +1':'✕ Wrong pick':high?'✓ Correct answer':'Lower Elo'):'Higher Elo'}</button></article>`;
+   }).join('')}</div>${guess.answered?`<section class="panel guess-feedback dashboard-surface ${guess.result.correct?'guess-success':'guess-failure'}"><strong role="status">${guess.result.correct?'✓ Correct · +1 point':'✕ Incorrect · +0 points · streak reset'}</strong><span>Next pair automatically…</span><button class="btn" data-guess-next>Next pair →</button><small id="reveal-audio-note"></small></section>`:''}`;
    U.attachPlayers();window.PreviewPlayback?.preloadPair([$('#guess-audio-0'),$('#guess-audio-1')]);if(guess.answered)$$('.match-cover .cover-button').forEach(b=>b.disabled=true);release();
  }
 
@@ -140,12 +140,18 @@ window.SpecialModes=(()=>{
    const generation=reveal.generation,release=U.holdHeight();U.main.innerHTML='<div class="page-head"><h1 class="shelves">Album Shelves</h1></div><div id="shelf-content"><div class="empty" role="status">Loading shelves…</div></div>';
    try{const result=await U.api('/api/album-shelves/round',{album_count:0,fresh});if(generation!==reveal.generation||reveal.closed)return;
      shelf={...result,placements:Object.fromEntries(result.albums.map(a=>[String(a.slot),[]])),pool:result.songs.map(s=>s.slot),answered:false,revealed:new Set()};
-     $('#shelf-content').innerHTML=`<div class="shelf-actions"><button class="btn primary" data-shelf-check>Check shelves</button><button class="btn primary shelf-next" data-shelf-next hidden>Next round →</button><div id="shelf-order-score" class="shelf-order-score" hidden role="status"></div><span id="shelf-reveal-progress" class="sr-only" role="status"></span><small id="reveal-audio-note"></small></div><div class="shelf-audio-bar panel"><span class="shelf-preview-duration">10-second samples</span><button class="btn primary" data-shelf-play aria-pressed="false" ${shelf.songs.some(s=>s.audio_url)?'':'disabled'}>▶ Play previews</button><span id="shelf-preview-info" role="status">${shelf.songs.filter(s=>s.audio_url).length} / 10 previews</span><audio id="shelf-preview-audio" preload="none"></audio></div><div id="shelf-board"></div>`;renderShelfBoard();bindShelfAudio();
+     $('#shelf-content').innerHTML=`<div class="shelf-actions"><button class="btn primary" data-shelf-check>Check shelves</button><button class="btn primary shelf-next" data-shelf-next hidden>Next round →</button><div id="shelf-order-score" class="shelf-order-score" hidden role="status"></div><span id="shelf-reveal-progress" class="shelf-reveal-progress" role="status"></span><small id="reveal-audio-note"></small></div><div class="shelf-audio-bar panel dashboard-surface"><span class="shelf-preview-duration">10-second samples</span><button class="btn primary" data-shelf-play aria-pressed="false" ${shelf.songs.some(s=>s.audio_url)?'':'disabled'}>▶ Play previews</button><span id="shelf-preview-info" role="status">${shelf.songs.filter(s=>s.audio_url).length} / 10 previews</span><audio id="shelf-preview-audio" preload="none"></audio></div><div id="shelf-board"></div>`;renderShelfBoard();bindShelfAudio();
    }catch(error){if(generation===reveal.generation&&!reveal.closed)$('#shelf-content').innerHTML=`<div class="empty error" role="alert">${esc(error.message)}</div><div class="next-area"><button class="btn" data-shelf-retry>Retry loading</button></div>`;}
    finally{shelfBusy=false;release();}
  }
 
 
+ function positionShelfPicker(picker){
+   const menu=picker.querySelector('.shelf-picker-options'),rect=picker.querySelector('summary').getBoundingClientRect(),below=window.innerHeight-rect.bottom-12;
+   const up=below<Math.min(menu.scrollHeight,220)&&rect.top>below;
+   menu.style.top=up?'auto':'calc(100% + 6px)';menu.style.bottom=up?'calc(100% + 6px)':'auto';
+   menu.style.maxHeight=Math.max(60,Math.min(300,up?rect.top-12:below))+'px';
+ }
  function shelfPicker(song,where){
    const chosen=shelf.albums.find(a=>String(a.slot)===where),title=chosen?.title||'Unsorted';
    const option=(target,title,art)=>`<button type="button" role="menuitemradio" aria-checked="${where===target}" data-shelf-pick="${song.slot}" data-shelf-target="${target}"><span class="shelf-option-art">${art||'⠿'}</span><span>${esc(title)}</span><b aria-hidden="true">${where===target?'✓':''}</b></button>`;
@@ -157,18 +163,19 @@ window.SpecialModes=(()=>{
    const status=full?'✓ Correct':!answer?.album_correct?'✕ Wrong album':'✕ Order error';
    const submittedAlbum=answer&&shelf.albums.find(a=>a.slot===answer.answer_slot),corrected=revealed&&!full;
    const positionLabel=corrected?`Your shelf position ${answer.answer_position} on ${submittedAlbum?.title||'another album'}; correct album track ${truth.track_number}`:revealed?`Album track ${truth.track_number}`:'Shelf position';
-   const position=corrected?`<del title="Your submitted shelf position">${answer.answer_position}</del><span title="Correct album track">${truth.track_number}</span>`:revealed?truth.track_number:where==='pool'?'⠿':index+1;
+   const actualPosition=revealed?`<span class="shelf-position-actual" title="Correct album track">${truth.track_number}</span>`:'';
+   const position=corrected?`<del title="Your submitted shelf position">${answer.answer_position}</del>${actualPosition}`:revealed?actualPosition:where==='pool'?'⠿':index+1;
    const feedback=revealed?`<div class="shelf-revealed-answer"><strong class="${full?'answer-correct':'answer-wrong'}">${status}</strong><span>${answer.order_pairs?`${answer.order_right} / ${answer.order_pairs} order comparisons`: 'No order comparisons'}</span><b class="shelves">${num(answer.points)} / ${answer.available} points</b></div>`:'';
    return `<div class="shelf-track ${shelf.answered?'reveal-track':''} ${revealed?(full?'answer-correct':'answer-wrong'):'reveal-pending'}" data-shelf-slot="${slot}" ${revealed?`data-correct-track="${truth.track_number}"`:''} tabindex="0" draggable="${!shelf.answered}"><div class="shelf-track-title"><span class="shelf-position ${corrected?'shelf-position-corrected':''}" aria-label="${esc(positionLabel)}">${position}</span>${revealed?`<a class="song" title="${esc(song.title)}" href="/song/${song.id}">${esc(song.title)}</a>`:`<b class="song" title="${esc(song.title)}">${esc(song.title)}</b>`}<button class="preview-track" data-shelf-preview="${slot}" aria-label="Play ${esc(song.title)}" ${song.audio_url&&(!shelf.answered||shelf.revealComplete)?'':'disabled'}>▶</button></div>${feedback}${shelf.answered?'':`<div class="shelf-track-controls">${shelfPicker(song,where)}${where==='pool'?'':`<button class="shelf-arrow" data-shelf-shift="${slot}" data-direction="-1" aria-label="Move ${esc(song.title)} up" ${index===0?'disabled':''}>↑</button><button class="shelf-arrow" data-shelf-shift="${slot}" data-direction="1" aria-label="Move ${esc(song.title)} down" ${index===length-1?'disabled':''}>↓</button>`}</div>`}</div>`;
  }
  function shelfAlbumScore(album){
    const answers=shelf.result.answers.filter(a=>a.album_slot===album.slot),items=answers.map(a=>shelf.result.items.find(i=>i.item_slot===a.slot));
    const available=items.reduce((total,item)=>total+item.available,0),points=items.reduce((total,item)=>total+(shelf.revealed.has(item.item_slot)?item.points:0),0);
-   return `<div class="shelf-cover-score"><small>Points</small><strong id="shelf-album-score-${album.slot}">${num(points)}</strong><span>/ ${available}</span></div>`;
+   return `<div class="shelf-cover-score"><small id="shelf-album-label-${album.slot}">${shelf.scoredAlbums?.has(album.slot)?'Added to total':'Album points'}</small><strong id="shelf-album-score-${album.slot}">${num(points)}</strong><span>/ ${available}</span></div>`;
  }
  function renderShelfBoard(){
    if(!shelf)return;
-   $('#shelf-board').innerHTML=`<div class="shelf-columns ${shelf.albums.length===2?'two':''}">${shelf.albums.map(a=>`<section class="panel shelf-column"><div class="shelf-column-head"><div class="shelf-album-art">${U.artwork({name:a.title,cover_url:a.cover_url},'albums')}${shelf.answered?shelfAlbumScore(a):''}</div><h2 class="album" title="${esc(a.title)}">${esc(a.title)}</h2></div><div class="shelf-drop" data-shelf-drop="${a.slot}">${shelf.placements[a.slot].length?shelf.placements[a.slot].map((slot,i,list)=>shelfTrack(slot,String(a.slot),i,list.length)).join(''):'<div class="shelf-empty">Drop tracks here</div>'}</div></section>`).join('')}</div>${shelf.answered?'':`<section class="panel shelf-pool"><div class="section-head"><h2>Unsorted</h2><b class="shelves">${shelf.pool.length} / 10</b></div><div class="shelf-pool-grid" data-shelf-drop="pool">${shelf.pool.map((slot,i,list)=>shelfTrack(slot,'pool',i,list.length)).join('')||'<p>All ten tracks placed</p>'}</div></section>`}`;
+   $('#shelf-board').innerHTML=`<div class="shelf-columns ${shelf.albums.length===2?'two':''}">${shelf.albums.map(a=>`<section class="panel shelf-column dashboard-surface" data-shelf-album="${a.slot}" data-score-added="${!!shelf.scoredAlbums?.has(a.slot)}"><div class="shelf-column-head"><div class="shelf-album-art">${U.artwork({name:a.title,cover_url:a.cover_url},'albums')}${shelf.answered?shelfAlbumScore(a):''}</div><h2 class="album" title="${esc(a.title)}">${esc(a.title)}</h2></div><div class="shelf-drop" data-shelf-drop="${a.slot}">${shelf.placements[a.slot].length?shelf.placements[a.slot].map((slot,i,list)=>shelfTrack(slot,String(a.slot),i,list.length)).join(''):'<div class="shelf-empty">Drop tracks here</div>'}</div></section>`).join('')}</div>${shelf.answered?'':`<section class="panel shelf-pool dashboard-surface"><div class="section-head"><h2>Unsorted</h2><b class="shelves">${shelf.pool.length} / 10</b></div><div class="shelf-pool-grid" data-shelf-drop="pool">${shelf.pool.map((slot,i,list)=>shelfTrack(slot,'pool',i,list.length)).join('')||'<p>All ten tracks placed</p>'}</div></section>`}`;
    $('[data-shelf-check]').disabled=!!shelf.pool.length||shelf.answered;markPlayback();
  }
 
@@ -182,25 +189,41 @@ window.SpecialModes=(()=>{
    const at=list.indexOf(slot),to=at+direction;if(to<0||to>=list.length)return;[list[at],list[to]]=[list[to],list[at]];selectedSlot=slot;renderShelfBoard();$(`[data-shelf-slot="${slot}"]`)?.focus();
  }
  async function revealShelfRound(){
-   const current=shelf,generation=reveal.generation,answers=[...current.result.answers].sort((a,b)=>a.album_slot-b.album_slot||a.track_number-b.track_number);let points=0;
-   const albumPoints=Object.fromEntries(current.albums.map(a=>[a.slot,0])),button=$('[data-shelf-check]');button.classList.add('shelf-score-counter');button.innerHTML=`<span>Points</span><strong id="shelf-running-score">0.00</strong><small>/ ${current.result.available}</small>`;
-   for(let index=0;index<answers.length;index++){
+   const current=shelf,generation=reveal.generation;
+   // Follow the visible album order. Keep unrounded saved points until display.
+   const groups=current.albums.map(album=>({album,answers:current.result.answers.filter(a=>a.album_slot===album.slot).sort((a,b)=>a.track_number-b.track_number)}));
+   const answers=groups.flatMap(group=>group.answers);let points=0,index=0;
+   current.scoredAlbums=new Set();
+   const albumPoints=Object.fromEntries(current.albums.map(a=>[a.slot,0])),button=$('[data-shelf-check]');button.classList.add('shelf-score-counter');button.innerHTML=`<span>Total points</span><strong id="shelf-running-score">0.00</strong><small>/ ${current.result.available}</small>`;
+   for(let albumIndex=0;albumIndex<groups.length;albumIndex++){
+    const group=groups[albumIndex],albumNode=$(`[data-shelf-album="${group.album.slot}"]`);albumNode.dataset.revealActive='true';
+    for(let trackIndex=0;trackIndex<group.answers.length;trackIndex++,index++){
      if(generation!==reveal.generation||reveal.closed)return;const truth=answers[index],slot=truth.slot,item=current.result.items.find(i=>i.item_slot===slot),old=$(`[data-shelf-slot="${slot}"]`);
      old.classList.add('reveal-closing');if(!await revealDelay(420,generation))return;
      current.revealed.add(slot);
      const destination=$(`[data-shelf-drop="${truth.album_slot}"]`);destination.querySelector('.shelf-empty')?.remove();
      const holder=document.createElement('div');holder.innerHTML=shelfTrack(slot,String(truth.album_slot),index,answers.length);const row=holder.firstElementChild;
      old.remove();destination.insertBefore(row,destination.querySelector('.shelf-track:not([data-correct-track])'));row.classList.add('reveal-opening');
-     const previous=points;points+=item.points;const previousAlbum=albumPoints[truth.album_slot];albumPoints[truth.album_slot]+=item.points;
-     button.innerHTML=`<span>Points</span><strong id="shelf-running-score">${num(points)}</strong><small>/ ${current.result.available}</small>`;U.animateScore($('#shelf-running-score'),previous,points,2);
-     U.animateScore($('#shelf-album-score-'+truth.album_slot),previousAlbum,albumPoints[truth.album_slot],2);
-     $('#shelf-reveal-progress').textContent=`Track ${index+1} / 10 revealed`;
+     const previousAlbum=albumPoints[truth.album_slot];albumPoints[truth.album_slot]+=item.points;
+     U.animateScore($('#shelf-album-score-'+truth.album_slot),previousAlbum,albumPoints[truth.album_slot],2,()=>generation===reveal.generation&&!reveal.closed);
+     $('#shelf-reveal-progress').textContent=`Album ${albumIndex+1} / ${groups.length} · Track ${trackIndex+1} / ${group.answers.length}`;
      const next=answers[index+1];await shelfAnswerAudio(current.songs.find(s=>s.slot===slot),next&&current.songs.find(s=>s.slot===next.slot),generation);
      if(!await revealDelay(2600,generation))return;row.classList.remove('reveal-opening');
+    }
+    if(generation!==reveal.generation||reveal.closed)return;
+    const previous=points;points+=albumPoints[group.album.slot];
+    albumNode.dataset.revealActive='false';albumNode.classList.add('shelf-score-transfer');button.classList.add('shelf-score-transfer');
+    $('#shelf-album-label-'+group.album.slot).textContent='Adding to total';
+    $('#shelf-reveal-progress').textContent=`Album ${albumIndex+1} / ${groups.length} · +${num(albumPoints[group.album.slot])} points`;
+    U.animateScore($('#shelf-running-score'),previous,points,2,()=>generation===reveal.generation&&!reveal.closed);
+    if(!await revealDelay(matchMedia('(prefers-reduced-motion: reduce)').matches?350:1250,generation))return;
+    current.scoredAlbums.add(group.album.slot);albumNode.dataset.scoreAdded='true';
+    $('#shelf-album-label-'+group.album.slot).textContent='Added to total';
+    albumNode.classList.remove('shelf-score-transfer');button.classList.remove('shelf-score-transfer');
    }
    current.placements=Object.fromEntries(current.albums.map(a=>[String(a.slot),answers.filter(t=>t.album_slot===a.slot).map(t=>t.slot)]));
    current.revealComplete=true;renderShelfBoard();$('#shelf-running-score').textContent=num(current.result.points);
-   retireShelfClip(generation);const order=$('#shelf-order-score');order.innerHTML=`<small>Track order</small><strong>${pct(current.result.order_right,current.result.order_pairs)}</strong>`;order.hidden=false;$('.shelf-actions').classList.add('shelf-results-ready');$('#shelf-reveal-progress').textContent='10 / 10 tracks revealed';
+   retireShelfClip(generation);const order=$('#shelf-order-score');order.innerHTML=`<small>Track order</small><strong>${pct(current.result.order_right,current.result.order_pairs)}</strong>`;order.hidden=false;$('.shelf-actions').classList.add('shelf-results-ready');$('#shelf-reveal-progress').textContent=`${answers.length} / ${answers.length} tracks revealed`;
    $('[data-shelf-next]').hidden=false;$('[data-shelf-play]').disabled=!current.songs.some(s=>s.audio_url);shelfBusy=false;
  }
 
@@ -251,6 +274,7 @@ window.SpecialModes=(()=>{
  }
  document.addEventListener('click',async e=>{
    $$('.shelf-picker[open]').forEach(picker=>{if(!picker.contains(e.target))picker.open=false;});
+   $$('.shelf-picker[open]').forEach(picker=>{if(!picker.contains(e.target))picker.open=false;});
    if(!U)return;const b=e.target.closest('button');if(!b||b.disabled)return;
    if(b.dataset.guessPick)await answerGuess(Number(b.dataset.guessPick));
    if(b.hasAttribute('data-guess-next'))await loadGuess();
@@ -267,6 +291,8 @@ window.SpecialModes=(()=>{
  });
  document.addEventListener('input',e=>{if(e.target.dataset.modeHistorySearch){const mode=e.target.dataset.modeHistorySearch,q=e.target.value.toLowerCase().trim();$$(`[data-special-history="${mode}"]`).forEach(r=>r.hidden=!r.dataset.historyQuery.includes(q));}});
  document.addEventListener('focusout',e=>{const picker=e.target.closest('.shelf-picker');if(picker&&!picker.contains(e.relatedTarget))picker.open=false;});
+ document.addEventListener('toggle',e=>{if(e.target.matches('.shelf-picker')&&e.target.open)positionShelfPicker(e.target);},true);
+ window.addEventListener('resize',()=>$$('.shelf-picker[open]').forEach(picker=>picker.open=false));
  document.addEventListener('dragstart',e=>{const row=e.target.closest('[data-shelf-slot]');if(row&&shelf&&!shelf.answered){dragged=Number(row.dataset.shelfSlot);e.dataTransfer?.setData('text/plain',String(dragged));row.classList.add('dragging');}});
  document.addEventListener('dragover',e=>{const zone=e.target.closest('[data-shelf-drop]');if(zone&&shelf&&!shelf.answered){e.preventDefault();zone.classList.add('dragover');}});
  document.addEventListener('dragleave',e=>{const zone=e.target.closest('[data-shelf-drop]');if(zone&&!zone.contains(e.relatedTarget))zone.classList.remove('dragover');});
@@ -277,7 +303,7 @@ window.SpecialModes=(()=>{
    if(picker){const options=[...picker.querySelectorAll('[data-shelf-pick]')];
      if(e.key==='Escape'){e.preventDefault();picker.open=false;picker.querySelector('summary').focus();return;}
      if(['ArrowDown','ArrowUp','Home','End'].includes(e.key)){
-       e.preventDefault();picker.open=true;const at=options.indexOf(e.target),direction=e.key==='ArrowUp'?-1:1;
+       e.preventDefault();picker.open=true;positionShelfPicker(picker);const at=options.indexOf(e.target),direction=e.key==='ArrowUp'?-1:1;
        const target=e.key==='Home'?0:e.key==='End'?options.length-1:at<0?Math.max(0,options.findIndex(b=>b.getAttribute('aria-checked')==='true')):(at+direction+options.length)%options.length;
        options[target]?.focus();return;
      }

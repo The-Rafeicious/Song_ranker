@@ -59,9 +59,25 @@ def album_performance():
 @app.route('/history')
 def history():
     conn = get_db_connection()
-    history_data = fetch_match_history(conn, limit=50)
-    conn.close()
+    try:
+        conn.execute('BEGIN')
+        history_data = fetch_match_history(conn, limit=50)
+    finally:
+        conn.close()
     return render_template('history.html', history=history_data)
+
+
+@app.route('/voting_stats')
+def voting_stats():
+    from voting_stats_data import build_voting_stats
+    conn = get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        data = build_voting_stats(conn, history_mode=request.args.get('history_mode', 'all'),
+                                  history_page=request.args.get('history_page', 1))
+        return render_template('voting_stats.html', **data)
+    finally:
+        conn.close()
 
 
 @app.route('/global_stats')
