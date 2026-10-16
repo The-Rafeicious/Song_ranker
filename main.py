@@ -17,4 +17,17 @@ if __name__ == '__main__':
     if (ROOT / '.git').exists():
         git_pull()
         init_db()
-    app.run(host='127.0.0.1', port=5000, debug=False)
+    import os
+    try:
+        from waitress import serve
+    except ImportError as error:
+        raise SystemExit('Install the hosting dependency first: python -m pip install -r requirements.txt') from error
+    host = os.environ.get('SONG_RANKER_HOST', '0.0.0.0')
+    try:
+        port = int(os.environ.get('SONG_RANKER_PORT', '5000'))
+        if not 1 <= port <= 65535:
+            raise ValueError
+    except ValueError as error:
+        raise SystemExit('SONG_RANKER_PORT must be between 1 and 65535.') from error
+    serve(app, host=host, port=port, threads=4, expose_tracebacks=False,
+          clear_untrusted_proxy_headers=True, max_request_body_size=app.config['MAX_CONTENT_LENGTH'])

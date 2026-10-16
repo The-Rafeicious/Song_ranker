@@ -1,3 +1,4 @@
-Flask
+Flask>=3.1,<4
 requests
-gunicorn
+gunicorn; sys_platform != "win32"
+waitress>=3.0.2,<4

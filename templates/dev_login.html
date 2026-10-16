@@ -5,6 +5,7 @@
   <h1 class="song">System Access</h1>
   {% if error %}<p class="error" role="alert">{{error}}</p>{% endif %}
   <form action="/dev/login" method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="field"><label for="pin">PIN</label><input id="pin" name="pin" type="password" inputmode="numeric" autocomplete="current-password" required autofocus></div>
     <button type="submit" class="btn primary">Unlock</button>
   </form>

@@ -75,7 +75,10 @@ def special_records(conn):
             tracks=sum(len(shelf_items[r['id']]) for r in shelf_rows),
             album_correct=sum(r['album_correct'] for r in shelf_rows),
             order_right=sum(r['order_right'] for r in shelf_rows),
-            order_pairs=sum(r['order_pairs'] for r in shelf_rows)))
+            order_pairs=sum(r['order_pairs'] for r in shelf_rows),
+            albums_played=conn.execute('''SELECT COUNT(DISTINCT i.album_id) FROM album_shelf_items i
+                JOIN album_shelf_rounds r ON r.id=i.round_id JOIN albums a ON a.id=i.album_id
+                WHERE r.completed_at IS NOT NULL''').fetchone()[0]))
     return songs,summary,guess_rows[-30:][::-1],shelf_rows[-30:][::-1]
 
 
@@ -96,13 +99,31 @@ def elo_guesser():return render_template('app_page.html',page='guesser')
 
 
 @app.route('/elo_guesser_stats')
-def guesser_stats():return render_template('app_page.html',page='guesser_stats')
+def guesser_stats():
+    from guesser_stats_data import build_guesser_stats
+    conn=get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        data=build_guesser_stats(conn,history_page=request.args.get('history_page',1,type=int))
+    finally:
+        conn.close()
+    return render_template('guesser_stats.html',**data)
 
 @app.route('/album_shelves')
 def album_shelves():return render_template('app_page.html',page='shelves')
 
 @app.route('/album_shelves_stats')
-def shelf_stats():return render_template('app_page.html',page='shelves_stats')
+def shelf_stats():
+    from shelves_stats_data import build_shelves_stats
+    conn=get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        data=build_shelves_stats(conn,history_page=request.args.get('history_page',1,type=int),
+                                album_page=request.args.get('album_page',1,type=int),
+                                selected=request.args.get('round',type=int))
+    finally:
+        conn.close()
+    return render_template('shelves_stats.html',show_albums='album_page' in request.args,**data)
 
 @app.route('/mode_rankings/<mode>')
 def special_rankings(mode):
@@ -161,7 +182,8 @@ def guess_answer():
     finally:conn.close()
 
 
-def shelf_candidates(conn,count):
+def shelf_pool(conn):
+    """The existing numbered/proper-album pool, shared by the picker and stats."""
     pool=[dict(r) for r in conn.execute('''SELECT s.id,s.album_id,s.track_number FROM songs s JOIN albums a ON a.id=s.album_id
         WHERE TRIM(a.title)!='' AND LOWER(TRIM(a.title))!='unknown album'
         AND LOWER(TRIM(a.title)) NOT LIKE '% - single' AND typeof(s.track_number)='integer' AND s.track_number>0
@@ -170,7 +192,11 @@ def shelf_candidates(conn,count):
     grouped=defaultdict(list)
     for song in pool:grouped[song['album_id']].append(song)
     # A shelf must offer an ordering question, not a singleton album clue.
-    grouped={id:tracks for id,tracks in grouped.items() if len(tracks)>=2}
+    return {id:tracks for id,tracks in grouped.items() if len(tracks)>=2}
+
+
+def shelf_candidates(conn,count):
+    grouped=shelf_pool(conn)
     ids=list(grouped)
     def feasible(available,n):
         return len(available)>=n and sum(sorted((len(grouped[id]) for id in available),reverse=True)[:n])>=10

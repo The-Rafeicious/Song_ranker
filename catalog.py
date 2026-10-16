@@ -8,6 +8,16 @@ def proper_album(album):
     return bool(title) and title != 'unknown album' and not title.endswith(' - single')
 
 
+def versus_metadata(album, linked_artists):
+    """Shared display links for paired song rows; preserve whole artist names."""
+    album = album or {}
+    return dict(
+        cover_url=album.get('cover_url') or '',
+        artist_links=[dict(id=a['id'], name=a['name'])
+                      for a in sorted(linked_artists, key=lambda a: (a['name'], a['id']))],
+        album_link=dict(id=album['id'], title=album['title']) if proper_album(album) else None)
+
+
 TOURNAMENT_TOTALS = ('tournament_wins', 'tournament_losses', 'tournament_points',
                      'championships', 'runner_ups', 'tournament_appearances', 'third_places', 'fourth_places', 'podiums')
 

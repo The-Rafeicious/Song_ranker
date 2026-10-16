@@ -1,0 +1,48 @@
+/* Standard-board details; geometry/type are shared in site_baseline.css. */
+body.standard-rankings-page .leaderboard .leader-title { line-height: 1.2; }
+body.standard-rankings-page .leaderboard .leader-title.song { color: var(--song); }
+body.standard-rankings-page .leaderboard .leader-title.artist { color: var(--artist); }
+body.standard-rankings-page .leaderboard .leader-title.album { color: var(--album); }
+body.standard-rankings-page .leaderboard .leader-title.tag { color: var(--tag); }
+body.standard-rankings-page .leaderboard .leader-meta { line-height: 1.5; margin-top: 8px; }
+body.standard-rankings-page .leaderboard .leader-meta a { font-weight: 800; }
+body.standard-rankings-page .leaderboard .leader-meta a.artist { color: var(--artist); }
+body.standard-rankings-page .leaderboard .leader-meta a.album { color: var(--album); }
+body.standard-rankings-page .leaderboard .leader-title:hover,
+body.standard-rankings-page .leaderboard .leader-title:focus-visible,
+body.standard-rankings-page .leaderboard .leader-meta a:hover,
+body.standard-rankings-page .leaderboard .leader-meta a:focus-visible {
+  text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px;
+}
+body.standard-rankings-page .leaderboard .leader-title:focus-visible,
+body.standard-rankings-page .leaderboard .leader-meta a:focus-visible { outline-color: currentColor; }
+body.standard-rankings-page .leaderboard .leader-votes { font-size: 15px; line-height: 1.5; gap: 5px 16px; margin-top: 12px; }
+body.standard-rankings-page .leaderboard .leader-score small { font-size: 13px; }
+@media (max-width: 760px) {
+  body.standard-rankings-page .leaderboard .leader-votes { font-size: 14px; }
+  body.standard-rankings-page .leaderboard .leader-votes span + span { padding-left: 12px; }
+}
+@media (max-width: 520px) {
+  body.standard-rankings-page .leaderboard .leader-votes { gap: 3px; margin-top: 8px; }
+  body.standard-rankings-page .leaderboard .leader-votes span + span { border: 0; padding: 0; }
+}
+
+/* Mode boards share standard rows; their context counts must wrap on phones. */
+body.mode-rankings-page .rank-links { flex-wrap: wrap; gap: 8px 22px; }
+body.mode-rankings-page .rank-links a { min-height: 44px; display: inline-flex; align-items: center; }
+body.mode-rankings-page .leader-votes span { white-space: normal; max-width: 100%; overflow-wrap: anywhere; }
+body.mode-rankings-page .leader-score { min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+@media (max-width: 520px) {
+  body.mode-rankings-page .leader-score { flex-wrap: wrap; justify-content: flex-end; }
+  body.mode-rankings-page .leader-score small { max-width: 100%; white-space: normal; }
+}
+
+/* Category selection follows the entity; row scores/glows retain the mode hue. */
+body.mode-rankings-page .rank-links a.active {
+  color: var(--category-color);
+  border-bottom-color: var(--category-color);
+  text-shadow: 0 0 14px color-mix(in srgb, var(--category-color) 65%, transparent);
+  box-shadow: 0 9px 14px -11px var(--category-color);
+}
+body.mode-rankings-page .rank-links a:hover,
+body.mode-rankings-page .rank-links a:focus-visible { color: var(--category-color); outline-color: var(--category-color); }

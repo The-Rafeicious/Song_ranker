@@ -1,0 +1,78 @@
+/* Elo Guesser composition; shared mode_stats.css owns dashboard geometry. */
+.guesser-stats-page {
+  --section-color: var(--guesser);
+  --surface-accent: var(--guesser);
+  --mode-stats-border: #ed786366;
+  --mode-stats-rule: #ed786329;
+  --mode-stats-divider: #ed786322;
+}
+.guess-windows { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 20px; }
+.guess-gap-list { display: grid; gap: 14px; }
+.guess-gap { display: grid; grid-template-columns: minmax(130px,180px) minmax(0,1fr) minmax(150px,auto); gap: 18px; align-items: center; }
+.guess-gap > * + * { margin-top: 0; }
+.guess-gap h3 { text-align: left; font-size: 22px; }
+.guess-gap h3 small { display: block; color: var(--guesser); font-size: 16px; font-weight: 700; }
+.guess-gap p { text-align: right; }
+.guess-gap-rate > strong { display: block; margin-bottom: 10px; color: var(--guesser); font-size: 28px; font-weight: 900; }
+.guess-pairs { display: grid; gap: 16px; }
+.guess-comparison { display: grid; grid-template-columns: minmax(0,1fr) minmax(115px,auto) minmax(0,1fr); gap: 18px; align-items: center; }
+.guess-comparison > * + * { margin-top: 0; }
+.guess-side { --mode-stats-art-size: 72px; display: grid; grid-template-columns: var(--mode-stats-art-size) minmax(0,1fr); gap: 14px; align-items: center; min-width: 0; }
+.guess-side-1 { grid-template-columns: minmax(0,1fr) var(--mode-stats-art-size); text-align: right; }
+.guess-side-1 > .mode-stats-art { grid-column: 2; grid-row: 1; }
+.guess-side-1 > .mode-stats-copy { grid-column: 1; grid-row: 1; }
+.guess-side-1 .mode-stats-meta, .guess-side-1 .guess-labels { justify-content: end; }
+.guess-side .mode-stats-name { font-size: 23px; }
+.guess-side .mode-stats-meta { font-size: 16px; gap: 5px 10px; }
+.guess-saved-elo { display: block; margin-top: 10px; color: var(--guesser); font-size: 17px; font-weight: 800; }
+.guess-labels { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.guess-label { display: inline-block; padding: 3px 8px; border: 1px solid currentColor; border-radius: 99px; color: var(--guesser); font-size: 14px; font-weight: 700; }
+.guess-versus { display: grid; gap: 6px; text-align: center; color: var(--guesser); min-width: 0; overflow-wrap: anywhere; }
+.guess-versus > strong { font-size: 22px; font-weight: 900; }
+.guess-versus > b { font-size: 28px; }
+.guess-versus > span { font-size: 15px; }
+.guess-history-item { scroll-margin-top: 20px; }
+.guess-history-item summary { min-height: 44px; cursor: pointer; color: var(--guesser); }
+.guess-summary { display: inline-grid; grid-template-columns: minmax(0,1fr) auto; gap: 12px; width: calc(100% - 24px); vertical-align: middle; align-items: center; }
+.guess-summary-copy { min-width: 0; }
+.guess-summary-name { display: block; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 20px; font-weight: 800; }
+.guess-summary-copy > span { display: block; font-size: 15px; margin-top: 5px; }
+.guess-outcome { font-size: 18px; font-weight: 900; }
+.guess-history-body { margin-top: 18px; padding-top: 18px; border-top: 1px solid var(--mode-stats-rule); }
+.guesser-stats-page .guess-right { color: var(--song); }
+.guesser-stats-page .guess-wrong { color: var(--danger); }
+.guesser-stats-page .guess-unknown { color: var(--muted); }
+.guess-history-item summary:hover .guess-summary-name, .guess-history-item summary:focus-visible .guess-summary-name { text-decoration: underline; text-underline-offset: 3px; }
+.guess-history-item summary:focus-visible { outline: 2px solid var(--guesser); outline-offset: 4px; border-radius: 3px; }
+.guesser-stats-page .mode-stats-more summary { min-height: 44px; padding-block: 10px; }
+.guesser-stats-page .btn { min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+.guesser-stats-page .section-head > a { min-height: 44px; display: inline-flex; align-items: center; }
+.guess-pagination { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px; color: var(--guesser); font-size: 16px; }
+@media (max-width: 1050px) {
+  .guess-windows { grid-template-columns: minmax(0,1fr); }
+}
+@media (max-width: 760px) {
+  .guess-gap { grid-template-columns: minmax(0,1fr) auto; gap: 12px; }
+  .guess-gap-rate { grid-column: 1 / -1; grid-row: 2; }
+  .guess-gap p { grid-column: 2; grid-row: 1; }
+  .guess-comparison { grid-template-columns: minmax(0,1fr); gap: 14px; }
+  .guess-side, .guess-side-1 { --mode-stats-art-size: 64px; grid-template-columns: var(--mode-stats-art-size) minmax(0,1fr); text-align: left; gap: 12px; }
+  .guess-side-1 > .mode-stats-art { grid-column: 1; }
+  .guess-side-1 > .mode-stats-copy { grid-column: 2; }
+  .guess-side .mode-stats-meta, .guess-side-1 .mode-stats-meta, .guess-side .guess-labels, .guess-side-1 .guess-labels { justify-content: start; }
+  .guess-versus { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: center; gap: 6px 14px; border-block: 1px solid var(--mode-stats-rule); padding-block: 10px; }
+  .guess-side .mode-stats-name { font-size: 22px; }
+  .guess-side .mode-stats-meta { font-size: 15px; }
+}
+@media (max-width: 520px) {
+  .guess-gap { grid-template-columns: minmax(0,1fr); }
+  .guess-gap p { grid-column: 1; grid-row: 3; text-align: left; }
+  .guess-gap h3 { font-size: 20px; }
+  .guess-gap p { font-size: 15px; }
+  .guess-summary { grid-template-columns: minmax(0,1fr); gap: 8px; }
+  .guess-summary-name { font-size: 19px; }
+  .guess-summary-copy > span { font-size: 14px; }
+  .guess-outcome { font-size: 17px; }
+  .guess-saved-elo { font-size: 16px; }
+  .guess-pagination { font-size: 15px; }
+}

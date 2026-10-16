@@ -260,8 +260,16 @@ def api_tournament_detail(tournament_id):
 
 @app.route('/tournament_stats')
 def tournament_stats_page():
-    """Render the dedicated tournament leaderboard and history page."""
-    return render_template('tournament_stats.html')
+    """Read-only tournament dashboard; ranking APIs and game actions stay separate."""
+    from tournament_stats_data import build_tournament_stats
+    conn = get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        data = build_tournament_stats(conn, selected=request.args.get('tournament', type=int),
+                                      archive_page=request.args.get('archive_page', 1, type=int))
+    finally:
+        conn.close()
+    return render_template('tournament_stats.html', **data)
 
 
 @app.route('/api/tournament_stats', methods=['GET'])

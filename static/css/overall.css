@@ -1,6 +1,6 @@
-/* Overall: shared, warm-white surfaces with the full mode spectrum. */
-:root{--overall:#f5ead8}.overall{color:var(--overall)}
-body[data-tone=overall]{--page-color:var(--overall);--page-rgb:245,234,216}
+/* Overall: shared, warm-white surfaces with the full mode spectrum. */.overall{color:var(--overall)}
+
+
 .overall-panel{position:relative;margin:28px 0;padding:27px;border-color:#e8dbbe66;background:radial-gradient(ellipse at 0 0,#ed786316,transparent 55%),radial-gradient(ellipse at 100% 100%,#af89bd22,transparent 60%),#211f24;box-shadow:0 0 28px #b0dfdf13,0 8px 24px #0004;min-width:0}
 .overall-panel:before{content:"";display:block;position:absolute;top:-1px;left:20px;right:20px;height:3px;border-radius:10px;background:linear-gradient(90deg,var(--standard),var(--blind),var(--recognition),var(--tournament),var(--guesser),var(--shelves));opacity:.85}
 .overall-value{font-size:58px;font-weight:950;line-height:1.12;color:var(--overall);letter-spacing:-.03em}

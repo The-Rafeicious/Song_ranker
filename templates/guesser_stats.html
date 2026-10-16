@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% from 'components.html' import art %}
+{% from 'mode_stats_components.html' import figure, rate, number, progress, metadata, saved_date %}
+{% block title %}Elo Guesser Stats · Song Ranker{% endblock %}
+{% block page_kind %}guesser_stats{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/mode_stats.css',v=app_version) }}"><link rel="stylesheet" href="{{ url_for('static',filename='css/guesser_stats.css',v=app_version) }}">{% endblock %}
+
+{% macro track_list(rows, offset=0) -%}
+<ol class="mode-stats-list" start="{{ offset+1 }}">
+{% for row in rows %}<li class="mode-stats-row">
+  <span class="mode-stats-rank" aria-hidden="true">{{ offset+loop.index }}</span><span class="mode-stats-art">{{ art(row.cover_url) }}</span>
+  <div class="mode-stats-copy"><a class="song mode-stats-name" title="{{ row.title }}" href="{{ url_for('song_page',song_id=row.id) }}">{{ row.title }}</a>{{ metadata(row) }}</div>
+  <div class="mode-stats-result"><strong>{{ rate(row.accuracy) }}</strong><span>{{ row.correct }} / {{ row.attempts }} correct appearances</span><span>{{ row.missed }} wrong</span></div>
+</li>{% endfor %}</ol>
+{%- endmacro %}
+{% macro category_list(rows, kind, misses=false) -%}
+<ol class="mode-stats-list mode-stats-dense">
+{% for row in rows %}<li class="mode-stats-row">
+  <span class="mode-stats-art">{{ art(row.cover_url|default(''),kind=='artist') }}</span>
+  <div class="mode-stats-copy">
+    {% if kind=='artist' %}{% set href=url_for('artist_page',artist_name=row.name) %}{% elif kind=='album' %}{% set href=url_for('album_page',album_title=row.name) %}{% else %}{% set href=url_for('tag_page',tag_name=row.name) %}{% endif %}
+    <a class="{{ kind }} mode-stats-name" title="{{ row.name }}" href="{{ href }}">{{ row.name }}</a><span>{{ row.tested }} tested {{ 'track' if row.tested==1 else 'tracks' }}</span>
+  </div>
+  <div class="mode-stats-result"><strong>{{ row.missed if misses else rate(row.accuracy) }}</strong><span>{{ 'wrong appearances' if misses else (row.correct|string)+' / '+(row.attempts|string)+' correct' }}</span><span>{{ rate(row.accuracy) if misses else (row.attempts|string)+' appearances' }}</span></div>
+</li>{% else %}<li class="empty">{{ 'No wrong guesses yet.' if misses else 'No completed guesses yet.' }}</li>{% endfor %}</ol>
+{%- endmacro %}
+{% macro side(song, position, row=none) -%}
+<div class="guess-side guess-side-{{ position }}">
+  <span class="mode-stats-art">{{ art(song.cover_url) }}</span>
+  <div class="mode-stats-copy">
+    {% if song.id %}<a class="song mode-stats-name" title="{{ song.title }}" href="{{ url_for('song_page',song_id=song.id) }}">{{ song.title }}</a>{% else %}<strong class="mode-stats-name muted">{{ song.title }}</strong>{% endif %}
+    {{ metadata(song) }}
+    {% if row is not none %}
+    <span class="guess-saved-elo">{{ number(row.elo1 if position==1 else row.elo2) }} saved Elo</span>
+    <div class="guess-labels">
+      {% if row.chosen_slot==position %}<span class="guess-label {{ 'guess-right' if row.correct==1 else 'guess-wrong' if row.correct==0 else 'guess-unknown' }}">Your pick</span>{% endif %}
+      {% if row.correct is not none and ((position==1 and row.elo1>row.elo2) or (position==2 and row.elo2>row.elo1)) %}<span class="guess-label">Higher Elo</span>{% endif %}
+    </div>
+    {% endif %}
+  </div>
+</div>
+{%- endmacro %}
+
+{% block content %}
+<div class="guesser-stats-page mode-stats-page">
+  <div class="page-head"><h1 class="guesser">Elo Guesser Stats</h1><a class="btn guesser" href="{{ url_for('elo_guesser') }}">Play Elo Guesser →</a></div>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-overview">
+    <div class="section-head"><h2 class="guesser" id="guesser-overview">Elo Guesser overview</h2></div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{ figure('Completed guesses',summary.rounds) }}{{ figure('Correct picks',summary.correct) }}{{ figure('Wrong guesses',summary.wrong) }}{{ figure('Best streak',summary.best_streak) }}</dl>
+    <div class="mode-stats-inset mode-stats-rate"><h3>Overall accuracy</h3><strong class="mode-stats-primary">{{ rate(summary.accuracy) }}</strong>{{ progress('Overall guess accuracy',summary.accuracy) }}<p>{{ summary.correct }} correct / {{ summary.graded }} guesses</p></div>
+    {% if summary.unknown %}<p class="mode-stats-caption">{{ summary.unknown }} saved {{ 'result has' if summary.unknown==1 else 'results have' }} incomplete comparison data.</p>{% endif %}
+    {% if summary.undated %}<p class="mode-stats-caption">{{ summary.undated }} {{ 'result has' if summary.undated==1 else 'results have' }} no usable date; streaks cover dated results.</p>{% endif %}
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-form">
+    <div class="section-head"><h2 class="guesser" id="guesser-form">Recent form</h2></div>
+    <dl class="joined-metrics mode-stats-metrics">{{ figure('Current streak',summary.current_streak if summary.current_streak is not none else '—') }}{{ figure('Longest miss run',summary.longest_miss) }}{{ figure('Active days',summary.active_days) }}</dl>
+    <div class="guess-windows">{% for window in windows %}<div class="mode-stats-inset mode-stats-rate"><h3>{{ window.title }}</h3><strong class="mode-stats-primary">{{ rate(window.accuracy) }}</strong>{{ progress(window.title+' accuracy',window.accuracy) }}<p>{{ window.correct }} correct · {{ window.wrong }} wrong</p><p>{{ window.rounds }} completed{% if window.unknown %} · {{ window.unknown }} ungraded{% endif %}</p></div>{% endfor %}</div>
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-coverage">
+    <div class="section-head"><h2 class="guesser" id="guesser-coverage">Collection coverage</h2></div>
+    <dl class="joined-metrics mode-stats-metrics">{{ figure('Eligible tracks',coverage.eligible) }}{{ figure('Already tested',coverage.tested) }}{{ figure('Still to try',coverage.untested) }}</dl>
+    <div class="mode-stats-inset mode-stats-rate"><h3>Eligible tracks tested</h3><strong class="mode-stats-primary">{{ rate(coverage.share) }}</strong>{{ progress('Eligible tracks tested',coverage.share) }}<p>{{ coverage.tested }} / {{ coverage.eligible }} tracks</p></div>
+    {% if coverage.other_tested %}<p class="mode-stats-caption">{{ coverage.other_tested }} other tested {{ 'track is' if coverage.other_tested==1 else 'tracks are' }} outside the current eligible pool.</p>{% endif %}
+    {% if not coverage.eligible %}<p class="mode-stats-caption">The mode needs at least two tracks with different finite Elo ratings. Previews are optional.</p>{% endif %}
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-gaps">
+    <div class="section-head"><h2 class="guesser" id="guesser-gaps">Accuracy by Elo gap</h2></div>
+    <div class="guess-gap-list">{% for band in gaps %}<div class="mode-stats-inset guess-gap" data-gap-low="{{ band.low }}"><h3>{{ band.label }} <small>Elo apart</small></h3><div class="guess-gap-rate"><strong>{{ rate(band.accuracy) }}</strong>{{ progress(band.label+' Elo gap accuracy',band.accuracy) }}</div><p>{{ band.correct }} correct / {{ band.rounds }} guesses<br>{{ band.wrong }} wrong</p></div>{% endfor %}</div>
+    <dl class="joined-metrics mode-stats-small-metrics" data-columns="4">{{ figure('Average gap · correct',number(gap_summary.correct_average)) }}{{ figure('Average gap · wrong',number(gap_summary.wrong_average)) }}{{ figure('Closest correct pick',number(gap_summary.closest_correct)) }}{{ figure('Widest wrong pick',number(gap_summary.widest_wrong)) }}</dl>
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-choices">
+    <div class="section-head"><h2 class="guesser" id="guesser-choices">Card choices</h2></div>
+    <div class="mode-stats-comparisons">{% for choice in choices %}<div class="mode-stats-inset mode-stats-rate"><h3>{{ choice.label }}</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Picks',choice.rounds) }}{{ figure('Correct',choice.correct) }}{{ figure('Wrong',choice.wrong) }}</dl><strong class="mode-stats-primary">{{ rate(choice.accuracy) }}</strong>{{ progress(choice.label+' accuracy when chosen',choice.accuracy) }}<p>Accuracy when chosen · {{ rate(choice.share) }} of all picks</p></div>{% endfor %}</div>
+  </section>
+
+  {% for title,rows in [('Top tracks',top_tracks),('Tracks to practise',practice_tracks)] %}
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-tracks-{{ loop.index }}">
+    <div class="section-head"><h2 class="guesser" id="guesser-tracks-{{ loop.index }}">{{ title }}</h2><a class="guesser" href="/mode_rankings/guesser">Rankings ↗</a></div>
+    {{ track_list(rows[:5]) }}{% if rows|length>5 %}<details class="mode-stats-more"><summary>Show {{ rows|length-5 }} more tracks</summary>{{ track_list(rows[5:],5) }}</details>{% endif %}
+    {% if not rows %}<div class="empty">{{ 'No wrong guesses to practise yet.' if loop.index==2 else 'Complete an Elo Guesser round to start these records.' }}</div>{% endif %}
+  </section>
+  {% endfor %}
+
+  {% for group in categories %}
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-{{ group.kind }}">
+    <div class="section-head"><h2 class="guesser" id="guesser-{{ group.kind }}">{{ group.title }}</h2></div>
+    <div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3>Highest accuracy</h3>{{ category_list(group.best,group.kind) }}</div><div class="mode-stats-inset"><h3>Most wrong appearances</h3>{{ category_list(group.missed,group.kind,true) }}</div></div>
+  </section>
+  {% endfor %}
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-pairs">
+    <div class="section-head"><h2 class="guesser" id="guesser-pairs">Frequent comparisons</h2></div>
+    <ol class="mode-stats-list guess-pairs">{% for pair in pairs %}<li class="mode-stats-inset guess-comparison">{{ side(pair.first,1) }}<div class="guess-versus"><strong>VS</strong><b>{{ rate(pair.accuracy) }}</b><span>{{ pair.correct }} / {{ pair.rounds }} correct</span><span>{{ number(pair.average_gap) }} average gap</span></div>{{ side(pair.second,2) }}</li>{% else %}<li class="empty">No repeated comparisons yet.</li>{% endfor %}</ol>
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-history">
+    <div class="section-head"><h2 class="guesser" id="guesser-history">Guess history</h2></div>
+    {% for row in history %}<details class="mode-stats-inset guess-history-item" data-guess-round="{{ row.id }}"{% if loop.first %} open{% endif %}>
+      <summary><span class="guess-summary"><span class="guess-summary-copy"><strong class="guess-summary-name" title="{{ row.chosen.title if row.chosen else 'Pick unavailable' }}">{{ row.chosen.title if row.chosen else 'Pick unavailable' }}</strong><span>#{{ row.id }} · {{ saved_date(row.date) }}</span></span><span class="guess-outcome {{ 'guess-right' if row.correct==1 else 'guess-wrong' if row.correct==0 else 'guess-unknown' }}">{{ 'Correct +1' if row.correct==1 else 'Wrong +0' if row.correct==0 else 'Unavailable' }}</span></span></summary>
+      <div class="guess-comparison guess-history-body">{{ side(row.first,1,row) }}<div class="guess-versus"><strong>VS</strong><span>{{ number(row.gap) }} Elo gap</span><span>{{ row.streak if row.streak is not none else '—' }} streak</span></div>{{ side(row.second,2,row) }}</div>
+    </details>{% else %}<div class="empty">No completed Elo guesses yet.</div>{% endfor %}
+    <nav class="guess-pagination" aria-label="Guess history pages">
+      {% if history_page>1 %}<a class="btn guesser" rel="prev" href="{{ url_for('guesser_stats',history_page=history_page-1) }}#guesser-history">← Newer</a>{% endif %}
+      <span>Page {{ history_page }} / {{ history_pages }}{% if summary.rounds %} · {{ history_start }}–{{ history_end }} of {{ summary.rounds }}{% endif %}</span>
+      {% if history_page<history_pages %}<a class="btn guesser" rel="next" href="{{ url_for('guesser_stats',history_page=history_page+1) }}#guesser-history">Older →</a>{% endif %}
+    </nav>
+  </section>
+</div>
+{% endblock %}

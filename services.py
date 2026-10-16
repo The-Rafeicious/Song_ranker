@@ -11,7 +11,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent
 app = Flask(__name__)
-app.secret_key = os.environ.get('SONG_RANKER_SECRET', 'theandwasdwe')
+from lan_security import configure_security
+configure_security(app, ROOT)
 from version import APP_VERSION
 
 @app.context_processor

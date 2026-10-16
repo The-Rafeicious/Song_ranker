@@ -1,31 +1,30 @@
 /* Shared Overall cards. Calculation and calibration remain on the server. */
 window.Overall=(()=>{
  'use strict';let U,current,ranking={type:'songs',bottom:false},devType='songs',requestId=0,loadId=0,inspectId=0;
- const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
- const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const {$,$$,esc}=window.SongRankerUI;
  const rounded=v=>(Math.round((Number(v)+Number.EPSILON)*100)/100).toFixed(2),pct=v=>v==null?'—':rounded(v)+'%';
- const types=['songs','artists','albums','tags'],labels={songs:'Song',artists:'Artist',albums:'Album',tags:'Tag'};
+ const types=window.SongRankerUI.entityTypes,labels=window.SongRankerUI.entityLabels;
  async function load(){const id=++loadId,data=await U.api('/api/overall');if(id===loadId)current=data;return data;}
  function bar(value,label){return `<div class="overall-progress" role="progressbar" aria-label="${esc(label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${value==null?0:Math.max(0,Math.min(100,value))}"><span style="width:${value==null?0:Math.max(0,Math.min(100,value))}%"></span></div>`;}
  function breakdown(row){return `<details class="overall-breakdown"><summary>Mode balance</summary><div class="overall-mode-grid">${row.contributions.map(c=>`<div><span>${esc(c.label)} <small>${pct(c.weight)} weight</small></span><b>${pct(c.score)}</b>${bar(c.score,c.label+' calibrated score')}<small>${pct(c.evidence)} evidence</small></div>`).join('')||'<div class="empty">No tested modes</div>'}</div></details>`;}
  function card(row,type='songs',title='Overall',id=''){
    const name=row?.name||'',noData=row?.score==null;
-   return `<section ${id?`id="${id}"`:''} class="panel overall-panel overall-card"><div class="section-head"><h2 class="overall">${esc(title)}</h2><a class="overall" href="/overall_rankings?entity=${type}">Rankings ↗</a></div><div class="overall-card-body"><span class="overall-meta">${noData?(row?.eligible===false?'Unranked album':'Not tested'):type==='songs'?pct(row.evidence)+' evidence':pct(row.group_confidence||0)+' collection confidence'}</span><strong class="overall-value">${pct(row?.score)}</strong><span class="overall-meta overall-meta-right">${row?.mode_count||0} modes${type==='songs'?'':` · ${row?.tested_tracks||0} / ${row?.track_count||0} tracks tested`}</span></div>${bar(row?.score,name+' Overall score')}${row?breakdown(row):''}</section>`;
+   return `<section ${id?`id="${id}"`:''} class="panel overall-panel overall-card dashboard-surface"><div class="section-head"><h2 class="overall">${esc(title)}</h2><a class="overall" href="/overall_rankings?entity=${type}">Rankings ↗</a></div><div class="overall-card-body"><span class="overall-meta">${noData?(row?.eligible===false?'Unranked album':'Not tested'):type==='songs'?pct(row.evidence)+' evidence':pct(row.group_confidence||0)+' collection confidence'}</span><strong class="overall-value">${pct(row?.score)}</strong><span class="overall-meta overall-meta-right">${row?.mode_count||0} modes${type==='songs'?'':` · ${row?.tested_tracks||0} / ${row?.track_count||0} tracks tested`}</span></div>${bar(row?.score,name+' Overall score')}${row?breakdown(row):''}</section>`;
  }
- function highlights(data,title='Overall Leaders',id='overall-highlights'){
-   return `<section class="panel overall-panel" id="${id}"><div class="section-head"><h2 class="overall">${title}</h2><a class="overall" href="/overall_rankings">Rankings ↗</a></div><div class="overall-highlights">${types.map(type=>{const row=data.highlights[type];return row?`<a class="overall-highlight" href="${U.urlFor(type,row)}"><span class="overall-highlight-art">${U.artwork(row,type)}</span><strong class="${U.colour(type)}" title="${esc(row.name)}">${esc(row.name)}</strong><b class="overall">${pct(row.score)}</b>${bar(row.score,row.name+' Overall score')}</a>`:`<div class="overall-highlight empty"><span>${labels[type]}</span><small>Not tested</small></div>`;}).join('')}</div></section>`;
+ function highlights(data,title='Overall Leaders',id='overall-highlights',showLink=true){
+   return `<section class="panel overall-panel" id="${id}"><div class="section-head"><h2 class="overall">${title}</h2>${showLink?'<a class="overall" href="/overall_rankings">Rankings ↗</a>':''}</div><div class="overall-highlights">${types.map(type=>{const row=data.highlights[type];return row?`<a class="overall-highlight" href="${U.urlFor(type,row)}"><span class="overall-highlight-art">${U.artwork(row,type)}</span><strong class="${U.colour(type)}" title="${esc(row.name)}">${esc(row.name)}</strong><b class="overall">${pct(row.score)}</b>${bar(row.score,row.name+' Overall score')}</a>`:`<div class="overall-highlight empty"><span>${labels[type]}</span><small>Not tested</small></div>`;}).join('')}</div></section>`;
  }
  async function mount(page){
-   const profile=['song','artist','album','tag'].includes(page),root=profile?$('.song-profile'):page==='home'?$('.home-record-stats'):$('#overall-global');
+   const profile=['song','artist','album','tag'].includes(page),root=profile?$('.profile-key-stats'):page==='home'?$('.home-record-stats'):$('#overall-global');
    if(!root)return;let placeholder;
-   if(profile){$('#overall-profile')?.remove();$('.song-profile + [data-overall-loading]')?.remove();}else if(page==='home'){$('#overall-highlights')?.remove();$('[data-overall-loading]')?.remove();}
+   if(profile){$('#overall-profile')?.remove();$('.profile-key-stats + [data-overall-loading]')?.remove();}else if(page==='home'){$('#overall-highlights')?.remove();$('[data-overall-loading]')?.remove();}
    if(page==='global_stats')placeholder=root;
    else{placeholder=document.createElement('section');placeholder.className='panel overall-panel';placeholder.dataset.overallLoading='true';placeholder.innerHTML='<h2 class="overall">Overall</h2><div class="empty" role="status">Calculating…</div>';if(profile)root.after(placeholder);else root.before(placeholder);}
    try{
      const data=await load();if(!placeholder.isConnected)return;
      if(page==='home'){placeholder.outerHTML=highlights(data);return;}
      if(page==='global_stats'){
-       placeholder.outerHTML=`<section class="panel overall-panel" id="overall-global"><div class="section-head"><h2 class="overall">Overall Stats</h2><a class="overall" href="/overall_rankings">Rankings ↗</a></div><div class="overall-global-summary"><div><small>Average adjusted percentile</small><strong class="overall-value">${pct(data.summary.average)}</strong>${bar(data.summary.average,'Average adjusted percentile Overall score')}</div><div><b>${data.summary.tested_songs} / ${data.summary.songs}</b><small>Tested songs</small></div><div><b>${pct(data.summary.evidence)}</b><small>Library evidence</small></div><div><b>${data.summary.active_modes}</b><small>Active modes</small></div></div>${highlights(data,'Overall Leaders','overall-global-leaders')}</section>`;return;
+       placeholder.outerHTML=`<section class="panel overall-panel" id="overall-global" data-global-section="overall"><div class="section-head"><h2 class="overall">Overall Stats</h2><a class="overall" href="/overall_rankings">Overall rankings ↗</a></div><div class="overall-global-summary joined-metrics"><div><b>${data.summary.tested_songs} / ${data.summary.songs}</b><small>Tested songs</small></div><div><b>${pct(data.summary.evidence)}</b><small>Library evidence</small></div><div><b>${data.summary.active_modes}</b><small>Active modes</small></div></div>${highlights(data,'Overall Leaders','overall-global-leaders',false)}</section>`;return;
      }
      let type,id;
      if(page==='song'){type='songs';id=Number(document.body.dataset.entity)||Number(new URLSearchParams(location.search).get('id'))||U.records('songs')[0]?.id;}
@@ -34,14 +33,16 @@ window.Overall=(()=>{
    }catch(error){placeholder.innerHTML=`<h2 class="overall">Overall</h2><div class="empty error">${esc(error.message)}</div><button class="btn" data-overall-retry="${page}">Retry</button>`;}
  }
  async function renderRankings(init=false){
-   const id=++requestId;U.pageTone('overall');document.body.classList.add('rankings-page');
+   const id=++requestId;U.pageTone('overall');document.body.classList.add('rankings-page','standard-rankings-page','mode-rankings-page');document.body.style.setProperty('--rank-color','var(--overall)');
    if(init){const params=new URLSearchParams(location.search);ranking={type:types.includes(params.get('entity'))?params.get('entity'):'songs',bottom:params.get('view')==='bottom'};}
    U.main.innerHTML='<div class="page-head"><h1 class="overall">Overall Rankings</h1></div><div class="empty" role="status">Calculating…</div>';
    try{await load();if(id===requestId)drawRankings();}catch(error){if(id===requestId)U.main.innerHTML=`<div class="empty error">${esc(error.message)}</div><button class="btn" data-overall-retry="rankings">Retry</button>`;}
  }
  function drawRankings(){
    const type=ranking.type,all=current.entities[type].filter(r=>r.score!=null&&r.eligible!==false),rows=(ranking.bottom?[...all].reverse():all).slice(0,20);
-   U.main.innerHTML=`<div class="page-head"><h1 class="overall">Overall Rankings</h1></div><div class="overall-ranking-controls"><div class="pill-nav overall-tabs" role="group" aria-label="Ranking category">${types.map(t=>`<button class="pill ${t===type?'active':''} ${U.colour(t)}" data-overall-entity="${t}" aria-pressed="${t===type}">${labels[t]}s</button>`).join('')}</div><div class="pill-nav overall-view-tabs" role="group" aria-label="Ranking range"><button class="pill ${!ranking.bottom?'active':''}" data-overall-view="top" aria-pressed="${!ranking.bottom}">Top twenty</button><button class="pill ${ranking.bottom?'active':''}" data-overall-view="bottom" aria-pressed="${ranking.bottom}">Bottom twenty</button></div></div><div class="leaderboard overall-leaderboard">${rows.map((row,i)=>`<article class="leader-row" style="${U.rankGlow(i,ranking.bottom,'overall')}"><span class="leader-rank">${ranking.bottom?all.length-i:['🥇','🥈','🥉'][i]||i+1}</span><a href="${U.urlFor(type,row)}" aria-label="${esc(row.name)}">${U.artwork(row,type)}</a><div class="special-rank-copy"><a class="leader-title ${U.colour(type)}" title="${esc(row.name)}" href="${U.urlFor(type,row)}">${esc(row.name)}</a><div class="leader-meta">${type==='songs'?pct(row.evidence)+' evidence':pct(row.group_confidence||0)+' collection confidence'} · ${row.mode_count} modes${type==='songs'?'':` · ${row.tested_tracks} / ${row.track_count} tracks tested`}</div>${bar(row.score,row.name+' Overall score')}</div><div class="leader-score overall">${pct(row.score)}<small>Overall</small></div></article>`).join('')||'<div class="empty">No tested records yet</div>'}</div>`;
+   const facts=row=>[type==='songs'?pct(row.evidence)+' evidence':pct(row.group_confidence||0)+' collection confidence',`${row.mode_count} modes`,...(type==='songs'?[]:[`${row.tested_tracks} / ${row.track_count} tracks tested`])];
+   U.main.innerHTML=`<div class="page-head"><h1 class="overall">Overall Rankings</h1></div>${window.SongRankerUI.modeRankingControls('/overall_rankings',type,ranking.bottom,'overall',types)}<div class="leaderboard overall-leaderboard">${rows.map((row,i)=>window.SongRankerUI.modeRankingRow(U,row,type,i,all.length,ranking.bottom,'overall',pct(row.score),'Overall',facts(row))).join('')||'<div class="empty">No tested records yet</div>'}</div>`;
+
    history.replaceState({},'',`/overall_rankings?entity=${type}&view=${ranking.bottom?'bottom':'top'}`);
  }
  async function renderDev(){

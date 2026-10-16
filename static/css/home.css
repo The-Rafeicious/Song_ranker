@@ -1,0 +1,164 @@
+/* V3.4.3.3: home composition; shared rows/glows live in components.css. */
+body[data-page=home] #main .home-collection-totals {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--site-gap, 20px);
+}
+body[data-page=home] #main .home-collection-totals > .stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+  padding: var(--site-padding, 24px);
+  text-align: center;
+}
+body[data-page=home] #main .home-collection-totals .stat-label {
+  font-size: var(--site-meta-size, 18px);
+  font-weight: 800;
+  line-height: 1.4;
+}
+body[data-page=home] #main .home-collection-totals .stat-value {
+  font-size: var(--site-value-size, 36px);
+  font-weight: 900;
+  line-height: 1.2;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+body[data-page=home] #main .home-record-stats {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--site-gap, 20px);
+  margin: 0 0 36px;
+}
+body[data-page=home] #main .home-record-stats > .panel {
+  --section-color: var(--recognition);
+  min-width: 0;
+  margin: 0;
+}
+body[data-page=home] #main .home-record-stats > [data-home-mode=tournament] { --section-color: var(--tournament); }
+body[data-page=home] #main .home-record-stats > [data-home-mode=guesser] { --section-color: var(--guesser); }
+body[data-page=home] #main .home-record-stats > [data-home-mode=shelves] { --section-color: var(--shelves); }
+body[data-page=home] #main .home-record-stats .section-head {
+  margin: 0 0 18px;
+  padding-bottom: 16px;
+  border-bottom-color: color-mix(in srgb, var(--section-color) 22%, #383838);
+}
+body[data-page=home] #main .home-record-stats .section-head > h2 { color: var(--section-color); }
+body[data-page=home] #main .home-record-stats .section-head > a {
+  color: var(--section-color);
+  font-size: 16px;
+  white-space: nowrap;
+}
+body[data-page=home] #main .home-record-stats .section-head > a:hover,
+body[data-page=home] #main .home-record-stats .section-head > a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+body[data-page=home] #main .home-record-stats .mini-stats { margin: 0; }
+body[data-page=home] #main .home-record-stats .mini-stats > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+body[data-page=home] #main .home-record-stats .mini-stats b {
+  color: var(--section-color);
+  font-weight: 900;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+body[data-page=home] #main .home-record-stats .mini-stats small {
+  color: var(--section-color);
+  font-size: 17px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+body[data-page=home] #main .home-mode-bar {
+  margin-top: 18px;
+  min-width: 0;
+  color: var(--section-color);
+}
+body[data-page=home] #main .home-bar-caption {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 10px;
+  font-size: 18px;
+  font-weight: 800;
+}
+body[data-page=home] #main .home-bar-caption > strong { white-space: nowrap; }
+body[data-page=home] #main .home-percentage-track,
+body[data-page=home] #main .home-stacked-bar {
+  display: flex;
+  width: 100%;
+  height: 14px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--section-color) 8%, #2a2a2a);
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--section-color) 20%, #383838);
+}
+body[data-page=home] #main .home-percentage-track > span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--section-color);
+}
+body[data-page=home] #main .home-stacked-bar > span {
+  display: block;
+  height: 100%;
+  flex: 0 0 auto;
+}
+body[data-page=home] #main .home-stacked-bar > span + span {
+  box-shadow: -1px 0 0 #242424;
+}
+body[data-page=home] #main .bracket-size-32 { background: var(--tournament); }
+body[data-page=home] #main .bracket-size-16 { background: color-mix(in srgb, var(--tournament) 65%, white); }
+body[data-page=home] #main .bracket-size-8 { background: color-mix(in srgb, var(--tournament) 62%, #5b1741); }
+body[data-page=home] #main .home-bracket-legend {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 16px;
+}
+body[data-page=home] #main .home-bracket-legend > div { min-width: 0; text-align: center; }
+body[data-page=home] #main .home-bracket-legend > div > span {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+body[data-page=home] #main .home-bracket-legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+body[data-page=home] #main .home-bracket-legend strong {
+  display: block;
+  margin-top: 4px;
+  overflow-wrap: anywhere;
+}
+body[data-page=home] #main .home-bar-details {
+  display: block;
+  margin-top: 8px;
+  font-size: 15px;
+  line-height: 1.4;
+}
+@media (max-width: 760px) {
+  body[data-page=home] #main .home-collection-totals { gap: 12px; }
+  body[data-page=home] #main .home-collection-totals > .stat { padding: 20px 14px; }
+  body[data-page=home] #main .home-record-stats .mini-stats { margin: 0; }
+@media (max-width: 520px) {
+  body[data-page=home] #main .home-collection-totals > .stat { padding: 18px 10px; }
+  body[data-page=home] #main .home-collection-totals .stat-label { font-size: 16px; }
+  body[data-page=home] #main .home-collection-totals .stat-value { font-size: 28px; }
+  body[data-page=home] #main .home-record-stats .mini-stats small { font-size: 16px; }
+  body[data-page=home] #main .home-bar-caption { font-size: 16px; }
+  body[data-page=home] #main .home-bracket-legend { gap: 6px; font-size: 14px; }
+}

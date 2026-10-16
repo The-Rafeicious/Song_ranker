@@ -1,6 +1,40 @@
 {% macro stat(label, value, kind='song') -%}
 <div class="stat {{ kind }}"><span class="stat-label">{{ label }}</span><strong class="stat-value">{{ value }}</strong></div>
 {%- endmacro %}
+
+{% macro versus_side(song, side, outcome='', before=none, after=none) -%}
+  {% if side=='right' %}<span class="versus-art versus-art-right">{{ art(song.cover_url) }}</span>{% endif %}
+  <div class="versus-copy versus-copy-{{ side }}"{% if outcome %} data-outcome="{{ outcome }}"{% endif %}>
+    <a class="versus-title song" href="{{ url_for('song_page',song_id=song.id) }}" title="{{ song.title }}"{% if outcome %} aria-label="{{ outcome|capitalize }}: {{ song.title }}"{% endif %}>{{ song.title }}</a>
+    <div class="versus-artists" title="{{ song.artist_links|map(attribute='name')|join(', ') }}">
+      {% for artist in song.artist_links %}<a class="artist" href="{{ url_for('artist_page',artist_name=artist.name) }}" title="{{ artist.name }}">{{ artist.name }}</a>{% if not loop.last %}<span class="muted">, </span>{% endif %}{% else %}<span class="muted">Unknown artist</span>{% endfor %}
+    </div>
+    {% if song.album_link %}<a class="versus-album album" href="{{ url_for('album_page',album_title=song.album_link.title) }}" title="{{ song.album_link.title }}">{{ song.album_link.title }}</a>{% endif %}
+    <div class="versus-rating standard">
+      {% if after is not none %}
+        <span class="versus-rating-label">Elo{% if before is none %} after match{% endif %}</span>
+        <strong>{% if before is not none %}{{ before|round|int }} <span aria-hidden="true">→</span> {% endif %}{{ after|round|int }}</strong>
+        {% if before is not none %}<span class="versus-delta {{ 'song' if after>=before else 'loss' }}">{{ '%+.0f'|format(after-before) }}</span>{% endif %}
+      {% else %}<span class="versus-rating-label">Current Elo</span><strong>{{ song.elo_score|round|int }}</strong>{% endif %}
+    </div>
+  </div>
+  {% if side=='left' %}<span class="versus-art versus-art-left">{{ art(song.cover_url) }}</span>{% endif %}
+{%- endmacro %}
+
+{% macro versus_row(left, right, mode='', created_at='', encounters=none, before_left=none, after_left=none, before_right=none, after_right=none, match_id=none, hidden=false) -%}
+  {% set is_match = encounters is none %}
+  {% set mode_name = 'Blind' if mode=='blind' else 'Non-blind' if mode=='standard' else 'Unknown mode' %}
+  <article class="versus-row {{ 'history-match dashboard-surface' if is_match else 'frequent-pair' }}"{% if mode %} data-match-mode="{{ mode }}"{% endif %}{% if match_id is not none %} data-match-id="{{ match_id }}"{% endif %}{% if hidden %} data-frequent-extra hidden{% endif %} aria-label="{{ mode_name+' match: ' if is_match else 'Frequent matchup: ' }}{{ left.title }} versus {{ right.title }}"{% if is_match %} title="{{ mode_name }} match"{% endif %}>
+    {{ versus_side(left,'left','winner' if is_match else '',before_left,after_left) }}
+    <div class="versus-center"><strong class="versus-label" aria-hidden="true">VS</strong>
+      {% if is_match %}
+        <span class="versus-mode-label">{{ mode_name }} match</span>
+        {% if created_at %}<time class="versus-date" datetime="{{ created_at|replace(' ','T') }}" title="{{ created_at }}">{{ created_at[:10] }}</time>{% else %}<small class="versus-date">Date unavailable</small>{% endif %}
+      {% else %}<span class="versus-count standard"><b>{{ encounters }}</b><small>encounters</small></span>{% endif %}
+    </div>
+    {{ versus_side(right,'right','loser' if is_match else '',before_right,after_right) }}
+  </article>
+{%- endmacro %}
 {% macro art(url, circle=false) -%}
 <span class="small-art{% if circle %} circle{% endif %}" aria-hidden="true">♫{% if url %}<img src="{{ url }}" alt="" loading="lazy" onerror="this.hidden=true">{% endif %}</span>
 {%- endmacro %}

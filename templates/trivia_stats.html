@@ -1,55 +1,141 @@
 {% extends 'base.html' %}
-{% from 'components.html' import song, stat, art %}
+{% from 'components.html' import art %}
+{% from 'mode_stats_components.html' import figure, rate, progress, metadata %}
 {% block title %}Recognisability · Song Ranker{% endblock %}
 {% block page_kind %}recognition_stats{% endblock %}
-{% block content %}
-<div class="page-head"><h1 class="recognition">Recognisability</h1><a class="btn recognition" href="/trivia">Play Trivia →</a></div>
-<div class="stats trivia-stats-summary">
-  {{ stat('Best player score',records.get('trivia_high_score',0)|round(2),'recognition') }}
-  {{ stat('Best streak 🔥',records.get('trivia_high_streak',0)|int,'recognition') }}
-  {{ stat('Rounds',summary.rounds,'recognition') }}
-  {{ stat('Tested tracks',summary.tested,'recognition') }}
-</div>
-<section class="trivia-field-records" aria-label="Field accuracy">
-{% for field in fields %}
-  <article class="panel recognition-panel stats-glow glow-recognition trivia-field-record" data-trivia-field="{{ field.key }}">
-    <div class="section-head"><h2 class="{{ field.kind }}">{{ field.name }}</h2><span class="recognition">{{ field.correct }} / {{ field.attempts }}</span></div>
-    <strong class="recognition field-accuracy">{{ (field.accuracy|string)+'%' if field.accuracy is not none else '—' }}</strong>
-    <small class="muted">Accuracy</small>
-    <div class="progress" role="progressbar" aria-label="{{ field.name }} accuracy" aria-valuemin="0" aria-valuemax="100" aria-valuenow="{{ [100,field.accuracy or 0]|min }}"><span style="width:{{ [100,field.accuracy or 0]|min }}%"></span></div>
-    <div class="field-totals"><span class="recognition">{{ field.correct }} correct</span><span class="loss">{{ field.missed }} missed</span></div>
-  </article>
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/mode_stats.css',v=app_version) }}"><link rel="stylesheet" href="{{ url_for('static',filename='css/recognition_stats.css',v=app_version) }}">{% endblock %}
+
+{% macro track_list(rows, offset=0) -%}
+<ol class="mode-stats-list rec-ranking" start="{{ offset+1 }}">
+{% for row in rows %}
+<li class="mode-stats-row">
+  <span class="mode-stats-rank" aria-hidden="true">{{ offset+loop.index }}</span>
+  <span class="mode-stats-art">{{ art(row.cover_url) }}</span>
+  <div class="mode-stats-copy"><a class="song mode-stats-name" title="{{ row.title }}" href="{{ url_for('song_page',song_id=row.id) }}">{{ row.title }}</a>{{ metadata(row) }}</div>
+  <div class="mode-stats-result"><strong>{{ rate(row.accuracy) }}</strong><span>{{ row.correct }} / {{ row.available }} fields</span><span>{{ row.attempts }} {{ 'round' if row.attempts==1 else 'rounds' }}</span></div>
+</li>
 {% endfor %}
-</section>
-<div class="stats-columns trivia-ranking-columns">
-{% for heading, rows in [('Most Recognised',top_stats),('Least Recognised',bottom_stats)] %}
-  <section class="panel recognition-panel stats-glow glow-recognition"><div class="section-head"><h2 class="recognition">{{ heading }}</h2><small>{{ rows|length }} tracks</small></div>
-  {% for row in rows %}{{ song(row,(row.rec_score|int|string)+'%',(row.trivia_correct|string)+' / '+(row.available_points|string)+' fields · '+(row.trivia_attempts|string)+' rounds',loop.index) }}{% else %}<div class="empty">No attempts yet</div>{% endfor %}
-  </section>
-{% endfor %}
-</div>
-<section class="panel recognition-panel stats-glow glow-recognition spaced-panel trivia-recent">
-  <div class="section-head"><h2 class="recognition">Recent Trivia</h2><small>{{ recent|length }} {{ 'round' if recent|length==1 else 'rounds' }}</small></div>
-  <div class="trivia-history-list" tabindex="0" aria-label="Recent trivia rounds">
-  {% for row in recent %}
-    <article class="trivia-history-row" data-trivia-round="{{ row.id }}">
-      <div class="trivia-history-track">
-        {% if row.song %}<a class="trivia-history-art" href="/song/{{ row.song_id }}" aria-label="{{ row.song.title }}">{{ art(row.song.cover_url) }}</a>{% endif %}
-        <div class="compact-copy">
-          {% if row.song %}
-          <a class="song trivia-history-title" title="{{ row.song.title }}" href="/song/{{ row.song_id }}">{{ row.song.title }}</a>
-          <div class="metadata trivia-history-meta">{% for aid in row.song.artist_ids %}{% set artist=artist_map.get(aid) %}{% if artist %}<a class="artist" href="{{ url_for('artist_page',artist_name=artist.name) }}">{{ artist.name }}</a>{% endif %}{% endfor %}{% if row.song.album and not row.song.album_is_single %}<a class="album" href="{{ url_for('album_page',album_title=row.song.album) }}">{{ row.song.album }}</a>{% endif %}</div>
-          {% else %}<span class="muted">Deleted track</span>{% endif %}
-          <div class="field-history">
-          {% for field,label in [('title','Song'),('artist','Artist'),('album','Album')] %}{% set result=row[field+'_correct'] %}
-            <span class="{{ 'yes' if result else 'no' if result is not none else 'not-played' }}" aria-label="{{ label }}: {{ 'correct' if result else 'missed' if result is not none else 'not applicable' }}">{{ '✓' if result else '×' if result is not none else '—' }} {{ label }}</span>
-          {% endfor %}
-          </div>
-        </div>
-      </div>
-      <div class="trivia-history-result"><strong class="recognition">+{{ row.points|round(2) }}</strong><small>{{ (row.user_score_after or 0)|round(2) }} score · {{ row.streak_after or 0 }} 🔥</small><time data-timestamp="{{ row.completed_at or '' }}">Round #{{ row.id }}</time></div>
-    </article>
-  {% else %}<div class="empty">No rounds yet</div>{% endfor %}
+</ol>
+{%- endmacro %}
+{% macro category_list(rows, kind, misses=false) -%}
+<ol class="mode-stats-list mode-stats-dense">
+{% for row in rows %}
+<li class="mode-stats-row">
+  <span class="mode-stats-art">{{ art(row.cover_url|default(''),kind=='artist') }}</span>
+  <div class="mode-stats-copy">
+    {% if kind=='artist' %}{% set href=url_for('artist_page',artist_name=row.name) %}{% elif kind=='album' %}{% set href=url_for('album_page',album_title=row.name) %}{% else %}{% set href=url_for('tag_page',tag_name=row.name) %}{% endif %}
+    <a class="{{ kind }} mode-stats-name" title="{{ row.name }}" href="{{ href }}">{{ row.name }}</a>
+    <span>{{ row.tested }} tested {{ 'track' if row.tested==1 else 'tracks' }}</span>
   </div>
-</section>
+  <div class="mode-stats-result"><strong>{{ row.missed if misses else rate(row.accuracy) }}</strong><span>{{ 'missed fields' if misses else (row.correct|string)+' / '+(row.attempts|string)+' correct' }}</span><span>{{ rate(row.accuracy) if misses else (row.attempts|string)+' fields' }}</span></div>
+</li>
+{% else %}<li class="empty">{{ 'No missed answers' if misses else 'No attempts yet' }}</li>{% endfor %}
+</ol>
+{%- endmacro %}
+{% macro recent_list(rows) -%}
+<ol class="mode-stats-list rec-recent-list">
+{% for row in rows %}
+<li class="mode-stats-row mode-stats-dense-row" data-trivia-round="{{ row.id }}">
+  <span class="mode-stats-art">{{ art(row.song.cover_url if row.song else '') }}</span>
+  <div class="mode-stats-copy">
+    {% if row.song %}<a class="song mode-stats-name" title="{{ row.song.title }}" href="{{ url_for('song_page',song_id=row.song_id) }}">{{ row.song.title }}</a>{{ metadata(row.song) }}{% else %}<strong class="mode-stats-name muted">Removed track</strong>{% endif %}
+    <ul class="rec-field-results" aria-label="Field results">
+    {% for key,label in [('title','Song'),('artist','Artist'),('album','Album')] %}
+      {% set answer=row[key+'_correct'] %}{% set eligible=key!='album' or row.album_available %}
+      {% set status='yes' if eligible and answer==1 else 'no' if eligible and answer==0 else 'unknown' %}
+      <li class="{{ status }}" aria-label="{{ label }}: {{ 'not applicable' if not eligible else 'correct' if answer==1 else 'missed' if answer==0 else 'result unavailable' }}">{{ '—' if not eligible else '✓' if answer==1 else '×' if answer==0 else '?' }} {{ label }}</li>
+    {% endfor %}
+    </ul>
+  </div>
+  <div class="mode-stats-result">
+    <strong>{{ '+'+('%g'|format(row.points)) if row.points is not none else '—' }}<small> points</small></strong>
+    <span>{{ ('%g'|format(row.user_score_after)) if row.user_score_after is not none else '—' }} score · {{ row.streak_after if row.streak_after is not none else '—' }} streak</span>
+    {% if row.date %}<time datetime="{{ row.date }}" data-timestamp="{{ row.completed_at }}">{{ row.date[:10] }} · {{ row.date[11:16] }} UTC</time>{% else %}<span>Date unavailable</span>{% endif %}
+  </div>
+</li>
+{% endfor %}
+</ol>
+{%- endmacro %}
+
+{% block content %}
+<div class="recognition-stats-page mode-stats-page">
+  <div class="page-head"><h1 class="recognition">Recognisability</h1><a class="btn recognition" href="{{ url_for('trivia_mode') }}">Play Trivia →</a></div>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-overview">
+    <div class="section-head"><h2 id="recognition-overview" class="recognition">Trivia overview</h2></div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">
+      {{ figure('Best player score','%g'|format(summary.best_score)) }}
+      {{ figure('Best streak',summary.best_streak) }}
+      {{ figure('Completed rounds',summary.rounds) }}
+      {{ figure('Tested tracks',summary.tested) }}
+    </dl>
+    <div class="mode-stats-inset mode-stats-rate">
+      <h3>Overall field accuracy</h3><strong class="mode-stats-primary">{{ rate(summary.accuracy) }}</strong>
+      {{ progress('Overall field accuracy',summary.accuracy) }}
+      <p>{{ summary.correct }} correct / {{ summary.available }} available fields</p>
+    </div>
+    <div class="rec-fields">
+    {% for field in fields %}
+      <div class="mode-stats-inset rec-field" data-trivia-field="{{ field.key }}">
+        <h3 class="{{ field.kind }}">{{ field.name }} answers</h3><strong class="mode-stats-primary">{{ rate(field.accuracy) }}</strong>
+        {{ progress(field.name+' accuracy',field.accuracy) }}
+        <dl class="joined-metrics mode-stats-small-metrics" data-columns="2">{{ figure('Correct',field.correct) }}{{ figure('Missed',field.missed) }}</dl>
+        <p>{{ field.attempts }} available fields</p>
+        <div class="rec-timing"><strong>{{ ('%g'|format(field.seconds))+' s' if field.seconds is not none else '—' }}</strong><span>Average correct-answer time</span><small>{{ field.timed_answers }} timed {{ 'answer' if field.timed_answers==1 else 'answers' }}</small></div>
+      </div>
+    {% endfor %}
+    </div>
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-rounds">
+    <div class="section-head"><h2 id="recognition-rounds" class="recognition">Round results</h2></div>
+    <dl class="joined-metrics mode-stats-metrics"{% if outcomes|length==4 %} data-columns="4"{% endif %}>
+      {% for outcome in outcomes %}<div class="rec-outcome-{{ outcome.key }}"><dt>{{ outcome.label }}</dt><dd>{{ outcome.count }}</dd></div>{% endfor %}
+    </dl>
+    <div class="mode-stats-inset">
+      <h3>Round outcome split</h3>
+      <div class="mode-stats-stacked" role="img" aria-label="Round outcomes{% for outcome in outcomes %}; {{ outcome.label }}: {{ outcome.count }}{% endfor %}">{% for outcome in outcomes %}<span class="rec-outcome-{{ outcome.key }}" style="width:{{ outcome.share or 0 }}%"></span>{% endfor %}</div>
+      <ul class="mode-stats-legend">{% for outcome in outcomes %}<li class="rec-outcome-{{ outcome.key }}"><i aria-hidden="true"></i>{{ outcome.label }} <b>{{ rate(outcome.share) }}</b></li>{% endfor %}</ul>
+    </div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">
+      {{ figure('Points earned',('%g'|format(summary.points)) if summary.points is not none else '—') }}{{ figure('Points per round',('%g'|format(summary.average_points)) if summary.average_points is not none else '—') }}
+      {{ figure('Rounds · last 7 days',summary.week) }}{{ figure('Rounds · last 30 days',summary.month) }}
+    </dl>
+    {% if summary.scored_rounds!=summary.rounds %}<p class="mode-stats-caption">Points cover {{ summary.scored_rounds }} rounds with complete results and timings.</p>{% endif %}
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-coverage">
+    <div class="section-head"><h2 id="recognition-coverage" class="recognition">Collection coverage</h2></div>
+    <dl class="joined-metrics mode-stats-metrics">{{ figure('Tracks with previews',coverage.playable) }}{{ figure('Already tested',coverage.tested) }}{{ figure('Still to try',coverage.untested) }}</dl>
+    <div class="mode-stats-inset mode-stats-rate"><h3>Preview-ready tracks tested</h3><strong class="mode-stats-primary">{{ rate(coverage.accuracy) }}</strong>{{ progress('Preview-ready tracks tested',coverage.accuracy) }}<p>{{ coverage.tested }} / {{ coverage.playable }} tracks</p></div>
+    {% if coverage.without_preview %}<p class="mode-stats-caption">{{ coverage.without_preview }} other tested {{ 'track has' if coverage.without_preview==1 else 'tracks have' }} no current preview.</p>{% endif %}
+  </section>
+
+  {% for heading,rows in [('Most recognised tracks',top_stats),('Least recognised tracks',bottom_stats)] %}
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-ranking-{{ loop.index }}">
+    <div class="section-head"><h2 class="recognition" id="recognition-ranking-{{ loop.index }}">{{ heading }}</h2><a class="recognition" href="/mode_rankings/trivia">Rankings ↗</a></div>
+    {{ track_list(rows[:5]) }}
+    {% if rows|length>5 %}<details class="mode-stats-more"><summary>Show {{ rows|length-5 }} more tracks</summary>{{ track_list(rows[5:],5) }}</details>{% endif %}
+    {% if not rows %}<div class="empty">Complete a Trivia round to start these rankings.</div>{% endif %}
+  </section>
+  {% endfor %}
+
+  {% for group in categories %}
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-category-{{ group.kind }}">
+    <div class="section-head"><h2 class="recognition" id="recognition-category-{{ group.kind }}">{{ group.title }}</h2></div>
+    <p class="mode-stats-caption">{{ group.note }}</p>
+    <div class="mode-stats-comparisons">
+      <div class="mode-stats-inset"><h3>Highest accuracy</h3>{{ category_list(group.best,group.kind) }}</div>
+      <div class="mode-stats-inset"><h3>Most missed</h3>{{ category_list(group.missed,group.kind,true) }}</div>
+    </div>
+  </section>
+  {% endfor %}
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-recent">
+    <div class="section-head"><h2 id="recognition-recent" class="recognition">Recent Trivia</h2><span class="mode-stats-caption">Latest {{ recent|length }} {{ 'round' if recent|length==1 else 'rounds' }}</span></div>
+    {{ recent_list(recent[:10]) }}
+    {% if recent|length>10 %}<details class="mode-stats-more"><summary>Show {{ recent|length-10 }} earlier rounds</summary>{{ recent_list(recent[10:]) }}</details>{% endif %}
+    {% if not recent %}<div class="empty">No completed rounds yet.</div>{% endif %}
+  </section>
+</div>
 {% endblock %}

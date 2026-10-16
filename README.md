@@ -1,8 +1,11 @@
 # Song Ranker
 
-A local, single-user music library with voting, trivia, tournaments and knowledge games. Current release: **V3.3.5.1**, database schema **8**. Release-specific changes live in [update_logs](update_logs/README.md).
+A personal music library with voting, trivia, tournaments and knowledge games,
+hosted on your computer and usable from an allowed phone on trusted private
+Wi-Fi. Current release: **V3.4.8**, database schema **8**. Release-specific
+changes live in [update_logs](update_logs/README.md).
 
-## Run locally
+## Run on your computer and phone
 
 From the project folder:
 
@@ -11,9 +14,96 @@ python -m pip install -r requirements.txt
 python main.py
 ```
 
-Open **http://127.0.0.1:5000**. Keep the app bound to localhost. Your existing System Access PIN is unchanged. Python 3.10 or newer is recommended.
+Python 3.10 or newer is recommended. The launcher uses **Waitress** with
+debugging and traceback exposure disabled. Run the dependency-install command
+on a fresh install or when requirements change; it was required for V3.4.6.1.
 
-When installing an update, stop the app, copy the supplied `Song_ranker` files over your existing project, restart, and hard-refresh the browser. Keep your own `song_ranker_v2.db` and `database_backups` folder. Updates do not include a replacement music database. V3.3 upgrades existing databases to schema 8 automatically, with a consistent pre-upgrade backup. V3.3.5.1 adds no migration. This update supplies edited files only. Detailed instructions: [V3.3.5 update](update_logs/V3_3_5_UPDATE.md).
+| Device | Address to open |
+| --- | --- |
+| Hosting computer | **http://127.0.0.1:5000** |
+| Allowed phone, on the same trusted Wi-Fi | **http://COMPUTER-LAN-IP:5000**, replacing `COMPUTER-LAN-IP` with the computer's private IPv4 address, for example `192.168.1.20` |
+
+Find the computer's Wi-Fi/Ethernet IPv4 address in its network settings, or with
+`ipconfig` on Windows. The phone URL uses the **computer's** address; the
+allow-list uses the **phone's** address. `0.0.0.0` is the server's listen setting,
+not an address to enter in the browser. Keep the computer awake and the app
+running. A guest network, Wi-Fi client isolation or a VPN can prevent devices
+from reaching one another. If a firewall prompt appears, allow this application
+only on your trusted private network.
+
+The phone address from the supplied launcher, **`10.103.199.228`**, remains the
+default allowed device. Loopback access on the computer is always allowed,
+including IPv6. If the phone's address changes, set `SONG_RANKER_ALLOWED_IPS`
+before starting the app. Use exact comma-separated device addresses, without
+wildcards or network ranges. A router DHCP reservation can keep the phone and
+computer addresses stable.
+
+For example, in **PowerShell**, substitute the phone's actual address:
+
+```powershell
+$env:SONG_RANKER_ALLOWED_IPS = "192.168.1.42"
+python main.py
+```
+
+On **macOS/Linux**:
+
+```sh
+SONG_RANKER_ALLOWED_IPS="192.168.1.42" python main.py
+```
+
+Restart after changing settings. Environment settings apply to the terminal
+where they are set; put them in your own startup script if you want them to
+persist. The app does not load a `.env` file automatically.
+
+### Hosting settings and security
+
+| Setting | Default / purpose |
+| --- | --- |
+| `SONG_RANKER_HOST` | `0.0.0.0`: listen on the computer's IPv4 interfaces. Set `127.0.0.1` for computer-only use. |
+| `SONG_RANKER_PORT` | `5000`; valid ports are 1–65535. Include the chosen port in both browser URLs. |
+| `SONG_RANKER_ALLOWED_IPS` | The supplied phone address above, plus loopback implicitly. An empty value allows loopback only. |
+| `SONG_RANKER_HOSTNAMES` | Empty. Private numeric IPs and `localhost` work without configuration. For a local DNS name, list exact names separated by commas, without schemes, ports or wildcards. |
+| `SONG_RANKER_SECRET` | Optional stable random signing key of at least 32 characters. Otherwise a private key is generated once in `instance/session_secret`. |
+| `SONG_RANKER_PIN` | Optional replacement for the existing System Access PIN, whose value is unchanged by this update. |
+
+The allow-list checks the direct connection address. Forwarded headers cannot
+grant access. It filters devices, not people: anyone using an allowed device
+can browse and play modes, changing this shared library's game history. An IP
+address can be reassigned to another device. **System Access and all developer
+APIs are restricted to the hosting computer's loopback address**, even when the
+phone has a signed-in session. Open System Access using the computer URL above.
+Set your own Dev PIN before sharing access to the computer.
+
+The app rejects unexpected Host names, cross-origin API requests and ordinary
+form submissions to JSON mutation APIs. The two legacy round/bracket-creation
+GETs also require the app's JSON header; HEAD cannot create rounds. Dev login
+has a session-bound form token. Session cookies use HttpOnly and SameSite=Lax;
+requests are capped at 4 MiB. Native preview and byte-range requests still work.
+
+Keep `instance/session_secret` private and out of source control, shared ZIPs
+and public folders. The supplied `instance/.gitignore` excludes it from Git.
+The first start with the new key invalidates older browser sessions: sign in
+again if needed; old browser-bound unfinished-round tokens may also need a new
+round. Saved database history is retained. Keep the same key on subsequent
+restarts; deleting or replacing it signs browsers out again. If you already set
+`SONG_RANKER_SECRET`, retain a strong existing value or replace a short/shared one.
+
+This setup uses **unencrypted HTTP on trusted private Wi-Fi**. Do not expose it
+with router port forwarding, public tunnels or a reverse proxy. Internet access
+would need a separate authentication, HTTPS and proxy configuration review.
+The current checks are for direct personal LAN use.
+
+### Applying updates
+
+Stop the app, copy the supplied `Song_ranker` files over the existing project,
+install requirements, restart, and hard-refresh each browser. Keep your own
+`song_ranker_v2.db`, `database_backups` and private instance key. Updates contain
+edited/new files only, with no replacement database. V3.3 upgrades older
+databases to schema 8 with a consistent pre-upgrade backup; **V3.4.6.1 adds no
+migration**, and V3.4.8 keeps the same schema. Detailed notes:
+[V3.4 updates](update_logs/V3_4_UPDATE.md).
+
+Tournament Stats is now a dashboard with overview, podium, bracket/match breakdowns, collection coverage, records, seed patterns and expandable bracket history. The full tournament rankings remain available from its Rankings link. See the grouped V3.4.6 notes for data definitions.
 
 ## Modes
 
@@ -36,11 +126,20 @@ Open **Elo Guesser** at `/elo_guesser`, or use its home/nav link. Covers, song n
 
 Both cover previews preload quietly before selection. Their cache is released when advancing to the next pair, after the answer sample. A correct answer earns 1 point and adds to the current streak. A wrong answer earns 0 and resets the current streak. Best streak is derived from saved answers and appears in global stats. Ratings appear at the bottom of each cover after answering, with a clear red loss message for a wrong pick. The higher-rated song plays a short answer snippet in either case. After about 4.5 seconds the next pair loads automatically and starts silently. Reopening the mode resumes an unanswered question. Both songs in a pair receive one tested appearance with that comparison’s correctness, allowing song, album and artist accuracy summaries. An artist/album’s counts are pooled song appearances, not extra user points.
 
+**Elo Guesser Stats** at `/elo_guesser_stats` now follows the shared detailed
+mode dashboard: overall accuracy, recent form/streaks, collection coverage,
+accuracy by saved Elo gap, card choices, top/practice tracks, artist/album/tag
+records, repeated comparisons and paginated guess history. History identifies
+your pick and the higher-rated track, with frozen ratings, outcome and streak.
+It shows ten expandable results per page; phone comparisons stack vertically.
+All saved completed guesses feed the totals, not only the visible history.
+See the V3.4.7 notes for appearance pooling, gap bands and saved-data limits.
+
 ### Trivia
 
 Song, artist and album inputs mark on blur or Enter, correct minor spelling mistakes, and flip to linked canonical answers. Song is worth more than album, and album more than artist. Single releases have no album guess and save that field as null. Bracketed extras such as featured artists or deluxe labels are not required to identify the main title.
 
-The ending sample waits until the main preview ends or all available fields are marked. Highest score and best streak are recorded. Recognisability divides correct fields by fields actually available; unavailable albums are not misses. Recognised badges and the home recognition banner require more than 90%.
+The ending sample waits until the main preview ends or all available fields are marked. Highest score and best streak are recorded. Recognisability divides correct fields by fields actually available; unavailable albums are not misses. Recognised badges and the home recognition banner require more than 90%. The Recognisability Stats page now shows pooled field accuracy, correct-answer timing, complete/partial/missed rounds, lifetime points, recent activity, preview coverage and song/artist/album/tag records. Calculation details and saved-data limits are in the V3.4.5 update notes.
 
 ### Tournaments
 
@@ -58,6 +157,16 @@ Checking requires all ten tracks to be placed once. Correct album membership ear
 
 Real track numbers are preserved: 1, 4 and 8 is a valid sequence. The game checks the relative order of the selected tracks, not whether your collected album is complete. Older saved rounds may have singleton shelves: those tracks have a 0.5-point membership denominator without free order points. New rounds always have at least two tracks per album. A round is usually out of 30; its actual denominator is shown. Percentages use earned points divided by available points.
 
+**Album Shelves Stats** at `/album_shelves_stats` uses the shared detailed mode
+dashboard. Relative track order is the main rate, followed by round outcomes,
+points, recent form, perfect streaks, two-/three-album performance, playable
+collection coverage, track/album/artist/tag records and optional album placement.
+Every played album remains accessible through a paginated expandable list.
+History shows ten rounds per page, with each saved shelf, original track number,
+submitted shelf/position and earned points. It uses saved facts even if a track
+later moves album. Phone layouts stack the comparisons and saved shelves.
+The V3.4.8 notes explain pooling, historical availability and eligibility.
+
 The Shelves play page has a wider desktop layout. Submit above the compact preview player. Each song flips in turn and moves into its actual album and original track order, playing a short snippet when available. Wrong cards also show the submitted shelf position in small red text beside the actual album track number. Green means the submitted answer was fully correct; wrong album or any ordering error stays red even after the card moves to the correct position. Partial-credit points still count. Each album cover counts its own points while the submit button counts the total. Reveals do not scroll your screen or display a sticky banner. Once all ten tracks are revealed, the result remains until you press **Next round**, between the total score and the track-order percentage box above the preview player. All three boxes share the same border, background and height. The new round starts silently. Unanswered rounds resume when reopened. Each reveal holds for a second longer than V3.3.3. One preview is buffered ahead. The outgoing snippet continues while the incoming one buffers, then the shared player overlaps them for 1.5 seconds; missing or stalled audio does not stop the flips. The album menus show artwork and full titles, mark the current selection, and support arrow keys, Home/End and Escape. No Apple metadata lookup is performed while generating either new mode.
 
 ## Pages and navigation
@@ -72,7 +181,7 @@ The Shelves play page has a wider desktop layout. Submit above the compact previ
 | Song | Cover playback, Elo, votes/win rates, new knowledge records, trivia, tournaments and recent matches. |
 | Artist / Album | Shared profile layout, pooled track records, highlights, linked tracks and new mode summaries. Artist artwork stays circular. Artist and tag covers cycle ranked tracks for ten seconds each; album covers cycle in track-number order. |
 | Tag | Description, linked tracks and an Elo-ordered looping preview queue. |
-| Global Stats | Library, Overall summary/leaders, Elo distribution, voting, recognisability, podiums, knowledge modes and recent activity. |
+| Global Stats | Full-width collection/mode totals, collection records, Overall leaders, voting/frequent pairs, 50-point Elo bands, recognition misses, tournament sizes/podium/champions, knowledge records, top-five artist/album average Elo, ten tags and recent results across all modes. Recent colours follow the displayed mix; round entries keep their key results and full names behind ellipses. |
 | Match History | Standard/blind voting records and filters; loser names are red. |
 | Mode Stats | Detailed trivia, tournament, Elo Guesser and Album Shelves records. New modes include percentage bars, top/practice lists and recent rounds. Shelves emphasises track ordering and lists albums actually played; album placement is available as an optional breakdown. |
 | Dev Dashboard | Catalogue search/editing, imports, bulk changes, metadata maintenance, records, backups and separate mode resets. |
@@ -141,7 +250,12 @@ The complete calculation is documented in
 
 ## Developer tools
 
-Open **System Access** in the footer and unlock the dashboard. The music library explorer searches songs, artists, albums and tags together. Entity tables have field filters, sort controls and a column picker. Bulk edits support moving songs into albums and adding/removing tags. Existing tag suggestions and descriptions reduce spelling mistakes and tab switching.
+On the hosting computer at **http://127.0.0.1:5000**, open **System Access** in
+the footer and unlock the dashboard. Phone access to developer pages/APIs is
+blocked. The music library explorer searches songs, artists, albums and tags
+together. Entity tables have field filters, sort controls and a column picker.
+Bulk edits support moving songs into albums and adding/removing tags. Existing
+tag suggestions and descriptions reduce spelling mistakes and tab switching.
 
 Apple search supports Enter, keeps suggestions after adding when selected, and uses shared request throttling. Importing music does not manufacture missing facts. The optional metadata program fills only blank **track numbers** and **album release dates** after conservative identity checks; it never renames songs/albums or changes artwork/preview URLs. It uses a review/backup step and produces a text report. Instructions remain in [V3.2.6 notes](update_logs/README_V3_2_6.md).
 
@@ -159,13 +273,47 @@ Apple search supports Enter, keeps suggestions after adding when selected, and u
 - The local app keeps up to ten complete Apple previews in RAM for ten minutes, up to 4 MiB each; it writes no audio files. Cache entries belong to the page that loaded them. Standard/Blind Vote and Elo Guesser release each completed pair after its result sample, while tournaments retain recent previews across rounds. Leaving a page clears its cache and native buffers; another open tab is unaffected. Back navigation uses a fresh cache scope. Edited preview URLs bypass old entries. Replays and byte ranges use cached audio when available; custom hosts retain native buffering.
 - Voting pairs warm both previews without autoplay and without retaining a second JavaScript copy. Downloads are spaced to respect the existing local preview request gate. An immediate click or a failed preload can still show the buffering notice.
 - A shared player keeps the outgoing preview audible until the next preview starts and can play its buffer, then overlaps them for 1.5 seconds. Album/tag queues, Shelves, podiums, cover switching, trivia handoffs and full-preview loops use this behavior. Loading/buffering notices remain visible. Volume changes preserve the fade mix; pause, navigation and cancelled requests stop pending/retired audio. Fresh Standard/Tournament/Guesser rounds still begin silently.
-- `SONG_RANKER_DB`, `SONG_RANKER_PIN` and `SONG_RANKER_SECRET` can override the database path, Dev PIN and session secret. Keeping a stable secret preserves existing sessions.
+- `SONG_RANKER_DB` can override the database path. Dev PIN, stable session key
+  and LAN settings are described under Hosting settings and security above.
 - If the project has Git configured, its existing startup pull/manual database sync remains available. The live database is kept on a pull; a remote SQL dump does not overwrite it.
 
 ## Project structure and future updates
 
-`main.py` starts the app and registers modules. `services.py` handles common app/database helpers, `catalog.py` shared catalogue projections, `pages.py` page routes, `games.py` voting/tournaments, `trivia.py` trivia and `special_modes.py` both knowledge games and `overall.py` the read-only composite calculator. `database.py`, `mode_schema.py` and `special_schema.py` own versioned schema setup. Templates and shared scripts/styles live under `templates` and `static`.
+`main.py` starts Waitress and registers modules. `lan_security.py` owns direct
+device/Host/origin checks, session-key creation, login CSRF and response headers;
+`services.py` applies this policy when constructing the shared Flask app, so it
+also applies when imported by a WSGI server. `services.py` handles common
+app/database helpers, `catalog.py` shared catalogue projections, `pages.py` page
+routes, `games.py` voting/tournaments, `trivia.py` trivia and `special_modes.py`
+both knowledge games and `overall.py` the read-only composite calculator.
+`database.py`, `mode_schema.py` and `special_schema.py` own versioned schema setup.
+Templates and shared scripts/styles live under `templates` and `static`.
+`recognition_stats_data.py`, `tournament_stats_data.py`, `guesser_stats_data.py`
+and `shelves_stats_data.py` build their read-only detailed dashboards from one
+caller-owned database snapshot, using shared mode styles and formatting macros.
+The shared palette is in `static/css/style.css`, approved geometry/type in
+`static/css/site_baseline.css`, and joined data rows/dashboard glows in
+`static/css/components.css`. `static/js/ui.js` provides presentation helpers
+and loads before the feature scripts. See the page guide for their ownership
+and load order.
 
-The current version is defined once in **`version.py`**. The footer and shared CSS/JS cache keys read it. For every update, change that constant. Keep one Markdown changelog per **three-part release** in **`update_logs/`** and append fourth/fifth-part hotfixes inside that release file; update the index rather than creating standalone hotfix documents. Keep this README as the current project guide rather than a growing stack of patch notes. Older ideas remain in `V3_3_MODE_IDEAS.md`; they are not enabled simply because their concepts are documented.
+For page/layout changes, read [README_PAGE_STYLE.md](README_PAGE_STYLE.md) first and follow later user corrections. It records the accepted components, colours, type, artwork, spacing, responsive behavior, Global Stats order and the accepted standard ranking boards. V3.4 is being applied page by page, with all V3.4.x notes grouped in [V3_4_UPDATE.md](update_logs/V3_4_UPDATE.md). The approved custom style baseline now applies across shared public/developer
+components; individual page compositions can be updated later.
+Every future page patch must also check phone sizing, touch controls and long
+names, following the phone checklist in the styling guide. The existing modes
+and rankings remain the working baseline. Detailed mode dashboards use shared
+components with their own phone and desktop compositions.
+Home mode summaries now use one full-width panel per mode, and all home banners
+show up to ten entries. The three collection totals below Ways to Play are
+Songs, Artists and Albums, kept in one centred row. Each mode summary has three
+figures in a joined row with a full-width accuracy or bracket-distribution bar
+below. Recognition pools all eligible fields, Elo Guesser counts completed
+questions, and Shelves uses relative ordering comparisons rather than weighted
+points. Tournament track entries count completed bracket slots, while Shelves
+Albums played counts distinct saved albums from completed rounds. Home and
+Global Stats main boxes share a soft accent glow, and all Global Stats joined
+metric rows use the same quiet dividers as Home.
+
+The current version is defined once in **`version.py`**. The footer and shared CSS/JS cache keys read it. For every update, change that constant. Normally keep one Markdown changelog per **three-part release** in **`update_logs/`** and append fourth/fifth-part hotfixes inside that release file; the V3.4 styling rollout instead groups its page patches under V3.4; update the index rather than creating standalone hotfix documents. Keep this README as the current project guide rather than a growing stack of patch notes. Older ideas remain in `V3_3_MODE_IDEAS.md`; they are not enabled simply because their concepts are documented.
 
 Run backend checks with `python -m unittest discover -s tests -v`. Tests use copied/temporary databases, not the live one. See [VALIDATION.md](VALIDATION.md) for the current release’s checks and verification limits.

@@ -1,0 +1,23 @@
+{% macro figure(label, value) -%}
+<div><dt>{{ label }}</dt><dd>{{ value }}</dd></div>
+{%- endmacro %}
+{% macro rate(value) -%}{{ ('%g'|format(value))+'%' if value is not none else '—' }}{%- endmacro %}
+{% macro number(value) -%}{{ '%g'|format(value) if value is not none else '—' }}{%- endmacro %}
+{% macro progress(label, value) -%}
+<div class="mode-stats-progress" role="progressbar" aria-label="{{ label }}" aria-valuemin="0" aria-valuemax="100" {% if value is not none %}aria-valuenow="{{ value }}"{% else %}aria-valuetext="No attempts yet"{% endif %}><span style="width:{{ value if value is not none else 0 }}%"></span></div>
+{%- endmacro %}
+{% macro metadata(song) -%}
+<div class="mode-stats-meta">
+{% for artist in song.artist_links %}<a class="artist" title="{{ artist.name }}" href="{{ url_for('artist_page',artist_name=artist.name) }}">{{ artist.name }}</a>{% endfor %}
+{% if song.album_link %}<a class="album" title="{{ song.album_link.title }}" href="{{ url_for('album_page',album_title=song.album_link.title) }}">{{ song.album_link.title }}</a>{% endif %}
+</div>
+{%- endmacro %}
+{% macro saved_date(date) -%}
+{% if date %}<time datetime="{{ date.iso }}" data-timestamp="{{ date.seconds }}">{{ date.iso[:10] }} · {{ date.iso[11:16] }} UTC</time>{% else %}<span>Date unavailable</span>{% endif %}
+{%- endmacro %}
+{% macro scope_link(scope) -%}
+{% if scope.row %}
+{% if scope.kind=='artist' %}{% set href=url_for('artist_page',artist_name=scope.name) %}{% elif scope.kind=='album' %}{% set href=url_for('album_page',album_title=scope.name) %}{% else %}{% set href=url_for('tag_page',tag_name=scope.name) %}{% endif %}
+<a class="{{ scope.kind }} mode-stats-name" title="{{ scope.name }}" href="{{ href }}">{{ scope.name }}</a>
+{% else %}<span class="mode-stats-name tournament" title="{{ scope.name }}">{{ scope.name }}</span>{% endif %}
+{%- endmacro %}

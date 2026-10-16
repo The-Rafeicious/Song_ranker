@@ -1,7 +1,6 @@
 window.songRankerTriviaLoaded=true;
 (async()=>{
-const $=s=>document.querySelector(s),root=$('#trivia-root');
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const {$,esc}=window.SongRankerUI,root=$('#trivia-root');
 const order=['title','artist','album'],names={title:'Song',artist:'Artist',album:'Album'},colours={title:'song',artist:'artist',album:'album'},weights={title:50,artist:20,album:30};
 let state,active=false,busy=false,paused=false,tick,nextTimer,anchor=0,baseElapsed=0,generation=0;
 const pending=new Map(),animations=new Set();

@@ -1,63 +1,101 @@
 {% extends 'base.html' %}
-{% from 'components.html' import stat, art %}
+{% from 'components.html' import stat, art, versus_row %}
 {% block title %}Global Stats · Song Ranker{% endblock %}
 {% block page_kind %}global_stats{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/global_stats.css',v=app_version) }}">{% endblock %}
+{% block extra_js %}<script src="{{ url_for('static',filename='js/global_stats.js',v=app_version) }}" defer></script>{% endblock %}
+{% macro entity_link(row,kind='song',name='') -%}
+  {% set title = name or row.title|default(row.name|default('')) %}
+  {% if kind=='song' and row.id %}<a class="song stats-name{{ ' match-loser' if row.outcome|default('')=='loser' else '' }}" href="{{ url_for('song_page',song_id=row.id) }}" title="{{ title }}">{{ title }}</a>
+  {% elif kind=='artist' and row.id %}<a class="artist stats-name" href="{{ url_for('artist_page',artist_name=title) }}" title="{{ title }}">{{ title }}</a>
+  {% elif kind=='album' and row.id %}<a class="album stats-name" href="{{ url_for('album_page',album_title=title) }}" title="{{ title }}">{{ title }}</a>
+  {% elif kind=='tag' and row.id %}<a class="tag stats-name" href="{{ url_for('tag_page',tag_name=title) }}" title="{{ title }}"># {{ title }}</a>
+  {% else %}<span class="muted">{{ title }}</span>{% endif %}
+{%- endmacro %}
+{% macro metric(label,value,kind,detail='') -%}
+  <div class="global-metric"><strong class="{{ kind }}">{{ value }}</strong><span>{{ label }}</span>{% if detail %}<small>{{ detail }}</small>{% endif %}</div>
+{%- endmacro %}
+{% macro pct(value) -%}{{ (value|round(1)|string)+'%' if value is not none else '—' }}{%- endmacro %}
+{% macro feature(row,label,value,kind='song',unit='') -%}
+  {% if row %}<div class="stats-feature">{{ art(row.artwork|default(row.cover_url|default('')),kind=='artist') }}<div><small>{{ label }}</small>{{ entity_link(row,kind) }}</div><strong class="feature-value">{{ value }}{% if unit %}<small>{{ unit }}</small>{% endif %}</strong></div>{% endif %}
+{%- endmacro %}
 {% block content %}
-<div class="page-head"><h1 class="standard">Global Stats</h1></div>
-<div class="stats">{{ stat('Songs',total_songs) }}{{ stat('Artists',total_artists,'artist') }}{{ stat('Albums',total_albums,'album') }}{{ stat('Votes',total_matches,'standard') }}</div>
-<section id="overall-global" class="panel overall-panel"><h2 class="overall">Overall Stats</h2><div class="empty" role="status">Calculating…</div></section>
-<section class="panel stats-glow glow-voting win-record-panel spaced-panel">
-  <div class="section-head"><h2 class="standard">Voting Results</h2><a class="standard" href="/history">Match history ↗</a></div>
-  <div class="win-rate-grid">
-    {% for key,prefix,label,kind in [('overall','','Overall','standard'),('standard','standard_','Non-blind','standard'),('blind','blind_','Blind','blind')] %}
-    <div class="win-rate {{ kind }}"><h3>{{ label }}</h3><strong>{{ voting[prefix+'wins'] }}<small> votes</small></strong><small>Highest track win rates</small>
-      {% for row in voting_leaders[key] %}<a class="win-leader" href="/song/{{ row.id }}"><span class="song" title="{{ row.title }}">{{ row.title }}</span><b class="{{ kind }}">{{ row.win_rate }}%</b><small>{{ row.wins }}W · {{ row.losses }}L</small></a>{% else %}<div class="empty">No votes yet</div>{% endfor %}
-    </div>{% endfor %}
+<div class="global-stats-page">
+  <div class="page-head"><h1 class="standard">Global Stats</h1></div>
+  <div class="global-top" data-global-section="totals">
+    <div class="stats global-stat-grid">{{ stat('Songs',total_songs) }}{{ stat('Artists',total_artists,'artist') }}{{ stat('Albums',total_albums,'album') }}{{ stat('Votes',total_matches,'standard') }}</div>
+    <div class="stats global-stat-grid global-mode-totals">{% for row in mode_totals %}{{ stat(row.label,row.value,row.kind) }}{% endfor %}</div>
   </div>
-</section>
-<div class="stats-columns global-details special-global-records">
-  <section class="panel stats-glow glow-standard">
-    <div class="section-head"><h2 class="standard">Elo Distribution</h2><strong class="standard">{{ extra_stats.average_elo }} avg</strong></div>
-    {% set max_count = (elo_distribution|map(attribute='count')|max) if elo_distribution else 1 %}
-    {% for band in elo_distribution %}<div class="distribution-row"><span>{{ band.band }}</span><div class="distribution-bar"><span style="width:{{ 100*band.count/(max_count or 1) }}%"></span></div><strong class="standard">{{ band.count }}</strong></div>{% else %}<div class="empty">No tracks</div>{% endfor %}
-    <div class="mini-stats collection-mini"><div><b class="standard">{{ extra_stats.songs_never_voted }}</b><small>Unplayed tracks</small></div><div><b class="standard">{{ extra_stats.recent_votes }}</b><small>Votes this week</small></div><div><b class="song">{{ extra_stats.songs_with_audio }}</b><small>Audio previews</small></div></div>
-  </section>
-  <section class="panel stats-glow glow-collection">
+  <section id="global-collection" class="panel stats-glow glow-collection" data-global-section="collection">
     <div class="section-head"><h2 class="song">Collection Records</h2></div>
-    {% for label, row, value in [('Highest Elo',extra_stats.highest_elo,extra_stats.highest_elo.elo_score|default(0)|round|int),('Lowest Elo',extra_stats.lowest_elo,extra_stats.lowest_elo.elo_score|default(0)|round|int),('Most Wins',extra_stats.most_wins,extra_stats.most_wins.wins|default(0)),('Most Played',most_played,most_played.matches_played|default(0))] %}
-    {% if row %}<a class="record-row" href="{{ url_for('song_page',song_id=row.id) }}"><div><small>{{ label }}</small><strong class="song" title="{{ row.title }}">{{ row.title }}</strong></div><b class="standard">{{ value }}</b></a>{% endif %}{% endfor %}
-    {% if prolific_artist %}<a class="record-row" href="{{ url_for('artist_page',artist_name=prolific_artist.artist) }}"><div><small>Most Prolific Artist</small><strong class="artist">{{ prolific_artist.artist }}</strong></div><b class="artist">{{ prolific_artist.track_count }} tracks</b></a>{% endif %}
-    {% if top_genre %}<a class="record-row" href="{{ url_for('tag_page',tag_name=top_genre.name) }}"><div><small>Most Used Tag</small><strong class="tag"># {{ top_genre.name }}</strong></div><b class="tag">{{ top_genre.tag_count }}</b></a>{% endif %}
+    <div class="collection-record-grid">{% for record in collection_records %}<article class="collection-record"><small>{{ record.label }}</small><div class="record-identity">
+      {% if record.kind=='tag' %}<span class="small-art tag-art" aria-hidden="true">#</span>{% else %}{{ art(record.row.artwork|default(record.row.cover_url|default('')),record.kind=='artist') }}{% endif %}
+      <div>{{ entity_link(record.row,record.kind,record.name) }}<strong class="{{ 'standard' if record.kind=='song' else record.kind }}">{{ record.value }}{% if record.unit %}<small>{{ record.unit }}</small>{% endif %}</strong></div>
+    </div></article>{% else %}<div class="empty">Add tracks to start collecting records.</div>{% endfor %}</div>
   </section>
-  <section class="panel stats-glow glow-recognition recognition-panel">
+  <section id="overall-global" class="panel overall-panel" data-global-section="overall"><h2 class="overall">Overall Stats</h2><div class="empty" role="status">Calculating…</div></section>
+  <section id="global-voting" class="panel stats-glow glow-voting" data-global-section="voting">
+    <div class="section-head"><h2 class="standard">Voting Results</h2><a class="standard" href="/history">Match history ↗</a></div>
+    <div class="voting-columns">{% for key,prefix,label,kind in [('overall','','Overall','standard'),('standard','standard_','Non-blind','standard'),('blind','blind_','Blind','blind')] %}<div class="vote-column {{ kind }}">
+      <h3 class="{{ kind }}">{{ label }}</h3><strong class="vote-total {{ kind }}">{{ voting[prefix+'wins'] }}<small>votes</small></strong><p class="sub-label">Highest track win rates</p>
+      {% for row in voting_leaders[key] %}<div class="vote-leader">{{ art(row.cover_url) }}<div>{{ entity_link(row) }}<small>{{ row.wins }}W · {{ row.losses }}L</small></div><b class="{{ kind }}">{{ row.win_rate }}%</b></div>{% else %}<div class="empty">No votes yet</div>{% endfor %}
+    </div>{% endfor %}</div>
+    <div class="stats-subsection frequent-matchups"><div class="subsection-head"><h3 class="standard">Frequent Matchups</h3>{% if expand_matchups %}<label class="stats-check"><input type="checkbox" id="frequent-five" aria-controls="global-matchups"> Show five</label>{% endif %}</div>
+      <div id="global-matchups">{% for match in matchups %}{{ versus_row(match.s1,match.s2,encounters=match.encounters,hidden=loop.index>3) }}{% else %}<div class="empty">No matchups yet</div>{% endfor %}</div>
+    </div>
+  </section>
+  <section id="global-elo" class="panel stats-glow glow-standard" data-global-section="elo">
+    <div class="section-head"><h2 class="standard">Elo Distribution</h2></div>
+    <div class="stats-group elo-band-group">
+    {% set max_count=(elo_distribution|map(attribute='count')|max) if elo_distribution else 1 %}
+    {% for band in elo_distribution %}<div class="distribution-row"><span>{{ band.band }}</span><div class="distribution-bar"><span style="width:{{ 100*band.count/(max_count or 1) }}%"></span></div><strong class="standard">{{ band.count }}</strong></div>{% else %}<div class="empty">No tracks</div>{% endfor %}
+    </div>
+    <div class="global-metrics three global-secondary joined-metrics" data-columns="3">{{ metric('Unplayed tracks',unplayed,'standard') }}{{ metric('Votes this week',week_votes,'standard') }}{{ metric('Audio previews',audio_previews,'standard') }}</div>
+  </section>
+  <section id="global-recognition" class="panel stats-glow glow-recognition recognition-panel" data-global-section="recognition">
     <div class="section-head"><h2 class="recognition">Recognisability</h2><a class="recognition" href="/trivia_stats">View stats ↗</a></div>
-    <div class="feature-row"><div><strong class="recognition">{{ extra_stats.trivia_attempts }} rounds</strong><p>{{ extra_stats.trivia_correct }} / {{ extra_stats.trivia_available }} fields correct</p></div><strong class="big recognition">{{ ((100*extra_stats.trivia_correct/(extra_stats.trivia_available or 1))|round(1)|string)+'%' if extra_stats.trivia_available else '—' }}</strong></div>
-    <div class="record-field-stats global-field-stats">{% for row in extra_stats.trivia_fields %}<div><b class="recognition">{{ (row.accuracy|string)+'%' if row.accuracy is not none else '—' }}</b><small>{{ row.label }} · {{ row.correct }}/{{ row.attempts }}</small></div>{% endfor %}</div>
-    <div class="mini-stats collection-mini"><div><b class="recognition">{{ extra_stats.trivia_high_score|round(2) }}</b><small>Best player score</small></div><div><b class="recognition">{{ extra_stats.trivia_high_streak|int }} 🔥</b><small>Best streak</small></div><div><b class="recognition">{{ extra_stats.trivia_tested }}</b><small>Tested tracks</small></div><div><b class="recognition">{{ extra_stats.trivia_over_ninety }}</b><small>Above 90%</small></div></div>
-    {% if extra_stats.top_trivia %}<a class="record-row" href="{{ url_for('song_page',song_id=extra_stats.top_trivia.id) }}"><div><small>Most Recognised</small><strong class="song" title="{{ extra_stats.top_trivia.title }}">{{ extra_stats.top_trivia.title }}</strong></div><b class="recognition">{{ extra_stats.top_trivia.accuracy|int }}%</b></a>{% endif %}
+    <div class="global-metrics three joined-metrics" data-columns="3">{{ metric('Field accuracy',pct(recognition.accuracy),'recognition',recognition.correct|string+' / '+recognition.available|string+' fields') }}{{ metric('Song answers missed',recognition.missed,'recognition') }}{{ metric('Tracks tested',recognition.tested,'recognition') }}</div>
+    <div class="field-accuracy-grid">{% for field in recognition.fields %}<div><h3 class="recognition">{{ field.label }}</h3><strong class="recognition">{{ pct(field.accuracy) }}</strong><small>{{ field.correct }} / {{ field.attempts }} correct · {{ field.missed }} missed</small><div class="stats-progress"><span style="width:{{ field.accuracy or 0 }}%"></span></div></div>{% endfor %}</div>
+    <div class="global-metrics global-secondary joined-metrics" data-columns="4">{{ metric('Best player score',recognition.best_score|round(2),'recognition') }}{{ metric('Best streak',recognition.best_streak|int,'recognition') }}{{ metric('Tracks above 90%',recognition.above_ninety,'recognition') }}{{ metric('Distinct missed tracks',recognition.missed_tracks,'recognition') }}</div>
+    {{ feature(recognition.best,'Most recognised',pct(recognition.best.accuracy) if recognition.best else '') }}
+    <div class="missed-groups stats-subsection">{% for kind,label,rows in [('artist','Most-missed artists',recognition.missed_artists),('album','Most-missed albums',recognition.missed_albums)] %}<div><h3 class="recognition">{{ label }}</h3>{% for row in rows %}<div class="stats-list-row">{{ art(row.cover_url|default(''),kind=='artist') }}<div>{{ entity_link(row,kind) }}</div><strong class="recognition">{{ row.misses }}<small>misses / {{ row.attempts }}</small></strong></div>{% else %}<div class="empty">No recorded misses</div>{% endfor %}</div>{% endfor %}</div>
   </section>
-  <section class="panel stats-glow glow-tournament tournament-panel">
+  <section id="global-tournaments" class="panel stats-glow glow-tournament tournament-panel" data-global-section="tournament">
     <div class="section-head"><h2 class="tournament">Tournaments</h2><a class="tournament" href="/tournament_stats">View stats ↗</a></div>
-    <div class="mini-stats collection-mini"><div><b class="tournament">{{ extra_stats.tournaments_total }}</b><small>Brackets</small></div><div><b class="tournament">{{ extra_stats.tournaments_completed }}</b><small>Completed</small></div><div><b class="tournament">{{ extra_stats.tournaments_total-extra_stats.tournaments_completed }}</b><small>Unfinished</small></div><div><b class="tournament">{{ extra_stats.tournament_matches }}</b><small>Matches played</small></div></div>
-    <div class="record-field-stats global-field-stats">{% for row in extra_stats.tournament_places %}<div><b class="tournament">{{ row.count }}</b><small>{{ row.label }}</small></div>{% endfor %}</div>
-    <div class="tournament-points-total"><strong class="tournament">{{ extra_stats.tournament_points }}</strong><small>Match points awarded</small></div>
-    {% if extra_stats.latest_podium %}<div class="section-head podium-mini-head"><h3 class="tournament">Latest Podium</h3><a class="tournament" href="/tournament?tournament={{ extra_stats.latest_tournament_id }}">#{{ extra_stats.latest_tournament_id }} ↗</a></div><div class="global-podium">{% for row in extra_stats.latest_podium %}<a class="song" href="/song/{{ row.id }}"><b class="tournament">{{ ['🥇','🥈','🥉'][row.place-1] }}</b><strong title="{{ row.title }}">{{ row.title }}</strong></a>{% endfor %}</div>{% endif %}
-    {% for row in extra_stats.tournament_leaders %}<a class="record-row" href="/song/{{ row.id }}"><div><small>{{ 'Most Championships' if loop.first else 'Champion' }}</small><strong class="song" title="{{ row.title }}">{{ row.title }}</strong></div><b class="tournament">{{ row.championships }} 🏆</b></a>{% endfor %}
+    <div class="global-metrics joined-metrics" data-columns="4"><div class="global-metric"><strong class="tournament">{{ tournament.total }}{% if tournament.unfinished %}<span class="unfinished"> ({{ tournament.unfinished }} unfinished)</span>{% endif %}</strong><span>Brackets</span></div>{% for size in [32,16,8] %}{{ metric(size|string+'-track brackets',tournament.sizes.get(size,0),'tournament') }}{% endfor %}</div>
+    <div class="global-metrics two global-secondary joined-metrics" data-columns="2">{{ metric('Matches played',tournament.matches,'tournament') }}{{ metric('Match points awarded',tournament.points,'tournament') }}</div>
+    {% if tournament.podium %}<div class="stats-subsection"><div class="subsection-head"><h3 class="tournament">Latest Podium</h3><a class="tournament" href="/tournament?tournament={{ tournament.latest_id }}">Bracket #{{ tournament.latest_id }} ↗</a></div><div class="global-podium">{% for row in tournament.podium %}<article><b class="tournament">{{ ['🥇','🥈','🥉'][row.place-1] }}</b>{{ art(row.cover_url) }}{{ entity_link(row) }}</article>{% endfor %}</div></div>{% endif %}
+    <div class="stats-subsection"><h3 class="tournament">Recent Champions</h3>{% for row in tournament.champions %}<div class="stats-list-row">{{ art(row.cover_url) }}<div>{{ entity_link(row) }}<small class="artist stats-ellipsis" title="{{ row.artist }}">{{ row.artist }}</small></div><a class="tournament bracket-link" href="/tournament?tournament={{ row.bracket_id }}">#{{ row.bracket_id }}<small>{{ row.size }} tracks</small></a></div>{% else %}<div class="empty">No completed tournaments yet</div>{% endfor %}</div>
   </section>
-{% set guess = extra_stats.special_modes.guesser %}{% set shelf = extra_stats.special_modes.shelves %}
-
-  <section class="panel special-panel guesser"><div class="section-head"><h2 class="guesser">Elo Guesser</h2><a class="guesser" href="/elo_guesser_stats">Stats ↗</a></div><div class="mini-stats"><div><b class="guesser">{{ guess.correct }}</b><small>Correct picks · {{ guess.rounds }} questions</small></div><div><b class="guesser">{{ guess.best_streak }} 🔥</b><small>Best streak</small></div><div><b class="guesser">{{ (guess.accuracy|round(1)) ~ '%' if guess.accuracy is not none else '—' }}</b><small>Accuracy</small></div></div></section>
-  <section class="panel special-panel shelves"><div class="section-head"><h2 class="shelves">Album Shelves</h2><a class="shelves" href="/album_shelves_stats">Stats ↗</a></div><div class="mini-stats"><div><b class="shelves">{{ shelf.rounds }}</b><small>Rounds · {{ shelf.perfect }} perfect</small></div><div><b class="shelves">{{ shelf.points|round(2) }}</b><small>Points</small></div><div><b class="shelves">{{ (shelf.accuracy|round(1)) ~ '%' if shelf.accuracy is not none else '—' }}</b><small>Points earned</small></div></div></section>
-
-  <section class="panel stats-glow glow-voting">
-    <div class="section-head"><h2 class="standard">Frequent Matchups</h2><a class="standard" href="/history">Match history ↗</a></div>
-    {% for match in matchups %}<div class="rivalry"><div class="match-row">{% for row in [match.s1,match.s2] %}{% if loop.index==2 %}<span class="vs-small">VS</span>{% endif %}<a class="match-song song" href="{{ url_for('song_page',song_id=row.id) }}">{{ art(row.cover_url) }}<div><strong class="song" title="{{ row.title }}">{{ row.title }}</strong><small>{{ row.artist or '' }}</small></div></a>{% endfor %}</div><small>{{ match.encounters }} encounters</small></div>{% else %}<div class="empty">No matchups yet</div>{% endfor %}
+  <section id="global-guesser" class="panel special-panel guesser" data-global-section="guesser">
+    <div class="section-head"><h2 class="guesser">Elo Guesser</h2><a class="guesser" href="/elo_guesser_stats">View stats ↗</a></div>
+    <div class="global-metrics joined-metrics" data-columns="4">{{ metric('Accuracy',pct(guess.accuracy),'guesser') }}{{ metric('Correct picks',guess.correct,'guesser') }}{{ metric('Wrong picks',guess.wrong,'guesser') }}{{ metric('Best streak',guess.best_streak,'guesser') }}</div>
+    <div class="global-metrics two global-secondary joined-metrics" data-columns="2">{{ metric('Current streak',guess.streak,'guesser') }}{{ metric('Tracks tested',guess.tested,'guesser') }}</div>
+    <div class="record-pair">{{ feature(guess.most_tested,'Most tested track',guess.most_tested.value if guess.most_tested else '',unit='appearances') }}{{ feature(guess.most_missed,'Most missed track',guess.most_missed.value if guess.most_missed else '',unit='misses') }}</div>
+    {% if not guess.rounds %}<div class="empty">Play an Elo Guesser round to start these records.</div>{% endif %}
   </section>
-  <section class="panel stats-glow glow-album-elo">
-    <div class="section-head"><h2 class="album">Album Averages</h2><a class="album" href="/albums">Rankings ↗</a></div>
-    {% for row in top_albums_stats %}<a class="compact-track" href="{{ url_for('album_page',album_title=row.title) }}">{{ art(row.cover_url) }}<span class="compact-copy"><strong class="album">{{ row.title }}</strong><small>{{ row.songs }} tracks</small></span><span class="compact-score standard"><b>{{ row.avg_elo|int }}</b><small>Average Elo</small></span></a>{% else %}<div class="empty">No albums</div>{% endfor %}
+  <section id="global-shelves" class="panel special-panel shelves" data-global-section="shelves">
+    <div class="section-head"><h2 class="shelves">Album Shelves</h2><a class="shelves" href="/album_shelves_stats">View stats ↗</a></div>
+    <div class="global-metrics joined-metrics" data-columns="4">{{ metric('Points earned',pct(shelf.accuracy),'shelves') }}{{ metric('Rounds',shelf.rounds,'shelves') }}{{ metric('Perfect rounds',shelf.perfect,'shelves') }}{{ metric('Track placements',shelf.tracks,'shelves') }}</div>
+    <div class="global-metrics global-secondary joined-metrics" data-columns="4">{{ metric('Correct album',pct(shelf.album_accuracy),'shelves') }}{{ metric('Relative track order',pct(shelf.order_accuracy),'shelves') }}{{ metric('Albums played',shelf.albums,'shelves') }}{{ metric('Best round points',shelf.best_points|round(2),'shelves') }}</div>
+    <div class="record-pair">{{ feature(shelf.most_played,'Most played album',shelf.most_played.rounds if shelf.most_played else '',kind='album',unit='rounds') }}{{ feature(shelf.most_missed,'Most misplaced album',shelf.most_missed.misses if shelf.most_missed else '',kind='album',unit='placements') }}</div>
+    {% if not shelf.rounds %}<div class="empty">Play an Album Shelves round to start these records.</div>{% endif %}
+  </section>
+  {% for section,kind,title,rows,href in [('artists','artist','Artist Average Elo',top_artists,'/artists'),('albums','album','Album Average Elo',top_albums,'/albums')] %}
+  <section id="global-{{ section }}" class="panel stats-glow glow-{{ kind }}-elo" data-global-section="{{ section }}"><div class="section-head"><h2 class="{{ kind }}">{{ title }}</h2><a class="{{ kind }}" href="{{ href }}">Rankings ↗</a></div>
+    {% for row in rows %}<div class="stats-list-row stats-average"><span class="stats-rank">{{ loop.index }}</span>{{ art(row.artwork|default(row.cover_url|default('')),kind=='artist') }}<div>{{ entity_link(row,kind) }}<small class="average-meta">{% if kind=='album' and row.artist %}<span class="artist stats-ellipsis" title="{{ row.artist }}">{{ row.artist }}</span><span>·</span>{% endif %}<span class="stats-count">{{ row.songs }} tracks</span></small></div><strong class="standard">{{ row.avg_elo|round|int }}<small>Average Elo</small></strong></div>{% else %}<div class="empty">No {{ section }} with linked tracks</div>{% endfor %}
+  </section>{% endfor %}
+  <section id="global-tags" class="panel stats-glow glow-tag" data-global-section="tags"><div class="section-head"><h2 class="tag">Top Tags</h2><a class="tag" href="/tags">All {{ tag_count }} tags ↗</a></div><div class="top-tags-grid">{% for tag in top_tags %}<div class="stats-tag">{{ entity_link(tag,'tag',tag.name) }}<strong class="tag">{{ tag.songs }}<small>tracks</small></strong></div>{% else %}<div class="empty">No linked tags</div>{% endfor %}</div></section>
+  <section id="global-activity" class="panel stats-glow activity-panel" data-global-section="activity"><div class="section-head"><h2 class="activity-heading">Recent Mode Results</h2><small>Latest ten saved results</small></div>
+    {% for row in recent_activity %}<article class="mode-activity {{ row.kind }}" data-activity-kind="{{ row.kind }}">{{ art(row.cover_url) }}<div class="activity-copy">
+      <a class="activity-mode {{ row.kind }}" href="{{ row.href }}" title="{{ row.title }}{% if row.kind in ['tournament','shelves'] %} #{{ row.id }}{% endif %}">{{ row.title }}{% if row.kind in ['tournament','shelves'] %} #{{ row.id }}{% endif %}</a>
+      <div class="activity-entities activity-entities-{{ row.related|length }}">{% for entity in row.related %}<div class="activity-participant">{{ entity_link(entity,entity.entity_kind) }}
+        {% if entity.role or entity.saved_elo is defined %}<small class="activity-participant-info">{% if entity.role %}<span>{{ entity.role }}</span>{% endif %}{% if entity.higher %}<span>· Higher Elo</span>{% endif %}
+          {% if entity.saved_elo is defined %}<span class="standard">{{ entity.saved_elo }} Elo</span>{% endif %}{% if entity.elo_delta is defined and entity.elo_delta is not none %}<span class="standard">{{ entity.elo_delta }} Elo</span>{% endif %}</small>{% endif %}
+      </div>{% endfor %}</div>
+      {% if row.scope %}<div class="activity-scope"><small>Scope</small>{{ entity_link(row.scope,row.scope.entity_kind) }}</div>{% endif %}
+      {% if row.metrics %}<div class="activity-metrics">{% for metric in row.metrics %}<span class="activity-metric {{ metric.state }}"><b>{{ metric.value }}</b><small>{{ metric.label }}</small></span>{% endfor %}</div>{% else %}<small class="activity-detail">{{ row.details }}</small>{% endif %}
+    </div><time datetime="{{ row.iso }}" data-local-time title="{{ row.iso }}">{{ row.date }}</time></article>{% else %}<div class="empty">No completed mode results yet</div>{% endfor %}
   </section>
 </div>
-<section class="panel stats-glow glow-tag spaced-panel"><div class="section-head"><h2 class="tag">Top Tags</h2><a class="tag" href="/tags">All {{ extra_stats.genres_count }} tags ↗</a></div><div class="tag-cloud">{% for tag in genre_leaders %}<a class="tag-chip" href="{{ url_for('tag_page',tag_name=tag.name) }}"># {{ tag.name }}<strong>{{ tag.songs }}</strong></a>{% else %}<span class="muted">No tags</span>{% endfor %}</div></section>
-<section class="panel stats-glow glow-voting spaced-panel"><div class="section-head"><h2 class="standard">Recent Matches</h2><a class="standard" href="/history">View all ↗</a></div>{% for row in recent_activity %}<div class="activity-row"><small>{{ (row.created_at or '')[:10] }}</small><a class="song" href="{{ url_for('song_page',song_id=row.winner_id) }}">{{ row.winner_title }}</a><span class="muted">beat</span><a class="song match-loser" href="{{ url_for('song_page',song_id=row.loser_id) }}">{{ row.loser_title }}</a></div>{% else %}<div class="empty">No votes yet</div>{% endfor %}</section>
 {% endblock %}
