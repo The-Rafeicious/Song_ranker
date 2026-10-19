@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% from 'stats_visuals.html' import pulse, listening_panel %}
 {% from 'components.html' import art %}
 {% from 'mode_stats_components.html' import figure, rate, number, progress, metadata, saved_date %}
 {% block title %}Elo Guesser Stats · Song Ranker{% endblock %}
@@ -47,15 +48,18 @@
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-overview">
     <div class="section-head"><h2 class="guesser" id="guesser-overview">Elo Guesser overview</h2></div>
-    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{ figure('Completed guesses',summary.rounds) }}{{ figure('Correct picks',summary.correct) }}{{ figure('Wrong guesses',summary.wrong) }}{{ figure('Best streak',summary.best_streak) }}</dl>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{ figure('Completed guesses',summary.rounds) }}{{ figure('Correct picks',summary.correct) }}{{ figure('Wrong guesses',summary.wrong) }}{{ figure('Challenge best streak',summary.challenge.best_streak) }}</dl>
+    
     <div class="mode-stats-inset mode-stats-rate"><h3>Overall accuracy</h3><strong class="mode-stats-primary">{{ rate(summary.accuracy) }}</strong>{{ progress('Overall guess accuracy',summary.accuracy) }}<p>{{ summary.correct }} correct / {{ summary.graded }} guesses</p></div>
     {% if summary.unknown %}<p class="mode-stats-caption">{{ summary.unknown }} saved {{ 'result has' if summary.unknown==1 else 'results have' }} incomplete comparison data.</p>{% endif %}
     {% if summary.undated %}<p class="mode-stats-caption">{{ summary.undated }} {{ 'result has' if summary.undated==1 else 'results have' }} no usable date; streaks cover dated results.</p>{% endif %}
   </section>
+  {{pulse(pulse_data)}}
+  {{listening_panel(listening_data)}}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-form">
     <div class="section-head"><h2 class="guesser" id="guesser-form">Recent form</h2></div>
-    <dl class="joined-metrics mode-stats-metrics">{{ figure('Current streak',summary.current_streak if summary.current_streak is not none else '—') }}{{ figure('Longest miss run',summary.longest_miss) }}{{ figure('Active days',summary.active_days) }}</dl>
+    <dl class="joined-metrics mode-stats-metrics">{{ figure('Latest challenge streak',summary.challenge.streak) }}{{ figure('Longest miss run',summary.longest_miss) }}{{ figure('Active days',summary.active_days) }}</dl>
     <div class="guess-windows">{% for window in windows %}<div class="mode-stats-inset mode-stats-rate"><h3>{{ window.title }}</h3><strong class="mode-stats-primary">{{ rate(window.accuracy) }}</strong>{{ progress(window.title+' accuracy',window.accuracy) }}<p>{{ window.correct }} correct · {{ window.wrong }} wrong</p><p>{{ window.rounds }} completed{% if window.unknown %} · {{ window.unknown }} ungraded{% endif %}</p></div>{% endfor %}</div>
   </section>
 
@@ -102,7 +106,7 @@
     <div class="section-head"><h2 class="guesser" id="guesser-history">Guess history</h2></div>
     {% for row in history %}<details class="mode-stats-inset guess-history-item" data-guess-round="{{ row.id }}"{% if loop.first %} open{% endif %}>
       <summary><span class="guess-summary"><span class="guess-summary-copy"><strong class="guess-summary-name" title="{{ row.chosen.title if row.chosen else 'Pick unavailable' }}">{{ row.chosen.title if row.chosen else 'Pick unavailable' }}</strong><span>#{{ row.id }} · {{ saved_date(row.date) }}</span></span><span class="guess-outcome {{ 'guess-right' if row.correct==1 else 'guess-wrong' if row.correct==0 else 'guess-unknown' }}">{{ 'Correct +1' if row.correct==1 else 'Wrong +0' if row.correct==0 else 'Unavailable' }}</span></span></summary>
-      <div class="guess-comparison guess-history-body">{{ side(row.first,1,row) }}<div class="guess-versus"><strong>VS</strong><span>{{ number(row.gap) }} Elo gap</span><span>{{ row.streak if row.streak is not none else '—' }} streak</span></div>{{ side(row.second,2,row) }}</div>
+      <div class="guess-comparison guess-history-body">{{ side(row.first,1,row) }}<div class="guess-versus"><strong>VS</strong><span>{{ number(row.gap) }} Elo gap</span><span>{{ 'Challenge' if row.rules_version==2 else 'Classic' }} · {{ row.streak if row.streak is not none else '—' }} streak</span></div>{{ side(row.second,2,row) }}</div>
     </details>{% else %}<div class="empty">No completed Elo guesses yet.</div>{% endfor %}
     <nav class="guess-pagination" aria-label="Guess history pages">
       {% if history_page>1 %}<a class="btn guesser" rel="prev" href="{{ url_for('guesser_stats',history_page=history_page-1) }}#guesser-history">← Newer</a>{% endif %}

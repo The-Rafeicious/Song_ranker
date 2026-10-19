@@ -101,6 +101,7 @@ body.site-style-baseline #main .versus-row {
 body.site-style-baseline #main .history-match { --versus-accent: var(--muted); }
 body.site-style-baseline #main .versus-row[data-match-mode=standard] { --versus-accent: var(--standard); }
 body.site-style-baseline #main .versus-row[data-match-mode=blind] { --versus-accent: var(--blind); }
+body.site-style-baseline #main .versus-row[data-match-origin=tournament] { --versus-accent: var(--tournament); }
 body.site-style-baseline #main .versus-copy { min-width: 0; }
 body.site-style-baseline #main .versus-copy-left { grid-column: 1; text-align: right; }
 body.site-style-baseline #main .versus-copy-right { grid-column: 5; text-align: left; }

@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% from 'stats_visuals.html' import pulse, listening_panel %}
 {% from 'components.html' import stat, art, versus_row %}
 {% block title %}Global Stats · Song Ranker{% endblock %}
 {% block page_kind %}global_stats{% endblock %}
@@ -23,9 +24,12 @@
 <div class="global-stats-page">
   <div class="page-head"><h1 class="standard">Global Stats</h1></div>
   <div class="global-top" data-global-section="totals">
-    <div class="stats global-stat-grid">{{ stat('Songs',total_songs) }}{{ stat('Artists',total_artists,'artist') }}{{ stat('Albums',total_albums,'album') }}{{ stat('Votes',total_matches,'standard') }}</div>
+    <div class="stats global-stat-grid">{{ stat('Songs',total_songs) }}{{ stat('Artists',total_artists,'artist') }}{{ stat('Albums',total_albums,'album') }}{{ stat('Elo matches',total_matches,'standard') }}</div>
     <div class="stats global-stat-grid global-mode-totals">{% for row in mode_totals %}{{ stat(row.label,row.value,row.kind) }}{% endfor %}</div>
   </div>
+  {{pulse(pulse_data)}}
+  {{listening_panel(listening_data)}}
+  <section class="panel stats-glow glow-voting"><div class="section-head"><h2 class="standard">Public Elo activity</h2><a class="standard" href="/history">History ↗</a></div><div class="joined-metrics" data-columns="3">{{metric('Elo matches',elo_summary.total,'standard')}}{{metric('Voting',elo_summary.ordinary,'standard')}}{{metric('Tournament first rounds',elo_summary.tournament,'tournament')}}</div><p class="mode-stats-caption tournament">Round 1 · {{elo_summary.tournament_standard}} Non-blind · {{elo_summary.tournament_blind}} Blind</p></section>
   <section id="global-collection" class="panel stats-glow glow-collection" data-global-section="collection">
     <div class="section-head"><h2 class="song">Collection Records</h2></div>
     <div class="collection-record-grid">{% for record in collection_records %}<article class="collection-record"><small>{{ record.label }}</small><div class="record-identity">
@@ -37,7 +41,7 @@
   <section id="global-voting" class="panel stats-glow glow-voting" data-global-section="voting">
     <div class="section-head"><h2 class="standard">Voting Results</h2><a class="standard" href="/history">Match history ↗</a></div>
     <div class="voting-columns">{% for key,prefix,label,kind in [('overall','','Overall','standard'),('standard','standard_','Non-blind','standard'),('blind','blind_','Blind','blind')] %}<div class="vote-column {{ kind }}">
-      <h3 class="{{ kind }}">{{ label }}</h3><strong class="vote-total {{ kind }}">{{ voting[prefix+'wins'] }}<small>votes</small></strong><p class="sub-label">Highest track win rates</p>
+      <h3 class="{{ kind }}">{{ label }}</h3><strong class="vote-total {{ kind }}">{{ voting[prefix+'wins'] }}<small>vote weight</small></strong><p class="sub-label">Highest track win rates</p>
       {% for row in voting_leaders[key] %}<div class="vote-leader">{{ art(row.cover_url) }}<div>{{ entity_link(row) }}<small>{{ row.wins }}W · {{ row.losses }}L</small></div><b class="{{ kind }}">{{ row.win_rate }}%</b></div>{% else %}<div class="empty">No votes yet</div>{% endfor %}
     </div>{% endfor %}</div>
     <div class="stats-subsection frequent-matchups"><div class="subsection-head"><h3 class="standard">Frequent Matchups</h3>{% if expand_matchups %}<label class="stats-check"><input type="checkbox" id="frequent-five" aria-controls="global-matchups"> Show five</label>{% endif %}</div>
@@ -56,7 +60,8 @@
     <div class="section-head"><h2 class="recognition">Recognisability</h2><a class="recognition" href="/trivia_stats">View stats ↗</a></div>
     <div class="global-metrics three joined-metrics" data-columns="3">{{ metric('Field accuracy',pct(recognition.accuracy),'recognition',recognition.correct|string+' / '+recognition.available|string+' fields') }}{{ metric('Song answers missed',recognition.missed,'recognition') }}{{ metric('Tracks tested',recognition.tested,'recognition') }}</div>
     <div class="field-accuracy-grid">{% for field in recognition.fields %}<div><h3 class="recognition">{{ field.label }}</h3><strong class="recognition">{{ pct(field.accuracy) }}</strong><small>{{ field.correct }} / {{ field.attempts }} correct · {{ field.missed }} missed</small><div class="stats-progress"><span style="width:{{ field.accuracy or 0 }}%"></span></div></div>{% endfor %}</div>
-    <div class="global-metrics global-secondary joined-metrics" data-columns="4">{{ metric('Best player score',recognition.best_score|round(2),'recognition') }}{{ metric('Best streak',recognition.best_streak|int,'recognition') }}{{ metric('Tracks above 90%',recognition.above_ninety,'recognition') }}{{ metric('Distinct missed tracks',recognition.missed_tracks,'recognition') }}</div>
+    <div class="global-metrics global-secondary joined-metrics" data-columns="4">{{ metric('Challenge best score',recognition.challenge.best_score|round(2),'recognition') }}{{ metric('Challenge best streak',recognition.challenge.best_streak,'recognition') }}{{ metric('Tracks above 90%',recognition.above_ninety,'recognition') }}{{ metric('Distinct missed tracks',recognition.missed_tracks,'recognition') }}</div>
+    
     {{ feature(recognition.best,'Most recognised',pct(recognition.best.accuracy) if recognition.best else '') }}
     <div class="missed-groups stats-subsection">{% for kind,label,rows in [('artist','Most-missed artists',recognition.missed_artists),('album','Most-missed albums',recognition.missed_albums)] %}<div><h3 class="recognition">{{ label }}</h3>{% for row in rows %}<div class="stats-list-row">{{ art(row.cover_url|default(''),kind=='artist') }}<div>{{ entity_link(row,kind) }}</div><strong class="recognition">{{ row.misses }}<small>misses / {{ row.attempts }}</small></strong></div>{% else %}<div class="empty">No recorded misses</div>{% endfor %}</div>{% endfor %}</div>
   </section>
@@ -69,8 +74,9 @@
   </section>
   <section id="global-guesser" class="panel special-panel guesser" data-global-section="guesser">
     <div class="section-head"><h2 class="guesser">Elo Guesser</h2><a class="guesser" href="/elo_guesser_stats">View stats ↗</a></div>
-    <div class="global-metrics joined-metrics" data-columns="4">{{ metric('Accuracy',pct(guess.accuracy),'guesser') }}{{ metric('Correct picks',guess.correct,'guesser') }}{{ metric('Wrong picks',guess.wrong,'guesser') }}{{ metric('Best streak',guess.best_streak,'guesser') }}</div>
-    <div class="global-metrics two global-secondary joined-metrics" data-columns="2">{{ metric('Current streak',guess.streak,'guesser') }}{{ metric('Tracks tested',guess.tested,'guesser') }}</div>
+    <div class="global-metrics joined-metrics" data-columns="4">{{ metric('Accuracy',pct(guess.accuracy),'guesser') }}{{ metric('Correct picks',guess.correct,'guesser') }}{{ metric('Wrong picks',guess.wrong,'guesser') }}{{ metric('Challenge best streak',guess.challenge.best_streak,'guesser') }}</div>
+    <div class="global-metrics two global-secondary joined-metrics" data-columns="2">{{ metric('Latest challenge streak',guess.challenge.streak,'guesser') }}{{ metric('Tracks tested',guess.tested,'guesser') }}</div>
+    
     <div class="record-pair">{{ feature(guess.most_tested,'Most tested track',guess.most_tested.value if guess.most_tested else '',unit='appearances') }}{{ feature(guess.most_missed,'Most missed track',guess.most_missed.value if guess.most_missed else '',unit='misses') }}</div>
     {% if not guess.rounds %}<div class="empty">Play an Elo Guesser round to start these records.</div>{% endif %}
   </section>

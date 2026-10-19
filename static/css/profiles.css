@@ -51,6 +51,20 @@ body.profile-page #main .profile-detail-body { padding: 0 16px 16px; min-width: 
 body.profile-page #main .profile-detail-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,230px),1fr)); gap: 16px; }
 body.profile-page #main .profile-inset { min-width: 0; }
 body.profile-page #main .profile-inset .profile-rate { margin-top: 6px; }
+/* Voting hierarchy: outcomes, balanced mode cards, then optional source detail. */
+body.profile-page #main #voting-record .vote-win { --section-color:var(--song); color:var(--song); }
+body.profile-page #main #voting-record .vote-loss { --section-color:var(--danger); color:var(--danger); }
+body.profile-page #main .profile-vote-grid { margin-top:18px; }
+body.profile-page #main .profile-vote-mode { padding:16px; border:1px solid color-mix(in srgb,var(--section-color) 24%,var(--line)); border-radius:var(--site-inner-radius); background:var(--raised); }
+body.profile-page #main .profile-vote-mode h3 { margin:0 0 12px; text-align:center; color:var(--section-color); font-size:22px; }
+body.profile-page #main .profile-vote-mode .joined-metrics { margin-top:16px; }
+body.profile-page #main .profile-vote-mode .joined-metrics b { font-size:28px; }
+body.profile-page #main .profile-vote-outcomes { display:flex; flex-wrap:wrap; justify-content:center; gap:8px 16px; font-size:15px; margin-top:10px; }
+body.profile-page #main .profile-vote-caption { text-align:center; color:var(--muted); font-size:15px; margin:8px 0 0; }
+body.profile-page #main .profile-vote-sources { display:flex; flex-wrap:wrap; justify-content:center; gap:8px 24px; margin:16px 0 6px; font-size:16px; }
+body.profile-page #main .profile-vote-details { border-top:1px solid var(--line); padding:6px 0; min-width:0; }
+body.profile-page #main .profile-vote-details h4 { font-size:18px; margin:16px 0 0; color:var(--section-color); }
+body.profile-page #main .profile-vote-details > a { display:inline-flex; align-items:center; min-height:44px; margin-top:8px; }
 body.profile-page #main .profile-bracket { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
 body.profile-page #main .profile-bracket:last-child { border: 0; }
 body.profile-page #main .profile-bracket div { min-width: 0; }

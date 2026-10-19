@@ -1,20 +1,22 @@
 /* Independent V3.3 games and their shared stats/profile projections. */
 window.SpecialModes=(()=>{
  'use strict';
- let U,guess=null,guessBusy=false,guessRequest=0,shelf=null,shelfBusy=false,dragged=null,loopRequested=false,playingSlot=null,selectedSlot=null,previewTimer=null,previewGeneration=0;
- const {$,$$,esc}=window.SongRankerUI;
+ let U,guess=null,guessBusy=false,guessLoading=false,guessRequest=0,shelf=null,shelfBusy=false,dragged=null,loopRequested=false,playingSlot=null,selectedSlot=null,previewTimer=null,previewGeneration=0;
+ const {$,$$,esc}=window.SongRankerUI,flow=window.RoundFlow;
+ const wait=(name,fallback)=>flow?.duration(name)||fallback;
  const pct=window.SongRankerUI.ratio,num=n=>Number(n||0).toFixed(2);
  const metricKeys=['guess_attempts','guess_correct','shelf_attempts','shelf_album_correct','shelf_order_right','shelf_order_pairs','shelf_points','shelf_available'];
  function totals(tracks){return window.SongRankerUI.sumFields(tracks,metricKeys);}
 
  const reveal={generation:0,timers:new Map(),audio:null,clip:0,closed:false};
  function cancelReveal(){
-   reveal.generation++;for(const [timer,resolve] of reveal.timers){clearTimeout(timer);resolve(false);}reveal.timers.clear();
+   reveal.generation++;for(const [timer,resolve] of reveal.timers){typeof timer==='function'?timer():clearTimeout(timer);resolve(false);}reveal.timers.clear();
    reveal.audio?.pause();reveal.audio?.remove();reveal.audio=null;cancelShelfClips();
  }
  function revealDelay(ms,generation){return new Promise(resolve=>{
    if(generation!==reveal.generation||reveal.closed){resolve(false);return;}
-   const timer=setTimeout(()=>{reveal.timers.delete(timer);resolve(generation===reveal.generation&&!reveal.closed);},ms);reveal.timers.set(timer,resolve);
+   const done=()=>{reveal.timers.delete(timer);resolve(generation===reveal.generation&&!reveal.closed);};
+   const timer=flow?flow.after(done,ms):setTimeout(done,ms);reveal.timers.set(timer,resolve);
  });}
  function snippet(song,ms,generation){
    reveal.audio?.pause();reveal.audio?.remove();reveal.audio=null;
@@ -60,7 +62,7 @@ window.SpecialModes=(()=>{
    const t=totals(tracks);
    return `<div class="special-profile-panels"><section class="panel special-panel guesser"><div class="section-head"><h2 class="guesser">Elo Guesser</h2><a class="guesser" href="${guessLink}?entity=${['songs','artists','albums'].includes(type)?type:'songs'}">Rankings ↗</a></div><div class="mini-stats"><div><b class="guesser">${pct(t.guess_correct,t.guess_attempts)}</b><small>Correct picks</small></div><div><b class="guesser">${t.guess_correct} / ${t.guess_attempts}</b><small>Track appearances</small></div></div></section><section class="panel special-panel shelves"><div class="section-head"><h2 class="shelves">Album Shelves</h2><a class="shelves" href="${shelfLink}?entity=${['songs','artists','albums'].includes(type)?type:'songs'}">Rankings ↗</a></div><div class="mini-stats"><div><b class="shelves">${pct(t.shelf_points,t.shelf_available)}</b><small>Points earned</small></div><div><b class="shelves">${pct(t.shelf_order_right,t.shelf_order_pairs)}</b><small>Track order</small></div></div></section></div>`;
  }
- function homeSummary(){const s=U.data().special_modes||{},g=s.guesser||{},a=s.shelves||{};return `<section class="panel special-panel guesser" data-home-mode="guesser"><div class="section-head"><h2 class="guesser">Elo Guesser</h2><a class="guesser" href="/elo_guesser_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="guesser">${g.correct||0}</b><small>Correct picks</small></div><div><b class="guesser">${g.best_streak||0} 🔥</b><small>Best streak</small></div><div><b class="guesser">${Math.max(0,Number(g.rounds||0)-Number(g.correct||0))}</b><small>Wrong guesses</small></div></div>${U.homeRateBar('guesser','Correct guesses',g.correct,g.rounds,'No completed guesses yet','guesses')}</section><section class="panel special-panel shelves" data-home-mode="shelves"><div class="section-head"><h2 class="shelves">Album Shelves</h2><a class="shelves" href="/album_shelves_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="shelves">${a.rounds||0}</b><small>Rounds</small></div><div><b class="shelves">${Number(a.albums_played||0)}</b><small title="Distinct albums in completed Shelves rounds">Albums played</small></div><div><b class="shelves">${a.perfect||0}</b><small>Perfect shelves</small></div></div>${U.homeRateBar('shelves','Relative track order',a.order_right,a.order_pairs,'No eligible track comparisons yet','order comparisons')}</section>`;}
+ function homeSummary(){const s=U.data().special_modes||{},g=s.guesser||{},a=s.shelves||{};return `<section class="panel special-panel guesser" data-home-mode="guesser"><div class="section-head"><h2 class="guesser">Elo Guesser</h2><a class="guesser" href="/elo_guesser_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="guesser">${g.correct||0}</b><small>Correct picks</small></div><div><b class="guesser">${g.challenge?.best_streak||0} 🔥</b><small>Challenge best streak</small></div><div><b class="guesser">${Math.max(0,Number(g.rounds||0)-Number(g.correct||0))}</b><small>Wrong guesses</small></div></div>${U.homeRateBar('guesser','Correct guesses',g.correct,g.rounds,'No completed guesses yet','guesses')}</section><section class="panel special-panel shelves" data-home-mode="shelves"><div class="section-head"><h2 class="shelves">Album Shelves</h2><a class="shelves" href="/album_shelves_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="shelves">${a.rounds||0}</b><small>Rounds</small></div><div><b class="shelves">${Number(a.albums_played||0)}</b><small title="Distinct albums in completed Shelves rounds">Albums played</small></div><div><b class="shelves">${a.perfect||0}</b><small>Perfect shelves</small></div></div>${U.homeRateBar('shelves','Relative track order',a.order_right,a.order_pairs,'No eligible track comparisons yet','order comparisons')}</section>`;}
  function homeBanners(){
    const limit=U.homeBannerLimit??10;
    const songs=U.records('songs'),guesses=songs.filter(s=>s.guess_attempts>0).sort((a,b)=>b.guess_correct/b.guess_attempts-a.guess_correct/a.guess_attempts||b.guess_attempts-a.guess_attempts||a.title.localeCompare(b.title)).slice(0,limit);
@@ -70,17 +72,22 @@ window.SpecialModes=(()=>{
    return banner(guesses,'guesser','Elo Guesser','songs')+banner(albums,'shelves','Album Shelves','albums');
  }
  function gameTabs(){return '<div class="game-head"><h1 class="guesser">Elo Guesser</h1></div>';}
- function guessCounters(records){return `<div class="stats guess-records">${U.stat('Correct picks',records.correct||0,'guesser')}${U.stat('Accuracy',pct(records.correct,records.rounds),'guesser')}${U.stat('Current streak',(records.streak||0)+' 🔥','guesser')}${U.stat('Best streak',(records.best_streak||0)+' 🔥','guesser')}</div>`;}
+ function guessCounters(records){return `<div class="stats guess-records">${U.stat('Correct picks',records.correct||0,'guesser')}${U.stat('Accuracy',pct(records.correct,records.rounds),'guesser')}${U.stat(records.rules_version===1?'Classic streak':'Challenge streak',(records.streak||0)+' 🔥','guesser')}${U.stat(records.rules_version===1?'Classic best':'Challenge best',(records.best_streak||0)+' 🔥','guesser')}</div>`;}
  function artistLinks(s){return (s.artists||[]).map(a=>`<a class="artist" href="/artist/${encodeURIComponent(a.name)}" title="${esc(a.name)}">${esc(a.name)}</a>`).join('<span class="muted">, </span>');}
  async function loadGuess(){
-   cancelReveal();reveal.closed=false;const requestId=++guessRequest;guessBusy=true;guess=null;U.cancelTransition();U.stopAudio();U.pageTone('guesser');document.body.classList.add('game-page');const release=U.holdHeight(),oldPair=$$('audio[data-preview-pair]');
-   U.main.innerHTML=gameTabs()+'<div class="empty" role="status">Loading pair…</div>';
-   try{await window.PreviewPlayback?.forgetPair(oldPair);if(requestId!==guessRequest||reveal.closed)return;const result=await U.api('/api/elo-guesser/round',{});if(requestId!==guessRequest||document.body.dataset.tone!=='guesser')return;guess={...result,answered:false};renderGuess();}
-   catch(error){if(requestId===guessRequest&&document.body.dataset.tone==='guesser')U.main.innerHTML=gameTabs()+`<div class="empty error" role="alert">${esc(error.message)}</div><div class="next-area"><button class="btn" data-guess-next>Retry</button></div>`;}
-   finally{if(requestId===guessRequest)guessBusy=false;release();}
+   if(guessLoading||reveal.closed)return;guessLoading=true;cancelReveal();const requestId=++guessRequest;guessBusy=true;U.cancelTransition();U.stopAudio();U.pageTone('guesser');document.body.classList.add('game-page');
+   const release=U.holdHeight(),oldPair=$$('audio[data-preview-pair]');window.PreviewPlayback?.forgetPair(oldPair)?.catch(()=>{});U.main.setAttribute('aria-busy','true');
+   if(!guess)U.main.innerHTML=gameTabs()+'<div class="empty" role="status">Loading pair…</div>';
+   $$('[data-guess-pick],[data-guess-next]').forEach(b=>b.disabled=true);if($('[data-guess-next]'))$('[data-guess-next]').textContent='Loading next pair…';$('#guess-load-error')?.remove();
+   try{const load=signal=>U.api('/api/elo-guesser/round',{},undefined,{signal});const result=await(flow?flow.take('guesser',load):load());if(requestId!==guessRequest||reveal.closed||document.body.dataset.tone!=='guesser')return;guess={...result,answered:false};window.Listening?.start('guesser',guess.token,guess.songs.map(s=>s.id));renderGuess();}
+   catch(error){if(requestId===guessRequest&&!reveal.closed&&document.body.dataset.tone==='guesser'){
+    U.main.insertAdjacentHTML('beforeend',`<p id="guess-load-error" class="error" role="alert">${esc(error.message)}</p>`);
+    if(!$('[data-guess-next]'))U.main.insertAdjacentHTML('beforeend','<div class="next-area"><button class="btn" data-guess-next>Retry pair</button></div>');else $('[data-guess-next]').textContent='Retry pair';
+   }}finally{if(requestId===guessRequest){guessBusy=false;guessLoading=false;U.main.removeAttribute('aria-busy');$$('[data-guess-next]').forEach(b=>b.disabled=false)}release();}
  }
+
  function renderGuess(){
-   const release=U.holdHeight();U.main.innerHTML=gameTabs()+guessCounters(guess.records)+`<div class="matchup">${guess.songs.map((song,i)=>{
+   const release=U.holdHeight();U.main.innerHTML=gameTabs()+guessCounters(guess.records)+`${guess.rules_version===1?'<div class="challenge-note guesser"><strong>Classic question</strong></div>':''}<div class="matchup">${guess.songs.map((song,i)=>{
      const high=guess.answered&&guess.result.ratings[i]>guess.result.ratings[1-i],chosen=guess.chosen===song.id;
      const overlay=guess.answered?`<div class="score-reveal guess-elo ${high?'score-win':'score-loss'}"><small>${high?'Higher Elo':'Lower Elo'}</small><strong>${Math.round(guess.result.ratings[i])}</strong><b>${high?'✓ Correct answer':chosen?'✕ Your pick':''}</b></div>`:'';
      const cover=U.mediaButton({...song,name:song.title,artist:song.artists.map(a=>a.name).join(', ')},'guess-audio-'+i,false,!guess.answered);
@@ -91,13 +98,13 @@ window.SpecialModes=(()=>{
 
  async function answerGuess(id){
    if(guessBusy||!guess||guess.answered)return;guessBusy=true;$$('[data-guess-pick]').forEach(b=>b.disabled=true);
-   let saved=false;
+   let saved=false;const current=guess,requestGeneration=reveal.generation;
    try{
-     const result=await U.api('/api/elo-guesser/answer',{token:guess.token,song_id:id});saved=true;window.PreviewPlayback?.hold();cancelReveal();
+     const result=await U.api('/api/elo-guesser/answer',{token:current.token,song_id:id,listening:window.Listening?.sample()});saved=true;if(guess!==current||reveal.closed||requestGeneration!==reveal.generation)return;window.PreviewPlayback?.hold();cancelReveal();
      guess.answered=true;guess.chosen=id;guess.result=result;guess.records=result.records;renderGuess();
-     const generation=reveal.generation,correct=guess.songs[result.ratings[0]>result.ratings[1]?0:1];snippet(correct,2800,generation);
-     U.refreshData().catch(()=>U.toast('Answer saved; collection refresh unavailable'));
-     if(await revealDelay(4500,generation))loadGuess();
+     const generation=reveal.generation,correct=guess.songs[result.ratings[0]>result.ratings[1]?0:1];snippet(correct,wait('guessClip',2800),generation);
+     flow?.prepare('guesser',signal=>U.api('/api/elo-guesser/round',{},undefined,{signal}));
+     if(await revealDelay(wait('pairResult',4500),generation))loadGuess();
    }catch(error){U.toast(error.message);if(!saved)$$('[data-guess-pick]').forEach(b=>b.disabled=false);}
    finally{guessBusy=false;}
  }
@@ -114,7 +121,7 @@ window.SpecialModes=(()=>{
    clearTimeout(previewTimer);clearTimeout(shelfPrimeTimer);selectedSlot=s.slot;loopRequested=true;
    const url=window.PreviewPlayback?.source(s.id,s.audio_url)||s.audio_url,old=a;
    if(window.PreviewPlayback)a=window.PreviewPlayback.replace(a,url);else{a.pause();a.src=url;a.currentTime=0}
-   if(a!==old)delete a.dataset.shelfBound;bindShelfAudio();markPlayback();
+   a.dataset.songId=s.id;if(a!==old)delete a.dataset.shelfBound;bindShelfAudio();markPlayback();
    try{await (window.PreviewPlayback?window.PreviewPlayback.play(a):a.play());if(generation!==previewGeneration||!loopRequested)return;playingSlot=s.slot;$('#shelf-preview-info').textContent=s.title;markPlayback();
      previewTimer=setTimeout(advanceShelf,Math.max(0,10-a.currentTime)*1000);
      shelfPrimeTimer=setTimeout(()=>{if(generation!==previewGeneration||!loopRequested)return;const at=available.findIndex(item=>item.slot===s.slot),next=available[(at+1)%available.length];window.PreviewPlayback?.prime(window.PreviewPlayback.source(next.id,next.audio_url))},650);
@@ -136,13 +143,15 @@ window.SpecialModes=(()=>{
  }
 
  async function loadShelf(fresh=false){
-   if(shelfBusy)return;shelfBusy=true;cancelReveal();reveal.closed=false;stopShelf();U.stopAudio();shelf=null;selectedSlot=null;U.pageTone('shelves');document.body.classList.remove('game-page');
-   const generation=reveal.generation,release=U.holdHeight();U.main.innerHTML='<div class="page-head"><h1 class="shelves">Album Shelves</h1></div><div id="shelf-content"><div class="empty" role="status">Loading shelves…</div></div>';
-   try{const result=await U.api('/api/album-shelves/round',{album_count:0,fresh});if(generation!==reveal.generation||reveal.closed)return;
+   if(shelfBusy||reveal.closed)return;const previous=shelf;shelfBusy=true;cancelReveal();stopShelf();U.stopAudio();shelf=null;selectedSlot=null;U.pageTone('shelves');document.body.classList.remove('game-page');
+   const generation=reveal.generation,release=U.holdHeight();if(!previous)U.main.innerHTML='<div class="page-head"><h1 class="shelves">Album Shelves</h1></div><div id="shelf-content"><div class="empty" role="status">Loading shelves…</div></div>';
+   $$('[data-shelf-next],[data-shelf-play],[data-shelf-retry]').forEach(b=>b.disabled=true);U.main.setAttribute('aria-busy','true');$('#shelf-load-error')?.remove();
+   try{const load=signal=>U.api('/api/album-shelves/round',{album_count:0,fresh:false},undefined,{signal});const result=await(flow?flow.take('shelves',load):load());if(generation!==reveal.generation||reveal.closed)return;
      shelf={...result,placements:Object.fromEntries(result.albums.map(a=>[String(a.slot),[]])),pool:result.songs.map(s=>s.slot),answered:false,revealed:new Set()};
+     window.Listening?.start('shelves',shelf.token,shelf.songs.map(s=>s.id));
      $('#shelf-content').innerHTML=`<div class="shelf-actions"><button class="btn primary" data-shelf-check>Check shelves</button><button class="btn primary shelf-next" data-shelf-next hidden>Next round →</button><div id="shelf-order-score" class="shelf-order-score" hidden role="status"></div><span id="shelf-reveal-progress" class="shelf-reveal-progress" role="status"></span><small id="reveal-audio-note"></small></div><div class="shelf-audio-bar panel dashboard-surface"><span class="shelf-preview-duration">10-second samples</span><button class="btn primary" data-shelf-play aria-pressed="false" ${shelf.songs.some(s=>s.audio_url)?'':'disabled'}>▶ Play previews</button><span id="shelf-preview-info" role="status">${shelf.songs.filter(s=>s.audio_url).length} / 10 previews</span><audio id="shelf-preview-audio" preload="none"></audio></div><div id="shelf-board"></div>`;renderShelfBoard();bindShelfAudio();
-   }catch(error){if(generation===reveal.generation&&!reveal.closed)$('#shelf-content').innerHTML=`<div class="empty error" role="alert">${esc(error.message)}</div><div class="next-area"><button class="btn" data-shelf-retry>Retry loading</button></div>`;}
-   finally{shelfBusy=false;release();}
+   }catch(error){if(generation===reveal.generation&&!reveal.closed){$('#shelf-content').insertAdjacentHTML('beforeend',`<div id="shelf-load-error"><p class="error" role="alert">${esc(error.message)}</p><button class="btn" data-shelf-retry>Retry loading</button></div>`);}}
+   finally{if(generation===reveal.generation){shelfBusy=false;U.main.removeAttribute('aria-busy')}release();}
  }
 
 
@@ -171,7 +180,7 @@ window.SpecialModes=(()=>{
  function shelfAlbumScore(album){
    const answers=shelf.result.answers.filter(a=>a.album_slot===album.slot),items=answers.map(a=>shelf.result.items.find(i=>i.item_slot===a.slot));
    const available=items.reduce((total,item)=>total+item.available,0),points=items.reduce((total,item)=>total+(shelf.revealed.has(item.item_slot)?item.points:0),0);
-   return `<div class="shelf-cover-score"><small id="shelf-album-label-${album.slot}">${shelf.scoredAlbums?.has(album.slot)?'Added to total':'Album points'}</small><strong id="shelf-album-score-${album.slot}">${num(points)}</strong><span>/ ${available}</span></div>`;
+   return `<div class="shelf-cover-score"><small id="shelf-album-label-${album.slot}">${shelf.scoredAlbums?.has(album.slot)?'Added to total':'Album points'}</small><strong id="shelf-album-score-${album.slot}">${num(points)}</strong><span>/ ${available}</span><b class="shelf-point-gain" id="shelf-album-gain-${album.slot}" aria-label="Latest revealed points"></b></div>`;
  }
  function renderShelfBoard(){
    if(!shelf)return;
@@ -199,16 +208,17 @@ window.SpecialModes=(()=>{
     const group=groups[albumIndex],albumNode=$(`[data-shelf-album="${group.album.slot}"]`);albumNode.dataset.revealActive='true';
     for(let trackIndex=0;trackIndex<group.answers.length;trackIndex++,index++){
      if(generation!==reveal.generation||reveal.closed)return;const truth=answers[index],slot=truth.slot,item=current.result.items.find(i=>i.item_slot===slot),old=$(`[data-shelf-slot="${slot}"]`);
-     old.classList.add('reveal-closing');if(!await revealDelay(420,generation))return;
+     old.classList.add('reveal-closing');if(!await revealDelay(wait('shelfClose',420),generation))return;
      current.revealed.add(slot);
      const destination=$(`[data-shelf-drop="${truth.album_slot}"]`);destination.querySelector('.shelf-empty')?.remove();
      const holder=document.createElement('div');holder.innerHTML=shelfTrack(slot,String(truth.album_slot),index,answers.length);const row=holder.firstElementChild;
      old.remove();destination.insertBefore(row,destination.querySelector('.shelf-track:not([data-correct-track])'));row.classList.add('reveal-opening');
      const previousAlbum=albumPoints[truth.album_slot];albumPoints[truth.album_slot]+=item.points;
+     $('#shelf-album-gain-'+truth.album_slot).textContent='+'+num(item.points)+' points';
      U.animateScore($('#shelf-album-score-'+truth.album_slot),previousAlbum,albumPoints[truth.album_slot],2,()=>generation===reveal.generation&&!reveal.closed);
      $('#shelf-reveal-progress').textContent=`Album ${albumIndex+1} / ${groups.length} · Track ${trackIndex+1} / ${group.answers.length}`;
      const next=answers[index+1];await shelfAnswerAudio(current.songs.find(s=>s.slot===slot),next&&current.songs.find(s=>s.slot===next.slot),generation);
-     if(!await revealDelay(2600,generation))return;row.classList.remove('reveal-opening');
+     if(!await revealDelay(wait('shelfTrack',2600),generation))return;row.classList.remove('reveal-opening');
     }
     if(generation!==reveal.generation||reveal.closed)return;
     const previous=points;points+=albumPoints[group.album.slot];
@@ -216,7 +226,7 @@ window.SpecialModes=(()=>{
     $('#shelf-album-label-'+group.album.slot).textContent='Adding to total';
     $('#shelf-reveal-progress').textContent=`Album ${albumIndex+1} / ${groups.length} · +${num(albumPoints[group.album.slot])} points`;
     U.animateScore($('#shelf-running-score'),previous,points,2,()=>generation===reveal.generation&&!reveal.closed);
-    if(!await revealDelay(matchMedia('(prefers-reduced-motion: reduce)').matches?350:1250,generation))return;
+    if(!await revealDelay(matchMedia('(prefers-reduced-motion: reduce)').matches?350:wait('shelfTransfer',1250),generation))return;
     current.scoredAlbums.add(group.album.slot);albumNode.dataset.scoreAdded='true';
     $('#shelf-album-label-'+group.album.slot).textContent='Added to total';
     albumNode.classList.remove('shelf-score-transfer');button.classList.remove('shelf-score-transfer');
@@ -229,8 +239,8 @@ window.SpecialModes=(()=>{
 
  async function checkShelf(){
    if(shelfBusy||!shelf||shelf.answered||shelf.pool.length)return;const current=shelf,generation=reveal.generation;shelfBusy=true;$('[data-shelf-check]').disabled=true;let saved=false;
-   try{const result=await U.api('/api/album-shelves/answer',{token:current.token,placements:current.placements});saved=true;current.answered=true;current.result=result;if(shelf!==current||generation!==reveal.generation||reveal.closed)return;stopShelf(true);window.PreviewPlayback?.hold();cancelReveal();renderShelfBoard();$('[data-shelf-play]').disabled=true;
-     U.refreshData().catch(()=>U.toast('Round saved; collection refresh unavailable'));await revealShelfRound();
+   try{const result=await U.api('/api/album-shelves/answer',{token:current.token,placements:current.placements,listening:window.Listening?.sample()});saved=true;current.answered=true;current.result=result;if(shelf!==current||generation!==reveal.generation||reveal.closed)return;stopShelf(true);window.PreviewPlayback?.hold();cancelReveal();renderShelfBoard();$('[data-shelf-play]').disabled=true;
+     flow?.prepare('shelves',signal=>U.api('/api/album-shelves/round',{album_count:0,fresh:false},undefined,{signal}));await revealShelfRound();
    }catch(error){U.toast(error.message);if(!saved&&$('[data-shelf-check]'))$('[data-shelf-check]').disabled=false;}
    finally{if(!saved)shelfBusy=false;}
  }
@@ -311,7 +321,8 @@ window.SpecialModes=(()=>{
    const row=e.target.closest('[data-shelf-slot]');if(row&&e.target===row&&['ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();shiftShelf(Number(row.dataset.shelfSlot),e.key==='ArrowUp'?-1:1);}
  });
  document.addEventListener('preview-blocked',()=>{stopShelf();cancelShelfClips();reveal.audio?.pause()});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden&&U&&['guesser','shelves'].includes(document.body.dataset.page)){U.stopAudio();stopShelf();}});
  window.addEventListener('pagehide',()=>{reveal.closed=true;cancelReveal();stopShelf();});
- window.addEventListener('pageshow',e=>{if(e.persisted&&U){reveal.closed=false;guessBusy=false;shelfBusy=false;if(document.body.dataset.page==='guesser')loadGuess();if(document.body.dataset.page==='shelves'){if(shelf?.answered){if(!shelf.revealComplete){shelf.revealed.clear();renderShelfBoard();shelfBusy=true;revealShelfRound().catch(error=>U.toast(error.message));}}else loadShelf();}}});
+ window.addEventListener('pageshow',e=>{if(e.persisted&&U){reveal.closed=false;guessBusy=false;guessLoading=false;shelfBusy=false;if(document.body.dataset.page==='guesser')loadGuess();if(document.body.dataset.page==='shelves'){if(shelf?.answered){if(!shelf.revealComplete){shelf.revealed.clear();renderShelfBoard();shelfBusy=true;revealShelfRound().catch(error=>U.toast(error.message));}}else loadShelf();}}});
  return {bindUI:ui=>U=ui,panels,homeSummary,homeBanners,loadGuess,loadShelf,renderModeRanking,renderDevRecords,cancelGuess:()=>{guessRequest++;guessBusy=false;},totals};
 })();

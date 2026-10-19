@@ -6,20 +6,27 @@ patches under V3.4. Earlier two-part foundational release notes are retained.
 
 | Release | Notes |
 | --- | --- |
+| V5.0 (includes V5.0.2.1 storage follow-up) | [V5_UPDATE.md](V5_UPDATE.md) |
+| V4.1 (includes V4.1.6) | [V4_1_UPDATE.md](V4_1_UPDATE.md) |
+| V4.0.0 — complete release (steps 1–8) | [V4_0_0_UPDATE.md](V4_0_0_UPDATE.md) |
 | V3.4 (includes V3.4.13) | [V3_4_UPDATE.md](V3_4_UPDATE.md) |
 | V3.3.5 (includes V3.3.5.1) | [V3_3_5_UPDATE.md](V3_3_5_UPDATE.md) |
 | V3.3.4 | [V3_3_4_UPDATE.md](V3_3_4_UPDATE.md) |
 | V3.3.3 | [V3_3_3_UPDATE.md](V3_3_3_UPDATE.md) |
-| V3.3.2 | [V3_3_2_UPDATE.md](V3_3_2_UPDATE.md) |
-| V3.3.1 | [V3_3_1_UPDATE.md](V3_3_1_UPDATE.md) |
-| V3.3 | [V3_3_UPDATE.md](V3_3_UPDATE.md) |
 | V3.2.7 | [V3_2_7_UPDATE.md](V3_2_7_UPDATE.md) |
-| V3.2.6 | [README_V3_2_6.md](README_V3_2_6.md) |
 | V3.2.5 | [README_V3_2_5.md](README_V3_2_5.md) |
-| V3.2.4 | [README_V3_2_4.md](README_V3_2_4.md) |
-| V3.2.3 | [README_V3_2_3.md](README_V3_2_3.md) |
-| V3.2.2 | [README_v3_2_2.md](README_v3_2_2.md) |
-| V3.2.1 | [README_V3_2_1.md](README_V3_2_1.md) |
-| V3.2 | [README_V3_2.md](README_V3_2.md) |
-| V3.1.4 | [README_V3_1_4.md](README_V3_1_4.md) |
-| V3.1 | [README_V3_1.md](README_V3_1.md) |
+
+Historical note files for V3.3.2, V3.3.1, V3.3, V3.2.6, V3.2.4, V3.2.3, V3.2.2, V3.2.1, V3.2, V3.1.4, V3.1 were not included in the supplied project. The table links only to notes present here.
+
+
+The V4 family log begins with the completed-release summary and step-8 changes,
+then retains every previously delivered V4 patch section. Statements about the
+next step inside old sections are historical. Current setup/play is in the
+[main README](../README.md); [technical details](../docs/TECHNICAL_GUIDE.md),
+[current validation](../docs/VALIDATION.md) and [historical validation](../docs/archive/VALIDATION_HISTORY.md)
+have separate owners. Earlier release notes are preserved as supplied; missing
+past release families listed above have not been reconstructed or invented.
+
+V5.0.3: [source review workflow](../docs/UPGRADE_V5_0_3.md).
+
+V5.0.3.1: [requested backups and website shutdown](../docs/UPGRADE_V5_0_3_1.md).

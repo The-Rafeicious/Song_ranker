@@ -3,6 +3,10 @@
  'use strict';
  const bound=new WeakSet(),problems=new WeakMap(),players=new Set(),gains=new WeakMap(),fades=new WeakMap(),mixes=new WeakMap(),prepared=new Map();
  const FADE_MS=1500,READY_TIMEOUT=12000;let cooldown=0,blockedMessage='',hideTimer,serial=0,pending=null,closed=false,tailId=0,focusAudio=null;
+ // A visible-time fade clock excludes even background time with no timer callbacks.
+ let fadeHidden=0,fadeHiddenAt=document.hidden?performance.now():null;
+ function fadeClock(){const now=performance.now();return now-fadeHidden-(fadeHiddenAt===null?0:now-fadeHiddenAt)}
+ document.addEventListener('visibilitychange',()=>{const now=performance.now();if(document.hidden){if(fadeHiddenAt===null)fadeHiddenAt=now}else if(fadeHiddenAt!==null){fadeHidden+=now-fadeHiddenAt;fadeHiddenAt=null}});
  const newToken=()=>Date.now().toString(36)+'_'+Math.random().toString(36).slice(2);
  let token=newToken(),warmQueue=Promise.resolve(),warmLast=0;
  const warmJobs=new Map();
@@ -113,8 +117,8 @@
   audio.addEventListener('error',()=>{if(audio.getAttribute('src')){recover(audio);problem(audio)}});
  }
  function fadeOut(audio,ms=FADE_MS){
-  if(!audio||audio.paused)return;const tails=mixes.get(audio);if(tails){mixes.delete(audio);for(const previous of tails)fadeOut(previous,ms)}const tag={},initial=gains.get(audio)??1,started=performance.now();fades.set(audio,tag);
-  function step(now){if(fades.get(audio)!==tag)return;const t=Math.min(1,(now-started)/ms);setGain(audio,initial*(1-t));if(t<1)setTimeout(()=>step(performance.now()),25);else{fades.delete(audio);audio.pause();if(audio.dataset.previewRetired)dispose(audio);else setGain(audio,1)}}setTimeout(()=>step(performance.now()),25);
+  if(!audio||audio.paused)return;const tails=mixes.get(audio);if(tails){mixes.delete(audio);for(const previous of tails)fadeOut(previous,ms)}const tag={},initial=gains.get(audio)??1,started=fadeClock();fades.set(audio,tag);
+  function step(now){if(fades.get(audio)!==tag)return;const t=Math.min(1,(fadeClock()-started)/ms);setGain(audio,initial*(1-t));if(t<1)setTimeout(()=>step(performance.now()),25);else{fades.delete(audio);audio.pause();if(audio.dataset.previewRetired)dispose(audio);else setGain(audio,1)}}setTimeout(()=>step(performance.now()),25);
  }
  function overlap(audio,outgoing){
   const incomingTag={},initial=new Map(),incomingGain=gains.get(audio)??0;fades.set(audio,incomingTag);mixes.set(audio,new Set(outgoing));

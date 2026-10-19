@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% from 'stats_visuals.html' import pulse, listening_panel %}
 {% from 'components.html' import art %}
 {% from 'mode_stats_components.html' import figure, rate, progress, metadata %}
 {% block title %}Recognisability · Song Ranker{% endblock %}
@@ -50,6 +51,7 @@
   <div class="mode-stats-result">
     <strong>{{ '+'+('%g'|format(row.points)) if row.points is not none else '—' }}<small> points</small></strong>
     <span>{{ ('%g'|format(row.user_score_after)) if row.user_score_after is not none else '—' }} score · {{ row.streak_after if row.streak_after is not none else '—' }} streak</span>
+    <span>{{ 'Challenge' if row.rules_version==2 else 'Classic' }}{% if row.rules_version==2 and row.streak_passed==0 %} · streak finished{% endif %}</span>
     {% if row.date %}<time datetime="{{ row.date }}" data-timestamp="{{ row.completed_at }}">{{ row.date[:10] }} · {{ row.date[11:16] }} UTC</time>{% else %}<span>Date unavailable</span>{% endif %}
   </div>
 </li>
@@ -64,11 +66,12 @@
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-overview">
     <div class="section-head"><h2 id="recognition-overview" class="recognition">Trivia overview</h2></div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">
-      {{ figure('Best player score','%g'|format(summary.best_score)) }}
-      {{ figure('Best streak',summary.best_streak) }}
+      {{ figure('Challenge best score','%g'|format(summary.challenge.best_score)) }}
+      {{ figure('Challenge best streak',summary.challenge.best_streak) }}
       {{ figure('Completed rounds',summary.rounds) }}
       {{ figure('Tested tracks',summary.tested) }}
     </dl>
+    
     <div class="mode-stats-inset mode-stats-rate">
       <h3>Overall field accuracy</h3><strong class="mode-stats-primary">{{ rate(summary.accuracy) }}</strong>
       {{ progress('Overall field accuracy',summary.accuracy) }}
@@ -86,6 +89,8 @@
     {% endfor %}
     </div>
   </section>
+  {{pulse(pulse_data)}}
+  {{listening_panel(listening_data)}}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-rounds">
     <div class="section-head"><h2 id="recognition-rounds" class="recognition">Round results</h2></div>

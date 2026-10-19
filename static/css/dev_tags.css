@@ -1,0 +1,54 @@
+/* Scoped workbench composition; the shared baseline is still loaded last. */
+body[data-page=dev] .tag-workbench { --surface-accent: var(--tag); display:grid; gap:20px; min-width:0; }
+body[data-page=dev] .tag-workbench .panel { min-width:0; margin:0; }
+body[data-page=dev] .tag-workbench :is(input,select,button) { font-size:16px; min-height:44px; }
+body[data-page=dev] .tag-workbench :is(input,select) { max-width:100%; min-width:0; }
+body[data-page=dev] .tag-workbench label { font-size:16px; }
+body[data-page=dev] .tag-workbench p { overflow-wrap:anywhere; }
+body[data-page=dev] .tag-workbench .section-head > * { min-width:0; overflow-wrap:anywhere; }
+body[data-page=dev] .tag-workbench .joined-metrics :is(b,span) { display:block; }
+body[data-page=dev] .tag-filters { display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin:20px 0; }
+body[data-page=dev] .tag-filters label, body[data-page=dev] .tag-edit-fields label, body[data-page=dev] .tag-new { display:grid; gap:8px; min-width:0; }
+body[data-page=dev] .tag-filters .tag-wide { grid-column:span 2; }
+body[data-page=dev] .tag-toolbar { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:16px; }
+body[data-page=dev] .tag-check { display:flex; align-items:center; gap:10px; min-height:44px; }
+body[data-page=dev] .tag-workbench input[type=checkbox] { width:20px; height:20px; min-height:20px; flex:0 0 20px; accent-color:var(--tag); }
+body[data-page=dev] .tag-edit-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+body[data-page=dev] .tag-choices { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; max-height:340px; overflow:auto; padding:6px; margin:12px 0 20px; border:1px solid var(--line); border-radius:18px; }
+body[data-page=dev] .tag-workbench .tag-choice { display:flex; align-items:center; gap:10px; min-width:0; padding:12px; min-height:56px; background:#242424; border-radius:12px; }
+body[data-page=dev] .tag-choice > span { flex:1; min-width:0; }
+body[data-page=dev] .tag-choice :is(b,small) { display:block; overflow-wrap:anywhere; }
+body[data-page=dev] .tag-choice small { font-size:14px; color:var(--muted); }
+body[data-page=dev] .tag-new > span { font-size:15px; }
+body[data-page=dev] .tag-player-copy { display:grid; gap:8px; min-width:0; }
+body[data-page=dev] .tag-player-copy > :is(strong,span) { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+body[data-page=dev] .tag-player-copy > strong { font-size:24px; }
+body[data-page=dev] .tag-song-row { display:grid; grid-template-columns:44px 72px minmax(0,1fr) auto; align-items:center; gap:16px; padding:18px 0; border-bottom:1px solid var(--line); min-width:0; }
+body[data-page=dev] .tag-song-row.tag-current { border-color:var(--song); }
+body[data-page=dev] .tag-select { display:grid; place-items:center; min-width:44px; min-height:44px; }
+body[data-page=dev] .tag-art, body[data-page=dev] .tag-art :is(img,.art-wrap,.art-fallback) { width:72px; height:72px; min-width:72px; min-height:72px; max-width:72px; max-height:72px; object-fit:cover; border-radius:12px; }
+body[data-page=dev] .tag-copy { min-width:0; }
+body[data-page=dev] .tag-copy > :is(a,p) { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+body[data-page=dev] .tag-copy > a { font-size:22px; font-weight:800; }
+body[data-page=dev] .tag-copy p { margin:6px 0; }
+body[data-page=dev] .tag-row-actions { display:flex; flex-wrap:wrap; gap:10px; max-width:260px; }
+body[data-page=dev] .tag-review, body[data-page=dev] .tag-discard { padding:18px; margin-top:20px; background:#242424; border:1px solid var(--line); border-radius:18px; min-width:0; }
+body[data-page=dev] .tag-review-row { border-bottom:1px solid var(--line); padding:16px 0; }
+body[data-page=dev] .tag-review-row :is(strong,p,span) { overflow-wrap:anywhere; }
+body[data-page=dev] .tag-diff { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+body[data-page=dev] .tag-diff > div { min-width:0; }
+body[data-page=dev] .tag-replace-note { color:var(--tag); }
+@media(max-width:1050px) {
+ body[data-page=dev] .tag-filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ body[data-page=dev] .tag-song-row { grid-template-columns:44px 72px minmax(0,1fr); }
+ body[data-page=dev] .tag-row-actions { grid-column:2/-1; max-width:none; }
+}
+@media(max-width:600px) {
+ body[data-page=dev] .tag-filters, body[data-page=dev] .tag-edit-fields, body[data-page=dev] .tag-choices, body[data-page=dev] .tag-diff { grid-template-columns:minmax(0,1fr); }
+ body[data-page=dev] .tag-filters .tag-wide { grid-column:auto; }
+ body[data-page=dev] .tag-song-row { grid-template-columns:44px 56px minmax(0,1fr); gap:10px; }
+ body[data-page=dev] .tag-art, body[data-page=dev] .tag-art :is(img,.art-wrap,.art-fallback) { width:56px; height:56px; min-width:56px; min-height:56px; max-width:56px; max-height:56px; }
+ body[data-page=dev] .tag-row-actions { grid-column:1/-1; }
+ body[data-page=dev] .tag-copy > a { font-size:19px; }
+ body[data-page=dev] .tag-review, body[data-page=dev] .tag-discard { padding:12px; }
+}

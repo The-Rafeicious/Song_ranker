@@ -4,8 +4,13 @@
 {% block page_kind %}history{% endblock %}
 {% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/history.css',v=app_version) }}">{% endblock %}
 {% block content %}
-<div class="page-head history-page-header"><h1 class="standard">Match History</h1><div class="pill-nav" aria-label="Match filter"><button class="pill active" data-history="all" aria-pressed="true">All</button><button class="pill blind" data-history="blind" aria-pressed="false">Blind</button><button class="pill standard" data-history="standard" aria-pressed="false">Non-blind</button></div></div>
+<div class="page-head history-page-header"><h1 class="standard">Match History</h1></div>
+<section class="panel history-overview">
+ <div class="joined-metrics" data-columns="3"><div><b>{{elo_summary.total}}</b><span>Elo matches</span></div><div><b class="standard">{{elo_summary.ordinary}}</b><span>Voting</span></div><div><b class="tournament">{{elo_summary.tournament}}</b><span>Tournament first rounds</span></div></div>
+ <nav class="pill-nav history-filters" aria-label="Match filter">{% for key,label in [('all','All modes'),('standard','Non-blind'),('blind','Blind')] %}<a class="pill {{key}}{% if history_mode==key %} active{% endif %}" href="{{url_for('history',mode=key,origin=history_origin)}}"{% if history_mode==key %} aria-current="page"{% endif %}>{{label}}</a>{% endfor %}</nav>
+ <nav class="pill-nav history-filters" aria-label="Match origin">{% for key,label in [('all','All Elo matches'),('ordinary','Voting'),('tournament','Tournament first rounds')] %}<a class="pill{% if key=='tournament' %} tournament{% endif %}{% if history_origin==key %} active{% endif %}" href="{{url_for('history',mode=history_mode,origin=key)}}"{% if history_origin==key %} aria-current="page"{% endif %}>{{label}}</a>{% endfor %}</nav>
+</section>
 <section class="panel stats-glow glow-voting history-list" id="all-history" aria-label="Recent matches">
-  {% for match in history %}{{ versus_row(match.winner_song,match.loser_song,mode=match.mode,created_at=match.created_at,before_left=match.winner_before,after_left=match.winner_after,before_right=match.loser_before,after_right=match.loser_after,match_id=match.id) }}{% endfor %}
+  {% for match in history %}{{ versus_row(match.winner_song,match.loser_song,mode=match.mode,created_at=match.created_at,before_left=match.winner_before,after_left=match.winner_after,before_right=match.loser_before,after_right=match.loser_after,match_id=match.id,history_note=match.get('history_note',''),origin=match.get('origin','ordinary'),tournament_id=match.get('tournament_id'),rating_weight=match.get('rating_weight',1)) }}{% endfor %}
   <div class="empty" id="history-empty" {% if history %}hidden{% endif %}>No matches</div>
-</section>{% endblock %}
+</section><nav class="history-pagination" aria-label="Match history pages">{% if history_page>1 %}<a class="btn" href="{{url_for('history',mode=history_mode,origin=history_origin,page=history_page-1)}}">← Newer</a>{% endif %}<span>{{history_start}}–{{history_end}} of {{history_total}} · Page {{history_page}} / {{history_pages}}</span>{% if history_page<history_pages %}<a class="btn" href="{{url_for('history',mode=history_mode,origin=history_origin,page=history_page+1)}}">Older →</a>{% endif %}</nav>{% endblock %}

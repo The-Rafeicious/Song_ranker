@@ -1,10 +1,7 @@
-# Page and style work
+# Song Ranker work
 
-Before editing a page layout or styling, read `README_PAGE_STYLE.md`. Use its
-shared rules and accepted page decisions, and follow the user's latest
-corrections when they differ. Update the guide when a correction becomes a new
-shared rule. Limit each patch to the page/group requested.
-
-Group the V3.4 style rollout under `update_logs/V3_4_UPDATE.md`, with a section
-for each exact patch version. Deliver only edited files and version notes
-unless the user requests a different package. Preserve the user's database.
+Read docs/PAGE_STYLE.md before layout changes. Keep approved semantic colours,
+responsive geometry and short, useful labels. Update the guide for accepted changes.
+The user’s current scope takes priority. Backend code lives in songranker/;
+schema lives in data/schema.sql; documentation lives in docs/ and release notes
+in update_logs/. Preserve active databases and backups. Test data is disposable.

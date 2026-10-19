@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% from 'stats_visuals.html' import pulse, listening_panel %}
 {% from 'components.html' import art %}
 {% from 'mode_stats_components.html' import figure, rate, number, progress, metadata, saved_date %}
 {% block title %}Album Shelves Stats · Song Ranker{% endblock %}
@@ -40,6 +41,8 @@
     <div class="mode-stats-inset mode-stats-rate"><h3>Relative track order</h3><strong class="mode-stats-primary">{{ rate(summary.order_accuracy) }}</strong>{{ progress('Overall relative track order',summary.order_accuracy) }}<p>{{ summary.order_right }} correct / {{ summary.order_pairs }} eligible track comparisons</p></div>
     {% if summary.unknown %}<p class="mode-stats-caption">{{ summary.unknown }} completed {{ 'round has' if summary.unknown==1 else 'rounds have' }} incomplete saved answers; score and order totals cover {{ summary.scored_rounds }} rounds.</p>{% endif %}
   </section>
+  {{pulse(pulse_data)}}
+  {{listening_panel(listening_data)}}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="shelves-results">
     <div class="section-head"><h2 class="shelves" id="shelves-results">Round results</h2></div>

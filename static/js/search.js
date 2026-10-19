@@ -45,7 +45,7 @@ window.SearchPage=(()=>{
  }
  function card(r){
    const tracks=U.linkedSongs(type,r),kind=entityColour(type),info=type==='songs'||type==='albums'?U.rankingMetadata(type==='songs'&&!U.properAlbum(U.records('albums').find(a=>a.id===r.album_id))?{...r,album:''}:r,type):{html:`${tracks.length} songs`,text:`${tracks.length} songs`};
-   return `<article class="result-card ${kind} dashboard-surface"><div class="search-art">${U.artwork(r,type)}</div><div class="result-info"><span class="badge ${kind}">${entityLabels[type]}</span><h2><a class="${kind}" href="${U.urlFor(type,r)}" title="${esc(r.name)}">${type==='tags'?'# ':''}${esc(r.name)}</a></h2><div class="search-metadata" title="${esc(info.text)}">${info.html}</div>${type==='tags'&&r.description?`<p class="search-description" title="${esc(r.description)}">${esc(r.description)}</p>`:''}</div><div class="result-score ${type==='songs'?'standard':kind}">${Math.round(r.score)}<small>${type==='songs'?'Elo':'Impact'}</small></div>${badges(tracks)}</article>`;
+   return `<article class="result-card ${kind} dashboard-surface"><div class="search-art">${U.artwork(r,type)}</div><div class="result-info"><span class="badge ${kind}">${entityLabels[type]}</span><h2><a class="${kind}" href="${U.urlFor(type,r)}" title="${esc(r.name)}">${type==='tags'?'# ':''}${esc(r.name)}</a></h2><div class="search-metadata" title="${esc(info.text)}">${info.html}</div>${type==='tags'&&r.description?`<p class="search-description" title="${esc(r.description)}">${esc(r.description)}</p>`:''}</div><div class="result-score ${type==='songs'?'standard':kind}">${type==='songs'?Math.round(r.score):window.SongRankerUI.impactText(r.score)}<small>${type==='songs'?'Elo':'Impact'}</small></div>${badges(tracks)}</article>`;
  }
  function randomOrder(category){
    if(!randomOrders.has(category)){
@@ -87,7 +87,7 @@ window.SearchPage=(()=>{
    U.pageTone(entityColour(type));
    const found=U.related(query),all=found[type].filter(r=>(type!=='albums'||U.properAlbum(r))&&(!tag||type!=='songs'||r.tag_ids.includes(tag)));
    const order=sort==='random'?randomOrder(type):null;
-   all.sort(order?(a,b)=>(order.get(a.id)??Infinity)-(order.get(b.id)??Infinity)||a.id-b.id:sort==='name'?(a,b)=>a.name.localeCompare(b.name)||a.id-b.id:(a,b)=>b.score-a.score||a.name.localeCompare(b.name)||a.id-b.id);
+   all.sort(order?(a,b)=>(order.get(a.id)??Infinity)-(order.get(b.id)??Infinity)||a.id-b.id:sort==='name'?(a,b)=>a.name.localeCompare(b.name)||a.id-b.id:(a,b)=>(b.score??-Infinity)-(a.score??-Infinity)||a.name.localeCompare(b.name)||a.id-b.id);
    const host=$('#catalog-results');host.innerHTML=all.slice(0,limit).map(card).join('')||'<div class="empty">No '+type+' found. Try another name or category.</div>';
    $('#result-count').textContent=`${all.length} ${type} · ${Math.min(limit,all.length)} shown`;
    $('#search-more').hidden=limit>=all.length;syncSort();

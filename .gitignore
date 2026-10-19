@@ -1,0 +1,26 @@
+# Local data/private/generated files. Already tracked files stay tracked by Git.
+*.db
+*.db-wal
+*.db-shm
+*.db-journal
+*.sqlite
+*.sqlite3
+*.sqlite-wal
+*.sqlite-shm
+*.sqlite3-wal
+*.sqlite3-shm
+.env
+__pycache__/
+*.py[cod]
+database_backups/
+instance/*
+!instance/.gitignore
+.venv/
+venv/
+node_modules/
+.pytest_cache/
+/tmp*/
+/.git_snapshot_*
+/database_snapshot.txt
+/current_elo_rankings.txt
+# database_backup.sql is intentionally eligible for explicit backup uploads.

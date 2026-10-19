@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
-{% from 'components.html' import art %}
+{% from 'stats_visuals.html' import pulse, listening_panel %}
+{% from 'components.html' import art, versus_row %}
 {% from 'mode_stats_components.html' import figure, rate, progress, metadata, saved_date, scope_link %}
 {% block title %}Tournament Stats · Song Ranker{% endblock %}
 {% block page_kind %}tournament_stats{% endblock %}
@@ -41,7 +42,10 @@
     <div class="mode-stats-inset mode-stats-rate"><h3>Brackets completed</h3><strong class="mode-stats-primary">{{ rate(summary.completion) }}</strong>{{ progress('Brackets completed',summary.completion) }}<p>{{ summary.finished }} / {{ summary.brackets }} brackets</p></div>
     {% if summary.missing_entries %}<p class="mode-stats-caption">Entry counts unavailable for {{ summary.missing_entries }} {{ 'bracket' if summary.missing_entries==1 else 'brackets' }}.</p>{% endif %}
   </section>
+  {{pulse(pulse_data)}}
+  {{listening_panel(listening_data)}}
 
+  <section class="panel dashboard-surface mode-stats-panel"><div class="section-head"><h2 class="tournament">First-round Elo</h2><a class="tournament" href="/history?origin=tournament">History ↗</a></div><dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Elo matches',tournament_elo.total)}}{{figure('Full influence',tournament_elo.full)}}{{figure('Half influence',tournament_elo.half)}}{{figure('Tracks involved',tournament_elo.tracks)}}</dl><div class="mode-stats-stacked" role="img" aria-label="{{tournament_elo.full}} full influence, {{tournament_elo.half}} half influence"><span style="background:var(--tournament);width:{{100*tournament_elo.full/tournament_elo.total if tournament_elo.total else 0}}%"></span><span style="background:#ffb1ca;width:{{100*tournament_elo.half/tournament_elo.total if tournament_elo.total else 0}}%"></span></div><p class="mode-stats-caption tournament">{{tournament_elo.standard}} Non-blind · {{tournament_elo.blind}} Blind</p><details class="stats-notes"><summary>Recent first-round Elo history</summary><div class="compact-elo-history">{% for row in tournament_elo_history %}{{versus_row(row.winner_song,row.loser_song,mode=row.mode,created_at=row.created_at,before_left=row.winner_before,after_left=row.winner_after,before_right=row.loser_before,after_right=row.loser_after,match_id=row.id,origin='tournament',tournament_id=row.tournament_id,rating_weight=row.rating_weight)}}{% else %}<div class="empty">No first-round Elo matches yet.</div>{% endfor %}</div></details></section>
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-podium">
     <div class="section-head"><h2 class="tournament" id="ts-podium">Latest podium</h2>{% if latest %}<a class="tournament" href="{{ url_for('tournament_stats_page',tournament=latest.id) }}#tournament-{{ latest.id }}">Bracket #{{ latest.id }} ↗</a>{% endif %}</div>
     {% if latest %}
