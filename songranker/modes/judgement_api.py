@@ -28,7 +28,8 @@ def mode_updates_config():
         tags = [dict(r) for r in conn.execute('SELECT id,name,description FROM genres ORDER BY name COLLATE NOCASE,id')]
         paths={'spotlight':'shared_spotlight','vibe':'vibe_map'}
         return jsonify(rules_version=1,backend_only=False,modes=[dict(key=k,name=m.NAME,color=m.COLOR,
-            songs=m.SONGS,subjective=True,play_url='/'+paths[k],stats_url='/'+paths[k]+'_stats') for k,m in MODES.items()],
+            songs=m.SONGS,rules_version=m.RULES_VERSION,subjective=True,play_url='/'+paths[k],stats_url='/'+paths[k]+'_stats') for k,m in MODES.items()],
+            spotlight=dict(rules_version=2,points_per_song=12,max_round_points=24,coordinate_min=0,coordinate_max=100),
             vibe=dict(maps=MAPS,coordinate_min=0,coordinate_max=4,max_themes=MAX_THEMES,tags=tags),
             overall=dict(spotlight='Adaptive preference-family contribution',vibe='Descriptive coverage; no quality weight'))
     finally: conn.close()

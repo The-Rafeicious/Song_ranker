@@ -250,7 +250,9 @@
     }
     if (mode === 'spotlight') {
       const ready = valid() || !!pending?.allocations || state === 'saved';
-      $('#spotlight-budget').textContent = ready ? '12 / 12 shared' : '12 available';
+      $('#spotlight-budget').textContent = state === 'saved'
+        ? 'Points awarded: ' + allocations.reduce((a,b) => a+b, 0)
+        : ready ? 'Ready to save' : 'Place all four songs';
       $$('[data-spotlight-points]', root).forEach(output => {
         const slot = Number(output.dataset.spotlightPoints);
         output.hidden = state !== 'saved';

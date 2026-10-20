@@ -26,7 +26,7 @@ def command(root,*args):
 
 class GitSyncTests(unittest.TestCase):
     def setUp(self):
-        self.temp=TemporaryDirectory(dir=Path.cwd());self.addCleanup(self.temp.cleanup);self.folder=Path(self.temp.name)
+        self.temp=TemporaryDirectory();self.addCleanup(self.temp.cleanup);self.folder=Path(self.temp.name)
         self.remote=self.folder/'remote.git';self.seed=self.folder/'seed';self.work=self.folder/'app'
         command(self.folder,'init','--bare','--initial-branch=main',str(self.remote))
         self.seed.mkdir();command(self.seed,'init','-b','main');self.identity(self.seed)
@@ -80,7 +80,7 @@ class GitSyncTests(unittest.TestCase):
     def test_sql_is_complete_and_unchanged_upload_creates_no_extra_commit(self):
         first=self.sync.upload();self.assertTrue(first['ok']);head=self.head()
         restored=self.folder/'from_sql.db';c=sqlite3.connect(restored);c.executescript(self.sync.sql.read_text());c.close()
-        with readonly(restored) as c:self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],17);self.assertEqual(c.execute('SELECT title FROM songs').fetchone()[0],'Fixture song')
+        with readonly(restored) as c:self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],18);self.assertEqual(c.execute('SELECT title FROM songs').fetchone()[0],'Fixture song')
         again=self.sync.upload();self.assertTrue(again['ok']);self.assertEqual(again['code'],'unchanged');self.assertEqual(self.head(),head)
 
     def test_failed_push_keeps_commit_and_retry_does_not_duplicate_it(self):

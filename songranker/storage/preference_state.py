@@ -197,10 +197,11 @@ def upgrade_state(original):
         from songranker.storage.challenge_state import ADDITIONS as quiz_additions
         from songranker.storage.catalog_source_state import ADDITIONS as song_additions
         current={name:set(columns) for name,columns in table_columns().items()}
-        old_current={**current,'twins_choices':{'round_id','chosen_slot'}}
-        layouts=[(16,old_current),(17,current)]
+        seventeen={name:columns for name,columns in current.items() if name!='spotlight_positions'}
+        old_current={**seventeen,'twins_choices':{'round_id','chosen_slot'}}
+        layouts=[(18,current),(17,seventeen),(16,old_current)]
         previous={name:set(columns) for name,columns in current.items() if name not in
-                  ('judgement_rounds','judgement_items','spotlight_allocations','vibe_placements','vibe_themes','twins_choices')}
+                  ('judgement_rounds','judgement_items','spotlight_allocations','spotlight_positions','vibe_placements','vibe_themes','twins_choices')}
         layouts.append((14,previous))
         thirteen={name:set(columns) for name,columns in previous.items() if name not in ('song_details','competition_state','listening_observations')}
         layouts.append((13,thirteen))
@@ -215,7 +216,7 @@ def upgrade_state(original):
         ten['tournaments']-={'elo_policy_version','elo_weight'}
         layouts.append((10,ten))
         for version,layout in layouts:
-            if (set(original['tables'])&set(old_current)==set(layout) and
+            if (set(original['tables'])&set(current | old_current)==set(layout) and
                 all(set(original['tables'][name]['columns'])==columns for name,columns in layout.items())):
                 original=deepcopy(original);original['user_version']=version;break
     from songranker.storage.challenge_state import upgrade_state as upgrade_challenges
