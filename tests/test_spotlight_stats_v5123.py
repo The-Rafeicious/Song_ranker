@@ -50,6 +50,8 @@ class SpotlightStatsTests(unittest.TestCase):
         self.answer([0]*4)
         self.answer([100]*4)
         self.answer([3]*4,legacy=True)
+        self.c.execute('DELETE FROM song_artists WHERE song_id=1')
+        self.c.execute('DELETE FROM song_genres WHERE song_id=1')
         self.c.execute('DELETE FROM songs WHERE id=1');self.c.commit()
         before=capture(self.c)
         data=build_judgement_page(self.c,'spotlight')
