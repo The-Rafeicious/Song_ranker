@@ -82,10 +82,10 @@ window.DevCatalog=(()=>{
  }
  async function saveAlbumImport(){
   const state=dialogState;if(state?.type!=='album-import'||mutating)return;
-  const selected=$('[data-album-import-id]:checked').map(n=>state.tracks.find(r=>r.id===Number(n.dataset.albumImportId))).filter(r=>r&&!r.added);
+  const selected=$$('[data-album-import-id]:checked').map(n=>state.tracks.find(r=>r.id===Number(n.dataset.albumImportId))).filter(r=>r&&!r.added);
   if(!selected.length){error('Select at least one new track.');return}
   const gen=dialogGeneration;mutating=true;state.busy=true;
-  $('#editor-fields button, #editor-fields input').forEach(n=>n.disabled=true);
+  $$('#editor-fields button, #editor-fields input').forEach(n=>n.disabled=true);
   let saved=0,failure='';
   try{
    for(const row of selected){
@@ -101,7 +101,7 @@ window.DevCatalog=(()=>{
    const message=`${saved} of ${selected.length} songs saved.${failure?' '+failure:''}${refreshFailed?' Reload to refresh the catalogue.':''}`;
    if(gen===dialogGeneration){
     if(!failure)$('#editor').close();
-    else{$('#editor-fields button, #editor-fields input').forEach(n=>n.disabled=false);$('[data-album-import-id]').forEach(n=>{if(state.tracks.find(r=>r.id===Number(n.dataset.albumImportId))?.added){n.checked=false;n.disabled=true}});error(message)}
+    else{$$('#editor-fields button, #editor-fields input').forEach(n=>n.disabled=false);$$('[data-album-import-id]').forEach(n=>{if(state.tracks.find(r=>r.id===Number(n.dataset.albumImportId))?.added){n.checked=false;n.disabled=true}});error(message)}
    }
    U.toast(message);
   }
