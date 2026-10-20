@@ -1198,3 +1198,24 @@ visibility and catalogue entity colours keep their established meanings.
 Metadata summaries use four joined metrics and collapsed change reviews; long
 names wrap within bounded columns. Desktop/mobile layout uses the existing
 breakpoints and shared baseline remains last.
+
+
+## Entity profile simplification — V5.0.4.1
+
+This replaces earlier profile disclosure/listening-summary instructions; other
+pages retain their existing reporting. Song, artist, album and tag profiles use
+one shared panel structure: heading with stats links, joined summary, primary
+rate and useful inline breakdowns. Keep Non-blind/Blind Elo cards, recognition
+fields, podium counts and shelf rates visible. Remove repeated explanations,
+per-bracket history, nested independent-rating disclosures and profile listening
+diagnostics. Overall alone retains Mode balance, with figures and short labels
+but no explanatory paragraphs.
+
+Artwork, play overlay and player frame must use the same inner corner radius.
+Artist hero layers remain circular, including clipping; song/album heroes retain
+rounded corners. Preserve the over-art playback controls and current hero sizes.
+
+Tag album lists begin with six cards and expand by six. Artist, album and tag
+song lists begin with thirty rows and expand by thirty. Put Show more centred
+at the bottom of each list and remove it when exhausted. Expansion appends rows
+to preserve active previews; the hero queue still includes every linked preview.

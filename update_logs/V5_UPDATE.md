@@ -1,5 +1,19 @@
 # V5 update log
 
+## V5.0.4.1 — profile page revamp
+
+20 October 2026 · schema 15 unchanged.
+
+- Restore matching rounded hero artwork/player layers and circular artists.
+- Use shared compact mode records across song, artist, album and tag pages;
+  move useful breakdowns inline and remove extra explanations and disclosures.
+- Keep Overall Mode balance dropdown with figures only.
+- Add centred Show more controls after six tag albums and thirty collection
+  songs, preserving active previews and complete collection playback queues.
+- Add 137 passing profile DOM assertions and update the profile style rules.
+
+See [installation and validation](../docs/UPGRADE_V5_0_4_1.md).
+
 ## V5.0.2.1 — storage follow-up
 
 19 October 2026 · cumulative V5 patch, database schema 15.
@@ -172,3 +186,4 @@ for exact scope and physical-device limits. Install/recovery are in the
 - Retain source/tag review, Git/shutdown and backup safeguards; remove outdated
   Classic-record UI and automatic-backup wording. No schema/scoring changes.
 - [Upgrade, per-tool audit and validation limits](../docs/UPGRADE_V5_0_4.md).
+

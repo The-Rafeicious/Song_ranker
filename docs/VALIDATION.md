@@ -340,3 +340,20 @@ Manual follow-up: import an album with exclusions, retry a partial failure,
 check a song link imports only one song, check an EP name, and verify source-only
 bulk review still links existing songs without importing tracks.
 
+
+
+## V5.0.4.1 profile patch validation
+
+`NODE_PATH=PATH_TO_TEST_DEPENDENCIES/node_modules node tests/test_profiles_v5041.js`
+passes **137 assertions** with jsdom 26. The real shared frontend scripts run
+against stubbed catalogue and Overall responses for all four entity pages at
+390/1280 viewport settings. Checks cover shared record structure, inline
+breakdowns, Overall-only disclosure and removal of explanatory copy, empty and
+thirty-song boundaries, album/song expansion, rank numbering, track sorting,
+active audio-node preservation and full hero queues. CSS contract checks cover
+shared hero radii, artist circles and centred expansion controls.
+
+JavaScript syntax and `git diff --check` pass. This is DOM/contract coverage,
+not browser painting or measured responsive geometry. Real audio, physical
+devices and the Python suite were not run for this frontend-only patch. Earlier
+release totals above remain historical.

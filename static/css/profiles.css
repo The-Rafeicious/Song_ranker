@@ -1,7 +1,11 @@
 /* Entity profile composition. Shared tokens, joined rows and surface glows stay
    in site_baseline.css/components.css; every rule here is profile-scoped. */
 body.profile-page #main .song-profile { --profile-art-size: 240px; grid-template-columns: var(--profile-art-size) minmax(0,1fr); gap: 28px; margin-bottom: var(--site-gap); }
-body.profile-page #main .profile-media { width: var(--profile-art-size); min-width: 0; }
+body.profile-page #main .profile-media { --profile-cover-radius: var(--site-inner-radius); width: var(--profile-art-size); min-width: 0; }
+body.profile-page #main .profile-artist .profile-media { --profile-cover-radius: 50%; }
+body.profile-page #main .profile-media :is(.album-cover-player,.cover-button,.art-wrap,.art-fallback,.play-overlay) { border-radius: var(--profile-cover-radius); }
+body.profile-page #main .profile-media .album-cover-player { overflow: hidden; isolation: isolate; }
+body.profile-page #main .profile-media .art-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
 body.profile-page #main .profile-media :is(.cover-button,.album-cover-player) { width: 100%; }
 body.profile-page #main .profile-media .cover-button { display: block; line-height: 0; }
 body.profile-page #main .profile-media .art-wrap { width: var(--profile-art-size); height: var(--profile-art-size); min-width: var(--profile-art-size); min-height: var(--profile-art-size); max-width: var(--profile-art-size); max-height: var(--profile-art-size); aspect-ratio: 1; flex-shrink: 0; }
@@ -16,7 +20,7 @@ body.profile-page #main .album-cover-step.previous { left: 8px; }
 body.profile-page #main .album-cover-step.next { right: 8px; }
 body.profile-page #main .album-cover-step:hover { background: var(--raised); border-color: var(--page-color); }
 body.profile-page #main :is(.album-cover-step,.cover-button,.profile-track-row .btn):focus-visible { outline: 2px solid var(--page-color); outline-offset: 3px; }
-body.profile-page #main .album-player-info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 8px; margin: 0; min-height: 0; padding: 28px 12px 12px; border-radius: 0 0 12px 12px; background: linear-gradient(transparent,#000d); color: #fff; font-size: 15px; line-height: 1.3; pointer-events: none; }
+body.profile-page #main .album-player-info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 8px; margin: 0; min-height: 0; padding: 28px 12px 12px; border-radius: 0 0 var(--profile-cover-radius) var(--profile-cover-radius); background: linear-gradient(transparent,#000d); color: #fff; font-size: 15px; line-height: 1.3; pointer-events: none; }
 body.profile-page #main .album-player-info:empty { display: none; }
 body.profile-page #main .album-player-info a { display: block; min-width: 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--song); font-size: 16px; font-weight: 800; text-shadow: 0 1px 4px #000; pointer-events: auto; }
 body.profile-page #main .profile-preview-position { color: #eee; font-size: 12px; white-space: nowrap; }
@@ -45,31 +49,21 @@ body.profile-page #main .profile-rate-caption strong { font-size: 28px; color: v
 body.profile-page #main .profile-rate .overall-progress { height: 12px; margin: 8px 0; }
 body.profile-page #main .profile-rate .overall-progress span { background: var(--section-color,var(--page-color)); }
 body.profile-page #main .profile-rate > small { font-size: 15px; color: var(--muted); overflow-wrap: anywhere; }
-body.profile-page #main .profile-extra { margin-top: 20px; border: 1px solid color-mix(in srgb,var(--section-color,var(--page-color)) 24%,var(--line)); border-radius: var(--site-inner-radius); background: var(--raised); color: var(--text); min-width: 0; }
-body.profile-page #main .profile-extra > h3 { margin: 0; padding: 14px 16px 10px; color: var(--section-color,var(--page-color)); font-size: 20px; font-weight: 800; }
-body.profile-page #main .profile-detail-body { padding: 0 16px 16px; min-width: 0; }
 body.profile-page #main .profile-detail-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,230px),1fr)); gap: 16px; }
 body.profile-page #main .profile-inset { min-width: 0; }
 body.profile-page #main .profile-inset .profile-rate { margin-top: 6px; }
-/* Voting hierarchy: outcomes, balanced mode cards, then optional source detail. */
+/* Shared record hierarchy: summary, rate and inline breakdowns. */
 body.profile-page #main #voting-record .vote-win { --section-color:var(--song); color:var(--song); }
 body.profile-page #main #voting-record .vote-loss { --section-color:var(--danger); color:var(--danger); }
-body.profile-page #main .profile-vote-grid { margin-top:18px; }
+body.profile-page #main :is(.profile-vote-grid,.profile-field-grid,.profile-secondary-metrics) { margin-top:18px; }
+body.profile-page #main .profile-list-actions { display:flex; justify-content:center; margin-top:20px; }
+body.profile-page #main .profile-list-actions:empty { display:none; }
+body.profile-page #main .profile-list-actions .btn { min-height:44px; }
+body.profile-page #main .profile-album-card .art-wrap { border-radius:var(--site-inner-radius); }
 body.profile-page #main .profile-vote-mode { padding:16px; border:1px solid color-mix(in srgb,var(--section-color) 24%,var(--line)); border-radius:var(--site-inner-radius); background:var(--raised); }
 body.profile-page #main .profile-vote-mode h3 { margin:0 0 12px; text-align:center; color:var(--section-color); font-size:22px; }
 body.profile-page #main .profile-vote-mode .joined-metrics { margin-top:16px; }
 body.profile-page #main .profile-vote-mode .joined-metrics b { font-size:28px; }
-body.profile-page #main .profile-vote-outcomes { display:flex; flex-wrap:wrap; justify-content:center; gap:8px 16px; font-size:15px; margin-top:10px; }
-body.profile-page #main .profile-vote-caption { text-align:center; color:var(--muted); font-size:15px; margin:8px 0 0; }
-body.profile-page #main .profile-vote-sources { display:flex; flex-wrap:wrap; justify-content:center; gap:8px 24px; margin:16px 0 6px; font-size:16px; }
-body.profile-page #main .profile-vote-details { border-top:1px solid var(--line); padding:6px 0; min-width:0; }
-body.profile-page #main .profile-vote-details h4 { font-size:18px; margin:16px 0 0; color:var(--section-color); }
-body.profile-page #main .profile-vote-details > a { display:inline-flex; align-items:center; min-height:44px; margin-top:8px; }
-body.profile-page #main .profile-bracket { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; padding: 16px 0; border-bottom: 1px solid var(--line); }
-body.profile-page #main .profile-bracket:last-child { border: 0; }
-body.profile-page #main .profile-bracket div { min-width: 0; }
-body.profile-page #main .profile-bracket small { display: block; margin-top: 6px; color: var(--muted); font-size: 15px; }
-body.profile-page #main .profile-bracket a { min-height: 44px; display: inline-flex; align-items: center; }
 body.profile-page #main a:hover,
 body.profile-page #main a:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
 body.profile-page #main .profile-highlight { min-width: 0; --surface-accent: var(--standard); border-color: color-mix(in srgb,var(--standard) 38%,var(--line)); background: color-mix(in srgb,var(--standard) 7%,var(--panel)); }
@@ -105,7 +99,6 @@ body.profile-page #main #history .pill-nav { margin-bottom: 16px; }
   body.profile-page #main .joined-metrics b { font-size: clamp(20px,5vw,25px); }
   body.profile-page #main .joined-metrics small { font-size: 14px; }
   body.profile-page #main .profile-stat-links { justify-content: flex-end; font-size: 15px; }
-  body.profile-page #main .profile-detail-body { padding: 0 12px 12px; }
   body.profile-page #main .profile-track-row { grid-template-columns: 20px 56px minmax(0,1fr) 48px; gap: 8px 10px; }
   body.profile-page #main .profile-track-row :is(.compact-rank,.small-art) { grid-row: 1 / span 2; }
   body.profile-page #main .profile-track-row .small-art { width: 56px; height: 56px; min-width: 56px; min-height: 56px; max-width: 56px; max-height: 56px; }
@@ -114,3 +107,4 @@ body.profile-page #main #history .pill-nav { margin-bottom: 16px; }
   body.profile-page #main .profile-track-row .compact-score { grid-column: 3; grid-row: 2; }
   body.profile-page #main .profile-track-row .btn { grid-column: 4; grid-row: 2; }
 }
+
