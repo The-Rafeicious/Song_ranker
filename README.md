@@ -1,6 +1,6 @@
 # Song Ranker V5
 
-**V5.0.3.3 · V3 competition database · schema 15**
+**V5.0.3.3.1 · V3 competition database · schema 15**
 
 Vote between songs, identify previews, run tournaments, guess Elo and arrange
 album shelves. V5 keeps your music catalogue and starts the competition again
@@ -28,7 +28,7 @@ python main.py
 
 Use `python3` if that is your Python command. Python 3.10+ is required; validation
 used 3.12. Open **http://127.0.0.1:5000**, then hard-refresh existing browser tabs.
-The footer should show **V5.0.3.3**.
+The footer should show **V5.0.3.3.1**.
 
 On first launch, V5 makes a complete SQLite backup of V2, verifies a catalogue-only
 transfer and publishes **`data/song_ranker_v3.db`**. Song/artist/album/tag IDs,
@@ -209,3 +209,7 @@ Album links open a track checklist: untick unwanted songs, then add the selectio
 Song links still select one recording. A trailing “ - EP” is removed from new
 local album names. See [Apple adding and developer request behaviour](docs/APPLE_MUSIC.md)
 for each dev-panel area, caching, throttling and partial-import recovery.
+
+V5.0.3.3.1 fixes the album checklist Add button so checked songs are submitted,
+the saved count is confirmed and the popup closes after success. Restart and
+hard-refresh after updating to load the corrected JavaScript.
