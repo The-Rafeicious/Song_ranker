@@ -1,6 +1,6 @@
 # Song Ranker V5
 
-**V5.0.4 · V3 competition database · schema 15**
+**V5.0.4.1 · V3 competition database · schema 15**
 
 Vote between songs, identify previews, run tournaments, guess Elo and arrange
 album shelves. V5 keeps your music catalogue and starts the competition again
@@ -28,7 +28,7 @@ python main.py
 
 Use `python3` if that is your Python command. Python 3.10+ is required; validation
 used 3.12. Open **http://127.0.0.1:5000**, then hard-refresh existing browser tabs.
-The footer should show **V5.0.4**.
+The footer should show **V5.0.4.1**.
 
 On first launch, V5 makes a complete SQLite backup of V2, verifies a catalogue-only
 transfer and publishes **`data/song_ranker_v3.db`**. Song/artist/album/tag IDs,
@@ -227,3 +227,14 @@ paths and obsolete Classic Trivia record editing have been removed.
 See the [V5.0.4 upgrade and developer audit](docs/UPGRADE_V5_0_4.md).
 Restart and hard-refresh after updating, including all new scripts/templates.
 Schema remains 15. Existing catalogue, competition and backup policy are kept.
+
+
+## V5.0.4.1 profile pages
+
+Song, artist, album and tag pages share compact mode records with inline
+breakdowns. Overall keeps its Mode balance dropdown without explanatory copy.
+Hero artwork and player overlays share rounded corners; artists remain circular.
+Tags show six albums initially, and artist/album/tag pages show thirty songs,
+with centred Show more buttons for additional items.
+
+See the [profile patch guide](docs/UPGRADE_V5_0_4_1.md). Restart and hard-refresh.

@@ -37,3 +37,6 @@ V5.0.3.3: [Apple album imports and request reference](../docs/APPLE_MUSIC.md).
 
 
 V5.0.4: [developer polish and tool audit](../docs/UPGRADE_V5_0_4.md).
+
+
+V5.0.4.1: [profile page revamp](../docs/UPGRADE_V5_0_4_1.md).
