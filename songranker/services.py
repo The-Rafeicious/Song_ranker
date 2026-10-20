@@ -304,7 +304,10 @@ def link_genres_to_song(conn, song_id, genre_string):
     if not genre_string:
         return
 
-    split_genres = [g.strip() for g in genre_string.split(',') if g.strip()]
+    from songranker.storage.tag_limits import tag_names, check_count
+    split_genres = tag_names(genre_string)
+    existing = {r[0].casefold() for r in conn.execute('SELECT g.name FROM song_genres sg JOIN genres g ON g.id=sg.genre_id WHERE sg.song_id=?',(song_id,))}
+    check_count(len(existing | {name.casefold() for name in split_genres}))
     for name in split_genres:
         genre_row = conn.execute('SELECT id FROM genres WHERE name = ? COLLATE NOCASE', (name,)).fetchone()
         if genre_row:
@@ -314,5 +317,6 @@ def link_genres_to_song(conn, song_id, genre_string):
             genre_id = cursor.lastrowid
 
         conn.execute('INSERT OR IGNORE INTO song_genres (song_id, genre_id) VALUES (?, ?)', (song_id, genre_id))
+
 
 

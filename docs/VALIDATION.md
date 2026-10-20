@@ -1,4 +1,4 @@
-# V5.0.4 validation
+# V5 validation
 
 ## V5.0.4 developer polish
 
@@ -357,3 +357,42 @@ JavaScript syntax and `git diff --check` pass. This is DOM/contract coverage,
 not browser painting or measured responsive geometry. Real audio, physical
 devices and the Python suite were not run for this frontend-only patch. Earlier
 release totals above remain historical.
+
+
+## V5.0.4.2 tag limit validation
+
+- **107 focused Python tests pass**, including seven new tag-limit tests and
+  existing tag workbench, available catalogue-source, developer-polish and Git
+  sync cases. New tests cover backed-up schema-15-to-16 cleanup by attachment
+  order, rollback, repeat startup, eight/nine-tag API boundaries, duplicate names,
+  mixed bulk unions, Replace at capacity, Remove and direct insert/update guards.
+- **459 JavaScript assertions pass**: tag workbench 132 (20 new capacity checks),
+  catalogue 190 and profile pages 137. Real shared scripts run in jsdom with
+  stubbed HTTP/media. Workbench and song-editor controls are checked at capacity,
+  after removal, with typed overflow/duplicates and with mixed bulk selections.
+- JavaScript syntax, Python compilation and `git diff --check` pass.
+- Two catalogue-source cases and 24 database-foundation cases in the broader
+  attempted run are blocked by missing upstream `schema_v9.sql`/`schema_v12.sql`
+  fixtures. They are not included in the passing total. This is a focused run,
+  not a claim that complete discovery passes.
+- The repository SQL snapshot was inspected read-only: no songs exceeded eight
+  tag links. No live/local user database was modified here. Browser painting,
+  physical-device layout, live Apple requests and real audio remain untested.
+
+Python environment: install requirements and put `tests` on `PYTHONPATH`. Load
+`songranker.developer.dev_system` before running HTTP tests so routes are
+registered before the first request. The focused modules are `test_tag_limits`,
+`test_tag_workbench`, `test_catalog_sources`, `test_dev_polish_v504` and
+`test_git_sync`; exclude the two source tests requiring absent schema-v12
+fixtures (`test_schema12_upgrade_keeps_legacy_dates_and_source_identity_unknown`
+and `test_reserved_source_names_fail_closed_without_discarding_extensions`).
+When running Git tests inside a containing checkout, set `GIT_CEILING_DIRECTORIES`
+to that checkout root so temporary non-repository directories remain isolated.
+
+With jsdom 26 installed as a test-only dependency, run:
+
+```sh
+node tests/test_dev_tags.js
+node tests/test_dev_catalog.js
+node tests/test_profiles_v5041.js
+```

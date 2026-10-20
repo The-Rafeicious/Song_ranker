@@ -40,3 +40,6 @@ V5.0.4: [developer polish and tool audit](../docs/UPGRADE_V5_0_4.md).
 
 
 V5.0.4.1: [profile page revamp](../docs/UPGRADE_V5_0_4_1.md).
+
+
+V5.0.4.2: [eight-tag limit and suggested tags](../docs/UPGRADE_V5_0_4_2.md).

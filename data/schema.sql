@@ -1,4 +1,4 @@
--- Song Ranker schema 15. Canonical definitions for fresh and rebuilt databases.
+-- Song Ranker schema 16. Canonical definitions for fresh and rebuilt databases.
 -- Never put migration-only transforms or user data in this file.
 -- Grade facts and all explicit IDs survive rebuilds; sequences keep deleted-ID high water.
 
@@ -525,3 +525,22 @@ CREATE TABLE IF NOT EXISTS listening_observations (
     UNIQUE(mode,reference,song_key)
 );
 CREATE INDEX IF NOT EXISTS listening_song_mode ON listening_observations(song_id,mode);
+
+
+-- Enforce the eight-tag policy for every membership writer, including bulk tools.
+CREATE TRIGGER IF NOT EXISTS song_tags_limit_insert
+BEFORE INSERT ON song_genres
+WHEN NOT EXISTS (SELECT 1 FROM song_genres WHERE song_id=NEW.song_id AND genre_id=NEW.genre_id)
+ AND (SELECT COUNT(*) FROM song_genres WHERE song_id=NEW.song_id) >= 8
+BEGIN
+    SELECT RAISE(ABORT, 'A song can have at most 8 tags. Remove a tag before adding another.');
+END;
+
+CREATE TRIGGER IF NOT EXISTS song_tags_limit_update
+BEFORE UPDATE OF song_id,genre_id ON song_genres
+WHEN (NEW.song_id != OLD.song_id OR NEW.genre_id != OLD.genre_id)
+ AND NOT EXISTS (SELECT 1 FROM song_genres WHERE song_id=NEW.song_id AND genre_id=NEW.genre_id)
+ AND (SELECT COUNT(*) FROM song_genres WHERE song_id=NEW.song_id AND rowid != OLD.rowid) >= 8
+BEGIN
+    SELECT RAISE(ABORT, 'A song can have at most 8 tags. Remove a tag before adding another.');
+END;

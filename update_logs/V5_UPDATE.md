@@ -1,5 +1,19 @@
 # V5 update log
 
+## V5.0.4.2 — eight tags per song
+
+21 October 2026 · database schema 16.
+
+- Limit each song to eight tags in the song editor and tag workbench, including
+  typed names and each song’s final bulk selection. Keep removals available.
+- Enforce the policy in server review/save and database insert/update guards.
+- Back up and trim existing excess memberships once during migration, keeping
+  the earliest eight saved links. Preserve definitions and competition data.
+- Add migration, rollback, API and selection-limit regressions and propose eight
+  complementary tags based on the current saved catalogue.
+
+See [upgrade notes and tag suggestions](../docs/UPGRADE_V5_0_4_2.md).
+
 ## V5.0.4.1 — profile page revamp
 
 20 October 2026 · schema 15 unchanged.
@@ -186,4 +200,5 @@ for exact scope and physical-device limits. Install/recovery are in the
 - Retain source/tag review, Git/shutdown and backup safeguards; remove outdated
   Classic-record UI and automatic-backup wording. No schema/scoring changes.
 - [Upgrade, per-tool audit and validation limits](../docs/UPGRADE_V5_0_4.md).
+
 

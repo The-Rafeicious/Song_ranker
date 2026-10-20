@@ -2,6 +2,7 @@
 import hashlib
 import json
 import unicodedata
+from songranker.storage.tag_limits import check_count
 
 
 def normalized(value):
@@ -99,6 +100,7 @@ def plan(conn,change):
     for sid in change['song_ids']:
         old=members[sid]
         new=old|wanted if change['action']=='add_tags' else {k:v for k,v in old.items() if k not in wanted} if change['action']=='remove_tags' else wanted.copy()
+        check_count(len(new))
         added=[new[k] for k in new.keys()-old.keys()];removed=[old[k] for k in old.keys()-new.keys()]
         order=lambda t:(normalized(t['name']),t['key'])
         rows.append(dict(song_id=sid,title=songs[sid]['title'],artist=', '.join(a['name'] for a in artists[sid]),
@@ -127,4 +129,5 @@ def apply_memberships(conn,review):
         for tag in row['added']:
             conn.execute('INSERT OR IGNORE INTO song_genres(song_id,genre_id) VALUES(?,?)',(row['song_id'],ids[tag['key']]))
     return [dict(id=ids['new:'+normalized(name)],name=name) for name in review['new_tags']]
+
 

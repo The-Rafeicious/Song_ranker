@@ -217,7 +217,8 @@ def upgrade_state(original):
     from songranker.storage.challenge_state import upgrade_state as upgrade_challenges
     from songranker.storage.catalog_source_state import upgrade_state as upgrade_sources
     from songranker.storage.source_storage import upgrade_state as upgrade_storage
-    return upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original))))
+    from songranker.storage.tag_limits import upgrade_state as upgrade_tags
+    return upgrade_tags(upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original)))))
 
 
 def replay(songs, seeds, events, overrides, cutoff, boundary):
@@ -260,3 +261,4 @@ def replay(songs, seeds, events, overrides, cutoff, boundary):
                 result[sid]['highest_rank'] = min(result[sid]['highest_rank'], rank)
     apply_before(float('inf'))
     return result, projected
+

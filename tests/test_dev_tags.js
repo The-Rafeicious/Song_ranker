@@ -8,10 +8,10 @@ function fixture(){return {songs:Array.from({length:45},(_,i)=>({id:i+1,title:`S
  elo_score:1200,matches_played:0,track_number:null})),artists:[{id:1,name:'Artist, One'},{id:2,name:'Another <artist>'}],
  albums:[{id:1,title:'Album <one>'},{id:2,title:'A song - Single'}],tags:[{id:1,name:'Bright',description:'Playful <description>'},{id:2,name:'Night',description:'Late listening'},{id:3,name:'Calm',description:'Quiet'}],
  history:[],tournaments:[],tournament_matches:[],tournament_entries:[],global_stats:{},special_modes:{}};}
-async function harness(width=1280,view='tag_workbench'){
+async function harness(width=1280,view='tag_workbench',configure=()=>{}){
  const dom=new JSDOM('<body data-page="dev" class="site-style-baseline"><main id="main"><div id="loading"></div></main><input id="volume-range" value=".5"><span id="volume-value"></span><button id="volume-btn"></button><div id="volume-panel" hidden></div><div id="preview-status" hidden></div><dialog id="editor"><form id="editor-form"><h2 id="editor-title"></h2><div id="editor-fields"></div><button type="button" id="editor-close">Close</button><button id="editor-submit" type="submit">Save</button></form></dialog><div id="toast" hidden></div></body>',{url:'http://localhost/dev/dashboard?view='+view,runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,d=w.document,data=fixture(),requests=[],plays=[],errors=[],paused=new WeakMap();let handler=()=>undefined,playHook=null,nextToken=0;
- w.innerWidth=width;w.scrollTo=()=>{};w.matchMedia=()=>({matches:true});w.HTMLElement.prototype.scrollIntoView=function(){};
+ configure(data);w.innerWidth=width;w.scrollTo=()=>{};w.matchMedia=()=>({matches:true});w.HTMLElement.prototype.scrollIntoView=function(){};
  Object.defineProperty(w.HTMLMediaElement.prototype,'paused',{get(){return paused.get(this)!==false}});
  Object.defineProperty(w.HTMLMediaElement.prototype,'readyState',{get:()=>4});Object.defineProperty(w.HTMLMediaElement.prototype,'duration',{get:()=>30});
  w.HTMLMediaElement.prototype.play=function(){plays.push({id:this.id,url:this.getAttribute('src')});paused.set(this,false);this.dispatchEvent(new w.Event('play'));return playHook?playHook(this):Promise.resolve()};
@@ -177,5 +177,40 @@ async function viewportChecks(width){
  check(d.querySelector('#tag-query').type==='search'&&d.querySelector('#tag-action'),'filter/operation controls at '+width);
  snapshots[width]={songRows:d.querySelectorAll('[data-tag-song]').length,controls:d.querySelectorAll('.tag-workbench button').length,review:d.querySelector('#tag-review').textContent};h.close();
 }
-(async()=>{await filterChecks();await bulkChecks();await singleAndPreviewChecks();await draftChecks();await failureChecks();await navigationChecks();await recoveredNewTagChecks();await mediaFailureChecks();await bulkBridgeCheck();for(const w of [320,360,390,430,568,768,1280])await viewportChecks(w);if(process.env.SNAPSHOT_OUTPUT)fs.writeFileSync(process.env.SNAPSHOT_OUTPUT,JSON.stringify(snapshots,null,2));console.log(assertions+' tag workbench assertions passed')})().catch(error=>{console.error(error);process.exitCode=1});
+
+async function tagLimitChecks(){
+ const h=await harness(390,'tag_workbench',data=>{
+  data.tags=Array.from({length:11},(_,i)=>({id:i+1,name:'Tag '+(i+1),description:''}));
+  data.songs[0].tag_ids=[1,2,3,4,5,6,7,8];data.songs[1].tag_ids=[1,2,3,4,5,6,7];
+ });const {w,d}=h;
+ w.DevTags.focusSong(1);await flush();
+ check(d.querySelector('#tag-limit-status').textContent.includes('8 / 8'),'single song displays capacity');
+ check(d.querySelector('[data-tags-choice="9"]').disabled,'ninth unchecked choice disabled');
+ check(!d.querySelector('[data-tags-choice="8"]').disabled,'checked tags removable at capacity');
+ h.change('[data-tags-choice="8"]',false);check(!d.querySelector('[data-tags-choice="9"]').disabled,'removal frees a slot');
+ h.change('[data-tags-choice="9"]',true);check(d.querySelector('[data-tags-choice="10"]').disabled,'replacement fills freed slot');
+ h.input('#tag-new-names','New');check(d.querySelector('#tag-review-button').disabled,'typed new tag cannot bypass capacity');
+ const sent=h.requests.filter(r=>r.url==='/api/dev/tags/review').length;await h.review();
+ check(h.requests.filter(r=>r.url==='/api/dev/tags/review').length===sent,'overflow blocked before review request');
+ h.input('#tag-new-names','Tag 9, Ｔａｇ 9');check(!d.querySelector('#tag-review-button').disabled,'duplicate existing/new names count once');
+ h.click('[data-tags-reset-draft]');h.change('#tag-action','remove_tags');check(!d.querySelector('[data-tags-choice="9"]').disabled,'remove allows arbitrary choices');
+ h.change('[data-tags-choice="9"]',true);check(!d.querySelector('#tag-review-button').disabled,'removing more than eight targets is allowed');
+ h.click('[data-tags-reset-draft]');h.click('[data-tags-bulk-scope]');h.change('#tag-sort','title');
+ h.change('[data-tags-select="1"]',true);h.change('[data-tags-select="2"]',true);
+ check(d.querySelector('[data-tags-choice="9"]').disabled,'mixed bulk add checks fullest song');
+ check(!d.querySelector('[data-tags-choice="8"]').disabled,'bulk add existing tag on full song is allowed');
+ h.change('[data-tags-choice="8"]',true);check(!d.querySelector('#tag-review-button').disabled,'union count permits filling only second song');
+ h.change('#tag-action','replace_tags');check(!d.querySelector('[data-tags-choice="9"]').disabled,'replace capacity counts replacement rather than existing tags');
+ w.testDev.setView('songs');h.click('[data-edit="songs"][data-id="1"]');await flush();
+ check(d.querySelector('#tag-limit-edit').textContent.includes('8 / 8'),'song editor shows tag counter');
+ check(d.querySelector('[data-pick-tag="9"]').disabled,'song editor disables ninth tag');
+ h.change('[data-pick-tag="8"]',false);check(!d.querySelector('[data-pick-tag="9"]').disabled,'song editor removal frees slot');
+ h.input('#field-tags',Array.from({length:9},(_,i)=>'Tag '+(i+1)).join(', '));
+ check(!d.querySelector('#field-tags').checkValidity(),'typed ninth tag marks song field invalid');
+ h.input('#field-tags','Tag 1, Tag 1');check(d.querySelector('#field-tags').checkValidity(),'duplicate text names count once');
+ check(h.errors.length===0,'no script errors with limit controls');h.close();
+}
+
+(async()=>{await tagLimitChecks();await filterChecks();await bulkChecks();await singleAndPreviewChecks();await draftChecks();await failureChecks();await navigationChecks();await recoveredNewTagChecks();await mediaFailureChecks();await bulkBridgeCheck();for(const w of [320,360,390,430,568,768,1280])await viewportChecks(w);if(process.env.SNAPSHOT_OUTPUT)fs.writeFileSync(process.env.SNAPSHOT_OUTPUT,JSON.stringify(snapshots,null,2));console.log(assertions+' tag workbench assertions passed')})().catch(error=>{console.error(error);process.exitCode=1});
+
 

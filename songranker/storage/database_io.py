@@ -161,6 +161,9 @@ def validate(conn):
     tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     if not {'songs', 'albums', 'artists', 'genres', 'song_artists', 'song_genres'} <= tables:
         raise DatabaseValidationError('Not a complete relational Song Ranker database.')
+    if conn.execute('PRAGMA user_version').fetchone()[0] >= 16:
+        if conn.execute('SELECT 1 FROM song_genres GROUP BY song_id HAVING COUNT(*)>8 LIMIT 1').fetchone():
+            raise DatabaseValidationError('A song exceeds the eight-tag limit in this schema-16 database.')
     if 'album_id' not in {row[1] for row in conn.execute('PRAGMA table_info(songs)')}:
         raise DatabaseValidationError('The older flat-schema database is not supported. Keep it separately.')
 
@@ -456,3 +459,4 @@ def restore_live_database(source, filename, *, expected_live=None, expected_back
                         target.close()
                 raise
     return backup
+

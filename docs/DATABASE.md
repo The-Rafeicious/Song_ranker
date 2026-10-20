@@ -1,6 +1,6 @@
 # V5 database dictionary
 
-**V3 competition database · schema 15 · application V5.0.2.1**
+**V3 competition database · schema 16 · application V5.0.4.2**
 
 The active default is `data/song_ranker_v3.db`. The schema registry is
 [data/schema.sql](../data/schema.sql); this dictionary is derived from it.
@@ -119,6 +119,11 @@ Foreign keys: `song_id` → `songs.id` (delete CASCADE).
 Foreign keys: `artist_id` → `artists.id` (delete NO ACTION); `song_id` → `songs.id` (delete NO ACTION).
 
 ### song_genres
+
+Schema 16 limits each song to eight tag links with insert/update triggers. The
+backed-up upgrade retains the earliest eight stored link rowids per song and
+removes later memberships; tag definitions and all game facts remain. Normal
+writes reject overflow. See [tag-limit upgrade](UPGRADE_V5_0_4_2.md).
 
 | Column | SQLite type | Required / key | Default |
 | --- | --- | --- | --- |
@@ -468,3 +473,4 @@ Do not hand-edit grading tables or restore an old archive over the active V3 fil
 V5.0.3.1 backup policy: requested and website-shutdown snapshots share three
 `rolling_*.db` slots. Ordinary edits create none. Migration archives and existing
 backups remain separate. See [backup and stop workflow](UPGRADE_V5_0_3_1.md).
+
