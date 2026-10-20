@@ -144,3 +144,16 @@ for exact scope and physical-device limits. Install/recovery are in the
 - Removes trailing - EP from new local Apple album metadata; retains raw source names.
 - Documents Apple adding and requests across developer areas in docs/APPLE_MUSIC.md.
 - Schema 15 retained. Python/browser regression suites were not run in this session.
+
+## V5.0.3.3.1 — album Add button fix
+
+- Fix four single-element selectors in the album-save handler to use the shared
+  list selector. The previous handler threw before sending any save request.
+- Restore checked-track submission, control disabling, confirmation/close on
+  success and saved-track exclusion when retrying a partial failure.
+- Add browser regression cases for exclusions, empty selection, double activation,
+  successful catalogue addition/confirmation/close and partial-failure retry.
+- Validation: JavaScript syntax checks and eight focused handler checks passed;
+  the same isolated harness reproduced the original pre-request failure.
+  Full jsdom/browser and Python suites were not run: execution host unavailable.
+- No database or schema changes. Restart and hard-refresh to load V5.0.3.3.1.
