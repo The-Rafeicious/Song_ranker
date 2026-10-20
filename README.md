@@ -1,6 +1,6 @@
 # Song Ranker V5
 
-**V5.0.3.1 · V3 competition database · schema 15**
+**V5.0.3.2 · V3 competition database · schema 15**
 
 Vote between songs, identify previews, run tournaments, guess Elo and arrange
 album shelves. V5 keeps your music catalogue and starts the competition again
@@ -199,3 +199,6 @@ See [V5.0.3 installation and workflow](docs/UPGRADE_V5_0_3.md).
 V5.0.3.1 adds a fresh-PIN **Stop app** button in the developer header: save a
 rotating backup, optionally upload the database snapshot to Git, show the results,
 then stop the normal launcher. See [installation and backup policy](docs/UPGRADE_V5_0_3_1.md).
+
+V5.0.3.2 adds selection feedback, collapsed source alternatives and aligned bulk
+controls. See [patch notes](docs/UPGRADE_V5_0_3_2.md).

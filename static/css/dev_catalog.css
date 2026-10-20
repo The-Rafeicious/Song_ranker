@@ -52,3 +52,9 @@ body[data-page=dev] :is(.catalog-extra-sources,.catalog-batch-review) { display:
 body[data-page=dev] .catalog-extra-sources { margin-top:12px; }
 body[data-page=dev] .catalog-batch-bar { display:grid; gap:12px; padding:16px; border:1px solid var(--song); border-radius:18px; }
 body[data-page=dev] .catalog-more-sources > summary:focus-visible { outline:2px solid var(--song); outline-offset:4px; }
+
+body[data-page=dev] .catalog-source-choices > summary { cursor:pointer; font-weight:800; padding:10px 0; min-height:44px; }
+body[data-page=dev] .catalog-source-choices > summary:focus-visible { outline:2px solid var(--song); outline-offset:3px; }
+body[data-page=dev] .catalog-selected { border:1px solid var(--song); scroll-margin-top:16px; }
+body[data-page=dev] .catalog-selected > h3 { color:var(--song); }
+body[data-page=dev] [data-catalog-source-select][aria-pressed=true] { border-color:var(--song); color:var(--song); }

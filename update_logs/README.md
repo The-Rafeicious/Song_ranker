@@ -30,3 +30,5 @@ past release families listed above have not been reconstructed or invented.
 V5.0.3: [source review workflow](../docs/UPGRADE_V5_0_3.md).
 
 V5.0.3.1: [requested backups and website shutdown](../docs/UPGRADE_V5_0_3_1.md).
+
+V5.0.3.2: [source confirmation and bulk alignment](../docs/UPGRADE_V5_0_3_2.md).

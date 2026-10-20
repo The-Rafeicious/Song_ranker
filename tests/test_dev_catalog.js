@@ -180,7 +180,7 @@ async function bulkSourceChecks(){
  const extra=d.querySelector('.catalog-more-sources');check(extra&&!extra.open&&extra.querySelectorAll('.catalog-match').length===10,'ten extra choices collapsed');
  check(d.querySelectorAll('[data-catalog-source-select]').length===15,'source choices capped at fifteen');
  check(!d.querySelector('[data-catalog-source-select="15"]'),'additional versions require a refined search');
- h.click('[data-catalog-source-select="2"]');check(!d.querySelector('#catalog-refresh-source'),'bulk changes only source identity');
+ h.click('[data-catalog-source-select="2"]');check(!d.querySelector('#catalog-source-choices').open,'choosing collapses other recordings');check(d.activeElement.hasAttribute('data-source-batch-choose'),'confirmation receives keyboard focus');check(d.querySelector('.catalog-selected').textContent.includes('✓ Selected recording'),'selection feedback is visible');check(d.querySelector('[data-catalog-source-select="2"]').getAttribute('aria-pressed')==='true','selected version remains marked when reopened');check(!requests.some(r=>r.url==='/api/dev/song-sources/bulk'),'choosing never saves without confirmation');check(!d.querySelector('#catalog-refresh-source'),'bulk changes only source identity');
  h.click('[data-source-batch-choose]');await flush();
  check(d.querySelector('#editor-title').textContent==='Review source group','last choice opens group review');
  check(!requests.some(r=>r.url==='/api/dev/song-sources/bulk'),'draft choices are not saved early');

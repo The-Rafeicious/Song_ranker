@@ -1,9 +1,26 @@
-# V5.0.3.1 validation
+# V5.0.3.2 validation
 
 Based on the completed V4 app plus V4.1.6. V5 uses a new generation-3 database,
 initially schema 14, now schema 15. The supplied V2 database remains unchanged, SHA-256:
 `d9d06fc85a2786968f50219549a0eb4598c4284686e98fafb4b1a7beae695e68`.
 Earlier reports are retained in [validation history](archive/VALIDATION_HISTORY.md).
+
+## V5.0.3.2 source confirmation and alignment
+
+167 developer-catalogue JavaScript assertions pass, including selected feedback,
+collapsed alternatives, retained pressed state, confirmation focus and no early
+save. The catalogue suite also exercises single/bulk source editing, failure
+recovery, staging/skip/revisit, and DOM contracts at seven widths. Developer
+controls, developer-system and V4.1.5 UI regression suites pass separately.
+These are DOM/behavior checks, not physical-device browser paint assertions.
+
+A real Waitress/HTML/script bulk-source check with mocked Apple confirms the
+new selected/collapsed/focused state and a subsequent successful group save.
+Restart retains current sources, database integrity and foreign keys. The
+supplied database remains unchanged. Cumulative packaging checks validate
+syntax, document links, checksums/CRC and repeated extracted-app startup.
+Backend behavior is unchanged; the prior 550-test Python validation is retained
+below for the underlying V5.0.3.1 implementation.
 
 ## V5.0.3.1 requested backups and shutdown
 

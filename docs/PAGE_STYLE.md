@@ -1162,3 +1162,13 @@ Keep Stop app in the developer header action group, using the existing danger
 button and wrapping responsive layout. Require a fresh masked PIN, show the Git
 destination, and show local/Git outcomes before closing the server. Keep the
 final receipt readable in the tab. Routine edit labels must not promise backups.
+
+
+## V5.0.3.2 source confirmation and bulk alignment
+
+After choosing a recording, show a green selected state, collapse the alternatives
+behind Change selected recording and focus/scroll to confirmation. Keep the
+choice reversible and never auto-save. Respect reduced motion for scrolling.
+Bulk filter labels use one shared gap and 44 px controls for native and enhanced
+selects; align Selected only with the controls. Action and release-link fields
+use the same label spacing and existing narrow-screen stacking.

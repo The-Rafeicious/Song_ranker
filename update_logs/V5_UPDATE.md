@@ -125,3 +125,14 @@ for exact scope and physical-device limits. Install/recovery are in the
   then acknowledge and gracefully stop the normal single-process launcher.
 - Failure, cancellation or missing acknowledgement leaves the app running.
 - Schema 15 retained, no competition reset, no files deleted.
+
+
+## V5.0.3.2 — faster source selection feedback
+
+- Show selected feedback and a marked source-choice button.
+- Collapse alternatives, scroll to confirmation and focus the next action.
+- Retain the option to reopen choices; no automatic save or queue advance.
+- Align bulk filter controls, especially Apple source versus artist/album pickers,
+  plus action and optional release-link label spacing.
+- Retain schema 15, three-slot requested backup policy and shutdown workflow.
+  No files deleted.
