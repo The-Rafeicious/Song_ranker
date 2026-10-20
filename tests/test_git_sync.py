@@ -12,6 +12,7 @@ import sys
 import unittest
 
 from songranker.storage.database import initialize_database
+from songranker.storage.database_schema import SCHEMA_VERSION
 from songranker.storage.database_io import (capture, readonly)
 from songranker.developer.git_sync import (GitSync, SyncError, display_remote)
 
@@ -80,7 +81,7 @@ class GitSyncTests(unittest.TestCase):
     def test_sql_is_complete_and_unchanged_upload_creates_no_extra_commit(self):
         first=self.sync.upload();self.assertTrue(first['ok']);head=self.head()
         restored=self.folder/'from_sql.db';c=sqlite3.connect(restored);c.executescript(self.sync.sql.read_text());c.close()
-        with readonly(restored) as c:self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],15);self.assertEqual(c.execute('SELECT title FROM songs').fetchone()[0],'Fixture song')
+        with readonly(restored) as c:self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],SCHEMA_VERSION);self.assertEqual(c.execute('SELECT title FROM songs').fetchone()[0],'Fixture song')
         again=self.sync.upload();self.assertTrue(again['ok']);self.assertEqual(again['code'],'unchanged');self.assertEqual(self.head(),head)
 
     def test_failed_push_keeps_commit_and_retry_does_not_duplicate_it(self):
@@ -256,3 +257,4 @@ class GitSyncTests(unittest.TestCase):
 
 
 if __name__=='__main__':unittest.main()
+

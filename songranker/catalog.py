@@ -140,7 +140,7 @@ def collection(include_overall_sources=False):
         data['challenge_records']={'trivia':challenge_records(conn,'trivia')}
         artist_links, tag_links = defaultdict(list), defaultdict(list)
         for row in conn.execute('SELECT * FROM song_artists'):artist_links[row['song_id']].append(row['artist_id'])
-        for row in conn.execute('SELECT * FROM song_genres'):tag_links[row['song_id']].append(row['genre_id'])
+        for row in conn.execute('SELECT * FROM song_genres ORDER BY rowid'):tag_links[row['song_id']].append(row['genre_id'])
         for song in data['songs']:
             song.update(artist_ids=artist_links[song['id']],tag_ids=tag_links[song['id']])
         data['history'].sort(key=lambda r:r['id'],reverse=True)
@@ -199,3 +199,4 @@ def ranked(data, kind):
             **measure(related,context),
             'artist':', '.join(dict.fromkeys(s['artist'] for s in related if s['artist']))})
     return sorted(result,key=lambda r:(r['impact_score'] is None,-(r['impact_score'] or 0),r['name'].casefold()))
+

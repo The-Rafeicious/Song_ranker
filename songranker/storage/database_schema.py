@@ -4,7 +4,7 @@ from pathlib import Path
 import re
 import sqlite3
 
-SCHEMA_VERSION = 15
+SCHEMA_VERSION = 16
 from songranker.paths import ROOT
 SCHEMA_PATH = ROOT/'data/schema.sql'
 
@@ -63,3 +63,4 @@ def ensure_tournament_schema(conn):
     conn.execute("UPDATE tournaments SET status='completed' WHERE champion_id IS NOT NULL AND status IS NULL")
     conn.execute('UPDATE tournaments SET created_at=COALESCE(created_at,timestamp,CURRENT_TIMESTAMP)')
     conn.execute('UPDATE tournaments SET completed_at=COALESCE(completed_at,timestamp) WHERE champion_id IS NOT NULL')
+

@@ -154,6 +154,10 @@ def song_metadata(data):
         if number is None and data.get('track_number') not in (None,''):number=data['track_number']
         data={**data,**imported,'genres':', '.join(retained.values()),'track_number':number}
         title=data['title'];supplied_date=True
+    from songranker.storage.tag_limits import tag_names, check_count
+    names=tag_names(data.get('genres'))
+    check_count(len(names))
+    data['genres']=', '.join(names)
     if not title:raise ValueError('Title is required.')
     release_date=str(data.get('release_date') or '').strip()
     if release_date:
@@ -793,4 +797,5 @@ def api_dev_tournament_placements(tournament_id):
     except (ValueError,TypeError) as exc:
         conn.rollback();return jsonify(message=str(exc)),400
     finally:conn.close()
+
 

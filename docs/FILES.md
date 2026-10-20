@@ -25,6 +25,11 @@ lossless snapshot codec and small/large SQLite page policy.
 
 ## Storage
 
+`songranker/storage/tag_limits.py` owns the eight-tag policy, unique-name
+counting and schema-16 membership cleanup. Database insert/update guards live in
+`data/schema.sql`. [Tag-limit upgrade notes](UPGRADE_V5_0_4_2.md) include suggested
+new tag definitions; `tests/test_tag_limits.py` covers policy and migration.
+
 | File | Responsibility |
 | --- | --- |
 | `songranker/storage/catalog_source_state.py` | Lossless schema-13 upgrade: unknown legacy source identities/dates stay unknown. |
@@ -114,3 +119,4 @@ V5.0.4 adds `static/js/dev_metadata.js` for metadata task state/polling and
 `templates/dev_assets.html` owns Dev stylesheet/script declarations.
 `tools/validate_dev_pages.py` runs the disposable served-page DOM/HTTP checks;
 its companion is `tests/test_dev_pages.js` (requires Node and jsdom).
+

@@ -13,6 +13,18 @@ window.DevTags=(()=>{
  const tagName=id=>tags().find(t=>t.id===id)?.name||'Missing tag #'+id;
  const names=ids=>ids.map(tagName).join(', ')||'No tags';
  const selectedIds=()=>target?[target]:[...selection].sort((a,b)=>a-b);
+ const LIMIT=8;
+ function tagCapacity(){
+  const keys=new Map(tags().map(t=>[t.id,norm(t.name)])),byId=new Map(songs().map(s=>[s.id,s]));
+  const wanted=new Set([...chosen].map(id=>keys.get(id)).concat(action==='remove_tags'?[]:newNames.split(',').map(name=>norm(name.trim().replace(/^#+/,'')))).filter(Boolean));
+  const current=(selectedIds().length?selectedIds():[null]).map(id=>new Set((byId.get(id)?.tag_ids||[]).map(id=>keys.get(id))));
+  const counts=current.map(row=>action==='replace_tags'?wanted.size:action==='remove_tags'?[...row].filter(name=>!wanted.has(name)).length:new Set([...row,...wanted]).size);
+  const over=action==='remove_tags'?0:counts.filter(n=>n>LIMIT).length;
+  const canAdd=id=>action==='remove_tags'||(!over&&(wanted.has(keys.get(id))||(action==='replace_tags'?wanted.size<LIMIT:current.every((row,i)=>counts[i]<LIMIT||row.has(keys.get(id))))));
+  return {counts,over,canAdd};
+ }
+ function overLimit(){return tagCapacity().over>0}
+
  function matches(){
   const terms=norm(query).split(' ').filter(Boolean);
   return songs().filter(s=>terms.every(q=>norm([s.title,s.artist,s.album,s.tag_names,'#'+s.id].join(' ')).includes(q))
@@ -53,7 +65,7 @@ window.DevTags=(()=>{
    <section class="panel tag-editor dashboard-surface" aria-labelledby="tag-edit-title"><div class="section-head"><h3 id="tag-edit-title">Tags for selection</h3><button class="btn" type="button" data-tags-bulk-scope hidden>Use selection</button></div><p id="tag-edit-context"></p>
     <div id="tag-discard" class="tag-discard" hidden></div>
     <form id="tag-edit-form"><div class="tag-edit-fields"><label>Change<select id="tag-action"><option value="add_tags">Add tags; keep other tags</option><option value="remove_tags">Remove chosen tags</option><option value="replace_tags">Replace all tags</option></select></label>
-    <label>Find a tag<input type="search" id="tag-choice-query" value="${esc(tagQuery)}" placeholder="Name or description…"></label></div><p id="tag-chosen-count" class="muted"></p><div id="tag-choices" class="tag-choices"></div>
+    <label>Find a tag<input type="search" id="tag-choice-query" value="${esc(tagQuery)}" placeholder="Name or description…"></label></div><p id="tag-chosen-count" class="muted"></p><p id="tag-limit-status" role="status" aria-live="polite"></p><div id="tag-choices" class="tag-choices"></div>
     <label class="tag-new">New tags, separated by commas<input id="tag-new-names" value="${esc(newNames)}" placeholder="e.g. Road trip, Late night"><span class="muted">Existing names are reused. New names are created only when the reviewed changes save.</span></label>
     <div class="tag-toolbar"><button class="btn primary" type="submit" id="tag-review-button">Review tag changes</button><button class="btn" type="button" data-tags-reset-draft>Reset choices</button></div></form>
     <p id="tag-message" role="status" aria-live="polite"></p><div id="tag-review"></div>
@@ -103,7 +115,11 @@ window.DevTags=(()=>{
   if(!active||!$('#tag-review-button'))return;
   $$('#tag-edit-form input, #tag-edit-form select, [data-tags-select], [data-tags-choice]').forEach(n=>n.disabled=busy);
   $('#tag-new-names').disabled=busy||action==='remove_tags';
-  $('#tag-review-button').disabled=busy||pending||!selectedIds().length;
+  const capacity=tagCapacity(),{counts,over}=capacity;
+  $('#tag-limit-status').textContent=over?`Over the 8-tag limit on ${over} song${over===1?'':'s'}. Remove tags or use Replace.`:`Up to ${Math.max(0,...counts)} / 8 tags per song after this change`;
+  $('#tag-limit-status').classList.toggle('error',over>0);
+  $$('[data-tags-choice]').forEach(n=>n.disabled=busy||(!n.checked&&!capacity.canAdd(Number(n.dataset.tagsChoice))));
+  $('#tag-review-button').disabled=busy||pending||!selectedIds().length||overLimit();
   $('#tag-review-button').textContent=pending?'Preparing review…':target?'Review this song’s tags':'Review tag changes';
   $$('[data-tags-apply], [data-tags-reset-draft], [data-tags-bulk-scope], [data-tags-edit], [data-tags-page-select], [data-tags-all-select], [data-tags-clear]').forEach(n=>n.disabled=busy);
  }
@@ -119,6 +135,7 @@ window.DevTags=(()=>{
  }
  async function reviewChanges(){
   if(!active||busy||pending)return;
+  if(overLimit()){message('A song can have at most 8 tags. Remove tags or use Replace.',true);return}
   const ids=selectedIds();if(!ids.length){message('Select a song or a group first.',true);return}
   const serial=++request;pending=true;review=null;renderReview();drawButtons();message('Checking current song tags…');
   try{
@@ -243,7 +260,7 @@ window.DevTags=(()=>{
  document.addEventListener('change',e=>{
   if(!active||busy)return;const n=e.target;
   if(n.dataset.tagsSelect){n.checked?selection.add(Number(n.dataset.tagsSelect)):selection.delete(Number(n.dataset.tagsSelect));if(!target)invalidate();renderRows()}
-  if(n.dataset.tagsChoice){n.checked?chosen.add(Number(n.dataset.tagsChoice)):chosen.delete(Number(n.dataset.tagsChoice));dirty=true;invalidate();$('#tag-chosen-count').textContent=`${chosen.size} tags chosen`}
+  if(n.dataset.tagsChoice){const id=Number(n.dataset.tagsChoice);if(n.checked&&!tagCapacity().canAdd(id)){n.checked=false;message('A song can have at most 8 tags.',true);return}n.checked?chosen.add(id):chosen.delete(id);dirty=true;invalidate();renderChoices()}
   if(n.id==='tag-action'){action=n.value;dirty=true;invalidate();drawButtons()}
   if(n.id==='tag-selected-only'){selectedOnly=n.checked;filterChanged()}
   if(n.id==='tag-status'){status=n.value;filterChanged()}
@@ -266,3 +283,4 @@ window.DevTags=(()=>{
  }
  return {bindUI:ui=>U=ui,render,viewChanged,focusSong,reviewSelection,openFilter,resetAfterRestore};
 })();
+

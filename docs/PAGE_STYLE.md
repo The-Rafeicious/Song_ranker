@@ -1219,3 +1219,13 @@ Tag album lists begin with six cards and expand by six. Artist, album and tag
 song lists begin with thirty rows and expand by thirty. Put Show more centred
 at the bottom of each list and remove it when exhausted. Expansion appends rows
 to preserve active previews; the hero queue still includes every linked preview.
+
+
+## Song tag capacity — V5.0.4.2
+
+Song details and the tag workbench show an eight-tag capacity. Disable only
+unselected additions that would exceed the limit; selected tags stay removable.
+Count each song’s resulting union for Add, the replacement set for Replace,
+and allow unrestricted Remove targets. Typed new names count too. Keep the
+capacity message live and disable Review for an overflowing draft. Preserve
+choices so the user can fix them; do not silently trim new submissions.
