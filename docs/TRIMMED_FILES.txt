@@ -1,0 +1,9 @@
+V5.1 is a code-only cumulative upgrade into the supplied V5 layout.
+
+Keep data/song_ranker_v3.db, instance/, database_backups/, .git/ and your local
+database_backup.sql. They are intentionally absent from the download.
+
+No deletion is required for this V5.1 step. The package's explicit entry points
+are main.py and safe_mode.py. Backend modules live under songranker/; see
+docs/FILES.md for their current locations. Do not run obsolete root module
+copies from a pre-V5 installation as alternative launchers.

@@ -1,4 +1,4 @@
--- Song Ranker schema 15. Canonical definitions for fresh and rebuilt databases.
+-- Song Ranker schema 16. Canonical definitions for fresh and rebuilt databases.
 -- Never put migration-only transforms or user data in this file.
 -- Grade facts and all explicit IDs survive rebuilds; sequences keep deleted-ID high water.
 
@@ -484,6 +484,9 @@ CREATE VIEW IF NOT EXISTS mode_exposures AS
       UNION ALL SELECT i.song_id,'shelves',COUNT(*) FROM album_shelf_items i
         JOIN album_shelf_rounds r ON r.id=i.round_id WHERE r.completed_at IS NOT NULL
         AND i.song_id IS NOT NULL GROUP BY i.song_id
+      UNION ALL SELECT i.song_id,r.mode,COUNT(*) FROM judgement_items i
+        JOIN judgement_rounds r ON r.id=i.round_id WHERE r.status='answered'
+        AND i.song_id IS NOT NULL GROUP BY i.song_id,r.mode
     ) SELECT c.song_id,c.mode,c.appearances FROM counts c JOIN songs s ON s.id=c.song_id;
 
 CREATE VIEW IF NOT EXISTS shelf_album_exposures AS
@@ -514,7 +517,7 @@ CREATE TABLE IF NOT EXISTS competition_state (
 -- Measured playback up to an accepted decision; not downloads or reveal audio.
 CREATE TABLE IF NOT EXISTS listening_observations (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    mode TEXT NOT NULL CHECK(mode IN ('standard','blind','tournament','trivia','guesser','shelves')),
+    mode TEXT NOT NULL CHECK(mode IN ('standard','blind','tournament','trivia','guesser','shelves','spotlight','vibe')),
     reference TEXT NOT NULL,
     song_key INTEGER NOT NULL,
     song_id INTEGER REFERENCES songs(id) ON DELETE SET NULL,
@@ -525,3 +528,106 @@ CREATE TABLE IF NOT EXISTS listening_observations (
     UNIQUE(mode,reference,song_key)
 );
 CREATE INDEX IF NOT EXISTS listening_song_mode ON listening_observations(song_id,mode);
+
+-- V5.1 subjective judgements: one reusable pending offer and one durable receipt.
+-- Assets, ratings, pair matrices and cumulative counters are not duplicated here.
+CREATE TABLE IF NOT EXISTS judgement_rounds (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    token TEXT NOT NULL UNIQUE CHECK(length(token) BETWEEN 32 AND 64),
+    owner_hash TEXT NOT NULL CHECK(length(owner_hash)=64),
+    mode TEXT NOT NULL CHECK(mode IN ('spotlight','vibe')),
+    rules_version INTEGER NOT NULL DEFAULT 1 CHECK(rules_version=1),
+    status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','answered','skipped')),
+    created_at REAL NOT NULL,
+    closed_at REAL,
+    answer_hash TEXT CHECK(answer_hash IS NULL OR length(answer_hash)=64),
+    themes_reviewed INTEGER NOT NULL DEFAULT 0 CHECK(themes_reviewed IN (0,1)),
+    CHECK(mode='vibe' OR themes_reviewed=0),
+    CHECK((status='open' AND closed_at IS NULL AND answer_hash IS NULL AND themes_reviewed=0)
+       OR (status!='open' AND closed_at IS NOT NULL AND closed_at>=created_at AND answer_hash IS NOT NULL))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS judgement_open_offer
+    ON judgement_rounds(owner_hash,mode) WHERE status='open';
+CREATE INDEX IF NOT EXISTS judgement_results ON judgement_rounds(mode,status,closed_at,id);
+CREATE INDEX IF NOT EXISTS judgement_abandoned ON judgement_rounds(created_at) WHERE status!='answered';
+
+CREATE TABLE IF NOT EXISTS judgement_items (
+    round_id INTEGER NOT NULL REFERENCES judgement_rounds(id) ON DELETE CASCADE,
+    slot INTEGER NOT NULL CHECK(typeof(slot)='integer' AND slot BETWEEN 0 AND 3),
+    song_key INTEGER NOT NULL CHECK(typeof(song_key)='integer' AND song_key>0),
+    song_id INTEGER REFERENCES songs(id) ON DELETE SET NULL,
+    identity TEXT NOT NULL CHECK(length(identity)<=512),
+    PRIMARY KEY(round_id,slot),
+    UNIQUE(round_id,song_key),
+    CHECK(song_id IS NULL OR song_id=song_key)
+);
+CREATE INDEX IF NOT EXISTS judgement_song ON judgement_items(song_id,round_id);
+
+CREATE TABLE IF NOT EXISTS spotlight_allocations (
+    round_id INTEGER NOT NULL,
+    slot INTEGER NOT NULL,
+    points INTEGER NOT NULL CHECK(typeof(points)='integer' AND points BETWEEN 0 AND 12),
+    PRIMARY KEY(round_id,slot),
+    FOREIGN KEY(round_id,slot) REFERENCES judgement_items(round_id,slot) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS vibe_placements (
+    round_id INTEGER NOT NULL REFERENCES judgement_rounds(id) ON DELETE CASCADE,
+    map_key TEXT NOT NULL CHECK(map_key IN ('mood','sound','craft')),
+    x INTEGER NOT NULL CHECK(typeof(x)='integer' AND x BETWEEN 0 AND 4),
+    y INTEGER NOT NULL CHECK(typeof(y)='integer' AND y BETWEEN 0 AND 4),
+    PRIMARY KEY(round_id,map_key)
+);
+CREATE TABLE IF NOT EXISTS vibe_themes (
+    round_id INTEGER NOT NULL REFERENCES judgement_rounds(id) ON DELETE CASCADE,
+    tag_key INTEGER NOT NULL CHECK(typeof(tag_key)='integer' AND tag_key>0),
+    tag_id INTEGER REFERENCES genres(id) ON DELETE SET NULL,
+    label TEXT NOT NULL CHECK(length(label)<=160),
+    PRIMARY KEY(round_id,tag_key),
+    CHECK(tag_id IS NULL OR tag_id=tag_key)
+);
+
+CREATE TRIGGER IF NOT EXISTS judgement_start_open
+BEFORE INSERT ON judgement_rounds WHEN NEW.status!='open'
+BEGIN SELECT RAISE(ABORT,'Create an open offer before recording a judgement.'); END;
+
+CREATE TRIGGER IF NOT EXISTS spotlight_open_answer
+BEFORE INSERT ON spotlight_allocations WHEN NOT EXISTS(
+    SELECT 1 FROM judgement_rounds WHERE id=NEW.round_id AND mode='spotlight' AND status='open')
+BEGIN SELECT RAISE(ABORT,'Use an open Shared Spotlight offer.'); END;
+
+CREATE TRIGGER IF NOT EXISTS vibe_open_placement
+BEFORE INSERT ON vibe_placements WHEN NOT EXISTS(
+    SELECT 1 FROM judgement_rounds WHERE id=NEW.round_id AND mode='vibe' AND status='open')
+BEGIN SELECT RAISE(ABORT,'Use an open Vibe Map offer.'); END;
+
+CREATE TRIGGER IF NOT EXISTS vibe_open_theme
+BEFORE INSERT ON vibe_themes WHEN NOT EXISTS(
+    SELECT 1 FROM judgement_rounds WHERE id=NEW.round_id AND mode='vibe' AND status='open')
+BEGIN SELECT RAISE(ABORT,'Use an open Vibe Map offer.'); END;
+
+-- A closed receipt must be a complete valid decision, including explicit skips.
+CREATE TRIGGER IF NOT EXISTS judgement_close_valid
+BEFORE UPDATE OF status ON judgement_rounds WHEN NEW.status!='open'
+BEGIN
+    SELECT RAISE(ABORT,'A judgement is already closed.') WHERE OLD.status!='open';
+    SELECT RAISE(ABORT,'Incomplete judgement offer.') WHERE
+      (SELECT COUNT(*) FROM judgement_items WHERE round_id=NEW.id)!=CASE WHEN NEW.mode='vibe' THEN 1 ELSE 4 END;
+    SELECT RAISE(ABORT,'Skipped judgements cannot have answers.') WHERE NEW.status='skipped' AND
+      (EXISTS(SELECT 1 FROM spotlight_allocations WHERE round_id=NEW.id)
+       OR EXISTS(SELECT 1 FROM vibe_placements WHERE round_id=NEW.id)
+       OR EXISTS(SELECT 1 FROM vibe_themes WHERE round_id=NEW.id)
+       OR NEW.themes_reviewed!=0);
+    SELECT RAISE(ABORT,'Invalid spotlight allocation.') WHERE NEW.status='answered' AND NEW.mode='spotlight' AND
+      ((SELECT COUNT(*) FROM spotlight_allocations WHERE round_id=NEW.id)!=4
+       OR (SELECT SUM(points) FROM spotlight_allocations WHERE round_id=NEW.id)!=12);
+    SELECT RAISE(ABORT,'Place at least one vibe map.') WHERE NEW.status='answered' AND NEW.mode='vibe' AND
+      NOT EXISTS(SELECT 1 FROM vibe_placements WHERE round_id=NEW.id);
+    SELECT RAISE(ABORT,'Invalid theme review.') WHERE NEW.mode='vibe' AND
+      ((SELECT COUNT(*) FROM vibe_themes WHERE round_id=NEW.id)>8 OR
+       (NEW.themes_reviewed=0 AND EXISTS(SELECT 1 FROM vibe_themes WHERE round_id=NEW.id)));
+    SELECT RAISE(ABORT,'Answer belongs to a different mode.') WHERE
+      (NEW.mode!='spotlight' AND EXISTS(SELECT 1 FROM spotlight_allocations WHERE round_id=NEW.id))
+      OR (NEW.mode!='vibe' AND (EXISTS(SELECT 1 FROM vibe_placements WHERE round_id=NEW.id)
+                              OR EXISTS(SELECT 1 FROM vibe_themes WHERE round_id=NEW.id))); 
+END;

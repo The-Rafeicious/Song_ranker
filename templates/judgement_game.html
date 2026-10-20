@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}{{ mode_name }} · Song Ranker{% endblock %}
+{% block page_kind %}{{ mode }}_play{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/judgement_modes.css',v=app_version) }}">{% endblock %}
+{% block content %}
+<div class="judgement-game judgement-{{ mode }}" data-judgement-mode="{{ mode }}" style="--judgement-color:var(--{{ mode }})">
+  <div class="judgement-heading"><h1>{{ mode_name }}</h1>{% if mode!='spotlight' %}<a href="{{ stats_url }}">Stats ↗</a>{% endif %}</div>
+  <div id="judgement-round" aria-busy="true"><div class="panel judgement-loading" role="status">Loading round…</div></div>
+  <p id="judgement-error" class="judgement-error" role="alert" hidden></p>
+  <div id="judgement-recovery" class="judgement-recovery" hidden><button type="button" class="btn" id="judgement-retry">Retry</button></div>
+  <noscript><p class="empty">Enable JavaScript to play this mode.</p></noscript>
+</div>
+<script id="judgement-config" type="application/json">{{ game_config|tojson }}</script>
+{% endblock %}
+{% block extra_js %}{% if mode=='spotlight' %}<script src="{{ url_for('static',filename='js/spotlight.js',v=app_version) }}" defer></script>{% endif %}<script src="{{ url_for('static',filename='js/judgement_game.js',v=app_version) }}" defer></script>{% endblock %}

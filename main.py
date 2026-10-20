@@ -7,12 +7,19 @@ import sys
 from pathlib import Path
 
 if __name__ == '__main__':
+    from songranker.storage.safe_mode import launch_arguments, runtime_for
+    launch_arguments()
+    runtime = runtime_for(Path(__file__).resolve().parent).prepare()
+    if runtime.safe:
+        print('SAFE MODE: main database protected; test copy: '+str(runtime.active_db),flush=True)
+    else:
+        print('LIVE MODE: writes are enabled for '+str(runtime.active_db),flush=True)
     from songranker.developer.git_sync import GitSync
     startup_root = Path(__file__).resolve().parent
     from songranker.storage.competition import configured_paths
     updater = GitSync(startup_root, str(configured_paths(startup_root)[0]))
     handoff = os.environ.pop('SONG_RANKER_BOOT_COMMIT', '')
-    if not handoff or updater.status().get('head') != handoff:
+    if not runtime.safe and (not handoff or updater.status().get('head') != handoff):
         update = updater.startup()
         print(update['message'], flush=True)
         if update.get('stop_startup'):
@@ -29,6 +36,8 @@ from songranker.modes import trivia  # Registers field-by-field trivia routes.
 from songranker.modes import special_modes  # Registers independent Elo Guesser and Album Shelves.
 from songranker import overall  # Registers derived, calibrated Overall scores; no stored counters.
 from songranker.modes import games  # Registers voting and tournament routes.
+from songranker.modes import judgement_api  # Subjective-mode HTTP contracts.
+from songranker.modes import judgement_pages  # V5.1.1 gameplay and dedicated statistics.
 from songranker.developer import metadata_tools  # Registers fill-only metadata scans.
 from songranker.developer import dev    # Registers authenticated database tools.
 from songranker.developer import dev_catalog  # Registers verified source review, album inspection and Singles moves.

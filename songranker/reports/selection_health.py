@@ -86,8 +86,13 @@ def build_selection_health(conn, context=None):
     def coverage(label,count):return dict(label=label,count=count,total=len(songs),percent=100*count/len(songs) if songs else None,health=coverage_health(count,len(songs)))
     has_details=conn.execute("SELECT 1 FROM sqlite_master WHERE name='song_details'").fetchone()
     bad=conn.execute('SELECT COUNT(*) FROM song_details WHERE preview_bad=1').fetchone()[0] if has_details else 0
+    updates={}
+    from songranker.modes.judgements import available
+    if available(conn):
+        from songranker.modes.judgement_selection import diagnostics
+        updates={key:diagnostics(conn,key) for key in ('spotlight','vibe')}
     return dict(preview_flags=bad,total=len(songs),quality=[coverage('Preview URLs present',len(previews)),coverage('Tagged tracks',tagged),
-        coverage('Finite Elo',len(valid)),coverage('Shelves-eligible tracks',len(shelf_ids))],pools=pools,
+        coverage('Finite Elo',len(valid)),coverage('Shelves-eligible tracks',len(shelf_ids))],pools=pools,mode_updates=updates,
         weights=dict(exploration=S.EXPLORATION,shortfall=1-S.EXPLORATION,match_floor=S.MATCH_FLOOR,
             match_close=S.MATCH_CLOSENESS,guess_floor=S.GUESS_FLOOR,guess_target=S.GUESS_TARGET_WEIGHT,
             guess_width=S.GUESS_WIDTH,previous=S.GUESS_PREVIOUS),

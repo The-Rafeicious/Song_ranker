@@ -116,6 +116,8 @@ def migrate(filename):
     Rebuild inside one write transaction, rather than replacing an open file.
     A concurrent write during candidate preparation aborts the upgrade safely.
     """
+    from songranker.storage.safe_mode import assert_writable
+    assert_writable(filename)
     from songranker.storage.database_io import (DatabaseValidationError, capture, create_backup, readonly, replace_contents, validate)
     path = Path(filename)
     if not path.exists():
@@ -177,6 +179,8 @@ def migrate(filename):
 
 def initialize_database(filename, sql_backup=None):
     """Existing DB wins. Missing DB restores SQL before any empty schema is made."""
+    from songranker.storage.safe_mode import assert_writable
+    assert_writable(filename)
     import tempfile
     from songranker.storage.database_io import (DatabaseValidationError, publish, validate)
     path = Path(filename).resolve()

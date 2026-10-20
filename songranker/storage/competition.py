@@ -58,6 +58,8 @@ def catalogue_rows(conn):
 
 def start_competition(target,legacy=None,seed=None):
     """Build privately, verify transfer/reset, then publish without overwriting a V3 DB."""
+    from songranker.storage.safe_mode import assert_writable
+    assert_writable(target)
     target=Path(target).resolve()
     if legacy and target==Path(legacy).resolve():raise DatabaseValidationError('V2 source and V3 destination must be separate files.')
     if target.exists():
@@ -126,6 +128,8 @@ def start_competition(target,legacy=None,seed=None):
 
 def bootstrap_sql(target,sql_file):
     """Recover a Git SQL snapshot privately: V3 keeps results, V2 carries catalogue only."""
+    from songranker.storage.safe_mode import assert_writable
+    assert_writable(target)
     target=Path(target).resolve();target.parent.mkdir(parents=True,exist_ok=True)
     if target.exists():return start_competition(target)
     with tempfile.TemporaryDirectory(prefix='.sql_bootstrap_',dir=target.parent) as folder:

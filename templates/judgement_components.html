@@ -1,0 +1,15 @@
+{% from 'components.html' import art %}
+{% from 'mode_stats_components.html' import metadata, saved_date %}
+{% macro identity(song, dense=false) -%}
+<div class="judgement-identity{% if dense %} judgement-identity-dense{% endif %}">
+  <span class="mode-stats-art">{{ art(song.cover_url|default('')) }}</span>
+  <div class="mode-stats-copy">{% if song.id is not none %}<a class="song mode-stats-name" title="{{ song.title }}" href="{{ url_for('song_page',song_id=song.id) }}">{{ song.title }}</a>{% else %}<strong class="mode-stats-name muted" title="{{ song.title }}">{{ song.title }}</strong>{% endif %}
+  {{ metadata(song) }}{% if not song.artist_links and song.saved_artist|default('') %}<span class="muted">{{ song.saved_artist }}</span>{% endif %}</div>
+</div>
+{%- endmacro %}
+{% macro spotlight_row(row, index) -%}
+<li class="mode-stats-row"><span class="mode-stats-rank">{{ index }}</span><span class="mode-stats-art">{{ art(row.song.cover_url) }}</span><div class="mode-stats-copy"><a class="song mode-stats-name" title="{{ row.song.title }}" href="{{ url_for('song_page',song_id=row.song.id) }}">{{ row.song.title }}</a>{{ metadata(row.song) }}</div><div class="mode-stats-result"><strong>{{ '%.1f'|format(100*row.adjusted_support) }}<small>% support</small></strong><span>{{ '%.1f'|format(row.mean_points) }} / 12 mean points</span><span>{{ row.offers }} rounds · {{ row.zero_shares }} zero shares</span></div></li>
+{%- endmacro %}
+{% macro heatmap(table) -%}
+<article class="mode-stats-inset judgement-heatmap"><h3>{{ table.label }}</h3><p class="mode-stats-caption">{{ table.placements }} placements · {{ table.tested_songs }} current tracks</p><div class="judgement-heat-axis">{{ table.y.high }} ↑</div><table class="judgement-heat-table"><caption class="judgement-sr">{{ table.label }} placements, x and y coordinates 0 to 4. {{ table.x.low }} to {{ table.x.high }}; {{ table.y.low }} to {{ table.y.high }}.</caption><thead><tr><th scope="col"><span class="judgement-sr">Y / X</span></th>{% for x in range(5) %}<th scope="col">{{ x }}</th>{% endfor %}</tr></thead><tbody>{% for y in range(4,-1,-1) %}<tr><th scope="row">{{ y }}</th>{% for x in range(5) %}<td style="--heat:{{ (65*table.heatmap[y][x]/table.peak)|round(2) if table.peak else 0 }}%" title="X {{ x }}, Y {{ y }}: {{ table.heatmap[y][x] }} placements">{{ table.heatmap[y][x] }}</td>{% endfor %}</tr>{% endfor %}</tbody></table><div class="judgement-heat-axis">↓ {{ table.y.low }}</div><div class="judgement-axis-ends"><span>{{ table.x.low }}</span><span>{{ table.x.high }} →</span></div></article>
+{%- endmacro %}

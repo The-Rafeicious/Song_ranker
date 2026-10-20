@@ -64,12 +64,31 @@ def upgrade_state(original):
 
 def compact_database(filename,*,force=False,backed_up=False,grow_only=False):
     """Run only on a stopped/private database. SQLite keeps VACUUM atomic."""
+    from songranker.storage.safe_mode import assert_writable
+    assert_writable(filename)
     path=Path(filename);conn=sqlite3.connect(path,timeout=5)
     try:
         page=conn.execute('PRAGMA page_size').fetchone()[0]
         used=(conn.execute('PRAGMA page_count').fetchone()[0]-conn.execute('PRAGMA freelist_count').fetchone()[0])*page
         target=2048 if used<4*1024*1024 else 4096
         if not force and (page==target or (grow_only and target<page)):return False
+        # VACUUM may renumber implicit rowids. Sparse IDs are stored facts in
+        # lossless transports too, including extension tables without indexes.
+        # Defer optional compaction rather than silently changing those IDs.
+        for name,sql in conn.execute("SELECT name,sql FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"):
+            if 'WITHOUT ROWID' in (sql or '').upper():continue
+            quoted='"'+name.replace('"','""')+'"'
+            columns=list(conn.execute('PRAGMA table_info('+quoted+')'))
+            primary=[r for r in columns if r[5]]
+            if len(primary)==1 and primary[0][2].upper()=='INTEGER' and not any(r[3]=='pk' for r in conn.execute('PRAGMA index_list('+quoted+')')):
+                continue
+            names={r[1].lower() for r in columns}
+            alias=next((a for a in ('rowid','_rowid_','oid') if a not in names),None)
+            if alias is None:return False
+            n,low,high=conn.execute(f'SELECT COUNT(*),MIN({alias}),MAX({alias}) FROM '+quoted).fetchone()
+            if n and (low!=1 or high!=n):
+                logging.getLogger(__name__).info('Optional compaction deferred to preserve sparse implicit rowids in %s',name)
+                return False
         if not backed_up:
             from songranker.storage.database_io import create_backup
             create_backup(path,'pre_compact')

@@ -154,6 +154,7 @@ body[data-page=home] #main .home-bar-details {
   body[data-page=home] #main .home-collection-totals { gap: 12px; }
   body[data-page=home] #main .home-collection-totals > .stat { padding: 20px 14px; }
   body[data-page=home] #main .home-record-stats .mini-stats { margin: 0; }
+}
 @media (max-width: 520px) {
   body[data-page=home] #main .home-collection-totals > .stat { padding: 18px 10px; }
   body[data-page=home] #main .home-collection-totals .stat-label { font-size: 16px; }
@@ -161,4 +162,40 @@ body[data-page=home] #main .home-bar-details {
   body[data-page=home] #main .home-record-stats .mini-stats small { font-size: 16px; }
   body[data-page=home] #main .home-bar-caption { font-size: 16px; }
   body[data-page=home] #main .home-bracket-legend { gap: 6px; font-size: 14px; }
+}
+
+/* Home owns the eight-card grid; no legacy spans or nth-child placement. */
+body[data-page=home] #main .modes {
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  grid-auto-rows:1fr;
+  gap:var(--site-gap,20px);
+  align-items:stretch;
+}
+body[data-page=home] #main .modes > .mode-card {
+  grid-column:auto;
+  grid-row:auto;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  min-width:0;
+  width:100%;
+  max-width:none;
+}
+body[data-page=home] #main .modes .mode-icon { font-size:40px; line-height:1.2; }
+body[data-page=home] #main .modes h2 { font-size:24px; line-height:1.25; margin:0; }
+body[data-page=home] #main .mode-card:is(.spotlight-mode,.vibe-mode) {
+  --surface-accent:currentColor;
+  border-color:color-mix(in srgb,currentColor 50%,#444);
+  background:linear-gradient(135deg,color-mix(in srgb,currentColor 8%,#1e1e1e),#1e1e1e 70%);
+}
+@media(max-width:1050px) {
+  body[data-page=home] #main .modes { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:520px) {
+  body[data-page=home] #main .modes { grid-template-columns:minmax(0,1fr); }
+  body[data-page=home] #main .modes > .mode-card { flex-direction:row; gap:18px; }
+  body[data-page=home] #main .modes h2 { font-size:22px; }
 }

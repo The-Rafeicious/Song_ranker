@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, session
+from flask import Flask, redirect, url_for, session, jsonify
 from functools import wraps
 from difflib import SequenceMatcher
 import random
@@ -11,17 +11,22 @@ import weakref
 from songranker.storage.database_access import gate
 
 from songranker.paths import ROOT
+from songranker.storage.safe_mode import runtime_for, SafeModeError
+runtime = runtime_for(ROOT)
+if runtime.safe:
+    runtime.prepare()  # Freeze the destination before modules import DB_NAME.
 app = Flask(__name__,template_folder=str(ROOT/'templates'),static_folder=str(ROOT/'static'))
 from songranker.lan_security import configure_security
-configure_security(app, ROOT)
+configure_security(app, runtime.session_root)
 from songranker.version import APP_VERSION
 
 @app.context_processor
 def project_version():
-    return dict(app_version=APP_VERSION)
+    return dict(app_version=APP_VERSION,safe_mode=runtime.safe,
+                safe_run=runtime.run_dir.name if runtime.run_dir else None)
 
 from songranker.storage.competition import configured_paths
-DB_PATH, LEGACY_DB_PATH = configured_paths(ROOT)
+DB_PATH, LEGACY_DB_PATH = runtime.active_db, runtime.legacy_db
 DB_NAME = str(DB_PATH)
 DEV_PIN = os.environ.get('SONG_RANKER_PIN', '9042')
 
@@ -45,12 +50,20 @@ class _AppConnection(sqlite3.Connection):
 
 
 def get_db_connection():
+    runtime.assert_writable(DB_NAME)
     gate.enter_connection()
     try:
         conn = sqlite3.connect(DB_NAME, timeout=30, factory=_AppConnection)
         conn._maintenance_lease = weakref.finalize(conn, gate.leave_connection)
         conn.row_factory = sqlite3.Row
         conn.execute('PRAGMA foreign_keys=ON')
+        if runtime.safe:
+            def protect(action,arg1,arg2,database,trigger):
+                if action in (sqlite3.SQLITE_ATTACH,sqlite3.SQLITE_DETACH):return sqlite3.SQLITE_DENY
+                if action==sqlite3.SQLITE_PRAGMA and str(arg1).lower() in ('writable_schema','temp_store_directory'):
+                    return sqlite3.SQLITE_DENY
+                return sqlite3.SQLITE_OK
+            conn.set_authorizer(protect)
         return conn
     except BaseException:
         if 'conn' in locals():
@@ -80,6 +93,8 @@ def ensure_tournament_schema(conn):
 def init_db():
     """Restore before creating anything, then apply the single versioned schema."""
     from songranker.storage.competition import start_competition, bootstrap_sql
+    if Path(DB_NAME).resolve()==runtime.active_db:
+        runtime.prepare()
     with gate.maintenance():
         if not Path(DB_NAME).exists() and os.environ.get('SONG_RANKER_LEGACY_DB') and not LEGACY_DB_PATH.exists():
             raise ValueError('The configured V2 source is missing; no fresh database was created.')
@@ -87,6 +102,23 @@ def init_db():
             bootstrap_sql(DB_NAME,ROOT/'database_backup.sql')
             return
         start_competition(DB_NAME, LEGACY_DB_PATH, ROOT / 'data/catalogue_seed.db')
+
+
+@app.route('/api/runtime-mode')
+def runtime_mode():
+    response=jsonify(runtime.status());response.headers['Cache-Control']='no-store';return response
+
+
+@app.errorhandler(SafeModeError)
+def protected_database_error(error):
+    return jsonify(message=str(error),safe_mode=runtime.safe),409
+
+
+@app.after_request
+def runtime_headers(response):
+    response.headers['X-Song-Ranker-Mode']='safe' if runtime.safe else 'live'
+    if runtime.safe:response.headers['Cache-Control']='no-store'
+    return response
 
 
 def export_rankings():
@@ -112,7 +144,8 @@ def export_rankings():
                              ''').fetchall()
     conn.close()
 
-    with open(ROOT / "database_snapshot.txt", "w", encoding="utf-8") as f:
+    output_root=runtime.run_dir if runtime.safe else ROOT
+    with open(output_root / "database_snapshot.txt", "w", encoding="utf-8") as f:
         f.write("--- SONG RANKER DATABASE SNAPSHOT ---\n\n")
 
         # Define table headers and column widths
@@ -141,7 +174,7 @@ def export_rankings():
             f.write(
                 f"{rank:<5} | {elo:<6} | {peak_elo:<9} | {peak_rank:<10} | {song['matches_played']:<7} | {recog:<7} | {title:<35} | {artist:<25} | {album}\n")
 
-    with open("current_elo_rankings.txt", "w", encoding="utf-8") as f:
+    with open(output_root / "current_elo_rankings.txt", "w", encoding="utf-8") as f:
         f.write("--- CURRENT ELO RANKINGS ---\n\n")
         f.write(f"{'Rank':<5} | {'Elo':<6} | {'Matches':<7} | {'Track'}\n")
         f.write("-" * 65 + "\n")

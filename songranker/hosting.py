@@ -30,6 +30,9 @@ class StopCoordinator:
             return dict(supported=self.shutdown is not None,**{k:v for k,v in self.job.items() if k not in ('owner','event','action')})
 
     def begin(self,owner,sync_git,expected=None):
+        if sync_git:
+            from songranker.storage.safe_mode import assert_git_allowed
+            assert_git_allowed()
         with self.condition:
             if self.shutdown is None:raise ValueError('Start the app with python main.py to use website shutdown. This host is managed externally.')
             if self.busy:

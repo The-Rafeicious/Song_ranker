@@ -8,7 +8,7 @@ import secrets
 from songranker.storage.preference_state import (calculate_new_elo, compact, replay, mode_replay)
 
 RULES_VERSION = 1
-EXPOSURE_MODES = ('public', 'standard', 'blind', 'trivia', 'guesser', 'tournament', 'shelves')
+EXPOSURE_MODES = ('public', 'standard', 'blind', 'trivia', 'guesser', 'tournament', 'shelves','spotlight','vibe')
 
 
 class PreferenceError(ValueError):

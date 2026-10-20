@@ -197,8 +197,12 @@ def upgrade_state(original):
         from songranker.storage.challenge_state import ADDITIONS as quiz_additions
         from songranker.storage.catalog_source_state import ADDITIONS as song_additions
         current={name:set(columns) for name,columns in table_columns().items()}
-        layouts=[(14,current)]
-        thirteen={name:set(columns) for name,columns in current.items() if name not in ('song_details','competition_state','listening_observations')}
+        old_current={**current,'twins_choices':{'round_id','chosen_slot'}}
+        layouts=[(16,old_current),(17,current)]
+        previous={name:set(columns) for name,columns in current.items() if name not in
+                  ('judgement_rounds','judgement_items','spotlight_allocations','vibe_placements','vibe_themes','twins_choices')}
+        layouts.append((14,previous))
+        thirteen={name:set(columns) for name,columns in previous.items() if name not in ('song_details','competition_state','listening_observations')}
         layouts.append((13,thirteen))
         twelve={name:set(columns) for name,columns in thirteen.items() if name!='song_sources'}
         twelve['songs']-={name for name,_ in song_additions}
@@ -211,13 +215,14 @@ def upgrade_state(original):
         ten['tournaments']-={'elo_policy_version','elo_weight'}
         layouts.append((10,ten))
         for version,layout in layouts:
-            if (set(original['tables'])&set(current)==set(layout) and
+            if (set(original['tables'])&set(old_current)==set(layout) and
                 all(set(original['tables'][name]['columns'])==columns for name,columns in layout.items())):
                 original=deepcopy(original);original['user_version']=version;break
     from songranker.storage.challenge_state import upgrade_state as upgrade_challenges
     from songranker.storage.catalog_source_state import upgrade_state as upgrade_sources
     from songranker.storage.source_storage import upgrade_state as upgrade_storage
-    return upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original))))
+    from songranker.storage.mode_retirement import upgrade_state as retire_modes
+    return retire_modes(upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original)))))
 
 
 def replay(songs, seeds, events, overrides, cutoff, boundary):

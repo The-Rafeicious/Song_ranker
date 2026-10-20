@@ -1,0 +1,51 @@
+/* Shared navbar typography and mode spectrum. Foundation keeps menu controls. */
+.navbar {
+  --nav-mode-spectrum:linear-gradient(100deg,
+    var(--standard) 0%,var(--blind) 14.3%,var(--recognition) 28.6%,
+    var(--tournament) 42.9%,var(--guesser) 57.1%,var(--shelves) 71.4%,
+    var(--spotlight) 85.7%,var(--vibe) 100%);
+}
+.navbar .nav-inner {
+  display:grid; grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);
+  align-items:center; gap:20px; padding:20px 28px;
+}
+.navbar .wordmark { grid-column:2; grid-row:1; justify-self:center; font-size:28px; }
+.navbar .nav-left { grid-column:1; grid-row:1; display:flex; flex-wrap:wrap; gap:12px; min-width:0; }
+.navbar .nav-right { grid-column:3; grid-row:1; justify-self:end; min-width:0; }
+.navbar .nav-left :is(summary,.nav-rankings) { font-size:17px; line-height:1.4; }
+.navbar .nav-left :is(.nav-matches,.nav-stats,.nav-performance) {
+  background-image:var(--nav-mode-spectrum);
+  background-clip:text; -webkit-background-clip:text; color:transparent;
+}
+.navbar .menu a { font-size:16px; }
+@media(max-width:1280px) {
+  .navbar .nav-inner { grid-template-columns:minmax(0,1fr) auto; gap:14px 20px; }
+  .navbar .wordmark { grid-column:1/-1; grid-row:1; }
+  .navbar .nav-left { grid-column:1; grid-row:2; }
+  .navbar .nav-right { grid-column:2; grid-row:2; }
+}
+@media(max-width:980px) {
+  .navbar .nav-inner { grid-template-columns:minmax(0,1fr); }
+  .navbar .nav-left { grid-column:1; grid-row:2; justify-content:center; justify-self:center; }
+  .navbar .nav-right { grid-column:1; grid-row:3; justify-self:center; justify-content:center; }
+}
+@media(max-width:600px) {
+  .navbar .nav-inner { padding:16px 14px; gap:14px; }
+  .navbar .wordmark { font-size:25px; }
+  .navbar .nav-left { display:grid; grid-template-columns:repeat(2,max-content); gap:10px 24px; }
+  .navbar .nav-left :is(summary,.nav-rankings) { font-size:16px; }
+  .navbar .nav-left .menu { min-width:min(260px,calc(100vw - 28px)); max-width:calc(100vw - 28px); }
+  .navbar .nav-left details:nth-child(2) .menu { left:auto; right:0; }
+  .navbar .nav-right { display:flex; flex-wrap:wrap; width:100%; gap:10px; }
+  .navbar .nav-search { min-width:0; max-width:100%; flex:1 1 180px; }
+}
+
+/* One destination per line, with page scrolling instead of an inner scrollbar. */
+.navbar .nav-stats-menu .menu {
+  display:block; width:max-content; min-width:290px;
+  max-width:calc(100vw - 28px); max-height:none; overflow:visible;
+}
+.navbar .nav-stats-menu .menu a {
+  display:block; width:100%; white-space:nowrap; line-height:1.5;
+  padding:10px 14px;
+}

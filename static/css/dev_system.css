@@ -199,3 +199,8 @@ body[data-page=dev] #main :is(#dev-search,#manage-search) > button { width:auto;
 
 body[data-page=dev] #main .dev-table-tools { display:flex; align-items:center; flex-wrap:wrap; gap:12px 20px; margin:16px 0; }
 body[data-page=dev] #main #table-state-label { font-size:14px; color:var(--muted); }
+
+body[data-page=dev] #main .bulk-workbench .field { display:grid; gap:7px; min-width:0; }
+body[data-page=dev] #main .bulk-workbench .field > label { margin:0; }
+body[data-page=dev] #main .bulk-workbench :is(.field > input,.field > select) { margin:0; }
+body[data-page=dev] #main .bulk-workbench .bulk-actions { margin:16px 0; }

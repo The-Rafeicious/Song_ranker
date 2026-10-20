@@ -1,46 +1,116 @@
-# Song Ranker V5
+# Song Ranker V5.1.2.1
 
-**V5.0.3.1 · V3 competition database · schema 15**
+**V5.1.2.1 · Spotlight placement and results refinements · V3 competition · schema 17**
 
-Vote between songs, identify previews, run tournaments, guess Elo and arrange
-album shelves. V5 keeps your music catalogue and starts the competition again
-at 1200 Elo, using the complete V4.1.6 feature set with cleaner reporting,
-stage-aware selection and listening analysis.
+Vote between songs, identify previews, run tournaments, guess Elo, arrange album
+shelves, share a spotlight or describe a vibe. Home has seven games in a
+responsive four/two/one-column grid, with real emojis and full-cover preview
+players. Proper album links follow Standard Vote’s metadata pattern.
 
-Already on V5? Apply the [V5.0.2 storage follow-up](docs/UPGRADE_V5_STORAGE.md).
-It backs up your current database, compresses source metadata losslessly and
-keeps one current source per song. Competition results continue unchanged.
-Apple ID and Apple link are available as optional columns in Dev → Songs.
+## V5.1.2.1 Spotlight refinements
+
+Use the numbered selector **below each song’s artist/album details**, then click
+its position on the compact Worse → Better bar. Selection has a clear highlight;
+metadata links and preview covers have their own actions. Small cover thumbnails
+replace the bar’s numbers, with overlapping covers fanning apart on hover/focus.
+The bar pulses on placement. After 1.5 seconds without adjustment, selection moves
+to the next unplaced song (or the next song if all are placed). Dragging, further
+adjustment and manual selection reset/cancel the wait; revisiting remains possible.
+
+The footer now reads **available points · Loop previews · Next round**.
+Points remain hidden while placing. Next round saves the same automatic 12-point
+split, reveals clean point bands over the covers and rearranges bar thumbnails
+by point order. Brief result previews play highest points first, once through,
+then a new round opens. The results Next round button can advance immediately.
+
+This download contains **changed and added files only**, to merge over your last
+Spotlight release, now named **V5.1.2** (previously labelled V5.1.1.3). No separate
+reinstall is needed. Stop the app, merge `Song_ranker`, restart and hard-refresh.
+Schema 17, saved results, adaptive weighting and safe mode are unchanged.
+[Installation and controls](docs/UPGRADE_V5_1_2_1.md).
+
+## V5.1.1.2 changes
+
+Vibe Map now uses vivid red `#FF3B3B`. The navbar spectrum includes every current
+mode, and the Stats dropdown gives each destination its own line without an
+internal scrollbar. Shared Spotlight keeps blue-violet `#7F91FF`.
+
+The retired mode is removed from current play, reports, Overall coverage,
+resets and storage. Schema 17 selectively removes its results after a verified
+pre-upgrade backup. Your catalogue and the remaining modes’ results are kept.
+Historical release notes are unchanged; see the
+[upgrade and deletion list](docs/UPGRADE_V5_1_1_2.md).
+
+## Shared Spotlight and Vibe Map
+
+- **Shared Spotlight 🔦:** place four tracks on a relative line. Distances
+  divide 12 points automatically; ties and zeroes remain valid.
+- **Vibe Map 🗺️:** place one, two or all three independent tables. Optional
+  tags use the catalogue’s existing selections and descriptions. Unplaced
+  tables and unreviewed tags stay unknown.
+
+Both have focused game pages and dedicated stats: summaries and main findings
+first, then detailed tables, listening and history. They use shared preview,
+volume and Standard/Quick pacing. Drafts and open rounds resume on refresh;
+**Retry same save** retains the original answer and listening sample. Selectors
+and evidence weights remain self-adjusting. Spotlight contributes adaptively to
+Overall’s preference family; Vibe provides descriptive coverage with no quality
+weight. Overall remains calibration 7.
+
+## Test safely
+
+Merge the code into your existing folder while keeping the database and backups.
+Stop the app, then launch:
+
+```sh
+python safe_mode.py
+```
+
+First use creates an isolated copy. Later launches reopen the same safe database,
+and browser refresh retains its test data. The banner identifies safe mode;
+results, edits and backups stay there. Git is disabled and test changes never
+merge into the main database. To copy your latest real songs into that same
+location, stop the app and explicitly refresh:
+
+```sh
+python safe_mode.py --refresh-safe-mode
+```
+
+Refresh clears test results in the safe database; it leaves the main database
+unchanged. The first updated launch adopts the latest marked old test run and
+removes other marked runs for that same source. Unmarked folders and backups
+are kept. Stop the test app and run `python main.py` for real play.
+
+See [page controls](docs/UPGRADE_V5_1_1.md),
+[backend contracts](docs/UPGRADE_V5_1.md) and [release history](update_logs/V5_1_UPDATE.md).
 
 ## Start or upgrade
 
-1. Stop the app. Merge the V5 `Song_ranker` folder into your existing app folder,
-   or extract the full app into a new folder.
-2. For your latest catalogue, keep your current `song_ranker_v2.db` beside
-   `main.py` before the first launch. An existing V2 file takes priority over the
-   catalogue supplied with the full download.
+1. Stop the app. Merge this download's `Song_ranker` folder into your existing app folder.
+2. Retain your current `data/song_ranker_v3.db`, backups and local settings.
+   For an older V2 installation, follow [the transition guide](docs/UPGRADE_V5.md).
 3. In that folder, run:
 
 ```sh
 python -m pip install -r requirements.txt
-python main.py
+python safe_mode.py
 ```
 
 Use `python3` if that is your Python command. Python 3.10+ is required; validation
 used 3.12. Open **http://127.0.0.1:5000**, then hard-refresh existing browser tabs.
-The footer should show **V5.0.3**.
+The footer should show **V5.1.1.1**.
 
-On first launch, V5 makes a complete SQLite backup of V2, verifies a catalogue-only
+When moving from V2 into a missing V3 destination, V5 makes a complete SQLite
+backup of V2, verifies a catalogue-only
 transfer and publishes **`data/song_ranker_v3.db`**. Song/artist/album/tag IDs,
 relationships, artwork, previews, dates and current Apple source observations stay
 intact. Votes, brackets, quiz results, streaks, records, ratings and listening
 history start fresh. An existing V3 competition is reused on later launches.
 
-The full download contains a fresh catalogue seed from the supplied app: **507
-songs, 65 artists, 151 albums and 54 tags**, with no competition results. The
-smaller upgrade contains code and notes only. Neither package overwrites an
-active V3 database. To carry changes made since the supplied snapshot, use your
-current V2 file when first launching either package.
+This V5.1.1 download is a code-only upgrade. It includes no active SQLite database,
+SQL backup snapshot or fabricated results. Your existing V3 database takes
+priority; it is preserved and migrated on a normal launch. The code-only package
+also supports an empty installation, but does not supply its music catalogue.
 
 Read the [V5 upgrade and patch guide](docs/UPGRADE_V5.md) for transfer details,
 custom paths, recovery and the [obsolete-file list](docs/TRIMMED_FILES.txt).
@@ -53,7 +123,7 @@ Do not copy an old database over the active V3 file to undo an upgrade.
   and slightly tighter Elo pairing as a pool gains experience.
 - Categorical data health, current exposure averages and stage-relative Elo
   spread references, alongside precise draw probabilities.
-- Measured playback seconds before answers in all five game modes. Statistics
+- Measured playback seconds before answers in all eight game modes. Statistics
   show measured samples; missing measurements remain unknown.
 - A private **Preview quality** annotation in Dev → Songs → Actions, included in
   analysis downloads without changing public pages or automatic selection.
@@ -71,11 +141,13 @@ Do not copy an old database over the active V3 file to undo an upgrade.
 | Tournament | Play an 8/16/32-track bracket across the library or an artist/album/tag. | Bracket points, placements and first-round Elo. |
 | Elo Guesser | Pick the track with the higher frozen Elo. | Accuracy and a challenge streak whose pairs become harder. |
 | Album Shelves | Place ten songs into two or three albums and arrange their relative track order. | Order accuracy, album placement and points. |
+| Shared Spotlight | Place four previews on a relative line; distance divides 12 points automatically. | Allocations, adjusted preference support and adaptive Overall evidence. |
+| Vibe Map | Place a preview on independent mood/energy, sound/delivery and build/hook grids; optionally choose tags. | Descriptive coordinates, heatmaps, spread and reviewed-tag counts. |
 
 Every song starts at 1200. **Play Standard Vote or Tournament before Elo
 Guesser** so there are different ratings to compare. Blind/Trivia need previews;
 Shelves needs proper albums with unambiguous positive track numbers and enough
-capacity for ten tracks. An unavailable mode explains what it needs.
+capacity for ten tracks. Spotlight needs four distinct previewable songs; Vibe needs one. An unavailable mode explains what it needs.
 
 The clock menu beside volume controls Standard/Quick result speed and preparing
 next questions. Audio continues when changing browser tabs; explicit pause stays
@@ -186,7 +258,7 @@ transfer fails, V5 leaves the source intact and does not publish a partial V3
 file; read the terminal error and the [upgrade guide](docs/UPGRADE_V5.md). Fresh
 zero rates should show `—`, not an invented percentage.
 
-Validation includes **511 Python tests**, **2,037 JavaScript assertions**,
+Earlier V5 validation included **511 Python tests**, **2,037 JavaScript assertions**,
 **571 live app checks** and **48,000 simulated preference draws**. Browser QA used
 DOM/computed-style checks; physical-device layout, audio and Windows hosting
 remain installation checks. Scope and reproducible commands are in
@@ -199,3 +271,11 @@ See [V5.0.3 installation and workflow](docs/UPGRADE_V5_0_3.md).
 V5.0.3.1 adds a fresh-PIN **Stop app** button in the developer header: save a
 rotating backup, optionally upload the database snapshot to Git, show the results,
 then stop the normal launcher. See [installation and backup policy](docs/UPGRADE_V5_0_3_1.md).
+
+V5.0.3.2 adds selection feedback, collapsed source alternatives and aligned bulk
+controls. See [patch notes](docs/UPGRADE_V5_0_3_2.md).
+
+V5.1.1.1 verification: **268 Python tests** and **466 JavaScript assertions**,
+including 14 page/report cases and 88 gameplay assertions. The unchanged
+V5.1 selectors previously passed 600 simulated rounds. See
+[the current validation report](docs/VALIDATION.md) for scope and limits.

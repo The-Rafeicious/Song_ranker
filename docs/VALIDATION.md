@@ -1,262 +1,148 @@
-# V5.0.3.1 validation
+# V5.1.2.1 validation
 
-Based on the completed V4 app plus V4.1.6. V5 uses a new generation-3 database,
-initially schema 14, now schema 15. The supplied V2 database remains unchanged, SHA-256:
-`d9d06fc85a2786968f50219549a0eb4598c4284686e98fafb4b1a7beae695e68`.
-Earlier reports are retained in [validation history](archive/VALIDATION_HISTORY.md).
+All five JavaScript suites passed: **124 gameplay, 49 Spotlight-core, 167
+catalogue, 99 system and 112 tag-workbench assertions** (551 explicit assertions),
+plus 625 allocation property cases. **272 Python tests passed.** Packaging checks are recorded in the release
+manifest.
 
-## V5.0.3.1 requested backups and shutdown
+## Spotlight interaction
 
-**550 Python tests pass**, including eight new rotation/shutdown cases: five
-requests retain only the latest three slots, old archives stay untouched, failed
-atomic replacement retains all slots, pending requests drain, PIN is required
-even for administrators, new writes are blocked during stop, owner/job-bound UI
-acknowledgement is required, Git failure retains the local backup and app, cancel
-and timeout resume the app, and externally managed WSGI hosts cannot be stopped.
-Earlier tests now verify routine source/tag/metadata/delete edits create no
-backup. Explicit manual backup/restore still reconciles every field.
+Deterministic DOM checks verify footer order, Next round wording, selectors
+below metadata, thumbnail markers, overlap expansion coordinates and hidden
+points before confirmation. Placement pulses, a resettable 1.5-second idle
+selection delay, manual cancellation, revisiting a placed song and drag/release
+behavior are covered. The allocation’s existing 625 distance/tie/order/translation
+cases continue to pass.
 
-**2,090 JavaScript assertions pass in 18 suites.** The stop UI tests cover the
-always-available developer header action, masked fresh PIN and incorrect-PIN
-feedback, visible Git destination, explicit reviewed request, backup/Git receipts
-before acknowledgement, four-second display pause and unsupported WSGI state.
+Confirmed receipts reveal the same integer shares, rearrange covers by point
+order and start the highest-scoring preview. Timed tests verify one finite pass,
+current-song highlighting, stopping at the last snippet, a single next-round
+schedule and manual Next cancellation. Result playback does not resample or
+resubmit listening. Browser permission blocks retain the visible result for
+manual Play/Next. Retry, legacy manual receipts, drafts, Vibe controls and
+cross-tab Standard/Quick settings continue to pass.
 
-**10 live real-launcher checks pass** with actual HTML/scripts, real Waitress,
-an isolated supplied-database copy and a disposable local bare Git remote. An
-incorrect PIN leaves the app running. Correct PIN creates the local slot and
-pushes the SQL snapshot; both success receipts appear while the server still
-serves pages. Browser acknowledgement then produces a clean process exit (0).
-The remote commit matches local HEAD and contains only `database_backup.sql`.
-Restored SQL, the shutdown backup and live DB compare exactly. The original
-attachment is unchanged. This does not claim physical-device browser paint or
-user-remote credentials were tested.
+A real Waitress/DOM run loaded the full shared/page script stack, exercised
+placement, footer preview control and score-first results, saved real fixture
+receipts and opened dedicated stats. No JavaScript errors were captured. Safe
+restart retained those answers at one path; explicit refresh cleared only the
+safe database at that same path. The source fixture remained byte-for-byte exact.
 
-The cumulative ZIP also passes syntax, document-link, hash/CRC and extracted
-full-app overlay checks, including repeated startup and catalogue preservation.
-No active database, secret, Git repository or backup is shipped. Earlier reports
-below describe their own releases' backup policies; V5.0.3.1 supersedes per-edit
-backup creation.
+## Release and compatibility
 
-## V5.0.3 source review
+The preceding release is relabelled V5.1.2. The old guide path remains a pointer;
+V5.1.2.1 applies directly over the last Spotlight download, including its former
+V5.1.1.3 label. Current documentation, style reference, technical/database guides
+and release log are updated. Historical measurements below retain their counts.
 
-**542 Python tests pass**, including eight new bulk-source transaction tests:
-complete pre-edit backup, unchanged catalogue/game tables, stale-item rejection,
-external identity conflicts, corrected pair swaps with stable row IDs, duplicate
-song/track/token validation, session ownership, admin/size bounds and rollback
-when the backup cannot be created.
+Patch contents are checked against the last download so only changed/added files
+ship. An overlay onto that installation must match the complete project hashes.
+Schema, backend mode rules, adaptive selection/Overall and safe-mode sources
+are checked unchanged. Syntax, CSS/templates, documentation links and archive
+checks are run during packaging. No active database, secrets or generated test
+answers are included. CSS/DOM checks do not establish rendered browser/device
+paint or physical audio output.
 
-**2,079 JavaScript assertions pass in 18 suites.** Source tests exercise five
-initial choices plus ten collapsed extras, the fifteen-choice cap, source-state
-filtering, queue advance/skip/revisit, duplicate staging, close/resume/discard,
-failed-save retry, explicit signed per-song requests and successful refresh.
-Shared album/EP/Single search results are reused, reordered for each title and
-never automatically assigned. Bulk tag UI tests now verify its removal while
-the separate tag workbench remains fully covered.
+---
 
-**19 live HTTP/jsdom checks pass** against Waitress and a disposable copy of the
-supplied database, using the actual loaded HTML/scripts and mocked Apple only.
-The real source queue selects two recordings, commits them together, shows a
-successful backup receipt and retains the correct advisory flags. Songs,
-albums, artists, tags and history compare exactly before/after. A second process
-retains both source records, one row per song, SQLite integrity and foreign keys.
-No live database or original attachment was modified. These are DOM/HTTP checks;
-physical-device browser layout and live Apple availability are not asserted.
+# V5.1.2 validation
 
-The release ZIP is checked for syntax, document links, file hashes/CRC and a
-cumulative overlay onto the original full V5 app. Repeated startup against a
-copy of the supplied schema-14 database retains its entire catalogue and latest
-source values through the included schema-15 storage upgrade. No active database,
-secret or backup is bundled. No files are deleted by this patch.
+**272 Python tests passed. All five JavaScript suites passed:** 92 gameplay,
+40 Spotlight-core, 167 developer catalogue, 99 system and 112 tag-workbench
+assertions (510 explicit assertions), plus 625 allocation property cases.
 
-## V5.0.2.1 storage follow-up
+## Relative placement and receipts
 
-**534 Python tests pass**, including nine compression/current-source cases.
-They check lossless Unicode/URL round trips, plain-JSON compatibility, corrupt/
-truncated streams, current-only migration with a complete pre-upgrade backup,
-unchanged non-source tables, unique source constraints, in-place updates/stale
-reviews, complete export/rebuild, protected invalid/extension-referenced sources,
-and growth from 2 KiB to 4 KiB pages. Source-history assertions now reflect the
-explicit one-current-source requirement. Separate WAL compaction checks retain
-all values and restore WAL mode.
+The allocation grid checks total 12, whole nonnegative shares, monotonic order,
+exact tied shares, reversal/card-order independence and translation invariance.
+Examples include 3/3/3/3 for equal placements, 12/0/0/0 for a lone high extreme,
+0/4/4/4 for three equal high songs and near-equal points for tight clusters.
+Invalid/partial/sparse positions cannot produce a split.
 
-**2,052 JavaScript assertions pass in 18 suites.** **41 live source checks pass**
-against Waitress/jsdom using an isolated copy of the supplied database. They cover
-all decoded sources, an incomplete observation, actual import/source changes,
-Edit summaries, a saved vote, and readable current sources in the analysis export.
-A second process retains the vote and current sources. Apple responses are mocked.
+Real DOM checks cover card selection without autoplay, a centre click with no
+slider-value change, all-four placement before saving, live cover points,
+collision lanes, keyboard controls, preserved album links, removed manual/Skip
+controls, exact integer API payloads, single rapid save, audio-node continuity,
+listening samples, draft resumption and frozen retry. Old unconfirmed manual
+receipts retain their original payload. Vibe controls and unjudged Skip pass.
 
-The supplied database is **897,024 bytes**; the verified optimized copy is
-**573,440 bytes** (36.07% smaller). All 517 songs, 155 albums, 67 artists, 54 tags,
-532 artist links and 1,045 tag links are retained. All non-source table values
-match exactly; every field/URL/ID/time of the 232 latest source observations
-matches the original. Only nine obsolete observations are removed. The original
-attachment SHA-256 remains
-`356c6b10b3b408b41c114c6cc242faa041f3f6f10a78db26be76d142b542984c`.
-The full supplied-data JSON rebuild and SQL restore reconcile every table and
-all 232 decoded current sources. Integrity and foreign-key checks pass.
+## Rotating previews
 
-Page-size/compression candidates and a representative 10,000-vote storage
-scenario informed the small/large page policy. These are measured examples, not
-a guaranteed reduction for every future database. The optimized deliverable is
-the supplied catalogue copy and contains none of the isolated live-test writes.
+Deterministic media-clock checks cover Standard 20 seconds, Quick 10 seconds,
+wraparound, manual jumps, pace changes after partial listening, buffering pauses,
+one current player, retained playback after save, cancellation, stale work,
+all-four failures and browser playback blocks. Tests also load the real
+RoundFlow settings module and exercise Standard/Quick/cross-tab duration changes.
+DOM checks redirect an active loop by cover click and stop on a hidden page.
 
-## V5.0.2 source reads and save status
+A real Waitress server/DOM harness loaded all shared and page scripts. It
+verified the simplified Spotlight heading, selected all four positions, checked
+sum 12 and ordered shares, started/redirected/stopped the loop, saved the answer
+and rendered populated dedicated stats. Vibe also saved and rendered correctly.
+There were no JavaScript errors. Safe restart kept both results at one path;
+explicit refresh cleared only safe results at that same path. The source fixture
+remained byte-for-byte unchanged.
 
-**525 Python tests pass.** Four new regressions cover fill-generated snapshots
-with omitted optional fields, successful save followed by a working batch read,
-partial historical observations after relinking, and missing optional names.
-Reads retain exact stored snapshots. The V5.0.1 failure was reproduced as a source
-POST returning 200 followed by a summary GET returning 500 (`track_url` missing).
+## Compatibility and packaging
 
-**2,052 JavaScript assertions pass in 18 suites.** The catalogue suite adds live
-Edit-summary updates without losing unsaved text, and a confirmed save followed
-by an injected 500 refresh. The latter retains the confirmed source, closes the
-save dialog and shows a saved/reload notice. Existing rejected-save checks still
-require an error and an open dialog.
+Schema 17, backend answer validation/rules, support formula, adaptive selectors,
+Overall calibration 7 and persistent safe mode are unchanged. Their source
+hashes are checked against V5.1.1.2. Python/template/JavaScript/CSS syntax,
+documentation links, patch paths/checksums and an overlay onto V5.1.1.2 are
+checked before delivery. The ZIP contains changed/added files only, with no
+live databases, generated answers, backups, secrets or safe runs.
 
-**38 live Waitress/jsdom checks pass**, including an existing fill-generated
-partial observation, actual source changes, success feedback and agreement with
-the Edit summary. A new process retains the saved vote and all four observations.
-Apple responses/media are mocked. The package overlay also checks preservation
-of every stored V3 value, including existing results/listening/private flags.
+CSS/DOM checks do not verify rendered browser/device paint or physical audio.
+Historical V5.1.1.2 validation follows unchanged.
 
-## V5.0.1 source persistence
+---
 
-- **521 Python tests pass**, including ten new source-fix regressions. Flat Apple
-  identities/links are verified and persisted; blank offers, missing/mismatched
-  identities and failed source inserts leave the database unchanged. Signed and
-  duplicate imports return saved source receipts. Reopened connections and Dev
-  summaries retain the ID, URL and advisory label. Source-only repair preserves
-  every other table; unmarked explicitness keeps the Not explicit default.
-- **2,046 JavaScript assertions pass in 18 suites.** The Dev catalogue checks now
-  reject missing offers/unconfirmed source receipts and cover optional saved-ID/
-  link columns, filtering and safe external links. Existing layout/game checks
-  remain in the suite.
-- **34 live Waitress/jsdom checks pass.** Actual search/add/reload requests retain
-  Apple ID, URL, explicitness and observation time; flat imports use the server's
-  advisory fact rather than a forged client label. A Source-only repair keeps
-  every public song/rating/listening value. Reloaded table columns read the
-  persisted observation. Only the Apple response/media are mocked.
-- A second process retains the saved match and all three source observations;
-  integrity and foreign-key checks pass. These writes use isolated QA databases.
+# V5.1.1.2 validation
 
-This is a schema-14 code patch over V5.0.0. The original first-release migration
-and broader V5 validation are recorded below. Automated DOM checks do not replace
-real-device visual/audio testing or prove current Apple service availability.
+**271 Python tests and 456 JavaScript assertions passed.** The four DOM suites
+contain 78 gameplay, 167 developer catalogue, 99 system and 112 tag-workbench
+assertions. Retired-mode tests are replaced by migration and persistent-safe
+regressions; historical counts are retained under `update_logs/validation/`.
 
-## Automated regression checks — V5.0.0 baseline
+## Storage and isolation
 
-**511 Python tests pass.** The release adds 14 V5 cases alongside the retained
-preference, scoring, replay, metadata, recovery, security and report suites.
+- Schema-16 fixtures migrate to schema 17 with only retired-mode choices,
+  rounds/items, listening and exposure entries removed. Other stored values,
+  row IDs, extension notes and sequence high-water marks reconcile exactly.
+- The original database is retained in a verified pre-upgrade backup. A second
+  launch adds no repeat migration backup. JSON rebuild and versionless SQL
+  restore apply the same retirement. Foreign-key checks pass.
+- Safe launches reuse one path and preserve test edits through repeated restarts.
+  The newest marked legacy run is adopted and only same-source marked old runs
+  are pruned. Unmarked folders are preserved and refused as overwrite targets.
+- Explicit refresh loads the latest main snapshot at that same safe path.
+  A failed source copy retains the previous safe database and releases the lock.
+- WAL snapshots, missing/corrupt sources, source-byte equality, hardlink aliases,
+  write/attach guards, launcher locks and disabled Git are covered. The backend
+  smoke tool writes a disposable child copy.
 
-- Catalogue transfer verifies exact songs/artists/albums/tags/source facts and
-  relationships, ID high-water marks, 1200 baselines, zero old game/analysis rows
-  and a complete old-results backup. The source is byte-for-byte unchanged.
-- Repeated and simultaneous first starts publish one complete competition.
-  A failed destination publish retains the old source and completed archive.
-  Existing results/additions survive restart, including after archiving the V2
-  source. Non-V3 destination data is refused. Exact V2 filename configuration
-  maps to a distinct V3 target.
-- SQL bootstrap preserves a generation-3 competition and resets older snapshot
-  results through catalogue transfer. V2 archives cannot be restored over a V3
-  competition through the normal Dev restore endpoint.
-- Accepted Standard/Blind, Tournament, Trivia, Guesser and Shelves answers store
-  listening only for actual offered tracks. Retry inserts once. Partial, foreign,
-  duplicate, nonfinite or excessive measurements stay unmeasured and do not
-  change a valid game result. Recognition reports map Trivia samples correctly.
-- Preview flags require Dev authentication, validate input and remain absent
-  from public collection data. Private exports include flags and observations;
-  flags do not change public metadata or eligibility.
-- New-track support is bounded and decays; exploration remains positive and
-  normalised. Stage policy changes smoothly and health follows current mean/
-  dispersion. Existing full/half preference evidence and saved Elo semantics pass.
-- Package-import/launcher/Git re-exec fixtures follow the new module layout.
-  Read-query bounds were updated only for the explicit extra analysis reads.
+## Pages and running app
 
-**2,037 JavaScript assertions pass in 18 suites.** Tests use actual feature
-modules with controlled media/clocks and cover existing gameplay, timing,
-reduced motion, tab visibility, Shelf counters, Dev search state, history,
-rankings, profiles and controls. The new tracker checks audible progress,
-preload/pause/buffer/mute exclusion, unplayed zeros, question redraw/restart,
-Shelf player identity and seek-jump bounds. Health checks retain exact counts
-while replacing headline percentage labels with categorical states.
+A real Waitress server and DOM harness verified seven Home cards, the current
+emojis, both subjective games and both dedicated stats pages with all shared
+scripts loaded. Centre-overlay play/pause toggled once per click, album links
+rendered and each game saved a real fixture decision. No JavaScript errors were
+captured. After stopping/restarting, both results remained in the same safe
+database. An explicit refresh cleared them at the same path; one safe-run folder
+remained throughout. The source fixture stayed byte-for-byte unchanged.
 
-## Live application checks
+Removed HTML/API routes return 404 and current navigation/configuration expose
+only the two remaining subjective modes. Vibe advertises red `#FF3B3B`.
+All 27 stylesheets and all Jinja templates parse. Stats dropdown rules provide
+full-width block links, nowrap labels, no height limit and no inner overflow
+scrolling. JavaScript/Python syntax, documentation links, archive contents and
+release hashes are checked at packaging.
 
-**571 checks pass** against Waitress/jsdom using an isolated copied V2 source
-and a newly transferred V3 database. All 19 Dev sections and the public Home,
-rankings/search, six stats dashboards, history, five game routes, Overall and
-song/artist/album/tag profiles load actual local assets and endpoints without
-script/request errors.
+CSS/DOM checks are not rendered-browser or physical-device paint checks. No live
+Apple requests, physical audio output or Windows runtime were verified here.
+All tests use disposable data; the package contains no active database, sample
+answers, backups, secrets or safe runs. Remaining adaptive selection/quality
+formulas are retained; Overall stays calibration 7.
 
-The run confirms all 507 songs/65 artists/151 albums/54 tags carry into a zero-
-result competition, Guesser explains the initial equal-rating state, a real
-browser-module vote saves four playback seconds across two measured tracks,
-a selective first-round match contributes half preference influence, and the
-Dev quality dialog saves a private note that stays out of public catalogue data.
-It checks shared listening panels, categorical health, complete daily tables,
-balanced profile mode cards and the shared baseline loading last. DOM controls
-remain present under width settings 320, 360, 390, 430, 760 and 1280 px.
-
-A separate full-app seed startup creates the same 507-song, 1200-Elo, zero-result
-competition and serves the fresh Home/six stats pages. A full V3 JSON export and
-rebuild reconcile every stored value, including nonzero listening samples,
-private quality annotations and competition provenance.
-
-## Selector simulations
-
-Eight seeds × 3,000 preference draws × two policies = **48,000 draws**. Each
-scenario starts with 80 equal-rated tracks, uses fixed noisy underlying
-preferences and adds ten new tracks after round 1,500. Clock/seed inputs are
-fixed. Compare the saved V4.1.6 policy with the final V5 policy:
-
-| Checkpoint | V4 exposure CV | V5 exposure CV | New-track mean V4 / V5 |
-| --- | --- | --- | --- |
-| 100 rounds | 0.4416 | 0.4340 | — |
-| 1,000 rounds | 0.0613 | 0.0545 | — |
-| 1,700 rounds | 0.1290 | 0.1037 | 25.21 / 27.98 |
-| 3,000 rounds | 0.0230 | 0.0209 | 66.67 / 66.94 |
-
-CV is population exposure standard deviation / mean (lower is more even).
-These are scenario results, not a promise of perfect uniformity or universal
-improvement for every seed/library. The final policy preserves a randomness
-floor and existing eligibility/recency constraints. Elo is never forced to the
-health reference range. The tested capped-ratio alternative was rejected in
-favour of the retained, slightly strengthened mean-deficit catch-up rule.
-
-Full results: [SELECTION_VALIDATION.json](SELECTION_VALIDATION.json). Reproduce
-from the root with a saved V4.1.6 `selection.py`:
-
-```sh
-python tools/validate_v5_selection.py --reference PATH_TO_V4_SELECTION_PY --output selection_check.json
-```
-
-Without `--reference`, the tool runs V5 alone. It writes no database or ranking.
-
-## Packaging and practical limits
-
-- Python/JavaScript syntax, relative documentation links, source manifests,
-  cumulative full/upgrade CRCs and original/prior-install overlay checks pass.
-  The full ZIP's only database is a catalogue-only fallback seed. Neither ZIP
-  contains an active V3 file, old results, session secret, SQL data dump, backup,
-  QA dependency or temporary test repository.
-- Extracted-ZIP startup checks pass for a fresh full installation, the upgrade
-  merged over V4, and the full app merged over V4. All three retain 507 songs,
-  start at 1200 with no old preference results, produce one complete backup,
-  accept a new vote, and preserve it on the next process start. The upgrade
-  paths also restart after the unchanged V2 source is moved into an archive.
-- Old moved/superseded locations are listed explicitly in
-  [TRIMMED_FILES.txt](TRIMMED_FILES.txt). The list protects databases, backups,
-  snapshots and the signing key. No automatic deletion is performed.
-- DOM/computed-style checks do **not** render browser paint or calculate complete
-  phone geometry. Physical-device appearance, real audio/autoplay/background
-  behavior, CDN access and Windows hosting remain installation checks. No claim
-  is made that those were tested on the user's phone.
-- Live saves affect only the isolated QA copy. Preview-network calls are stubbed
-  for live UI tests; no external Apple lookup or user Git remote is contacted.
-  Listening values are browser observations and may be unavailable when the
-  client cannot report them; grades and scores do not depend on those values.
-
-Install normal requirements and run `python -m unittest discover -s tests`.
-For JS tests, install jsdom as a test-only dependency and run each
-`tests/test_*.js` with Node. Keep startup/live checks on a disposable database.
+[Previous validation](../update_logs/validation/V5_1_1_1_VALIDATION.md) ·
+[Earlier history](VALIDATION_HISTORY.md) · [Upgrade](UPGRADE_V5_1_1_2.md)

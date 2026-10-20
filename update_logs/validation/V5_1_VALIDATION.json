@@ -1,0 +1,62 @@
+{
+  "version": "5.1.0",
+  "schema": 16,
+  "schema_objects": {
+    "table": 34,
+    "index": 27,
+    "trigger": 9,
+    "view": 5
+  },
+  "simulations": [
+    {
+      "mode": "spotlight",
+      "rounds": 200,
+      "initial_songs": 12,
+      "added_songs": 4,
+      "added_after_round": 100,
+      "mean_exposure": 50.0,
+      "new_song_mean_exposure": 50.25,
+      "coefficient_of_variation": 0.025495097567963924,
+      "coverage": 100.0,
+      "bytes_added": 161792
+    },
+    {
+      "mode": "vibe",
+      "rounds": 200,
+      "initial_songs": 12,
+      "added_songs": 4,
+      "added_after_round": 100,
+      "mean_exposure": 4.166666666666667,
+      "new_song_mean_exposure": 3.3333333333333335,
+      "coefficient_of_variation": 0.24166091947189142,
+      "coverage": 100.0,
+      "bytes_added": 96256
+    },
+    {
+      "mode": "twins",
+      "rounds": 200,
+      "initial_songs": 12,
+      "added_songs": 4,
+      "added_after_round": 100,
+      "mean_exposure": 50.0,
+      "new_song_mean_exposure": 49.25,
+      "coefficient_of_variation": 0.04,
+      "coverage": 100.0,
+      "bytes_added": 141312
+    }
+  ],
+  "supplied_catalogue": {
+    "songs": 535,
+    "artists": 67,
+    "albums": 155,
+    "tags": 54,
+    "all_old_values_and_rowids_preserved": true,
+    "new_judgement_rows": 0,
+    "integrity": "ok",
+    "foreign_key_errors": 0,
+    "source_bytes": 722944,
+    "migrated_bytes": 774144
+  },
+  "source_sha256_unchanged": "fdb4053e25faefb05823758cacfb3663e032d5967b9a6ad1d497c274b85019be",
+  "simulation_results_included_in_package": false
+}

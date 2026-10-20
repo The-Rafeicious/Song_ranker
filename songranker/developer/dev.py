@@ -457,7 +457,8 @@ def reset_competition_data(scope):
     try:
         conn=get_db_connection()
         conn.execute('BEGIN IMMEDIATE')
-        listening_modes={'matches':('standard','blind'),'trivia':('trivia',),'tournaments':('tournament',),'guesser':('guesser',),'shelves':('shelves',)}
+        listening_modes={'matches':('standard','blind'),'trivia':('trivia',),'tournaments':('tournament',),'guesser':('guesser',),'shelves':('shelves',),
+                         'spotlight':('spotlight',),'vibe':('vibe',)}
         if scope=='all':
             conn.execute('DELETE FROM listening_observations')
             conn.execute('UPDATE competition_state SET started_at=unixepoch() WHERE id=1')
@@ -487,6 +488,10 @@ def reset_competition_data(scope):
         if scope in ('all','shelves'):
             conn.execute('DELETE FROM album_shelf_rounds')
         if scope=='all':
+            conn.execute('DELETE FROM judgement_rounds')
+        elif scope in ('spotlight','vibe'):
+            conn.execute('DELETE FROM judgement_rounds WHERE mode=?',(scope,))
+        if scope=='all':
             conn.execute("UPDATE global_stats SET value=CASE WHEN key='trivia_scoring_version' THEN 2 ELSE 0 END")
         conn.commit()
         if scope in ('all','trivia'):
@@ -494,7 +499,8 @@ def reset_competition_data(scope):
                 session.pop(key,None)
         if scope in ('all','guesser'):session.pop('guess_token',None)
         if scope in ('all','shelves'):session.pop('shelf_token',None)
-        labels={'guesser':'Elo Guesser history','shelves':'Album Shelves history','all':'All competition data','matches':'Elo and match history','trivia':'Trivia history and records','tournaments':'Tournament history and records'}
+        labels={'guesser':'Elo Guesser history','shelves':'Album Shelves history','all':'All competition data','matches':'Elo and match history','trivia':'Trivia history and records','tournaments':'Tournament history and records',
+                'spotlight':'Shared Spotlight history','vibe':'Vibe Map history'}
         return jsonify(status='success',message=labels[scope]+' reset. Music library kept.',backup=None)
     except Exception:
         if conn:conn.rollback()
@@ -507,9 +513,10 @@ def reset_competition_data(scope):
 @app.route('/api/dev/reset-history/<scope>',methods=['POST'])
 @admin_required
 def api_dev_reset_history(scope):
-    if scope not in ('matches','trivia','tournaments','guesser','shelves'):
+    if scope not in ('matches','trivia','tournaments','guesser','shelves','spotlight','vibe'):
         return jsonify(message='Choose match, trivia, tournament, Elo Guesser or Album Shelves history.'),400
-    phrases={'guesser':'RESET GUESSER','shelves':'RESET SHELVES','matches':'RESET MATCHES','trivia':'RESET TRIVIA','tournaments':'RESET TOURNAMENTS'}
+    phrases={'guesser':'RESET GUESSER','shelves':'RESET SHELVES','matches':'RESET MATCHES','trivia':'RESET TRIVIA','tournaments':'RESET TOURNAMENTS',
+             'spotlight':'RESET SPOTLIGHT','vibe':'RESET VIBE'}
     if (request.get_json(silent=True) or {}).get('confirmation')!=phrases[scope]:
         return jsonify(message='Type '+phrases[scope]+' to confirm.'),400
     return reset_competition_data(scope)

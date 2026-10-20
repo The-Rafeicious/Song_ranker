@@ -38,7 +38,7 @@ def summary(conn,mode='global'):
         mean=round(total/len(rows),2) if rows else None,
         modes=[dict(mode=m,samples=len(group),seconds=round(sum(r['seconds'] for r in group),1),
                     mean=round(sum(r['seconds'] for r in group)/len(group),2))
-               for m in ('standard','blind','tournament','trivia','guesser','shelves')
+               for m in ('standard','blind','tournament','trivia','guesser','shelves','spotlight','vibe')
                if (group:=[r for r in rows if r['mode']==m])])
 
 

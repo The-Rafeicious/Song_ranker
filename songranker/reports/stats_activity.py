@@ -4,7 +4,8 @@ from datetime import datetime, timezone, timedelta
 from math import isfinite
 
 COLORS = {'standard':'Non-blind', 'blind':'Blind', 'recognition':'Trivia',
-          'tournament':'Tournament', 'guesser':'Elo Guesser', 'shelves':'Album Shelves'}
+          'tournament':'Tournament', 'guesser':'Elo Guesser', 'shelves':'Album Shelves',
+          'spotlight':'Shared Spotlight','vibe':'Vibe Map'}
 
 
 def timestamp(value):
@@ -35,6 +36,9 @@ def build_activity(conn, mode, now=None):
         if date>current or date.date().isoformat() not in days: return
         item=days[date.date().isoformat()];item['count']+=1;item['parts'][kind]+=1
         item['right']+=right;item['denominator']+=denominator
+    if 'judgement_rounds' in known:
+        for row in conn.execute("SELECT mode,closed_at FROM judgement_rounds WHERE status='answered' AND mode IN ('spotlight','vibe')" ):
+            if mode in ('global',row['mode']):add(row['closed_at'],row['mode'])
     if mode in ('global','voting','history') and 'history' in known:
         from songranker.elo_history import source_sql
         for row in conn.execute('SELECT * FROM '+source_sql(conn)):
