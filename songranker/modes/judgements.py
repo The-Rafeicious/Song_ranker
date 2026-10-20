@@ -70,7 +70,11 @@ def result(conn, row):
     if row['status'] == 'answered':
         if row['mode'] == 'spotlight':
             values = [r[0] for r in conn.execute('SELECT points FROM spotlight_allocations WHERE round_id=? ORDER BY slot', (row['id'],))]
-            answer.update(allocations=values, support=[shared_spotlight.support(p) for p in values])
+            answer.update(allocations=values, points_awarded=sum(values),
+                          support=[shared_spotlight.support(p) for p in values])
+            if row['rules_version'] == 2:
+                answer['positions'] = [r[0] for r in conn.execute(
+                    'SELECT position FROM spotlight_positions WHERE round_id=? ORDER BY slot', (row['id'],))]
         elif row['mode'] == 'vibe':
             answer['maps'] = [dict(map=r['map_key'],x=r['x'],y=r['y']) for r in conn.execute('SELECT * FROM vibe_placements WHERE round_id=? ORDER BY map_key', (row['id'],))]
             if row['themes_reviewed']:
@@ -96,13 +100,15 @@ def get_offer(conn, owner, mode, rng=random, *, now=None):
             try: ids = draw(conn, mode, hashed, spec.SONGS, rng)
             except ValueError as error: raise JudgementError(str(error), 409) from error
             token = secrets.token_urlsafe(32)
-            cursor = conn.execute('INSERT INTO judgement_rounds(token,owner_hash,mode,created_at) VALUES(?,?,?,?)', (token,hashed,mode,now))
+            cursor = conn.execute('INSERT INTO judgement_rounds(token,owner_hash,mode,created_at,rules_version) VALUES(?,?,?,?,?)', (token,hashed,mode,now,spec.RULES_VERSION))
             rid = cursor.lastrowid
             conn.executemany('INSERT INTO judgement_items VALUES(?,?,?,?,?)',
                 [(rid,slot,sid,sid,identity(conn,sid)) for slot,sid in enumerate(ids)])
             row = conn.execute('SELECT * FROM judgement_rounds WHERE id=?', (rid,)).fetchone()
         answer = result(conn, row); answer['songs'] = songs_for(conn, row['id'])
-        if mode == 'spotlight': answer['points'] = shared_spotlight.POINTS
+        if mode == 'spotlight':
+            answer['points'] = shared_spotlight.POINTS
+            answer['max_round_points'] = 24 if row['rules_version'] == 2 else 12
         if mode == 'vibe':
             sid = answer['songs'][0]['id']
             seen = dict(conn.execute("""SELECT v.map_key,COUNT(*) FROM vibe_placements v
@@ -116,10 +122,13 @@ def get_offer(conn, owner, mode, rng=random, *, now=None):
 def normalized(mode, payload):
     if not isinstance(payload, dict): raise JudgementError('Send a JSON object.')
     common = {'token','rules_version','skip','listening'}
-    fields = {'spotlight': {'allocations'}, 'vibe': {'maps','themes'}}[mode]
+    fields = {'spotlight': {'allocations','positions'}, 'vibe': {'maps','themes'}}[mode]
     if set(payload)-common-fields: raise JudgementError('Unsupported fields for this mode.')
     version = payload.get('rules_version', 1)
-    if type(version) is not int or version != 1: raise JudgementError('Unsupported rules version; reload the round.', 409)
+    if type(version) is not int or version not in ((1,2) if mode == 'spotlight' else (1,)): raise JudgementError('Unsupported rules version; reload the round.', 409)
+    if mode == 'spotlight' and ((version == 2 and 'allocations' in payload) or
+                                (version == 1 and 'positions' in payload)):
+        raise JudgementError('Send positions for connecting rounds, allocations for legacy rounds.')
     skip = payload.get('skip', False)
     if type(skip) is not bool: raise JudgementError('Skip must be true or false.')
     if skip:
@@ -138,6 +147,8 @@ def save_answer(conn, owner, mode, payload, *, now=None):
     with transaction(conn):
         row = conn.execute('SELECT * FROM judgement_rounds WHERE token=? AND owner_hash=? AND mode=?', (token,owner_hash(owner),mode)).fetchone()
         if row is None: raise JudgementError('This round is not available in the current browser.',404)
+        if payload.get('rules_version', 1) != row['rules_version']:
+            raise JudgementError('Rules changed; reload the round.',409)
         if row['status'] != 'open':
             if row['answer_hash'] != fingerprint: raise JudgementError('This round already has a different saved answer.',409)
             return dict(result(conn,row), replayed=True)
@@ -147,6 +158,9 @@ def save_answer(conn, owner, mode, payload, *, now=None):
         rid = row['id']
         if not answer['skip']:
             if mode == 'spotlight':
+                if 'positions' in answer:
+                    conn.executemany('INSERT INTO spotlight_positions VALUES(?,?,?)',
+                        [(rid,i,p) for i,p in enumerate(answer['positions'])])
                 conn.executemany('INSERT INTO spotlight_allocations VALUES(?,?,?)', [(rid,i,p) for i,p in enumerate(answer['allocations'])])
             elif mode == 'vibe':
                 conn.executemany('INSERT INTO vibe_placements VALUES(?,?,?,?)', [(rid,m['map'],m['x'],m['y']) for m in answer['maps']])

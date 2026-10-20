@@ -1288,3 +1288,15 @@ release. Further adjustments restart it; explicit selection cancels it. Advance
 to an unplaced song first, otherwise the next card. Do not mark a song permanently
 ineligible for auto-selection after it has once been placed. Selection changes
 never submit a result or start previews.
+
+
+## V5.1.2.2 connecting bar and linked previews
+
+The axis reads Not connecting / Some connection / Really connecting. Saved
+connecting rounds retain their actual bar positions and show Points awarded;
+points remain hidden before confirmation. Each song has 0–12 points, with up
+to 24 per round. Legacy rounds retain their original receipts and rules.
+While previews loop, selection follows the playing song. Selecting another
+song during playback switches to it. Manual cover play enables the loop;
+fresh entry remains silent and explicit stop still stops it. This supersedes
+the earlier independent-selection and fixed-budget wording.

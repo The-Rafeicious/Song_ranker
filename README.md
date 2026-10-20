@@ -279,3 +279,25 @@ V5.1.1.1 verification: **268 Python tests** and **466 JavaScript assertions**,
 including 14 page/report cases and 88 gameplay assertions. The unchanged
 V5.1 selectors previously passed 600 simulated rounds. See
 [the current validation report](docs/VALIDATION.md) for scope and limits.
+
+
+### V5.1.2.2 — connecting bar
+
+Shared Spotlight now measures Not connecting → Some connection → Really
+connecting. For positions x in [0,1], points are rounded half-up from
+max(0, min(12, 6*x + 8*(x - group_mean))). Each round awards 0–24 points;
+the maximum is a ceiling, not a target. Equal positions score equally:
+0/20/50/80/100% give 0/1/3/5/6 points each. A lone 100% standout receives 12.
+
+The server calculates scores from the four saved integer percentage positions.
+Schema 18 retains positions alongside rules-versioned receipts. Upgrade uses
+the existing verified pre-upgrade backup and transactional rebuild. Answered
+legacy rounds and pending legacy receipts retain their 12-point rules; new
+offers use rules version 2. Statistics sum actual awarded points; Overall
+continues the monotone support mapping with three points at 50% and one
+observation per song. Public Elo remains based on preference matches.
+
+Starting a preview enables Loop previews. Selection follows each preview;
+selecting another song while looping switches playback to that song. Selecting
+while stopped stays silent. Stop previews stops the loop. Results retain their
+finite playback pass, and new connecting receipts retain actual bar locations.

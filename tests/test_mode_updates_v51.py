@@ -53,7 +53,13 @@ class ModeUpdatesTests(unittest.TestCase):
         c=sqlite3.connect(self.db,timeout=10);c.row_factory=sqlite3.Row;c.execute('PRAGMA foreign_keys=ON');return c
 
     def offer(self,mode='spotlight',owner='one'):
-        return get_offer(self.c,owner,mode,random.Random(4))
+        offer = get_offer(self.c,owner,mode,random.Random(4))
+        # This suite exercises the historical V5.1 contract; V5.1.2.2 has its own suite.
+        if mode == 'spotlight':
+            self.c.execute('UPDATE judgement_rounds SET rules_version=1 WHERE id=?', (offer['id'],))
+            self.c.commit()
+            offer = get_offer(self.c,owner,mode,random.Random(4))
+        return offer
 
     def answer(self,mode='spotlight',owner='one',**fields):
         offer=self.offer(mode,owner)
@@ -226,14 +232,14 @@ class ModeUpdatesTests(unittest.TestCase):
         c=sqlite3.connect(path);c.row_factory=sqlite3.Row
         c.execute('CREATE TABLE note(value BLOB)');c.execute("INSERT INTO note(rowid,value) VALUES(77,X'00FF')");c.commit()
         before=capture(c);c.close();original=path.read_bytes();migrate(path)
-        with readonly(path) as c:reconcile(before,capture(c));self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],17)
+        with readonly(path) as c:reconcile(before,capture(c));self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],18)
         backup=next((path.parent/'database_backups').glob('pre_upgrade_*.db'))
         with readonly(backup) as c:self.assertEqual(capture(c),before)
         first=path.read_bytes();migrate(path);self.assertEqual(path.read_bytes(),first)
 
     def test_http_contract_ownership_origin_pagination_and_validation(self):
         a=self.client.post('/api/shared-spotlight/round',json={});self.assertEqual(a.status_code,200)
-        token=a.json['token'];payload=dict(token=token,allocations=[3]*4)
+        token=a.json['token'];payload=dict(token=token,rules_version=2,positions=[50]*4)
         other=services.app.test_client();self.assertEqual(other.post('/api/shared-spotlight/answer',json=payload).status_code,403)
         self.assertEqual(self.client.post('/api/shared-spotlight/answer',json=payload,headers={'Origin':'https://elsewhere.invalid'}).status_code,403)
         self.assertEqual(self.client.post('/api/shared-spotlight/answer',json=payload).status_code,200)
