@@ -1300,3 +1300,25 @@ While previews loop, selection follows the playing song. Selecting another
 song during playback switches to it. Manual cover play enables the loop;
 fresh entry remains silent and explicit stop still stops it. This supersedes
 the earlier independent-selection and fixed-budget wording.
+
+
+## V5.1.2.3 Spotlight Stats and reveal pacing
+
+Spotlight uses Standard Vote's shared mode-stats overview, two-column inset
+panels, dense track/entity rows, activity, coverage, distribution and paged
+history composition, retaining the blue-violet Spotlight accent. Every ongoing
+track/artist/album/tag record list has at most five entries with no full-list
+disclosure. History keeps ten-round pagination; daily figures and calculation
+notes retain their native disclosures. This supersedes the earlier expandable
+Spotlight leaderboard rule.
+
+Show actual awarded totals, point averages/ranges and original connection
+averages. Connection samples exclude legacy rounds; missing values use —.
+Label legacy/connecting counts and denominators. Retain removed-track facts in
+summary/distribution/history and use current tracks for record lists. Points
+and connection leaderboards require three observations; category mean support
+requires five appearances. Category counts are track appearances.
+
+Standard result snippets last 3.5 seconds each, Quick 1.8 seconds. Final settle
+is 1.2 / 0.7 seconds. Keep manual Next, existing playback ownership, hidden-tab
+handling, reduced-motion support and silent fresh entry.

@@ -39,9 +39,11 @@ def spotlight_records(conn):
         SUM(a.points) points,AVG(a.points) mean_points,
         SUM(3.0*a.points/(12+2.0*a.points)) support_total,
         AVG(3.0*a.points/(12+2.0*a.points)) mean_support,
-        SUM(a.points=0) zero_shares
+        SUM(a.points=0) zero_shares,
+        AVG(p.position) mean_connection,COUNT(p.position) connection_offers
         FROM spotlight_allocations a JOIN judgement_items i ON i.round_id=a.round_id AND i.slot=a.slot
-        JOIN judgement_rounds r ON r.id=a.round_id WHERE r.mode='spotlight'
+        JOIN judgement_rounds r ON r.id=a.round_id
+        LEFT JOIN spotlight_positions p ON p.round_id=a.round_id AND p.slot=a.slot WHERE r.mode='spotlight'
         AND r.status='answered' AND i.song_id IS NOT NULL GROUP BY i.song_id""")}
 
 
@@ -73,7 +75,29 @@ def spotlight_stats(conn):
     rounds = conn.execute("SELECT COUNT(*) FROM judgement_rounds WHERE mode='spotlight' AND status='answered'").fetchone()[0]
     points = conn.execute("""SELECT COALESCE(SUM(a.points),0) FROM spotlight_allocations a
         JOIN judgement_rounds r ON r.id=a.round_id WHERE r.status='answered' AND r.mode='spotlight'""").fetchone()[0]
-    return dict(points_shared=points,points_awarded=points,leaders=ordered[:50],songs=rows,
+    round_scores = [dict(r) for r in conn.execute("""SELECT r.id,r.rules_version,SUM(a.points) points
+        FROM judgement_rounds r JOIN spotlight_allocations a ON a.round_id=r.id
+        WHERE r.mode='spotlight' AND r.status='answered' GROUP BY r.id""")]
+    placements = conn.execute("""SELECT COUNT(*) samples,AVG(p.position) mean,
+        SUM(p.position=0) not_connecting,SUM(p.position=100) really_connecting
+        FROM spotlight_positions p JOIN judgement_rounds r ON r.id=p.round_id
+        WHERE r.status='answered' AND r.mode='spotlight' AND r.rules_version=2""").fetchone()
+    track_scores = conn.execute("""SELECT COUNT(*) samples,MIN(a.points) lowest,
+        MAX(a.points) highest,SUM(a.points=0) zero_points,SUM(a.points=12) full_points
+        FROM spotlight_allocations a JOIN judgement_rounds r ON r.id=a.round_id
+        WHERE r.status='answered' AND r.mode='spotlight'""").fetchone()
+    scoring = dict(rounds=rounds,points=points,track_samples=track_scores['samples'],
+        mean_round=points/rounds if rounds else None,
+        mean_track=points/track_scores['samples'] if track_scores['samples'] else None,
+        lowest=track_scores['lowest'],highest=track_scores['highest'],
+        zero_points=track_scores['zero_points'] or 0,full_points=track_scores['full_points'] or 0,
+        connecting_rounds=sum(r['rules_version']==2 for r in round_scores),
+        legacy_rounds=sum(r['rules_version']==1 for r in round_scores),
+        mean_connection=placements['mean'],connection_samples=placements['samples'],
+        not_connecting=placements['not_connecting'] or 0,really_connecting=placements['really_connecting'] or 0,
+        lowest_round=min((r['points'] for r in round_scores),default=None),
+        highest_round=max((r['points'] for r in round_scores),default=None))
+    return dict(points_shared=points,points_awarded=points,leaders=ordered[:5],songs=rows,scoring=scoring,
                 neutral_points=3,points_per_round=None,max_points_per_round=24,
                 interpretation='Connecting rounds combine absolute placement and group differences, awarding 0–24 points. Legacy rounds retain their fixed 12-point shares. One offer is one observation.')
 

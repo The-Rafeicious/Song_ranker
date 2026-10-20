@@ -213,7 +213,7 @@
     if (closed || state !== 'saved' || mode !== 'spotlight') return;
     cancelNext?.();
     $$('[data-spotlight-card]',root).forEach(card=>card.classList.remove('is-result-playing'));
-    if (flow && !resultBlocked) cancelNext = flow.after(loadRound, flow.duration('spotlightSettle') || 700);
+    if (flow && !resultBlocked) cancelNext = flow.after(loadRound, flow.duration('spotlightSettle') || 1200);
   }
   function startSpotlightResults() {
     cancelNext?.();cancelNext = null;rotation?.destroy();resultBlocked = false;
@@ -222,7 +222,7 @@
       players: rotationOrder.map(slot=>document.getElementById('judgement-audio-'+slot)),
       play: audio=>playback ? playback.play(audio) : audio.play(),
       stop: ()=>{if (playback) playback.stopAll();else $$('audio',root).forEach(a=>a.pause());},
-      duration: ()=>flow?.duration('spotlightResult') || 2000,
+      duration: ()=>flow?.duration('spotlightResult') || 3500,
       repeat:false,onComplete:finishSpotlightResults,
       onState: (active,index)=>{
         $$('[data-spotlight-card]',root).forEach(card=>card.classList.toggle('is-result-playing',active && Number(card.dataset.spotlightCard)===rotationOrder[index]));

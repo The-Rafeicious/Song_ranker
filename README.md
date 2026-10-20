@@ -301,3 +301,22 @@ Starting a preview enables Loop previews. Selection follows each preview;
 selecting another song while looping switches playback to that song. Selecting
 while stopped stays silent. Stop previews stops the loop. Results retain their
 finite playback pass, and new connecting receipts retain actual bar locations.
+
+
+### V5.1.2.3 — longer reveals and Spotlight Stats
+
+Spotlight's result pass now takes 15.2 seconds in Standard or 7.9 seconds in
+Quick, including a final pause; Next round skips it at any time. Preview-loop
+listening intervals are unchanged.
+
+The Spotlight dashboard follows Standard Vote's established stats layout.
+It shows actual points awarded, averages per round and track, round ranges,
+zero/full-point outcomes, connection averages and endpoint counts, activity,
+coverage, a point histogram, artist/album/tag records, and paged history.
+Each record list stops at five; there is no hidden full leaderboard. Mean-point
+and connection leaders need at least three observations, and category support
+needs five track appearances. Track support adjusts for evidence; category
+support pools actual track observations. Connection percentages describe bar
+placement, not correctness or the fraction of the 24-point ceiling spent.
+Legacy rounds retain their saved scores and have no invented connection values.
+No schema or scoring changes are introduced by this patch.
