@@ -66,13 +66,47 @@ window.DevCatalog=(()=>{
   U.renderTagPicker();renderResults();ensureSources().catch(()=>{});
  }
  async function search(){
-  if(searching)return;query=$('#apple-query').value.trim();country=$('#apple-country').value.trim().toLowerCase();
+  if(searching||mutating)return;query=$('#apple-query').value.trim();country=$('#apple-country').value.trim().toLowerCase();
   const n=$('#apple-status'),button=$('#apple-search button'),root=$('#apple-results');searching=true;button.disabled=true;n.hidden=false;n.classList.remove('error');n.textContent='Searching Apple…';
   try{const result=await U.api('/api/dev/search_apple?q='+encodeURIComponent(query)+'&country='+encodeURIComponent(country));rows=result.map((r,i)=>({...r,id:i+1}));limit=20;
    try{const link=new URL(query);if(link.searchParams.has('i')||link.pathname.includes('/song/'))showMatches=true}catch{}
-   if($('#apple-results')){$('#show-apple-matches').checked=showMatches;renderResults();$('#apple-status').hidden=true}
+   if($('#apple-results')){$('#show-apple-matches').checked=showMatches;renderResults();$('#apple-status').hidden=true;
+    try{const link=new URL(query);if(['music.apple.com','www.music.apple.com'].includes(link.hostname)&&link.pathname.includes('/album/')&&!link.searchParams.has('i')&&rows.length)reviewAlbumImport()}catch{}
+   }
   }catch(e){const current=$('#apple-status');if(current){current.hidden=false;current.classList.add('error');current.textContent=e.message}}finally{searching=false;const current=$('#apple-search button');if(current)current.disabled=false}
  }
+
+ function reviewAlbumImport(){
+  const tracks=rows.filter(r=>!r.added),tags=U.selectedTags().join(', ');
+  open('Add album',`<h3 class="album">${esc(tracks[0]?.album||'Album')}</h3><p>Untick any songs you do not want to add. Library matches are unticked by default.</p><div style="max-height:50vh;overflow:auto">${tracks.map(r=>`<label class="catalog-check" style="min-height:44px"><input type="checkbox" data-album-import-id="${r.id}" ${matches(r).length?'':'checked'}><span><strong class="song">${esc(r.title)}</strong><span class="artist"> · ${esc(r.artist)}</span>${matches(r).length?' · Library match':''}</span></label>`).join('')}</div><p class="catalog-note">Tracks keep their album and source positions. Selected tags apply to every added track.</p><button class="btn primary" type="button" data-album-import-save>Add selected songs</button><p id="album-import-status" role="status"></p><p id="editor-error" class="dialog-error" role="alert" tabindex="-1" hidden></p>`,{type:'album-import',tracks,tags});
+ }
+ async function saveAlbumImport(){
+  const state=dialogState;if(state?.type!=='album-import'||mutating)return;
+  const selected=$('[data-album-import-id]:checked').map(n=>state.tracks.find(r=>r.id===Number(n.dataset.albumImportId))).filter(r=>r&&!r.added);
+  if(!selected.length){error('Select at least one new track.');return}
+  const gen=dialogGeneration;mutating=true;state.busy=true;
+  $('#editor-fields button, #editor-fields input').forEach(n=>n.disabled=true);
+  let saved=0,failure='';
+  try{
+   for(const row of selected){
+    const result=await U.api('/api/dev/add_song',{source_token:row.source_token,import_source:'apple',genres:state.tags,allow_duplicate:matches(row).length>0,placement:'keep'});
+    if(!result.source_id||result.source?.track_id!==row.source.track_id)throw new Error('Save could not be confirmed. Reload before retrying.');
+    row.added=true;saved++;rememberSource(result);
+    if(gen===dialogGeneration){const n=$('#album-import-status');if(n)n.textContent=`${saved} of ${selected.length} saved`}
+   }
+  }catch(e){failure=e.message}
+  finally{
+   let refreshFailed=false;try{await U.refresh();await ensureSources(true)}catch{refreshFailed=true}
+   mutating=false;state.busy=false;renderResults();
+   const message=`${saved} of ${selected.length} songs saved.${failure?' '+failure:''}${refreshFailed?' Reload to refresh the catalogue.':''}`;
+   if(gen===dialogGeneration){
+    if(!failure)$('#editor').close();
+    else{$('#editor-fields button, #editor-fields input').forEach(n=>n.disabled=false);$('[data-album-import-id]').forEach(n=>{if(state.tracks.find(r=>r.id===Number(n.dataset.albumImportId))?.added){n.checked=false;n.disabled=true}});error(message)}
+   }
+   U.toast(message);
+  }
+ }
+
  async function add(id){
   const row=rows.find(r=>r.id===id);if(!row||mutating)return;
   if(typeof row.source_token!=='string'||!row.source_token){error('Apple source details are missing. Search again before adding this song.');return}
@@ -181,6 +215,7 @@ window.DevCatalog=(()=>{
   a.volume=Number($('#volume-range')?.value??.5);try{await(window.PreviewPlayback?window.PreviewPlayback.play(a):a.play())}catch(e){error(e.message)}
  }
  document.addEventListener('click',e=>{const b=e.target.closest('button');if(!U||!b||b.disabled)return;
+  if(b.hasAttribute('data-album-import-save'))saveAlbumImport();
   if(b.dataset.catalogReview)review(Number(b.dataset.catalogReview));
   if(b.dataset.catalogSource)openSource(Number(b.dataset.catalogSource));
   if(b.dataset.catalogSingle)openSingle(Number(b.dataset.catalogSingle));
