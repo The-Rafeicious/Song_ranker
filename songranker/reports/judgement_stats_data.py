@@ -71,9 +71,11 @@ def spotlight_stats(conn):
         row['adjusted_support'] = .5 + (row['mean_support']-.5)*row['evidence']
     ordered = sorted(rows.values(),key=lambda r:(-r['adjusted_support'],-r['offers'],r['song_id']))
     rounds = conn.execute("SELECT COUNT(*) FROM judgement_rounds WHERE mode='spotlight' AND status='answered'").fetchone()[0]
-    return dict(points_shared=rounds*12,leaders=ordered[:50],songs=rows,
-                neutral_points=3,points_per_round=12,
-                interpretation='Shares are relative to the other songs offered; ties are retained. One offer is one observation.')
+    points = conn.execute("""SELECT COALESCE(SUM(a.points),0) FROM spotlight_allocations a
+        JOIN judgement_rounds r ON r.id=a.round_id WHERE r.status='answered' AND r.mode='spotlight'""").fetchone()[0]
+    return dict(points_shared=points,points_awarded=points,leaders=ordered[:50],songs=rows,
+                neutral_points=3,points_per_round=None,max_points_per_round=24,
+                interpretation='Connecting rounds combine absolute placement and group differences, awarding 0–24 points. Legacy rounds retain their fixed 12-point shares. One offer is one observation.')
 
 
 def vibe_stats(conn):

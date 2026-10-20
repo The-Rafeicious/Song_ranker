@@ -6,27 +6,31 @@ function equal(a, b, label) {assert.deepEqual(a, b, label);checks++;}
 function check(value, label) {assert.ok(value, label);checks++;}
 const settle = async () => {for (let i = 0; i < 100; i++) await Promise.resolve();};
 function allocations() {
-  equal(allocate([50,50,50,50]),[3,3,3,3]);
+  for (const [position,points] of [[0,0],[20,1],[50,3],[80,5],[100,6]])
+    equal(allocate(Array(4).fill(position)),Array(4).fill(points));
+  equal(allocate([80,60,40,20]),[7,4,2,0]);
+  equal(allocate([0,100,100,100],1),[0,4,4,4],'Legacy scoring remains available');
   equal(resultOrder([2,5,5,0]),[1,2,0,3]);
   equal(resultPositions([2,5,5,0]),[50,100,100,0]);
   equal(resultPositions([3,3,3,3]),[50,50,50,50]);
   equal(allocate([100,0,0,0]),[12,0,0,0]);
-  equal(allocate([0,100,100,100]),[0,4,4,4]);
+  equal(allocate([0,100,100,100]),[0,8,8,8]);
   equal(allocate([49,50,50,51]),[3,3,3,3],'Nearby placements keep similar shares');
   check(allocate([0,20,60,100])[3] > allocate([40,45,55,60])[3],'Larger distances express more strength');
   for (const invalid of [null,[],Array(4),[1,2,3],[1,2,3,null],[true,2,3,4],[NaN,2,3,4],[-1,2,3,4],[101,2,3,4],[1.5,2,3,4]]) equal(allocate(invalid),null);
   let cases = 0;
-  for (const a of [0,25,50,75,100]) for (const b of [0,25,50,75,100])
-    for (const c of [0,25,50,75,100]) for (const d of [0,25,50,75,100]) {
+  const grid = Array.from({length:21},(_,i)=>i*5);
+  for (const a of grid) for (const b of grid)
+    for (const c of grid) for (const d of grid) {
       const positions = [a,b,c,d], points = allocate(positions);
-      assert.equal(points.reduce((x,y)=>x+y),12);
+      assert.ok(points.reduce((x,y)=>x+y)<=24);
       assert.ok(points.every(x=>Number.isInteger(x)&&x>=0&&x<=12));
       for(let i=0;i<4;i++)for(let j=0;j<4;j++) {
         if(positions[i]===positions[j])assert.equal(points[i],points[j]);
         if(positions[i]>positions[j])assert.ok(points[i]>=points[j]);
       }
       assert.deepEqual(allocate([...positions].reverse()),[...points].reverse(),'Card order cannot change shares');
-      if(Math.max(...positions)<=75)assert.deepEqual(allocate(positions.map(x=>x+25)),points,'Only relative differences matter');
+      if(Math.max(...positions)<=75)assert.ok(allocate(positions.map(x=>x+25)).every((p,i)=>p>=points[i]),'Stronger connection never reduces points');
       cases++;
     }
   console.log(`Spotlight allocation: ${cases} distance/tie/order/translation cases passed.`);

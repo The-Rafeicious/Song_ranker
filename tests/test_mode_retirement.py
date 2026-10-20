@@ -41,7 +41,7 @@ class RetirementTests(unittest.TestCase):
     def check_retired(self, path):
         with readonly(path) as c:
             after=capture(c);reconcile(self.before,after)
-            self.assertEqual(after['user_version'],17)
+            self.assertEqual(after['user_version'],18)
             self.assertNotIn('twins_choices',after['tables'])
             self.assertNotIn('twins_open_answer',{o['name'] for o in after['objects']})
             self.assertEqual([r[0] for r in c.execute('SELECT mode FROM judgement_rounds ORDER BY id')],['spotlight','vibe'])

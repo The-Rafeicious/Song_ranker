@@ -34,7 +34,7 @@ class ModePagesTests(unittest.TestCase):
 
     def answer(self, mode, **fields):
         offer = get_offer(self.conn, 'page-test', mode, self.rng)
-        defaults = dict(allocations=[5,4,2,1]) if mode == 'spotlight' else dict(
+        defaults = dict(rules_version=2,positions=[50]*4) if mode == 'spotlight' else dict(
             maps=[dict(map='mood',x=1,y=4),dict(map='sound',x=2,y=0)], themes=[1])
         receipt = save_answer(self.conn, 'page-test', mode, dict(token=offer['token'], **(fields or defaults)))
         return offer, receipt

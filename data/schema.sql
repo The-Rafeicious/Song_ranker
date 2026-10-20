@@ -536,7 +536,7 @@ CREATE TABLE IF NOT EXISTS judgement_rounds (
     token TEXT NOT NULL UNIQUE CHECK(length(token) BETWEEN 32 AND 64),
     owner_hash TEXT NOT NULL CHECK(length(owner_hash)=64),
     mode TEXT NOT NULL CHECK(mode IN ('spotlight','vibe')),
-    rules_version INTEGER NOT NULL DEFAULT 1 CHECK(rules_version=1),
+    rules_version INTEGER NOT NULL DEFAULT 1 CHECK(rules_version IN (1,2) AND (mode='spotlight' OR rules_version=1)),
     status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open','answered','skipped')),
     created_at REAL NOT NULL,
     closed_at REAL,
@@ -570,6 +570,20 @@ CREATE TABLE IF NOT EXISTS spotlight_allocations (
     PRIMARY KEY(round_id,slot),
     FOREIGN KEY(round_id,slot) REFERENCES judgement_items(round_id,slot) ON DELETE CASCADE
 );
+
+-- Coordinates are original subjective facts, not reconstructed from rounded points.
+CREATE TABLE IF NOT EXISTS spotlight_positions (
+    round_id INTEGER NOT NULL,
+    slot INTEGER NOT NULL,
+    position INTEGER NOT NULL CHECK(typeof(position)='integer' AND position BETWEEN 0 AND 100),
+    PRIMARY KEY(round_id,slot),
+    FOREIGN KEY(round_id,slot) REFERENCES judgement_items(round_id,slot) ON DELETE CASCADE
+);
+
+CREATE TRIGGER IF NOT EXISTS spotlight_position_open
+BEFORE INSERT ON spotlight_positions WHEN NOT EXISTS(
+    SELECT 1 FROM judgement_rounds WHERE id=NEW.round_id AND mode='spotlight' AND rules_version=2 AND status='open')
+BEGIN SELECT RAISE(ABORT,'Use an open connecting-bar offer.'); END;
 
 CREATE TABLE IF NOT EXISTS vibe_placements (
     round_id INTEGER NOT NULL REFERENCES judgement_rounds(id) ON DELETE CASCADE,
@@ -614,13 +628,21 @@ BEGIN
     SELECT RAISE(ABORT,'Incomplete judgement offer.') WHERE
       (SELECT COUNT(*) FROM judgement_items WHERE round_id=NEW.id)!=CASE WHEN NEW.mode='vibe' THEN 1 ELSE 4 END;
     SELECT RAISE(ABORT,'Skipped judgements cannot have answers.') WHERE NEW.status='skipped' AND
-      (EXISTS(SELECT 1 FROM spotlight_allocations WHERE round_id=NEW.id)
+      (EXISTS(SELECT 1 FROM spotlight_positions WHERE round_id=NEW.id)
+       OR EXISTS(SELECT 1 FROM spotlight_allocations WHERE round_id=NEW.id)
        OR EXISTS(SELECT 1 FROM vibe_placements WHERE round_id=NEW.id)
        OR EXISTS(SELECT 1 FROM vibe_themes WHERE round_id=NEW.id)
        OR NEW.themes_reviewed!=0);
     SELECT RAISE(ABORT,'Invalid spotlight allocation.') WHERE NEW.status='answered' AND NEW.mode='spotlight' AND
       ((SELECT COUNT(*) FROM spotlight_allocations WHERE round_id=NEW.id)!=4
-       OR (SELECT SUM(points) FROM spotlight_allocations WHERE round_id=NEW.id)!=12);
+       OR (NEW.rules_version=1 AND (SELECT SUM(points) FROM spotlight_allocations WHERE round_id=NEW.id)!=12)
+       OR (NEW.rules_version=2 AND (
+         (SELECT COUNT(*) FROM spotlight_positions WHERE round_id=NEW.id)!=4
+         OR (SELECT SUM(points) FROM spotlight_allocations WHERE round_id=NEW.id)>24
+         OR EXISTS(SELECT 1 FROM spotlight_allocations a JOIN spotlight_positions p
+           ON p.round_id=a.round_id AND p.slot=a.slot WHERE a.round_id=NEW.id AND
+           a.points!=MAX(0,MIN(12,CAST((14*p.position-2*(SELECT SUM(position)
+             FROM spotlight_positions WHERE round_id=NEW.id)+50)/100 AS INTEGER)))))));
     SELECT RAISE(ABORT,'Place at least one vibe map.') WHERE NEW.status='answered' AND NEW.mode='vibe' AND
       NOT EXISTS(SELECT 1 FROM vibe_placements WHERE round_id=NEW.id);
     SELECT RAISE(ABORT,'Invalid theme review.') WHERE NEW.mode='vibe' AND

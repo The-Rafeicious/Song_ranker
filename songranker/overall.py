@@ -16,7 +16,7 @@ from songranker import services
 from songranker.services import (app, admin_required)
 from songranker.catalog import (collection, proper_album)
 
-VERSION=7
+VERSION=8
 # Five equally based families. Spotlight shares the preference family with the
 # three correlated voting views; it is not a second full preference family.
 MODE_SPECS=[('elo','Elo',4),('standard','Non-blind voting',3),('blind','Blind voting',3),
@@ -36,7 +36,7 @@ METRICS=[('elo_current','elo','Current Elo',.85,'elo'),('elo_peak','elo','Peak E
  ('guess_accuracy','guesser','Correct comparisons',1,'rate'),
  ('shelf_order','shelves','Relative track order',5/6,'rate'),
  ('shelf_album','shelves','Album placement',1/6,'rate'),
- ('spotlight_support','spotlight','Relative spotlight support',1,'rate')]
+ ('spotlight_support','spotlight','Spotlight support',1,'rate')]
 NEUTRAL=50.0
 RATE_MIX=dict(actual=.6,population=.4)
 _models=OrderedDict()

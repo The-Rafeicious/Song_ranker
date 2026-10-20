@@ -9,7 +9,7 @@ async function settle() { for (let n = 0; n < 100; n++) await Promise.resolve();
 const maps = ['mood', 'sound', 'craft'].map(key => ({key, label:key + ' table',
   x:{label:'X axis',low:'Low X',high:'High X'},y:{label:'Y axis',low:'Low Y',high:'High Y'}}));
 
-async function harness(mode, {draft, hook} = {}) {
+async function harness(mode, {draft, hook, rulesVersion = 1} = {}) {
   const config = {mode,maps,max_themes:8,tags:Array.from({length:12},(_,i)=>({id:i+1,name:'Tag '+(i+1),description:'Description '+(i+1)}))};
   const dom = new JSDOM(`<body><div class="judgement-game" data-judgement-mode="${mode}"><div id="judgement-round" aria-busy="true"><p>Loading</p></div><p id="judgement-error" hidden></p><div id="judgement-recovery" hidden><button id="judgement-retry">Retry</button></div></div><script id="judgement-config" type="application/json">${JSON.stringify(config)}</script></body>`,
     {url:'http://localhost/'+mode,runScripts:'outside-only',pretendToBeVisual:true});
@@ -45,7 +45,7 @@ async function harness(mode, {draft, hook} = {}) {
     if (custom !== undefined) return respond(custom.body,custom.status || 200);
     if (url.endsWith('/round')) {
       offered++;
-      return respond({token:'round-'+mode+'-'+offered+'-'.repeat(32),mode,rules_version:1,
+      return respond({token:'round-'+mode+'-'+offered+'-'.repeat(32),mode,rules_version:mode === 'spotlight' ? rulesVersion : 1,
         suggested_maps:['mood','sound','craft'],songs:Array.from({length:mode==='vibe'?1:4},(_,slot)=>({slot,id:slot+1,title:slot===0?'<img src=x onerror=bad()>':'Song '+slot,
           audio_url:'https://example.test/preview/'+slot,cover_url:'https://example.test/cover/'+slot,
           album:slot===2?'Unknown Album':slot===3?'Example - Single':'Album <one> & "two"',
@@ -53,7 +53,7 @@ async function harness(mode, {draft, hook} = {}) {
     }
     if (url.endsWith('/answer')) {
       if (!receipts.has(payload.token)) receipts.set(payload.token,{id:requests.length,mode,
-        status:payload.skip?'skipped':'answered',maps:payload.maps,allocations:payload.allocations});
+        status:payload.skip?'skipped':'answered',maps:payload.maps,allocations:payload.positions ? w.Spotlight.allocate(payload.positions) : payload.allocations});
       return respond(receipts.get(payload.token));
     }
     throw Error('Unexpected request '+url);
@@ -91,7 +91,7 @@ async function spotlight() {
   equal(h.errors,[],'Initial render has no errors');
   check(h.find('#judgement-save').disabled,'All four tracks must be placed');
   equal(h.plays,[],'No autoplay on entry');
-  equal(h.find('#spotlight-budget').textContent,'12 available');
+  equal(h.find('#spotlight-budget').textContent,'Place all four songs');
   equal(h.d.querySelectorAll('[data-share], [data-share-step], [data-j-equal], [data-j-skip]').length,0,'Manual points, equal-split and Skip controls are removed');
   equal(h.d.querySelectorAll('.spotlight-marker:not([hidden])').length,0,'No invented placements');
   check(h.find('[data-judgement-play]').classList.contains('cover-button'));
@@ -115,7 +115,7 @@ async function spotlight() {
   equal(h.find('[data-spotlight-loop]').previousElementSibling.id,'spotlight-budget');
   equal(h.find('[data-spotlight-loop]').nextElementSibling.id,'judgement-save');
   equal(h.find('#judgement-save').textContent,'Next round');
-  equal(h.find('#spotlight-budget').textContent,'12 / 12 shared');
+  equal(h.find('#spotlight-budget').textContent,'Ready to save');
   const audio=h.find('audio');
   h.click('[data-judgement-play]');await settle();
   equal(h.plays.length,1);equal(h.find('[data-judgement-play]').dataset.playing,'true');
@@ -131,6 +131,28 @@ async function spotlight() {
   equal(h.samples(),1);equal(h.draft(),null);
   h.click('[data-j-next]');await settle();
   equal(h.requests.filter(r=>r.url.endsWith('/round')).length,2);const heard=h.plays.length;await h.advance(10000);equal(h.plays.length,heard,'Manual next cancels remaining result snippets');h.close();
+}
+async function connectingAndLinkedPlayback() {
+  const h = await harness('spotlight', {rulesVersion:2});
+  check(h.find('.spotlight-axis-labels').textContent.includes('Some connection'));
+  h.click('[data-judgement-play="judgement-audio-2"]'); await settle();
+  equal(h.find('[data-spotlight-loop]').getAttribute('aria-pressed'),'true','Manual start enables loop');
+  equal(h.find('.spotlight-select[aria-pressed=true]').dataset.spotlightSelect,'2','Playback selects the same song');
+  h.click('.spotlight-select[data-spotlight-select="1"]'); await settle();
+  equal(h.plays.at(-1),'judgement-audio-1','Selection redirects playback');
+  await h.advance(20000);
+  equal(h.find('.spotlight-select[aria-pressed=true]').dataset.spotlightSelect,'2','Rotation moves selection');
+  h.click('[data-spotlight-loop]'); await settle();
+  const heard=h.plays.length;
+  h.click('.spotlight-select[data-spotlight-select="0"]'); await settle();
+  equal(h.plays.length,heard,'Selection while stopped stays silent');
+  [80,60,40,20].forEach((x,slot)=>place(h,slot,x));
+  h.click('#judgement-save'); await settle();
+  equal(h.answers()[0].payload.positions,[80,60,40,20]);
+  check(!('allocations' in h.answers()[0].payload),'The server calculates points');
+  equal([...h.d.querySelectorAll('[data-spotlight-points] strong')].map(n=>Number(n.textContent)),[7,4,2,0]);
+  equal(h.find('#spotlight-budget').textContent,'Points awarded: 13');
+  h.close();
 }
 async function relativeAndLoop() {
   let h=await harness('spotlight');
@@ -294,6 +316,6 @@ async function actualPacing() {
   w.dispatchEvent(new w.Event('pagehide'));w.close();
 }
 (async()=>{
-  for (const test of [spotlight,relativeAndLoop,delayedSelectionAndResults,retryAndDraft,vibeMaps,themes,errorsAndExit,escapingAndDraft,actualPacing]) await test();
+  for (const test of [connectingAndLinkedPlayback,spotlight,relativeAndLoop,delayedSelectionAndResults,retryAndDraft,vibeMaps,themes,errorsAndExit,escapingAndDraft,actualPacing]) await test();
   console.log(`Judgement gameplay: ${assertions} assertions passed.`);
 })().catch(error=>{console.error(error);process.exitCode=1;});

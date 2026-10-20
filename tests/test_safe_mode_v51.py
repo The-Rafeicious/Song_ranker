@@ -48,7 +48,7 @@ class SafeModeTests(unittest.TestCase):
             self.assertTrue(create_backup(runtime.active_db).is_relative_to(runtime.run_dir))
         self.assertEqual(fingerprint(self.main),before)
         with readonly(self.main) as c:self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],15)
-        with readonly(runtime.active_db) as c:self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],17)
+        with readonly(runtime.active_db) as c:self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],18)
         self.assertEqual(runtime.session_root,runtime.run_dir)
 
     def test_safe_managed_helpers_refuse_main_and_hardlink_aliases(self):

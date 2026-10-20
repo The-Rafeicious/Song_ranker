@@ -10,7 +10,7 @@
   <div class="page-head"><h1>{{ mode_name }} Stats</h1><a class="btn" href="{{ play_url }}">Play {{ mode_name }} →</a></div>
   <section class="panel dashboard-surface mode-stats-panel"><div class="section-head"><h2>{{ mode_name }} overview</h2></div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{ figure('Rounds saved',summary.rounds) }}
-      {% if mode=='spotlight' %}{{ figure('Points shared',details.points_shared) }}{{ figure('Current tracks judged',summary.tested_songs) }}
+      {% if mode=='spotlight' %}{{ figure('Points awarded',details.points_shared) }}{{ figure('Current tracks judged',summary.tested_songs) }}
       {% elif mode=='vibe' %}{{ figure('Map placements',details.placements) }}{{ figure('Current tracks described',summary.tested_songs) }}
       {% endif %}
       {{ figure('Preview-pool coverage',('%.1f'|format(summary.coverage))+'%' if summary.coverage is not none else '—') }}
@@ -19,8 +19,8 @@
 
   {% if mode=='spotlight' %}
   <section class="panel dashboard-surface mode-stats-panel"><div class="section-head"><h2>Most supported tracks</h2></div>
-    <p class="mode-stats-caption">Adjusted for evidence · points stay relative to each four-song offer</p>
-    <ol class="mode-stats-list">{% for row in details.leaders[:5] %}{{ spotlight_row(row,loop.index) }}{% else %}<li class="empty">Save a split to see the first track records.</li>{% endfor %}</ol>
+    <p class="mode-stats-caption">Adjusted for evidence · connection and differences within each offer</p>
+    <ol class="mode-stats-list">{% for row in details.leaders[:5] %}{{ spotlight_row(row,loop.index) }}{% else %}<li class="empty">Save a round to see the first track records.</li>{% endfor %}</ol>
     {% if details.leaders|length>5 %}<details class="mode-stats-more"><summary>More track records · {{ details.leaders|length-5 }} more</summary><ol class="mode-stats-list" start="6">{% for row in details.leaders[5:] %}{{ spotlight_row(row,loop.index+5) }}{% endfor %}</ol></details>{% endif %}
   </section>
   {% elif mode=='vibe' %}
@@ -48,17 +48,17 @@
   {{ pulse(pulse_data) }}
   {{ listening_panel(listening_data) }}
   {% if mode=='spotlight' %}
-  <section class="panel dashboard-surface mode-stats-panel"><div class="section-head"><h2>Point distribution</h2></div><div class="judgement-distribution" role="img" aria-label="Points assigned per track{% for row in details.distribution %}; {{ row.points }} points: {{ row.count }} allocations{% endfor %}">{% for row in details.distribution %}<div><span>{{ row.count }}</span><i style="height:{{ row.height }}%"></i><b>{{ row.points }}</b></div>{% endfor %}</div><p class="mode-stats-caption">Points per track · zero shares and ties included</p></section>
+  <section class="panel dashboard-surface mode-stats-panel"><div class="section-head"><h2>Point distribution</h2></div><div class="judgement-distribution" role="img" aria-label="Points assigned per track{% for row in details.distribution %}; {{ row.points }} points: {{ row.count }} allocations{% endfor %}">{% for row in details.distribution %}<div><span>{{ row.count }}</span><i style="height:{{ row.height }}%"></i><b>{{ row.points }}</b></div>{% endfor %}</div><p class="mode-stats-caption">Points per track · zero points and ties included</p></section>
   {% endif %}
   <section class="panel dashboard-surface mode-stats-panel" id="round-history"><div class="section-head"><h2>Round history</h2><span class="mode-stats-caption">{{ summary.rounds }} saved rounds</span></div>
-    {% for row in history %}<details class="mode-stats-inset judgement-history"><summary><span class="judgement-history-title">{% if mode=='vibe' %}{{ row.songs[0].title }}{% else %}Split #{{ row.id }} · {{ row.allocations|join(' / ') }}{% endif %}</span>{{ saved_date(row.date) }}</summary>
-      <div class="judgement-history-body">{% for song in row.songs %}<div class="judgement-history-song">{{ identity(song,true) }}{% if mode=='spotlight' %}<strong>{{ row.allocations[song.slot] }} / 12 points</strong>{% endif %}</div>{% endfor %}
+    {% for row in history %}<details class="mode-stats-inset judgement-history"><summary><span class="judgement-history-title">{% if mode=='vibe' %}{{ row.songs[0].title }}{% else %}Round #{{ row.id }} · {{ row.allocations|join(' / ') }}{% endif %}</span>{{ saved_date(row.date) }}</summary>
+      <div class="judgement-history-body">{% if mode=='spotlight' %}<p>{{ 'Connecting bar · up to 24 points' if row.rules_version==2 else 'Legacy shares · fixed 12 points' }} · Points awarded: {{ row.allocations|sum }}</p>{% endif %}{% for song in row.songs %}<div class="judgement-history-song">{{ identity(song,true) }}{% if mode=='spotlight' %}<strong>{{ row.allocations[song.slot] }} / 12 points{% if row.rules_version==2 %} · {{ row.positions[song.slot] }}% connection{% endif %}</strong>{% endif %}</div>{% endfor %}
       {% if mode=='vibe' %}<ul class="judgement-map-receipt">{% for placement in row.maps %}{% set definition=(details.maps|selectattr('key','equalto',placement.map)|first) %}<li><strong>{{ definition.label }}</strong><span>{{ definition.x.label }} {{ placement.x }} / 4 · {{ definition.y.label }} {{ placement.y }} / 4</span></li>{% endfor %}</ul><p>Tags: {% if row.themes is not defined %}not reviewed{% elif not row.themes %}reviewed, none selected{% else %}{{ row.themes|map(attribute='label')|join(', ') }}{% endif %}</p>{% endif %}</div>
     </details>{% else %}<div class="empty">No saved rounds yet.</div>{% endfor %}
     {% if history_pages>1 %}<nav class="judgement-pagination" aria-label="Round history pages">{% if history_page>1 %}<a class="btn" href="{{ url_for('judgement_stats_page',mode=mode,history_page=history_page-1,map=selected_map.key if selected_map is defined else none,q=query|default(none),track_page=track_page|default(none)) }}#round-history">← Newer</a>{% endif %}<span>Page {{ history_page }} / {{ history_pages }}</span>{% if history_page<history_pages %}<a class="btn" href="{{ url_for('judgement_stats_page',mode=mode,history_page=history_page+1,map=selected_map.key if selected_map is defined else none,q=query|default(none),track_page=track_page|default(none)) }}#round-history">Older →</a>{% endif %}</nav>{% endif %}
   </section>
   <section class="panel dashboard-surface mode-stats-panel"><details class="stats-notes"><summary>How these figures work</summary>
-    {% if mode=='spotlight' %}<p>One completed split gives each track one observation. Support uses 3 × points / (12 + 2 × points), then moves lightly tested tracks toward 50% using current collection evidence. Equal three-point shares are neutral. Shared Spotlight contributes adaptively to Overall's preference family; public Elo stays based on matches. Up to 50 supported tracks are shown.</p>
+    {% if mode=='spotlight' %}<p>One completed split gives each track one observation. Support uses 3 × points / (12 + 2 × points), then moves lightly tested tracks toward 50% using current collection evidence. Three points map to 50% support. Connecting rounds use rounded max(0, min(12, 6 × placement + 8 × (placement − group average))), awarding up to 24 points total. Legacy rounds keep their original fixed 12-point interpretation and have no saved connection positions. Shared Spotlight contributes adaptively to Overall's preference family; public Elo stays based on matches. Up to 50 supported tracks are shown.</p>
     {% elif mode=='vibe' %}<p>Each grid describes the heard preview independently. Unplaced grids and unreviewed tags stay unknown. Means use the 0–4 axes; spread is the combined standard deviation of X and Y, so a larger value means more varied descriptions. Heatmaps include saved placements for removed tracks; track tables use the current catalogue. Tags use reviewed rounds as their denominator and never change catalogue memberships. Descriptions have no quality weight in Overall.</p>
 {% endif %}
     <p>Coverage uses current tracks with preview URLs. Selectors and evidence weights adjust as the catalogue and results change. Skips and abandoned offers are retained for seven days; completed rounds are kept. Listening counts playback before a saved decision.</p>

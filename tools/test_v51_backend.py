@@ -40,7 +40,9 @@ def _run():
             continue
         offered=response.get_json()
         answer=dict(token=offered['token'],rules_version=offered['rules_version'])
-        if slug=='shared-spotlight':answer['allocations']=[5,4,2,1]
+        if slug=='shared-spotlight':
+            if offered['rules_version']==2:answer['positions']=[80,60,40,20]
+            else:answer['allocations']=[5,4,2,1]
         elif slug=='vibe-map':answer['maps']=[dict(map='mood',x=2,y=2)]
         response=client.post('/api/'+slug+'/answer',json=answer)
         if response.status_code!=200:raise RuntimeError(response.get_json())

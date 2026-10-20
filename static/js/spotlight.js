@@ -1,11 +1,11 @@
-/* Relative placements become the existing 12-point receipt; no stored coordinates. */
+/* Connecting positions use the server's integer half-up scoring rule. */
 ((scope) => {
   'use strict';
   const splits = [];
   for (let a = 0; a <= 12; a++) for (let b = 0; b <= 12-a; b++)
     for (let c = 0; c <= 12-a-b; c++) splits.push([a, b, c, 12-a-b-c]);
 
-  function allocate(positions) {
+  function allocateLegacy(positions) {
     if (!Array.isArray(positions) || positions.length !== 4 ||
         !Array.from(positions).every(x => Number.isInteger(x) && x >= 0 && x <= 100)) return null;
     const mean = positions.reduce((a, b) => a+b, 0)/4;
@@ -24,6 +24,14 @@
       }
     }
     return [...best];
+  }
+
+  function allocate(positions, version = 2) {
+    if (version === 1) return allocateLegacy(positions);
+    if (!Array.isArray(positions) || positions.length !== 4 ||
+        !Array.from(positions).every(x => Number.isInteger(x) && x >= 0 && x <= 100)) return null;
+    const total = positions.reduce((a,b) => a+b, 0);
+    return positions.map(x => Math.max(0, Math.min(12, Math.floor((14*x-2*total+50)/100))));
   }
 
   function resultOrder(points) {

@@ -57,7 +57,7 @@
       if (Array.isArray(draft.positions) && draft.positions.length === 4 &&
           draft.positions.every(x => x === null || (Number.isInteger(x) && x >= 0 && x <= 100))) {
         positions = draft.positions;
-        allocations = window.Spotlight.allocate(positions) || [0, 0, 0, 0];
+        allocations = window.Spotlight.allocate(positions, round.rules_version) || [0, 0, 0, 0];
       }
       if (Number.isInteger(draft.selectedSlot) && draft.selectedSlot >= 0 && draft.selectedSlot < 4) selectedSlot = draft.selectedSlot;
       // Old unconfirmed point receipts must still retry exactly as submitted.
@@ -88,12 +88,12 @@
     return `${cover}<audio id="${audioId}" data-song-id="${song.id}" src="${esc(playback?.source(song.id, song.audio_url) || song.audio_url)}" preload="none" loop></audio><div class="judgement-track-copy"><a class="song" title="${esc(song.title)}" href="/song/${song.id}">${esc(song.title)}</a><div class="judgement-artists game-artists">${artists}</div>${albumLink}${mode === 'spotlight' ? `<button type="button" class="spotlight-select" data-spotlight-select="${song.slot}" aria-label="Place track ${song.slot+1}: ${esc(song.title)}" aria-pressed="false"><b>${song.slot+1}</b><span class="spotlight-select-state">Place on bar</span></button>` : ''}<span class="judgement-audio-note" role="status"></span></div>`;
   }
   function controls() {
-    const left = mode === 'spotlight' ? '<strong id="spotlight-budget" role="status">12 available</strong>' : '<button type="button" class="btn" data-j-skip>Skip</button>';
+    const left = mode === 'spotlight' ? '<strong id="spotlight-budget" role="status">Place all four songs</strong>' : '<button type="button" class="btn" data-j-skip>Skip</button>';
     return '<div class="judgement-actions">' + left + (mode === 'spotlight' ? '<button type="button" class="btn" data-spotlight-loop aria-pressed="false">Loop previews</button>' : '') + '<button type="button" class="btn judgement-primary" id="judgement-save" disabled>Save</button></div><div id="judgement-result" class="judgement-result" role="status" hidden></div>';
   }
   function render() {
     if (mode === 'spotlight') {
-      stage.innerHTML = `<div class="judgement-cards spotlight-cards">${round.songs.map(s => `<article class="panel dashboard-surface judgement-card spotlight-card" data-spotlight-card="${s.slot}" aria-label="Track ${s.slot+1}: ${esc(s.title)}">${track(s)}</article>`).join('')}</div><section class="spotlight-placement" aria-label="Relative song placement"><span id="spotlight-selected" class="judgement-sr"></span><div class="spotlight-axis-labels"><span>Worse</span><span>Better</span></div><div class="spotlight-line-board"><input type="range" id="spotlight-line" min="0" max="100" step="1" value="50" aria-label="Place selected track from worse to better" aria-describedby="spotlight-selected"><div class="spotlight-markers">${round.songs.map(s => `<button type="button" class="spotlight-marker" data-spotlight-select="${s.slot}" style="--slot:${s.slot}" aria-label="Select track ${s.slot+1}: ${esc(s.title)}" hidden><span class="spotlight-marker-fallback" aria-hidden="true">🎵</span>${markerArtwork(s)}</button>`).join('')}</div></div></section>${controls()}`;
+      stage.innerHTML = `<div class="judgement-cards spotlight-cards">${round.songs.map(s => `<article class="panel dashboard-surface judgement-card spotlight-card" data-spotlight-card="${s.slot}" aria-label="Track ${s.slot+1}: ${esc(s.title)}">${track(s)}</article>`).join('')}</div><section class="spotlight-placement" aria-label="Connection with each preview"><span id="spotlight-selected" class="judgement-sr"></span><div class="spotlight-axis-labels"><span>Not connecting</span><span>Some connection</span><span>Really connecting</span></div><div class="spotlight-line-board"><input type="range" id="spotlight-line" min="0" max="100" step="1" value="50" aria-label="Place selected track from not connecting to really connecting" aria-describedby="spotlight-selected"><div class="spotlight-markers">${round.songs.map(s => `<button type="button" class="spotlight-marker" data-spotlight-select="${s.slot}" style="--slot:${s.slot}" aria-label="Select track ${s.slot+1}: ${esc(s.title)}" hidden><span class="spotlight-marker-fallback" aria-hidden="true">🎵</span>${markerArtwork(s)}</button>`).join('')}</div></div></section>${controls()}`;
     } else if (mode === 'vibe') {
       stage.innerHTML = `<div class="vibe-play-layout"><article class="panel dashboard-surface judgement-card vibe-track">${track(round.songs[0])}</article><section class="panel dashboard-surface vibe-workspace"><div class="vibe-tabs" role="tablist" aria-label="Vibe tables">${config.maps.map((m, i) => `<button type="button" role="tab" id="vibe-tab-${m.key}" aria-controls="vibe-panel" aria-selected="${m.key === activeMap}" tabindex="${m.key === activeMap ? 0 : -1}" data-vibe-tab="${m.key}">${esc(['Mood & energy', 'Sound & delivery', 'Build & hook'][i])}<span class="vibe-tab-state" aria-hidden="true"></span></button>`).join('')}</div><div id="vibe-panel" role="tabpanel"></div></section></div><details class="panel vibe-tag-panel"><summary>Tags <span id="vibe-tag-count">Optional</span></summary><div class="vibe-tag-body"><div class="vibe-tag-tools"><label>Find a tag<input id="vibe-tag-search" type="search" placeholder="Search tags and descriptions"></label><button type="button" class="btn" data-theme-none>None fit</button><button type="button" class="btn" data-theme-clear>Clear review</button></div><p class="vibe-tag-status" id="vibe-tag-status" role="status"></p><div class="vibe-tag-list">${config.tags.map(t => `<label class="vibe-tag-option" data-tag-search="${esc((t.name + ' ' + (t.description || '')).toLocaleLowerCase())}" title="${esc(t.description || t.name)}"><input type="checkbox" value="${t.id}" data-theme><span class="tag">${esc(t.name)}</span></label>`).join('') || '<p class="empty">No catalogue tags yet.</p>'}</div><p id="vibe-tags-empty" class="empty" hidden>No matching tags.</p></div></details>${controls()}`;
       renderMap();
@@ -118,11 +118,15 @@
     });
   }
   function valid() {
-    return mode === 'spotlight' ? window.Spotlight.allocate(positions) !== null : Object.keys(placements).length > 0;
+    return mode === 'spotlight' ? window.Spotlight.allocate(positions, round.rules_version) !== null : Object.keys(placements).length > 0;
   }
-  function selectSlot(slot) {
+  function selectSlot(slot, followAudio = true) {
     if (state !== 'playing' || !Number.isInteger(slot) || slot < 0 || slot > 3) return;
     cancelAutoSelect();selectedSlot = slot;update();
+    if (followAudio && rotation?.active) {
+      const index = rotationOrder.indexOf(slot);
+      if (rotation.index !== index) rotation.jump(index);
+    }
   }
   function place(value) {
     if (state !== 'playing') return;
@@ -130,7 +134,7 @@
     if (!Number.isInteger(x) || x < 0 || x > 100) return;
     const changed = positions[selectedSlot] !== x;
     positions[selectedSlot] = x;
-    allocations = window.Spotlight.allocate(positions) || [0, 0, 0, 0];
+    allocations = window.Spotlight.allocate(positions, round.rules_version) || [0, 0, 0, 0];
     update();
     if (changed) {
       placementDirty = true;
@@ -153,7 +157,7 @@
   }
   function layoutMarkers() {
     const result = state === 'saved';
-    const locations = result ? window.Spotlight.resultPositions(allocations) : positions;
+    const locations = result && round.rules_version === 1 ? window.Spotlight.resultPositions(allocations) : positions;
     const width = Math.max(160, ($('#spotlight-line').clientWidth || 600)-28);
     const visible = [];
     $$('.spotlight-marker', root).forEach(button => {
@@ -195,7 +199,10 @@
       play: audio => playback ? playback.play(audio) : audio.play(),
       stop: () => {if (playback) playback.stopAll();else $$('audio', root).forEach(a => a.pause());},
       duration: () => flow?.duration('spotlightPreview') || 20000,
-      onState: paintRotation,
+      onState: (active, index) => {
+        if (active && state === 'playing') selectSlot(rotationOrder[index], false);
+        paintRotation();
+      },
       onError: (error, slot) => {
         const card = $(`[data-spotlight-card="${slot}"]`, root);
         $('.judgement-audio-note', card).textContent = error.name === 'NotAllowedError' ? 'Press play to retry' : 'Preview unavailable';
@@ -243,7 +250,9 @@
     }
     if (mode === 'spotlight') {
       const ready = valid() || !!pending?.allocations || state === 'saved';
-      $('#spotlight-budget').textContent = ready ? '12 / 12 shared' : '12 available';
+      $('#spotlight-budget').textContent = state === 'saved'
+        ? 'Points awarded: ' + allocations.reduce((a,b) => a+b, 0)
+        : ready ? 'Ready to save' : 'Place all four songs';
       $$('[data-spotlight-points]', root).forEach(output => {
         const slot = Number(output.dataset.spotlightPoints);
         output.hidden = state !== 'saved';
@@ -259,7 +268,7 @@
       layoutMarkers();
       const slider = $('#spotlight-line');
       slider.value = positions[selectedSlot] ?? 50;
-      slider.setAttribute('aria-valuetext', positions[selectedSlot] === null ? 'Not placed' : `${positions[selectedSlot]} of 100 from worse to better`);
+      slider.setAttribute('aria-valuetext', positions[selectedSlot] === null ? 'Not placed' : `${positions[selectedSlot]} of 100 from not connecting to really connecting`);
       $('#spotlight-selected').textContent = `${selectedSlot+1} · ${round.songs[selectedSlot].title}`;
       paintRotation();
     } else {
@@ -289,7 +298,11 @@
         button.setAttribute('aria-busy', String(['loading', 'buffering'].includes(button.dataset.previewState)));
       };
       for (const name of ['playing', 'pause', 'waiting', 'canplay', 'loadstart']) audio.addEventListener(name, paint);
-      audio.addEventListener('playing', () => note.textContent = '');
+      audio.addEventListener('playing', () => {
+        note.textContent = '';
+        if (mode === 'spotlight' && state === 'playing')
+          selectSlot(Number(audio.id.split('-').at(-1)), false);
+      });
       audio.addEventListener('error', () => { note.textContent = 'Preview unavailable'; paint(); });
     });
   }
@@ -382,7 +395,10 @@
     pending = {token: round.token, rules_version: round.rules_version};
     if (skip) pending.skip = true;
     else {
-      if (mode === 'spotlight') pending.allocations = [...allocations];
+      if (mode === 'spotlight') {
+        if (round.rules_version === 2) pending.positions = [...positions];
+        else pending.allocations = [...allocations];
+      }
       else if (mode === 'vibe') {
         pending.maps = Object.entries(placements).map(([map, p]) => ({map, x: p.x, y: p.y}));
         if (themesReviewed) pending.themes = [...themes].sort((a, b) => a - b);
@@ -401,6 +417,8 @@
       if (rotation?.active) {
         const slot = rotationOrder.indexOf($$('audio', root).indexOf(audio));
         if (rotation.index === slot && !audio.paused) {rotation.stop();if (state === 'saved') finishSpotlightResults();}else rotation.jump(slot);
+      } else if (mode === 'spotlight' && state === 'playing') {
+        rotation.start(rotationOrder.indexOf(Number(audio.id.split('-').at(-1))));
       } else play(button.dataset.judgementPlay);
       return;
     }

@@ -272,3 +272,8 @@ html[data-round-paused=true] .judgement-countdown span { animation-play-state:pa
   .spotlight-card,.spotlight-marker { transition:none; }
   .spotlight-placement[data-pulse] #spotlight-line { animation:none; }
 }
+
+/* The centre anchor stays centred when the endpoint labels differ in length. */
+.spotlight-axis-labels { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; align-items:center; }
+.spotlight-axis-labels span:nth-child(2) { text-align:center; font-size:12px; color:var(--muted); }
+.spotlight-axis-labels span:last-child { text-align:right; }
