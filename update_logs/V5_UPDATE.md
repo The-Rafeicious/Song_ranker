@@ -157,3 +157,18 @@ for exact scope and physical-device limits. Install/recovery are in the
   the same isolated harness reproduced the original pre-request failure.
   Full jsdom/browser and Python suites were not run: execution host unavailable.
 - No database or schema changes. Restart and hard-refresh to load V5.0.3.3.1.
+
+
+## V5.0.4 — developer polish
+
+- Audit the complete Dev backend and all nineteen interface views.
+- Consolidate catalogue entity mutations, validation, connection cleanup and
+  inventory/backup discovery. Fix the technical-guide download target.
+- Extract metadata tasks and record lists from the shared page script; group
+  developer assets in a readable include and remove obsolete frontend fallbacks.
+- Add tool search, bounded bulk/history/tournament lists, choice-list counts,
+  better selection feedback, shared-picker focus/reset handling and one dialog
+  error owner. Distinguish saved changes from follow-up refresh failures.
+- Retain source/tag review, Git/shutdown and backup safeguards; remove outdated
+  Classic-record UI and automatic-backup wording. No schema/scoring changes.
+- [Upgrade, per-tool audit and validation limits](../docs/UPGRADE_V5_0_4.md).

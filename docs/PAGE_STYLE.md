@@ -1179,3 +1179,22 @@ Reuse the editor dialog with a bounded track checklist and labelled native
 checkboxes, 44 px targets and song/artist/album colours. New tracks start checked;
 library matches start unchecked. Save only on Add selected songs. Show progress
 and partial failure counts, and disable saved tracks before retry.
+
+
+## V5.0.4 developer polish
+
+Keep Dev assets in `dev_assets.html` and feature state with its owning module.
+Tool search filters the grouped sidebar and restores expansion when cleared.
+Use shared 44 px controls, labelled native inputs/selects, clear selected states,
+counts, retry actions and one error element per editor. Keep editor scrolling
+bounded with its footer visible; do not duplicate a higher-specificity heading
+rule that overrides the common centred title.
+
+Album checklists use bounded rows and explicit selection controls. Bulk lists
+start at fifty with more available; record archives start at thirty. Search and
+filters apply to all loaded records, not only the visible slice. Show selected
+items outside current filters and disclose capped choice lists. Match status,
+visibility and catalogue entity colours keep their established meanings.
+Metadata summaries use four joined metrics and collapsed change reviews; long
+names wrap within bounded columns. Desktop/mobile layout uses the existing
+breakpoints and shared baseline remains last.

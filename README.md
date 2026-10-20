@@ -1,6 +1,6 @@
 # Song Ranker V5
 
-**V5.0.3.3.1 · V3 competition database · schema 15**
+**V5.0.4 · V3 competition database · schema 15**
 
 Vote between songs, identify previews, run tournaments, guess Elo and arrange
 album shelves. V5 keeps your music catalogue and starts the competition again
@@ -28,7 +28,7 @@ python main.py
 
 Use `python3` if that is your Python command. Python 3.10+ is required; validation
 used 3.12. Open **http://127.0.0.1:5000**, then hard-refresh existing browser tabs.
-The footer should show **V5.0.3.3.1**.
+The footer should show **V5.0.4**.
 
 On first launch, V5 makes a complete SQLite backup of V2, verifies a catalogue-only
 transfer and publishes **`data/song_ranker_v3.db`**. Song/artist/album/tag IDs,
@@ -186,10 +186,10 @@ transfer fails, V5 leaves the source intact and does not publish a partial V3
 file; read the terminal error and the [upgrade guide](docs/UPGRADE_V5.md). Fresh
 zero rates should show `—`, not an invented percentage.
 
-Validation includes **511 Python tests**, **2,037 JavaScript assertions**,
-**571 live app checks** and **48,000 simulated preference draws**. Browser QA used
-DOM/computed-style checks; physical-device layout, audio and Windows hosting
-remain installation checks. Scope and reproducible commands are in
+V5.0.4 validation passed **196 available Python tests**, **424 JavaScript
+assertions** and **39 served-app DOM/HTTP cases**. Full discovery remains blocked
+by missing upstream historical schema fixtures; browser painting and real-device
+layout/audio were not validated here. Scope and commands are in
 [VALIDATION.md](docs/VALIDATION.md).
 
 V5.0.3 adds five-choice source selection and reviewed bulk source updates.
@@ -213,3 +213,17 @@ for each dev-panel area, caching, throttling and partial-import recovery.
 V5.0.3.3.1 fixes the album checklist Add button so checked songs are submitted,
 the saved count is confirmed and the popup closes after success. Restart and
 hard-refresh after updating to load the corrected JavaScript.
+
+
+## V5.0.4 developer polish
+
+Dev has searchable tool navigation, clearer shared controls, bounded bulk and
+record lists, an improved album-import checklist and a separate metadata task
+module with retry/polling ownership. Catalogue edits share validation and
+transaction handling; current inventory/backup discovery has one owner.
+Saved edits now report refresh failures separately, and old frontend restore/Git
+paths and obsolete Classic Trivia record editing have been removed.
+
+See the [V5.0.4 upgrade and developer audit](docs/UPGRADE_V5_0_4.md).
+Restart and hard-refresh after updating, including all new scripts/templates.
+Schema remains 15. Existing catalogue, competition and backup policy are kept.

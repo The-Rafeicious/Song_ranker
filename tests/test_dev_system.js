@@ -30,7 +30,7 @@ async function harness(view='',width=1280,session={}){
   throw Error('Unexpected request '+url);
  };
  w.Overall={bindUI(){}};
- for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_tags.js','dev_system.js'])w.eval(source(file));
+ for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js','dev_system.js'])w.eval(source(file));
  const expose="window.testDev={refreshData,records,setView:v=>{devView=v;renderDevView()}};window.DevSystem?.bindUI(";
  await w.eval(source('site.js').replace('window.DevSystem?.bindUI(',expose));await flush();
  const click=sel=>{const n=d.querySelector(sel);assert.ok(n,'missing '+sel);n.click();return n};
@@ -194,3 +194,4 @@ async function stopFlows(){
 }
 module.exports={harness,flush};
 if(require.main===module)(async()=>{await entryAndShortcuts();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
+

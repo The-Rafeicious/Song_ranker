@@ -95,7 +95,7 @@ window.Overall=(()=>{
  }
  function devResults(query){
    const root=$('#overall-dev-results');if(!root||!current)return;const q=query.trim().toLocaleLowerCase();
-   root.innerHTML=current.entities[devType].filter(r=>r.name.toLocaleLowerCase().includes(q)).slice(0,12).map(row=>`<button class="btn small" data-overall-inspect="${row.id}" data-overall-inspect-type="${devType}"><span class="${U.colour(devType)}" title="${esc(row.name)}">${esc(row.name)}</span><b class="overall">${pct(row.score)}</b></button>`).join('')||`<div class="empty">No ${devType}</div>`;
+   const found=current.entities[devType].filter(r=>(r.name+' #'+r.id).toLocaleLowerCase().includes(q));root.innerHTML=found.slice(0,12).map(row=>`<button class="btn small" data-overall-inspect="${row.id}" data-overall-inspect-type="${devType}"><span class="${U.colour(devType)}" title="${esc(row.name)}">${esc(row.name)}</span><b class="overall">${pct(row.score)}</b></button>`).join('')||`<div class="empty">No ${devType}</div>`;if(found.length>12)root.insertAdjacentHTML('beforeend','<p class="overall-dev-copy">Showing 12 of '+found.length+'. Search by name or #ID to narrow the list.</p>');
  }
  function selectDevType(type){
    if(!types.includes(type))return;devType=type;++inspectId;
@@ -138,3 +138,4 @@ window.Overall=(()=>{
  document.addEventListener('input',e=>{if(e.target.id==='overall-dev-query')devResults(e.target.value);});
  return {bindUI:ui=>U=ui,mount,renderRankings,renderDev};
 })();
+

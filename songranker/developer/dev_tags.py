@@ -1,5 +1,4 @@
 """Authenticated, browser-bound review/apply endpoints for tag-only catalogue work."""
-import os
 from flask import jsonify,request
 from itsdangerous import URLSafeTimedSerializer,BadData
 
@@ -52,3 +51,4 @@ def apply_tags():
         conn.rollback();app.logger.exception('Reviewed tag save failed')
         return jsonify(message='Tags could not be saved. No tag changes were applied. Check database health and try again.'),500
     finally:conn.close()
+

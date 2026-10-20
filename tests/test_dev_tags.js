@@ -50,7 +50,7 @@ async function harness(width=1280,view='tag_workbench'){
   if(url.startsWith('/api/dev/song-source/')){const id=Number(url.split('/').pop()),s=data.songs.find(s=>s.id===id);return respond({song:{...s,artist:'Artist, One',album:'Album',genres:'Bright'},fingerprint:'source-'+id,current:null,history:[]})}
   throw Error('Unexpected request '+url);
  };
- w.Overall={bindUI(){}};for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_tags.js'])w.eval(source(file));
+ w.Overall={bindUI(){}};for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js'])w.eval(source(file));
  const expose="window.testDev={setView:v=>{devView=v;renderDevView()},applyBulk,setBulk:ids=>{bulkSelection=new Set(ids);devView='bulk';renderDevView()}};window.DevTags?.bindUI(";
  await w.eval(source('site.js').replace('window.DevTags?.bindUI(',expose));await flush();
  const click=selector=>{const n=d.querySelector(selector);assert.ok(n,'missing '+selector);n.click();return n};
@@ -178,3 +178,4 @@ async function viewportChecks(width){
  snapshots[width]={songRows:d.querySelectorAll('[data-tag-song]').length,controls:d.querySelectorAll('.tag-workbench button').length,review:d.querySelector('#tag-review').textContent};h.close();
 }
 (async()=>{await filterChecks();await bulkChecks();await singleAndPreviewChecks();await draftChecks();await failureChecks();await navigationChecks();await recoveredNewTagChecks();await mediaFailureChecks();await bulkBridgeCheck();for(const w of [320,360,390,430,568,768,1280])await viewportChecks(w);if(process.env.SNAPSHOT_OUTPUT)fs.writeFileSync(process.env.SNAPSHOT_OUTPUT,JSON.stringify(snapshots,null,2));console.log(assertions+' tag workbench assertions passed')})().catch(error=>{console.error(error);process.exitCode=1});
+

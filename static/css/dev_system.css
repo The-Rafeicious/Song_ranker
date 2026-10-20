@@ -10,7 +10,6 @@ body[data-page=dev] #main .dev-sidebar h2 { font-size:22px; text-align:center; }
 body[data-page=dev] #main .side-btn { min-height:46px; padding:12px; font-size:16px; line-height:1.4; }
 body[data-page=dev] #main .dev-nav-group > summary { min-height:44px; padding:12px; font-size:16px; letter-spacing:normal; }
 body[data-page=dev] #main .dev-main summary { min-height:44px; }
-body[data-page=dev] #main .dev-main .page-head { display:flex; flex-wrap:wrap; align-items:center; }
 body[data-page=dev] #main .dev-system { --surface-accent:var(--song); --section-color:var(--song); display:grid; gap:20px; min-width:0; }
 body[data-page=dev] #main .dev-system .panel { min-width:0; margin:0; }
 body[data-page=dev] #main .dev-system :is(p,strong,code,summary,h2,h3) { overflow-wrap:anywhere; min-width:0; }
@@ -204,3 +203,29 @@ body[data-page=dev] #main .bulk-workbench .field { display:grid; gap:7px; min-wi
 body[data-page=dev] #main .bulk-workbench .field > label { margin:0; }
 body[data-page=dev] #main .bulk-workbench :is(.field > input,.field > select) { margin:0; }
 body[data-page=dev] #main .bulk-workbench .bulk-actions { margin:16px 0; }
+
+
+/* V5.0.4: shared tools stay bounded without shrinking text or touch targets. */
+body[data-page=dev] #editor { max-height:calc(100dvh - 24px); overflow:auto; overscroll-behavior:contain; }
+body[data-page=dev] #editor .dialog-actions { position:sticky; bottom:-24px; z-index:2; padding:16px 0; background:#1e1e1e; border-top:1px solid var(--line); }
+body[data-page=dev] #main .bulk-selection { max-height:65vh; overflow:auto; overscroll-behavior:contain; scrollbar-gutter:stable; }
+body[data-page=dev] #main .bulk-row { min-height:64px; }
+body[data-page=dev] #main .scope-option[aria-pressed=true] { border-color:var(--album); background:#bf77ff15; }
+body[data-page=dev] #main .metadata-panel { min-width:0; }
+body[data-page=dev] #main .metadata-panel .joined-metrics :is(b,span) { display:block; }
+body[data-page=dev] #main .metadata-panel .joined-metrics b { font-size:28px; color:var(--song); }
+body[data-page=dev] #main .metadata-actions { gap:16px; }
+body[data-page=dev] #main .metadata-actions label { display:grid; gap:7px; min-width:140px; }
+body[data-page=dev] #main .metadata-panel .health-row { gap:16px; flex-wrap:wrap; }
+body[data-page=dev] #main :is(.metadata-review,.column-picker) > summary { padding:10px 0; min-height:44px; cursor:pointer; }
+body[data-page=dev] #main .dev-nav-group > summary { min-height:44px; display:flex; align-items:center; }
+body[data-page=dev] #main .dev-pagination { display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+body[data-page=dev] #main .mode-record-search input { width:100%; }
+body[data-page=dev] #main .mode-records .section-head { gap:12px; }
+body[data-page=dev] #main .overall-dev-copy { font-size:16px; }
+@media(max-width:600px) {
+ body[data-page=dev] #editor .dialog-actions { bottom:-18px; }
+ body[data-page=dev] #main .metadata-actions { align-items:stretch; flex-direction:column; }
+}
+
+body[data-page=dev] #main .dev-tool-search { display:grid; gap:7px; grid-column:1/-1; font-size:15px; }

@@ -6,7 +6,6 @@ Run `python -m songranker.developer.db_tools --help`; no Flask/developer credent
 import argparse
 from pathlib import Path
 import json
-import os
 import sqlite3
 import tempfile
 
@@ -89,3 +88,4 @@ def main(argv=None):
 
 if __name__ == '__main__':
     raise SystemExit(main())
+

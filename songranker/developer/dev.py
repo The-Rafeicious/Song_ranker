@@ -7,7 +7,15 @@ from datetime import datetime
 
 from songranker.apple_access import (apple_lookup, AppleRequestError)
 from songranker.developer.track_numbers import (parse_track_number, check_track_position, track_position_conflicts, TrackNumberConflict)
-from songranker.services import (app, DB_NAME, DEV_PIN, admin_required, get_db_connection, get_song_full, git_push, init_db, export_rankings, create_database_backup, get_or_create_album, link_artists_to_song, link_genres_to_song)
+from songranker.services import (app, DB_NAME, DEV_PIN, admin_required, get_db_connection, get_song_full, export_rankings, create_database_backup, get_or_create_album, link_artists_to_song, link_genres_to_song)
+
+
+def json_fields():
+    """Legacy maintenance forms treat a missing/non-object payload as empty."""
+    data = request.get_json(silent=True)
+    return data if isinstance(data, dict) else {}
+
+
 @app.route('/dev/login', methods=['GET', 'POST'])
 def dev_login():
     if request.method == 'POST':
@@ -307,117 +315,121 @@ def api_delete_song(song_id):
         conn.close()
 
 
+def edit_catalogue_record(table, record_id, fields):
+    """Validate editable entity fields and always release the database connection."""
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify(message='Send catalogue fields as an object.'), 400
+    title = fields[0]
+    if not isinstance(data.get(title), str) or not data[title].strip():
+        return jsonify(message='A name is required.'), 400
+    values = {}
+    for key in fields:
+        value = data.get(key, '')
+        if value is None:
+            value = ''
+        if not isinstance(value, str):
+            return jsonify(message=f'{key.replace("_", " ").capitalize()} must be text.'), 400
+        values[key] = value.strip()
+    if 'description' in values and len(values['description']) > 2000:
+        return jsonify(message='Tag info must be text, up to 2,000 characters.'), 400
+    day = values.get('release_date')
+    if day:
+        try:
+            values['release_date'] = datetime.strptime(day, '%Y-%m-%d').date().isoformat()
+        except ValueError:
+            return jsonify(message='Invalid release date.'), 400
+    # Table/column names come only from the fixed route definitions below.
+    conn = get_db_connection()
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        if not conn.execute(f'SELECT 1 FROM {table} WHERE id=?', (record_id,)).fetchone():
+            return jsonify(message='Record not found.'), 404
+        if table == 'genres':
+            if conn.execute('SELECT 1 FROM genres WHERE LOWER(name)=LOWER(?) AND id!=?',
+                            (values['name'], record_id)).fetchone():
+                return jsonify(message='Tag already exists.'), 400
+            if data.get('description') is None:
+                values.pop('description', None)
+        assignments = ', '.join(key + '=?' for key in values)
+        conn.execute(f'UPDATE {table} SET {assignments} WHERE id=?', (*values.values(), record_id))
+        conn.commit()
+        return jsonify(status='success', message='Catalogue record updated.')
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        return jsonify(message='This change conflicts with an existing catalogue record.'), 409
+    finally:
+        conn.close()
+
+
 @app.route('/api/dev/edit_artist/<int:artist_id>', methods=['POST'])
 @admin_required
 def api_edit_artist(artist_id):
-    data = request.json
-    if not str(data.get('name','')).strip():
-        return jsonify({'message':'A name is required.'}),400
-    conn = get_db_connection()
-    if not conn.execute('SELECT 1 FROM artists WHERE id=?',(artist_id,)).fetchone():
-        conn.close(); return jsonify({'message':'Record not found.'}),404
-    conn.execute('UPDATE artists SET name = ?, cover_url = ? WHERE id = ?',
-                 (data.get('name', '').strip(), data.get('cover_url', ''), artist_id))
+    return edit_catalogue_record('artists', artist_id, ('name', 'cover_url'))
 
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "success", "message": "Artist updated successfully."})
+
+def delete_catalogue_record(table, record_id):
+    """Remove an entity and its catalogue links, preserving referenced game facts."""
+    conn = get_db_connection()
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        if not conn.execute(f'SELECT 1 FROM {table} WHERE id=?', (record_id,)).fetchone():
+            return jsonify(message='Record not found.'), 404
+        if table == 'albums':
+            conn.execute('UPDATE songs SET album_id=NULL WHERE album_id=?', (record_id,))
+        else:
+            links, column = ('song_artists', 'artist_id') if table == 'artists' else ('song_genres', 'genre_id')
+            conn.execute(f'DELETE FROM {links} WHERE {column}=?', (record_id,))
+        conn.execute(f'DELETE FROM {table} WHERE id=?', (record_id,))
+        conn.commit()
+        return jsonify(status='success', message='Catalogue record deleted.')
+    except sqlite3.IntegrityError:
+        conn.rollback()
+        return jsonify(message='This record is still referenced. Review its saved results before deleting it.'), 409
+    finally:
+        conn.close()
 
 
 @app.route('/api/dev/delete_artist/<int:artist_id>', methods=['DELETE'])
 @admin_required
 def api_delete_artist(artist_id):
-    conn = get_db_connection()
-    conn.execute('DELETE FROM song_artists WHERE artist_id = ?', (artist_id,))
-    conn.execute('DELETE FROM artists WHERE id = ?', (artist_id,))
-
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "success", "message": "Artist deleted."})
+    return delete_catalogue_record('artists', artist_id)
 
 
 @app.route('/api/dev/edit_album/<int:album_id>', methods=['POST'])
 @admin_required
 def api_edit_album(album_id):
-    data = request.json
-    if not str(data.get('title','')).strip():
-        return jsonify({'message':'A name is required.'}),400
-    conn = get_db_connection()
-    if not conn.execute('SELECT 1 FROM albums WHERE id=?',(album_id,)).fetchone():
-        conn.close(); return jsonify({'message':'Record not found.'}),404
-    conn.execute('UPDATE albums SET title = ?, cover_url = ?, release_date = ? WHERE id = ?',
-                 (data.get('title', '').strip(), data.get('cover_url', ''), data.get('release_date', ''), album_id))
-
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "success", "message": "Album updated successfully."})
+    return edit_catalogue_record('albums', album_id, ('title', 'cover_url', 'release_date'))
 
 
 @app.route('/api/dev/delete_album/<int:album_id>', methods=['DELETE'])
 @admin_required
 def api_delete_album(album_id):
-    conn = get_db_connection()
-    conn.execute('UPDATE songs SET album_id = NULL WHERE album_id = ?', (album_id,))
-    conn.execute('DELETE FROM albums WHERE id = ?', (album_id,))
-
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "success", "message": "Album deleted. Associated songs updated."})
+    return delete_catalogue_record('albums', album_id)
 
 
 @app.route('/api/dev/edit_genre/<int:genre_id>', methods=['POST'])
 @admin_required
 def api_edit_genre(genre_id):
-    data = request.json
-    if not str(data.get('name','')).strip():
-        return jsonify({'message':'A name is required.'}),400
-    description = data.get('description')
-    if description is not None and (not isinstance(description, str) or len(description) > 2000):
-        return jsonify({'message':'Tag info must be text, up to 2,000 characters.'}),400
-    conn = get_db_connection()
-    if not conn.execute('SELECT 1 FROM genres WHERE id=?',(genre_id,)).fetchone():
-        conn.close(); return jsonify({'message':'Record not found.'}),404
-    if conn.execute('SELECT 1 FROM genres WHERE LOWER(name)=LOWER(?) AND id!=?',(data['name'].strip(),genre_id)).fetchone():
-        conn.close(); return jsonify({'message':'Tag already exists.'}),400
-    conn.execute('UPDATE genres SET name = ? WHERE id = ?', (data.get('name', '').strip(), genre_id))
-    if description is not None:
-        conn.execute('UPDATE genres SET description=? WHERE id=?', (description.strip(), genre_id))
-
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "success", "message": "Genre updated successfully."})
+    return edit_catalogue_record('genres', genre_id, ('name', 'description'))
 
 
 @app.route('/api/dev/delete_genre/<int:genre_id>', methods=['DELETE'])
 @admin_required
 def api_delete_genre(genre_id):
-    conn = get_db_connection()
-    conn.execute('DELETE FROM song_genres WHERE genre_id = ?', (genre_id,))
-    conn.execute('DELETE FROM genres WHERE id = ?', (genre_id,))
-
-    conn.commit()
-    conn.close()
-    return jsonify({"status": "success", "message": "Genre deleted."})
+    return delete_catalogue_record('genres', genre_id)
 
 
 @app.route('/api/dev/overview', methods=['GET'])
 @admin_required
 def api_dev_overview():
-    conn = get_db_connection()
-    tables = [r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY name")]
-    schema_version = conn.execute('PRAGMA user_version').fetchone()[0]
-    counts = {table: conn.execute(f'SELECT COUNT(*) FROM {table}').fetchone()[0] for table in tables}
-    integrity = conn.execute('PRAGMA integrity_check').fetchone()[0]
-    fk_errors = len(conn.execute('PRAGMA foreign_key_check').fetchall())
-    conn.close()
-    backup_dir = os.path.join(os.path.dirname(os.path.abspath(DB_NAME)), 'database_backups')
-    backups=[]
-    if os.path.isdir(backup_dir):
-        for name in sorted(os.listdir(backup_dir), reverse=True):
-            full=os.path.join(backup_dir,name)
-            if os.path.isfile(full) and name.endswith('.db'):
-                backups.append({'name':name,'size':os.path.getsize(full),'modified':datetime.fromtimestamp(os.path.getmtime(full)).isoformat(timespec='seconds')})
-    return jsonify({'counts':counts,'schema_version':schema_version,'integrity':integrity,'foreign_key_errors':fk_errors,'backups':backups})
+    # Keep the older response shape; inventory and backup discovery have one owner.
+    from songranker.developer.dev_system import inventory, backups
+    state = inventory()
+    return jsonify(counts={row['name']:row['rows'] for row in state['inventory']},
+                   schema_version=state['schema'], integrity=state['integrity'],
+                   foreign_key_errors=state['foreign_key_errors'],
+                   backups=[dict(row, size=row['bytes']) for row in backups()])
 
 
 @app.route('/api/dev/backup', methods=['POST'])
@@ -510,7 +522,7 @@ def api_dev_reset_history(scope):
     if scope not in ('matches','trivia','tournaments','guesser','shelves'):
         return jsonify(message='Choose match, trivia, tournament, Elo Guesser or Album Shelves history.'),400
     phrases={'guesser':'RESET GUESSER','shelves':'RESET SHELVES','matches':'RESET MATCHES','trivia':'RESET TRIVIA','tournaments':'RESET TOURNAMENTS'}
-    if (request.get_json(silent=True) or {}).get('confirmation')!=phrases[scope]:
+    if json_fields().get('confirmation')!=phrases[scope]:
         return jsonify(message='Type '+phrases[scope]+' to confirm.'),400
     return reset_competition_data(scope)
 
@@ -536,7 +548,7 @@ def delete_special_round(mode,round_id):
 @app.route('/api/dev/reset-database', methods=['POST'])
 @admin_required
 def api_dev_reset_database():
-    if (request.get_json(silent=True) or {}).get('confirmation') != 'RESET COMPETITION':
+    if json_fields().get('confirmation') != 'RESET COMPETITION':
         return jsonify(message='Type RESET COMPETITION to confirm.'),400
     return reset_competition_data('all')
 
@@ -697,18 +709,21 @@ def api_export():
 @app.route('/api/dev/bulk_songs', methods=['POST'])
 @admin_required
 def api_dev_bulk_songs():
-    data=request.get_json(silent=True) or {}
+    from songranker.developer.tag_operations import identifiers
+    data=request.get_json(silent=True)
+    if not isinstance(data,dict):return jsonify(message='Send a bulk change as an object.'),400
     conn=get_db_connection()
     try:
-        ids=list(dict.fromkeys(int(i) for i in data.get('song_ids',[])))
-        if not ids: raise ValueError('Select at least one song.')
+        ids=identifiers(data.get('song_ids'),'Songs',maximum=500)
         conn.execute('BEGIN IMMEDIATE')
         placeholders=','.join('?' for _ in ids)
         rows=conn.execute(f'SELECT id,title,album_id,track_number FROM songs WHERE id IN ({placeholders})',ids).fetchall()
         if len(rows)!=len(ids): raise ValueError('One of the selected songs no longer exists.')
         action=data.get('action')
         if action=='move_album':
-            album_id=int(data.get('album_id'))
+            album_id=data.get('album_id')
+            if type(album_id) is not int or album_id<=0:raise ValueError('Choose an existing album.')
+            if type(data.get('clear_track_numbers',False)) is not bool:raise ValueError('Choose whether to clear track numbers.')
             if not conn.execute('SELECT 1 FROM albums WHERE id=?',(album_id,)).fetchone(): raise ValueError('Choose an existing album.')
             clear=data.get('clear_track_numbers') is True
             occupied={r['track_number']:r['title'] for r in conn.execute(f'SELECT title,track_number FROM songs WHERE album_id=? AND id NOT IN ({placeholders}) AND track_number IS NOT NULL',[album_id]+ids)}
@@ -722,8 +737,7 @@ def api_dev_bulk_songs():
             for row in rows:
                 conn.execute('UPDATE songs SET album_id=?,track_number=? WHERE id=?',(album_id,None if clear else row['track_number'],row['id']))
         elif action in ('add_tags','remove_tags'):
-            tags=list(dict.fromkeys(int(i) for i in data.get('tag_ids',[])))
-            if not tags: raise ValueError('Choose at least one tag.')
+            tags=identifiers(data.get('tag_ids'),'Tags',maximum=500)
             if any(not conn.execute('SELECT 1 FROM genres WHERE id=?',(i,)).fetchone() for i in tags): raise ValueError('A selected tag no longer exists.')
             for song_id in ids:
                 for tag_id in tags:
@@ -742,7 +756,7 @@ def api_dev_bulk_songs():
 @admin_required
 def api_dev_trivia_records():
     import math
-    data=request.get_json(silent=True) or {}
+    data=json_fields()
     try:
         score=float(data['high_score']);streak=int(data['high_streak'])
         if not math.isfinite(score) or score<0 or streak<0: raise ValueError()
@@ -758,7 +772,7 @@ def api_dev_trivia_records():
 @app.route('/api/dev/tournaments/<int:tournament_id>/placements', methods=['POST'])
 @admin_required
 def api_dev_tournament_placements(tournament_id):
-    data=request.get_json(silent=True) or {};conn=get_db_connection()
+    data=json_fields();conn=get_db_connection()
     try:
         conn.execute('BEGIN IMMEDIATE')
         tournament=conn.execute('SELECT * FROM tournaments WHERE id=?',(tournament_id,)).fetchone()
@@ -779,3 +793,4 @@ def api_dev_tournament_placements(tournament_id):
     except (ValueError,TypeError) as exc:
         conn.rollback();return jsonify(message=str(exc)),400
     finally:conn.close()
+

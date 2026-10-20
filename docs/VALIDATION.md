@@ -1,4 +1,57 @@
-# V5.0.3.2 validation
+# V5.0.4 validation
+
+## V5.0.4 developer polish
+
+- **196 Python tests pass** from the fixture-independent cases currently present
+  in this repository. The focused developer/source/tag/metadata/Git/shutdown run
+  passes **135 tests**, including six new developer-polish cases.
+- **424 JavaScript assertions pass**: catalogue 190, system 99, tag workbench 112,
+  metadata tasks 10, shared picker 8 and developer records 5.
+- **39 served-app DOM/HTTP cases pass**: all nineteen Dev views at two configured
+  viewport widths (390 and 1280), plus a real album import through signed offers
+  and the normal database route. The fixture has eighty songs; only Apple lookup
+  transport is mocked. Session cookies, template/script loading and catalogue
+  writes use the served app. These are jsdom checks, not rendered-layout tests.
+- All JavaScript files parse, Python modules compile and the diff whitespace
+  check passes. Test databases are disposable; no active user database was used.
+
+Full Python discovery is **not green**: 27 test methods (28 error entries, due
+one parameterised case) require absent `tests/fixtures/schema_v9.sql` or
+`schema_v12.sql`. The baseline checkout had the same missing fixtures. Those
+tests remain in the suite and were not rewritten or silently skipped. The 196
+figure describes a separately selected fixture-independent run, not the full
+historic migration suite. Git tests run with the project as the discovery
+ceiling so nested disposable folders cannot discover the surrounding checkout.
+
+Browser painting could not run in this execution environment, and the separate
+cloud browser could not reach the local fixture. Phone geometry, audio playback
+and platform-specific hosting remain installation checks. DOM width settings
+alone do not establish responsive pixel layout.
+
+Reproduce current JavaScript and served-page checks after installing app
+dependencies and a temporary jsdom development dependency:
+
+```sh
+python -m pip install -r requirements.txt
+npm install --no-save --package-lock=false jsdom@26
+node tests/test_dev_catalog.js
+node tests/test_dev_system.js
+node tests/test_dev_tags.js
+node tests/test_dev_metadata.js
+node tests/test_dev_controls.js
+node tests/test_dev_records.js
+python tools/validate_dev_pages.py
+```
+
+`tools/validate_dev_pages.py` creates and removes its own fixture database/server.
+Run full Python discovery separately to expose historical fixture gaps:
+
+```sh
+python -m unittest discover -s tests -p 'test_*.py'
+```
+
+Everything below is retained validation history for earlier releases; its totals
+are not claims about V5.0.4.
 
 Based on the completed V4 app plus V4.1.6. V5 uses a new generation-3 database,
 initially schema 14, now schema 15. The supplied V2 database remains unchanged, SHA-256:
@@ -286,3 +339,4 @@ were not run for this patch. Earlier totals above describe earlier versions only
 Manual follow-up: import an album with exclusions, retry a partial failure,
 check a song link imports only one song, check an EP name, and verify source-only
 bulk review still links existing songs without importing tracks.
+
