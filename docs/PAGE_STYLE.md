@@ -1172,3 +1172,10 @@ choice reversible and never auto-save. Respect reduced motion for scrolling.
 Bulk filter labels use one shared gap and 44 px controls for native and enhanced
 selects; align Selected only with the controls. Action and release-link fields
 use the same label spacing and existing narrow-screen stacking.
+
+## V5.0.3.3 album import
+
+Reuse the editor dialog with a bounded track checklist and labelled native
+checkboxes, 44 px targets and song/artist/album colours. New tracks start checked;
+library matches start unchecked. Save only on Add selected songs. Show progress
+and partial failure counts, and disable saved tracks before retry.

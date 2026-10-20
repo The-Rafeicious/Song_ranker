@@ -277,3 +277,12 @@ Without `--reference`, the tool runs V5 alone. It writes no database or ranking.
 Install normal requirements and run `python -m unittest discover -s tests`.
 For JS tests, install jsdom as a test-only dependency and run each
 `tests/test_*.js` with Node. Keep startup/live checks on a disposable database.
+
+## V5.0.3.3 validation scope
+
+The updated JavaScript parses successfully using the available JavaScript runtime.
+The execution host was unavailable: Python, browser and repository test suites
+were not run for this patch. Earlier totals above describe earlier versions only.
+Manual follow-up: import an album with exclusions, retry a partial failure,
+check a song link imports only one song, check an EP name, and verify source-only
+bulk review still links existing songs without importing tracks.

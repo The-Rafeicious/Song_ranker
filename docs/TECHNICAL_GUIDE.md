@@ -488,3 +488,8 @@ shutdown. Failures, cancel and a 120-second acknowledgement timeout release the
 gate and resume the app. The normal launcher registers its callback after server
 creation; WSGI imports leave it unsupported. Stop does not close a browser-owned
 tab. Three slots do not limit Git commit history or old/update recovery archives.
+
+## Apple adding and request behaviour
+
+See [Apple Music](APPLE_MUSIC.md) for song/album links, the album checklist,
+source review versus import, metadata/preview request limits and error handling.

@@ -136,3 +136,11 @@ for exact scope and physical-device limits. Install/recovery are in the
   plus action and optional release-link label spacing.
 - Retain schema 15, three-slot requested backup policy and shutdown workflow.
   No files deleted.
+
+## V5.0.3.3 — Apple album imports
+
+- Album-link search opens a track checklist; untick exclusions before saving.
+- Reuses verified song imports, reports partial failures and protects saved identities.
+- Removes trailing - EP from new local Apple album metadata; retains raw source names.
+- Documents Apple adding and requests across developer areas in docs/APPLE_MUSIC.md.
+- Schema 15 retained. Python/browser regression suites were not run in this session.

@@ -60,7 +60,7 @@ def apple_metadata(track):
         position=parse_track_number(track.get('trackNumber')) if discs==disc==1 else None
     except (ValueError,TypeError,OverflowError):position=None
     return dict(title=text(track.get('trackName')) or 'Unknown',artist=text(track.get('artistName')) or 'Unknown',
-        album=text(track.get('collectionName')),cover_url=text(track.get('artworkUrl100')).replace('100x100bb','300x300bb'),
+        album=re.sub(r'\s+-\s+EP\s*$', '', text(track.get('collectionName')), flags=re.I),cover_url=text(track.get('artworkUrl100')).replace('100x100bb','300x300bb'),
         audio_url=text(track.get('previewUrl')),track_number=position,release_date=release_day(track.get('releaseDate')),
         genres=text(track.get('primaryGenreName')),source_track_number=track.get('trackNumber'),
         disc_number=track.get('discNumber') or 1,disc_count=track.get('discCount') or 1)
