@@ -49,6 +49,10 @@ class ConnectingTests(unittest.TestCase):
         with self.assertRaises(JudgementError):
             save_answer(self.c,'connecting','spotlight',dict(payload,positions=[81,60,40,20]))
         self.assertEqual(spotlight_stats(self.c)['points_awarded'],13)
+        from songranker.reports.global_stats_data import build_global_stats
+        feed = build_global_stats(self.c)['recent_activity']
+        self.assertEqual(next(r['details'] for r in feed if r['kind']=='spotlight'),
+                         '13 points awarded')
         before = capture(self.c)
         target = sqlite3.connect(':memory:')
         try:

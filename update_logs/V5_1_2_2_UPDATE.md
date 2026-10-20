@@ -9,5 +9,8 @@
 - Preview rotation and placement selection follow each other. Manual play starts
   the loop. Explicit stop and silent page entry remain supported.
 
-Validation: local Python/Node execution was unavailable in this session.
-Added regression coverage for the new formula, receipts and schema checks.
+Validation: GitHub Actions passed all 278 Python tests and five JavaScript
+suites (567 explicit assertions), plus 194,481 scoring combinations. Coverage
+includes server-owned scores, idempotency, zero/max rounds, legacy migration,
+lossless export/rebuild, database constraints, linked playback and global totals.
+Local execution was unavailable; verification used GitHub's Ubuntu runner.

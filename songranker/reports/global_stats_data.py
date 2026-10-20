@@ -218,7 +218,7 @@ def build_global_stats(conn):
                 if song['id'] is None:participant.update(title=song['title'])
                 if r['mode']=='spotlight':participant['role']=str(answer['allocations'][song['slot']])+' points'
                 participants.append(participant)
-            detail='12 points shared' if r['mode']=='spotlight' else str(len(answer['maps']))+' maps placed'
+            detail=(str(sum(answer['allocations']))+' points awarded') if r['mode']=='spotlight' else str(len(answer['maps']))+' maps placed'
             event(r['mode'],r['id'],r['closed_at'],MODES[r['mode']].NAME,detail,
                 '/'+paths[r['mode']]+'_stats#round-history',participants,[metric(detail,'result')])
     activity.sort(key=lambda e:(-e['timestamp'],e['kind'],-e['id']))

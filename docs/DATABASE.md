@@ -1,14 +1,40 @@
 # V5 database dictionary
 
-**V3 competition database · schema 17 · application V5.1.2.1**
+**V3 competition database · schema 18 · application V5.1.2.2**
 
 The active default is `data/song_ranker_v3.db`. The schema registry is
 [data/schema.sql](../data/schema.sql); this dictionary is derived from it.
-There are 33 stored tables, five views, 27 explicit indexes and eight triggers.
+There are 34 stored tables, five views, 27 explicit indexes and nine triggers.
 IDs/relationships and exact catalogue values survive first transfer; old results
 do not. See [UPGRADE_V5.md](UPGRADE_V5.md) for the catalogue whitelist and backup.
 
-## V5.1.2 and V5.1.2.1: same stored Spotlight receipt
+## V5.1.2.2: connecting-bar facts and flexible points
+
+New Spotlight offers have rules_version=2. Each answered round saves four
+integer 0–100 positions in spotlight_positions and four server-calculated
+0–12 points in spotlight_allocations. Scores use half-up rounding of
+max(0,min(12,6x+8(x−mean))) for x in [0,1]. Total points can be 0–24.
+Database close validation requires all four positions and matching points.
+The composite foreign key to judgement_items cascades on round deletion.
+
+| spotlight_positions column | Type | Constraint |
+| --- | --- | --- |
+| round_id | INTEGER | Required; part of composite primary/foreign key |
+| slot | INTEGER | Required; offered slot, part of primary/foreign key |
+| position | INTEGER | Required; whole percentage 0–100 |
+
+The existing verified pre-upgrade backup and transactional canonical rebuild
+migrate schema 17 to 18 without changing prior facts. Answered legacy rounds
+and pending offers remain version 1, with exactly 12 points and no reconstructed
+positions. The next newly created Spotlight offer uses version 2. Vibe stays
+version 1. Versionless SQL restores recognise both layouts.
+
+Stats and the global activity feed sum actual awarded points. Overall retains
+the 0–1 monotone support transform 3p/(12+2p), now named Spotlight support:
+three points correspond to 50%, zero to 0%, twelve to 100%. Each offer remains
+one observation per song. Calibration version is 8; public Elo is unaffected.
+
+## Historical V5.1.2 and V5.1.2.1 receipt (superseded for new rounds)
 
 The placement line calculates the existing four integer shares totaling 12.
 Coordinates are browser-tab drafts and are not stored or sent as additional
@@ -21,7 +47,7 @@ are transient presentation state and create no extra result rows.
 
 ## V5.1 subjective mode facts
 
-The five compact mode tables are `judgement_rounds`, `judgement_items`,
+The original five compact mode tables are `judgement_rounds`, `judgement_items`,
 `spotlight_allocations`, `vibe_placements` and `vibe_themes`. No seeded results,
 duplicated audio/artwork, pair matrix or cached totals are stored. See
 [the backend guide](UPGRADE_V5_1.md) for contracts and derived statistics.
@@ -64,7 +90,7 @@ stored. See [UPGRADE_V5_1_1.md](UPGRADE_V5_1_1.md) for routes and page behaviour
 
 ## V5.1.1.1 display-only patch
 
-Current schema is 17; calibration 7 is retained. Album links read the current offer's
+This historical display patch used schema 17 and calibration 7. Album links read the current offer's
 existing album title/ID; they introduce no duplicated metadata or stored values.
 Home/nav/cover-player styling changes add no database writes or migrations.
 
@@ -78,7 +104,7 @@ Home/nav/cover-player styling changes add no database writes or migrations.
 | Trivia / Guesser | Saved questions, choices, grades, field time and challenge runs | Completed accuracy, streaks and reports; pending rows add no result. |
 | Tournament | Bracket, entries, match facts and placements | Bracket points and eligible weighted first-round preference events. |
 | Shelves | Offered album/track facts and submitted positions | Regraded relative order/placement totals from frozen facts. |
-| V5.1 judgements | Five mode tables above | Completed allocations, independent maps, selected themes. |
+| V5.1 judgements | Six mode tables, including spotlight_positions | Completed allocations, independent maps, selected themes. |
 | Listening | `listening_observations` | Accepted-decision samples with mode/reference, original song key and chosen state. |
 
 ## Units and privacy
