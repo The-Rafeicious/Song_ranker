@@ -233,6 +233,39 @@ async function moveAndTableChecks(width){
  snapshots['developer-album-'+width]=d.documentElement.outerHTML;
  check(h.errors.length===0,'no browser errors at '+width);h.dom.window.close();
 }
-(async()=>{await importChecks();await sourceChecks();await navigationChecks();await addNavigationCheck();await sourcePersistenceChecks();await sourceRefreshChecks();await bulkSourceChecks();for(const width of [320,360,390,430,568,768,1280])await moveAndTableChecks(width);
+
+async function albumImportChecks(){
+ const h=await harness(),{w,d,requests}=h;
+ await h.search('https://music.apple.com/us/album/example/8001');
+ check(d.querySelector('#editor-title').textContent==='Add album','album link opens checklist');
+ check(!d.querySelector('[data-album-import-id="1"]').checked&&!d.querySelector('[data-album-import-id="2"]').checked,'library matches start unchecked');
+ d.querySelectorAll('[data-album-import-id]').forEach(n=>n.checked=false);
+ h.click('[data-album-import-save]');await flush();
+ check(!requests.some(r=>r.url==='/api/dev/add_song'),'empty checklist sends no save');
+ check(d.querySelector('#editor-error').textContent.includes('Select at least one'),'empty checklist shows an error');
+ h.change('[data-album-import-id="3"]',true);h.change('[data-album-import-id="5"]',true);
+ h.click('[data-album-import-save]');h.click('[data-album-import-save]');await flush();
+ const posts=requests.filter(r=>r.url==='/api/dev/add_song').map(r=>JSON.parse(r.options.body));
+ check(posts.length===2&&posts[0].source_token==='signed-9100'&&posts[1].source_token==='signed-9102','button saves only checked tracks once');
+ check(posts.every(p=>p.placement==='keep'),'album imports keep album placement');
+ check(h.data.songs.some(s=>s.title==='New <0>')&&h.data.songs.some(s=>s.title==='New <2>'),'selected songs reach the catalogue');
+ check(!d.querySelector('#editor').open,'successful album import closes popup');
+ check(d.querySelector('#toast').textContent.includes('2 of 2 songs saved'),'successful import confirms saved count');
+ check(h.errors.length===0,'album click has no browser errors');h.dom.window.close();
+
+ const retry=await harness(),rd=retry.d;await retry.search('https://music.apple.com/us/album/example/8001');
+ rd.querySelectorAll('[data-album-import-id]').forEach(n=>n.checked=['3','4'].includes(n.dataset.albumImportId));
+ retry.handler((url,opts)=>url==='/api/dev/add_song'&&JSON.parse(opts.body).source_token==='signed-9101'?{status:409,body:{message:'Track position conflict'}}:undefined);
+ retry.click('[data-album-import-save]');await flush();
+ check(rd.querySelector('#editor').open&&rd.querySelector('#editor-error').textContent.includes('1 of 2 songs saved'),'partial failure keeps popup with saved count');
+ check(rd.querySelector('[data-album-import-id="3"]').disabled&&!rd.querySelector('[data-album-import-id="3"]').checked,'saved track disabled and unchecked for retry');
+ check(!rd.querySelector('[data-album-import-id="4"]').disabled&&!rd.querySelector('[data-album-import-save]').disabled,'failed track and button enabled for retry');
+ retry.handler(()=>undefined);retry.click('[data-album-import-save]');await flush();
+ const retryPosts=retry.requests.filter(r=>r.url==='/api/dev/add_song').map(r=>JSON.parse(r.options.body));
+ check(retryPosts.length===3&&retryPosts[2].source_token==='signed-9101','retry sends only failed track');
+ check(!rd.querySelector('#editor').open,'successful retry closes popup');retry.dom.window.close();
+}
+
+(async()=>{await albumImportChecks();await importChecks();await sourceChecks();await navigationChecks();await addNavigationCheck();await sourcePersistenceChecks();await sourceRefreshChecks();await bulkSourceChecks();for(const width of [320,360,390,430,568,768,1280])await moveAndTableChecks(width);
  if(process.env.DEV_CATALOG_SNAPSHOTS)fs.writeFileSync(process.env.DEV_CATALOG_SNAPSHOTS,JSON.stringify(snapshots));console.log(assertions+' developer catalogue assertions passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
