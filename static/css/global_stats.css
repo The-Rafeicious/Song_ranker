@@ -194,8 +194,3 @@
 /* Paired rows share their geometry with Match History. */
 .global-stats-page #global-matchups { display: grid; gap: var(--site-gap, 20px); }
 .global-stats-page .frequent-pair { --versus-padding: 18px; --versus-radius: var(--site-inner-radius, 18px); }
-
-/* Subjective-mode summaries and recent result accents. */
-.global-stats-page .global-mode-update{border-color:color-mix(in srgb,var(--section-color) 45%,#383838)}
-.global-stats-page #global-activity [data-activity-kind=spotlight]{--activity-row-color:var(--spotlight)}
-.global-stats-page #global-activity [data-activity-kind=vibe]{--activity-row-color:var(--vibe)}

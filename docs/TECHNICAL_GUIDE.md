@@ -1,152 +1,11 @@
 # Song Ranker V5 technical guide
 
-**Application 5.1.2.1 · competition database generation 3 · SQLite schema 17**
+**Application 5.0.3.1 · competition database generation 3 · SQLite schema 15**
 
 This is the current implementation reference. Installation is in the
 [main README](../README.md); the one-time reset is described in
 [UPGRADE_V5.md](UPGRADE_V5.md). Historical changes belong in
 [update_logs/](../update_logs/README.md), not in the running app's help copy.
-
-## V5.1.2 / V5.1.2.1 Spotlight
-
-The preceding relative-placement update is V5.1.2. V5.1.2.1 refines its controls
-and results without changing storage. `static/js/spotlight.js` owns allocation,
-result order/positions and preview rotation. Target points remain
-`3 + 12 * (position - mean_position) / 100`. The closest of 455 nonnegative integer
-splits totaling 12 is chosen, respecting position order and exact ties. The
-allocator is card-order/translation invariant. Small gaps may round to equal shares.
-
-Browser drafts retain positions and selection; accepted receipts still contain
-only four integer allocations. Next round first saves through the existing
-idempotent endpoint. No points are shown before confirmation, including uncertain
-retries. Old unconfirmed manual receipts keep their exact original payload.
-Schema 17, rules version 1, support, adaptive selection and Overall calibration
-7 are unchanged. Result playback never sends another judgement/listening sample.
-
-Selection is explicit via metadata-bottom buttons or cover markers. Card and
-preview clicks do not change it. A cancelable 1,500 ms idle timer follows each
-changed placement, advancing to an unplaced song or the next card. Pointer drag
-defers scheduling until release; edits restart it, selection cancels it, and
-revisited songs can schedule again. Token/selection serials reject stale callbacks.
-Saving, hiding, new offers and page exit cancel the wait.
-
-The native rail remains under the cover markers, with a 760 px maximum width.
-Collision groups use 14 px resting offsets; hover/focus spreads covers to 52 px
-separation within the rail bounds. Distinct score groups occupy ascending rank
-positions during results, with exact ties sharing a position. Pulse animation
-alternates names to restart without forced layout and respects reduced motion.
-
-Placement preview rotation retains 20/10-second Standard/Quick segments.
-After confirmation, `resultOrder` sorts descending points with stable tied card
-order. `createRotation` runs that player order with `repeat:false`, 2/1-second
-snippets and a completion callback, followed by a 700/350 ms settle. Raw audio
-nodes stay in offer-slot order, preserving receipt mapping; bar positions alone
-move to result order. Waiting/seeking/paused time does not consume segments.
-Manual Next cancels remaining playback and consumes the prepared offer.
-A manual result loop stop completes the visual result; replay cancels pending
-advancement and starts one fresh finite pass. Permission blocks leave results available for manual Play/Next; other failures
-complete safely. Hidden pages stop playback and defer advancing via RoundFlow.
-
-## V5.1.1.2 retirement and safe reuse
-
-Schema 17 retires Sound Twins through `storage/mode_retirement.py`. Canonical
-migration, JSON rebuilds and versionless SQL restores remove only retired
-rounds/items, choices, listening and obsolete table/trigger definitions.
-All other values, row IDs, extension objects and sequence high-water marks are
-reconciled. The retired exposure view entries intentionally disappear. Normal
-startup creates a verified pre-upgrade backup; safe startup upgrades only its copy.
-Historical release logs retain the retired mode.
-
-Safe identity uses `run_<24-character SHA-256 source-path digest>` beneath
-`SONG_RANKER_SAFE_DIR` (default `data/safe_mode`). It adopts the latest valid
-legacy marked run, then prunes only other marked runs for that same source.
-Later launches validate/reuse the same database. Unmarked folders are preserved.
-`--refresh-safe-mode` implies safe mode and rebuilds that same database from the
-latest main snapshot, clearing test results. A temporary SQLite candidate is
-checked before replacement; copy failure preserves the existing test database.
-Backups/settings remain in the safe folder. Launcher locks, mode=ro source,
-write/attach guards and disabled Git remain enforced. `/api/runtime-mode`
-reports persistence/reuse. The backend smoke tool uses a disposable child copy
-so synthetic decisions do not pollute persistent test progress.
-
-## V5.1 launch and mode backend
-
-`storage/safe_mode.py` configures launch identity before Git, Flask or schema
-work. Safe mode reads the main database through SQLite mode=ro and routes writes
-to one persistent test database per resolved source path. The normal launcher uses a process lock; WSGI requires one
-worker. [UPGRADE_V5_1.md](UPGRADE_V5_1.md) documents the scope and test commands.
-
-`modes/judgements.py` owns shared round transactions and idempotency; the two
-mode files own answer rules. `judgement_selection.py` derives adaptive weights;
-`reports/judgement_stats_data.py` derives reports without stored counters.
-`judgement_api.py` registers the HTTP contract. Overall calibration
-7 shares the preference family with Spotlight and reports descriptive Vibe
-coverage separately from quality weights.
-
-## V5.1.1 page and presentation contracts
-
-`modes/judgement_pages.py` registers `/shared_spotlight`, `/vibe_map` and each corresponding `_stats` URL. Games use
-`templates/judgement_game.html`; reports use `judgement_stats.html` and
-`judgement_components.html`, alongside the established stats macros and styles.
-`GET /api/mode-updates` now reports `backend_only: false` and each mode's play
-and stats URLs. Existing POST and stats API contracts remain compatible.
-
-`static/js/judgement_game.js` owns the two mode UI state machines: loading, editing,
-saving, uncertain/retry, saved and unavailable. It requests/resumes a real offer
-before rendering choices. Validation prevents incomplete point budgets, empty Vibe placements. A cell is never preselected as a
-result. Grid coordinates increase right/up; radio cells and table tabs support
-keyboard navigation. Tag reviews distinguish omitted themes from a reviewed
-empty list. HTML text/attributes are escaped through `SongRankerUI.esc`;
-server configuration uses Jinja's `tojson`.
-
-A single session-storage draft per mode is keyed to the offered token. It stores
-only this tab's choices and, when needed, the frozen pending save. An uncertain
-save keeps inputs locked and retries exactly the same answer/listening payload,
-including after refresh. Definite validation failures can return to editing.
-Acknowledged saves remove drafts. Generation checks reject stale responses;
-page exit aborts in-flight requests and cancels advancement. Browser back/forward
-cache restoration requests the current offer again. Server receipts remain the
-only result authority; browser drafts are never used by statistics.
-
-The UI uses `PreviewPlayback` for user-started playback/ready handoffs,
-`Listening.start/sample` once per offered/saved decision, and `RoundFlow` for
-preparation, Standard/Quick result waits and visible-tab timers. It replaces
-controls/status after saving while retaining existing audio elements. Next
-consumes the prepared offer; no preparation starts audio or submits an answer.
-All new play routes load the same navbar clock, preview and listening assets.
-
-`reports/judgement_page_data.py` adapts `build_judgement_stats` in its caller's
-read transaction. It hydrates current song/artist/album identities, preserves historical tag
-labels with current tag URLs, builds the Spotlight allocation histogram and
-pages/searches Vibe track descriptions. HTML history is ten rounds per page;
-Vibe tracks are twenty per page. API history retains its own 1–50 size contract.
-Reports show the first five Spotlight leaders, with up to 50 disclosed.
-
-Global Stats renders mode summaries and includes one saved subjective round as
-one recent item. The live mode blend and listening labels include both subjective modes.
-Home shows seven mode cards and the Stats menu links to all dedicated reports.
-The `spotlight-mode` text class avoids the older `.spotlight` record-card class.
-
-Current schema is 17; calibration 7 and remaining selection rules are retained. See [UPGRADE_V5_1_1.md](UPGRADE_V5_1_1.md) for controls and
-[PAGE_STYLE.md](PAGE_STYLE.md) for page composition and responsive rules.
-
-## V5.1.1.1 display ownership
-
-`home.css` owns the seven-card grid and automatic child placement. Obsolete
-five-card spans, nth-child positions and sizing rules were removed from
-`special_modes.css`; they no longer interfere with Home's four/two/one columns.
-`navigation.css`, loaded before the final shared baseline, owns navbar spectrum,
-17/16 px labels, the relative 28/25 px wordmark and responsive header rows.
-Its single mode spectrum includes all eight accents, including Blind and the
-two subjective modes. Both Home and menu entries use the same real emoji per mode.
-
-The subjective-mode controller renders the shared `cover-button` / `play-overlay`
-structure but retains its own `data-judgement-play` owner, so the site's
-`data-audio` delegation cannot toggle the player twice. Audio events update both
-ARIA and `data-playing` state. Shared preview readiness/loading styles remain
-in use. Proper album names are escaped and URL-encoded, with Singles and Unknown
-Album omitted exactly as on Standard Vote. Existing audio nodes and listening
-samples survive result rendering. This patch changes no backend rules or schema.
 
 ## Architecture and ownership
 
@@ -352,7 +211,7 @@ limits are recorded in [VALIDATION.md](VALIDATION.md).
 
 ## Listening and private preview analysis
 
-`static/js/listening.js` is loaded once on the eight game pages. A question begins
+`static/js/listening.js` is loaded once on the five game pages. A question begins
 one measurement session keyed by mode and offered token/match. The tracker uses
 media identity plus actual playback progress, capped by elapsed wall time.
 Playing/time-update/pause/waiting/end/seek events distinguish audible progress

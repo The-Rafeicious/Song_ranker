@@ -1,108 +1,12 @@
 # V5 database dictionary
 
-**V3 competition database · schema 18 · application V5.1.2.3**
+**V3 competition database · schema 15 · application V5.0.2.1**
 
 The active default is `data/song_ranker_v3.db`. The schema registry is
 [data/schema.sql](../data/schema.sql); this dictionary is derived from it.
-There are 34 stored tables, five views, 27 explicit indexes and nine triggers.
+There are 28 stored tables, five views, 23 explicit indexes and three triggers.
 IDs/relationships and exact catalogue values survive first transfer; old results
 do not. See [UPGRADE_V5.md](UPGRADE_V5.md) for the catalogue whitelist and backup.
-
-## V5.1.2.3: expanded read-only Spotlight dashboard
-
-Schema remains 18. Point totals/means/ranges include every saved allocation,
-including removed tracks; connection aggregates use original saved positions
-from rules-version-2 rounds only. Legacy connection is unknown. Track and
-artist/album/tag record lists use current catalogue memberships and stop at five.
-Category support pools track observations; a collaboration or multiple tags
-can contribute to more than one separate group. Reports add no stored totals,
-cache tables, background updates or new migration.
-
-## V5.1.2.2: connecting-bar facts and flexible points
-
-New Spotlight offers have rules_version=2. Each answered round saves four
-integer 0–100 positions in spotlight_positions and four server-calculated
-0–12 points in spotlight_allocations. Scores use half-up rounding of
-max(0,min(12,6x+8(x−mean))) for x in [0,1]. Total points can be 0–24.
-Database close validation requires all four positions and matching points.
-The composite foreign key to judgement_items cascades on round deletion.
-
-| spotlight_positions column | Type | Constraint |
-| --- | --- | --- |
-| round_id | INTEGER | Required; part of composite primary/foreign key |
-| slot | INTEGER | Required; offered slot, part of primary/foreign key |
-| position | INTEGER | Required; whole percentage 0–100 |
-
-The existing verified pre-upgrade backup and transactional canonical rebuild
-migrate schema 17 to 18 without changing prior facts. Answered legacy rounds
-and pending offers remain version 1, with exactly 12 points and no reconstructed
-positions. The next newly created Spotlight offer uses version 2. Vibe stays
-version 1. Versionless SQL restores recognise both layouts.
-
-Stats and the global activity feed sum actual awarded points. Overall retains
-the 0–1 monotone support transform 3p/(12+2p), now named Spotlight support:
-three points correspond to 50%, zero to 0%, twelve to 100%. Each offer remains
-one observation per song. Calibration version is 8; public Elo is unaffected.
-
-## Historical V5.1.2 and V5.1.2.1 receipt (superseded for new rounds)
-
-The placement line calculates the existing four integer shares totaling 12.
-Coordinates are browser-tab drafts and are not stored or sent as additional
-result rows. Completed rounds still use `spotlight_allocations` and rules
-version 1. Live graphs, rotation timers and point overlays add no tables,
-columns, caches or migrations. Stats and Overall read the same saved shares;
-selection and reliability weights remain adaptive. Schema stays at 17. Points
-reveal only after confirmation; result-order covers/audio and delayed selection
-are transient presentation state and create no extra result rows.
-
-## V5.1 subjective mode facts
-
-The original five compact mode tables are `judgement_rounds`, `judgement_items`,
-`spotlight_allocations`, `vibe_placements` and `vibe_themes`. No seeded results,
-duplicated audio/artwork, pair matrix or cached totals are stored. See
-[the backend guide](UPGRADE_V5_1.md) for contracts and derived statistics.
-
-Schema 17 removes retired Sound Twins choices, rounds/items, listening samples
-and its obsolete table/trigger. All catalogue values and remaining results,
-row IDs and sequence high-water marks are preserved. A verified pre-upgrade
-backup keeps the original data. JSON/SQL restores use the same migration.
-Normal launch migrates the main database; safe launch migrates only its copy.
-
-Safe mode reuses one database per source path. Explicit
-`python safe_mode.py --refresh-safe-mode` replaces test data at that same path
-from the latest main snapshot. Other marked legacy runs for that source are
-pruned after successful adoption; unmarked folders and backups are retained.
-
-All successful decisions are transactionally closed receipts. A browser owner
-and answer hash make retries idempotent. Missing song/tag links become NULL;
-original keys and short identities preserve the history. Skips do not enter
-`mode_exposures` or Overall. New mode listening uses the existing table.
-
-## V5.1.1 pages: unchanged schema and compact writes
-
-The two subjective game pages write through the existing round/answer transactions.
-No tables, columns, seed results or cached percentages are added by V5.1.1.
-Schema-16 databases receive the selective schema-17 migration. Session-storage
-choices are browser-tab drafts, not database evidence; an unconfirmed save
-retains the same token, canonical answer and frozen listening sample on retry.
-
-`reports/judgement_page_data.py` uses the read-only stats projections for HTML.
-Spotlight's point histogram groups saved allocation rows. Vibe's three heatmaps
-count actual placements; track means/spread are filtered and paged without
-writing derived values. Reviewed theme denominators include explicit empty
-reviews. Removed-song identities and renamed-tag labels remain
-historical facts. Reports expose no browser owner hashes or receipt tokens.
-
-The new pages use the existing listening table and `mode_exposures` view.
-Global Stats includes these saved rounds in its recent feed; unjudged skips and
-unsubmitted drafts are excluded. No activity cache, map table or pair matrix is
-stored. See [UPGRADE_V5_1_1.md](UPGRADE_V5_1_1.md) for routes and page behaviour.
-
-## V5.1.1.1 display-only patch
-
-This historical display patch used schema 17 and calibration 7. Album links read the current offer's
-existing album title/ID; they introduce no duplicated metadata or stored values.
-Home/nav/cover-player styling changes add no database writes or migrations.
 
 ## Fact ownership
 
@@ -114,7 +18,6 @@ Home/nav/cover-player styling changes add no database writes or migrations.
 | Trivia / Guesser | Saved questions, choices, grades, field time and challenge runs | Completed accuracy, streaks and reports; pending rows add no result. |
 | Tournament | Bracket, entries, match facts and placements | Bracket points and eligible weighted first-round preference events. |
 | Shelves | Offered album/track facts and submitted positions | Regraded relative order/placement totals from frozen facts. |
-| V5.1 judgements | Six mode tables, including spotlight_positions | Completed allocations, independent maps, selected themes. |
 | Listening | `listening_observations` | Accepted-decision samples with mode/reference, original song key and chosen state. |
 
 ## Units and privacy
@@ -565,61 +468,3 @@ Do not hand-edit grading tables or restore an old archive over the active V3 fil
 V5.0.3.1 backup policy: requested and website-shutdown snapshots share three
 `rolling_*.db` slots. Ordinary edits create none. Migration archives and existing
 backups remain separate. See [backup and stop workflow](UPGRADE_V5_0_3_1.md).
-
-## V5.1 table columns
-
-Constraints and foreign-key actions are authoritative in `data/schema.sql`.
-`identity` is a short display fallback (at most 512 characters), not a second
-copy of artwork or preview metadata. Selected theme fallback labels are at most
-160 characters. Owner hashes and receipt tokens are not public history fields.
-
-### judgement_rounds
-
-| Column | Type | Null / key | Default |
-| --- | --- | --- | --- |
-| `id` | INTEGER | Primary key 1 |  |
-| `token` | TEXT | Not null |  |
-| `owner_hash` | TEXT | Not null |  |
-| `mode` | TEXT | Not null |  |
-| `rules_version` | INTEGER | Not null | 1 |
-| `status` | TEXT | Not null | 'open' |
-| `created_at` | REAL | Not null |  |
-| `closed_at` | REAL | Nullable |  |
-| `answer_hash` | TEXT | Nullable |  |
-| `themes_reviewed` | INTEGER | Not null | 0 |
-
-### judgement_items
-
-| Column | Type | Null / key | Default |
-| --- | --- | --- | --- |
-| `round_id` | INTEGER | Primary key 1 |  |
-| `slot` | INTEGER | Primary key 2 |  |
-| `song_key` | INTEGER | Not null |  |
-| `song_id` | INTEGER | Nullable |  |
-| `identity` | TEXT | Not null |  |
-
-### spotlight_allocations
-
-| Column | Type | Null / key | Default |
-| --- | --- | --- | --- |
-| `round_id` | INTEGER | Primary key 1 |  |
-| `slot` | INTEGER | Primary key 2 |  |
-| `points` | INTEGER | Not null |  |
-
-### vibe_placements
-
-| Column | Type | Null / key | Default |
-| --- | --- | --- | --- |
-| `round_id` | INTEGER | Primary key 1 |  |
-| `map_key` | TEXT | Primary key 2 |  |
-| `x` | INTEGER | Not null |  |
-| `y` | INTEGER | Not null |  |
-
-### vibe_themes
-
-| Column | Type | Null / key | Default |
-| --- | --- | --- | --- |
-| `round_id` | INTEGER | Primary key 1 |  |
-| `tag_key` | INTEGER | Primary key 2 |  |
-| `tag_id` | INTEGER | Nullable |  |
-| `label` | TEXT | Not null |  |

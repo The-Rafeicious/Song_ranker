@@ -1,7 +1,7 @@
 # Historical validation reports
 
 These are step-by-step records, retained without replacing their historical
-counts. Use [current validation](VALIDATION.md) for the current release.
+counts. Use [current validation](../VALIDATION.md) for the current release.
 
 # V4.1.5 — Dev, Shelves and first-round preference integration
 

@@ -165,8 +165,6 @@ def collection(include_overall_sources=False):
                 'trivia_stats':[dict(r) for r in conn.execute('SELECT * FROM trivia_stats')],
                 'trivia_rounds':[dict(r) for r in conn.execute('SELECT song_id,album_available,title_correct,artist_correct,album_correct FROM trivia_rounds WHERE completed_at IS NOT NULL')],
             }
-            from songranker.reports.judgement_stats_data import overall_sources
-            data['overall_sources']['judgements']=overall_sources(conn)
         if conn.execute("SELECT 1 FROM sqlite_master WHERE name='mode_exposures' AND type='view'").fetchone():
             from songranker.modes.preferences import exposure_totals
             exposures = exposure_totals(conn)

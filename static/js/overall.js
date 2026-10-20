@@ -8,7 +8,7 @@ window.Overall=(()=>{
  function bar(value,label){const width=value==null?0:Math.max(0,Math.min(100,value));return `<div class="overall-progress" ${value==null?'aria-hidden="true"':`role="progressbar" aria-label="${esc(label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${width}"`}><span style="width:${width}%"></span></div>`;}
  function breakdown(row,type){
    const collection=type!=='songs',known=row.score!=null;
-   const tones={elo:'standard',standard:'standard',blind:'blind',trivia:'recognition',tournament:'tournament',guesser:'guesser',shelves:'shelves',spotlight:'spotlight',neutral:'overall'};
+   const tones={elo:'standard',standard:'standard',blind:'blind',trivia:'recognition',tournament:'tournament',guesser:'guesser',shelves:'shelves',neutral:'overall'};
    const modes=(row.contributions||[]).map(c=>({...c,adjusted:c.display_score??c.score,allocated:c.display_weight??c.weight,contribution:c.display_points??c.points,relative:c.display_evidence??c.evidence}));
    if(row.neutral_balance)modes.push({...row.neutral_balance,key:'neutral',label:'Neutral share',adjusted:row.neutral_balance.score,allocated:row.neutral_balance.weight,contribution:row.neutral_balance.points,relative:null});
    const pointText=value=>value==null?'—':rounded(value)+' pts';

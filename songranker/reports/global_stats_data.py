@@ -208,22 +208,7 @@ def build_global_stats(conn):
         if r['available']>0 and abs(r['points']-r['available'])<1e-8:metrics.append(metric('Perfect','round','correct'))
         event('shelves',r['id'],shelf_times[r['id']],'Album Shelves',f"{len(r['song_ids'])} tracks · {round(r['accuracy'],1) if r['accuracy'] is not None else 0}% points",
               '/album_shelves_stats',related,metrics)
-    from songranker.modes.judgements import available, result, songs_for, MODES
-    if available(conn):
-        paths={'spotlight':'shared_spotlight','vibe':'vibe_map'}
-        for r in conn.execute("SELECT * FROM judgement_rounds WHERE status='answered' ORDER BY closed_at DESC,id DESC LIMIT 10"):
-            answer=result(conn,r); offered=songs_for(conn,r['id']); participants=[]
-            for song in offered:
-                participant=dict(saved_song(song['id']))
-                if song['id'] is None:participant.update(title=song['title'])
-                if r['mode']=='spotlight':participant['role']=str(answer['allocations'][song['slot']])+' points'
-                participants.append(participant)
-            detail=(str(sum(answer['allocations']))+' points awarded') if r['mode']=='spotlight' else str(len(answer['maps']))+' maps placed'
-            event(r['mode'],r['id'],r['closed_at'],MODES[r['mode']].NAME,detail,
-                '/'+paths[r['mode']]+'_stats#round-history',participants,[metric(detail,'result')])
     activity.sort(key=lambda e:(-e['timestamp'],e['kind'],-e['id']))
-    from songranker.reports.judgement_stats_data import overview
-    mode_updates={mode:overview(conn,mode) for mode in ('spotlight','vibe')}
     return attach_reports(conn, dict(elo_summary=elo_summary(conn),total_songs=len(songs),total_artists=len(artists),total_albums=len(proper),total_matches=len(history),
         mode_totals=[dict(label='Trivia rounds',value=trivia_total,kind='recognition'),dict(label='Tournaments',value=tournament['total'],kind='tournament'),
             dict(label='Elo Guesser rounds',value=guess['rounds'],kind='guesser'),dict(label='Shelves rounds',value=shelf['rounds'],kind='shelves')],
@@ -231,7 +216,7 @@ def build_global_stats(conn):
         elo_distribution=elo,average_elo=round(sum(s['elo_score'] for s in songs.values())/len(songs)) if songs else None,
         unplayed=sum(not votes[sid]['matches'] for sid in songs),audio_previews=sum(bool(str(s['audio_url'] or '').strip()) for s in songs.values()),
         week_votes=sum(timestamp(h['created_at'])>=datetime.now(timezone.utc).timestamp()-7*86400 for h in history),
-        recognition=recognition,tournament=tournament,guess=guess,shelf=shelf,mode_updates=mode_updates,
+        recognition=recognition,tournament=tournament,guess=guess,shelf=shelf,
         top_artists=sorted(artist_rows,key=lambda a:(-a['avg_elo'],-a['songs'],a['name'].casefold()))[:5],
         top_albums=sorted(album_rows,key=lambda a:(-a['avg_elo'],-a['songs'],a['title'].casefold()))[:5],
         top_tags=tag_rows[:10],tag_count=len(tags),recent_activity=activity[:10]), 'global')

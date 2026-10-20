@@ -24,7 +24,3 @@ node_modules/
 /database_snapshot.txt
 /current_elo_rankings.txt
 # database_backup.sql is intentionally eligible for explicit backup uploads.
-
-# V5.1 disposable test copies and process locks
-data/safe_mode/
-*.app.lock

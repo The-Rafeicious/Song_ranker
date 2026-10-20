@@ -50,7 +50,7 @@ class DeveloperSystemTests(unittest.TestCase):
             r=self.client.get('/api/dev/system');fetch.assert_not_called()
         self.assertEqual(r.status_code,200);self.assertEqual(before,capture(self.conn))
         rows={r['name']:r for r in r.json['inventory']}
-        self.assertEqual(len(rows),41);self.assertEqual(rows['custom notes']['group'],'Extensions')
+        self.assertEqual(len(rows),35);self.assertEqual(rows['custom notes']['group'],'Extensions')
         self.assertEqual(rows['custom view']['role'],'Derived / read-only')
         self.assertEqual(rows['preference_mode_ratings']['role'],'Rebuildable projection')
         self.assertEqual(rows['songs']['rows'],10);self.assertEqual(r.json['integrity'],'ok')
@@ -91,7 +91,7 @@ class DeveloperSystemTests(unittest.TestCase):
     def test_restore_review_is_read_only_and_binds_backup_and_live_state(self):
         p=self.backup();before=self.current();r=self.review(p)
         self.assertEqual(r['live']['Songs'],10);self.assertEqual(r['backup']['Songs'],10)
-        self.assertEqual(r['target_schema'],18);self.assertEqual(before,self.current())
+        self.assertEqual(r['target_schema'],15);self.assertEqual(before,self.current())
         token=system.signer().loads(r['review_token']);self.assertEqual(token['kind'],'restore')
         self.assertIn('backup',token);self.assertIn('live',token)
 

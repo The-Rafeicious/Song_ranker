@@ -45,7 +45,7 @@ def git_payload(state=None):
 def git_reply(result):
     result=dict(result);result['git']=git_payload(result.pop('git',None))
     result['status']='success' if result['ok'] else 'error'
-    status=200 if result['ok'] else 409 if result['code'] in ('busy','stale_target','pending_code','behind','diverged','operation_in_progress','safe_mode') else 502
+    status=200 if result['ok'] else 409 if result['code'] in ('busy','stale_target','pending_code','behind','diverged','operation_in_progress') else 502
     return jsonify(result),status
 
 
@@ -62,8 +62,6 @@ def git_check():
 
 
 def upload_database():
-    if services.runtime.safe:
-        return jsonify(message='Git upload is disabled in safe mode. Test results stay in the test copy.'),409
     data=request.get_json(silent=True)
     try:
         if not isinstance(data,dict):raise ValueError('Open the Git panel before uploading.')
@@ -116,7 +114,6 @@ def area(name,kind):
     if name=='competition_state':return 'Competition'
     if name=='listening_observations':return 'Listening analysis'
     if name=='elo_guess_rounds':return 'Elo Guesser'
-    if name.startswith(('judgement_','spotlight_','vibe_')):return 'V5.1 mode judgements'
     if name in ('challenge_runs','global_stats'):return 'Runs and records'
     if name in ('songs','albums','artists','genres','song_artists','song_genres','song_sources','song_details'):return 'Catalogue'
     return 'Extensions'
@@ -152,7 +149,7 @@ def counts(db):
     tables={r[0] for r in db.execute("SELECT name FROM sqlite_master WHERE type IN ('table','view')")}
     result={}
     for label,table in [('Songs','songs'),('Artists','artists'),('Releases','albums'),('Tags','genres'),('Preferences','preference_events'),
-        ('Trivia rounds','trivia_rounds'),('Guesser rounds','elo_guess_rounds'),('Shelf rounds','album_shelf_rounds'),('Tournaments','tournaments'),('V5.1 judgements','judgement_rounds')]:
+        ('Trivia rounds','trivia_rounds'),('Guesser rounds','elo_guess_rounds'),('Shelf rounds','album_shelf_rounds'),('Tournaments','tournaments')]:
         if table in tables:result[label]=db.execute('SELECT COUNT(*) FROM '+quote(table)).fetchone()[0]
     return result
 

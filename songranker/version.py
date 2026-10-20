@@ -1,2 +1,2 @@
 """Single version source for the footer and shared asset cache keys."""
-APP_VERSION = '5.1.2.3'
+APP_VERSION = '5.0.3.1'

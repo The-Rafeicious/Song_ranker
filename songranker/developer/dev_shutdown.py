@@ -49,8 +49,6 @@ def stop_status():
 def stop_prepare():
     data=request.get_json(silent=True);browser=owner()
     if not isinstance(data,dict) or type(data.get('sync_git')) is not bool:return jsonify(message='Choose whether to upload to Git.'),400
-    if services.runtime.safe and data['sync_git']:
-        return jsonify(message='Safe mode can stop with a local test backup only. Turn off Git upload.'),409
     now=time.monotonic()
     with _attempt_lock:
         for key,(_,stamp) in list(_attempts.items()):

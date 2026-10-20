@@ -10,7 +10,7 @@
   node.title=date.toLocaleString();
  }
  const activity=document.getElementById('global-activity');
- const modes={standard:['--standard','Standard Vote'],blind:['--blind','Blind Audition'],recognition:['--recognition','Trivia'],tournament:['--tournament','Tournament'],guesser:['--guesser','Elo Guesser'],shelves:['--shelves','Album Shelves'],spotlight:['--spotlight','Shared Spotlight'],vibe:['--vibe','Vibe Map']};
+ const modes={standard:['--standard','Standard Vote'],blind:['--blind','Blind Audition'],recognition:['--recognition','Trivia'],tournament:['--tournament','Tournament'],guesser:['--guesser','Elo Guesser'],shelves:['--shelves','Album Shelves']};
  function themeActivity(){
   if(!activity)return;
   const counts={};for(const row of activity.querySelectorAll('[data-activity-kind]')){

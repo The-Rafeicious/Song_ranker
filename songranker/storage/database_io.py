@@ -18,7 +18,6 @@ import tempfile
 from threading import Lock
 
 from songranker.storage.database_schema import (SCHEMA_VERSION, create_objects, definitions, table_columns)
-from songranker.storage.safe_mode import assert_writable
 
 EXPORT_FORMAT = 'song-ranker-database/1'
 
@@ -267,7 +266,6 @@ def create_backup(filename, prefix='manual'):
         raise ValueError('Invalid backup prefix.')
     path = Path(filename).resolve(strict=True)
     directory = path.parent / 'database_backups'
-    assert_writable(directory)
     directory.mkdir(exist_ok=True)
     backup = directory / f'{prefix}_{datetime.now().strftime("%Y%m%d_%H%M%S_%f")}.db'
     with readonly(path) as source:
@@ -291,7 +289,6 @@ def create_rolling_backup(filename):
     """
     path=Path(filename).resolve(strict=True)
     directory=path.parent/'database_backups'
-    assert_writable(directory)
     with _rolling_lock:
         if directory.is_symlink():raise DatabaseValidationError('Backup folder must not be a symbolic link.')
         directory.mkdir(exist_ok=True)
@@ -345,7 +342,6 @@ def audit(filename):
 
 def publish(candidate, output):
     """Atomically publish a new file; never overwrite an existing destination."""
-    assert_writable(output)
     output = Path(output)
     try:
         os.link(candidate, output)
@@ -354,7 +350,6 @@ def publish(candidate, output):
 
 
 def write_export(filename, output):
-    assert_writable(output)
     with snapshot(filename) as conn:
         validate(conn)
         state = capture(conn)
@@ -380,7 +375,6 @@ def read_export(filename):
 
 def rebuild(state, output):
     """Build/compact a new database, never the active file or a supplied backup."""
-    assert_writable(output)
     output = Path(output).resolve()
     with tempfile.TemporaryDirectory(dir=output.parent, prefix='.rebuild_') as folder:
         candidate = Path(folder) / 'candidate.db'
@@ -391,6 +385,7 @@ def rebuild(state, output):
             conn.execute('BEGIN IMMEDIATE')
             populate(conn, state)
             conn.commit()
+            conn.execute('VACUUM')
             validate(conn)
         finally:
             conn.close()
@@ -402,7 +397,6 @@ def rebuild(state, output):
 
 def prepare_candidate(source, output):
     """Copy, migrate and validate a backup without touching source or live files."""
-    assert_writable(output)
     output = Path(output)
     if output.exists():
         raise DatabaseValidationError('Candidate output must be a new file.')
@@ -429,7 +423,6 @@ def restore_live_database(source, filename, *, expected_live=None, expected_back
     The gate covers the local Waitress process. For multi-process WSGI hosting,
     stop other workers before manual recovery (see docs/DATABASE.md).
     """
-    assert_writable(filename)
     from songranker.storage.database_access import gate
     filename = Path(filename).resolve(strict=True)
     with gate.maintenance():

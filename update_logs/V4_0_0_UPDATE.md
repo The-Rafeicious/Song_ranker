@@ -428,7 +428,7 @@ remained intact; current first-round influence, frozen answers, classic streaks
 and grading stayed correct. Export/rebuild reconciled all state and reproduced
 seeded draws. The original and working database files remain unchanged.
 
-The optional [experiment kit](../tools/selection_lab/README.md) ships with its
+The optional [experiment kit](../docs/archive/SELECTION_LAB_V4.md) ships with its
 anonymous feature snapshot and separate QA requirement. Classic-mode difficulty
 is unchanged by the offline future-stage tests. UI/audio pacing still follows
 step 8, and real desktop/phone/audio play remains a combined release gate.

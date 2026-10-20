@@ -16,14 +16,12 @@ from songranker import services
 from songranker.services import (app, admin_required)
 from songranker.catalog import (collection, proper_album)
 
-VERSION=8
-# Five equally based families. Spotlight shares the preference family with the
-# three correlated voting views; it is not a second full preference family.
-MODE_SPECS=[('elo','Elo',4),('standard','Non-blind voting',3),('blind','Blind voting',3),
+VERSION=6
+# Five equally based game families. Voting's three correlated views share 20%.
+MODE_SPECS=[('elo','Elo',8),('standard','Non-blind voting',6),('blind','Blind voting',6),
             ('trivia','Recognisability',20),('tournament','Tournament',20),
-            ('guesser','Elo Guesser',20),('shelves','Album Shelves',20),
-            ('spotlight','Shared Spotlight',10)]
-FAMILIES={'voting':('elo','standard','blind','spotlight'),'trivia':('trivia',),
+            ('guesser','Elo Guesser',20),('shelves','Album Shelves',20)]
+FAMILIES={'voting':('elo','standard','blind'),'trivia':('trivia',),
           'tournament':('tournament',),'guesser':('guesser',),'shelves':('shelves',)}
 # Within-mode policy weights. Derived duplicate totals are explained in Dev.
 METRICS=[('elo_current','elo','Current Elo',.85,'elo'),('elo_peak','elo','Peak Elo',.15,'elo'),
@@ -35,8 +33,7 @@ METRICS=[('elo_current','elo','Current Elo',.85,'elo'),('elo_peak','elo','Peak E
  ('tournament_points','tournament','Points per completed entry / 7',.25,'rate'),
  ('guess_accuracy','guesser','Correct comparisons',1,'rate'),
  ('shelf_order','shelves','Relative track order',5/6,'rate'),
- ('shelf_album','shelves','Album placement',1/6,'rate'),
- ('spotlight_support','spotlight','Spotlight support',1,'rate')]
+ ('shelf_album','shelves','Album placement',1/6,'rate')]
 NEUTRAL=50.0
 RATE_MIX=dict(actual=.6,population=.4)
 _models=OrderedDict()
@@ -97,7 +94,6 @@ def features(data):
             for key in ('champion_id','runner_up_id','third_place_id'):
                 if t.get(key):entries[t[key]].add(t['id'])
     result={}
-    spotlight=data.get('overall_sources',{}).get('judgements',{}).get('spotlight',{})
     for song in data.get('songs',[]):
         sid=song['id'];v=song.get('voting',{});t=trivia.get(sid,song)
         elo_n=max(number(song.get('matches_played')),number(v.get('matches')))
@@ -124,13 +120,11 @@ def features(data):
           'guess_accuracy':ratio(song.get('guess_correct'),song.get('guess_attempts')),
           'shelf_order':ratio(song.get('shelf_order_right'),song.get('shelf_order_pairs'),evidence=song.get('shelf_attempts',0),applicable=sid in shelf_ids),
           'shelf_album':ratio(song.get('shelf_album_correct'),song.get('shelf_attempts'),applicable=sid in shelf_ids),
-          'spotlight_support':feature(spotlight.get(sid,{}).get('mean_support'),spotlight.get(sid,{}).get('offers',0),applicable=audio_available),
         }
         result[sid]['mode_appearances']=dict(elo=elo_n,standard=number(v.get('standard_matches')),
             blind=number(v.get('blind_matches')),trivia=max(title_n,perfect[sid][1]),
             tournament=max(len(entries[sid]),number(song.get('tournament_appearances'))),
-            guesser=number(song.get('guess_attempts')),shelves=number(song.get('shelf_attempts')),
-            spotlight=number(spotlight.get(sid,{}).get('offers')))
+            guesser=number(song.get('guess_attempts')),shelves=number(song.get('shelf_attempts')))
     return result
 
 def quantile(values,fraction):
@@ -213,12 +207,6 @@ def calibrate(facts,data,force=False):
         mode['depth_factor']=average/(average+depth_reference) if average else 0
         mode['support']=math.sqrt(mode['participation'])*mode['depth_factor']
     family_strengths={family:sum(m['base_weight']*m['support'] for m in modes if m['key'] in members)/20 for family,members in FAMILIES.items()}
-    # Correlated preferences do not add two families' worth of support. Taking
-    # the stronger supported view preserves V5.0 weights when Spotlight is idle
-    # and avoids a sudden family-wide penalty after the very first new round.
-    family_strengths['voting']=max(
-        sum(m['base_weight']*m['support'] for m in modes if m['key'] in ('elo','standard','blind'))/10,
-        next(m['support'] for m in modes if m['key']=='spotlight'))
     active_families=sum(value>0 for value in family_strengths.values())
     cap=min(1,1/active_families+.1) if active_families else 1
     shares=capped_shares(family_strengths,cap)
@@ -233,29 +221,14 @@ def calibrate(facts,data,force=False):
                 metric['overall_weight']=mode['weight']*metric['mode_share']
     families=[dict(key=family,base_weight=20,weight=100*shares.get(family,0),support=strength,active=strength>0)
               for family,strength in family_strengths.items()]
-    context=[]
-    judgements=data.get('overall_sources',{}).get('judgements',{})
-    for key,label in [('vibe','Vibe Map')]:
-        eligible={s['id'] for s in data.get('songs',[]) if str(s.get('audio_url') or '').strip()}
-        counts=judgements.get('descriptors',{}).get(key,{})
-        tested={sid:n for sid,n in counts.items() if sid in eligible and n>0}
-        reference=exposure_reference(list(tested.values()))
-        participation=len(tested)/len(eligible) if eligible else 0
-        average=reference['average_appearances']
-        context.append(dict(key=key,label=label,role='descriptive',weight=0,score_weight=0,
-            active=bool(tested),eligible_songs=len(eligible),tested_songs=len(tested),
-            participation=participation,appearances=sum(tested.values()),**reference,
-            adaptive_support=math.sqrt(participation)*average/(average+depth_reference) if average and depth_reference else math.sqrt(participation)/2 if average else 0,
-            explanation='Describes songs; no objective correctness or preference-quality score.'))
-    identity=hashlib.sha256(json.dumps([VERSION,RATE_MIX,observed,modes,shape,context],sort_keys=True).encode()).hexdigest()[:16]
+    identity=hashlib.sha256(json.dumps([VERSION,RATE_MIX,observed,modes,shape],sort_keys=True).encode()).hexdigest()[:16]
     with _lock:
         previous=_models.get(key)
         if previous and previous['id']==identity and not force:return previous
         model=dict(id=identity,version=VERSION,generated_at=time.time(),topology=shape,modes=modes,metrics=observed,
                    families=families,rate_mix=RATE_MIX,group_prior_songs=2,neutral_score=NEUTRAL,
                    depth_reference=depth_reference,family_cap=100*cap,score_scale='composite percentage',
-                   refresh_after_seconds=0,refresh_threshold='every change to saved results or eligibility',
-                   context_modes=context,preference_policy='One family; stronger supported view sets family depth; adaptive within-family shares')
+                   refresh_after_seconds=0,refresh_threshold='every change to saved results or eligibility')
         _models[key]=model;_models.move_to_end(key)
         while len(_models)>8:_models.popitem(last=False)
         return model
@@ -387,8 +360,7 @@ def evaluate(data,force=False,details=False):
     highlights={kind:next((r for r in rows if r['score'] is not None and r.get('eligible',True)),None) for kind,rows in result.items()}
     measured=[s for s in result['songs'] if s['score'] is not None]
     summary=dict(average=sum(s['score'] for s in measured)/len(measured) if measured else None,tested_songs=len(measured),songs=len(result['songs']),
-                 evidence=sum(s['evidence'] for s in result['songs'])/len(result['songs']) if result['songs'] else 0,active_modes=sum(m['active'] for m in model['modes']),
-                 descriptive_modes=model['context_modes'])
+                 evidence=sum(s['evidence'] for s in result['songs'])/len(result['songs']) if result['songs'] else 0,active_modes=sum(m['active'] for m in model['modes']))
     return dict(entities=result,highlights=highlights,summary=summary,calibration=model)
 
 @app.route('/overall_rankings')

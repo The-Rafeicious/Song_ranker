@@ -2,7 +2,7 @@
 window.RoundFlow=(()=>{
  'use strict';
  const key='songRankerPlaySettings',TTL=60000,clock=()=>performance.now();
- const durations={spotlightPreview:[20000,10000],spotlightResult:[3500,1800],spotlightSettle:[1200,700],pairResult:[4500,2200],tournamentPoints:[2800,1600],tournamentFirst:[7500,4400],triviaResult:[5500,2800],guessClip:[2800,1700],
+ const durations={pairResult:[4500,2200],tournamentPoints:[2800,1600],tournamentFirst:[7500,4400],triviaResult:[5500,2800],guessClip:[2800,1700],
   shelfClose:[420,160],shelfTrack:[2600,1000],shelfTransfer:[1250,450],score:[1100,320],triviaFlip:[1550,600]};
  let settings={pace:'standard',prepare:true},entry=null,closed=false;
  const timers=new Set(),aborted=()=>Object.assign(Error('Next round cancelled'),{name:'AbortError'});

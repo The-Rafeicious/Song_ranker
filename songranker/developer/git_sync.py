@@ -96,8 +96,6 @@ class GitSync:
         except (OSError,ValueError,TypeError):return []
 
     def record(self,result):
-        from songranker.storage.safe_mode import assert_git_allowed
-        assert_git_allowed()
         result=dict(result,at=stamp());events=[result,*self.history()][:10]
         self.state_dir.mkdir(exist_ok=True)
         with tempfile.NamedTemporaryFile(dir=self.state_dir,mode='w',encoding='utf-8',delete=False) as f:
@@ -110,8 +108,7 @@ class GitSync:
         except ValueError:db_rel=None
         return (path.casefold() in {db_rel,(db_rel or '')+'-wal',(db_rel or '')+'-shm',(db_rel or '')+'-journal'}
             or name.endswith(('.db','.sqlite','.sqlite3','.pyc','-wal','-shm','-journal'))
-            or bool(parts&{'instance','database_backups','safe_mode','__pycache__','.venv','venv','node_modules','.pytest_cache'})
-            or name.endswith('.app.lock')
+            or bool(parts&{'instance','database_backups','__pycache__','.venv','venv','node_modules','.pytest_cache'})
             or name in {'database_snapshot.txt','current_elo_rankings.txt','.env'}
             or any(s.startswith(('.restore_','.export_')) for s in p.parts))
 
@@ -164,10 +161,6 @@ class GitSync:
             history=self.history(),snapshot=dict(name='database_backup.sql',exists=self.sql.is_file(),bytes=self.sql.stat().st_size if self.sql.is_file() else 0))
 
     def status(self):
-        from songranker.storage.safe_mode import assert_git_allowed, SafeModeError
-        try:assert_git_allowed()
-        except SafeModeError as error:
-            return dict(ok=False,state='safe_mode',code='safe_mode',configured=False,message=str(error))
         try:return self.inspect()
         except SyncError as error:return dict(available=False,state=error.code,message=str(error),history=self.history() if self.gitdir else [])
 
@@ -176,10 +169,6 @@ class GitSync:
             '+refs/heads/'+state['target']+':refs/remotes/'+state['remote']+'/'+state['target'],network=True)
 
     def check(self):
-        from songranker.storage.safe_mode import assert_git_allowed, SafeModeError
-        try:assert_git_allowed()
-        except SafeModeError as error:
-            return dict(ok=False,action='check',code='safe_mode',message=str(error),git=self.status())
         try:
             self.discover()
             with self.lock():
@@ -205,8 +194,6 @@ class GitSync:
         return dest
 
     def write_snapshot(self):
-        from songranker.storage.safe_mode import assert_git_allowed
-        assert_git_allowed()
         if not self.database.is_file():raise SyncError('database_missing','The live database does not exist. Start/restore the app before uploading a backup.')
         if self.sql.is_symlink():raise SyncError('linked_snapshot','The SQL snapshot is a symbolic link. Use a normal file before syncing.')
         from songranker.storage.database_io import (snapshot, validate, sql_dump)
@@ -226,10 +213,6 @@ class GitSync:
         finally:Path(name).unlink(missing_ok=True)
 
     def upload(self,expected=None):
-        from songranker.storage.safe_mode import assert_git_allowed, SafeModeError
-        try:assert_git_allowed()
-        except SafeModeError as error:
-            return dict(ok=False,action='upload',code='safe_mode',message=str(error),git=self.status())
         commit=None
         try:
             self.discover()
@@ -265,10 +248,6 @@ class GitSync:
 
     def startup(self):
         """Called only before application imports, while the server is stopped."""
-        from songranker.storage.safe_mode import assert_git_allowed, SafeModeError
-        try:assert_git_allowed()
-        except SafeModeError as error:
-            return dict(ok=False,action='startup',code='safe_mode',message=str(error))
         sql_copy=None;modified_sql=False;applying=False;backup=None
         try:
             self.discover()

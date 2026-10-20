@@ -165,6 +165,3 @@ body.site-style-baseline #main .metadata a {
   body.site-style-baseline #main .global-stats-page > .panel { padding: 18px; }
   body.site-style-baseline #main .global-podium .small-art { --stats-art-size: 72px; }
 }
-
-/* V5.1: launch identity stays visible on every test page. */
-.safe-mode-banner{display:flex;align-items:center;gap:14px;max-width:1360px;margin:18px auto;padding:16px 24px;border:1px solid #ffb833;border-radius:18px;background:#272319;color:#f5f5f5;font:16px/1.45 Arial,Helvetica,sans-serif}.safe-mode-banner strong{color:#ffb833;white-space:nowrap;font-weight:900}.safe-mode-banner span{min-width:0;overflow-wrap:anywhere}@media(max-width:760px){.safe-mode-banner{margin:14px 18px;padding:14px 18px;align-items:flex-start;flex-direction:column;gap:6px}}
