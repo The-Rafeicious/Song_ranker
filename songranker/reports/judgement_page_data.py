@@ -32,8 +32,8 @@ def build_judgement_page(conn, mode, *, history_page=1, track_page=1, map_key='m
             song.update(songs.get(song['id'], dict(artist_links=[], album_link=None)))
 
     if mode == 'spotlight':
-        for row in details['leaders']:
-            row['song'] = songs[row['song_id']]
+        from songranker.reports.spotlight_dashboard_data import enrich_spotlight
+        enrich_spotlight(conn, data, songs)
         counts = dict(conn.execute('''SELECT a.points,COUNT(*) FROM spotlight_allocations a
             JOIN judgement_rounds r ON r.id=a.round_id WHERE r.status='answered' GROUP BY a.points'''))
         peak = max(counts.values(), default=0)

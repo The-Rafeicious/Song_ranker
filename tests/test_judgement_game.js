@@ -32,7 +32,7 @@ async function harness(mode, {draft, hook, rulesVersion = 1} = {}) {
   };
   w.Listening = {start(){},sample(){sampleCount++;return {version:1,decision_ms:1000,songs:[]};}};
   w.RoundFlow = {
-    duration:name=>({spotlightPreview:20000,spotlightResult:2000,spotlightSettle:700}[name] || 4500),
+    duration:name=>({spotlightPreview:20000,spotlightResult:3500,spotlightSettle:1200}[name] || 4500),
     take(name,loader){const value=prepared;prepared=null;return value || loader();},
     prepare(name,loader){prepared=loader();prepared.catch(()=>{});},
     after(callback){const task={callback,cancelled:false};timers.push(task);return ()=>task.cancelled=true;},
@@ -200,7 +200,9 @@ async function delayedSelectionAndResults() {
   const order=[0,1,2,3].sort((a,b)=>receipt[b]-receipt[a]||a-b);
   equal(h.plays.slice(before),['judgement-audio-'+order[0]],'Result playback starts with the highest point score');
   check(h.find('[data-spotlight-card="'+order[0]+'"]').classList.contains('is-result-playing'));
-  await h.advance(8000);
+  await h.advance(13999);
+  check(h.timers.length===0,'The longer final preview must finish before advancing');
+  await h.advance(1);
   equal(h.plays.slice(before),order.map(slot=>'judgement-audio-'+slot),'Results visit score order once');
   check([...h.d.querySelectorAll('audio')].every(audio=>audio.paused),'Results stop after the last snippet');
   check(h.timers.length===1,'Only completed result sequence schedules the next round');
@@ -307,10 +309,10 @@ async function actualPacing() {
     {url:'http://localhost/shared_spotlight',runScripts:'outside-only',pretendToBeVisual:true});
   const w=dom.window;w.eval(source('round_flow.js'));
   equal(w.RoundFlow.duration('spotlightPreview'),20000,'Real Standard pacing supplies twenty seconds');
-  equal(w.RoundFlow.duration('spotlightResult'),2000);
+  equal(w.RoundFlow.duration('spotlightResult'),3500);
   const select=w.document.getElementById('round-pace');select.value='quick';select.dispatchEvent(new w.Event('change',{bubbles:true}));
   equal(w.RoundFlow.duration('spotlightPreview'),10000,'Real Quick setting supplies ten seconds');
-  equal(w.RoundFlow.duration('spotlightResult'),1000);
+  equal(w.RoundFlow.duration('spotlightResult'),1800);
   w.dispatchEvent(new w.StorageEvent('storage',{key:'songRankerPlaySettings',newValue:'{"pace":"standard"}'}));
   equal(w.RoundFlow.duration('spotlightPreview'),20000,'Cross-tab setting changes update the duration');
   w.dispatchEvent(new w.Event('pagehide'));w.close();

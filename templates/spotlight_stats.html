@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% from 'stats_visuals.html' import pulse, listening_panel %}
+{% from 'components.html' import art %}
+{% from 'mode_stats_components.html' import figure, number, progress, metadata, saved_date %}
+{% from 'judgement_components.html' import identity %}
+{% macro decimal(value) -%}{{ '%.1f'|format(value) if value is not none else '—' }}{%- endmacro %}
+{% macro tracks(rows,metric) -%}
+<ol class="mode-stats-list mode-stats-dense" data-spotlight-record="{{ metric }}">
+{% for row in rows[:5] %}<li class="mode-stats-row">
+  <span class="mode-stats-art">{{ art(row.song.cover_url) }}</span>
+  <div class="mode-stats-copy"><a class="song mode-stats-name" href="{{ url_for('song_page',song_id=row.song.id) }}" title="{{ row.song.title }}">{{ row.song.title }}</a>{{ metadata(row.song) }}</div>
+  <div class="mode-stats-result">
+    {% if metric=='support' %}<strong>{{ decimal(100*row.adjusted_support) }}<small>%</small></strong><span>Adjusted support</span>
+    {% elif metric=='points' %}<strong>{{ decimal(row.mean_points) }}<small> / 12</small></strong><span>Mean points / track</span>
+    {% elif metric=='connection' %}<strong>{{ decimal(row.mean_connection) }}<small>%</small></strong><span>Mean connection</span>
+    {% else %}<strong>{{ row.offers }}</strong><span>Rounds judged</span>{% endif %}
+    <span>{{ row.points }} points · {{ row.offers }} rounds</span>
+    {% if metric=='connection' %}<span>{{ row.connection_offers }} saved placements</span>{% elif metric!='points' %}<span>{{ decimal(row.mean_points) }} / 12 mean points</span>{% endif %}
+  </div>
+</li>{% else %}<li class="empty">No qualifying records yet.</li>{% endfor %}
+</ol>
+{%- endmacro %}
+{% macro categories(rows,kind,metric) -%}
+<ol class="mode-stats-list mode-stats-dense">
+{% for row in rows[:5] %}<li class="mode-stats-row">
+  <span class="mode-stats-art">{{ art(row.cover_url,kind=='artist') }}</span>
+  <div class="mode-stats-copy">
+    {% if kind=='artist' %}{% set href=url_for('artist_page',artist_name=row.name) %}{% elif kind=='album' %}{% set href=url_for('album_page',album_title=row.name) %}{% else %}{% set href=url_for('tag_page',tag_name=row.name) %}{% endif %}
+    <a class="{{ kind }} mode-stats-name" title="{{ row.name }}" href="{{ href }}">{{ row.name }}</a><span>{{ row.tracks }} judged tracks</span>
+  </div>
+  <div class="mode-stats-result"><strong>{{ decimal(100*row.mean_support)+'%' if metric=='support' else row.offers }}</strong><span>{{ 'Mean support' if metric=='support' else 'Track appearances' }}</span><span>{{ row.points }} points · {{ decimal(row.mean_points) }} / 12 mean</span></div>
+</li>{% else %}<li class="empty">No qualifying records yet.</li>{% endfor %}
+</ol>
+{%- endmacro %}
+{% block title %}Shared Spotlight Stats · Song Ranker{% endblock %}
+{% block page_kind %}spotlight_stats{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/mode_stats.css',v=app_version) }}"><link rel="stylesheet" href="{{ url_for('static',filename='css/judgement_modes.css',v=app_version) }}">{% endblock %}
+{% block content %}
+{% set score=details.scoring %}
+<div class="judgement-stats mode-stats-page judgement-spotlight" style="--judgement-color:var(--spotlight)">
+  <div class="page-head"><h1>Shared Spotlight Stats</h1><a class="btn" href="{{ play_url }}">Play Shared Spotlight →</a></div>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="spotlight-overview">
+    <div class="section-head"><h2 id="spotlight-overview">Spotlight overview</h2></div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{ figure('Rounds saved',summary.rounds) }}{{ figure('Points awarded',score.points) }}{{ figure('Mean points / round',decimal(score.mean_round)) }}{{ figure('Tracks judged',summary.tested_songs) }}</dl>
+    <p class="mode-stats-caption">0–12 points per track · up to 24 per connecting round · {{ score.track_samples }} judged appearances</p>
+    <div class="mode-stats-comparisons">
+      <div class="mode-stats-inset"><h3>Connecting rounds</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Rounds',score.connecting_rounds) }}{{ figure('Saved placements',score.connection_samples) }}</dl><p class="mode-stats-caption">Points reflect connection and differences within each offer.</p></div>
+      <div class="mode-stats-inset"><h3>Scoring range</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Lowest round',number(score.lowest_round)) }}{{ figure('Highest round',number(score.highest_round)) }}</dl><p class="mode-stats-caption">{{ score.legacy_rounds }} legacy rounds retain their fixed 12-point shares.</p></div>
+    </div>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="spotlight-connection">
+    <div class="section-head"><h2 id="spotlight-connection">Connection &amp; points</h2></div>
+    <div class="mode-stats-comparisons">
+      <div class="mode-stats-inset mode-stats-rate"><h3>Mean connection</h3><strong class="mode-stats-primary">{{ decimal(score.mean_connection) }}{% if score.mean_connection is not none %}%{% endif %}</strong>{{ progress('Mean saved connection',score.mean_connection) }}<p>{{ score.connection_samples }} saved placements · connecting rounds only</p><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Not connecting · 0%',score.not_connecting) }}{{ figure('Really connecting · 100%',score.really_connecting) }}</dl></div>
+      <div class="mode-stats-inset"><h3>Points per track</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Mean / 12',decimal(score.mean_track)) }}{{ figure('Zero-point results',score.zero_points) }}{{ figure('12-point results',score.full_points) }}</dl><p class="mode-stats-caption">{{ score.track_samples }} scored appearances · legacy and connecting rounds</p></div>
+    </div>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="spotlight-records">
+    <div class="section-head"><h2 id="spotlight-records">Track records</h2></div>
+    <p class="mode-stats-caption">Five tracks per list · support adjusts for evidence; points and connection show saved averages.</p>
+    <div class="mode-stats-comparisons">{% for record in details.records %}<div class="mode-stats-inset"><h3>{{ record.title }}</h3>{{ tracks(record.rows,record.metric) }}</div>{% endfor %}</div>
+  </section>
+  {{ listening_panel(listening_data) }}
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="spotlight-activity">
+    <div class="section-head"><h2 id="spotlight-activity">Spotlight activity</h2></div>
+    <dl class="joined-metrics mode-stats-metrics">{{ figure('Active days',summary.active_days) }}{{ figure('Busiest day rounds',details.activity.busiest_rounds) }}{{ figure('Rounds / active day',decimal(details.activity.mean_day)) }}</dl>
+    {{ pulse(pulse_data,false) }}
+    <p class="mode-stats-caption">Busiest date: {{ details.activity.busiest_day or '—' }} UTC · First round: {{ saved_date(details.activity.first) }} · Latest: {{ saved_date(details.activity.latest) }}</p>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="spotlight-coverage">
+    <div class="section-head"><h2 id="spotlight-coverage">Collection coverage</h2></div>
+    <dl class="joined-metrics mode-stats-metrics">{{ figure('Playable tracks judged',summary.eligible_tested) }}{{ figure('Still to try',summary.still_to_try) }}{{ figure('Recent skips',summary.recent_skips) }}</dl>
+    <div class="mode-stats-inset mode-stats-rate"><h3>Current preview pool</h3><strong class="mode-stats-primary">{{ decimal(summary.coverage) }}{% if summary.coverage is not none %}%{% endif %}</strong>{{ progress('Current preview-pool coverage',summary.coverage) }}<p>{{ summary.eligible_tested }} / {{ summary.eligible_songs }} playable tracks judged</p></div>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="spotlight-distribution">
+    <div class="section-head"><h2 id="spotlight-distribution">Point distribution</h2></div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{ figure('Mean points / track',decimal(score.mean_track)) }}{{ figure('Lowest points',number(score.lowest)) }}{{ figure('Highest points',number(score.highest)) }}{{ figure('Scored appearances',score.track_samples) }}</dl>
+    <div class="mode-stats-inset"><div class="judgement-distribution" role="img" aria-label="Points assigned per track{% for row in details.distribution %}; {{ row.points }} points: {{ row.count }} appearances{% endfor %}">{% for row in details.distribution %}<div><span>{{ row.count }}</span><i style="height:{{ row.height }}%"></i><b>{{ row.points }}</b></div>{% endfor %}</div><p class="mode-stats-caption">Saved points per track · zero points and ties included · all scoring versions</p></div>
+  </section>
+  {% for category in details.categories %}<section class="panel dashboard-surface mode-stats-panel" aria-labelledby="spotlight-{{ category.kind }}">
+    <div class="section-head"><h2 id="spotlight-{{ category.kind }}">{{ category.title }}</h2></div>
+    <div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3>Most appearances</h3>{{ categories(category.most,category.kind,'offers') }}</div><div class="mode-stats-inset"><h3>Highest mean support · 5+ appearances</h3>{{ categories(category.best,category.kind,'support') }}</div></div>
+  </section>{% endfor %}
+  <section class="panel dashboard-surface mode-stats-panel" id="round-history"><div class="section-head"><h2>Round history</h2><span class="mode-stats-caption">{{ summary.rounds }} saved rounds</span></div>
+    {% for row in history %}<details class="mode-stats-inset judgement-history"><summary><span class="judgement-history-title">{% if mode=='vibe' %}{{ row.songs[0].title }}{% else %}Round #{{ row.id }} · {{ row.allocations|join(' / ') }}{% endif %}</span>{{ saved_date(row.date) }}</summary>
+      <div class="judgement-history-body">{% if mode=='spotlight' %}<p>{{ 'Connecting bar · up to 24 points' if row.rules_version==2 else 'Legacy shares · fixed 12 points' }} · Points awarded: {{ row.allocations|sum }}</p>{% endif %}{% for song in row.songs %}<div class="judgement-history-song">{{ identity(song,true) }}{% if mode=='spotlight' %}<strong>{{ row.allocations[song.slot] }} / 12 points{% if row.rules_version==2 %} · {{ row.positions[song.slot] }}% connection{% endif %}</strong>{% endif %}</div>{% endfor %}
+      {% if mode=='vibe' %}<ul class="judgement-map-receipt">{% for placement in row.maps %}{% set definition=(details.maps|selectattr('key','equalto',placement.map)|first) %}<li><strong>{{ definition.label }}</strong><span>{{ definition.x.label }} {{ placement.x }} / 4 · {{ definition.y.label }} {{ placement.y }} / 4</span></li>{% endfor %}</ul><p>Tags: {% if row.themes is not defined %}not reviewed{% elif not row.themes %}reviewed, none selected{% else %}{{ row.themes|map(attribute='label')|join(', ') }}{% endif %}</p>{% endif %}</div>
+    </details>{% else %}<div class="empty">No saved rounds yet.</div>{% endfor %}
+    {% if history_pages>1 %}<nav class="judgement-pagination" aria-label="Round history pages">{% if history_page>1 %}<a class="btn" href="{{ url_for('judgement_stats_page',mode=mode,history_page=history_page-1,map=selected_map.key if selected_map is defined else none,q=query|default(none),track_page=track_page|default(none)) }}#round-history">← Newer</a>{% endif %}<span>Page {{ history_page }} / {{ history_pages }}</span>{% if history_page<history_pages %}<a class="btn" href="{{ url_for('judgement_stats_page',mode=mode,history_page=history_page+1,map=selected_map.key if selected_map is defined else none,q=query|default(none),track_page=track_page|default(none)) }}#round-history">Older →</a>{% endif %}</nav>{% endif %}
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel"><details class="stats-notes"><summary>How these figures work</summary>
+    <p>Connecting positions run from 0 to 1. Points round half-up from max(0, min(12, 6 × position + 8 × (position − group average))). The 24-point round ceiling is not a target: equal 0%, 50% and 100% positions earn 0, 3 and 6 points per track.</p>
+    <p>Support uses 3 × points / (12 + 2 × points). Adjusted support moves lightly tested tracks toward 50%. Each completed offer contributes one observation per track. Artist, album and tag support pools those track observations; collaborations and multiple tags can appear in more than one group. Every record list shows at most five entries.</p>
+    <p>Legacy rounds retain their original fixed 12-point interpretation. Their connection is unknown and excluded from connection averages. Totals, point averages, distribution and history retain saved results for removed tracks; leaderboards and category records use the current catalogue. Three points map to 50% support. Spotlight contributes to Overall's preference family; public Elo stays based on matches.</p>
+    <p>Activity uses UTC. Skipped rounds are excluded from scoring and retained for seven days. Listening counts playback before saved decisions. History remains paged, with ten rounds per page.</p>
+  </details></section>
+</div>
+{% endblock %}

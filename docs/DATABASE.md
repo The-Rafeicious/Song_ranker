@@ -1,12 +1,22 @@
 # V5 database dictionary
 
-**V3 competition database · schema 18 · application V5.1.2.2**
+**V3 competition database · schema 18 · application V5.1.2.3**
 
 The active default is `data/song_ranker_v3.db`. The schema registry is
 [data/schema.sql](../data/schema.sql); this dictionary is derived from it.
 There are 34 stored tables, five views, 27 explicit indexes and nine triggers.
 IDs/relationships and exact catalogue values survive first transfer; old results
 do not. See [UPGRADE_V5.md](UPGRADE_V5.md) for the catalogue whitelist and backup.
+
+## V5.1.2.3: expanded read-only Spotlight dashboard
+
+Schema remains 18. Point totals/means/ranges include every saved allocation,
+including removed tracks; connection aggregates use original saved positions
+from rules-version-2 rounds only. Legacy connection is unknown. Track and
+artist/album/tag record lists use current catalogue memberships and stop at five.
+Category support pools track observations; a collaboration or multiple tags
+can contribute to more than one separate group. Reports add no stored totals,
+cache tables, background updates or new migration.
 
 ## V5.1.2.2: connecting-bar facts and flexible points
 

@@ -43,7 +43,8 @@ def judgement_stats_page(mode):
         data = build_judgement_page(conn, mode, history_page=history_page,
             track_page=track_page, map_key=request.args.get('map', 'mood'),
             query=request.args.get('q', '')[:200])
-        response = app.make_response(render_template('judgement_stats.html', **data,
+        template = 'spotlight_stats.html' if mode == 'spotlight' else 'judgement_stats.html'
+        response = app.make_response(render_template(template, **data,
             mode=mode, mode_name=MODES[mode].NAME, play_url=PATHS[mode],
             stats_url=PATHS[mode]+'_stats'))
         response.headers['Cache-Control'] = 'no-store'
