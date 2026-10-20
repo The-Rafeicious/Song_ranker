@@ -74,7 +74,7 @@ class DeveloperSystemTests(unittest.TestCase):
         self.assertEqual(before,read_export(p));self.assertEqual(before,capture(self.conn))
 
     def test_guide_is_downloaded_without_disclosing_other_files(self):
-        docs=Path(self.temp.name)/'docs';docs.mkdir();(docs/'DATABASE.md').write_text('# Recovery guide')
+        docs=Path(self.temp.name)/'docs';docs.mkdir();(docs/'TECHNICAL_GUIDE.md').write_text('# Recovery guide')
         r=self.client.get('/api/dev/database/guide');self.assertEqual(r.data,b'# Recovery guide')
         self.assertIn('attachment',r.headers['Content-Disposition']);r.close()
 
@@ -164,3 +164,4 @@ class DeveloperSystemTests(unittest.TestCase):
 
 
 if __name__=='__main__':unittest.main()
+

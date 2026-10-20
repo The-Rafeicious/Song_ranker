@@ -78,13 +78,18 @@ window.DevCatalog=(()=>{
 
  function reviewAlbumImport(){
   const tracks=rows.filter(r=>!r.added),tags=U.selectedTags().join(', ');
-  open('Add album',`<h3 class="album">${esc(tracks[0]?.album||'Album')}</h3><p>Untick any songs you do not want to add. Library matches are unticked by default.</p><div style="max-height:50vh;overflow:auto">${tracks.map(r=>`<label class="catalog-check" style="min-height:44px"><input type="checkbox" data-album-import-id="${r.id}" ${matches(r).length?'':'checked'}><span><strong class="song">${esc(r.title)}</strong><span class="artist"> · ${esc(r.artist)}</span>${matches(r).length?' · Library match':''}</span></label>`).join('')}</div><p class="catalog-note">Tracks keep their album and source positions. Selected tags apply to every added track.</p><button class="btn primary" type="button" data-album-import-save>Add selected songs</button><p id="album-import-status" role="status"></p><p id="editor-error" class="dialog-error" role="alert" tabindex="-1" hidden></p>`,{type:'album-import',tracks,tags});
+  open('Add album',`<h3 class="album">${esc(tracks[0]?.album||'Album')}</h3><p>Untick any songs you do not want to add. Library matches are unticked by default.</p><div class="catalog-actions"><button class="btn" type="button" data-album-import-all>Select new songs</button><button class="btn" type="button" data-album-import-none>Clear selection</button><strong id="album-import-count" role="status"></strong></div><div class="catalog-album-tracks">${tracks.map(r=>`<label class="catalog-check"><input type="checkbox" data-album-import-id="${r.id}" ${matches(r).length?'':'checked'}><span><strong class="song">${esc(r.title)}</strong><span class="artist"> · ${esc(r.artist)}</span>${matches(r).length?' · Library match':''}</span></label>`).join('')}</div><p class="catalog-note">Tracks keep their album and source positions. Selected tags apply to every added track.</p><button class="btn primary" type="button" data-album-import-save>Add selected songs</button><p id="album-import-status" role="status"></p><p id="editor-error" class="dialog-error" role="alert" tabindex="-1" hidden></p>`,{type:'album-import',tracks,tags});updateAlbumSelection();
+ }
+ function updateAlbumSelection(){
+  if(dialogState?.type!=='album-import')return;
+  const count=$$('[data-album-import-id]:checked').filter(n=>!n.disabled).length;
+  const label=$('#album-import-count');if(label)label.textContent=count+' selected';
  }
  async function saveAlbumImport(){
   const state=dialogState;if(state?.type!=='album-import'||mutating)return;
   const selected=$$('[data-album-import-id]:checked').map(n=>state.tracks.find(r=>r.id===Number(n.dataset.albumImportId))).filter(r=>r&&!r.added);
   if(!selected.length){error('Select at least one new track.');return}
-  const gen=dialogGeneration;mutating=true;state.busy=true;
+  const gen=dialogGeneration;mutating=true;state.busy=true;const errorNode=$('#editor-error');if(errorNode)errorNode.hidden=true;$('#album-import-status').textContent='Adding '+selected.length+' songs…';
   $$('#editor-fields button, #editor-fields input').forEach(n=>n.disabled=true);
   let saved=0,failure='';
   try{
@@ -101,7 +106,7 @@ window.DevCatalog=(()=>{
    const message=`${saved} of ${selected.length} songs saved.${failure?' '+failure:''}${refreshFailed?' Reload to refresh the catalogue.':''}`;
    if(gen===dialogGeneration){
     if(!failure)$('#editor').close();
-    else{$$('#editor-fields button, #editor-fields input').forEach(n=>n.disabled=false);$$('[data-album-import-id]').forEach(n=>{if(state.tracks.find(r=>r.id===Number(n.dataset.albumImportId))?.added){n.checked=false;n.disabled=true}});error(message)}
+    else{$$('#editor-fields button, #editor-fields input').forEach(n=>n.disabled=false);$$('[data-album-import-id]').forEach(n=>{if(state.tracks.find(r=>r.id===Number(n.dataset.albumImportId))?.added){n.checked=false;n.disabled=true}});updateAlbumSelection();error(message)}
    }
    U.toast(message);
   }
@@ -216,6 +221,7 @@ window.DevCatalog=(()=>{
  }
  document.addEventListener('click',e=>{const b=e.target.closest('button');if(!U||!b||b.disabled)return;
   if(b.hasAttribute('data-album-import-save'))saveAlbumImport();
+  if((b.hasAttribute('data-album-import-all')||b.hasAttribute('data-album-import-none'))&&!mutating&&dialogState?.type==='album-import'){for(const n of $$('[data-album-import-id]'))if(!n.disabled)n.checked=b.hasAttribute('data-album-import-all')&&!matches(dialogState.tracks.find(r=>r.id===Number(n.dataset.albumImportId))).length;updateAlbumSelection()}
   if(b.dataset.catalogReview)review(Number(b.dataset.catalogReview));
   if(b.dataset.catalogSource)openSource(Number(b.dataset.catalogSource));
   if(b.dataset.catalogSingle)openSingle(Number(b.dataset.catalogSingle));
@@ -238,6 +244,7 @@ window.DevCatalog=(()=>{
   if(b.dataset.catalogPreview)preview(Number(b.dataset.catalogPreview));
  });
  document.addEventListener('change',e=>{if(!U)return;const n=e.target;
+  if(n.hasAttribute('data-album-import-id'))updateAlbumSelection();
   if(n.id==='keep-import')keep=n.checked;if(n.id==='show-apple-matches'){showMatches=n.checked;limit=20;renderResults()}
   if(n.id==='apple-as-single')asSingle=n.checked;
   if(n.id==='catalog-refresh-source'){const album=$('#catalog-use-album');album.disabled=!n.checked;if(!n.checked)album.checked=false}
@@ -247,3 +254,4 @@ window.DevCatalog=(()=>{
  return {bindUI:ui=>U=ui,renderImport,search,add,ensureSources,sourceText,contentText,sourceValue,summaryMarkup,
   releaseDialog,openSource,openSingle,openAlbum,renderResults,startSourceBatch,resetSourceBatch:()=>{sourceBatch=null}};
 })();
+

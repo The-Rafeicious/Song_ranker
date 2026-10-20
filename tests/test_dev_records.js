@@ -1,0 +1,12 @@
+const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM}=require('jsdom');
+const dom=new JSDOM('<main id="root"></main>',{runScripts:'outside-only'}),w=dom.window,d=w.document;
+w.eval(fs.readFileSync('static/js/ui.js','utf8'));w.eval(fs.readFileSync('static/js/dev_records.js','utf8'));
+const tournaments=Array.from({length:65},(_,i)=>({id:i+1,size:8,scope_type:'global',status:i%2?'completed':'in_progress',champion_id:1}));
+w.DevRecords.bindUI({title:t=>'<h2>'+t+'</h2>',root:()=>d.querySelector('#root'),data:()=>({tournaments,history:[]}),records:()=>[{id:1,title:'Winner'}],clipped:w.SongRankerUI.esc,matchRow:()=>''});
+let n=0;const check=(v,m)=>{assert.ok(v,m);n++};
+w.DevRecords.render('tournaments');check(d.querySelectorAll('tbody tr').length===30,'initial page bounded');
+d.querySelector('[data-dev-record-more]').click();check(d.querySelectorAll('tbody tr').length===60,'more renders next page');
+const q=d.querySelector('input');q.value='#65';q.dispatchEvent(new w.Event('input',{bubbles:true}));check(d.querySelectorAll('tbody tr').length===1&&d.querySelector('tbody').textContent.includes('#65'),'search includes later pages');
+q.value='';q.dispatchEvent(new w.Event('input',{bubbles:true}));const filter=d.querySelector('select');filter.value='completed';filter.dispatchEvent(new w.Event('change',{bubbles:true}));check(d.querySelector('#dev-record-count').textContent.includes('32 matching'),'status filter counts all matches');
+w.DevRecords.render('history');check(d.querySelector('#dev-record-list').textContent.includes('No matching'),'empty history labelled');
+console.log(n+' developer record assertions passed');w.close();

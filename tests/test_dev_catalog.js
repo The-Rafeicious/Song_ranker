@@ -50,8 +50,8 @@ async function harness(view='import',width=1280){
   }
   throw Error('Unexpected request '+url);
  };
- w.Overall={bindUI(){}};w.eval(source('ui.js'));w.eval(source('special_modes.js'));w.eval(source('dev_catalog.js'));
- await w.eval(source('site.js').replace('window.DevCatalog?.bindUI(',"window.testDev={setView:v=>{devView=v;renderDevView()},editRecord};window.DevCatalog?.bindUI("));await flush();
+ w.Overall={bindUI(){}};w.eval(source('ui.js'));w.eval(source('special_modes.js'));w.eval(source('dev_catalog.js'));w.eval(source('dev_metadata.js'));w.eval(source('dev_records.js'));
+ await w.eval(source('site.js').replace('window.DevCatalog?.bindUI(',"window.testDev={refreshData,setView:v=>{devView=v;renderDevView()},editRecord};window.DevCatalog?.bindUI("));await flush();
  const click=s=>{const n=d.querySelector(s);assert.ok(n,'missing '+s);n.click();return n};
  const change=(selector,value)=>{const n=d.querySelector(selector);n.checked=value;n.dispatchEvent(new w.Event('change',{bubbles:true}))};
  const search=async(q='Artist query')=>{d.querySelector('#apple-query').value=q;await w.DevCatalog.search();await flush()};
@@ -237,7 +237,7 @@ async function moveAndTableChecks(width){
 async function albumImportChecks(){
  const h=await harness(),{w,d,requests}=h;
  await h.search('https://music.apple.com/us/album/example/8001');
- check(d.querySelector('#editor-title').textContent==='Add album','album link opens checklist');
+ check(d.querySelector('#editor-title').textContent==='Add album','album link opens checklist');check(d.querySelectorAll('#editor-error').length===1,'album dialog has one error owner');
  check(!d.querySelector('[data-album-import-id="1"]').checked&&!d.querySelector('[data-album-import-id="2"]').checked,'library matches start unchecked');
  d.querySelectorAll('[data-album-import-id]').forEach(n=>n.checked=false);
  h.click('[data-album-import-save]');await flush();
@@ -266,6 +266,25 @@ async function albumImportChecks(){
  check(!rd.querySelector('#editor').open,'successful retry closes popup');retry.dom.window.close();
 }
 
-(async()=>{await albumImportChecks();await importChecks();await sourceChecks();await navigationChecks();await addNavigationCheck();await sourcePersistenceChecks();await sourceRefreshChecks();await bulkSourceChecks();for(const width of [320,360,390,430,568,768,1280])await moveAndTableChecks(width);
+
+async function polishChecks(){
+ const h=await harness('bulk'),{w,d}=h;
+ for(let id=3;id<=80;id++)h.data.songs.push({...h.data.songs[0],id,title:'Extra '+id});
+ await w.testDev.refreshData();w.testDev.setView('bulk');
+ check(d.querySelectorAll('[data-bulk-song]').length===50,'bulk selection starts at fifty rows');
+ check(d.querySelector('[data-bulk-apply]').disabled,'bulk action disabled without selection');
+ h.click('[data-bulk-more]');check(d.querySelectorAll('[data-bulk-song]').length===80,'more exposes remaining bulk rows');
+ h.change('[data-bulk-song="1"]',true);check(!d.querySelector('[data-bulk-apply]').disabled,'selection enables bulk action');
+ const q=d.querySelector('#bulk-query');q.value='Extra 80';q.dispatchEvent(new w.Event('input',{bubbles:true}));
+ check(d.querySelector('#bulk-count').textContent.includes('1 selected outside filters'),'hidden selection count is explicit');
+ w.testDev.editRecord('songs',1);
+ h.handler((url,opts)=>url==='/api/dev/edit_song/1'?{status:'success',message:'Saved'}:url==='/api/collection'?{status:500,body:{message:'Refresh failed'}}:undefined);
+ d.querySelector('#editor-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await flush();
+ check(!d.querySelector('#editor').open&&d.querySelector('#toast').textContent.startsWith('Saved.'),'confirmed edit is distinguished from refresh failure');
+ check(h.errors.length===0,'polished bulk/editor flows have no browser errors');h.dom.window.close();
+}
+
+(async()=>{await polishChecks();await albumImportChecks();await importChecks();await sourceChecks();await navigationChecks();await addNavigationCheck();await sourcePersistenceChecks();await sourceRefreshChecks();await bulkSourceChecks();for(const width of [320,360,390,430,568,768,1280])await moveAndTableChecks(width);
  if(process.env.DEV_CATALOG_SNAPSHOTS)fs.writeFileSync(process.env.DEV_CATALOG_SNAPSHOTS,JSON.stringify(snapshots));console.log(assertions+' developer catalogue assertions passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
+

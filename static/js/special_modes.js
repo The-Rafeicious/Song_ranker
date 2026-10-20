@@ -284,7 +284,6 @@ window.SpecialModes=(()=>{
  }
  document.addEventListener('click',async e=>{
    $$('.shelf-picker[open]').forEach(picker=>{if(!picker.contains(e.target))picker.open=false;});
-   $$('.shelf-picker[open]').forEach(picker=>{if(!picker.contains(e.target))picker.open=false;});
    if(!U)return;const b=e.target.closest('button');if(!b||b.disabled)return;
    if(b.dataset.guessPick)await answerGuess(Number(b.dataset.guessPick));
    if(b.hasAttribute('data-guess-next'))await loadGuess();
@@ -297,7 +296,7 @@ window.SpecialModes=(()=>{
    if(b.hasAttribute('data-shelf-next')&&shelf?.revealComplete)await loadShelf(true);
    if(b.dataset.specialEntity){rankingState.type=b.dataset.specialEntity;renderModeRanking(rankingState.mode);}
    if(b.dataset.specialView){rankingState.bottom=b.dataset.specialView==='bottom';renderModeRanking(rankingState.mode);}
-   if(b.dataset.removeSpecial){if(!confirm('Delete this saved round? A database backup will be created.'))return;try{await U.api('/api/dev/special-round/'+b.dataset.removeSpecial+'/'+b.dataset.round,{});await U.refreshData();await renderDevRecords(devRecordMode);U.toast('Round deleted');}catch(error){U.toast(error.message);}}
+   if(b.dataset.removeSpecial){if(!confirm('Delete this saved round? Create a backup first if you need a restore point.'))return;try{await U.api('/api/dev/special-round/'+b.dataset.removeSpecial+'/'+b.dataset.round,{});await U.refreshData();await renderDevRecords(devRecordMode);U.toast('Round deleted');}catch(error){U.toast(error.message);}}
  });
  document.addEventListener('input',e=>{if(e.target.dataset.modeHistorySearch){const mode=e.target.dataset.modeHistorySearch,q=e.target.value.toLowerCase().trim();$$(`[data-special-history="${mode}"]`).forEach(r=>r.hidden=!r.dataset.historyQuery.includes(q));}});
  document.addEventListener('focusout',e=>{const picker=e.target.closest('.shelf-picker');if(picker&&!picker.contains(e.relatedTarget))picker.open=false;});
@@ -326,3 +325,4 @@ window.SpecialModes=(()=>{
  window.addEventListener('pageshow',e=>{if(e.persisted&&U){reveal.closed=false;guessBusy=false;guessLoading=false;shelfBusy=false;if(document.body.dataset.page==='guesser')loadGuess();if(document.body.dataset.page==='shelves'){if(shelf?.answered){if(!shelf.revealComplete){shelf.revealed.clear();renderShelfBoard();shelfBusy=true;revealShelfRound().catch(error=>U.toast(error.message));}}else loadShelf();}}});
  return {bindUI:ui=>U=ui,panels,homeSummary,homeBanners,loadGuess,loadShelf,renderModeRanking,renderDevRecords,cancelGuess:()=>{guessRequest++;guessBusy=false;},totals};
 })();
+

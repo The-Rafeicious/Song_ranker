@@ -114,7 +114,7 @@ def plan(conn,change):
 
 
 def apply_memberships(conn,review):
-    """Caller owns BEGIN IMMEDIATE and the safety backup. Touch only deltas."""
+    """Caller owns BEGIN IMMEDIATE. Apply only the reviewed membership deltas."""
     ids={}
     for row in review['rows']:
         for tag in row['after']:
@@ -127,3 +127,4 @@ def apply_memberships(conn,review):
         for tag in row['added']:
             conn.execute('INSERT OR IGNORE INTO song_genres(song_id,genre_id) VALUES(?,?)',(row['song_id'],ids[tag['key']]))
     return [dict(id=ids['new:'+normalized(name)],name=name) for name in review['new_tags']]
+

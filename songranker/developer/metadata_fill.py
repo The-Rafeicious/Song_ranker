@@ -336,7 +336,6 @@ def apply_plan(filename, plan):
         for row in plan.get('sources',[]):
             conflict=source_conflict(conn,row['id'],row['source'])
             if conflict:raise ValueError('An Apple identity is already linked to another song. Scan again.')
-        backup_path = None  # Routine edits do not create backups.
         for track in plan['tracks']:
             conn.execute('UPDATE songs SET track_number=? WHERE id=? AND (track_number IS NULL OR TRIM(track_number)=\'\')',
                          (track['value'],track['id']))
@@ -352,7 +351,7 @@ def apply_plan(filename, plan):
             save_source(conn,row['id'],dict(source=row['source'],observed_at=time.time()))
         conn.commit()
         plan['applied'] = True
-        plan['backup'] = str(backup_path) if backup_path else None
+        plan['backup'] = None  # Routine edits do not create backups.
         for row in plan['dates']:
             if row['status'] == 'proposed':
                 row['status'] = 'filled'
@@ -365,7 +364,7 @@ def apply_plan(filename, plan):
 
 
 def text_report(plan):
-    lines = ['SONG RANKER V4.1.3 — METADATA FILL',
+    lines = ['SONG RANKER — METADATA FILL',
              'Applied' if plan['applied'] else 'Dry run — no metadata written',
              'Track numbers ' + ('filled: ' if plan['applied'] else 'proposed: ') + str(len(plan['tracks'])),
              'Track failures: ' + str(len(plan['track_failures']))]
@@ -390,3 +389,4 @@ def text_report(plan):
     lines += ['', 'SONG METADATA FAILURES']
     lines += [f"Song #{r['id']} {r['title']} | {r['reason']}" for r in plan.get('metadata_failures',[])]
     return '\n'.join(lines)+'\n'
+

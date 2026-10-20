@@ -493,3 +493,14 @@ tab. Three slots do not limit Git commit history or old/update recovery archives
 
 See [Apple Music](APPLE_MUSIC.md) for song/album links, the album checklist,
 source review versus import, metadata/preview request limits and error handling.
+
+
+## V5.0.4 developer maintenance
+
+[The developer audit](UPGRADE_V5_0_4.md) maps each tool to its current workflow.
+Artist/album/tag mutations share catalogue validation and transaction cleanup.
+The old overview response reuses current inventory and backup discovery, keeping
+its response shape for clients. Bulk catalogue mutations accept up to 500
+positive integer IDs. The interface uses reviewed restore and Git tools; older
+backend aliases remain compatible. Developer-only assets load from one template
+include; metadata polling and archive paging have separate script owners.

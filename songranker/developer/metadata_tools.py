@@ -53,7 +53,10 @@ def metadata_scan():
         if request.method == 'POST':
             if _job and _job['state'] in ('scanning','applying'):
                 return jsonify(message='A metadata task is already running.'),409
-            country = (request.get_json(silent=True) or {}).get('country','gb')
+            data = request.get_json(silent=True)
+            if not isinstance(data,dict):
+                return jsonify(message='Send a metadata task as an object.'),400
+            country = data.get('country','gb')
             if not isinstance(country,str) or len(country)!=2 or not country.isascii() or not country.isalpha():
                 return jsonify(message='Choose a two-letter Apple store code.'),400
             _job = {'token':token_urlsafe(24),'state':'scanning','done':0,'total':0,'album':'',
@@ -107,3 +110,4 @@ def scan_report(token):
             report += '\nAPPLY ERROR: '+_job['error']+'\n' 
     return Response(report,content_type='text/plain; charset=utf-8',headers={
         'Content-Disposition':'attachment; filename="metadata_fill_report.txt"','Cache-Control':'no-store'})
+

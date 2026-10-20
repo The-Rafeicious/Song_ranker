@@ -1,5 +1,4 @@
 """Authenticated import/source review, album inspection and atomic Singles moves."""
-import os
 from flask import jsonify,request
 
 from songranker.services import (app, admin_required, get_db_connection, get_song_full, create_database_backup, get_or_create_album)
@@ -143,3 +142,4 @@ def song_single(song_id):
     except ValueError as error:
         conn.rollback();return jsonify(message=str(error)),400
     finally:conn.close()
+

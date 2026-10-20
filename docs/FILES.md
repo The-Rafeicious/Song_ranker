@@ -107,3 +107,10 @@ experiments and V4 shadow comparisons were retired in favour of the current V5
 benchmark and regression suite.
 One browser tracker/server writer/report macro handles the new listening feature.
 There are no compatibility copies of the moved root modules.
+
+
+V5.0.4 adds `static/js/dev_metadata.js` for metadata task state/polling and
+`static/js/dev_records.js` for searchable developer history/archive lists.
+`templates/dev_assets.html` owns Dev stylesheet/script declarations.
+`tools/validate_dev_pages.py` runs the disposable served-page DOM/HTTP checks;
+its companion is `tests/test_dev_pages.js` (requires Node and jsdom).

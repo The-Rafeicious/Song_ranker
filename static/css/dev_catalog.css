@@ -58,3 +58,10 @@ body[data-page=dev] .catalog-source-choices > summary:focus-visible { outline:2p
 body[data-page=dev] .catalog-selected { border:1px solid var(--song); scroll-margin-top:16px; }
 body[data-page=dev] .catalog-selected > h3 { color:var(--song); }
 body[data-page=dev] [data-catalog-source-select][aria-pressed=true] { border-color:var(--song); color:var(--song); }
+
+
+/* Album checklist uses the same bounded, keyboard-friendly catalogue rows. */
+body[data-page=dev] .catalog-album-tracks { max-height:50vh; overflow:auto; overscroll-behavior:contain; scrollbar-gutter:stable; display:grid; gap:8px; }
+body[data-page=dev] .catalog-album-tracks .catalog-check { padding:10px 12px; border:1px solid var(--line); border-radius:12px; background:#242424; }
+body[data-page=dev] .catalog-album-tracks .catalog-check:has(:checked) { border-color:var(--song); }
+body[data-page=dev] .catalog-album-tracks .catalog-check > span { min-width:0; overflow-wrap:anywhere; }

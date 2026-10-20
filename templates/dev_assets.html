@@ -1,0 +1,17 @@
+{# Developer-only assets; shared ui.js loads before these deferred modules. #}
+{% macro styles() %}
+<link rel="stylesheet" href="{{url_for('static',filename='css/preference_admin.css',v=app_version)}}">
+<link rel="stylesheet" href="{{url_for('static',filename='css/dev_catalog.css',v=app_version)}}">
+<link rel="stylesheet" href="{{url_for('static',filename='css/dev_tags.css',v=app_version)}}">
+<link rel="stylesheet" href="{{url_for('static',filename='css/dev_system.css',v=app_version)}}">
+{% endmacro %}
+{% macro scripts() %}
+<script src="{{url_for('static',filename='js/dev_controls.js',v=app_version)}}" defer></script>
+<script src="{{url_for('static',filename='js/dev_catalog.js',v=app_version)}}" defer></script>
+<script src="{{url_for('static',filename='js/dev_metadata.js',v=app_version)}}" defer></script>
+<script src="{{url_for('static',filename='js/dev_records.js',v=app_version)}}" defer></script>
+<script src="{{url_for('static',filename='js/dev_tags.js',v=app_version)}}" defer></script>
+<script src="{{url_for('static',filename='js/dev_system.js',v=app_version)}}" defer></script>
+<script src="{{url_for('static',filename='js/dev_selection.js',v=app_version)}}" defer></script>
+<script src="{{url_for('static',filename='js/preference_admin.js',v=app_version)}}" defer></script>
+{% endmacro %}

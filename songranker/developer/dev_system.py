@@ -218,7 +218,7 @@ def full_export():
 @app.route('/api/dev/database/guide')
 @admin_required
 def database_guide():
-    return send_file(Path(services.ROOT)/'docs'/'DATABASE.md',as_attachment=True,download_name='Song_Ranker_Database_Guide.md',max_age=0)
+    return send_file(Path(services.ROOT)/'docs'/'TECHNICAL_GUIDE.md',as_attachment=True,download_name='Song_Ranker_Technical_Guide.md',max_age=0)
 
 
 @app.route('/api/dev/selection-health')
@@ -274,3 +274,4 @@ def require_v3_backup(path):
         exists=conn.execute("SELECT 1 FROM sqlite_master WHERE name='competition_state'").fetchone()
         if not exists or not conn.execute('SELECT 1 FROM competition_state WHERE id=1 AND generation=3').fetchone():
             raise DatabaseValidationError('This is a V2 archive. V5 restores accept V3 competition backups; retain the V2 archive for catalogue recovery.')
+
