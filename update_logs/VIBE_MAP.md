@@ -1,5 +1,80 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.1 — coverage-first song selection
+
+Added the pure picker beside the other mode selectors in
+`songranker/modes/selection.py`, with its read-only database adapter beside the
+other pool readers in `songranker/modes/selection_data.py`. Schema stays 17,
+map definition version stays 1, and the app version stays V5.0.5.1.
+
+### Selection policy
+
+`choose_vibe_song(songs, rng, counts=..., previous=...)` draws one distinct song.
+It reuses the existing adaptive exposure probabilities: pool-relative shortfall
+support, the uniform exploration floor and the bounded, decaying new-song boost.
+Only completed **Vibe Map** counts matter; Elo, trivia attempts, tournament
+appearances, ratings and missing previews do not influence eligibility or counts.
+
+- While any song has zero completed passes, allocate 95% of probability to that
+  least-completed group and 5% to the adaptive distribution over the whole pool.
+  A single untouched song therefore retains at least 95% probability even among
+  thousands of songs already mapped once or twice.
+- After first coverage, allocate 75% to the least-completed group and 25% to the
+  whole adaptive distribution. This helps later passes stay close together.
+- Within each distribution, the previous song receives a 0.25 multiplier. This
+  discourages repeats without excluding the only unfinished song or blocking
+  one-song libraries. When all counts match, selection reduces to the existing
+  adaptive distribution with that soft recency adjustment.
+- Every eligible song retains a positive probability. This is a coverage bias,
+  not a hard quota or a guarantee that no song can repeat before another is seen.
+  Empty pools return None; duplicate IDs are counted once. Injecting a seeded
+  random generator makes a draw reproducible for tests.
+
+`vibe_song(conn, counts=..., previous=..., rng=...)` reads the library, attaches
+the shared age/map metadata, draws, then hydrates the selected song using
+`get_song_full()`. It returns all four independent map slots. The adapter does
+not create an offer, reserve a song, record an exposure, or save any result.
+
+Schema 17 currently stores placements, not a completed-round counter. For now,
+the adapter projects an incomplete four-map pass as 0 and a fully resolved pass
+as 1. A placed or explicitly not-applicable slot is resolved; an unmapped slot
+is unfinished. A partly completed song remains in the first-pass group until
+all four slots are resolved. A future round controller can pass actual saved
+counts (0, 1, 2, ...) through the same interface; supplied entries override the
+projection and omitted entries keep it. Timestamps are not used to invent repeat
+counts. The adapter cannot distinguish one completed pass from two using only
+the current schema; persistence belongs to the gameplay stage.
+
+### Result storage rule for the later gameplay stage
+
+Keep one existing `(song_id,map_id)` row for the aggregate placement. Do not add
+an attempt table or append a new row for every play. The second placement updates
+each coordinate to the mean of the first and second values. Later placements
+must remain an equally weighted running mean, rather than repeatedly halving
+the old mean and the newest value:
+
+`new_mean = old_mean + (new_value - old_mean) / (sample_count + 1)`
+
+The future writer must persist a small sample count on that same aggregate row
+so it can compute the true mean and supply repeat counts to selection. Update
+the mean and count atomically and make retries idempotent. Unmapped and
+not-applicable decisions are not coordinate samples and must never be averaged
+as zero. Completion of the four-map pass and coordinate sample counts are
+different concepts, particularly when a map is not applicable; define their
+compact counters in the gameplay update. This patch records that contract but
+adds no saving script, schema migration, page, route or gameplay integration.
+
+Existing tournament/Elo selection and Overall calculations are unchanged; this
+new selection policy applies only when the future Vibe Map controller calls it.
+
+Validation: 52 focused tests passed, including 12 new selection tests covering
+coverage priority, adaptive age weights, recency, actual read-only draws and
+future repeat-count overrides. One historical preference migration method was
+excluded because its upstream schema_v9.sql fixture is absent. Across 100 seeded
+simulations, all 100 songs received a first pick in 100–105 draws (mean 102.23),
+incrementing counts after each simulated completion. This measures selection
+coverage, not a guarantee for abandoned rounds or gameplay that is not yet built.
+
 ## Vibe-Map-v1.0.0 — database and query foundation
 
 Implemented on `New-modes-test`, based on V5.0.5.1. The app version stays

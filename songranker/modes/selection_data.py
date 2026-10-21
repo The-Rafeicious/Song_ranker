@@ -28,6 +28,27 @@ def preference_pair(conn, mode, owner=None, rng=random):
     return tuple(dict(get_song_full(s['id'], conn)) for s in pair)
 
 
+def vibe_song(conn, *, counts=None, previous=None, rng=random):
+    """Read-only Vibe Map draw, ready for the later round controller.
+
+    With schema 17, an incomplete four-map pass is 0; four resolved slots are 1.
+    Explicit completed-round counts override that first-pass projection when a
+    future aggregate writer can provide them. Merely drawing never counts.
+    """
+    from songranker.modes.selection import choose_vibe_song
+    from songranker.services import get_song_full
+    from songranker.storage.vibe_state import MAPS
+    pool = with_catalogue_age(conn, conn.execute('SELECT id FROM songs ORDER BY id'))
+    completed = {
+        song['id']: int(all(song['vibe_maps'][key]['status'] in ('placed', 'not_applicable')
+                            for key, *_ in MAPS))
+        for song in pool}
+    if counts is not None:
+        completed.update(counts)
+    chosen = choose_vibe_song(pool, rng, counts=completed, previous=previous)
+    return get_song_full(chosen['id'], conn) if chosen is not None else None
+
+
 def previous_preference(conn, mode, owner=None):
     from songranker.modes.preferences import owner_hash
     previous = None
