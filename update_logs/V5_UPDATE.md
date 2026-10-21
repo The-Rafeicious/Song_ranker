@@ -1,5 +1,13 @@
 # V5 update log
 
+## V5.0.5.1 — clean Windows shutdown
+
+- Queue socket cleanup on Waitress's event-loop thread, avoiding WinError 10038
+  when Stop app closes sockets while the main thread is waiting in select().
+- Keep backup, optional Git upload, confirmation and failure recovery unchanged.
+- Cover event-loop cleanup for single and multiple listeners with real Waitress
+  regression tests; unexpected server errors continue to propagate.
+
 ## V5.0.5 — safe cross-computer database sync
 
 21 October 2026 · schema 16 retained.
