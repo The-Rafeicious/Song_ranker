@@ -2,7 +2,7 @@ name: Song Ranker tests
 on:
   pull_request:
   push:
-    branches: [codex/v5.1.2.2-connecting-bar]
+    branches: [main, New-modes-test]
 permissions:
   contents: read
 jobs:
@@ -23,4 +23,9 @@ jobs:
       - name: JavaScript regression
         if: always()
         run: |
-          for test in tests/test_*.js; do node "$test" || exit 1; done
+          for test in tests/test_*.js; do
+            case "$test" in
+              tests/test_dev_pages.js) python tools/validate_dev_pages.py ;;
+              *) node "$test" ;;
+            esac || exit 1
+          done
