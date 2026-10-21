@@ -28,6 +28,9 @@ def command(root,*args):
 class GitSyncTests(unittest.TestCase):
     def setUp(self):
         self.temp=TemporaryDirectory(dir=Path.cwd());self.addCleanup(self.temp.cleanup);self.folder=Path(self.temp.name)
+        # Nested fixtures must never discover the enclosing checkout (detached in CI).
+        isolation=patch.dict(os.environ, GIT_CEILING_DIRECTORIES=str(self.folder.resolve()))
+        isolation.start();self.addCleanup(isolation.stop)
         self.remote=self.folder/'remote.git';self.seed=self.folder/'seed';self.work=self.folder/'app'
         command(self.folder,'init','--bare','--initial-branch=main',str(self.remote))
         self.seed.mkdir();command(self.seed,'init','-b','main');self.identity(self.seed)
