@@ -1,14 +1,27 @@
-# Song Ranker — V4 complete update log
+# V4.0 release notes
+
+## V4.0.0 — overall release summary
+
+Immutable preference facts/replay, independent visibility Elo, challenge runs, adaptive selectors and reviewed developer recovery workflows; complete steps 1–8.
+
+**Historical reference.** Installation commands, schemas, validation totals and
+then-planned features below describe their original release. Expired setup
+instructions are no longer necessary for current installs; use the
+[current upgrade guide](../docs/UPGRADES.md). Exact repeated prose is recorded once.
+
+## Detailed updates
+
+### Song Ranker — V4 complete update log
 
 
-## V4.0.0 — completed release and step 8
+#### V4.0.0 — completed release and step 8
 
 **All eight implementation steps are complete.** This final release brings
 V3.4.13 directly to V4.0.0/schema 13. It includes all 7A/7B/7C work; no intermediate
 startup is required. This section is current; the patch sections below retain
 their historical decisions, validation counts and then-next steps.
 
-### Complete V4 change map
+##### Complete V4 change map
 
 | Area | Delivered behaviour |
 | --- | --- |
@@ -23,7 +36,7 @@ their historical decisions, validation counts and then-next steps.
 | Dashboard/recovery/Git | Task shortcuts, complete DB inventory, exact downloads, signed stale-aware restore, SQL-only upload, safe retry and startup-only guarded updates. |
 | Final experience/docs | Optional Quick pacing, one prepared question, continuous result display, hidden-tab handling, fewer full-library requests and reorganized documentation. |
 
-### Step 8 behaviour
+##### Step 8 behaviour
 
 - Shared **Round pacing** disclosure on Standard/Blind, Trivia, Tournament,
   Guesser and Shelves. Standard is the default; Quick is browser-local and
@@ -58,7 +71,7 @@ their historical decisions, validation counts and then-next steps.
   exact recovery/Git cases. Prior validation is preserved in its own history,
   with a concise current report. This log/index and roadmap now show completion.
 
-### Final packages and checks
+##### Final packages and checks
 
 **Completed App** contains the complete edited application, tests, all available
 release-family notes and guides, plus the supplied original DB unchanged. Extract
@@ -78,13 +91,13 @@ those remain installation play-tests. Full evidence is in
 [VALIDATION.md](../docs/VALIDATION.md).
 
 
-## V4.0.0.7.3 — step 7C: dashboard, recovery and Git
+#### V4.0.0.7.3 — step 7C: dashboard, recovery and Git
 
 **Cumulative patch: steps 1–7 over V3.4.13. Step 7 is complete.** Intermediate
 startup is unnecessary. Keep the live database, backups and private instance key.
 Schema remains **13**; there is no new dependency. New build: **4.0.0.7.3**.
 
-### Developer workflow
+##### Developer workflow
 
 - Default Tasks & health panel with shortcuts to Apple import, untagged songs,
   missing previews/source links, album inspection and bulk editing. Upload to
@@ -102,7 +115,7 @@ Schema remains **13**; there is no new dependency. New build: **4.0.0.7.3**.
   tabs. Multi-worker recovery remains offline; the prior authenticated restore
   endpoint stays compatible.
 
-### Git behaviour
+##### Git behaviour
 
 - Opening the panel reads local state. Check remote fetches references only.
   The destination/branch, cached incoming/local counts and ten recent app
@@ -129,7 +142,7 @@ Schema remains **13**; there is no new dependency. New build: **4.0.0.7.3**.
   Git metadata holds outcomes and at most ten updater SQL archives. User `.db`
   backups are retained. The [technical guide](../docs/DATABASE.md) covers cases.
 
-### Validation and next step
+##### Validation and next step
 
 **451 Python tests and 1,277 JavaScript assertions pass.** New coverage includes
 29 actual temporary-local Git tests, 19 dashboard/recovery HTTP tests and 88
@@ -145,13 +158,13 @@ and combined release checks. No new decision is required to begin; retain the
 accepted scoring, K32, optional faster pacing and no automatic fresh-round audio.
 
 
-## V4.0.0.7.2 — step 7B: tag and preview workbench
+#### V4.0.0.7.2 — step 7B: tag and preview workbench
 
 **Cumulative patch: steps 1–6 plus 7A/7B over V3.4.13.** No intermediate startup
 is required. Keep your database, backups and private instance key. Schema stays
 13; no dependency or table was added. **7C dashboard/Git controls is next.**
 
-### Find, listen and tag
+##### Find, listen and tag
 
 Editing → Tags & previews adds library-wide song/untagged/preview-URL counts,
 search, tag/preview status, artist/release and has/missing-specific-tag filters.
@@ -169,7 +182,7 @@ loop/advance. Leaving or hiding the workbench stops audio. Unsaved choices need
 review/reset or explicit discard before switching song. Source review stays
 available for checking a missing/bad preview.
 
-### Reviewed bulk changes
+##### Reviewed bulk changes
 
 Add keeps other tags; Remove changes only selected memberships; Replace uses
 exactly the chosen set, including an explicitly empty set. Existing tags are
@@ -191,7 +204,7 @@ saved answers and game records remain exact. Current tag-based reports follow
 their new memberships. Restore backup now accepts the new tag backup prefix and
 7A Singles/source-refresh backups. No review/audit table or grading change is added.
 
-### Validation
+##### Validation
 
 **403 Python tests and 1,189 JavaScript assertions pass**, including 30 new backend
 tag checks and 110 workbench assertions using the actual site/shared preview code.
@@ -204,7 +217,7 @@ Clean distribution overlay, direct upgrade and fresh-process recovery are checke
 Next: **7C dashboard polish, backup/Git task controls and clear sync outcomes**.
 No new user decision is required. Step 8 retains pacing and final combined checks.
 
-## V4.0.0.7.1 — step 7A: reviewed imports and easier Singles
+#### V4.0.0.7.1 — step 7A: reviewed imports and easier Singles
 
 **Cumulative patch: steps 1–6 plus 7A over V3.4.13.** Keep the app stopped until
 the remaining upgrades are ready if preferred. This is the first of step 7's
@@ -212,7 +225,7 @@ three subpatches: 7B tags/previews and 7C dashboard/Git remain. Schema 13 upgrad
 directly from 8–12 with a consistent backup and stored-fact reconciliation.
 No runtime dependency was added. Keep your database, backups and private key.
 
-### Import and version review
+##### Import and version review
 
 - Apple text searches request 100 tracks, album links up to 200. Duplicate Apple
   IDs are removed. Cards show twenty at a time, hiding library matches initially
@@ -229,7 +242,7 @@ No runtime dependency was added. Keep your database, backups and private key.
   Single skips the later manual album move. Requests use the existing Apple
   adapter/throttling; missing data and network errors are not fabricated away.
 
-### Sources, song dates and album work
+##### Sources, song dates and album work
 
 Songs have a Source action and Needs Apple source link filter. Source review
 shows local/current/candidate facts and saved observations. Saving a source
@@ -255,7 +268,7 @@ references/custom album rules. Repeated moves are harmless. Albums' Tracks actio
 provides an ordered quick check with dates, source flags, manual previews and
 Source/Make Single actions. The song editor has a separate release-date field.
 
-### Validation and next work
+##### Validation and next work
 
 373 Python tests and 1,079 JavaScript assertions pass. A supplied-data copy kept
 all 427 vote facts, classic best 221 and every saved game fact through linking,
@@ -268,14 +281,14 @@ Next is **7B: preview/tag inspection and bulk changes**, then **7C: dashboard,
 backup and Git controls**. No additional decision is needed before 7B. Step 8
 retains pacing, final documentation consolidation and combined real-device checks.
 
-## V4.0.0.6 — step 6: progressive Trivia and Elo Guesser runs
+#### V4.0.0.6 — step 6: progressive Trivia and Elo Guesser runs
 
 **Cumulative patch: steps 1–6 over V3.4.13.** The app can remain stopped until
 the remaining upgrades are installed. Schema 12 upgrades directly from 8/9/10/11,
 with a pre-upgrade backup and full stored-fact reconciliation. No runtime
 dependency was added. Keep your database, backups and private instance key.
 
-### New play
+##### New play
 
 Trivia and Guesser now use database-owned runs per browser and mode. Current
 score/streak no longer depends on cookie counters. Reload/restart resumes the
@@ -301,7 +314,7 @@ with randomness retained. Each offer freezes its target, rules, run and both
 ratings; later Elo changes do not alter the answer. Correct/missed answers still
 earn 1/0 points. Identical modern retries count once; opposite retries conflict.
 
-### Records and developer controls
+##### Records and developer controls
 
 Existing results are explicitly classic, with no invented historical runs.
 The saved classic records, including 221, remain separate and unchanged. An
@@ -317,7 +330,7 @@ keep run chronology intact; field-total adjustments are still available.
 Explicit per-mode/full resets remove the affected rounds and runs together.
 Exports/rebuilds retain pending questions, ownership, targets, progress and bests.
 
-### Verification
+##### Verification
 
 - **336 Python tests** and **958 JavaScript assertions** pass. Coverage includes
   10/25 boundaries, no-album fallback, partial points, frozen metadata/ratings,
@@ -343,7 +356,7 @@ The optional offline checks are in `tools/selection_lab/run_challenges.py`.
 **Next: step 7**, developer workflow improvements in three subpatches. No new
 decision is required before starting.
 
-## V4.0.0.5 — step 5: adaptive selection across modes
+#### V4.0.0.5 — step 5: adaptive selection across modes
 
 **Cumulative patch: steps 1–5 over V3.4.13.** You can keep the app stopped until
 the remaining steps are installed. Retain the database, backups and private key.
@@ -351,7 +364,7 @@ Schema remains 11; earlier-step migrations still handle 8/9/10 directly. There
 is no new runtime dependency. The optional simulation kit uses its own NumPy QA
 requirement and never opens the app database.
 
-### Selection behaviour
+##### Selection behaviour
 
 All modes now use the accepted below-average exposure rule. Need is one plus
 any shortfall below the eligible pool's mean count. Base probabilities mix 90%
@@ -394,7 +407,7 @@ read snapshot to persisted questions/draws. Preference selection loads only IDs
 and Elo for the pool, then hydrates the chosen pair. Shelf capacity lookahead
 uses the largest remaining capacities without repeatedly sorting every remainder.
 
-### Verification
+##### Verification
 
 **305 Python tests and 836 JavaScript assertions passed.** The 41 new pure and
 endpoint regressions cover zero/large/imbalanced counts, exploration, scaling,
@@ -428,7 +441,7 @@ remained intact; current first-round influence, frozen answers, classic streaks
 and grading stayed correct. Export/rebuild reconciled all state and reproduced
 seeded draws. The original and working database files remain unchanged.
 
-The optional [experiment kit](../docs/archive/SELECTION_LAB_V4.md) ships with its
+The optional [experiment kit](../docs/RETIRED.md) ships with its
 anonymous feature snapshot and separate QA requirement. Classic-mode difficulty
 is unchanged by the offline future-stage tests. UI/audio pacing still follows
 step 8, and real desktop/phone/audio play remains a combined release gate.
@@ -437,7 +450,7 @@ step 8, and real desktop/phone/audio play remains a combined release gate.
 records. The accepted 10/25 Trivia requirements and Guesser target curve already
 settle the defaults; no new decision is needed to start.
 
-## V4.0.0.4 — step 4: direct Overall scores and clearer mode contributions
+#### V4.0.0.4 — step 4: direct Overall scores and clearer mode contributions
 
 **Cumulative patch: steps 1–4 over V3.4.13.** Keep the app stopped until all planned
 steps are ready if preferred. Copy these files over the project, retaining the
@@ -456,7 +469,7 @@ Existing evidence/name/ID tie-breaks retain deterministic ordering within a tie.
 Very small differences may look tied after display rounding. The old
 `rank_percentile` fields remain diagnostic API metadata, without a display role.
 
-### Mode balance
+##### Mode balance
 
 The existing disclosure now separates **Adjusted score, Effective weight,
 Contribution in Overall points, and Relative evidence**. Each mode's bar follows
@@ -475,7 +488,7 @@ a 44 px target. Mode insets stack below 760 px and the main score spans the card
 above its two context columns below 540 px. Dev explanation and lookup now show
 the direct composite and collection arithmetic.
 
-### Verification
+##### Verification
 
 **264 Python tests and 836 JavaScript assertions passed.** Fourteen additional
 Python regressions cover gap preservation, separate tied ranks, full precision,
@@ -508,7 +521,7 @@ combined release play-test.
 **Next: step 5**, implementing the already tested adaptive match selectors.
 No additional decision is needed before that step.
 
-## V4.0.0.3 — step 3: independent Elo and prospective first rounds
+#### V4.0.0.3 — step 3: independent Elo and prospective first rounds
 
 **Cumulative patch: steps 1–3 over V3.4.13.** Copy these files over the project
 when ready, retaining your database, backups and private key. You can keep the
@@ -540,7 +553,7 @@ migrates schema **8, 9 or 10 → 11** directly; no intermediate launch is needed
   affect later rounds and do not produce Elo. Vote corrections, catalogue deletion,
   manual public overrides and full export/rebuild remain compatible.
 
-### Policy checks
+##### Policy checks
 
 The read-only shadow command `python tools/validate_v4_elo.py BACKUP.db` replayed
 427 ordinary votes plus 72 historical first-round results, 36 restricted.
@@ -552,7 +565,7 @@ mass. Each entrant had at most one rated comparison per bracket. These checks
 support the fixed full/half default without claiming to remove opponent bias.
 No hypothetical historical tournament result is written to the upgraded database.
 
-### Validation and next step
+##### Validation and next step
 
 250 Python tests and 740 JavaScript assertions passed. Copied supplied data
 passed direct 8/9/10-to-11 upgrades, exact preservation of existing public
@@ -567,7 +580,7 @@ DOM/media fixtures do not replace those checks.
 raw score gaps and explaining mode contributions. No new decision is needed.
 Selection, challenge difficulty and pacing still follow the later planned steps.
 
-## V4.0.0.2 — step 2: reliable preferences and recoverable corrections
+#### V4.0.0.2 — step 2: reliable preferences and recoverable corrections
 
 **Cumulative patch: steps 1 + 2 over V3.4.13.** The app may stay stopped until all
 stages are complete. The latest download includes all earlier changes and
@@ -581,7 +594,7 @@ lost response. Mode, origin and rules version come from the server's offer.
 Offers are bound to the browser session, survive refresh/restart with that
 session, and keep one pending ordinary round per browser/mode.
 
-### Stored facts and shared projections
+##### Stored facts and shared projections
 
 - Existing history IDs and all nine original vote fields move intact to
   `preference_events`. Original labels are retained with legacy provenance and
@@ -614,7 +627,7 @@ recorded rating overrides can still be replayed. Existing peak Elo/rank records
 are retained as legacy floors; post-upgrade peak projections can be rebuilt.
 Frozen Trivia/Guesser/Shelves answers and classic records are unchanged.
 
-### Installation and checks
+##### Installation and checks
 
 Keep the current database, backups and instance key. When ready, copy the newest
 cumulative patch over the project and start it. Do not install the supplied test
@@ -628,7 +641,7 @@ Step 3 is next: independent blind/non-blind Elo beside public Elo, then validati
 of new first-round tournament influence through the same event path. Ordinary
 voting remains K32; no high-K placement or special artist-event rounds are added.
 
-## V4.0.0.1 — step 1: database foundations
+#### V4.0.0.1 — step 1: database foundations
 
 Development patch over **V3.4.13**, schema **8 → 9**. This is the first of the
 eight agreed implementation steps, not the completed public V4 release.
@@ -665,7 +678,7 @@ unchanged. New selectors, split Elo, tournament Elo, revised Overall display and
 harder challenge rules belong to later steps. No special artist-event mode or
 high-K placement is included.
 
-### Installation
+##### Installation
 
 Stop the app, copy the patch's `Song_ranker` contents over the project and restart.
 Keep your own `song_ranker_v2.db`, backups and instance key. The footer should read
@@ -679,13 +692,13 @@ a verified recovery file using the procedure in the database guide. V3.4.13 code
 does not understand this patch's newer schema marker, so roll back code and the
 matching database together.
 
-### Validation
+##### Validation
 
 See [VALIDATION.md](../docs/VALIDATION.md) for the exact checks, copied-database counts
 and limits. The update package contains only changed/new source, documentation
 and tests; it contains no live/test database, SQL data dump, backup or private key.
 
-### Step 2 defaults
+##### Step 2 defaults
 
 Implement persisted offered-round tokens, one saved preference per offer,
 idempotent retries, explicit mode/origin/rules versions and shared exposure

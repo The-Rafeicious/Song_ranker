@@ -1,4 +1,6 @@
-# Apple Music adding and requests — V5.0.3.3
+# Apple Music adding and requests
+
+Current workflow, introduced in V5.0.3.3; current database schema is 19.
 
 ## Add a song or album
 
@@ -20,7 +22,7 @@ Multi-disc releases keep source disc/track information but leave local positions
 New Apple metadata removes only a trailing “ - EP” (case insensitive) from the
 local album title. EPs then use ordinary album placement. The original Apple
 release name stays in the source observation. Existing albums are not renamed
-automatically. Schema remains 15; this patch does not migrate the database.
+automatically. This title normalization does not itself require a database migration.
 
 ## What each developer area requests
 
@@ -51,4 +53,4 @@ a separate gate (18 starts/minute, at least half a second apart); complete clips
 can be cached in page-scoped RAM, up to ten for ten minutes. These are app limits,
 not a claim about Apple's service quota. No automatic source-edit backups are added.
 
-Restart the app and hard-refresh after updating. The footer should show V5.0.3.3.
+After code updates, restart and hard-refresh. Current version/setup references are in the [README](../README.md) and [upgrades](UPGRADES.md).

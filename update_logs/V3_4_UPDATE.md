@@ -1,9 +1,22 @@
-# V3.4 — Page layouts and style standardisation
+# V3.4 release notes
+
+## V3.4.0 — overall release summary
+
+Shared visual baseline, page-by-page stats/rankings/search/profile updates, private-phone use and mode screen polish.
+
+**Historical reference.** Installation commands, schemas, validation totals and
+then-planned features below describe their original release. Expired setup
+instructions are no longer necessary for current installs; use the
+[current upgrade guide](../docs/UPGRADES.md). Exact repeated prose is recorded once.
+
+## Detailed updates
+
+### V3.4 — Page layouts and style standardisation
 
 This release is being applied page by page. All V3.4.x styling patches are
 documented here, with shared decisions in `README_PAGE_STYLE.md`.
 
-## V3.4.1 — Global Stats
+#### V3.4.1 — Global Stats
 
 - Full-width sections in the requested order, larger artwork/type, centred
   summary values and tighter spacing. Added top counters for Trivia rounds,
@@ -34,12 +47,12 @@ documented here, with shared decisions in `README_PAGE_STYLE.md`.
 - Added the dedicated page-style README and a project instruction to consult it
   for future designs while following subsequent user corrections.
 
-### Apply
+##### Apply
 
 Apply this edited-file patch over **V3.3.5.1**, restart and hard-refresh. The
 footer shows **V3.4.1**. No database migration or scoring change is included.
 
-### Validation
+##### Validation
 
 The Global Stats projection is read-only and tested against empty and populated
 fixtures, album exclusions, shared artists, Elo boundaries, repeated pairs,
@@ -47,7 +60,7 @@ saved misses, mixed timestamp formats and one-result-per-mode activity units.
 The original database is unchanged. Current verification totals and environment
 limits are recorded in `VALIDATION.md`.
 
-## V3.4.1.1 — Global Stats layout corrections
+#### V3.4.1.1 — Global Stats layout corrections
 
 - Fixed the vertical cover shapes: an inherited 48 px maximum width remained
   after the previous resize. Width/height and all min/max constraints now follow
@@ -69,7 +82,7 @@ This edited-file patch changes presentation only; data, scoring and previews
 are unchanged. Validation details are in `VALIDATION.md`.
 
 
-## V3.4.1.2 — Long text and mixed-mode recent results
+#### V3.4.1.2 — Long text and mixed-mode recent results
 
 - Variable names and artist metadata now use ellipses when they exceed their
   space. Full text remains in the DOM/title attributes. Scores, counts and
@@ -95,7 +108,7 @@ Apply over **V3.4.1.1**, restart and hard-refresh. The footer shows **V3.4.1.2**
 There is no migration or change to game scoring, Overall or preview playback.
 Read-only activity projections now expose more of the already saved results.
 
-## V3.4.2 — Standard ranking boards
+#### V3.4.2 — Standard ranking boards
 
 - Songs, Artists, Albums and Tags ranking titles always use their entity colour
   and underline on hover/keyboard focus. Song artist/album links are now bold.
@@ -118,7 +131,7 @@ Apply this edited-file patch over **V3.4.1.2**, restart and hard-refresh. The
 footer shows **V3.4.2**. No database, scoring, ranking order or preview playback
 change is included. Validation details are in `VALIDATION.md`.
 
-## V3.4.2.1 — Chosen shared styling baseline
+#### V3.4.2.1 — Chosen shared styling baseline
 
 - Applied the user's selected preview codes across shared site components:
   **T2 · F2 · W3 · A3 · D2 · R3 · G2 · C1 · B1 · H1 · N1**.
@@ -140,7 +153,7 @@ change is included. Validation details are in `VALIDATION.md`.
 Apply over **V3.4.2**, restart and hard-refresh. The corrected release label is
 **V3.4.2.1**. These notes now belong to the V3.4 release family.
 
-## V3.4.3 — Home mode summaries and banner limits
+#### V3.4.3 — Home mode summaries and banner limits
 
 - Trivia, Tournament, Elo Guesser and Album Shelves summaries beneath Overall
   now occupy one full-width row per mode. Existing figures, labels, mode order
@@ -160,7 +173,7 @@ Apply the edited files over **V3.4.2.1**, restart and hard-refresh. The footer
 shows **V3.4.3**. No database migration, scoring or audio change is included.
 Validation details are in `VALIDATION.md`.
 
-## V3.4.3.1 — Home collection totals and version correction
+#### V3.4.3.1 — Home collection totals and version correction
 
 - Removed the Tournament total beneath Ways to Play. Songs, Artists and Albums
   stay together in one row, including on narrow screens, with centred content.
@@ -179,7 +192,7 @@ Apply over the previous home update, now labelled **V3.4.3**. Restart and
 hard-refresh; the footer shows **V3.4.3.1**. Checks are in `VALIDATION.md`.
 
 
-## V3.4.3.2 — Home mode figures and percentage bars
+#### V3.4.3.2 — Home mode figures and percentage bars
 
 - Each of the four home mode panels now has three centred figures in one joined
   inset row, with a full-width rounded bar below. Rows stay three columns on
@@ -207,7 +220,7 @@ The patch contains edited files and these grouped notes only. No database,
 game scoring, schema or audio changes are included. Checks are in `VALIDATION.md`.
 
 
-## V3.4.3.3 — Shared dashboard styling and code cleanup
+#### V3.4.3.3 — Shared dashboard styling and code cleanup
 
 - Added the Home-style thin separators to every joined Global Stats metric
   row, including the dynamically loaded Overall figures. Two-, three- and
@@ -239,7 +252,7 @@ Apply over the supplied **V3.4.3.2**. Copy all edited files, including the new
 **V3.4.3.3**. Notes stay grouped here under V3.4. The patch excludes databases
 and validation fixtures; check results and limits are in `VALIDATION.md`.
 
-## V3.4.4 — Match History
+#### V3.4.4 — Match History
 
 - Standardised the history rows: outer song/artist/proper-album information,
   square artwork beside a central VS, and the saved date underneath VS.
@@ -254,7 +267,7 @@ and validation fixtures; check results and limits are in `VALIDATION.md`.
 Apply over **V3.4.3.3**, restart and hard-refresh. The footer shows **V3.4.4**.
 No scoring or database change.
 
-## V3.4.5 — Recognisability Stats
+#### V3.4.5 — Recognisability Stats
 
 - Applied the approved font, type scale, centred headings/right-hand actions,
   full-width panels, soft gold border glows, quieter inset sections and joined
@@ -281,7 +294,7 @@ No scoring or database change.
   stylesheet. Other pages retain their existing styles. Updated the page-style
   guide and added in-memory data regressions.
 
-### How the figures are calculated
+##### How the figures are calculated
 
 **Field accuracy:** correct song, artist and eligible album fields divided by
 available fields. Counts are pooled, not averaged from rounded track rates.
@@ -341,13 +354,13 @@ are excluded. Recent rounds sort by saved completion time, then ID. Missing
 identities remain unlinked history fallbacks. Empty counts are zero; a rate,
 mean or points figure without the required evidence shows an em dash.
 
-### Apply
+##### Apply
 
 Apply this edited/new-file patch over **V3.4.4**, restart and hard-refresh.
 The footer shows **V3.4.5**. Keep your own database; this update adds no migration,
 stored counters or scoring changes. Validation details are in `VALIDATION.md`.
 
-## V3.4.6 — Tournament Stats
+#### V3.4.6 — Tournament Stats
 
 - Replaced the old Top/Bottom tournament board with a stats dashboard based on
   the accepted Recognisability page. All major sections have their own row,
@@ -378,7 +391,7 @@ stored counters or scoring changes. Validation details are in `VALIDATION.md`.
   Removed the obsolete tournament board renderer and its private event handlers;
   game, scoring, preview and ranking APIs keep their existing behavior.
 
-### Data definitions and saved-history limits
+##### Data definitions and saved-history limits
 
 **Brackets and entries:** totals cover all saved brackets, including unfinished
 ones. A completed bracket means the saved status is `completed`; a champion ID
@@ -435,13 +448,13 @@ enter completion-window totals. Display dates use the browser's local timezone.
 A selected older bracket opens on its own archive page; missing IDs get a short
 message. Missing songs/scopes stay unlinked, and empty rates show an em dash.
 
-### Apply
+##### Apply
 
 Apply these edited/new files over **V3.4.5**, restart and hard-refresh. The footer
 shows **V3.4.6**. Keep the existing database and backups. No migration, stored
 counter, gameplay, scoring or preview change. Verification is in `VALIDATION.md`.
 
-## V3.4.6.1 — Private LAN phone hosting
+#### V3.4.6.1 — Private LAN phone hosting
 
 - Kept the uploaded launcher's LAN listening behavior, port 5000 and specific
   phone allow-list. Loopback access includes IPv6. The phone/device list, bind
@@ -484,7 +497,7 @@ counter, gameplay, scoring or preview change. Verification is in `VALIDATION.md`
   accepted modes/rankings remain the baseline. No visible layout/CSS change,
   score adjustment, database migration or replacement database in this patch.
 
-### Apply
+##### Apply
 
 Apply these edited/new files over **V3.4.6**, keeping the database, backups and
 any private instance key. Install the updated dependencies before restarting:
@@ -500,7 +513,7 @@ allowed phone, on the same trusted private network. The supplied phone IP
 remains the default; set `SONG_RANKER_ALLOWED_IPS` if it changes. See the main
 README for PowerShell/macOS/Linux examples and computer-only settings.
 
-### Review and verification
+##### Review and verification
 
 The review addressed the launcher's network exposure, shared session key,
 developer access, cross-site request handling and preview/API compatibility.
@@ -513,7 +526,7 @@ Implementation references: [Flask's Waitress deployment guide](https://flask.pal
 [Flask security guidance](https://flask.palletsprojects.com/en/stable/web-security/)
 and [OWASP CSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html).
 
-## V3.4.7 — Elo Guesser Stats
+#### V3.4.7 — Elo Guesser Stats
 
 - Rebuilt `/elo_guesser_stats` as a detailed dashboard using the accepted
   Recognisability/Tournament layout and shared mode components. Each major
@@ -548,7 +561,7 @@ and [OWASP CSRF prevention](https://cheatsheetseries.owasp.org/cheatsheets/Cross
   renderer. Game selection, points, Elo, Overall calculations, ranking APIs,
   previews, cache behavior and V3.4.6.1 LAN protections are unchanged.
 
-### Data definitions and saved-history limits
+##### Data definitions and saved-history limits
 
 **Questions and appearances:** overall accuracy counts a completed question
 once. A valid saved comparison has two different finite ratings and a recorded
@@ -611,7 +624,7 @@ time, listening time or pause intervals: elapsed time between opening a pair
 and submitting is not presented as reaction speed. No new counters or guessed
 history are stored.
 
-### Apply
+##### Apply
 
 Apply these edited/new files over **V3.4.6.1**, restart and hard-refresh the
 computer/phone browsers. The footer shows **V3.4.7**. Keep the existing database,
@@ -619,7 +632,7 @@ backups and private instance key. Requirements and schema are unchanged from
 V3.4.6.1. Shared page rules are in `README_PAGE_STYLE.md`; current checks and
 verification limits are in `VALIDATION.md`.
 
-## V3.4.8 — Album Shelves Stats
+#### V3.4.8 — Album Shelves Stats
 
 - Rebuilt `/album_shelves_stats` using the accepted Recognisability, Tournament
   and Elo Guesser dashboards. Main panels each occupy one row, with centred
@@ -659,7 +672,7 @@ verification limits are in `VALIDATION.md`.
   Guesser without changing that page's output. Other dashboards, game actions,
   scoring, Overall, previews/cache behavior and LAN hosting are unchanged.
 
-### Data definitions and saved-history limits
+##### Data definitions and saved-history limits
 
 **Ordering and points:** the primary percentage pools correct ordering
 comparisons divided by eligible comparisons, not an average of track/album/
@@ -727,7 +740,7 @@ them into zero-point or perfect rounds. Zero is shown for a genuine zero;
 rates without a denominator use an em dash. No stored counters or history
 rewrites are introduced.
 
-### Apply
+##### Apply
 
 Apply these edited/new files over **V3.4.7**, restart and hard-refresh computer
 and phone browsers. The footer shows **V3.4.8**. Requirements/schema are unchanged.
@@ -735,7 +748,7 @@ Keep the existing database, backups and private instance key. Layout rules are
 in `README_PAGE_STYLE.md`; verification and limits are in `VALIDATION.md`.
 
 
-## V3.4.9 — Shared mode ranking boards
+#### V3.4.9 — Shared mode ranking boards
 
 - Standardised Overall, Recognisability, Tournament, Elo Guesser and Album
   Shelves rankings using the accepted standard board: larger square covers
@@ -765,7 +778,7 @@ Apply edited/new files over **V3.4.8**, restart and hard-refresh. The footer
 shows **V3.4.9**. Validation and its limitations are recorded in `VALIDATION.md`.
 
 
-## V3.4.9.1 — Tournament points and tag boards
+#### V3.4.9.1 — Tournament points and tag boards
 
 - Tournament rankings now order by saved tournament points, shown to two decimal
   places. Supporting podium/win/entry counts stay compact; existing tie-breaks
@@ -782,7 +795,7 @@ Apply over **V3.4.9**, restart and hard-refresh. Footer: **V3.4.9.1**.
 Database, game logic and audio unchanged.
 
 
-## V3.4.10 — Search cards and achievements
+#### V3.4.10 — Search cards and achievements
 
 - Standardised the main Search page with the approved fonts, rounded dark
   panels, semantic colours, soft entity glows, larger constrained artwork and
@@ -818,7 +831,7 @@ Apply over **V3.4.9.1**, restart and hard-refresh. Footer: **V3.4.10**.
 Validation details and visual-check limitations are in `VALIDATION.md`.
 
 
-## V3.4.10.1 — Search badges and browsing controls
+#### V3.4.10.1 — Search badges and browsing controls
 
 - All percentage badges now require **at least 90%**: Trivia, Elo Guesser,
   Shelves relative order, standard voting and blind voting. Existing minimum
@@ -842,7 +855,7 @@ Validation details and visual-check limitations are in `VALIDATION.md`.
 Apply over **V3.4.10**, restart and hard-refresh. Footer: **V3.4.10.1**.
 
 
-## V3.4.10.2 — Styled Search sort menu
+#### V3.4.10.2 — Styled Search sort menu
 
 - Replaced the native Sort select with a custom button/listbox. The open menu
   now matches Search's dark rounded panels, accent border/glow and entity colour,
@@ -859,7 +872,7 @@ Apply over **V3.4.10.1**, restart and hard-refresh. Footer: **V3.4.10.2**.
 No database, scoring, badge threshold, audio or security changes.
 
 
-## V3.4.11 — Song, Album, Artist and Tag profiles
+#### V3.4.11 — Song, Album, Artist and Tag profiles
 
 - Standardised the four entity pages with shared profile components, full-width
   mode panels, semantic colours/glows, larger readable text, joined metrics,
@@ -903,7 +916,7 @@ No database, scoring, badge threshold, audio or security changes.
 Apply over **V3.4.10.2**, restart and hard-refresh. Footer: **V3.4.11**.
 
 
-## V3.4.11.1 — Profile colours, cover captions and open stats
+#### V3.4.11.1 — Profile colours, cover captions and open stats
 
 - Fixed stat-value colours: the legacy `.mini-stats b` rule explicitly set pink,
   overriding inherited panel colours. Profile metric values now explicitly use
@@ -931,7 +944,7 @@ Apply over **V3.4.10.2**, restart and hard-refresh. Footer: **V3.4.11**.
 Apply over **V3.4.11**, restart and hard-refresh. Footer: **V3.4.11.1**.
 
 
-## V3.4.12 — Standard Voting Stats
+#### V3.4.12 — Standard Voting Stats
 
 - Added **Stats → Voting Stats** (`/voting_stats`) for Non-blind and Blind votes,
   with a Stats entry point in entity-profile Voting Record panels. Main figures
@@ -989,7 +1002,7 @@ Apply over **V3.4.11.1**, restart and hard-refresh. Footer: **V3.4.12**.
 Validation and native-visual limitations are recorded in `VALIDATION.md`.
 
 
-## V3.4.12.1 — Match History server error
+#### V3.4.12.1 — Match History server error
 
 - Fixed `/history` returning HTTP 500 when matches exist. The shared VS-row
   template expects `winner_song` / `loser_song`, but the History reader still
@@ -1012,7 +1025,7 @@ Apply over **V3.4.12**, restart the app and refresh History. Footer: **V3.4.12.1
 This package contains edited/new files only. See `VALIDATION.md` for checks.
 
 
-## V3.4.13 — Game-mode styling and clearer play controls
+#### V3.4.13 — Game-mode styling and clearer play controls
 
 - Reviewed Standard Vote (Non-blind/Blind), Trivia, Tournament, Elo Guesser and
   Album Shelves together. Added shared game-only composition and control styles
