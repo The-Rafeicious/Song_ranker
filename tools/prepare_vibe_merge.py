@@ -45,13 +45,14 @@ def export_sql(conn,output):
     if not output.parent.is_dir():raise ValueError('The export directory must already exist.')
     content=sql_dump(conn)
     with tempfile.TemporaryDirectory(prefix='.merge_export_',dir=output.parent) as folder:
-        staged=Path(folder)/'database_backup.sql';staged.write_text(content,encoding='utf-8')
+        staged=Path(folder)/'database_backup.sql'
+        with staged.open('w',encoding='utf-8',newline='\n') as stream:
+            stream.write(content);stream.flush();os.fsync(stream.fileno())
         check=sqlite3.connect(':memory:');check.row_factory=sqlite3.Row
         try:
             check.executescript(content);validate(check);assert_clean(check)
             if capture(check)!=capture(conn):raise ValueError('Export round-trip verification failed.')
         finally:check.close()
-        with staged.open('rb') as stream:os.fsync(stream.fileno())
         os.replace(staged,output)
     return str(output)
 
