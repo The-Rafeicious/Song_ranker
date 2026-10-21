@@ -56,7 +56,7 @@ async function bounded(page,width,phase,folder){
   assert.ok(await page.locator('#vibe-finish').isDisabled());
   await page.setViewportSize({width:1365,height:1050});await page.goto(base+'/');await page.locator('.mode-card.vibe').waitFor();
   assert.equal(await page.locator('.mode-card').count(),6);
-  const rows=await page.locator('.mode-card').evaluateAll(nodes=>nodes.map(e=>Math.round(e.getBoundingClientRect().top)));
+  const rows=await page.locator('.mode-card').evaluateAll(nodes=>nodes.map(e=>e.offsetTop));
   assert.deepEqual(rows.slice(0,3),[rows[0],rows[0],rows[0]]);
   assert.deepEqual(rows.slice(3),[rows[3],rows[3],rows[3]]);assert.ok(rows[3]>rows[0]);
   await page.screenshot({path:folder+'/home-desktop.png',fullPage:true});
