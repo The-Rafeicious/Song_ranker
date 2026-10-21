@@ -151,10 +151,10 @@ reset, coordinate reinterpretation or database write is required.
 Home places a compact all-song card directly after Overall Leaders, using all
 saved per-map placements and the library's full-profile consistency. It follows
 the existing two-fully-mapped-track visibility rule. The final Home banner has
-Album/Artist/Tag tabs, each showing up to twenty most consistent groups. It uses
+one mixed strip of the top twenty albums, artists and tags, ordered by
+consistency without category buttons. It uses
 the shared scrolling owner, including pause on hover/focus, manual arrows,
-hidden-tab pause and reduced-motion support. Empty categories have a short
-empty state; the banner stays hidden when no category has ranked groups.
+hidden-tab pause and reduced-motion support. The banner stays hidden when no category has ranked groups.
 
 Global Stats places a Vibe Map summary directly after Overall: selected/full
 tracks, saved map positions, completed passes, coverage and the best eligible
@@ -181,3 +181,14 @@ the main stats page's quadratic song-pair highlights or persist extra data.
 Requests are read-only/no-store snapshots. Async selection/retry/navigation
 handling ignores obsolete responses. Existing profile and stats links include
 the new collection boards. Schema 19 and all saved data remain unchanged.
+
+
+## Global activity · v1.0.7.1
+
+The fourteen-day chart includes Vibe Map in red, counting one latest saved
+update per song on its saved UTC date. The recent-results list uses the same
+retained updates, interleaved by timestamp with other modes, showing the song
+and maps placed. Partial saves count; unseen slots do not. Repeated placements
+remain averaged and replace that track’s activity timestamp. This is retained
+track activity, not an exhaustive completed-pass log. Vibe contributes no
+accuracy denominator, Elo result or Overall score. No schema change is needed.

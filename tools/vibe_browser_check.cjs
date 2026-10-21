@@ -71,15 +71,16 @@ async function bounded(page,width,phase,folder){
   assert.equal(await page.locator('#overall-highlights + #home-vibe').count(),1);
   assert.equal(await page.locator('#home-vibe .vibe-mini-dot').count(),24);
   assert.ok(await page.locator('#home-vibe-banner').evaluate(e=>e===e.parentElement.lastElementChild));
+  assert.equal(await page.locator('[data-vibe-banner-entity]').count(),0);
+  assert.equal(await page.locator('#home-vibe-banner').evaluate(e=>getComputedStyle(e).getPropertyValue('--shelf-rgb').replace(/\s/g,'')),'237,101,115');
   for(const entity of ['albums','artists','tags']){
-   await page.locator('[data-vibe-banner-entity="'+entity+'"]').click();
-   assert.ok(await page.locator('[data-vibe-banner-row]').count()<=20);
-   assert.equal(await page.locator('#home-vibe-banner').evaluate(e=>getComputedStyle(e).getPropertyValue('--shelf-rgb').replace(/\s/g,'')),'237,101,115');
+   const cards=page.locator('[data-vibe-banner-kind="'+entity+'"]');
+   assert.ok(await cards.count()>0);assert.ok(await cards.count()<=20);
    const colours={albums:'rgb(191, 119, 255)',artists:'rgb(91, 155, 255)',tags:'rgb(255, 184, 51)'};
-   assert.equal(await page.locator('[data-vibe-banner-entity="'+entity+'"]').evaluate(e=>getComputedStyle(e).color),colours[entity]);
-
-   assert.ok((await page.locator('#home-vibe-banner .shelf-controls a').getAttribute('href')).includes('entity='+entity));
+   assert.equal(await cards.first().locator('h3').evaluate(e=>getComputedStyle(e).color),colours[entity]);
   }
+  const scores=await page.locator('[data-vibe-banner-row] strong').allTextContents();
+  assert.deepEqual(scores.map(parseFloat),scores.map(parseFloat).sort((a,b)=>b-a));
   await page.locator('#home-vibe').screenshot({path:folder+'/library-home-desktop.png'});
   await page.locator('#home-vibe-banner').screenshot({path:folder+'/vibe-banner-desktop.png'});
 
@@ -93,6 +94,12 @@ async function bounded(page,width,phase,folder){
   await page.setViewportSize({width:1365,height:1050});await page.goto(base+'/vibe_map_stats');
   await page.locator('[data-vibe-chart]').first().waitFor();
   assert.equal(await page.locator('[data-vibe-chart]').count(),4);
+  for(const width of [390,1365]){
+   await page.setViewportSize({width,height:1050});
+   assert.ok(await page.locator('.vibe-coverage .mode-stats-progress').evaluate(e=>{const a=e.getBoundingClientRect(),b=e.firstElementChild.getBoundingClientRect();return Math.abs(a.top-b.top)<1&&Math.abs(a.height-b.height)<1}),'Coverage fill must occupy full track height');
+  }
+  await page.locator('.vibe-coverage').screenshot({path:folder+'/coverage-desktop.png'});
+
   assert.equal(await page.locator('[data-vibe-point]').count(),24);
   assert.equal(await page.locator('.vibe-balance-row').count(),8);
   assert.equal(await page.locator('.vibe-stats-pair').count(),4);
@@ -162,7 +169,11 @@ async function bounded(page,width,phase,folder){
    await page.locator('#overall-profile').waitFor();assert.ok(await page.locator('#profile-vibe').isHidden(),'Unmapped profile stays compact');
    assert.equal(await page.locator('#profile-vibe .vibe-profile-content').textContent(),'');
   }
-  await page.goto(base+'/global_stats');await page.locator('#global-vibe[aria-busy="false"]').waitFor();
+  await page.goto(base+'/global_stats');
+  assert.ok(await page.locator('.pulse-bar i.vibe').count()>0);
+  assert.ok(await page.locator('#global-activity [data-activity-kind=vibe]').count()>0);
+  assert.ok((await page.locator('#global-activity').getAttribute('data-current-modes')).includes('vibe'));
+await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   assert.equal(await page.locator('#overall-global + #global-vibe').count(),1);
   assert.equal(await page.locator('#global-vibe .vibe-global-leaders > div').count(),3);
   await page.setViewportSize({width:1365,height:1050});await page.locator('#global-vibe').screenshot({path:folder+'/vibe-global-desktop.png'});

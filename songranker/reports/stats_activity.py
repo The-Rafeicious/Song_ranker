@@ -4,7 +4,7 @@ from datetime import datetime, timezone, timedelta
 from math import isfinite
 
 COLORS = {'standard':'Non-blind', 'blind':'Blind', 'recognition':'Trivia',
-          'tournament':'Tournament', 'guesser':'Elo Guesser', 'shelves':'Album Shelves'}
+          'tournament':'Tournament', 'guesser':'Elo Guesser', 'shelves':'Album Shelves', 'vibe':'Vibe Map'}
 
 
 def timestamp(value):
@@ -17,6 +17,16 @@ def timestamp(value):
         return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value.astimezone(timezone.utc)
     except (ValueError, TypeError, OverflowError, OSError):
         return None
+
+
+def latest_vibe_saves(conn):
+    """One retained update per song, not an invented log of completed passes."""
+    if not conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='song_vibe_positions'").fetchone():
+        return []
+    return [dict(row) for row in conn.execute("""SELECT v.song_id,MAX(v.updated_at) AS updated_at,
+        SUM(v.status='placed') AS placed,COUNT(*) AS selected
+        FROM song_vibe_positions v JOIN songs s ON s.id=v.song_id
+        WHERE v.status!='unmapped' GROUP BY v.song_id""")]
 
 
 def build_activity(conn, mode, now=None):
@@ -75,6 +85,8 @@ def build_activity(conn, mode, now=None):
             result=grade_shelf(items) if valid else {}
             # Same order denominator as the existing Shelves dashboard.
             add(row['completed_at'],'shelves',result.get('order_right',0),result.get('order_pairs',0))
+    if mode=='global':
+        for row in latest_vibe_saves(conn):add(row['updated_at'],'vibe')
     result=list(days.values());maximum=max((d['count'] for d in result),default=0)
     segments=[];segment=[]
     for n,day in enumerate(result):

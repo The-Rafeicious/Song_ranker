@@ -28,8 +28,8 @@ four compact heatmaps in one row on wider screens, with consistency and mapped
 counts in the same spot once two tracks are fully mapped. Phones use two columns.
 Connection now labels its early-attachment end Budding; saved coordinates are unchanged.
 Home now puts all-track Vibe maps below Overall Leaders and a scrolling consistency
-banner at the bottom, with Album/Artist/Tag tabs and up to twenty entries each.
-Global Stats has a Vibe summary below Overall. **Mode Rankings → Vibe Map**
+banner at the bottom, mixing the top twenty albums, artists and tags in one consistency-ordered strip.
+Global Stats has a Vibe summary below Overall; its activity chart and recent results include each track’s latest Vibe save. **Mode Rankings → Vibe Map**
 shows top/bottom twenty albums, artists and tags by consistency; there is no
 song board. Ranked collections need two fully mapped songs; proper-album rules
 exclude Singles. These descriptions do not contribute to Overall scores.
