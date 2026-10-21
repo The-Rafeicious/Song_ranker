@@ -1,4 +1,4 @@
-# Vibe Map stats · v1.0.6.1
+# Vibe Map stats · v1.0.7
 
 Open Stats → 📍 Vibe Map Stats, or the Stats link on the mode page.
 The dedicated page is `/vibe_map_stats`; its read-only JSON projection is
@@ -145,3 +145,39 @@ bond growing into devotion. This is a label-only presentation override across
 maps, radar labels, common combinations and balances. The stored schema-19
 Casual label is retained for snapshot validation/compatibility. No migration,
 reset, coordinate reinterpretation or database write is required.
+
+## Library surfaces and rankings · v1.0.7
+
+Home places a compact all-song card directly after Overall Leaders, using all
+saved per-map placements and the library's full-profile consistency. It follows
+the existing two-fully-mapped-track visibility rule. The final Home banner has
+Album/Artist/Tag tabs, each showing up to twenty most consistent groups. It uses
+the shared scrolling owner, including pause on hover/focus, manual arrows,
+hidden-tab pause and reduced-motion support. Empty categories have a short
+empty state; the banner stays hidden when no category has ranked groups.
+
+Global Stats places a Vibe Map summary directly after Overall: selected/full
+tracks, saved map positions, completed passes, coverage and the best eligible
+album/artist/tag, with mapped counts and ranked-group totals. Zero-data global
+summaries remain visible as real counts. Stats and Rankings links are included.
+
+`/mode_rankings/vibe` offers Albums, Artists and Tags only. Top twenty and Bottom
+twenty use the existing shared mode controls, row geometry, artwork, semantic
+entity colours and rank-dependent Vibe-red glows. Rows show consistency and
+mapped/total tracks. Bottom rows retain their absolute full-population rank.
+A song category query normalizes to Albums in the UI; the API rejects songs.
+
+Only groups with two fully mapped members qualify; proper-album rules exclude
+Singles/unknown albums. All saved averages count once per member, independent
+of repeats. Consistency is the same all-four-map metric as the dashboard.
+Unrounded values determine order, then mapped-track count, coverage and ID.
+Bottom view reverses the full ordered list before taking twenty, matching other
+mode boards. Banner order is the same as the corresponding top board. Display
+percentages do not rescale as the library grows. This is descriptive cohesion,
+not song quality, and adds no Overall component or draw change.
+
+Library/ranking readers batch profiles and scan group members; they do not run
+the main stats page's quadratic song-pair highlights or persist extra data.
+Requests are read-only/no-store snapshots. Async selection/retry/navigation
+handling ignores obsolete responses. Existing profile and stats links include
+the new collection boards. Schema 19 and all saved data remain unchanged.

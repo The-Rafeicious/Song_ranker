@@ -1350,3 +1350,22 @@ narrow screens keep two columns for readable labels. Keep every caption aligned,
 small charts and fixed 11 px dots. Display Connection's low Y pole as Budding
 rather than Casual, using a presentation override only; keep stored definitions,
 map keys, generation, coordinates and similarity unchanged.
+
+
+## Vibe library surfaces — Vibe-Map-v1.0.7
+
+Place Home's compact all-song map card immediately below Overall Leaders, and
+Global Stats' Vibe summary immediately below Overall. Keep four small maps per
+wide row and two columns on phones. Use existing joined metrics and dashboard
+glows. The final Home banner has Albums/Artists/Tags pills and twenty entries
+per selected category, using existing shelf cards, scroll buttons and autoplay
+ownership. Scores/frames are Vibe red; entity names, artwork shapes and track
+counts retain purple/blue/gold/green semantics. Pause scrolling for focus/hover
+and honour hidden tabs/reduced motion through the shared owner.
+
+Vibe Map is last in Mode Rankings, with albums/artists/tags and no song tab.
+Reuse shared Top/Bottom twenty controls and ranking row geometry, bounded names,
+artwork, semantic identity links and red rank-dependent glows. Show mapped/total
+counts with consistency; retain absolute ranks on the bottom board. Add context
+ranking links to collection profile cards and the dedicated Vibe stats page.
+Do not add a performance score or Overall contribution for Vibe Map.

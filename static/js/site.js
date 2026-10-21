@@ -614,15 +614,17 @@ window.DevCatalog?.bindUI({api,records,artwork,title:devTitle,root:()=>$('#dev-m
  tagPicker:()=>tagPicker('import'),renderTagPicker:()=>renderTagPicker('import'),selectedTags:()=>tags.filter(t=>importTags.has(t.id)).map(t=>t.name),
  sourcesChanged:()=>{if($('#manage-rows')&&devView==='songs')renderTableBody('songs');if($('#apple-results'))window.DevCatalog.renderResults();if($('#bulk-rows'))renderBulkRows()}});
 window.SpecialModes.bindUI({rankingMetadata,main,api,stat,artwork,compactArt,records,properAlbum,colour,urlFor,rankGlow,animateScore,attachPlayers,mediaButton,toast,stopAudio,refreshData,pageTone,holdHeight:holdGameHeight,cancelTransition:cancelRoundTransition,data:()=>DB,homeBannerLimit:HOME_BANNER_LIMIT,homeRateBar});
+window.VibeLibrary?.bindUI({main,records,artwork,rankingMetadata,properAlbum,urlFor,rankGlow,colour,pageTone,attachAutoScroll});
 window.Overall.bindUI({rankingMetadata,properAlbum,main,api,records,colour,urlFor,artwork,rankGlow,pageTone,toast,data:()=>DB,profile:()=>profileState});
 window.ProfileUI?.bindUI({stat,available,aggregateVotes,urlFor,historyRow:matchRow,data:()=>DB});
 volumeApply(volume);attachPlayers();document.body.classList.toggle('legacy',page==='legacy');
-if(page==='guesser')await window.SpecialModes.loadGuess();if(page==='shelves')await window.SpecialModes.loadShelf();if(page.startsWith('mode_rankings_'))window.SpecialModes.renderModeRanking(page.replace('mode_rankings_',''),true);
+if(page==='guesser')await window.SpecialModes.loadGuess();if(page==='shelves')await window.SpecialModes.loadShelf();if(page==='mode_rankings_vibe')window.VibeLibrary?.mountRankings();else if(page.startsWith('mode_rankings_'))window.SpecialModes.renderModeRanking(page.replace('mode_rankings_',''),true);
 if(page==='overall_rankings')await window.Overall.renderRankings(true);
 if(page==='home')renderHome();if(page==='song')renderSong();if(page==='standard'){try{gameMode=new URLSearchParams(location.search).get('mode')||localStorage.getItem('votingMode')||'standard'}catch{}if(!['standard','blind'].includes(gameMode))gameMode='standard';blind=gameMode==='blind';await nextMatch();}if(page.startsWith('rankings_'))renderRanking(page.replace('rankings_',''));if(page.startsWith('performance_'))renderPerformance(page.replace('performance_',''));if(page==='search')window.SearchPage.init({main,records,related,linkedSongs,rankingMetadata,properAlbum,colour,urlFor,artwork,pageTone});if(page==='dev')renderDev();if(['album','artist','tag'].includes(page))renderProfile();if(page==='tournament_play')await renderTournamentSetup();
 
 if(['song','artist','album','tag'].includes(page))window.VibeProfiles?.mount({kind:page,id:page==='song'?songId:profileState.item.id});
 if(['home','song','artist','album','tag','global_stats'].includes(page))await window.Overall.mount(page);
+if(page==='home'||page==='global_stats')window.VibeLibrary?.mount(page);
 })().catch(error=>{const node=document.getElementById('loading');if(node){node.textContent=error.message;node.classList.add('error')}else console.error(error)});
 
 

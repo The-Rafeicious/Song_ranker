@@ -27,7 +27,7 @@
 <div class="mode-stats-page vibe-stats-page">
   <div class="page-head"><h1 class="vibe">Vibe Map Stats</h1><a class="btn vibe" href="/vibe-map">Play Vibe Map →</a></div>
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-overview">
-    <div class="section-head"><h2 class="vibe" id="vibe-overview">Overview</h2></div>
+    <div class="section-head"><h2 class="vibe" id="vibe-overview">Overview</h2><a class="vibe" href="/mode_rankings/vibe">Rankings ↗</a></div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Tracks with selections',overview.selected)}}{{figure('Fully mapped',overview.full)}}{{figure('Partly mapped',overview.partial)}}{{figure('Still to map',overview.unselected)}}</dl>
     <dl class="joined-metrics mode-stats-small-metrics" data-columns="4">{{figure('Completed passes',overview.passes)}}{{figure('Repeat-mapped tracks',overview.repeated)}}{{figure('Saved placements',overview.samples)}}{{figure('Library tracks',overview.total)}}</dl>
     <div class="vibe-coverage"><strong>{{rate(overview.coverage)}}</strong><div>{{progress('Tracks with Vibe Map selections',overview.coverage)}}<span>{{overview.selected}} / {{overview.total}} tracks · {{overview.placed}} / {{overview.slots}} map positions</span></div></div>

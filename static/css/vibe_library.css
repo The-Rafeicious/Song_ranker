@@ -1,0 +1,32 @@
+/* Home, Global Stats and ranking composition; shared components own geometry. */
+.vibe-library-panel, .vibe-library-banner { --section-color: var(--vibe); --surface-accent: var(--vibe); --shelf-accent: var(--vibe); --mode-stats-rule: #ed65732b; --mode-stats-divider: #ed657322; }
+.vibe-library-panel { margin-bottom: var(--site-gap); border-color: #ed65734d; }
+.vibe-library-panel[hidden], .vibe-library-banner[hidden] { display: none !important; }
+.vibe-library-content.mode-stats-page { display: block; min-width: 0; }
+.vibe-library-links { display: flex; flex-wrap: wrap; gap: 10px 18px; font-size: 16px; }
+.vibe-library-banner .section-head h2, .vibe-library-banner .shelf-controls { color: var(--vibe); }
+.vibe-library-banner .shelf-card { --surface-accent: var(--vibe); border-color: #ed65734d; }
+.vibe-library-banner .shelf-info h3.album { color: var(--album); }
+.vibe-library-banner .shelf-info h3.artist { color: var(--artist); }
+.vibe-library-banner .shelf-info h3.tag { color: var(--tag); }
+.vibe-library-banner .shelf-info p.song { color: var(--song); }
+.vibe-library-banner .shelf-info strong { color: var(--vibe); }
+.vibe-banner-types { margin: 0 0 16px; }
+.vibe-global-coverage { display: grid; grid-template-columns: auto minmax(0,1fr) auto; gap: 16px; align-items: center; margin: 20px 0; color: #cbb1ba; }
+.vibe-global-coverage > strong { color: var(--vibe); font-size: 28px; }
+.vibe-global-coverage > span { font-size: 14px; }
+.vibe-global-leaders { display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.vibe-global-leaders h3 { margin: 0 0 12px; }
+.vibe-global-leaders h3.tag { color: var(--tag); }
+.vibe-global-leaders a { display: block; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 20px; font-weight: 800; }
+.vibe-global-leaders strong, .vibe-global-leaders span, .vibe-global-leaders small { display: block; margin-top: 8px; }
+.vibe-global-leaders strong { font-size: 24px; }
+.vibe-global-leaders strong small { display: inline; font-size: 14px; }
+.vibe-global-leaders > div > small { color: #bba7af; font-size: 13px; }
+.vibe-rankings .leader-votes > span { color: var(--song); }
+@media (max-width: 760px) {
+ .vibe-global-leaders { grid-template-columns: minmax(0,1fr); }
+ .vibe-global-coverage { grid-template-columns: minmax(0,1fr); text-align: center; gap: 10px; }
+}
+
+body[data-tone=vibe] { --page-color: var(--vibe); --page-rgb: 237,101,115; }
