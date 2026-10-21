@@ -1,5 +1,52 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.3 — Python round flow and aggregate saves
+
+Implemented the backend only on `New-modes-test`. `main.py` registers
+`songranker/modes/vibe_map.py`; no template, page route, CSS, JavaScript or
+navigation was added. The app version stays V5.0.5.1, while schema advances
+17 → 18 for compact counters and resumable current-round state.
+
+- Expose continuous -5..5 graph coordinates, with two-decimal display labels.
+  Store unrounded -1..1 coordinates to preserve the existing similarity policy.
+  No selectable grid or fixed placement step is introduced.
+- Draw through the existing coverage-first picker, then visit all four maps in
+  definition order. Draft edits restart a server-enforced five-second window.
+  Advance accepts the latest draft and returns the next map in one transaction;
+  only the fourth accepted map counts a completed pass.
+- Resume the current browser's round/draft/deadline after refresh or restart.
+  Enforce browser ownership and optimistic revisions. Retry-safe request IDs
+  prevent duplicate samples, repeated pass counts and accidental timer resets.
+- Maintain one aggregate row per song/map with true running means, numeric
+  sample counts and separate not-applicable counts. Skips are not zero samples
+  and do not erase a previously saved mean. Cancelling discards only the pending
+  draft; accepted maps remain saved without counting an incomplete pass.
+- Add one lifetime pass counter per song and one replaceable current round per
+  browser, containing at most four map receipts. No attempt-history table.
+  The mapper now reads real repeat-pass counts instead of a binary projection.
+- Return both current-pass and aggregate eight-spoke radar data, preserving the
+  X and Y dimensions of every map. Missing/not-applicable spokes remain gaps.
+- Provide read-only, continuous aggregate point clouds for library, artists,
+  albums and tags. Each song contributes once regardless of repeat count; the
+  frontend can render heatmaps without persisted density tables.
+- Migrate existing schema-17 points as one known historical sample/skip, with
+  one completed pass only for fully resolved four-map sets. Preserve original
+  coordinate precision and retain generic backup/rebuild/recovery support.
+
+The complete endpoint, timing, retry, chart and next-frontend contract is in
+[docs/VIBE_MAP_API.md](../docs/VIBE_MAP_API.md). The only remaining Python UI
+wiring is the page route when its template is added; the described game state,
+save flow, radar data and heatmap data are ready for the frontend.
+
+Validation: all 313 Python tests passed with no exclusions, including 16 new
+runtime tests for continuous values, five-second rearming, ordered maps,
+idempotent retries, concurrent saves, true repeated averages, skips, cancellation,
+rollback, browser/origin guards, legacy migration, radar/heatmap outputs and
+pending-state/receipt rebuild plus SQL restore. Existing JavaScript suites also
+passed, including 39 served-page checks. A disposable copy of the actual Git
+backup migrated 1,003 songs into schema 18 with 4,012 map slots, 1,003 pass counters
+and no rounds; all original table values stayed unchanged.
+
 ## Vibe-Map-v1.0.2 — gentle similarity across existing modes
 
 Added shared similarity helpers in `songranker/modes/vibe_similarity.py` and

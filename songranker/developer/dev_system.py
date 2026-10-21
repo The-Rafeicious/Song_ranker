@@ -113,7 +113,7 @@ def area(name,kind):
     if name.startswith('album_shelf'):return 'Album Shelves'
     if name=='competition_state':return 'Competition'
     if name=='listening_observations':return 'Listening analysis'
-    if name in ('vibe_maps','song_vibe_positions'):return 'Vibe Map'
+    if name in ('vibe_maps','song_vibe_positions','song_vibe_progress','vibe_rounds'):return 'Vibe Map'
     if name=='elo_guess_rounds':return 'Elo Guesser'
     if name in ('challenge_runs','global_stats'):return 'Runs and records'
     if name in ('songs','albums','artists','genres','song_artists','song_genres','song_sources','song_details'):return 'Catalogue'

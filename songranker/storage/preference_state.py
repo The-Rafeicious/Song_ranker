@@ -198,7 +198,10 @@ def upgrade_state(original):
         from songranker.storage.catalog_source_state import ADDITIONS as song_additions
         current={name:set(columns) for name,columns in table_columns().items()}
         from songranker.storage.vibe_state import TABLES as vibe_tables
-        layouts=[(17,current)]
+        layouts=[(18,current)]
+        seventeen={name:set(columns) for name,columns in current.items() if name not in ('song_vibe_progress','vibe_rounds')}
+        seventeen['song_vibe_positions']-={'sample_count','not_applicable_count'}
+        layouts.append((17,seventeen))
         sixteen={name:columns for name,columns in current.items() if name not in vibe_tables}
         # Pre-17 SQL dumps share the older 14-16 column layout; retain its
         # established transport adapters when the version pragma was omitted.

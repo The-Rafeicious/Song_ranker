@@ -35,11 +35,11 @@ class VibeMapTests(unittest.TestCase):
         self.conn.commit()
 
     def test_existing_and_future_songs_get_four_independent_slots(self):
-        self.assertEqual(self.conn.execute('PRAGMA user_version').fetchone()[0], 17)
+        self.assertEqual(self.conn.execute('PRAGMA user_version').fetchone()[0], SCHEMA_VERSION)
         self.assertEqual(len(MAPS), 4)
         for profile in song_profiles(self.conn, [1,2]).values():
             self.assertEqual(set(profile), {m[0] for m in MAPS})
-            self.assertTrue(all(v == dict(x=None,y=None,status='unmapped',updated_at=None) for v in profile.values()))
+            self.assertTrue(all(v == dict(x=None,y=None,status='unmapped',updated_at=None,sample_count=0,not_applicable_count=0) for v in profile.values()))
         self.place()
         profile = song_profiles(self.conn,[1])[1]
         self.assertEqual(profile['mood_energy']['x'], -.75)
