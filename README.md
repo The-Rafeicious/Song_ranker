@@ -1,6 +1,6 @@
 # Song Ranker V5
 
-**V5.0.5 · V3 competition database · schema 16**
+**V5.0.5.1 · V3 competition database · schema 16**
 
 Vote between songs, identify previews, run tournaments, guess Elo and arrange
 album shelves. V5 keeps your music catalogue and starts the competition again
@@ -28,7 +28,7 @@ python main.py
 
 Use `python3` if that is your Python command. Python 3.10+ is required; validation
 used 3.12. Open **http://127.0.0.1:5000**, then hard-refresh existing browser tabs.
-The footer should show **V5.0.5**.
+The footer should show **V5.0.5.1**.
 
 On first launch, V5 makes a complete SQLite backup of V2, verifies a catalogue-only
 transfer and publishes **`data/song_ranker_v3.db`**. Song/artist/album/tag IDs,
@@ -293,3 +293,7 @@ Apply the update on both computers. On the stale laptop, stop the app, pull the
 update, then run `python main.py` and check the startup outcome / song total.
 Do not delete the old database to force a reload. See the
 [upgrade and split-recovery guide](docs/UPGRADE_V5_0_5.md). Schema remains 16.
+
+V5.0.5.1 fixes the Windows Stop app socket race: after backup, optional Git upload
+and confirmation, Waitress closes sockets on its event-loop thread. Database sync
+and split-recovery rules are unchanged.

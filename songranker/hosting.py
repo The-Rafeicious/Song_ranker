@@ -85,9 +85,17 @@ class StopCoordinator:
 
 
 def register_waitress_shutdown(server,coordinator):
-    """Use Waitress's own dispatcher/socket map; no signal or forced process exit."""
+    """Close sockets on Waitress's event-loop thread, after acknowledged backup."""
     def shutdown():
-        from waitress import wasyncore
+        from waitress import trigger, wasyncore
+        socket_map = getattr(server, 'map', None)
+        if socket_map is None:
+            socket_map = server._map
+        # MultiSocketServer shares the listeners' map but has no trigger attribute.
+        wakeup = next(channel for channel in list(socket_map.values())
+                      if isinstance(channel, trigger.trigger))
         server.task_dispatcher.shutdown()
-        wasyncore.close_all(getattr(server,'map',None) or server._map)
+        # Closing here in the stop worker races select() on Windows (10038).
+        # Waitress executes trigger callbacks after select returns on its own thread.
+        wakeup.pull_trigger(lambda: wasyncore.close_all(socket_map))
     coordinator.shutdown=shutdown
