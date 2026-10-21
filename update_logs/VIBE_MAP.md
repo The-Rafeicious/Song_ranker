@@ -1,5 +1,26 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.7 — Home, Global Stats and collection consistency boards
+
+Add compact all-song maps below Home's Overall Leaders and a final scrolling
+consistency banner with Album/Artist/Tag tabs, twenty rows per category. Use the
+existing scrolling owner and record-card layouts. Add a concise Global Stats
+summary below Overall with coverage, passes and best eligible collection records.
+
+Add Mode Rankings → Vibe Map with albums/artists/tags only, shared top/bottom
+twenty controls, absolute ranks, red glows and semantic entity/track colours.
+Use the existing four-map consistency, two-fully-mapped-member minimum and
+proper-album exclusions. Sort raw scores before evidence/ID ties; bottom view
+reverses the full list. Banner and top-board order match. Add context links.
+
+New library/ranking endpoints read a consistent no-store snapshot, batch saved
+profiles and scan member groups, avoiding quadratic song-pair highlights. Keep
+missing evidence absent and repeats as one averaged point per song. Handle
+retry, stale requests and history restoration without duplicate scrolling timers
+or changing Overall scores. Schema 19 and all stored results/backups are intact.
+Update README, API/stats docs and styling rules.
+
+
 ## Vibe-Map-v1.0.6.1 — compact conditional profile cards
 
 Hide song cards until all four maps are placed; hide collection cards until two

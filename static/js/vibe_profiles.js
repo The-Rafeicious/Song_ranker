@@ -7,7 +7,8 @@ window.VibeProfiles=(()=>{
   const anchor=document.querySelector('.profile-key-stats');if(!anchor)return;
   active?.abort();document.querySelector('#profile-vibe')?.remove();
   const panel=document.createElement('section');panel.id='profile-vibe';panel.hidden=true;panel.className='panel profile-mode-panel mode-stats-panel vibe-profile-panel dashboard-surface vibe';panel.setAttribute('aria-labelledby','profile-vibe-title');
-  panel.innerHTML='<div class="section-head"><h2 class="vibe" id="profile-vibe-title">Vibe Map</h2><div class="profile-stat-links"><a class="vibe" href="/vibe_map_stats">Stats ↗</a></div></div><div class="vibe-profile-content mode-stats-page"></div>';
+  const ranks=info.kind==='song'?'':'<a class="vibe" href="/mode_rankings/vibe?entity='+({album:'albums',artist:'artists',tag:'tags'}[info.kind])+'">Rankings ↗</a>';
+  panel.innerHTML='<div class="section-head"><h2 class="vibe" id="profile-vibe-title">Vibe Map</h2><div class="profile-stat-links"><a class="vibe" href="/vibe_map_stats">Stats ↗</a>'+ranks+'</div></div><div class="vibe-profile-content mode-stats-page"></div>';
   anchor.after(panel);const body=panel.querySelector('.vibe-profile-content');
   async function load(){
    active?.abort();const request=new AbortController();active=request;

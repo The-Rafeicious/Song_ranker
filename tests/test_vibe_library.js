@@ -1,0 +1,32 @@
+/* Home/Global mounts, shared ranking controls, record colours and async ownership. */
+const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert/strict');
+const flush=async()=>{for(let i=0;i<50;i++)await Promise.resolve()};
+(async()=>{
+ const dom=new JSDOM('<body data-page="home"><main id="main"><section id="overall-highlights"></section><div id="other">Other home content</div></main></body>',{url:'http://localhost/',runScripts:'outside-only'});
+ const w=dom.window,d=w.document,calls=[],scrolls=[];
+ w.fetch=(url,options)=>new Promise((resolve,reject)=>calls.push({url,options,resolve,reject}));
+ for(const file of ['ui.js','vibe_library.js'])w.eval(fs.readFileSync('static/js/'+file,'utf8'));
+ const categories=['albums','artists','tags'],row=(type,i)=>({id:i,name:type+' <name> '+i,title:type+' <name> '+i,rank:i,consistency:100-i,mapped:2,total:3,song_count:3});
+ const api={profile_ready:true,html:'<div class="vibe-entity-card">All-track maps</div>',global_html:'<div class="vibe-global-content">Global coverage</div>',banner:Object.fromEntries(categories.map(t=>[t,[row(t,1),row(t,2)]]))};
+ const urlFor=(type,r)=>'/'+({albums:'album',artists:'artist',tags:'tag'}[type])+'/'+encodeURIComponent(type==='albums'?r.title:r.name);
+ w.VibeLibrary.bindUI({main:d.querySelector('main'),records:()=>[],artwork:()=>'<div class="art-wrap"></div>',urlFor,colour:w.SongRankerUI.entityColour,attachAutoScroll:e=>scrolls.push(e),rankGlow:()=>'',rankingMetadata:()=>({html:'Artist',text:'Artist'}),properAlbum:()=>true,pageTone:t=>d.body.dataset.tone=t});
+ const resolve=(i,data)=>calls[i].resolve({ok:true,json:async()=>data});
+ const mounting=w.VibeLibrary.mount('home');assert.ok(d.querySelector('#home-vibe').hidden);resolve(0,api);await mounting;
+ assert.equal(d.querySelector('#overall-highlights').nextElementSibling.id,'home-vibe');
+ assert.equal(d.querySelector('main').lastElementChild.id,'home-vibe-banner');assert.equal(scrolls.length,1);
+ assert.equal(d.querySelectorAll('[data-vibe-banner-row]').length,2);
+ assert.equal(d.querySelector('[data-vibe-banner-row]').getAttribute('href'),urlFor('albums',api.banner.albums[0]));
+ d.querySelector('[data-vibe-banner-entity="tags"]').click();assert.ok(d.querySelector('.shelf-info h3').classList.contains('tag'));assert.equal(d.querySelector('.shelf-info h3 img'),null);
+ const anchor=d.querySelector('#overall-highlights');d.querySelector('main').append(anchor);w.VibeLibrary.placeHome();assert.equal(anchor.nextElementSibling.id,'home-vibe');
+ d.querySelector('main').innerHTML='<div id="overall-global"></div><div>After</div>';
+ const global=w.VibeLibrary.mount('global_stats');resolve(1,api);await global;assert.equal(d.querySelector('#overall-global').nextElementSibling.id,'global-vibe');assert.ok(d.querySelector('.vibe-global-content'));
+ w.history.replaceState({},'','/mode_rankings/vibe?entity=songs&view=top');
+ const ranking=w.VibeLibrary.mountRankings();assert.ok(!d.querySelector('a[href*="entity=songs"]'));assert.equal(d.querySelectorAll('.rank-links a').length,3);
+ assert.ok(calls[2].url.includes('entity=albums'));resolve(2,{items:[row('albums',1)],total:25});await ranking;
+ assert.equal(d.body.dataset.tone,'vibe');assert.ok(d.querySelector('.leader-title').classList.contains('album'));assert.equal(d.querySelector('.leader-title').getAttribute('href'),urlFor('albums',row('albums',1)));
+ d.querySelector('[data-vibe-view="bottom"]').click();resolve(3,{items:[{...row('albums',25),rank:25}],total:25});await flush();assert.equal(d.querySelector('.leader-rank').textContent,'25');assert.ok(w.location.search.includes('view=bottom'));
+ d.querySelector('[data-vibe-view="top"]').click();d.querySelector('[data-vibe-view="bottom"]').click();assert.ok(calls[4].options.signal.aborted);resolve(5,{items:[],total:0});await flush();resolve(4,{items:[row('albums',1)],total:25});await flush();assert.equal(d.querySelectorAll('.leader-row').length,0);
+ d.querySelector('[data-vibe-view="top"]').click();calls[6].resolve({ok:false});await flush();assert.ok(d.querySelector('[data-vibe-library-retry]'));
+ d.querySelector('[data-vibe-library-retry]').click();resolve(7,{items:[],total:0});await flush();assert.ok(d.querySelector('#vibe-ranking-rows').textContent.includes('No ranked collections'));
+ dom.window.close();console.log('Vibe library: placement, mixed-category banner, safe links/text, category restrictions, absolute ranks, stale results and retry passed.');
+})().catch(error=>{console.error(error);process.exitCode=1});

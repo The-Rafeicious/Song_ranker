@@ -67,6 +67,22 @@ async function bounded(page,width,phase,folder){
   assert.ok(await page.locator('#vibe-finish').isDisabled());
   await page.setViewportSize({width:1365,height:1050});await page.goto(base+'/');await page.locator('.mode-card.vibe').waitFor();
   assert.equal(await page.locator('.mode-card').count(),6);
+  await page.locator('#home-vibe[aria-busy="false"]').waitFor();await page.locator('#home-vibe-banner').waitFor();
+  assert.equal(await page.locator('#overall-highlights + #home-vibe').count(),1);
+  assert.equal(await page.locator('#home-vibe .vibe-mini-dot').count(),24);
+  assert.ok(await page.locator('#home-vibe-banner').evaluate(e=>e===e.parentElement.lastElementChild));
+  for(const entity of ['albums','artists','tags']){
+   await page.locator('[data-vibe-banner-entity="'+entity+'"]').click();
+   assert.ok(await page.locator('[data-vibe-banner-row]').count()<=20);
+   assert.equal(await page.locator('#home-vibe-banner').evaluate(e=>getComputedStyle(e).getPropertyValue('--shelf-rgb').replace(/\s/g,'')),'237,101,115');
+   const colours={albums:'rgb(191, 119, 255)',artists:'rgb(91, 155, 255)',tags:'rgb(255, 184, 51)'};
+   assert.equal(await page.locator('[data-vibe-banner-entity="'+entity+'"]').evaluate(e=>getComputedStyle(e).color),colours[entity]);
+
+   assert.ok((await page.locator('#home-vibe-banner .shelf-controls a').getAttribute('href')).includes('entity='+entity));
+  }
+  await page.locator('#home-vibe').screenshot({path:folder+'/library-home-desktop.png'});
+  await page.locator('#home-vibe-banner').screenshot({path:folder+'/vibe-banner-desktop.png'});
+
   const rows=await page.locator('.mode-card').evaluateAll(nodes=>nodes.map(e=>e.offsetTop));
   assert.deepEqual(rows.slice(0,3),[rows[0],rows[0],rows[0]]);
   assert.deepEqual(rows.slice(3),[rows[3],rows[3],rows[3]]);assert.ok(rows[3]>rows[0]);
@@ -146,6 +162,25 @@ async function bounded(page,width,phase,folder){
    await page.locator('#overall-profile').waitFor();assert.ok(await page.locator('#profile-vibe').isHidden(),'Unmapped profile stays compact');
    assert.equal(await page.locator('#profile-vibe .vibe-profile-content').textContent(),'');
   }
-  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, 320–1365 px.');
+  await page.goto(base+'/global_stats');await page.locator('#global-vibe[aria-busy="false"]').waitFor();
+  assert.equal(await page.locator('#overall-global + #global-vibe').count(),1);
+  assert.equal(await page.locator('#global-vibe .vibe-global-leaders > div').count(),3);
+  await page.setViewportSize({width:1365,height:1050});await page.locator('#global-vibe').screenshot({path:folder+'/vibe-global-desktop.png'});
+  for(const width of [320,390,768,1365]){await page.setViewportSize({width,height:900});await bounded(page,width,'global-vibe',folder);}
+  await page.setViewportSize({width:390,height:844});await page.locator('#global-vibe').screenshot({path:folder+'/vibe-global-phone.png'});
+  for(const entity of ['albums','artists','tags']){
+   await page.goto(base+'/mode_rankings/vibe?entity='+entity);await page.locator('#vibe-ranking-rows .leader-row').first().waitFor();
+   assert.equal(await page.locator('.rank-links a').count(),3);assert.equal(await page.locator('.rank-links a[href*="entity=songs"]').count(),0);
+   assert.ok(await page.locator('.leader-row').count()<=20);
+   if(entity==='albums')assert.ok(!(await page.locator('.leader-title').first().getAttribute('href')).includes('undefined'));
+   await page.locator('[data-vibe-view="bottom"]').click();await page.waitForFunction(()=>document.querySelector('#vibe-ranking-rows .leader-row'));
+   assert.ok(page.url().includes('view=bottom'));assert.ok(await page.locator('.leader-row').count()<=20);
+   for(const width of [320,390,768,1365]){await page.setViewportSize({width,height:900});await bounded(page,width,'vibe-ranking-'+entity,folder);}
+   if(entity==='tags'){await page.screenshot({path:folder+'/vibe-ranking-desktop.png',fullPage:true});await page.setViewportSize({width:390,height:844});await page.screenshot({path:folder+'/vibe-ranking-phone.png',fullPage:true});}
+  }
+  await page.goto(base+'/');await page.locator('#home-vibe[aria-busy="false"]').waitFor();
+  await page.setViewportSize({width:390,height:844});await bounded(page,390,'home-vibe',folder);
+  await page.locator('#home-vibe').screenshot({path:folder+'/library-home-phone.png'});await page.locator('#home-vibe-banner').screenshot({path:folder+'/vibe-banner-phone.png'});
+  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

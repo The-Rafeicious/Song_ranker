@@ -2,7 +2,7 @@
 
 **V5.0.5.1 · V3 competition database · schema 19 (test branch)**
 
-`New-modes-test` adds **Vibe-Map-v1.0.6.1**: open **📍 Vibe Map** from Home or
+`New-modes-test` adds **Vibe-Map-v1.0.7**: open **📍 Vibe Map** from Home or
 Game Modes to place a song on four continuous red maps. Adjust a pin, let its
 five-second timer save it, and use the arrows to revisit saved maps. Finish
 opens a clean eight-axis radar and two similar songs with comparison percentages;
@@ -27,6 +27,12 @@ without repeating the song header; albums, artists and tags show
 four compact heatmaps in one row on wider screens, with consistency and mapped
 counts in the same spot once two tracks are fully mapped. Phones use two columns.
 Connection now labels its early-attachment end Budding; saved coordinates are unchanged.
+Home now puts all-track Vibe maps below Overall Leaders and a scrolling consistency
+banner at the bottom, with Album/Artist/Tag tabs and up to twenty entries each.
+Global Stats has a Vibe summary below Overall. **Mode Rankings → Vibe Map**
+shows top/bottom twenty albums, artists and tags by consistency; there is no
+song board. Ranked collections need two fully mapped songs; proper-album rules
+exclude Singles. These descriptions do not contribute to Overall scores.
 Restart and refresh after updating. See the [stats definitions](docs/VIBE_MAP_STATS.md).
 
 This is descriptive data, with no performance score or Overall contribution.

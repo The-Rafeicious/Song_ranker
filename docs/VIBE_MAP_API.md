@@ -296,3 +296,22 @@ song identity from its HTML fragment. Default inspection includes the identity.
 Budding replaces Casual only in public/display labels for Connection's low Y
 pole. Canonical stored definitions, schema version, positions, pass/sample counts,
 radar geometry and comparison calculations remain unchanged.
+
+
+## Library dashboard and consistency boards · v1.0.7
+
+- `GET /api/vibe-map/library` returns `profile_ready`, `summary`, four `maps`,
+  compact all-song `html`, `global_html`, per-category `counts` and `banner`.
+  Banner arrays contain at most twenty rows for each of albums/artists/tags.
+  The summary includes total/selected/full/partial songs, map positions,
+  completed passes, coverage and library consistency. Missing maps stay absent.
+- `GET /api/vibe-map/rankings?entity=albums&view=top` returns entity/view, total
+  eligible groups, fixed `limit: 20` and items. Entity is albums, artists or tags;
+  view is top or bottom. Unknown values return 400. Each row includes identity,
+  cover, mapped/total counts, coverage, displayed consistency and absolute rank.
+  Album rows retain title as well as name for the shared navigation helpers.
+
+Both readers use one read-only/no-store snapshot, with no play offers, ratings,
+placements or schema writes. Rank ordering uses unrounded consistency; no more
+than twenty items are returned. `/mode_rankings/vibe` supplies the shared UI.
+See [eligibility, tie-breaking and surface layout](VIBE_MAP_STATS.md).

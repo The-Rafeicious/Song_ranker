@@ -136,7 +136,7 @@ def shelf_stats():
 
 @app.route('/mode_rankings/<mode>')
 def special_rankings(mode):
-    if mode not in ('trivia','tournament','guesser','shelves'):return 'Unknown mode',404
+    if mode not in ('trivia','tournament','guesser','shelves','vibe'):return 'Unknown mode',404
     return render_template('app_page.html',page='mode_rankings_'+mode)
 
 

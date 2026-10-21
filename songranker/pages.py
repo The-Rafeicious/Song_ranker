@@ -279,3 +279,17 @@ def api_vibe_map_entity(kind, entity_id):
     from songranker.modes.vibe_map import respond
     from songranker.reports.vibe_entity_data import build_entity_vibe
     return respond(lambda conn, data: build_entity_vibe(conn, kind, entity_id))
+
+
+@app.get('/api/vibe-map/library')
+def api_vibe_map_library():
+    from songranker.modes.vibe_map import respond
+    from songranker.reports.vibe_library_data import build_library_vibe
+    return respond(lambda conn,data: build_library_vibe(conn))
+
+
+@app.get('/api/vibe-map/rankings')
+def api_vibe_map_rankings():
+    from songranker.modes.vibe_map import respond
+    from songranker.reports.vibe_library_data import build_vibe_rankings
+    return respond(lambda conn,data: build_vibe_rankings(conn,request.args.get('entity','albums'),request.args.get('view','top')))

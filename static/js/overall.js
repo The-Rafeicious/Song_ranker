@@ -29,7 +29,7 @@ window.Overall=(()=>{
    else{placeholder=document.createElement('section');placeholder.className='panel overall-panel';placeholder.dataset.overallLoading='true';placeholder.innerHTML='<h2 class="overall">Overall</h2><div class="empty" role="status">Calculating…</div>';if(profile)root.after(placeholder);else root.before(placeholder);}
    try{
      const data=await load();if(!placeholder.isConnected)return;
-     if(page==='home'){placeholder.outerHTML=highlights(data);return;}
+     if(page==='home'){placeholder.outerHTML=highlights(data);window.VibeLibrary?.placeHome();return;}
      if(page==='global_stats'){
        placeholder.outerHTML=`<section class="panel overall-panel" id="overall-global" data-global-section="overall"><div class="section-head"><h2 class="overall">Overall Stats</h2><a class="overall" href="/overall_rankings">Overall rankings ↗</a></div><div class="overall-global-summary joined-metrics"><div><b>${data.summary.tested_songs} / ${data.summary.songs}</b><small>Tested songs</small></div><div><b>${pct(data.summary.evidence)}</b><small>Library relative evidence</small></div><div><b>${data.summary.active_modes}</b><small>Active modes</small></div></div>${highlights(data,'Overall Leaders','overall-global-leaders',false)}</section>`;return;
      }
