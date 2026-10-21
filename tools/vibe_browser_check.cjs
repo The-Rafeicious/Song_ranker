@@ -36,8 +36,17 @@ async function bounded(page,width,phase,folder){
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:folder+'/map-phone.png',fullPage:true});
   await page.setViewportSize({width:1365,height:1050});
   await page.evaluate(()=>window.scrollTo(0,0));
-  const placement=await page.locator('#vibe-layout').evaluate(e=>{const card=e.querySelector('#vibe-song').getBoundingClientRect(),map=e.querySelector('#vibe-workspace').getBoundingClientRect();return Math.abs(card.y+card.height/2-map.y-map.height/2)});
-  assert.ok(placement<8,'Song card centres against the map container');
+  // ResizeObserver measures the newly responsive card on the next layout frame.
+  try{
+   await page.waitForFunction(()=>{
+    const card=document.querySelector('#vibe-song').getBoundingClientRect(),map=document.querySelector('#vibe-workspace').getBoundingClientRect();
+    return Math.abs(card.y+card.height/2-map.y-map.height/2)<8;
+   },null,{timeout:5000});
+  }catch(error){
+   await page.screenshot({path:folder+'/card-placement-failure.png',fullPage:true});
+   console.log(await page.locator('#vibe-song').evaluate(e=>({card:e.getBoundingClientRect().toJSON(),map:document.querySelector('#vibe-workspace').getBoundingClientRect().toJSON(),measured:e.style.getPropertyValue('--vibe-card-height'),top:getComputedStyle(e).top,scrollY})));
+   throw error;
+  }
   await page.locator('#vibe-save-status').scrollIntoViewIfNeeded();
   assert.ok(await page.locator('#vibe-finish').isVisible());
   await page.locator('#vibe-finish').click();await page.locator('.vibe-match').first().waitFor();
