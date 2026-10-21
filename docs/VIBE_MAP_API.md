@@ -256,3 +256,14 @@ Pairs/group consistency require all four placed maps; map coverage and patterns
 use available numeric evidence. No persisted grids, history, reset, new schema
 or weighting change is introduced. Definitions and denominators are in
 [Vibe Map stats](VIBE_MAP_STATS.md). Dedicated entity profiles remain future work.
+
+
+## Song inspection · v1.0.5.1
+
+`GET /api/vibe-map/inspect/<int:song_id>` is read-only/no-store and returns
+`song`, `profile` (including its saved average `radar`), two `matches`,
+`total_comparable`, `map_count` and an autoescaped reusable `html` fragment.
+Unknown songs return the existing `missing_song` 404; a zero ID is invalid (400).
+Matches use the same shared-map comparison and ordering as `/similar`, including
+partial evidence. Heatmap activation opens this in-page panel; explicit metadata
+links still navigate normally. See [stats layout and listening scope](VIBE_MAP_STATS.md).

@@ -6,6 +6,8 @@
 {% block extra_css %}
 <link rel="stylesheet" href="{{url_for('static',filename='css/mode_stats.css',v=app_version)}}">
 <link rel="stylesheet" href="{{url_for('static',filename='css/vibe_stats.css',v=vibe_version)}}">
+<link rel="stylesheet" href="{{url_for('static',filename='css/vibe_charts.css',v=vibe_version)}}">
+<link rel="stylesheet" href="{{url_for('static',filename='css/vibe_song_stats.css',v=vibe_version)}}">
 {% endblock %}
 {% macro pair_list(rows,empty) -%}
 <div class="vibe-stats-pairs">{% for row in rows %}<article class="mode-stats-inset vibe-stats-pair">
@@ -43,12 +45,17 @@
         <text class="vibe-map-pole" x="30" y="196">{{map.x_low}}</text><text class="vibe-map-pole" x="510" y="196" text-anchor="end">{{map.x_high}}</text>
         <text class="vibe-map-pole" x="270" y="15" text-anchor="middle">{{map.y_high}}</text><text class="vibe-map-pole" x="270" y="416" text-anchor="middle">{{map.y_low}}</text>
         {% if map.x_center %}<text class="vibe-map-centre" x="270" y="230" text-anchor="middle">{{map.x_center}}</text>{% endif %}
-        {% for point in map.points %}<a href="{{url_for('song_page',song_id=point.song_id)}}" tabindex="-1" data-vibe-point data-song-title="{{point.title}}" data-song-artist="{{point.artist}}" data-nearby="{{point.nearby}}" aria-label="{{point.title}} · {{point.artist}}"><circle class="vibe-map-dot" cx="{{point.cx}}" cy="{{point.cy}}" r="4.5" fill="{{point.colour}}" fill-opacity="{{point.opacity}}"><title>{{point.title}} · {{point.artist}}</title></circle></a>{% endfor %}
+        {% for point in map.points %}<g role="button" tabindex="-1" aria-controls="vibe-song-inspector" data-song-id="{{point.song_id}}" data-vibe-point data-song-title="{{point.title}}" data-song-artist="{{point.artist}}" data-nearby="{{point.nearby}}" aria-label="Inspect {{point.title}} · {{point.artist}}"><circle class="vibe-map-dot" cx="{{point.cx}}" cy="{{point.cy}}" r="4.5" fill="{{point.colour}}" fill-opacity="{{point.opacity}}"><title>{{point.title}} · {{point.artist}}</title></circle></g>{% endfor %}
         {% if not map.count %}<text class="vibe-map-empty" x="270" y="280" text-anchor="middle">No placements yet</text>{% endif %}
       </svg>
       <figcaption><span class="vibe-chart-selection" aria-live="polite" aria-atomic="true">{{map.count}} placed · {{map.unmapped}} without a point</span><span class="vibe-hotspot">Largest neighbourhood <b>{{map.max_nearby}}</b></span></figcaption>
     </figure>{% endfor %}</div>
-    <span class="vibe-visually-hidden" id="vibe-chart-help">Arrow keys browse songs. Home and End move to the first and last song. Enter opens the selected song.</span>
+    <span class="vibe-visually-hidden" id="vibe-chart-help">Arrow keys browse songs. Home and End move to the first and last song. Enter or Space opens the song vibe panel.</span>
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel vibe-song-inspector" id="vibe-song-inspector" aria-labelledby="vibe-inspector-title" aria-busy="false">
+    <div class="section-head"><h2 class="vibe" id="vibe-inspector-title" tabindex="-1">Song vibe</h2></div>
+    <div data-vibe-inspector-content><p class="empty">Select a map point.</p></div>
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-patterns">
@@ -67,4 +74,4 @@
   {% for group in groups %}<section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-{{group.kind}}s"><div class="section-head"><h2 class="{{group.kind}}" id="vibe-{{group.kind}}s">{{group.title}} · consistency</h2></div><div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3 class="{{group.kind}}">Most consistent</h3>{{group_list(group.most,group.kind)}}</div><div class="mode-stats-inset"><h3 class="{{group.kind}}">Least consistent</h3>{{group_list(group.least,group.kind)}}</div></div></section>{% endfor %}
 </div>
 {% endblock %}
-{% block extra_js %}<script src="{{url_for('static',filename='js/vibe_stats.js',v=vibe_version)}}" defer></script>{% endblock %}
+{% block extra_js %}<script src="{{url_for('static',filename='js/vibe_charts.js',v=vibe_version)}}" defer></script><script src="{{url_for('static',filename='js/vibe_stats.js',v=vibe_version)}}" defer></script>{% endblock %}

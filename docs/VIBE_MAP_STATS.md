@@ -1,4 +1,4 @@
-# Vibe Map stats · v1.0.5
+# Vibe Map stats · v1.0.5.1
 
 Open Stats → 📍 Vibe Map Stats, or the Stats link on the mode page.
 The dedicated page is `/vibe_map_stats`; its read-only JSON projection is
@@ -32,7 +32,7 @@ neighbours without rounding song positions. All four charts share one colour
 scale; denser neighbourhoods are brighter and overlapping dots accumulate.
 The largest neighbourhood count is shown on each chart. Hover or focus a dot
 to identify its song; arrow keys browse all points, Home/End select endpoints,
-and Enter opens the track. Every song remains reachable even when dots overlap.
+and Enter or Space opens the in-page song inspector. Every song remains reachable even when dots overlap.
 
 Common combinations count distinct songs beyond one displayed unit from the
 centre on two different axes. Both requested map placements must exist; the
@@ -68,3 +68,30 @@ then coverage and ID. Small libraries can show a group in both lists.
 There are no invented activity timelines: the mode retains compact averages,
 sample counts and completion counters, not an attempt-history table. Individual
 song/album/artist/tag profile stats and mode rankings remain future work.
+
+## Compact song inspector · v1.0.5.1
+
+Activating a heatmap dot keeps the stats page open and loads the Song vibe panel
+just below the maps. Hover/arrow browsing alone never triggers a request.
+The panel shows the song's saved average radar, explicit song/album/artist
+links, mapped evidence and two closest comparable songs. Each match labels
+shared maps; partial profiles retain radar gaps. Loading, retry and deleted-song
+states are explicit. New selections cancel older requests, and late responses
+cannot replace the current selection. Navigation cancels pending inspection.
+
+`GET /api/vibe-map/inspect/<song_id>` returns song identity, saved `profile`,
+`matches`, `total_comparable`, `map_count` and an autoescaped HTML fragment.
+It uses the mode's existing fixed similarity and a single read transaction;
+no play round, completion, listening observation or placement is created.
+
+`templates/vibe_song_stats_panel.html` and `static/css/vibe_song_stats.css` own
+the compact reusable layout for future song profile integration. Load shared
+mode stats and Vibe chart assets too. `VibeCharts.radar(data, label, true)` uses
+compact geometry; existing mode results keep their original default geometry.
+This patch does not yet add the panel to dedicated song pages.
+
+Listening observations currently support Standard, Blind, Tournament, Trivia,
+Guesser and Shelves only. The schema excludes Vibe Map and the mode sends no
+listening payload. Consequently no Vibe listening mean/high/low container is
+shown; unrelated playback data and unknown durations are not treated as zero.
+Listening capture/schema changes are outside this conditional display patch.

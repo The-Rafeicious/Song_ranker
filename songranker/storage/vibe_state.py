@@ -1,7 +1,7 @@
 """Fixed Vibe Map definitions and versioned schema-17/18 transport and one-time schema-19 test reset."""
 from copy import deepcopy
 
-VIBE_MAP_VERSION = 'Vibe-Map-v1.0.5'
+VIBE_MAP_VERSION = 'Vibe-Map-v1.0.5.1'
 VIBE_MAP_COLOUR = '#d94b58'
 # Stable keys and endpoint meanings: coordinate -1 is low, +1 is high.
 LEGACY_MAPS = (

@@ -1,0 +1,25 @@
+/* Compact Vibe Map song summary; shared with future dedicated song pages. */
+.vibe-song-panel { display: grid; grid-template-columns: minmax(220px,.8fr) minmax(0,1.2fr); gap: 14px 24px; align-items: center; }
+.vibe-song-identity { grid-column: 1 / -1; display: grid; grid-template-columns: 56px minmax(0,1fr); align-items: center; gap: 14px; }
+.vibe-song-panel .small-art { width: 56px; height: 56px; min-width: 56px; min-height: 56px; max-width: 56px; max-height: 56px; border-radius: 12px; }
+.vibe-song-panel .mode-stats-name { font-size: 20px; }
+.vibe-song-panel .mode-stats-meta { font-size: 14px; margin-top: 5px; gap: 4px 12px; }
+.vibe-song-evidence { display: block; color: #c6adb5; font-size: 13px; margin-top: 6px; }
+.vibe-song-chart { min-width: 0; }
+.vibe-song-panel .vibe-radar { width: min(100%,300px); }
+.vibe-song-panel .vibe-radar text { font-size: 18px; }
+.vibe-song-matches { min-width: 0; }
+.vibe-song-matches h3 { font-size: 20px; margin: 0 0 12px; }
+.vibe-song-matches .mode-stats-row { --mode-stats-art-size: 48px; grid-template-columns: 48px minmax(0,1fr) auto; gap: 12px; padding: 12px 0; }
+.vibe-song-matches .mode-stats-art .small-art { width: 48px; height: 48px; min-width: 48px; min-height: 48px; max-width: 48px; max-height: 48px; }
+.vibe-song-matches .mode-stats-result > strong { font-size: 22px; }
+.vibe-song-matches .mode-stats-result > span { font-size: 13px; }
+.vibe-song-matches .mode-stats-copy { grid-column: auto; }
+.vibe-song-matches .mode-stats-result { grid-column: auto; display: block; text-align: right; }
+@media (max-width: 650px) {
+  .vibe-song-panel { grid-template-columns: minmax(0,1fr); gap: 12px; }
+  .vibe-song-identity { grid-column: 1; }
+  .vibe-song-matches .mode-stats-row { grid-template-columns: 48px minmax(0,1fr); gap: 10px; }
+  .vibe-song-matches .mode-stats-result { grid-column: 2; display: flex; align-items: baseline; flex-wrap: wrap; gap: 8px; text-align: left; }
+  .vibe-song-matches .mode-stats-result > span { margin: 0; }
+}
