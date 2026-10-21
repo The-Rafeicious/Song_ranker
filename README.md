@@ -1,6 +1,6 @@
 # Song Ranker V5
 
-**V5.0.4.2 · V3 competition database · schema 16**
+**V5.0.4.3 · V3 competition database · schema 16**
 
 Vote between songs, identify previews, run tournaments, guess Elo and arrange
 album shelves. V5 keeps your music catalogue and starts the competition again
@@ -28,7 +28,7 @@ python main.py
 
 Use `python3` if that is your Python command. Python 3.10+ is required; validation
 used 3.12. Open **http://127.0.0.1:5000**, then hard-refresh existing browser tabs.
-The footer should show **V5.0.4.2**.
+The footer should show **V5.0.4.3**.
 
 On first launch, V5 makes a complete SQLite backup of V2, verifies a catalogue-only
 transfer and publishes **`data/song_ranker_v3.db`**. Song/artist/album/tag IDs,
@@ -253,3 +253,11 @@ instead of silently dropping your choices. Apple-supplied genres count too.
 
 See the [upgrade notes and suggested new tags](docs/UPGRADE_V5_0_4_2.md).
 Restart and hard-refresh after applying the patch.
+
+
+## V5.0.4.3 search result labels
+
+Search cards use coloured titles without repeated Song/Album/Artist/Tag badges.
+Song cards now show their attached tag count in tag gold, including **0 tags**
+and **1 tag**. Copy has consistent spacing across all four result categories.
+Restart and hard-refresh after updating. Schema remains 16.

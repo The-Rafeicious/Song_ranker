@@ -572,6 +572,13 @@ matching/URL query behavior. `search.js` owns this page's state, result markup,
 achievement rules and resize handling; `search.css` owns its composition. Load
 both only on Search. Keep shared baseline tokens and dashboard surface glows.
 
+V5.0.4.3 removes the redundant entity-type badge above each result title.
+Keep the category toolbar and entity-coloured title links. Song cards show a
+separate gold (`--tag`) line below metadata with their distinct attached-tag
+count, including “0 tags” and singular “1 tag”. Other categories have no added
+tag-count line. Use consistent 8 px copy gaps (6 px on phones) so names, metadata
+and tag descriptions have room without reserving an empty badge row.
+
 All four categories use the same two-column desktop card grid (one column below
 1100 px). Cards are articles with name/metadata links rather than nested links
 inside a whole-card link. Names keep entity colours; song scores use Elo orange,
@@ -1229,3 +1236,4 @@ Count each song’s resulting union for Add, the replacement set for Replace,
 and allow unrestricted Remove targets. Typed new names count too. Keep the
 capacity message live and disable Review for an overflowing draft. Preserve
 choices so the user can fix them; do not silently trim new submissions.
+
