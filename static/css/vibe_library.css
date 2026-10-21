@@ -30,3 +30,7 @@
 }
 
 body[data-tone=vibe] { --page-color: var(--vibe); --page-rgb: 237,101,115; }
+
+/* The shared shelf owner defaults to Song green; this banner owns Vibe red. */
+#home-vibe-banner { --shelf-accent: var(--vibe); --shelf-rgb: 237,101,115; --surface-accent: var(--vibe); }
+#home-vibe-banner .vibe-banner-types .pill.active { color: var(--category-color); border-color: var(--category-color); background: color-mix(in srgb,var(--category-color) 12%,var(--panel)); box-shadow: none; }

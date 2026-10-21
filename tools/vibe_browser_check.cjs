@@ -74,6 +74,10 @@ async function bounded(page,width,phase,folder){
   for(const entity of ['albums','artists','tags']){
    await page.locator('[data-vibe-banner-entity="'+entity+'"]').click();
    assert.ok(await page.locator('[data-vibe-banner-row]').count()<=20);
+   assert.equal(await page.locator('#home-vibe-banner').evaluate(e=>getComputedStyle(e).getPropertyValue('--shelf-rgb').replace(/\s/g,'')),'237,101,115');
+   const colours={albums:'rgb(191, 119, 255)',artists:'rgb(91, 155, 255)',tags:'rgb(255, 184, 51)'};
+   assert.equal(await page.locator('[data-vibe-banner-entity="'+entity+'"]').evaluate(e=>getComputedStyle(e).color),colours[entity]);
+
    assert.ok((await page.locator('#home-vibe-banner .shelf-controls a').getAttribute('href')).includes('entity='+entity));
   }
   await page.locator('#home-vibe').screenshot({path:folder+'/library-home-desktop.png'});
