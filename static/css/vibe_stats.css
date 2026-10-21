@@ -15,8 +15,8 @@ body[data-page=vibe_stats] { --page-color: var(--vibe); --page-rgb: 237,101,115;
 .vibe-density-map { width: 100%; height: auto; display: block; overflow: visible; margin-top: 14px; }
 .vibe-density-map:focus-visible { outline: 2px solid var(--vibe); outline-offset: 4px; border-radius: 18px; }
 .vibe-map-axis { stroke: #ed65734d; stroke-width: 1; }
-.vibe-map-pole { fill: #dbb8c2; font: 700 14px Arial,sans-serif; pointer-events: none; }
-.vibe-map-centre, .vibe-map-empty { fill: #b296a0; font: 13px Arial,sans-serif; pointer-events: none; }
+.vibe-map-pole { fill: #dbb8c2; font: 700 24px Arial,sans-serif; pointer-events: none; }
+.vibe-map-centre, .vibe-map-empty { fill: #b296a0; font: 22px Arial,sans-serif; pointer-events: none; }
 .vibe-map-dot { stroke: #ffc5cd33; stroke-width: .7; }
 .vibe-density-map a:hover .vibe-map-dot, .vibe-density-map a:focus .vibe-map-dot { stroke: white; stroke-width: 3; fill-opacity: 1; }
 .vibe-heatmap figcaption { min-height: 62px; display: grid; gap: 8px; margin: 16px 0 0; color: #ccb4bb; font-size: 14px; }
@@ -44,11 +44,14 @@ body[data-page=vibe_stats] { --page-color: var(--vibe); --page-rgb: 237,101,115;
 .vibe-pair-score { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; align-items: baseline; padding-top: 14px; border-top: 1px solid var(--mode-stats-rule); color: #d2b4bf; }
 .vibe-pair-score > strong { color: var(--vibe); font-size: 30px; font-weight: 900; }
 .vibe-pair-score > span { font-size: 15px; }
+.vibe-stats-page h3.tag { color: var(--tag); }
 .vibe-tag-art { width: 72px; height: 72px; display: grid; place-items: center; font-size: 36px; background: #453925; border: 1px solid #d5b15d33; border-radius: 18px; }
 .vibe-consistency-list .mode-stats-result > strong { font-size: 26px; }
 @media (max-width: 1100px) { .vibe-pattern-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
 @media (max-width: 850px) { .vibe-heatmaps, .vibe-stats-pairs { grid-template-columns: minmax(0,1fr); } }
 @media (max-width: 600px) {
+  .vibe-map-pole { font-size: 34px; }
+  .vibe-map-centre, .vibe-map-empty { font-size: 28px; }
   .vibe-balances { grid-template-columns: minmax(0,1fr); }
   .vibe-density-key { gap: 8px; font-size: 12px; }.vibe-density-key i { width: 65px; }
   .vibe-stats-page .vibe-heatmap { padding: 12px; }

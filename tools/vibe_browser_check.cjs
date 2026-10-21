@@ -94,6 +94,8 @@ async function bounded(page,width,phase,folder){
   await page.screenshot({path:folder+'/stats-desktop.png',fullPage:true});
   for(const width of [320,360,390,430,768,1365]){
    await page.setViewportSize({width,height:900});await bounded(page,width,'stats',folder);
+   const axisSize=await page.locator('.vibe-map-pole').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize)*e.ownerSVGElement.getBoundingClientRect().width/540);
+   assert.ok(axisSize>=12,'Readable heatmap labels at '+width);
   }
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:folder+'/stats-phone.png',fullPage:true});
   assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, keyboard links, 320–1365 px.');

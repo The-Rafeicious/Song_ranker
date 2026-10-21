@@ -1301,6 +1301,7 @@ macros with the red Vibe accent. Keep song/artist/album/tag identity colours.
 Order coverage, all-track maps, common combinations, axis balance, closest pairs,
 contrasts, then album/artist/tag consistency. Show useful evidence counts inline,
 without data disclosures or explanatory paragraphs. All four maps stay visible;
-one exact-position dot per placed song, one shared density scale. Support point
+one exact-position dot per placed song, one shared density scale. Keep axis
+labels at least 12 rendered pixels on phones. Support point
 hover and keyboard browsing, including overlapping tracks. Collapse map/pair and
 comparison columns on phones, retaining all data and bounded names/scores.
