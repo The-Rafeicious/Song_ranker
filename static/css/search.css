@@ -35,7 +35,7 @@ body.search-page #main .results > .empty { grid-column: 1 / -1; }
 body.search-page #main .result-card {
   --search-art-size: 96px;
   display: grid; grid-template-columns: var(--search-art-size) minmax(0,1fr) auto;
-  gap: 14px 18px; align-items: center; background: var(--panel);
+  gap: 14px 18px; align-items: center; background: var(--panel); min-width: 0; max-width: 100%;
   border-color: color-mix(in srgb, var(--entity) 38%, var(--line));
 }
 body.search-page #main .search-art { min-width: 0; line-height: 0; }
@@ -47,7 +47,10 @@ body.search-page #main .search-art .art-wrap {
 }
 body.search-page #main .search-art .tag-cover { font-size: 48px; color: var(--tag); }
 body.search-page #main .result-info { display: grid; gap: 8px; min-width: 0; }
-body.search-page #main .search-tag-count { margin: 0; color: var(--tag); font-size: 16px; font-weight: 800; }
+body.search-page #main :is(.search-tag-count,.search-song-count,.search-album-count) { margin: 0; font-size: 16px; font-weight: 800; }
+body.search-page #main .search-tag-count { color: var(--tag); }
+body.search-page #main .search-song-count { color: var(--song); }
+body.search-page #main .search-album-count { color: var(--album); }
 body.search-page #main .result-info h2 { font-size: 26px; font-weight: 900; line-height: 1.25; margin: 0; min-width: 0; }
 body.search-page #main :is(.result-info h2 a,.search-metadata,.search-description) { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 100%; }
 body.search-page #main .search-metadata { font-size: 18px; color: var(--muted); }
@@ -57,8 +60,8 @@ body.search-page #main .result-card a:hover,
 body.search-page #main .result-card a:focus-visible { text-decoration: underline; text-underline-offset: 4px; outline-color: currentColor; }
 body.search-page #main .result-score { font-size: 32px; min-width: 0; max-width: 100%; }
 body.search-page #main .result-score small { font-size: 13px; }
-body.search-page #main .search-achievements { grid-column: 1 / -1; display: flex; flex-wrap: nowrap; gap: 8px; overflow: hidden; min-width: 0; max-width: 100%; margin-top: 0; }
-body.search-page #main .achievement { display: inline-flex; align-items: center; gap: 5px; border: 1px solid; border-radius: 999px; font-weight: 800; line-height: 1.4; white-space: nowrap; flex: 0 0 auto; font-size: 12px; padding: 4px 9px; border-color: color-mix(in srgb,currentColor 35%,transparent); background: color-mix(in srgb,currentColor 8%,var(--panel)); }
+body.search-page #main .search-achievements { grid-column: 1 / -1; display: flex; flex-wrap: nowrap; align-items: center; gap: 8px; overflow: hidden; contain: inline-size; width: 100%; min-width: 0; max-width: 100%; height: 28px; margin-top: 0; }
+body.search-page #main .achievement { display: inline-flex; align-items: center; gap: 5px; border: 1px solid; border-radius: 999px; font-weight: 800; line-height: 1.4; white-space: nowrap; flex: 0 0 auto; box-sizing: border-box; max-height: 28px; font-size: 12px; padding: 4px 9px; border-color: color-mix(in srgb,currentColor 35%,transparent); background: color-mix(in srgb,currentColor 8%,var(--panel)); }
 body.search-page #main .achievement[hidden] { display: none; }
 body.search-page #main .search-tag-filter .btn,
 body.search-page #main .related-tags summary { min-height: 44px; }
@@ -74,7 +77,7 @@ body.search-page #main .search-tag-filter .btn { font-size: 15px; }
   body.search-page #main .search-art { grid-row: 1 / span 2; }
   body.search-page #main .result-info { grid-column: 2; grid-row: 1; gap: 6px; }
   body.search-page #main .result-info h2 { font-size: 22px; }
-  body.search-page #main :is(.search-metadata,.search-description,.search-tag-count) { font-size: 15px; }
+  body.search-page #main :is(.search-metadata,.search-description,.search-tag-count,.search-song-count,.search-album-count) { font-size: 15px; }
   body.search-page #main .result-score { grid-column: 2; grid-row: 2; justify-self: end; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; font-size: 28px; white-space: normal; overflow-wrap: anywhere; }
   body.search-page #main .result-score small { font-size: 12px; }
   body.search-page #main .search-toolbar { grid-template-columns: minmax(0,1fr); }
@@ -82,4 +85,5 @@ body.search-page #main .search-tag-filter .btn { font-size: 15px; }
   body.search-page #main .search-toolbar .pill-nav { gap: 8px; }
   body.search-page #main .search-toolbar .pill { padding: 9px 12px; }
 }
+
 
