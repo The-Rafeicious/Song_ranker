@@ -134,6 +134,9 @@ def collection(include_overall_sources=False):
         data = {'songs':[dict(r) for r in conn.execute('SELECT s.*,COALESCE(ts.attempts,0) AS attempts,COALESCE(ts.correct,0) AS correct,COALESCE(ts.available_points,0) AS available_points,COALESCE(ts.new_attempts,0) AS new_attempts,COALESCE(ts.title_correct,0) AS title_correct,COALESCE(ts.artist_correct,0) AS artist_correct,COALESCE(ts.album_attempts,0) AS album_attempts,COALESCE(ts.album_correct,0) AS album_correct FROM songs s LEFT JOIN trivia_stats ts ON ts.song_id=s.id')]}
         for key, table in [('artists','artists'),('albums','albums'),('tags','genres'),('history','history'),('tournaments','tournaments'),('tournament_entries','tournament_entries'),('tournament_matches','tournament_matches')]:
             data[key]=[dict(r) for r in conn.execute(f'SELECT * FROM {table}')]
+        from songranker.vibe_maps import map_definitions, with_vibe_maps
+        data['vibe_map_definitions'] = map_definitions(conn)
+        data['songs'] = with_vibe_maps(conn, data['songs'])
         data['trivia_rounds']=[dict(r) for r in conn.execute('SELECT * FROM trivia_rounds WHERE completed_at IS NOT NULL ORDER BY id DESC LIMIT 100')]
         data['global_stats']=dict(conn.execute('SELECT key,value FROM global_stats'))
         from songranker.modes.challenges import records as challenge_records

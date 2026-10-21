@@ -544,3 +544,50 @@ WHEN (NEW.song_id != OLD.song_id OR NEW.genre_id != OLD.genre_id)
 BEGIN
     SELECT RAISE(ABORT, 'A song can have at most 8 tags. Remove a tag before adding another.');
 END;
+
+-- Vibe-Map-v1.0.0: four independent two-axis descriptions, never preference scores.
+CREATE TABLE IF NOT EXISTS vibe_maps (
+    id TEXT PRIMARY KEY CHECK(id IN ('mood_energy','relationships','self_social','reflection_escape')),
+    title TEXT NOT NULL,
+    x_low TEXT NOT NULL,
+    x_high TEXT NOT NULL,
+    y_low TEXT NOT NULL,
+    y_high TEXT NOT NULL,
+    definition_version INTEGER NOT NULL CHECK(definition_version=1),
+    colour TEXT NOT NULL DEFAULT '#d94b58',
+    display_order INTEGER NOT NULL UNIQUE CHECK(display_order BETWEEN 1 AND 4)
+) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS song_vibe_positions (
+    song_id INTEGER NOT NULL REFERENCES songs(id) ON DELETE CASCADE,
+    map_id TEXT NOT NULL REFERENCES vibe_maps(id),
+    x REAL CHECK(x IS NULL OR (typeof(x) IN ('real','integer') AND x BETWEEN -1 AND 1)),
+    y REAL CHECK(y IS NULL OR (typeof(y) IN ('real','integer') AND y BETWEEN -1 AND 1)),
+    status TEXT NOT NULL DEFAULT 'unmapped' CHECK(status IN ('unmapped','placed','not_applicable')),
+    updated_at REAL CHECK(updated_at IS NULL OR (typeof(updated_at) IN ('real','integer') AND updated_at>=0)),
+    PRIMARY KEY(song_id,map_id),
+    CHECK((status='unmapped' AND x IS NULL AND y IS NULL AND updated_at IS NULL)
+       OR (status='not_applicable' AND x IS NULL AND y IS NULL AND updated_at IS NOT NULL)
+       OR (status='placed' AND x IS NOT NULL AND y IS NOT NULL AND updated_at IS NOT NULL))
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS vibe_positions_map ON song_vibe_positions(map_id,status,song_id);
+
+-- All import/add paths insert songs; each new song receives ALL four independent slots.
+CREATE TRIGGER IF NOT EXISTS song_vibe_added AFTER INSERT ON songs
+BEGIN
+    INSERT INTO song_vibe_positions(song_id,map_id)
+    SELECT NEW.id,id FROM vibe_maps;
+END;
+
+-- Clear a placement by updating it to unmapped; keep its required song/map slot.
+CREATE TRIGGER IF NOT EXISTS song_vibe_keep_slot BEFORE DELETE ON song_vibe_positions
+WHEN EXISTS(SELECT 1 FROM songs WHERE id=OLD.song_id)
+BEGIN
+    SELECT RAISE(ABORT, 'Keep all four Vibe Map slots; clear the coordinates instead.');
+END;
+CREATE TRIGGER IF NOT EXISTS song_vibe_keep_identity
+BEFORE UPDATE OF song_id,map_id ON song_vibe_positions
+WHEN NEW.song_id!=OLD.song_id OR NEW.map_id!=OLD.map_id
+BEGIN
+    SELECT RAISE(ABORT, 'A Vibe Map slot cannot be moved to another song or map.');
+END;
