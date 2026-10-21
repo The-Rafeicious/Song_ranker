@@ -1305,3 +1305,17 @@ one exact-position dot per placed song, one shared density scale. Keep axis
 labels at least 12 rendered pixels on phones. Support point
 hover and keyboard browsing, including overlapping tracks. Collapse map/pair and
 comparison columns on phones, retaining all data and bounded names/scores.
+
+
+## Vibe Map song inspection — Vibe-Map-v1.0.5.1
+
+Heatmap dots are inspection buttons, not immediate navigation links. Mouse,
+Enter and Space open a compact Song vibe panel immediately after the maps;
+hover and arrow browsing retain the lightweight caption. Keep explicit coloured
+song, album and artist links in the selected identity and match rows. Reuse a
+compact eight-spoke radar and two closest matches, labelled by shared evidence.
+Keep the desktop panel below 450 px tall and stack chart/matches on phones.
+Use the shared `vibe_song_stats_panel.html` / `vibe_song_stats.css` layout for
+future song-page integration. Missing maps stay gaps. Show short loading/retry
+states and protect the latest selection from stale responses. Do not show Vibe
+listening metrics until the mode actually records supported observations.

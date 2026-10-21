@@ -18,7 +18,7 @@ body[data-page=vibe_stats] { --page-color: var(--vibe); --page-rgb: 237,101,115;
 .vibe-map-pole { fill: #dbb8c2; font: 700 24px Arial,sans-serif; pointer-events: none; }
 .vibe-map-centre, .vibe-map-empty { fill: #b296a0; font: 22px Arial,sans-serif; pointer-events: none; }
 .vibe-map-dot { stroke: #ffc5cd33; stroke-width: .7; }
-.vibe-density-map a:hover .vibe-map-dot, .vibe-density-map a:focus .vibe-map-dot { stroke: white; stroke-width: 3; fill-opacity: 1; }
+.vibe-density-map [data-vibe-point]:hover .vibe-map-dot, .vibe-density-map [data-vibe-point]:focus .vibe-map-dot, .vibe-density-map [data-vibe-point].is-selected .vibe-map-dot { stroke: white; stroke-width: 3; fill-opacity: 1; }
 .vibe-heatmap figcaption { min-height: 62px; display: grid; gap: 8px; margin: 16px 0 0; color: #ccb4bb; font-size: 14px; }
 .vibe-chart-selection { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
 .vibe-chart-selection a { color: var(--song); font-weight: 800; }
@@ -61,3 +61,7 @@ body[data-page=vibe_stats] { --page-color: var(--vibe); --page-rgb: 237,101,115;
   .vibe-stats-page .vibe-coverage { grid-template-columns: minmax(0,1fr); text-align: center; gap: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { .vibe-stats-page * { scroll-behavior: auto; transition: none; } }
+
+.vibe-density-map [data-vibe-point] { cursor: pointer; }
+.vibe-song-inspector { scroll-margin-top: 110px; }
+.vibe-song-inspector [data-vibe-inspector-content] { min-width: 0; }

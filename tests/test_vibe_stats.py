@@ -2,6 +2,7 @@
 import unittest
 from unittest.mock import patch
 from songranker.reports.vibe_stats_data import build_vibe_stats, consistency, density, common_patterns
+from songranker.modes import vibe_map  # Register mode routes before exercising Flask.
 from songranker.modes.vibe_similarity import compare_positions
 from songranker.storage.vibe_state import MAPS
 from songranker.storage.database_io import capture
@@ -116,3 +117,52 @@ class VibeStatsTests(unittest.TestCase):
                 self.assertEqual(response.json['overview']['full'],2 if filled else 0)
                 self.assertEqual(response.headers['Cache-Control'],'no-store')
                 self.assertEqual(capture(self.conn),before)
+
+    def test_inspector_radar_links_and_top_two_use_saved_averages_without_writes(self):
+        from songranker.modes.vibe_map import similar_songs
+        self.place(1,-.7,.6,samples=3);self.place(2,-.7,.6);self.place(3,.9,-.9);self.place(4,-.6,.5)
+        before=capture(self.conn)
+        expected=similar_songs(self.conn,1)['matches']
+        response=pages.app.test_client().get('/api/vibe-map/inspect/1')
+        self.assertEqual(response.status_code,200,response.data[:500])
+        self.assertEqual(response.headers['Cache-Control'],'no-store')
+        data=response.json
+        self.assertEqual([m['song_id'] for m in data['matches']],[m['song_id'] for m in expected])
+        self.assertEqual([m['similarity'] for m in data['matches']],[m['similarity'] for m in expected])
+        self.assertEqual(len(data['profile']['radar']['spokes']),8)
+        self.assertEqual(data['profile']['maps']['pace_mood']['sample_count'],3)
+        self.assertIn('/song/1',data['html']);self.assertIn('/album/Album',data['html'])
+        self.assertIn('class="artist"',data['html'])
+        self.assertIn('data-vibe-song-radar',data['html'])
+        self.assertEqual(capture(self.conn),before)
+
+    def test_inspector_handles_partial_unmapped_and_deleted_songs(self):
+        client=pages.app.test_client()
+        data=client.get('/api/vibe-map/inspect/1').json
+        self.assertEqual(data['matches'],[])
+        self.assertTrue(all(s['radius'] is None for s in data['profile']['radar']['spokes']))
+        self.place(1,0,0,maps=1);self.place(2,0,0,maps=1)
+        data=client.get('/api/vibe-map/inspect/1').json
+        self.assertEqual(len(data['matches']),1)
+        self.assertEqual(data['matches'][0]['shared_maps'],1)
+        self.assertEqual(sum(s['radius'] is not None for s in data['profile']['radar']['spokes']),2)
+        self.assertIn('1 / 4 maps',data['html'])
+        for sid in (0,99999):self.assertEqual(client.get('/api/vibe-map/inspect/'+str(sid)).status_code,400 if sid==0 else 404)
+
+    def test_inspector_escapes_catalogue_text_and_excludes_unknown_album_links(self):
+        self.conn.execute('UPDATE songs SET title=? WHERE id=1',('<script>alert(1)</script>',))
+        self.conn.execute("UPDATE albums SET title='Unknown Album' WHERE id=1")
+        self.conn.execute('UPDATE artists SET name=? WHERE id=1',('A "quoted" <artist>',))
+        self.conn.commit()
+        data=pages.app.test_client().get('/api/vibe-map/inspect/1').json
+        self.assertIn('&lt;script&gt;',data['html']);self.assertNotIn('<script>',data['html'])
+        self.assertIn('&lt;artist&gt;',data['html'])
+        self.assertNotIn('class="album"',data['html'])
+
+    def test_heatmap_points_are_inspect_buttons_with_explicit_song_links_separate(self):
+        self.place(1)
+        with patch.object(pages,'get_db_connection',side_effect=self.connect):
+            html=pages.app.test_client().get('/vibe_map_stats').get_data(as_text=True)
+        self.assertIn('role="button" tabindex="-1" aria-controls="vibe-song-inspector" data-song-id="1"',html)
+        self.assertNotIn('<a href="/song/1" tabindex="-1" data-vibe-point',html)
+        self.assertIn('Select a map point.',html)

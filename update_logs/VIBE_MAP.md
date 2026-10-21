@@ -1,5 +1,21 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.5.1 — compact heatmap song inspection
+
+Heatmap point clicks and Enter/Space now inspect a song in place. Add a compact
+saved-average radar, explicit song/album/artist links and two nearest comparable
+songs with shared-map counts. Extract a reusable song-panel template/stylesheet
+and optional compact chart geometry; leave the existing mode radar unchanged.
+The read-only inspector endpoint uses one snapshot and existing similarity.
+Keep loading/retry/deleted-song states, cancel obsolete requests and ignore late
+responses. Preserve pointer/keyboard browsing, exact dots and explicit links.
+
+Checked listening coverage: the table supports six older modes only; Vibe Map
+has no listening submission and is excluded by the schema. Omit its listening
+container under the requested condition. Do not invent durations or add capture
+and schema changes in this display patch. Schema 19 and all results remain intact.
+
+
 ## Vibe-Map-v1.0.5 — dedicated descriptive stats
 
 Add Stats → 📍 Vibe Map Stats and a mode-page Stats link. Start with distinct

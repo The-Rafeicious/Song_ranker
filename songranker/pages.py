@@ -265,3 +265,10 @@ def api_vibe_map_stats():
         response=jsonify(build_vibe_stats(conn));response.headers['Cache-Control']='no-store'
         return response
     finally:conn.close()
+
+
+@app.get('/api/vibe-map/inspect/<int:song_id>')
+def api_vibe_map_inspect(song_id):
+    from songranker.modes.vibe_map import respond
+    from songranker.reports.vibe_song_data import build_song_vibe
+    return respond(lambda conn, data: build_song_vibe(conn, song_id))

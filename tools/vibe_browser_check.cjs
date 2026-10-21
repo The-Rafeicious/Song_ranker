@@ -90,14 +90,30 @@ async function bounded(page,width,phase,folder){
   assert.ok(await chart.locator('[data-vibe-point]').first().evaluate(e=>e===document.activeElement));
   await page.keyboard.press('ArrowRight');
   assert.ok(await chart.locator('.vibe-chart-selection a').isVisible());
-  await page.locator('h1').click();
+  await page.keyboard.press('Enter');
+  await page.locator('#vibe-song-inspector .vibe-radar').waitFor();
+  assert.equal(new URL(page.url()).pathname,'/vibe_map_stats');
+  assert.equal(await page.locator('#vibe-song-inspector .radar-axis').count(),8);
+  assert.equal(await page.locator('#vibe-song-inspector .vibe-song-matches .mode-stats-row').count(),2);
+  assert.ok(await page.locator('#vibe-song-inspector .vibe-song-identity .song').getAttribute('href'));
+  assert.ok(await page.locator('#vibe-song-inspector .vibe-song-identity .artist').getAttribute('href'));
+  assert.ok(await page.locator('#vibe-song-inspector .vibe-song-identity .album').getAttribute('href'));
+  await page.locator('#vibe-song-inspector').screenshot({path:folder+'/inspector-desktop.png'});
   await page.screenshot({path:folder+'/stats-desktop.png',fullPage:true});
   for(const width of [320,360,390,430,768,1365]){
    await page.setViewportSize({width,height:900});await bounded(page,width,'stats',folder);
    const axisSize=await page.locator('.vibe-map-pole').first().evaluate(e=>parseFloat(getComputedStyle(e).fontSize)*e.ownerSVGElement.getBoundingClientRect().width/540);
    assert.ok(axisSize>=12,'Readable heatmap labels at '+width);
+   if(width===1365){const height=await page.locator('#vibe-song-inspector').evaluate(e=>e.getBoundingClientRect().height);assert.ok(height<450,'Compact desktop song panel');}
+
   }
-  await page.setViewportSize({width:390,height:844});await page.screenshot({path:folder+'/stats-phone.png',fullPage:true});
-  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, keyboard links, 320–1365 px.');
+  await page.setViewportSize({width:390,height:844});
+  const nextPoint=page.locator('[data-vibe-point][data-song-id="3"]').first();
+  await nextPoint.locator('circle').click();
+  await page.waitForFunction(()=>document.querySelector('#vibe-song-inspector .vibe-song-identity .song')?.getAttribute('href')==='/song/3');
+  assert.equal(new URL(page.url()).pathname,'/vibe_map_stats');
+  await page.locator('#vibe-song-inspector').screenshot({path:folder+'/inspector-phone.png'});
+  await page.screenshot({path:folder+'/stats-phone.png',fullPage:true});
+  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});
