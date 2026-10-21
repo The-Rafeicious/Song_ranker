@@ -91,6 +91,11 @@ def compare_profiles(first,second):
     Missing/N/A maps supply no evidence, never a zero point. Draw bias is unchanged.
     """
     a,b=positions({'vibe_maps':first}),positions({'vibe_maps':second})
+    return compare_positions(a,b)
+
+
+def compare_positions(a,b):
+    """Same public metric for already validated vectors; shared by batch reports."""
     shared=[values[0] for values in MAPS if values[0] in a and values[0] in b]
     mean_squared=(sum(sum((x-y)**2 for x,y in zip(a[key],b[key])) for key in shared)/len(shared)) if shared else None
     return dict(similarity=100*math.exp(-mean_squared/(2*WIDTH**2)) if mean_squared is not None else None,
