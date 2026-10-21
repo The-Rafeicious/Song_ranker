@@ -51,3 +51,7 @@ Run CI and a disposable-copy upgrade check on the integration branch before
 promoting it. Keep the old production backup for rollback: older app code cannot
 open a database upgraded to a newer schema. A source rollback alone does not
 roll back a database migration.
+
+V1.0.4.2 advances to schema 19 and intentionally clears generation-1 test Vibe
+Map data once. Include that migration and its definition keys when promoting
+code. This does not authorise importing a test database into production.

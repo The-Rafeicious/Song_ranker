@@ -1,5 +1,5 @@
 """Read-only Vibe Map projections; no scoring or selection weights here."""
-from songranker.storage.vibe_state import MAPS
+from songranker.storage.vibe_state import MAPS, CENTER_LABELS
 
 
 def empty_profile():
@@ -9,7 +9,7 @@ def empty_profile():
 
 
 def map_definitions(conn):
-    return [dict(row) for row in conn.execute('SELECT * FROM vibe_maps ORDER BY display_order')]
+    return [dict(dict(row),**CENTER_LABELS.get(row['id'],{})) for row in conn.execute('SELECT * FROM vibe_maps ORDER BY display_order')]
 
 
 def song_profiles(conn, song_ids):

@@ -30,7 +30,7 @@ class VibeMapTests(unittest.TestCase):
         self.conn.execute("INSERT INTO songs(id,title,audio_url) VALUES(1,'One','preview'),(2,'Two',NULL)")
         self.conn.commit()
 
-    def place(self, map_id='mood_energy', x=-.75, y=.4):
+    def place(self, map_id='pace_mood', x=-.75, y=.4):
         self.conn.execute("UPDATE song_vibe_positions SET x=?,y=?,status='placed',updated_at=123 WHERE song_id=1 AND map_id=?", (x,y,map_id))
         self.conn.commit()
 
@@ -42,19 +42,19 @@ class VibeMapTests(unittest.TestCase):
             self.assertTrue(all(v == dict(x=None,y=None,status='unmapped',updated_at=None,sample_count=0,not_applicable_count=0) for v in profile.values()))
         self.place()
         profile = song_profiles(self.conn,[1])[1]
-        self.assertEqual(profile['mood_energy']['x'], -.75)
-        self.assertEqual(profile['relationships']['status'], 'unmapped')
+        self.assertEqual(profile['pace_mood']['x'], -.75)
+        self.assertEqual(profile['sound_impact']['status'], 'unmapped')
         self.conn.execute("INSERT INTO songs(id,title) VALUES(3,'Later import')")
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM song_vibe_positions WHERE song_id=3').fetchone()[0], 4)
 
     def test_neutral_and_not_applicable_are_different_from_unmapped(self):
         self.place(x=0,y=0)
-        self.conn.execute("UPDATE song_vibe_positions SET status='not_applicable',updated_at=124 WHERE song_id=1 AND map_id='relationships'")
+        self.conn.execute("UPDATE song_vibe_positions SET status='not_applicable',updated_at=124 WHERE song_id=1 AND map_id='sound_impact'")
         profile = song_profiles(self.conn,[1])[1]
-        self.assertEqual(profile['mood_energy']['status'], 'placed')
-        self.assertEqual(profile['mood_energy']['x'], 0)
-        self.assertEqual(profile['relationships']['status'], 'not_applicable')
-        self.assertIsNone(profile['relationships']['x'])
+        self.assertEqual(profile['pace_mood']['status'], 'placed')
+        self.assertEqual(profile['pace_mood']['x'], 0)
+        self.assertEqual(profile['sound_impact']['status'], 'not_applicable')
+        self.assertIsNone(profile['sound_impact']['x'])
 
     def test_constraints_refuse_invalid_coordinates_and_missing_identity(self):
         updates = ["x=2,y=0,status='placed',updated_at=1",
@@ -64,10 +64,10 @@ class VibeMapTests(unittest.TestCase):
                    "x=0,y=0,status='unmapped'", "status='other'",
                    "x=0,y=0,status='placed',updated_at=-1",
                    "x=0,y=0,status='placed',updated_at=NULL",
-                   "song_id=2", "map_id='relationships'"]
+                   "song_id=2", "map_id='sound_impact'"]
         for update in updates:
             with self.subTest(update=update), self.assertRaises(sqlite3.IntegrityError):
-                self.conn.execute('UPDATE song_vibe_positions SET '+update+" WHERE song_id=1 AND map_id='mood_energy'")
+                self.conn.execute('UPDATE song_vibe_positions SET '+update+" WHERE song_id=1 AND map_id='pace_mood'")
         with self.assertRaises(sqlite3.IntegrityError):
             self.conn.execute('DELETE FROM song_vibe_positions WHERE song_id=1')
         with self.assertRaises(sqlite3.IntegrityError):
@@ -173,7 +173,7 @@ class VibeMapTests(unittest.TestCase):
 
     def test_missing_slot_is_detected_by_validation(self):
         self.conn.execute('DROP TRIGGER song_vibe_keep_slot')
-        self.conn.execute("DELETE FROM song_vibe_positions WHERE song_id=1 AND map_id='relationships'")
+        self.conn.execute("DELETE FROM song_vibe_positions WHERE song_id=1 AND map_id='sound_impact'")
         with self.assertRaises(DatabaseValidationError):validate(self.conn)
 
 

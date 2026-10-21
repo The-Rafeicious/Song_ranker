@@ -198,7 +198,12 @@ def upgrade_state(original):
         from songranker.storage.catalog_source_state import ADDITIONS as song_additions
         current={name:set(columns) for name,columns in table_columns().items()}
         from songranker.storage.vibe_state import TABLES as vibe_tables
-        layouts=[(18,current)]
+        # Layout 18/19 is identical; definition generation disambiguates dumps.
+        maps=original['tables'].get('vibe_maps',{})
+        columns=maps.get('columns',[])
+        generation=(19 if 'definition_version' in columns and maps.get('rows') and
+                    all(row[columns.index('definition_version')]==2 for row in maps['rows']) else 18)
+        layouts=[(generation,current)]
         seventeen={name:set(columns) for name,columns in current.items() if name not in ('song_vibe_progress','vibe_rounds')}
         seventeen['song_vibe_positions']-={'sample_count','not_applicable_count'}
         layouts.append((17,seventeen))

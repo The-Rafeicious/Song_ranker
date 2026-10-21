@@ -1258,7 +1258,7 @@ after a manual pull, and link split recovery to the existing backup review.
 Keep status text escaped and retain explicit upload/stop/restore controls.
 
 
-## Vibe Map play screen — Vibe-Map-v1.0.4.1
+## Vibe Map play screen — Vibe-Map-v1.0.4.2
 
 Home has six modes, three by two on desktop, two columns on tablets and one on
 small phones. Vibe Map is last, labelled 📍 Vibe Map in Home/Game Modes, with
@@ -1287,3 +1287,9 @@ Shared radar geometry/styles live in `vibe_charts.js`/`vibe_charts.css`; follow 
 API's related-pole order, retain accessible pole labels, and leave missing spokes
 as gaps. Future stats pages place Vibe Map below Overall; future mode rankings put
 it last. Those pages are not part of this mode patch.
+
+Generation 2 uses Pace & mood, Sound & impact, Connection and Perspective.
+All endpoints are single words; Perspective alone labels its X midpoint Present
+just below the central axis. Radar order is Happy, Hopeful, Future, Secure,
+Devoted, Powerful, Electronic, Upbeat. Keep all eight dimensions, no raw legend,
+and the existing manual Finish → Next song flow.

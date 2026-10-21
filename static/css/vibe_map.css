@@ -94,3 +94,5 @@ body[data-page=vibe_map] .vibe-axis-pulse.pulsing::after { animation: vibe-pulse
 @media (prefers-reduced-motion: reduce) {
   body[data-page=vibe_map] .vibe-axis-pulse::before, body[data-page=vibe_map] .vibe-axis-pulse::after { animation: none !important; }
 }
+
+body[data-page=vibe_map] .vibe-axis-center { position: absolute; top: calc(50% + 28px); left: 50%; transform: translateX(-50%); color: #b99ca5; font-size: 13px; pointer-events: none; }
