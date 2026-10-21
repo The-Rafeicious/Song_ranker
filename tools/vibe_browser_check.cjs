@@ -114,6 +114,31 @@ async function bounded(page,width,phase,folder){
   assert.equal(new URL(page.url()).pathname,'/vibe_map_stats');
   await page.locator('#vibe-song-inspector').screenshot({path:folder+'/inspector-phone.png'});
   await page.screenshot({path:folder+'/stats-phone.png',fullPage:true});
-  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, 320–1365 px.');
+  // Dedicated profiles keep Vibe directly above Overall, independently of loading order.
+  for(const [kind,path,count] of [['song','/song/2',0],['album','/album/A%20long%20album%20title%20for%20responsive%20testing',12],['artist','/artist/Artist%20with%20a%20longer%20name',24],['tag','/tag/Melancholy',12]]){
+   await page.setViewportSize({width:1365,height:1050});await page.goto(base+path);
+   await page.locator('#profile-vibe[aria-busy="false"]').waitFor();await page.locator('#overall-profile').waitFor();
+   assert.equal(await page.locator('#profile-vibe + #overall-profile').count(),1,kind+' above Overall');
+   assert.equal(await page.locator('#profile-vibe .vibe-radar').count(),kind==='song'?1:0);
+   if(kind==='song'){
+    assert.equal(await page.locator('#profile-vibe .vibe-song-matches .mode-stats-row').count(),2);
+    const offset=await page.locator('#profile-vibe .vibe-song-identity').evaluate(e=>{const a=e.getBoundingClientRect(),b=e.parentElement.getBoundingClientRect();return Math.abs(a.x+a.width/2-b.x-b.width/2)});
+    assert.ok(offset<2,'Centred current song');
+   }else{
+    assert.equal(await page.locator('#profile-vibe .vibe-mini-dot').count(),count);
+    assert.equal(await page.locator('#profile-vibe .vibe-mini-map').count(),4);
+    assert.equal(await page.locator('#profile-vibe .vibe-mini-dot').first().evaluate(e=>e.getBoundingClientRect().width),11);
+   }
+   await page.locator('#profile-vibe').screenshot({path:folder+'/profile-'+kind+'-desktop.png'});
+   for(const width of [320,390,768,1365]){
+    await page.setViewportSize({width,height:900});await bounded(page,width,'profile-'+kind,folder);
+    if(kind!=='song'){
+     const rows=await page.locator('#profile-vibe .vibe-mini-map').evaluateAll(nodes=>nodes.map(e=>e.offsetTop));
+     assert.deepEqual(rows,[rows[0],rows[0],rows[2],rows[2]]);assert.ok(rows[2]>rows[0],kind+' two rows of two at '+width);
+    }
+   }
+   await page.setViewportSize({width:390,height:844});await page.locator('#profile-vibe').screenshot({path:folder+'/profile-'+kind+'-phone.png'});
+  }
+  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact 2×2 maps, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -272,3 +272,10 @@ def api_vibe_map_inspect(song_id):
     from songranker.modes.vibe_map import respond
     from songranker.reports.vibe_song_data import build_song_vibe
     return respond(lambda conn, data: build_song_vibe(conn, song_id))
+
+
+@app.get('/api/vibe-map/entity/<kind>/<int:entity_id>')
+def api_vibe_map_entity(kind, entity_id):
+    from songranker.modes.vibe_map import respond
+    from songranker.reports.vibe_entity_data import build_entity_vibe
+    return respond(lambda conn, data: build_entity_vibe(conn, kind, entity_id))

@@ -240,8 +240,8 @@ No heatmap grid is imposed or persisted; future pages can draw density fields
 for library, artist, album or tag views. Each song contributes once per map.
 
 This update builds the mode only. Future mode rankings put Vibe Map last;
-individual stats pages place its descriptive container immediately below Overall.
-Neither those pages nor a second new game mode are added here. See the
+individual stats pages place its descriptive container immediately above Overall.
+Version 1.0.6 adds those profile cards; a second new game mode remains separate. See the
 [code-only merge guide](VIBE_MAP_MERGE.md) before promoting test-branch code.
 
 ## Dedicated stats · v1.0.5
@@ -255,7 +255,7 @@ existing mode heatmap endpoint's public -5..5 coordinate projection above.
 Pairs/group consistency require all four placed maps; map coverage and patterns
 use available numeric evidence. No persisted grids, history, reset, new schema
 or weighting change is introduced. Definitions and denominators are in
-[Vibe Map stats](VIBE_MAP_STATS.md). Dedicated entity profiles remain future work.
+[Vibe Map stats](VIBE_MAP_STATS.md). Dedicated entity cards are available in v1.0.6.
 
 
 ## Song inspection · v1.0.5.1
@@ -267,3 +267,19 @@ Unknown songs return the existing `missing_song` 404; a zero ID is invalid (400)
 Matches use the same shared-map comparison and ordering as `/similar`, including
 partial evidence. Heatmap activation opens this in-page panel; explicit metadata
 links still navigate normally. See [stats layout and listening scope](VIBE_MAP_STATS.md).
+
+
+## Collection profile cards · v1.0.6
+
+`GET /api/vibe-map/entity/<kind>/<int:entity_id>` accepts album, artist or tag.
+It returns `kind`, `entity` (id/name), `summary` (total/full/partial/consistency),
+four `maps` with normalized -1..1 positions, counts and density colours, and the
+reusable autoescaped `html` card body. Identity must exist even for an empty
+collection; missing entities return `missing_entity` 404, unknown kinds and zero
+IDs return 400. Responses are read-only/no-store and use one SQLite snapshot.
+
+Fully mapped songs supply consistency, using the same all-four-map Gaussian
+pair-distance mean as the dashboard. At least two are required. Partial evidence
+still supplies per-map dots; repeat samples do not duplicate or weight tracks.
+No full-library pair search runs for a collection card. See
+[profile layout and evidence rules](VIBE_MAP_STATS.md).
