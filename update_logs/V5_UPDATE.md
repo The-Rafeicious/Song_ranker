@@ -1,5 +1,24 @@
 # V5 update log
 
+## V5.0.4.3.1 — search collection counts and contained achievements
+
+21 October 2026 · schema 16 unchanged.
+
+- Give album and artist results a separate green song-count line. Keep album
+  artist links without repeating the count in their metadata.
+- Add a purple proper-album count to artists with qualifying releases, excluding
+  Singles and counting each release once across linked songs.
+- Bound achievement rows to the card width and one 28 px line, preserving
+  whole-badge fitting, priority, the three-badge maximum and resize restoration.
+- Update the shared version, README and style rules. Restart and hard-refresh.
+
+Validation: 84 search DOM/fitting checks pass using the real frontend module
+and controlled badge measurements at 390/1280 viewport settings. Cover count
+pluralisation, Singles exclusion, links, metadata, sorting/query/pagination
+retention and long/high-percentage badge fitting at multiple row widths.
+JavaScript syntax and diff whitespace checks pass. Browser painting and actual
+responsive geometry were not verified.
+
 ## V5.0.4.3 — cleaner search cards
 
 21 October 2026 · schema 16 unchanged.
@@ -216,6 +235,7 @@ for exact scope and physical-device limits. Install/recovery are in the
 - Retain source/tag review, Git/shutdown and backup safeguards; remove outdated
   Classic-record UI and automatic-backup wording. No schema/scoring changes.
 - [Upgrade, per-tool audit and validation limits](../docs/UPGRADE_V5_0_4.md).
+
 
 
 

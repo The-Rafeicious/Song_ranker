@@ -579,6 +579,12 @@ count, including “0 tags” and singular “1 tag”. Other categories have no
 tag-count line. Use consistent 8 px copy gaps (6 px on phones) so names, metadata
 and tag descriptions have room without reserving an empty badge row.
 
+V5.0.4.3.1 gives album and artist cards a separate green (`--song`) song-count
+line with singular/plural labels. Album metadata retains artist links without
+repeating its song count. Artists with proper albums have a separate purple
+(`--album`) album-count line; count distinct releases linked through their
+songs, excluding Singles. Omit the album line when there are no proper albums.
+
 All four categories use the same two-column desktop card grid (one column below
 1100 px). Cards are articles with name/metadata links rather than nested links
 inside a whole-card link. Names keep entity colours; song scores use Elo orange,
@@ -591,6 +597,10 @@ counts and scores remain separate. Phone cards move the score below copy.
 
 Achievements use **one row**, at most three whole badges, prioritised before
 rendering; hide badges from the end when the card narrows and restore on resize.
+Keep the achievement row at 28 px, non-wrapping, clipped within the card’s
+content width and isolated from intrinsic inline sizing. Long title counts or
+percentage badges must never widen the card or create another badge row.
+Measure whole badges including gaps; an oversized badge is hidden, not cropped.
 Championships rank first, then perfect mode rates, silver/bronze, other high mode
 rates and strong voting records. Show only the best tournament placement class.
 Use each mode's colour. Rate rules: Trivia >=90% with >=2 eligible fields;
@@ -1236,4 +1246,5 @@ Count each song’s resulting union for Add, the replacement set for Replace,
 and allow unrestricted Remove targets. Typed new names count too. Keep the
 capacity message live and disable Review for an overflowing draft. Preserve
 choices so the user can fix them; do not silently trim new submissions.
+
 

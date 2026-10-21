@@ -192,12 +192,12 @@ function rankingVotes(r,type){
  const v=r.voting||{},rate=key=>v[key]==null?'—':Number(v[key]).toFixed(2)+'%',matches=Number(v.matches||0);
  return `<div class="leader-votes" aria-label="Voting statistics"><span class="standard" title="${type==='songs'?'Saved standard and blind matches':'Pooled track appearances; a match within this collection counts both songs'}">${matches} ${type==='songs'?'matches':'track matches'} · ${rate('win_rate')} wins</span><span class="standard">Non-blind <b>${Number(v.standard_matches||0)}</b> · ${rate('standard_win_rate')}</span><span class="blind">Blind <b>${Number(v.blind_matches||0)}</b> · ${rate('blind_win_rate')}</span></div>`;
 }
-function rankingMetadata(r,type){
+function rankingMetadata(r,type,includeSongCount=true){
  if(type==='songs')return {html:metadata(r),text:[r.artist,r.album&&!r.album_is_single?r.album:''].filter(Boolean).join(' · ')};
  if(type==='albums'){
   const ids=[...new Set(linkedSongs(type,r).flatMap(s=>s.artist_ids))],aa=ids.map(id=>byId(artists,id)).filter(Boolean);
   const names=aa.map(a=>`<a class="artist" title="${esc(a.name)}" href="${urlFor('artists',a)}">${esc(a.name)}</a>`).join('<span class="separator muted">,</span>');
-  return {html:(names?names+'<span class="separator muted">·</span>':'')+r.song_count+' songs',text:[aa.map(a=>a.name).join(', '),r.song_count+' songs'].filter(Boolean).join(' · ')};
+  return {html:names+(includeSongCount?(names?'<span class="separator muted">·</span>':'')+r.song_count+' songs':''),text:[aa.map(a=>a.name).join(', '),includeSongCount?r.song_count+' songs':''].filter(Boolean).join(' · ')};
  }
  const text=r.song_count+' songs · '+Math.round(r.avg_elo)+' average Elo';return {html:text,text};
 }
@@ -623,6 +623,7 @@ if(page==='home')renderHome();if(page==='song')renderSong();if(page==='standard'
 
 if(['home','song','artist','album','tag','global_stats'].includes(page))await window.Overall.mount(page);
 })().catch(error=>{const node=document.getElementById('loading');if(node){node.textContent=error.message;node.classList.add('error')}else console.error(error)});
+
 
 
 
