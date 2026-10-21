@@ -1,4 +1,4 @@
-# Vibe-Map-v1.0.4 mode and API contract
+# Vibe-Map-v1.0.4.1 mode and API contract
 
 The test branch now serves `/vibe-map` with its template, CSS, JavaScript and
 Home/Game Modes entries. Existing LAN/origin policy and shutdown guards apply.
@@ -163,44 +163,57 @@ that key use the first-uncompleted index. No schema migration is required.
 A completed round with a pending review draft cannot be replaced by Next song.
 Once Next song replaces the row, its previous pass is no longer editable.
 
-The page sends serial drafts on pointer release or after a short keyboard/slider
-idle, coalesces later adjustments, and uses server deadlines for acceptance.
-Unsettled drafts, in-flight writes and failed saves block map navigation and
-Finish. Exact retries keep request IDs. Reload round restores server state if
-another tab has changed its token/revision. Every map requires a placement or
-an explicit Not applicable decision; future uncompleted maps cannot be skipped.
+The page sends serial drafts on pointer release or after a short keyboard idle,
+coalesces later adjustments, and uses server deadlines for acceptance. Unsettled
+writes and failed saves block navigation and Finish. Exact retries keep request
+IDs. Reload restores server state after another tab changes token/revision.
+The UI offers placement only; historical N/A points and the API's N/A support
+remain intact for compatibility. Keyboard arrows remain available without sliders.
 
-After the fourth save, a five-second visible-time review window offers
-Readjust or See results; Finish is also available below the song identity.
-Readjust keeps the maps open until Finish. The results can reopen maps until
-Next song. Hidden tabs pause progression and never initiate automatic saves or
-results transitions. Already-sent writes may still finish normally.
+Automatic next-map saving remains. After all four maps save, the last map stays
+open for adjustments until the user presses Finish. Results do not open on a
+timer, and have no Readjust action. Finish becomes Next song in the stable song
+card. A tab-local sessionStorage token remembers an explicitly opened result on
+reload; a completed round that was not finished stays on its map. Hidden tabs
+pause automatic progression. Already-sent writes may finish normally.
 
-The shared `VibeCharts.radar()` renderer and `vibe_charts.css` accept public radar
-spokes for future profiles. Positive-pole order is Happy → Hopeful → Confident →
-Social → Close → New love → Dreamlike → Intense. Low/high pole labels and the
-neutral dashed ring retain the bipolar meanings. Missing spokes leave gaps.
-The mode shows the aggregate radar so it agrees with similarity comparisons;
-`selection_radar` remains available to consumers needing this pass alone.
+The shared `VibeCharts.radar()` renderer and `vibe_charts.css` keep related poles
+adjacent: Happy → Hopeful → Confident → Social → Close → New love → Dreamlike →
+Intense. Missing spokes stay gaps. Results show the aggregate radar, without raw
+coordinate figures or a detailed legend. Pole meanings remain available through
+SVG labels/titles. The public API retains coordinates and selection_radar for
+future consumers; removing displayed figures does not discard stored precision.
 
 ## Similarity percentage
 
-`vibe_similarity.compare_profiles(first, second)` takes normalised map profiles
-and returns `similarity`, `shared_maps`, `map_ids` and `coverage`. For each shared
-placed map, closeness is `1 - Euclidean_distance / (2 * sqrt(2))`. The percentage
-is 100 times the equally weighted average closeness. The HTTP API rounds it to
-two decimals after sorting.
-Identical positions are 100%; opposite corners are 0%. No shared placed map
-returns null and is excluded from ranking. Missing/N/A maps never become centres.
+`vibe_similarity.compare_profiles(first, second)` returns similarity,
+shared_maps, map_ids and coverage. Only shared placed maps count. Compute mean
+squared Euclidean distance `D2` on normalised -1..1 points, then
+`similarity = 100 * exp(-D2 / (2 * 0.65**2))`. This is a fixed Gaussian curve of
+RMS map distance, not a probability or musical-quality score. Identical points
+are 100%; opposite corners approach zero. No shared maps returns null and is
+excluded. Missing/N/A points never become fake centres. One strongly different
+map contributes its squared distance, rather than being diluted by a mean of
+individually high map percentages. Swapping the two songs gives the same result.
 
-`vibe_map.similar_songs(conn, song_id, limit)` ranks aggregate means by unrounded
-coordinate closeness, then shared-map count, then song ID. The public percentages
-are rounded for display. Results expose comparison coverage; a 100% match on one
-shared map is weaker evidence than on four. The mode displays `n/4 maps` with
-each match. Fewer than two comparable songs produces only the available matches.
-GET accepts limit 1..100 for future song-based similarity lists. This percentage
-is independent of the small, coverage-scaled Gaussian draw bias and changes no
-Elo, performance rankings or Overall score.
+The previous diagonal-normalised linear curve compressed typical comparisons
+upwards. In the pushed backup reviewed for this patch (15 fully mapped songs,
+60 points, 105 pairs), its median was 72.47%; the new curve gives 43.40%.
+The pair range changes from 36.70–89.70% to 2.13–88.79%. This is a small early
+sample, used to inspect scale behaviour rather than fit a moving percentile.
+The width stays fixed: adding songs can change which neighbours appear, but
+cannot change an existing pair's score. Tag membership and genre do not supply
+hidden penalties or override user placements.
+
+`vibe_map.similar_songs(conn, song_id, limit)` ranks unrounded percentages,
+then shared-map evidence and song ID. HTTP results round to two decimals; the
+mode displays one decimal plus n/4 shared maps. Limit remains 1..100 (default 2).
+Partial evidence is labelled; fewer than two comparable songs gives fewer
+matches. The gentle adaptive draw multiplier is unchanged: this sharper display
+percentage does not increase clustering or restrict who can face whom.
+
+See [map options](VIBE_MAP_OPTIONS.md) for alternative axes and four-map sets.
+None are activated, and existing coordinates are not reinterpreted.
 
 ## Preview ownership and cache
 

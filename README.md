@@ -2,17 +2,19 @@
 
 **V5.0.5.1 · V3 competition database · schema 18 (test branch)**
 
-`New-modes-test` adds **Vibe-Map-v1.0.4**: open **📍 Vibe Map** from Home or
+`New-modes-test` adds **Vibe-Map-v1.0.4.1**: open **📍 Vibe Map** from Home or
 Game Modes to place a song on four continuous red maps. Adjust a pin, let its
 five-second timer save it, and use the arrows to revisit saved maps. Finish
-opens an eight-axis radar and two similar songs with comparison percentages.
+opens a clean eight-axis radar and two similar songs with comparison percentages;
+the same button then becomes Next song. Results wait for Finish.
 Your preview stays with the song through every map and result screen.
 
 This is descriptive data, with no performance score or Overall contribution.
 Repeated passes update compact averages; reviewing the current pass replaces
 its contribution. See the [mode/API contract](docs/VIBE_MAP_API.md),
 [implementation log](update_logs/VIBE_MAP.md) and
-[code-only merge guide](docs/VIBE_MAP_MERGE.md). Keep a separate test database.
+[code-only merge guide](docs/VIBE_MAP_MERGE.md). Alternative axes and four-map
+sets are listed in [map options](docs/VIBE_MAP_OPTIONS.md). Keep a separate test database.
 
 Vote between songs, identify previews, run tournaments, guess Elo and arrange
 album shelves. V5 keeps your music catalogue and starts the competition again

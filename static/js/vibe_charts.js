@@ -12,8 +12,8 @@
   let shape='';
   if(spokes.every(valid))shape=`<polygon class="radar-shape" points="${spokes.map((s,i)=>pair(at(i,s.radius))).join(' ')}"/>`;
   else shape=spokes.map((s,i)=>{const next=(i+1)%n;if(!valid(s)||!valid(spokes[next]))return '';return `<polyline class="radar-shape" fill="none" points="${pair(at(i,s.radius))} ${pair(at(next,spokes[next].radius))}"/>`}).join('');
-  const points=spokes.map((s,i)=>{if(!valid(s))return '';const [x,y]=at(i,s.radius);return `<circle class="radar-point" cx="${x}" cy="${y}" r="4"><title>${esc(s.low)} → ${esc(s.high)}: ${s.value.toFixed(2)}</title></circle>`}).join('');
-  return `<svg class="vibe-radar" viewBox="0 0 440 410" role="img" aria-label="${esc(label)}"><desc>Eight bipolar axes. The dashed ring is neutral. Missing maps leave gaps.</desc>${rings}${axes}${shape}${points}</svg><ul class="vibe-radar-key">${spokes.map(s=>`<li>${esc(s.low)} → <b>${esc(s.label||s.high)}</b> · ${Number.isFinite(s.value)?s.value.toFixed(2):'N/A'}</li>`).join('')}</ul>`;
+  const points=spokes.map((s,i)=>{if(!valid(s))return '';const [x,y]=at(i,s.radius);return `<circle class="radar-point" cx="${x}" cy="${y}" r="4"><title>${esc(s.low)} → ${esc(s.high)}</title></circle>`}).join('');
+  return `<svg class="vibe-radar" viewBox="0 0 440 410" role="img" aria-label="${esc(label)}"><desc>Eight bipolar axes. The dashed ring is neutral. Missing maps leave gaps.</desc>${rings}${axes}${shape}${points}</svg>`;
  }
  window.VibeCharts=Object.freeze({radar});
 })();

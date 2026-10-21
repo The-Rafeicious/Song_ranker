@@ -1258,30 +1258,32 @@ after a manual pull, and link split recovery to the existing backup review.
 Keep status text escaped and retain explicit upload/stop/restore controls.
 
 
-## Vibe Map play screen — Vibe-Map-v1.0.4
+## Vibe Map play screen — Vibe-Map-v1.0.4.1
 
-Home now has six modes in reading order, three by two on desktop, two columns
-on tablets and one on small phones. Reset all five-card stagger/span/width rules.
-Vibe Map comes last and uses 📍 Vibe Map in Home and Game Modes. Its red semantic
-accent is `--vibe`; keep song green, album purple and artist blue for identity.
+Home has six modes, three by two on desktop, two columns on tablets and one on
+small phones. Vibe Map is last, labelled 📍 Vibe Map in Home/Game Modes, with
+red `--vibe` lighting and song/album/artist identity colours preserved.
 
-The dedicated page has the standard centred title, a stable song/player panel
-on the left and one map at a time on the right. Stack below 820 px. Use shared
-24 px panel corners/padding, 20–24 px gaps and at least 44 px action targets.
-Hero artwork remains rounded and matches the overlay, with a 240 px desktop
-cover and 200 px phone cover. Never replace the player while changing maps.
+The stable song card sits beside the map container's vertical centre. On desktop
+it sticks within that container as the page scrolls, centred in the viewport when
+possible; compact its cover at shorter viewport heights. Measure actual card
+height rather than assuming all titles are one line. Stacked tablet/phone layouts
+use normal document flow so the player never covers the graph.
 
-Maps are continuous, with subtle contours and neutral axes, full endpoint names,
-a cover-art pin with a red glow, two-decimal coordinate readouts, and accessible
-sliders/arrow-key placement. Pointer positions keep full precision. No selectable
-box grid. Show map title, progress and concise save state. Back/forward and Finish
-sit below album/artists; disable unresolved navigation and incomplete Finish.
-Provide a short optional review window, then aggregate radar and two similar
-songs with percentages and shared-map counts. No ranking/quality implication.
+Keep the current map title at the top, followed by concise progress. No placement
+subtitle, X/Y sliders, coordinate readouts or N/A button. Retain continuous pointer
+and keyboard positioning. X endpoint labels sit inside the graph alongside the
+horizontal axis, not below it. Y endpoints stay above/below the graph. Use a soft
+central glow, solid axes and a subtle outward axis pulse on placement/movement;
+no rigid contour circles. Suppress the pulse for reduced motion.
 
-Shared radar style lives in `vibe_charts.css` and its renderer in `vibe_charts.js`.
-Use the API's related-pole order and leave absent spokes as gaps. This provides
-reusable chart geometry for later pages without building those pages now.
-For that later work, Vibe Map belongs last in mode rankings and immediately
-below Overall on individual stats pages. Keep existing profile layouts unchanged
-until that work is requested.
+Save state and its progress bar sit below the song's back/Finish/forward controls,
+not at the bottom of the map. Automatic next-map saves remain; completed maps stay
+editable until Finish. Never automatically open results. On results, show the
+radar and two similarity matches without a raw-value legend or Readjust button.
+The existing Finish control becomes Next song. Keep the audio element stable.
+
+Shared radar geometry/styles live in `vibe_charts.js`/`vibe_charts.css`; follow the
+API's related-pole order, retain accessible pole labels, and leave missing spokes
+as gaps. Future stats pages place Vibe Map below Overall; future mode rankings put
+it last. Those pages are not part of this mode patch.
