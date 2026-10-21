@@ -89,7 +89,7 @@ class VibeRuntimeTests(unittest.TestCase):
         self.assertEqual(row['status'],'complete');self.assertEqual(len(row['saved_maps']),4)
         spokes=row['summary']['selection_radar']['spokes']
         self.assertEqual(len(spokes),8)
-        self.assertEqual([p['radius'] for p in spokes],[0,1]*4)
+        self.assertEqual([p['radius'] for p in spokes],[0,0,0,1,1,0,1,1])
         self.assertEqual(row['summary']['aggregate']['completed_passes'],1)
         self.assertEqual(self.start()['token'],row['token'])
         next_round=self.start(previous=row['token'])

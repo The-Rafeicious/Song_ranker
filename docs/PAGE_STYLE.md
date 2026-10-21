@@ -1256,3 +1256,32 @@ Dev’s Git summary. Remote-ahead, split and failed-validation states need a cle
 error-coloured status message. Explain that normal startup checks existing data
 after a manual pull, and link split recovery to the existing backup review.
 Keep status text escaped and retain explicit upload/stop/restore controls.
+
+
+## Vibe Map play screen — Vibe-Map-v1.0.4
+
+Home now has six modes in reading order, three by two on desktop, two columns
+on tablets and one on small phones. Reset all five-card stagger/span/width rules.
+Vibe Map comes last and uses 📍 Vibe Map in Home and Game Modes. Its red semantic
+accent is `--vibe`; keep song green, album purple and artist blue for identity.
+
+The dedicated page has the standard centred title, a stable song/player panel
+on the left and one map at a time on the right. Stack below 820 px. Use shared
+24 px panel corners/padding, 20–24 px gaps and at least 44 px action targets.
+Hero artwork remains rounded and matches the overlay, with a 240 px desktop
+cover and 200 px phone cover. Never replace the player while changing maps.
+
+Maps are continuous, with subtle contours and neutral axes, full endpoint names,
+a cover-art pin with a red glow, two-decimal coordinate readouts, and accessible
+sliders/arrow-key placement. Pointer positions keep full precision. No selectable
+box grid. Show map title, progress and concise save state. Back/forward and Finish
+sit below album/artists; disable unresolved navigation and incomplete Finish.
+Provide a short optional review window, then aggregate radar and two similar
+songs with percentages and shared-map counts. No ranking/quality implication.
+
+Shared radar style lives in `vibe_charts.css` and its renderer in `vibe_charts.js`.
+Use the API's related-pole order and leave absent spokes as gaps. This provides
+reusable chart geometry for later pages without building those pages now.
+For that later work, Vibe Map belongs last in mode rankings and immediately
+below Overall on individual stats pages. Keep existing profile layouts unchanged
+until that work is requested.
