@@ -1,9 +1,8 @@
-# Vibe-Map-v1.0.3 backend contract
+# Vibe-Map-v1.0.4 mode and API contract
 
-This release adds the Python mode and JSON APIs on `New-modes-test`. There is no
-template, page route, CSS, JavaScript, navigation entry or rendered chart yet.
-The next UI change should add `/vibe-map` with its template and consume this API.
-Existing LAN/origin policy and shutdown guards apply to all these requests.
+The test branch now serves `/vibe-map` with its template, CSS, JavaScript and
+Home/Game Modes entries. Existing LAN/origin policy and shutdown guards apply.
+Schema remains 18; no extra attempt/history tables are needed.
 
 ## Coordinates and charts
 
@@ -23,7 +22,7 @@ map definitions and their meanings are unchanged.
 Completed-round summaries contain two representations:
 
 - `summary.selection_radar`: the current pass's four submitted placements as
-  eight spokes, X and Y for each map, in map display order. Each spoke has its
+  eight spokes, X and Y for each map, in the semantic order below. Each spoke has its
   map ID/title, axis, low/high labels, displayed -5..5 `value` and full-precision
   `radius` in 0..1. Radius is `(normalised_coordinate + 1) / 2`. Neutral is 0.5.
 - `summary.aggregate`: the song's running averages and sample counts, plus an
@@ -48,9 +47,10 @@ per browser session. No developer PIN is needed for this game mode.
 | --- | --- |
 | GET `/api/vibe-map/state` | Read/resume this browser's current round. Does not create a session owner or draw a song. |
 | POST `/api/vibe-map/round` | `{}` creates the first round or resumes an active/completed one. After viewing a completed/cancelled round, send `{"previous_token":"that-round-token"}` to draw the next song. Repeated starts cannot replace an active round. |
-| POST `/api/vibe-map/draft` | Save/re-adjust the current map's draft: token, map_id, revision, request_id, status, and X/Y. It changes no aggregate or completed-pass counter. |
+| POST `/api/vibe-map/draft` | Save/re-adjust the first uncompleted map or an already saved map from this round: token, map_id, revision, request_id, status, and X/Y. It changes no aggregate or completed-pass counter. |
 | POST `/api/vibe-map/advance` | After the readjustment deadline, atomically accept the saved draft and return the next map, or the completed summary: token, map_id, revision, request_id. Do not send coordinates here; the server uses its latest acknowledged draft. |
 | POST `/api/vibe-map/cancel` | token and revision. Discard the pending draft and end the round. Already accepted maps remain saved; an incomplete pass is not counted as complete. |
+| GET `/api/vibe-map/similar/<song_id>?limit=2` | Rank comparable songs by coordinate closeness. Limit 1..100, default 2; exclude the source and songs with no shared placed maps. |
 | GET `/api/vibe-map/profile/<song_id>` | Read the song's aggregate maps, sample/skip counts, updated times, completed passes and eight-spoke radar. |
 | GET `/api/vibe-map/heatmap?kind=all` | Read the full-library aggregate point clouds. |
 | GET `/api/vibe-map/heatmap?kind=artist&id=1` | Same for an artist. Also supports `kind=album` and `kind=tag`, using numeric IDs. |
@@ -106,7 +106,7 @@ Tokens, revisions and request IDs have different jobs:
 
 A too-early advance returns HTTP 409 with `code: "readjusting"` and remaining_ms.
 Other 409 codes include stale_round, stale_revision, wrong_map, ended and
-already_saved. Refetch state when a revision/token conflict occurs. Invalid
+changed_sample. Refetch state when a revision/token conflict occurs. Invalid
 coordinates or malformed JSON return 400; missing songs return 404. All requests
 use the existing same-origin/LAN policy; cross-origin attempts are rejected.
 Readers send no-store headers and read one database snapshot.
@@ -147,17 +147,82 @@ stored values. Exports, SQL backups and canonical rebuilds preserve counters,
 pending drafts, deadlines and current receipts. Test this branch on a separate
 database; schema-17 app code cannot open the upgraded schema-18 file.
 
-## Heatmap contract and remaining frontend work
+## Review and results
+
+The first-uncompleted index never moves backwards. Saved maps may be viewed
+without writes; their submitted raw point, rather than the aggregate mean,
+restores the pin. A new draft on a saved map returns `draft.map_id` and the same
+five-second deadline. Advance removes that round's previous raw contribution
+from the current sum/count and adds the replacement atomically. Placed ↔ N/A
+changes update both counters correctly. Other browsers' or previous passes'
+contributions remain intact. Editing never adds another completed pass.
+
+The draft target occupies one reserved `_draft_map` key in the existing bounded
+round JSON; map receipts remain limited to four. Legacy schema-18 drafts without
+that key use the first-uncompleted index. No schema migration is required.
+A completed round with a pending review draft cannot be replaced by Next song.
+Once Next song replaces the row, its previous pass is no longer editable.
+
+The page sends serial drafts on pointer release or after a short keyboard/slider
+idle, coalesces later adjustments, and uses server deadlines for acceptance.
+Unsettled drafts, in-flight writes and failed saves block map navigation and
+Finish. Exact retries keep request IDs. Reload round restores server state if
+another tab has changed its token/revision. Every map requires a placement or
+an explicit Not applicable decision; future uncompleted maps cannot be skipped.
+
+After the fourth save, a five-second visible-time review window offers
+Readjust or See results; Finish is also available below the song identity.
+Readjust keeps the maps open until Finish. The results can reopen maps until
+Next song. Hidden tabs pause progression and never initiate automatic saves or
+results transitions. Already-sent writes may still finish normally.
+
+The shared `VibeCharts.radar()` renderer and `vibe_charts.css` accept public radar
+spokes for future profiles. Positive-pole order is Happy → Hopeful → Confident →
+Social → Close → New love → Dreamlike → Intense. Low/high pole labels and the
+neutral dashed ring retain the bipolar meanings. Missing spokes leave gaps.
+The mode shows the aggregate radar so it agrees with similarity comparisons;
+`selection_radar` remains available to consumers needing this pass alone.
+
+## Similarity percentage
+
+`vibe_similarity.compare_profiles(first, second)` takes normalised map profiles
+and returns `similarity`, `shared_maps`, `map_ids` and `coverage`. For each shared
+placed map, closeness is `1 - Euclidean_distance / (2 * sqrt(2))`. The percentage
+is 100 times the equally weighted average closeness. The HTTP API rounds it to
+two decimals after sorting.
+Identical positions are 100%; opposite corners are 0%. No shared placed map
+returns null and is excluded from ranking. Missing/N/A maps never become centres.
+
+`vibe_map.similar_songs(conn, song_id, limit)` ranks aggregate means by unrounded
+coordinate closeness, then shared-map count, then song ID. The public percentages
+are rounded for display. Results expose comparison coverage; a 100% match on one
+shared map is weaker evidence than on four. The mode displays `n/4 maps` with
+each match. Fewer than two comparable songs produces only the available matches.
+GET accepts limit 1..100 for future song-based similarity lists. This percentage
+is independent of the small, coverage-scaled Gaussian draw bias and changes no
+Elo, performance rankings or Overall score.
+
+## Preview ownership and cache
+
+The song card keeps one audio element across map, review and result renders.
+Its artwork play control uses the shared PreviewPlayback owner, source routing,
+volume and bounded server RAM cache. Preload the current preview automatically;
+Next song awaits `forgetPair` for the old track before warming the new one.
+No persistent browser cache or second JavaScript audio copy is introduced.
+Fresh entry is silent. A requested preview loops while visible. Switching tabs
+leaves its current clip playing, but never starts another loop while hidden.
+Returning resumes a requested ended loop; a deliberate pause remains paused.
+Actual navigation cleans up through the shared page lifecycle.
+
+## Heatmap contract and future pages
 
 Heatmap responses return one continuous aggregate point per placed song/map,
 with -5..5 coordinates, song ID, sample_count and `weight: 1`, plus unmapped and
-not-applicable song counts. Artist/tag membership is queried without multiplying
-rows. No heatmap grid is imposed or persisted; JavaScript can draw smooth density
-fields for library, artist, album or tag views. A frequently repeated song still
-contributes one song's point, not one point per attempt.
+not-applicable song counts. Artist/tag membership does not multiply rows.
+No heatmap grid is imposed or persisted; future pages can draw density fields
+for library, artist, album or tag views. Each song contributes once per map.
 
-The next update can implement the red continuous graphs, editable countdown,
-advance calls, final radar and density rendering against these APIs. Add the
-template page route together with the actual template, rather than registering
-a broken template route in this backend-only release. No further game-state or
-averaging backend is required for the flow described here.
+This update builds the mode only. Future mode rankings put Vibe Map last;
+individual stats pages place its descriptive container immediately below Overall.
+Neither those pages nor a second new game mode are added here. See the
+[code-only merge guide](VIBE_MAP_MERGE.md) before promoting test-branch code.

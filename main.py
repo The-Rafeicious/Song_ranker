@@ -27,7 +27,7 @@ from songranker import apple_access  # Registers streamed preview diagnostics an
 from songranker import pages  # Registers page and library routes.
 from songranker.modes import trivia  # Registers field-by-field trivia routes.
 from songranker.modes import special_modes  # Registers independent Elo Guesser and Album Shelves.
-from songranker.modes import vibe_map  # Registers continuous Vibe Map round APIs; no page yet.
+from songranker.modes import vibe_map  # Registers continuous Vibe Map round APIs and play page.
 from songranker import overall  # Registers derived, calibrated Overall scores; no stored counters.
 from songranker.modes import games  # Registers voting and tournament routes.
 from songranker.developer import metadata_tools  # Registers fill-only metadata scans.

@@ -81,3 +81,16 @@ class AlbumVibeBias:
             overlap = min(1.0,max(0.0,sum(x*y for x,y in zip(va,vb))))
             score += (2*overlap-1)*min(ca,cb)/len(MAPS)
         return 1+self.strength*score
+
+
+def compare_profiles(first,second):
+    """Public percentage, independent of the small adaptive draw multiplier.
+
+    Each shared map has equal weight. Identical points are 100%; opposite
+    corners are 0%. Missing/N/A maps supply no evidence, never a zero point.
+    """
+    a,b=positions({'vibe_maps':first}),positions({'vibe_maps':second})
+    shared=[values[0] for values in MAPS if values[0] in a and values[0] in b]
+    closeness=(sum(1-math.dist(a[key],b[key])/(2*math.sqrt(2)) for key in shared)/len(shared)) if shared else None
+    return dict(similarity=100*max(0,min(1,closeness)) if closeness is not None else None,
+                shared_maps=len(shared),map_ids=shared,coverage=len(shared)/len(MAPS))

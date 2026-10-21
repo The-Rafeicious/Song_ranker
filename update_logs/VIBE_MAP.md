@@ -1,5 +1,43 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.4 — continuous play page, review and similarity results
+
+Implemented on the test branch; app version remains V5.0.5.1 and schema stays 18.
+No production/test database or tracked SQL backup is changed by this code update.
+
+- Add 📍 Vibe Map last in Home/Game Modes, with six home cards in a desktop
+  3 + 3 layout and equal responsive cards. Reset the old five-card stagger.
+- Add the red `/vibe-map` page: stable song card/player on the left, one named
+  continuous map on the right, artwork pin/glow, subtle contours and -5..5 axes.
+  Pointer positions are unquantised; labels use two decimals. Keyboard arrows
+  and labelled sliders provide accessible alternatives to dragging.
+- Save after the server-enforced five-second readjustment period. Back/forward
+  restores saved pins; unresolved writes and incomplete maps cannot be skipped.
+  Offer a short visible-time final review window, Finish and result readjustment.
+- Extend saved-map edits to replace just this round's contribution, including
+  placed/N/A changes. Keep concurrent browser samples and completed-pass counts.
+  Retain serial writes, exact retry IDs and browser-owned resumable state.
+- Keep one preview through every map/result. Use shared automatic RAM warming;
+  forget the old preview before loading the next song. Hidden tabs finish the
+  current clip without restarting its loop, and pause automatic progression.
+- Add reusable radar SVG/CSS with related poles adjacent and missing spokes as
+  gaps. Results show the aggregate radar plus up to two comparable songs.
+- Add reusable Python coordinate similarity and GET similarity rankings with
+  percentages, shared-map counts and coverage. Missing/N/A evidence stays absent;
+  percentages are descriptive and independent of the gentle draw preference.
+- Document the API, shared styling and a future code-only promotion into main.
+  Keep production catalogue/backup files, leave experimental data behind, and
+  include schema SQL/migrations when promoting source. No branches are merged.
+
+Validation: 319 Python tests and all JavaScript suites pass locally, including
+27 new Vibe Map UI checks and 39 existing served developer-page checks. Six new
+Python tests cover review averaging, shared browser data, placement/N/A switches,
+ordered navigation, canonical recovery, read-only similarity and the play route.
+The CI browser check exercises real served templates/assets/API saves, review,
+results, next song, 3 + 3 Home and overflow at 320–1365 px, saving screenshots as
+workflow artifacts. Local browser execution is unavailable in this environment;
+CI's browser result is recorded in the PR checks.
+
 ## Vibe-Map-v1.0.3 — Python round flow and aggregate saves
 
 Implemented the backend only on `New-modes-test`. `main.py` registers

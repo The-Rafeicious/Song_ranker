@@ -154,6 +154,7 @@ body[data-page=home] #main .home-bar-details {
   body[data-page=home] #main .home-collection-totals { gap: 12px; }
   body[data-page=home] #main .home-collection-totals > .stat { padding: 20px 14px; }
   body[data-page=home] #main .home-record-stats .mini-stats { margin: 0; }
+}
 @media (max-width: 520px) {
   body[data-page=home] #main .home-collection-totals > .stat { padding: 18px 10px; }
   body[data-page=home] #main .home-collection-totals .stat-label { font-size: 16px; }
@@ -161,4 +162,16 @@ body[data-page=home] #main .home-bar-details {
   body[data-page=home] #main .home-record-stats .mini-stats small { font-size: 16px; }
   body[data-page=home] #main .home-bar-caption { font-size: 16px; }
   body[data-page=home] #main .home-bracket-legend { gap: 6px; font-size: 14px; }
+}
+
+/* Six modes, in reading order: three across on desktop. */
+body[data-page=home] #main .modes { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+body[data-page=home] #main .modes > .mode-card { grid-column: auto; min-width: 0; max-width: none; width: auto; justify-self: stretch; }
+body[data-page=home] #main .mode-card.vibe { --mode-color: var(--vibe); border-color: #ac4653; background: linear-gradient(135deg, #47272e, #252023); box-shadow: 0 0 24px #ed657318; }
+body[data-page=home] #main .mode-card.vibe h2 { color: var(--vibe); }
+@media (max-width: 760px) {
+  body[data-page=home] #main .modes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 420px) {
+  body[data-page=home] #main .modes { grid-template-columns: minmax(0, 1fr); }
 }

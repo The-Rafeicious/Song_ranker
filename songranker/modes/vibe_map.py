@@ -3,11 +3,12 @@ import json
 import math
 import secrets
 import time
-from flask import jsonify, request, session
+from flask import jsonify, request, session, render_template
 
 from songranker.services import app, get_db_connection, get_song_full
 from songranker.modes.preferences import transaction, owner_hash, snapshot_song
 from songranker.modes.selection_data import vibe_song
+from songranker.modes.vibe_similarity import compare_profiles
 from songranker.storage.vibe_state import MAPS, VIBE_MAP_VERSION
 from songranker.vibe_maps import map_definitions, song_profiles, pass_counts
 
@@ -60,14 +61,21 @@ def public_point(point):
 
 def radar(points):
     """Eight labelled spokes preserve both axes of all four independent maps."""
+    # Related positive poles are neighbours; raw bipolar values remain available.
+    order=(('mood_energy','x','Happy'),('reflection_escape','x','Hopeful'),
+           ('self_social','x','Confident'),('self_social','y','Social'),
+           ('relationships','y','Close'),('relationships','x','New love'),
+           ('reflection_escape','y','Dreamlike'),('mood_energy','y','Intense'))
+    definitions={values[0]:values for values in MAPS}
     result=[]
-    for key,title,x_low,x_high,y_low,y_high in MAPS:
+    for key,axis,label in order:
+        _,title,x_low,x_high,y_low,y_high=definitions[key]
+        low,high=(x_low,x_high) if axis=='x' else (y_low,y_high)
         point=points.get(key,{})
-        for axis,low,high in (('x',x_low,x_high),('y',y_low,y_high)):
-            value=point.get(axis) if point.get('status')=='placed' else None
-            result.append(dict(key=key+'_'+axis,map_id=key,map_title=title,axis=axis,
-                low=low,high=high,value=round(value*SCALE,2) if value is not None else None,
-                radius=(value+1)/2 if value is not None else None))
+        value=point.get(axis) if point.get('status')=='placed' else None
+        result.append(dict(key=key+'_'+axis,map_id=key,map_title=title,axis=axis,label=label,
+            low=low,high=high,value=round(value*SCALE,2) if value is not None else None,
+            radius=(value+1)/2 if value is not None else None))
     return dict(spokes=result,radius_min=0,radius_max=1,neutral_radius=.5,
                 description='Descriptive axes, not quality or performance scores.')
 
@@ -102,7 +110,7 @@ def payload(conn, row, now=None):
         draft=None,advance_at=None,remaining_ms=None,
         saved_maps=[dict(map_id=key,**public_point(answers[key])) for key in KEYS if key in answers])
     if row['draft_status'] is not None:
-        result['draft']=dict(public_point(dict(status=row['draft_status'],x=row['draft_x'],y=row['draft_y'])),
+        result['draft']=dict(map_id=answers.get('_draft_map',KEYS[min(row['map_index'],len(KEYS)-1)]),**public_point(dict(status=row['draft_status'],x=row['draft_x'],y=row['draft_y'])),
                              request_id=row['draft_key'])
         result['advance_at']=row['draft_at']+READJUST_SECONDS
         result['remaining_ms']=max(0,math.ceil((result['advance_at']-now)*1000))
@@ -119,8 +127,10 @@ def require_round(conn,owner,data):
 
 
 def require_stage(row,data):
-    if row['status']!='active':raise VibeError('This round has ended.','ended',409)
-    if data.get('map_id')!=KEYS[row['map_index']]:
+    if row['status']=='cancelled':raise VibeError('This round has ended.','ended',409)
+    map_id=data.get('map_id');answers=json.loads(row['answers'])
+    if map_id not in KEYS or (map_id not in answers and
+        (row['status']!='active' or map_id!=KEYS[row['map_index']])):
         raise VibeError('Save the current map before advancing.','wrong_map',409)
     if revision(data.get('revision'))!=row['revision']:
         raise VibeError('This placement was changed in another request. Reload its state.','stale_revision',409)
@@ -129,7 +139,7 @@ def require_stage(row,data):
 def start(conn,owner,data):
     with transaction(conn):
         old=current(conn,owner)
-        if old and (old['status']=='active' or data.get('previous_token') is None):
+        if old and (old['status']=='active' or old['draft_status'] is not None or data.get('previous_token') is None):
             return payload(conn,old)
         if old and data.get('previous_token')!=old['token']:
             raise VibeError('The previous round changed. Reload its state.','stale_round',409)
@@ -145,15 +155,17 @@ def draft(conn,owner,data):
     with transaction(conn):
         row=require_round(conn,owner,data)
         key=identifier(data.get('request_id'));status,x,y=placement(data)
-        if row['status']=='active' and data.get('map_id')==KEYS[row['map_index']] and row['draft_key']==key:
+        answers=json.loads(row['answers']);map_id=data.get('map_id')
+        if map_id in KEYS and answers.get('_draft_map')==map_id and row['draft_key']==key:
             if ((row['draft_status'],row['draft_x'],row['draft_y'])==(status,x,y) and
                 revision(data.get('revision')) in (row['revision']-1,row['revision'])):
                 return payload(conn,row)  # Retried draft does not restart its timer.
             raise VibeError('A request_id cannot be reused for a different placement.','request_conflict',409)
         require_stage(row,data)
+        answers['_draft_map']=map_id
         conn.execute('''UPDATE vibe_rounds SET draft_status=?,draft_x=?,draft_y=?,draft_at=?,draft_key=?,
-                        revision=revision+1 WHERE owner_hash=?''',
-                     (status,x,y,time.time(),key,owner_hash(owner)))
+                        revision=revision+1,answers=? WHERE owner_hash=?''',
+                     (status,x,y,time.time(),key,json.dumps(answers),owner_hash(owner)))
         return payload(conn,current(conn,owner))
 
 
@@ -162,42 +174,50 @@ def advance(conn,owner,data):
         row=require_round(conn,owner,data);key=identifier(data.get('request_id'))
         if data.get('map_id') not in KEYS:raise VibeError('A valid map_id is required.')
         expected=revision(data.get('revision'));answers=json.loads(row['answers'])
-        existing=answers.get(data.get('map_id'))
-        if existing:
-            if existing['request_id']!=key or existing['revision']!=expected:
-                raise VibeError('This map has already been saved.','already_saved',409)
-            result=payload(conn,row);result.update(replayed=True,accepted_map=data['map_id']);return result
-        if any(answer['request_id']==key for answer in answers.values()):
-            raise VibeError('Use a new request_id for each map.','request_conflict',409)
+        map_id=data['map_id'];existing=answers.get(map_id)
+        if existing and existing['request_id']==key and existing['revision']==expected:
+            result=payload(conn,row);result.update(replayed=True,accepted_map=map_id);return result
+        if any(answers[k]['request_id']==key for k in KEYS if k in answers):
+            raise VibeError('Use a new request_id for each save.','request_conflict',409)
         require_stage(row,data)
-        if row['draft_status'] is None:raise VibeError('Place the song on this map first.','missing_draft',409)
+        if row['draft_status'] is None or answers.get('_draft_map',KEYS[min(row['map_index'],len(KEYS)-1)])!=map_id:
+            raise VibeError('Place the song on this map first.','missing_draft',409)
         now=time.time();remaining=row['draft_at']+READJUST_SECONDS-now
         if remaining>0:
             raise VibeError('Allow five seconds after the latest adjustment.','readjusting',409,
                             remaining_ms=math.ceil(remaining*1000))
-        map_id=KEYS[row['map_index']]
         point=conn.execute('SELECT * FROM song_vibe_positions WHERE song_id=? AND map_id=?',
                            (row['song_id'],map_id)).fetchone()
         if point is None:raise VibeError('This map slot is missing. Check the database.','missing_slot',409)
+        # Replace only this round's contribution, preserving other browser/pass samples.
+        count=max(point['sample_count'],int(point['status']=='placed'))
+        skipped=point['not_applicable_count']
+        sx=(point['x'] or 0)*count;sy=(point['y'] or 0)*count
+        if existing:
+            if existing['status']=='placed':
+                count-=1;sx-=existing['x'];sy-=existing['y']
+            else:skipped-=1
+        if count<0 or skipped<0:
+            raise VibeError('The saved contribution changed. Reload this round.','changed_sample',409)
         if row['draft_status']=='placed':
-            count=max(point['sample_count'],int(point['status']=='placed'))
-            x=point['x']+(row['draft_x']-point['x'])/(count+1) if count else row['draft_x']
-            y=point['y']+(row['draft_y']-point['y'])/(count+1) if count else row['draft_y']
-            conn.execute("""UPDATE song_vibe_positions SET x=?,y=?,status='placed',updated_at=?,sample_count=?
-                            WHERE song_id=? AND map_id=?""",(x,y,now,count+1,row['song_id'],map_id))
-        else:
-            # A skip is not a zero sample and must not erase an existing mean.
-            conn.execute("""UPDATE song_vibe_positions SET status=CASE WHEN x IS NOT NULL THEN 'placed' ELSE 'not_applicable' END,
-                            updated_at=?,not_applicable_count=not_applicable_count+1 WHERE song_id=? AND map_id=?""",
-                         (now,row['song_id'],map_id))
+            count+=1;sx+=row['draft_x'];sy+=row['draft_y']
+        else:skipped+=1
+        x=max(-1,min(1,sx/count)) if count else None
+        y=max(-1,min(1,sy/count)) if count else None
+        status='placed' if count else 'not_applicable' if skipped else 'unmapped'
+        conn.execute('''UPDATE song_vibe_positions SET x=?,y=?,status=?,updated_at=?,sample_count=?,
+                        not_applicable_count=? WHERE song_id=? AND map_id=?''',
+                     (x,y,status,now,count,skipped,row['song_id'],map_id))
         answers[map_id]=dict(status=row['draft_status'],x=row['draft_x'],y=row['draft_y'],
                             request_id=key,revision=expected,submitted_at=now)
-        done=row['map_index']==len(MAPS)-1
-        conn.execute('''UPDATE vibe_rounds SET map_index=map_index+1,status=?,revision=revision+1,
+        answers.pop('_draft_map',None)
+        index=row['map_index']+(0 if existing else 1)
+        done=index==len(MAPS)
+        conn.execute('''UPDATE vibe_rounds SET map_index=?,status=?,revision=revision+1,
             draft_status=NULL,draft_x=NULL,draft_y=NULL,draft_at=NULL,draft_key=NULL,answers=?,finished_at=?
-            WHERE owner_hash=?''',('complete' if done else 'active',json.dumps(answers,allow_nan=False),
-                                  now if done else None,owner_hash(owner)))
-        if done:
+            WHERE owner_hash=?''',(index,'complete' if done else 'active',json.dumps(answers,allow_nan=False),
+                                  (row['finished_at'] or now) if done else None,owner_hash(owner)))
+        if done and not existing:
             saved=conn.execute('UPDATE song_vibe_progress SET completed_passes=completed_passes+1 WHERE song_id=?',(row['song_id'],))
             if saved.rowcount!=1:raise VibeError('The pass counter is missing. Check the database.','missing_counter',409)
         result=payload(conn,current(conn,owner));result.update(replayed=False,accepted_map=map_id);return result
@@ -291,4 +311,37 @@ def api_vibe_map_heatmap():
         try:entity_id=int(value) if value is not None else None
         except ValueError:raise VibeError('A numeric entity ID is required.')
         return heatmap(conn,request.args.get('kind','all'),entity_id)
+    return respond(read)
+
+
+@app.get('/vibe-map')
+def vibe_map_page():
+    return render_template('vibe_map.html',page='vibe_map',vibe_version=VIBE_MAP_VERSION)
+
+
+def similar_songs(conn,song_id,limit=2):
+    """Rank shared placed maps by diagonal-normalised coordinate closeness."""
+    profile(conn,song_id)  # Validate identity, including an entirely unmapped source.
+    profiles=song_profiles(conn,[r[0] for r in conn.execute('SELECT id FROM songs ORDER BY id')])
+    source=profiles[song_id];ranked=[]
+    for sid,points in profiles.items():
+        if sid==song_id:continue
+        comparison=compare_profiles(source,points)
+        if comparison['shared_maps']:
+            ranked.append(dict(song_id=sid,**comparison))
+    ranked.sort(key=lambda r:(-r['similarity'],-r['shared_maps'],r['song_id']))
+    matches=[]
+    for match in ranked[:limit]:
+        match['similarity']=round(match['similarity'],2)
+        match['song']=snapshot_song(conn,get_song_full(match['song_id'],conn));matches.append(match)
+    return dict(song_id=song_id,matches=matches,total_comparable=len(ranked),map_count=len(MAPS))
+
+
+@app.get('/api/vibe-map/similar/<int:song_id>')
+def api_vibe_map_similar(song_id):
+    def read(conn,data):
+        try:limit=int(request.args.get('limit','2'))
+        except ValueError:raise VibeError('Use a similarity limit between 1 and 100.')
+        if not 1<=limit<=100:raise VibeError('Use a similarity limit between 1 and 100.')
+        return similar_songs(conn,song_id,limit)
     return respond(read)
