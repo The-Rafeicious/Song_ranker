@@ -193,7 +193,7 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.setViewportSize({width:390,height:844});await bounded(page,390,'home-vibe',folder);
   await page.locator('#home-vibe').screenshot({path:folder+'/library-home-phone.png'});await page.locator('#home-vibe-banner').screenshot({path:folder+'/vibe-banner-phone.png'});
   await page.goto(base+'/dev/login');await page.locator('input[name="pin"]').fill('vibe-test-pin');
-  await Promise.all([page.waitForURL('**/dev/dashboard'),page.locator('button[type="submit"]').click()]);
+  await Promise.all([page.waitForURL('**/dev/dashboard'),page.locator('.login-panel button[type="submit"]').click()]);
   await page.goto(base+'/dev/dashboard?view=vibe_records');await page.locator('[data-vibe-edit="1"]').waitFor();
   await page.locator('[data-vibe-edit="1"]').click();await page.locator('#dev-vibe-save').waitFor();
   await page.locator('[name="pace_mood:x"]').fill('4.25');
