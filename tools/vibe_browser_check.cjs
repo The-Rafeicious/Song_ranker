@@ -135,6 +135,8 @@ async function bounded(page,width,phase,folder){
     if(kind!=='song'){
      const rows=await page.locator('#profile-vibe .vibe-mini-map').evaluateAll(nodes=>nodes.map(e=>e.offsetTop));
      assert.deepEqual(rows,[rows[0],rows[0],rows[2],rows[2]]);assert.ok(rows[2]>rows[0],kind+' two rows of two at '+width);
+     const plotOffsets=await page.locator('#profile-vibe .vibe-mini-plot').evaluateAll(nodes=>nodes.map(e=>e.getBoundingClientRect().y-e.parentElement.getBoundingClientRect().y));
+     assert.ok(Math.max(...plotOffsets)-Math.min(...plotOffsets)<2,'Aligned map captions at '+width);
     }
    }
    await page.setViewportSize({width:390,height:844});await page.locator('#profile-vibe').screenshot({path:folder+'/profile-'+kind+'-phone.png'});

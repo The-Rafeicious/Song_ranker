@@ -24,7 +24,8 @@ body.profile-page #main .vibe-profile-panel { --section-color: var(--vibe); --su
 @media (max-width: 600px) {
  .vibe-profile-maps { gap: 10px; }
  .vibe-mini-map { padding: 8px 6px; }
- .vibe-mini-map figcaption h3 { font-size: 15px; min-height: 38px; }
+ .vibe-mini-map figcaption { display: grid; gap: 4px; justify-items: center; }
+ .vibe-mini-map figcaption h3 { font-size: clamp(13px,3.8vw,15px); min-height: 0; }
  .vibe-mini-plot { margin-inline: 3px; }
  .vibe-profile-panel .mode-stats-small-metrics dd { font-size: 23px; }
  .vibe-profile-panel .mode-stats-small-metrics dt { font-size: 13px; }
