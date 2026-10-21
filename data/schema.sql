@@ -565,6 +565,8 @@ CREATE TABLE IF NOT EXISTS song_vibe_positions (
     y REAL CHECK(y IS NULL OR (typeof(y) IN ('real','integer') AND y BETWEEN -1 AND 1)),
     status TEXT NOT NULL DEFAULT 'unmapped' CHECK(status IN ('unmapped','placed','not_applicable')),
     updated_at REAL CHECK(updated_at IS NULL OR (typeof(updated_at) IN ('real','integer') AND updated_at>=0)),
+    sample_count INTEGER NOT NULL DEFAULT 0 CHECK(typeof(sample_count)='integer' AND sample_count>=0),
+    not_applicable_count INTEGER NOT NULL DEFAULT 0 CHECK(typeof(not_applicable_count)='integer' AND not_applicable_count>=0),
     PRIMARY KEY(song_id,map_id),
     CHECK((status='unmapped' AND x IS NULL AND y IS NULL AND updated_at IS NULL)
        OR (status='not_applicable' AND x IS NULL AND y IS NULL AND updated_at IS NOT NULL)
@@ -591,3 +593,37 @@ WHEN NEW.song_id!=OLD.song_id OR NEW.map_id!=OLD.map_id
 BEGIN
     SELECT RAISE(ABORT, 'A Vibe Map slot cannot be moved to another song or map.');
 END;
+
+-- Vibe-Map-v1.0.3: one lifetime pass counter per song, not one row per attempt.
+CREATE TABLE IF NOT EXISTS song_vibe_progress (
+    song_id INTEGER PRIMARY KEY REFERENCES songs(id) ON DELETE CASCADE,
+    completed_passes INTEGER NOT NULL DEFAULT 0 CHECK(typeof(completed_passes)='integer' AND completed_passes>=0)
+);
+CREATE TRIGGER IF NOT EXISTS vibe_progress_added AFTER INSERT ON songs
+BEGIN
+    INSERT INTO song_vibe_progress(song_id) VALUES(NEW.id);
+END;
+
+-- One replaceable resumable round per browser; at most four saved-map receipts.
+CREATE TABLE IF NOT EXISTS vibe_rounds (
+    owner_hash TEXT PRIMARY KEY,
+    token TEXT NOT NULL UNIQUE,
+    song_id INTEGER NOT NULL REFERENCES songs(id) ON DELETE CASCADE,
+    map_index INTEGER NOT NULL DEFAULT 0 CHECK(map_index BETWEEN 0 AND 4),
+    status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','complete','cancelled')),
+    revision INTEGER NOT NULL DEFAULT 0 CHECK(revision>=0),
+    draft_status TEXT CHECK(draft_status IN ('placed','not_applicable')),
+    draft_x REAL CHECK(draft_x BETWEEN -1 AND 1),
+    draft_y REAL CHECK(draft_y BETWEEN -1 AND 1),
+    draft_at REAL,
+    draft_key TEXT,
+    answers TEXT NOT NULL DEFAULT '{}',
+    started_at REAL NOT NULL,
+    finished_at REAL,
+    CHECK((draft_status IS NULL AND draft_x IS NULL AND draft_y IS NULL AND draft_at IS NULL AND draft_key IS NULL)
+       OR (draft_status='placed' AND draft_x IS NOT NULL AND draft_y IS NOT NULL AND draft_at IS NOT NULL AND draft_key IS NOT NULL)
+       OR (draft_status='not_applicable' AND draft_x IS NULL AND draft_y IS NULL AND draft_at IS NOT NULL AND draft_key IS NOT NULL)),
+    CHECK((status='active' AND map_index<4 AND finished_at IS NULL)
+       OR (status='complete' AND map_index=4 AND finished_at IS NOT NULL)
+       OR (status='cancelled' AND map_index<4 AND finished_at IS NOT NULL))
+) WITHOUT ROWID;

@@ -1,7 +1,7 @@
-"""Vibe-Map-v1.0.0 definitions and lossless schema-16 -> 17 transport upgrade."""
+"""Fixed Vibe Map definitions and lossless schema-17/18 transport upgrades."""
 from copy import deepcopy
 
-VIBE_MAP_VERSION = 'Vibe-Map-v1.0.2'
+VIBE_MAP_VERSION = 'Vibe-Map-v1.0.3'
 VIBE_MAP_COLOUR = '#d94b58'
 # Stable keys and endpoint meanings: coordinate -1 is low, +1 is high.
 MAPS = (
@@ -15,8 +15,9 @@ MAPS = (
 )
 MAP_COLUMNS = ('id', 'title', 'x_low', 'x_high', 'y_low', 'y_high',
                'definition_version', 'colour', 'display_order')
-POSITION_COLUMNS = ('song_id', 'map_id', 'x', 'y', 'status', 'updated_at')
-TABLES = {'vibe_maps', 'song_vibe_positions'}
+POSITION_COLUMNS_V17 = ('song_id', 'map_id', 'x', 'y', 'status', 'updated_at')
+BASE_TABLES = {'vibe_maps', 'song_vibe_positions'}
+TABLES = BASE_TABLES | {'song_vibe_progress', 'vibe_rounds'}
 
 
 def definition_rows():
@@ -30,29 +31,60 @@ def seed_definitions(conn):
 
 
 def validate_schema(conn):
-    """A schema-17 snapshot must contain the definitions and all four song links."""
+    """Validate fixed maps and required per-song coverage for this schema."""
     from songranker.storage.database_io import DatabaseValidationError
     tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
-    if not TABLES <= tables:
-        raise DatabaseValidationError('Vibe Map tables are missing from this schema-17 database.')
+    required = TABLES if conn.execute('PRAGMA user_version').fetchone()[0]>=18 else BASE_TABLES
+    if not required <= tables:
+        raise DatabaseValidationError('Vibe Map tables are missing from this database schema.')
     actual = [list(row) for row in conn.execute('SELECT * FROM vibe_maps ORDER BY display_order')]
     if actual != definition_rows():
         raise DatabaseValidationError('Vibe Map definitions do not match Vibe-Map-v1.0.0.')
     if conn.execute('''SELECT s.id FROM songs s LEFT JOIN song_vibe_positions v ON v.song_id=s.id
                        GROUP BY s.id HAVING COUNT(v.map_id)!=4 LIMIT 1''').fetchone():
         raise DatabaseValidationError('Each song must have all four Vibe Map slots.')
+    if 'song_vibe_progress' in required and conn.execute('''SELECT s.id FROM songs s
+        LEFT JOIN song_vibe_progress v ON v.song_id=s.id WHERE v.song_id IS NULL LIMIT 1''').fetchone():
+        raise DatabaseValidationError('Each song must have a Vibe Map pass counter.')
 
 
-def upgrade_state(original):
+def _upgrade_to_17(original):
     if original['user_version'] >= 17:
         return original
-    if TABLES & original['tables'].keys():
+    if BASE_TABLES & original['tables'].keys():
         raise ValueError('A pre-17 extension uses Vibe Map tables; a dedicated migration is required.')
     from songranker.storage.preference_state import records, table
     state = deepcopy(original)
     state['tables']['vibe_maps'] = table(MAP_COLUMNS, definition_rows())
-    state['tables']['song_vibe_positions'] = table(POSITION_COLUMNS, [
+    state['tables']['song_vibe_positions'] = table(POSITION_COLUMNS_V17, [
         [song['id'], values[0], None, None, 'unmapped', None]
         for song in records(state, 'songs') for values in MAPS])
     state['user_version'] = 17
+    return state
+
+
+def upgrade_state(original):
+    state = _upgrade_to_17(original)
+    if state['user_version'] >= 18:
+        return state
+    if {'song_vibe_progress','vibe_rounds'} & state['tables'].keys():
+        raise ValueError('A pre-18 extension uses Vibe Map runtime tables; a dedicated migration is required.')
+    from songranker.storage.preference_state import records, table
+    state = deepcopy(state)
+    positions = state['tables']['song_vibe_positions']
+    status = positions['columns'].index('status')
+    for key, target in (('sample_count','placed'),('not_applicable_count','not_applicable')):
+        if key in positions['columns']:
+            raise ValueError('A pre-18 extension uses Vibe Map sample counters.')
+        positions['columns'].append(key)
+        for row in positions['rows']:
+            row.append(int(row[status]==target))
+    completed = {}
+    for row in records(state,'song_vibe_positions'):
+        completed[row['song_id']] = completed.get(row['song_id'],0)+int(row['status']!='unmapped')
+    state['tables']['song_vibe_progress'] = table(('song_id','completed_passes'),[
+        [row['id'],int(completed.get(row['id'])==len(MAPS))] for row in records(state,'songs')])
+    from songranker.storage.database_schema import table_columns
+    state['tables']['vibe_rounds'] = table(table_columns()['vibe_rounds'],[])
+    state['user_version'] = 18
     return state

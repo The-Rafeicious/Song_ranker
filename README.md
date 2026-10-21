@@ -1,13 +1,14 @@
 # Song Ranker V5
 
-**V5.0.5.1 · V3 competition database · schema 17 (test branch)**
+**V5.0.5.1 · V3 competition database · schema 18 (test branch)**
 
-`New-modes-test` adds **Vibe-Map-v1.0.2**: four independent two-axis song maps,
-a coverage-first mapper picker, and gentle coverage-scaled similarity preferences
-in voting, tournaments, Elo Guesser and Album Shelves. See the
-[Vibe Map implementation log](update_logs/VIBE_MAP.md) for the selection limits.
-Vibe Map gameplay and result saving are still pending; use a separate test
-database when switching branches.
+`New-modes-test` adds **Vibe-Map-v1.0.3**: the Python round flow, continuous -5..5
+placement API, five-second readjustment window, compact running averages and
+radar/heatmap data. The page, CSS and JavaScript come next. Existing coverage-first
+mapping draws and gentle similarity preferences remain in place. See the
+[backend/frontend contract](docs/VIBE_MAP_API.md) and
+[implementation log](update_logs/VIBE_MAP.md). Use a separate test database when
+switching branches.
 
 Vote between songs, identify previews, run tournaments, guess Elo and arrange
 album shelves. V5 keeps your music catalogue and starts the competition again

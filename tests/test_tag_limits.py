@@ -46,8 +46,10 @@ class TagLimitTests(unittest.TestCase):
 
     def old_layout(self):
         # Simulate schema 15 rather than relabelling a schema-17 database.
-        for name in ('song_vibe_added','song_vibe_keep_slot','song_vibe_keep_identity'):
+        for name in ('song_vibe_added','song_vibe_keep_slot','song_vibe_keep_identity','vibe_progress_added'):
             self.conn.execute('DROP TRIGGER '+name)
+        self.conn.execute('DROP TABLE vibe_rounds')
+        self.conn.execute('DROP TABLE song_vibe_progress')
         self.conn.execute('DROP TABLE song_vibe_positions')
         self.conn.execute('DROP TABLE vibe_maps')
 
