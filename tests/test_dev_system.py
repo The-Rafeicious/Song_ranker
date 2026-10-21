@@ -8,6 +8,7 @@ import unittest
 import test_preferences as fixture
 from songranker import services
 from songranker.developer import dev_system as system
+from songranker.storage.database_schema import SCHEMA_VERSION
 from songranker.storage.database_io import (capture, create_backup, readonly, read_export)
 
 
@@ -91,7 +92,7 @@ class DeveloperSystemTests(unittest.TestCase):
     def test_restore_review_is_read_only_and_binds_backup_and_live_state(self):
         p=self.backup();before=self.current();r=self.review(p)
         self.assertEqual(r['live']['Songs'],10);self.assertEqual(r['backup']['Songs'],10)
-        self.assertEqual(r['target_schema'],15);self.assertEqual(before,self.current())
+        self.assertEqual(r['target_schema'],SCHEMA_VERSION);self.assertEqual(before,self.current())
         token=system.signer().loads(r['review_token']);self.assertEqual(token['kind'],'restore')
         self.assertIn('backup',token);self.assertIn('live',token)
 
@@ -152,7 +153,7 @@ class DeveloperSystemTests(unittest.TestCase):
     def test_git_failures_return_actionable_status_and_current_review(self):
         with patch.object(system.GitSync,'status',return_value=dict(available=True,fingerprint='target-1')):
             token=self.client.get('/api/dev/git/status').json['review_token']
-            for code,status in [('stale_target',409),('pending_code',409),('push_failed',502),('busy',409)]:
+            for code,status in [('stale_target',409),('pending_code',409),('database_behind',409),('database_conflict',409),('database_check_failed',409),('push_failed',502),('busy',409)]:
                 with self.subTest(code=code),patch.object(system.GitSync,'upload',return_value=dict(ok=False,code=code,message='Retry after checking')):
                     r=self.client.post('/api/dev/git/upload',json={'review_token':token});self.assertEqual(r.status_code,status);self.assertIn('git',r.json)
 

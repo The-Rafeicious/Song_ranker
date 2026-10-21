@@ -396,3 +396,47 @@ node tests/test_dev_tags.js
 node tests/test_dev_catalog.js
 node tests/test_profiles_v5041.js
 ```
+
+## V5.0.5 cross-computer database sync
+
+- **174 focused Python tests pass**, including **60 Git cases**: the existing
+  29 transport/startup tests and 31 new whole-database reconciliation tests.
+  The broader run includes developer recovery, shutdown, storage codec, tag,
+  catalogue-source and developer-polish regressions. A stale schema-15 assertion
+  in the existing recovery test now uses the canonical schema constant.
+- Two-computer fixtures use independent local checkouts and a bare local remote.
+  Cover 500 incoming songs after manual pull; unchanged-code startup; historical
+  baseline recovery; row edits/deletions with equal counts; local/remote splits;
+  same-ID collisions; game results and Elo; deleted links; extensions; WAL;
+  corrupt/future snapshots; concurrent writes; failed replacement rollback;
+  device/database-bound receipts and post-success receipt/log failures.
+- An end-to-end normal-launcher subprocess proves the live database is reconciled
+  before the server runs. WSGI’s Git-free import contract remains covered by the
+  existing startup design; no live multi-worker hosting was exercised.
+- **105 developer-system JavaScript assertions pass**, including six new checks
+  for separate remote-ahead/conflict/failed-validation messages and escaping.
+  Real frontend scripts run in jsdom with mocked HTTP/media.
+- The actual repository `database_backup.sql` at commit
+  `2d3638a35eb02fd2745cfd64d6389abe71dcf67f` was restored in a temporary directory.
+  It contains **1,003 songs, 199 releases including Singles, 80 artists and 64
+  tags** at schema 16. Validation and fresh bootstrap produce identical complete
+  captures, including rows, keys, sequences and views. The Git blob was
+  `84bd9ef38337dc2ca80582450b5674b753ef0498`; later uploads may differ.
+- JavaScript syntax, Python compilation and `git diff --check` pass.
+
+The focused run loads `dev_system` and `dev_shutdown` routes before HTTP tests,
+then runs `test_git_sync`, `test_git_database`, `test_dev_system`,
+`test_shutdown_v5031`, `test_storage_v5021`, `test_tag_limits`,
+`test_tag_workbench`, `test_dev_polish_v504` and available `test_catalog_sources`
+cases. Two catalogue-source tests still require missing upstream schema-v12
+fixtures and are excluded; full discovery was not claimed green or rerun.
+Set `GIT_CEILING_DIRECTORIES` to the containing checkout root for isolated local
+Git fixtures, and put `tests` on `PYTHONPATH`. Run the frontend suite with Node
+and jsdom 26: `node tests/test_dev_system.js`.
+
+No live user database or remote database upload was used in tests. Actual
+laptop/desktop files, Windows hosting/locking, physical browser rendering,
+real-network authentication/outages and multi-process deployment remain
+installation checks. The GitHub snapshot was read, not replaced. Initial
+recovery cannot reconstruct uncheckpointed work; see
+[baseline and split-recovery limits](UPGRADE_V5_0_5.md).

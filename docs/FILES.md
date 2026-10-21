@@ -25,6 +25,11 @@ lossless snapshot codec and small/large SQLite page policy.
 
 ## Storage
 
+`songranker/storage/git_database.py` owns V5.0.5 whole-snapshot reconciliation:
+committed SQL candidates, row/key comparisons, deletion-aware device baselines
+and transactional adoption. `tests/test_git_database.py` uses two local
+checkouts and a bare remote; [upgrade notes](UPGRADE_V5_0_5.md) cover recovery.
+
 `songranker/storage/tag_limits.py` owns the eight-tag policy, unique-name
 counting and schema-16 membership cleanup. Database insert/update guards live in
 `data/schema.sql`. [Tag-limit upgrade notes](UPGRADE_V5_0_4_2.md) include suggested

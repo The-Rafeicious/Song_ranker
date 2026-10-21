@@ -110,7 +110,7 @@ class GitSync:
             or name.endswith(('.db','.sqlite','.sqlite3','.pyc','-wal','-shm','-journal'))
             or bool(parts&{'instance','database_backups','__pycache__','.venv','venv','node_modules','.pytest_cache'})
             or name in {'database_snapshot.txt','current_elo_rankings.txt','.env'}
-            or any(s.startswith(('.restore_','.export_')) for s in p.parts))
+            or any(s.startswith(('.restore_','.export_','.git_database_')) for s in p.parts))
 
     def changes(self):
         fields=self.run('status','--porcelain=v1','-z','--untracked-files=all').stdout.split('\0');result=[];i=0
@@ -158,7 +158,65 @@ class GitSync:
             tracking_head=remote_head,ahead=ahead,behind=behind,pending_files=pending_files,commits=commits,
             pending_code=any(p!=self.sql_rel for p in pending_files),changes=changes,code_changes=len(code_changes),
             staged_changes=sum(r['staged'] for r in changes),in_progress=in_progress,fingerprint=fingerprint,
-            history=self.history(),snapshot=dict(name='database_backup.sql',exists=self.sql.is_file(),bytes=self.sql.stat().st_size if self.sql.is_file() else 0))
+            history=self.history(),database_sync=self.database_status(),snapshot=dict(name='database_backup.sql',exists=self.sql.is_file(),bytes=self.sql.stat().st_size if self.sql.is_file() else 0))
+
+    def database_status(self):
+        try:
+            value=json.loads((self.state_dir/'database_status.json').read_text(encoding='utf-8'))
+            return value if isinstance(value,dict) else None
+        except (OSError,ValueError):return None
+
+    def database_report(self,result):
+        self.state_dir.mkdir(exist_ok=True)
+        with tempfile.NamedTemporaryFile(dir=self.state_dir,mode='w',encoding='utf-8',delete=False) as stream:
+            path=stream.name;json.dump(dict(result,at=stamp()),stream);stream.flush();os.fsync(stream.fileno())
+        try:os.replace(path,self.state_dir/'database_status.json')
+        finally:Path(path).unlink(missing_ok=True)
+        return result
+
+    def review_database(self,state,adopt=False):
+        from songranker.storage.git_database import DatabaseSync
+        policy=DatabaseSync(self,state)
+        with policy.review() as reviewed:
+            result=dict(policy.public(reviewed),database_binding=policy.binding)
+            if result['code']=='database_matches':policy.remember(reviewed['commit'],reviewed['blob'])
+            elif result['code']=='database_remote_ahead' and adopt:
+                result.update(code='database_updated',backup=policy.adopt(reviewed),
+                    message=f"Loaded the newer Git database ({reviewed['local_songs']} → {reviewed['remote_songs']} songs). Local data was archived first; shared-baseline edits and deletions were checked.")
+                try:policy.remember(reviewed['commit'],reviewed['blob'])
+                except OSError:result['message']+=' The local sync receipt could not be saved; next launch will recheck snapshot history.'
+            elif result['code']=='database_conflict':
+                result['incoming_backup']=policy.incoming_backup(reviewed)
+                result['message']+=' Review '+result['incoming_backup']+' in Dev → Database & backups.'
+            try:return self.database_report(result)
+            except OSError:
+                if result['code']!='database_updated':raise
+                result['message']+=' Local status could not be saved, but the database update and safety archive completed.'
+                return result
+
+    def reconcile_database(self):
+        """Normal-launcher only, after code re-exec and schema bootstrap, before serving."""
+        if not self.database.is_file():
+            return dict(ok=True,action='database',code='database_missing',message='Database bootstrap has not created a live database yet.')
+        try:
+            self.discover()
+            with self.lock():
+                state=self.inspect()
+                if state['in_progress']:raise SyncError('operation_in_progress','Database sync skipped: finish the current Git operation first.')
+                self.fetch(state);state=self.inspect()
+                result=self.review_database(state,adopt=True)
+                result=dict(result,ok=result['code']!='database_conflict',action='database')
+                try:return self.record(result)
+                except OSError:
+                    result['message']+=' Git outcome history could not be saved.'
+                    return result
+        except (SyncError,OSError,sqlite3.Error,ValueError) as error:
+            if not isinstance(error,SyncError):error=SyncError('database_check_failed','Git database could not be validated or safely compared. Local data was kept; upload will recheck before publishing.')
+            result=self.failure('database',error)
+            if self.gitdir:
+                try:self.database_report(result)
+                except OSError:pass
+            return result
 
     def status(self):
         try:return self.inspect()
@@ -173,9 +231,11 @@ class GitSync:
             self.discover()
             with self.lock():
                 before=self.inspect();self.fetch(before);after=self.inspect()
-                self.record(dict(ok=True,action='check',code=after['state'],message='Remote checked. Local code and live database were not changed.'))
+                if self.database.is_file():self.review_database(after)
+                self.record(dict(ok=True,action='check',code=after['state'],message='Remote and database snapshot checked. Local code and live database were not changed.'))
                 return dict(ok=True,code=after['state'],message='Remote checked. Local code and live database were not changed.',git=self.inspect())
         except SyncError as error:return self.failure('check',error)
+        except (OSError,sqlite3.Error,ValueError):return self.failure('check',SyncError('database_check_failed','The remote database snapshot could not be validated. Local data was kept.'))
 
     def failure(self,action,error,**extra):
         result=dict(ok=False,action=action,code=error.code,message=str(error),**extra)
@@ -213,7 +273,7 @@ class GitSync:
         finally:Path(name).unlink(missing_ok=True)
 
     def upload(self,expected=None):
-        commit=None
+        commit=None;published=False
         try:
             self.discover()
             with self.lock():
@@ -223,6 +283,12 @@ class GitSync:
                 self.fetch(before);state=self.inspect()
                 if state['behind']:raise SyncError(state['state'],'The remote has updates. Restart for a safe fast-forward update, or resolve diverged history in your terminal. No database rows are merged.')
                 if state['pending_code']:raise SyncError('pending_code','Unpublished code commits are on this branch. Review/publish them through Git first; this button uploads database backups only.')
+                if self.database.is_file():
+                    try:review=self.review_database(state)
+                    except (OSError,sqlite3.Error,ValueError) as error:
+                        raise SyncError('database_check_failed','The remote database could not be validated or compared. Upload was blocked and local data was kept.') from error
+                    if review['code']=='database_remote_ahead':raise SyncError('database_behind','The Git database is newer than this live database. Restart the app to load it safely before uploading.')
+                    if review['code']=='database_conflict':raise SyncError('database_conflict',review['message'])
                 self.write_snapshot()
                 self.run('add','--',self.sql_rel)
                 changed=self.run('diff','--cached','--quiet','--',self.sql_rel,check=False).returncode
@@ -238,13 +304,24 @@ class GitSync:
                 if latest['ahead']:
                     result=self.run('push','--porcelain',latest['remote'],'HEAD:refs/heads/'+latest['target'],check=False,network=True)
                     if result.returncode:raise SyncError('push_failed','Upload was not confirmed. The local snapshot/commit is kept. Check remote access/history and retry; no force-push is used.')
+                    published=True
                     self.run('update-ref','refs/remotes/'+latest['remote']+'/'+latest['target'],latest['head'])
                     code='uploaded';message='Database backup uploaded. Local code edits and the live database were kept.'
                 else:code='unchanged';message='The database backup already matches the remote. No new commit or upload was needed.'
-                result=self.record(dict(ok=True,action='upload',code=code,message=message,commit=commit))
+                from songranker.storage.git_database import DatabaseSync
+                policy=DatabaseSync(self,latest)
+                try:
+                    blob=policy.blob(latest['head'])
+                    if blob:policy.remember(latest['head'],blob)
+                    self.database_report(dict(code='database_uploaded',message='The uploaded snapshot is the shared database baseline. New local edits remain local until the next backup.'))
+                except OSError:message+=' The local sync receipt could not be saved; next launch will recheck snapshot history.'
+                result=self.record(dict(ok=True,action='upload',code=code,message=message,commit=commit,database_binding=policy.binding))
                 return dict(result,git=self.inspect())
-        except SyncError as error:return self.failure('upload',error,commit=commit)
-        except (OSError,sqlite3.Error,ValueError):return self.failure('upload',SyncError('snapshot_failed','Could not finish the local snapshot. The live database was not changed.'),commit=commit)
+        except (SyncError,OSError,sqlite3.Error,ValueError) as error:
+            if published:
+                return dict(ok=True,action='upload',code='uploaded',commit=commit,message='The remote accepted the database backup. Local status could not be saved; check remote before retrying.')
+            if not isinstance(error,SyncError):error=SyncError('snapshot_failed','Could not finish the local snapshot. The live database was not changed.')
+            return self.failure('upload',error,commit=commit)
 
     def startup(self):
         """Called only before application imports, while the server is stopped."""
@@ -257,7 +334,7 @@ class GitSync:
                 self.fetch(state);state=self.inspect()
                 if state['ahead'] and state['behind']:raise SyncError('diverged','Update skipped: local and remote commits diverged. Resolve them in Git; no automatic merge/rebase is attempted.')
                 if not state['behind']:
-                    return self.record(dict(ok=True,action='startup',code='unchanged',message='No incoming code update. Using local code and database.'))
+                    return self.record(dict(ok=True,action='startup',code='unchanged',message='No incoming code update. The launcher will check database sync after bootstrap.'))
                 if state['staged_changes']:raise SyncError('staged_changes','Update skipped: staged changes need attention in Git. Using local code/data.')
                 if state['code_changes']:raise SyncError('local_changes','Update skipped: local code edits are kept. Commit/reconcile them in Git before updating.')
                 changed=list(filter(None,self.run('diff','--name-only','-z',state['head'],state['tracking_head']).stdout.split('\0')))
@@ -280,7 +357,7 @@ class GitSync:
                         cache=source.parent/'__pycache__'
                         if cache.is_dir():
                             for p in cache.glob(source.stem+'.*.pyc'):p.unlink()
-                return self.record(dict(ok=True,action='startup',code='updated',message='Code updated by fast-forward. Loading the updated app; the existing live database is kept.',
+                return self.record(dict(ok=True,action='startup',code='updated',message='Code updated by fast-forward. Loading the updated app before the separate database sync check.',
                     head=state['tracking_head'],backup=Path(backup).name if backup else None))
         except (SyncError,OSError,sqlite3.Error) as error:
             if modified_sql and sql_copy:

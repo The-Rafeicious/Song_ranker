@@ -50,6 +50,9 @@ First creation follows this order:
 4. Otherwise use the full package's catalogue-only seed if present.
 5. Otherwise create an empty catalogue and fresh competition.
 
+After this bootstrap, the normal launcher performs the separate V5.0.5 Git
+database comparison described below, including for an existing V3 database.
+
 An explicitly configured missing V2 source stops initial creation. It does not
 block restarts once a valid V3 exists. The retained `SONG_RANKER_DB` filename
 `song_ranker_v2.db` maps to a separate sibling V3 destination; other custom source
@@ -504,3 +507,29 @@ its response shape for clients. Bulk catalogue mutations accept up to 500
 positive integer IDs. The interface uses reviewed restore and Git tools; older
 backend aliases remain compatible. Developer-only assets load from one template
 include; metadata polling and archive paging have separate script owners.
+
+## V5.0.5 Git database reconciliation
+
+`developer/git_sync.py` still owns Git transport, locking, code fast-forward and
+snapshot-only uploads. `storage/git_database.py` owns committed SQL validation,
+logical row models, device baseline receipts, three-way change coverage and
+transactional adoption. `main.py` calls reconciliation after schema bootstrap
+and code re-exec but before the normal server starts, even after a manual pull.
+
+A shared baseline tracks removals as well as additions/edits; sequence high-water
+marks and extension objects participate. Device-local competition start/provenance
+are omitted from logical equality. Confirmed-upload history or an exact older
+Git snapshot can recover the initial baseline; absent/ambiguous history requires
+review. No row count or modification-time heuristic decides which database wins.
+
+Safe remote adoption uses an archival `pre_git_database` SQLite backup, a live
+digest recheck inside `BEGIN IMMEDIATE`, and the existing verified transactional
+rebuild. Conflicts retain local data and publish a validated `incoming_git` copy
+for the existing reviewed-restore workflow. Upload preflight rejects stale or
+split live databases even if source Git commits are already up to date.
+
+Status is cached locally in Git’s private state folder and returned as
+`git.database_sync`; Dev labels it separately from code status. Check remote
+compares read-only. WSGI import bootstrap does not fetch or auto-adopt snapshots.
+Details, first-upgrade limits and recovery are in
+[UPGRADE_V5_0_5.md](UPGRADE_V5_0_5.md).
