@@ -1,7 +1,7 @@
 """Vibe-Map-v1.0.0 definitions and lossless schema-16 -> 17 transport upgrade."""
 from copy import deepcopy
 
-VIBE_MAP_VERSION = 'Vibe-Map-v1.0.0'
+VIBE_MAP_VERSION = 'Vibe-Map-v1.0.1'
 VIBE_MAP_COLOUR = '#d94b58'
 # Stable keys and endpoint meanings: coordinate -1 is low, +1 is high.
 MAPS = (

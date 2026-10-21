@@ -12,6 +12,9 @@ GUESS_FLOOR = 0.05
 GUESS_TARGET_WEIGHT = 0.95
 GUESS_WIDTH = 0.10
 GUESS_PREVIOUS = 0.25
+VIBE_FIRST_PASS = 0.95
+VIBE_LATER_PASS = 0.75
+VIBE_PREVIOUS = 0.25
 
 
 def nonnegative(value):
@@ -141,6 +144,44 @@ def choose_single(songs, rng=random, *, counts=None, previous=None):
     if len(songs) > 1:
         base = [0 if s['id'] == previous else w for s, w in zip(songs, base)]
     return songs[weighted_index(base, rng)]
+
+
+def vibe_probabilities(songs, *, counts=None, previous=None, now=None):
+    """Adaptive draws with extra mass for the least-completed Vibe Map pass.
+
+    Counts are completed Vibe Map rounds, never Elo/Trivia exposures. A caller
+    without saved repeat counts supplies the first-pass 0/1 coverage projection.
+    Recency is a soft penalty within both distributions, so a lone unfinished
+    song retains its priority even if it was the previous draw.
+    """
+    values = [nonnegative(c) for c in counts_for(songs, counts, 'vibe_attempts')]
+    if not values:
+        return []
+    base = exposure_probabilities(values, [s.get('added_at', 0) for s in songs], now)
+    base = [w * (VIBE_PREVIOUS if s['id'] == previous else 1)
+            for s, w in zip(songs, base)]
+    total = math.fsum(base)
+    base = [w / total for w in base]
+    least = min(values)
+    priority = VIBE_FIRST_PASS if least == 0 else VIBE_LATER_PASS
+    cohort_total = math.fsum(w for w, count in zip(base, values) if count == least)
+    return [(1 - priority) * w + (priority * w / cohort_total if count == least else 0)
+            for w, count in zip(base, values)]
+
+
+def choose_vibe_song(songs, rng=random, *, counts=None, previous=None):
+    """One unique eligible song; coverage first, no rating or preview requirement."""
+    pool = []
+    seen = set()
+    for row in songs:
+        song = dict(row)
+        if song.get('id') is not None and song['id'] not in seen:
+            pool.append(song)
+            seen.add(song['id'])
+    if not pool:
+        return None
+    weights = vibe_probabilities(pool, counts=counts, previous=previous)
+    return pool[weighted_index(weights, rng)]
 
 
 def gap_positions(values, tolerance=0.0):
