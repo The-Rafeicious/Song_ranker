@@ -207,6 +207,8 @@ def initialize_database(filename, sql_backup=None):
             else:
                 conn.execute('BEGIN IMMEDIATE')
                 create_objects(conn)
+                from songranker.storage.vibe_state import seed_definitions
+                seed_definitions(conn)
                 conn.execute("INSERT INTO preference_replay_state VALUES(1,0,0,'verified_replay',1)")
                 conn.execute("INSERT INTO competition_state VALUES(1,3,unixepoch(),'{}')")
                 conn.executemany('INSERT INTO global_stats(key,value) VALUES(?,?)',

@@ -15,6 +15,7 @@ from songranker.developer.git_sync import GitSync, SyncError
 from songranker.storage.competition import bootstrap_sql
 from songranker.storage.database_io import capture, readonly
 from songranker.storage.git_database import DatabaseSync
+from songranker.storage.database_schema import SCHEMA_VERSION
 
 
 class GitDatabaseTests(unittest.TestCase):
@@ -202,7 +203,7 @@ class GitDatabaseTests(unittest.TestCase):
         self.assertFalse(self.sync.upload()['ok']);self.assertEqual(self.sync.sql.read_bytes(),sql)
 
     def test_future_schema_is_not_loaded_over_existing_data(self):
-        self.pair();sql=self.sync.sql.read_text().replace('PRAGMA user_version=16;','PRAGMA user_version=999;')
+        self.pair();sql=self.sync.sql.read_text().replace(f'PRAGMA user_version={SCHEMA_VERSION};','PRAGMA user_version=999;')
         self.remote_change({'database_backup.sql':sql});self.pull();before=self.state()
         self.assertEqual(self.sync.reconcile_database()['code'],'database_check_failed');self.assertEqual(self.state(),before)
 

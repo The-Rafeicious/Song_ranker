@@ -64,8 +64,9 @@ def shelf_history(conn):
 
 
 def with_catalogue_age(conn,rows):
-    """One shared annotation reader; preview-quality flags never enter selection."""
+    """Read age and vibe metadata; selectors do not yet use Vibe Map weights."""
     rows=[dict(row) for row in rows]
     exists=conn.execute("SELECT 1 FROM sqlite_master WHERE name='song_details'").fetchone()
     ages=dict(conn.execute('SELECT song_id,added_at FROM song_details')) if exists else {}
-    return [dict(row,added_at=ages.get(row['id'],0)) for row in rows]
+    from songranker.vibe_maps import with_vibe_maps
+    return with_vibe_maps(conn, [dict(row,added_at=ages.get(row['id'],0)) for row in rows])
