@@ -18,7 +18,8 @@ from songranker.version import APP_VERSION
 
 @app.context_processor
 def project_version():
-    return dict(app_version=APP_VERSION)
+    from songranker.storage.vibe_state import VIBE_MAP_VERSION
+    return dict(app_version=APP_VERSION, vibe_version=VIBE_MAP_VERSION)
 
 from songranker.storage.competition import configured_paths
 DB_PATH, LEGACY_DB_PATH = configured_paths(ROOT)
@@ -166,7 +167,7 @@ def is_close_match(guess, actual, threshold=0.75):
 SONG_SELECT = "SELECT s.*, al.cover_url, al.title as album,\n               CASE WHEN LOWER(TRIM(COALESCE(al.title, ''))) LIKE '% - single' THEN 1 ELSE 0 END AS album_is_single,\n               COALESCE(ts.attempts, 0) as trivia_attempts,\n               COALESCE(ts.correct, 0) as trivia_correct, COALESCE(ts.available_points,0) as available_points,\n               (SELECT GROUP_CONCAT(a2.name, ', ') FROM song_artists sa2 JOIN artists a2 ON sa2.artist_id = a2.id WHERE sa2.song_id = s.id) as artist,\n               (SELECT GROUP_CONCAT(g2.name, ', ') FROM song_genres sg2 JOIN genres g2 ON sg2.genre_id = g2.id WHERE sg2.song_id = s.id) as genres\n        FROM songs s\n        LEFT JOIN albums al ON s.album_id = al.id\n        LEFT JOIN trivia_stats ts ON s.id = ts.song_id"
 
 def fetch_songs(conn, *, song_id=None, audio_only=False):
-    """Consistent song, artist, release and trivia metadata in one query."""
+    """Consistent song metadata plus batched, independent Vibe Map placements."""
     conditions, parameters = [], []
     if song_id is not None:
         conditions.append('s.id=?')
@@ -174,7 +175,8 @@ def fetch_songs(conn, *, song_id=None, audio_only=False):
     if audio_only:
         conditions.append("COALESCE(s.audio_url, '') != ''")
     where=' WHERE '+' AND '.join(conditions) if conditions else ''
-    return conn.execute(SONG_SELECT+where,parameters).fetchall()
+    from songranker.vibe_maps import with_vibe_maps
+    return with_vibe_maps(conn, conn.execute(SONG_SELECT+where,parameters))
 
 
 def get_song_full(song_id, conn):

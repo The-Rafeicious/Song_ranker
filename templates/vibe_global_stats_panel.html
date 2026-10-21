@@ -1,0 +1,6 @@
+{% from 'mode_stats_components.html' import figure, rate, progress %}
+<div class="vibe-global-content">
+  <dl class="joined-metrics mode-stats-small-metrics" data-columns="4">{{figure('Tracks with selections',summary.selected)}}{{figure('Fully mapped',summary.full)}}{{figure('Map positions',summary.positions)}}{{figure('Completed passes',summary.passes)}}</dl>
+  <div class="vibe-global-coverage"><strong>{{rate(summary.coverage)}}</strong>{{progress('Vibe Map coverage',summary.coverage)}}<span>{{summary.selected}} / {{summary.total}} library tracks</span></div>
+  <div class="vibe-global-leaders">{% for category,leader in leaders.items() %}{% set tone={'albums':'album','artists':'artist','tags':'tag'}[category] %}<div class="mode-stats-inset"><h3 class="{{tone}}">{{category|capitalize}}</h3>{% if leader %}{% set path={'albums':'album','artists':'artist','tags':'tag'}[category] %}<a class="{{tone}}" href="/{{path}}/{{leader.name|urlencode}}" title="{{leader.name}}">{{leader.name}}</a><strong class="vibe">{{rate(leader.consistency)}} <small>consistency</small></strong><span class="song">{{leader.mapped}} / {{leader.total}} tracks mapped</span>{% else %}<span class="empty">No mapped groups yet</span>{% endif %}<small>{{counts[category]}} ranked</small></div>{% endfor %}</div>
+</div>

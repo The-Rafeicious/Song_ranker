@@ -1,5 +1,5 @@
 """Read-only Global Stats projections from one SQLite snapshot."""
-from songranker.reports.stats_activity import attach_reports
+from songranker.reports.stats_activity import attach_reports, latest_vibe_saves
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 import math
@@ -208,6 +208,9 @@ def build_global_stats(conn):
         if r['available']>0 and abs(r['points']-r['available'])<1e-8:metrics.append(metric('Perfect','round','correct'))
         event('shelves',r['id'],shelf_times[r['id']],'Album Shelves',f"{len(r['song_ids'])} tracks · {round(r['accuracy'],1) if r['accuracy'] is not None else 0}% points",
               '/album_shelves_stats',related,metrics)
+    for r in sorted(latest_vibe_saves(conn),key=lambda r:(timestamp(r['updated_at']),r['song_id']),reverse=True)[:10]:
+        event('vibe',r['song_id'],r['updated_at'],'Vibe Map','Latest saved selections','/vibe_map_stats',
+              [saved_song(r['song_id'])],[metric(f"{r['placed']} / 4",'maps placed')])
     activity.sort(key=lambda e:(-e['timestamp'],e['kind'],-e['id']))
     return attach_reports(conn, dict(elo_summary=elo_summary(conn),total_songs=len(songs),total_artists=len(artists),total_albums=len(proper),total_matches=len(history),
         mode_totals=[dict(label='Trivia rounds',value=trivia_total,kind='recognition'),dict(label='Tournaments',value=tournament['total'],kind='tournament'),

@@ -9,6 +9,7 @@ from songranker.developer import dev, dev_tags, dev_system
 from songranker.storage.database import migrate
 from songranker.storage.database_io import capture, reconcile
 from songranker.storage.tag_limits import tag_names
+from songranker.storage.database_schema import SCHEMA_VERSION
 
 
 class TagLimitTests(unittest.TestCase):
@@ -43,8 +44,17 @@ class TagLimitTests(unittest.TestCase):
         self.assertEqual(response.status_code,200,response.json)
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM song_genres WHERE song_id=1').fetchone()[0],8)
 
+    def old_layout(self):
+        # Simulate schema 15 rather than relabelling a schema-17 database.
+        for name in ('song_vibe_added','song_vibe_keep_slot','song_vibe_keep_identity','vibe_progress_added'):
+            self.conn.execute('DROP TRIGGER '+name)
+        self.conn.execute('DROP TABLE vibe_rounds')
+        self.conn.execute('DROP TABLE song_vibe_progress')
+        self.conn.execute('DROP TABLE song_vibe_positions')
+        self.conn.execute('DROP TABLE vibe_maps')
+
     def test_failed_upgrade_leaves_original_memberships_and_version(self):
-        self.extra_tags()
+        self.extra_tags();self.old_layout()
         for name in ('song_tags_limit_insert','song_tags_limit_update'):self.conn.execute('DROP TRIGGER '+name)
         self.conn.executemany('INSERT INTO song_genres VALUES(1,?)',[(i,) for i in range(2,12)])
         self.conn.execute('PRAGMA user_version=15');self.conn.commit();before=capture(self.conn)
@@ -88,7 +98,7 @@ class TagLimitTests(unittest.TestCase):
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM song_genres WHERE song_id=1').fetchone()[0],8)
 
     def test_upgrade_keeps_earliest_link_order_and_backup_then_is_idempotent(self):
-        self.extra_tags()
+        self.extra_tags();self.old_layout()
         for name in ('song_tags_limit_insert','song_tags_limit_update'):self.conn.execute('DROP TRIGGER '+name)
         # Deliberately different from tag-ID order; keep the earliest saved links.
         order=[11,10,9,8,7,6,5,4,3,2]
@@ -96,7 +106,7 @@ class TagLimitTests(unittest.TestCase):
         self.conn.execute('PRAGMA user_version=15');self.conn.commit();before=capture(self.conn)
         migrate(self.path)
         self.assertEqual([r[0] for r in self.conn.execute('SELECT genre_id FROM song_genres WHERE song_id=1 ORDER BY rowid')],[1]+order[:7])
-        self.assertEqual(self.conn.execute('PRAGMA user_version').fetchone()[0],16)
+        self.assertEqual(self.conn.execute('PRAGMA user_version').fetchone()[0],SCHEMA_VERSION)
         after=capture(self.conn);reconcile(before,after)
         for name,data in before['tables'].items():
             if name!='song_genres':self.assertEqual(data,after['tables'][name],name)

@@ -40,6 +40,12 @@ class StorageTests(unittest.TestCase):
     def source(self,n):return sources.observation(apple(trackId=9000+n,trackViewUrl='https://music.apple.com/gb/song/'+str(9000+n)), 'gb')
 
     def old_layout(self):
+        for name in ('song_vibe_added','song_vibe_keep_slot','song_vibe_keep_identity','vibe_progress_added'):
+            self.conn.execute('DROP TRIGGER '+name)
+        self.conn.execute('DROP TABLE vibe_rounds')
+        self.conn.execute('DROP TABLE song_vibe_progress')
+        self.conn.execute('DROP TABLE song_vibe_positions')
+        self.conn.execute('DROP TABLE vibe_maps')
         self.conn.execute('DROP INDEX song_sources_song')
         self.conn.execute('CREATE INDEX song_sources_song ON song_sources(song_id,id DESC)')
         self.conn.execute('PRAGMA user_version=14');self.conn.commit()

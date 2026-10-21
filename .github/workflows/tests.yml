@@ -17,7 +17,7 @@ jobs:
         with:
           node-version: '22'
       - run: pip install -r requirements.txt
-      - run: npm install --no-save --no-package-lock jsdom@26
+      - run: npm install --no-save --no-package-lock jsdom@26 playwright-core@1.58.2
       - name: Python regression
         run: python -m unittest discover -s tests -v
       - name: JavaScript regression
@@ -29,3 +29,14 @@ jobs:
               *) node "$test" ;;
             esac || exit 1
           done
+
+      - name: Vibe Map browser integration
+        if: always()
+        run: python tools/validate_vibe_page.py
+      - name: Vibe Map review screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vibe-map-screenshots
+          path: artifacts/vibe-map/*.png
+          if-no-files-found: ignore

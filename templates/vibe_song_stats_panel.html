@@ -1,0 +1,16 @@
+{% from 'components.html' import art %}
+{% from 'mode_stats_components.html' import metadata, rate %}
+<div class="vibe-song-panel">
+  {% if show_identity|default(true) %}<div class="vibe-song-identity">
+    {{art(song.cover_url)}}
+    <div class="mode-stats-copy"><a class="song mode-stats-name" href="{{url_for('song_page',song_id=song.id)}}" title="{{song.title}}">{{song.title}}</a>{{metadata(song)}}<span class="vibe-song-evidence">{{profile.maps.values()|selectattr('status','equalto','placed')|list|length}} / {{map_count}} maps · {{profile.completed_passes}} completed passes</span></div>
+  </div>
+  {% endif %}<div class="vibe-song-chart" data-vibe-song-radar></div>
+  <div class="vibe-song-matches"><h3 class="vibe">Closest matches</h3><ol class="mode-stats-list">
+    {% for match in matches %}{% set other=match.song %}<li class="mode-stats-row">
+      <span class="mode-stats-art">{{art(other.cover_url)}}</span>
+      <div class="mode-stats-copy"><a class="song mode-stats-name" href="{{url_for('song_page',song_id=other.id)}}" title="{{other.title}}">{{other.title}}</a>{{metadata(other)}}</div>
+      <div class="mode-stats-result"><strong>{{rate(match.similarity|round(1))}}</strong><span>{{match.shared_maps}} / {{map_count}} maps</span></div>
+    </li>{% else %}<li class="empty">Map another song to find a match.</li>{% endfor %}
+  </ol></div>
+</div>

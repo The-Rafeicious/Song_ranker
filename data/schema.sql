@@ -544,3 +544,86 @@ WHEN (NEW.song_id != OLD.song_id OR NEW.genre_id != OLD.genre_id)
 BEGIN
     SELECT RAISE(ABORT, 'A song can have at most 8 tags. Remove a tag before adding another.');
 END;
+
+-- Vibe-Map-v1.0.4.2 / schema 19: four independent two-axis descriptions, never preference scores.
+CREATE TABLE IF NOT EXISTS vibe_maps (
+    id TEXT PRIMARY KEY CHECK(id IN ('pace_mood','sound_impact','connection','perspective')),
+    title TEXT NOT NULL,
+    x_low TEXT NOT NULL,
+    x_high TEXT NOT NULL,
+    y_low TEXT NOT NULL,
+    y_high TEXT NOT NULL,
+    definition_version INTEGER NOT NULL CHECK(definition_version=2),
+    colour TEXT NOT NULL DEFAULT '#d94b58',
+    display_order INTEGER NOT NULL UNIQUE CHECK(display_order BETWEEN 1 AND 4)
+) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS song_vibe_positions (
+    song_id INTEGER NOT NULL REFERENCES songs(id) ON DELETE CASCADE,
+    map_id TEXT NOT NULL REFERENCES vibe_maps(id),
+    x REAL CHECK(x IS NULL OR (typeof(x) IN ('real','integer') AND x BETWEEN -1 AND 1)),
+    y REAL CHECK(y IS NULL OR (typeof(y) IN ('real','integer') AND y BETWEEN -1 AND 1)),
+    status TEXT NOT NULL DEFAULT 'unmapped' CHECK(status IN ('unmapped','placed','not_applicable')),
+    updated_at REAL CHECK(updated_at IS NULL OR (typeof(updated_at) IN ('real','integer') AND updated_at>=0)),
+    sample_count INTEGER NOT NULL DEFAULT 0 CHECK(typeof(sample_count)='integer' AND sample_count>=0),
+    not_applicable_count INTEGER NOT NULL DEFAULT 0 CHECK(typeof(not_applicable_count)='integer' AND not_applicable_count>=0),
+    PRIMARY KEY(song_id,map_id),
+    CHECK((status='unmapped' AND x IS NULL AND y IS NULL AND updated_at IS NULL)
+       OR (status='not_applicable' AND x IS NULL AND y IS NULL AND updated_at IS NOT NULL)
+       OR (status='placed' AND x IS NOT NULL AND y IS NOT NULL AND updated_at IS NOT NULL))
+) WITHOUT ROWID;
+CREATE INDEX IF NOT EXISTS vibe_positions_map ON song_vibe_positions(map_id,status,song_id);
+
+-- All import/add paths insert songs; each new song receives ALL four independent slots.
+CREATE TRIGGER IF NOT EXISTS song_vibe_added AFTER INSERT ON songs
+BEGIN
+    INSERT INTO song_vibe_positions(song_id,map_id)
+    SELECT NEW.id,id FROM vibe_maps;
+END;
+
+-- Clear a placement by updating it to unmapped; keep its required song/map slot.
+CREATE TRIGGER IF NOT EXISTS song_vibe_keep_slot BEFORE DELETE ON song_vibe_positions
+WHEN EXISTS(SELECT 1 FROM songs WHERE id=OLD.song_id)
+BEGIN
+    SELECT RAISE(ABORT, 'Keep all four Vibe Map slots; clear the coordinates instead.');
+END;
+CREATE TRIGGER IF NOT EXISTS song_vibe_keep_identity
+BEFORE UPDATE OF song_id,map_id ON song_vibe_positions
+WHEN NEW.song_id!=OLD.song_id OR NEW.map_id!=OLD.map_id
+BEGIN
+    SELECT RAISE(ABORT, 'A Vibe Map slot cannot be moved to another song or map.');
+END;
+
+-- Vibe-Map-v1.0.3: one lifetime pass counter per song, not one row per attempt.
+CREATE TABLE IF NOT EXISTS song_vibe_progress (
+    song_id INTEGER PRIMARY KEY REFERENCES songs(id) ON DELETE CASCADE,
+    completed_passes INTEGER NOT NULL DEFAULT 0 CHECK(typeof(completed_passes)='integer' AND completed_passes>=0)
+);
+CREATE TRIGGER IF NOT EXISTS vibe_progress_added AFTER INSERT ON songs
+BEGIN
+    INSERT INTO song_vibe_progress(song_id) VALUES(NEW.id);
+END;
+
+-- One replaceable resumable round per browser; at most four saved-map receipts.
+CREATE TABLE IF NOT EXISTS vibe_rounds (
+    owner_hash TEXT PRIMARY KEY,
+    token TEXT NOT NULL UNIQUE,
+    song_id INTEGER NOT NULL REFERENCES songs(id) ON DELETE CASCADE,
+    map_index INTEGER NOT NULL DEFAULT 0 CHECK(map_index BETWEEN 0 AND 4),
+    status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','complete','cancelled')),
+    revision INTEGER NOT NULL DEFAULT 0 CHECK(revision>=0),
+    draft_status TEXT CHECK(draft_status IN ('placed','not_applicable')),
+    draft_x REAL CHECK(draft_x BETWEEN -1 AND 1),
+    draft_y REAL CHECK(draft_y BETWEEN -1 AND 1),
+    draft_at REAL,
+    draft_key TEXT,
+    answers TEXT NOT NULL DEFAULT '{}',
+    started_at REAL NOT NULL,
+    finished_at REAL,
+    CHECK((draft_status IS NULL AND draft_x IS NULL AND draft_y IS NULL AND draft_at IS NULL AND draft_key IS NULL)
+       OR (draft_status='placed' AND draft_x IS NOT NULL AND draft_y IS NOT NULL AND draft_at IS NOT NULL AND draft_key IS NOT NULL)
+       OR (draft_status='not_applicable' AND draft_x IS NULL AND draft_y IS NULL AND draft_at IS NOT NULL AND draft_key IS NOT NULL)),
+    CHECK((status='active' AND map_index<4 AND finished_at IS NULL)
+       OR (status='complete' AND map_index=4 AND finished_at IS NOT NULL)
+       OR (status='cancelled' AND map_index<4 AND finished_at IS NOT NULL))
+) WITHOUT ROWID;

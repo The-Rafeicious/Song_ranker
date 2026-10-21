@@ -8,7 +8,7 @@ import unittest
 import test_preferences as fixture
 from songranker import services
 from songranker.developer import dev_system as system
-from songranker.storage.database_schema import SCHEMA_VERSION
+from songranker.storage.database_schema import SCHEMA_VERSION, definitions
 from songranker.storage.database_io import (capture, create_backup, readonly, read_export)
 
 
@@ -51,7 +51,9 @@ class DeveloperSystemTests(unittest.TestCase):
             r=self.client.get('/api/dev/system');fetch.assert_not_called()
         self.assertEqual(r.status_code,200);self.assertEqual(before,capture(self.conn))
         rows={r['name']:r for r in r.json['inventory']}
-        self.assertEqual(len(rows),35);self.assertEqual(rows['custom notes']['group'],'Extensions')
+        self.assertEqual(len(rows),sum(kind in ('table','view') for kind,_,_ in definitions())+2);
+        self.assertEqual(rows['vibe_maps']['group'],'Vibe Map')
+        self.assertEqual(rows['song_vibe_positions']['rows'],40); self.assertEqual(rows['custom notes']['group'],'Extensions')
         self.assertEqual(rows['custom view']['role'],'Derived / read-only')
         self.assertEqual(rows['preference_mode_ratings']['role'],'Rebuildable projection')
         self.assertEqual(rows['songs']['rows'],10);self.assertEqual(r.json['integrity'],'ok')

@@ -166,6 +166,9 @@ def validate(conn):
             raise DatabaseValidationError('A song exceeds the eight-tag limit in this schema-16 database.')
     if 'album_id' not in {row[1] for row in conn.execute('PRAGMA table_info(songs)')}:
         raise DatabaseValidationError('The older flat-schema database is not supported. Keep it separately.')
+    if conn.execute('PRAGMA user_version').fetchone()[0] >= 17:
+        from songranker.storage.vibe_state import validate_schema
+        validate_schema(conn)
 
 
 def reconcile(before, after):

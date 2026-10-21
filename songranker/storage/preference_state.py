@@ -197,8 +197,21 @@ def upgrade_state(original):
         from songranker.storage.challenge_state import ADDITIONS as quiz_additions
         from songranker.storage.catalog_source_state import ADDITIONS as song_additions
         current={name:set(columns) for name,columns in table_columns().items()}
-        layouts=[(14,current)]
-        thirteen={name:set(columns) for name,columns in current.items() if name not in ('song_details','competition_state','listening_observations')}
+        from songranker.storage.vibe_state import TABLES as vibe_tables
+        # Layout 18/19 is identical; definition generation disambiguates dumps.
+        maps=original['tables'].get('vibe_maps',{})
+        columns=maps.get('columns',[])
+        generation=(19 if 'definition_version' in columns and maps.get('rows') and
+                    all(row[columns.index('definition_version')]==2 for row in maps['rows']) else 18)
+        layouts=[(generation,current)]
+        seventeen={name:set(columns) for name,columns in current.items() if name not in ('song_vibe_progress','vibe_rounds')}
+        seventeen['song_vibe_positions']-={'sample_count','not_applicable_count'}
+        layouts.append((17,seventeen))
+        sixteen={name:columns for name,columns in current.items() if name not in vibe_tables}
+        # Pre-17 SQL dumps share the older 14-16 column layout; retain its
+        # established transport adapters when the version pragma was omitted.
+        layouts.append((14,sixteen))
+        thirteen={name:set(columns) for name,columns in sixteen.items() if name not in ('song_details','competition_state','listening_observations')}
         layouts.append((13,thirteen))
         twelve={name:set(columns) for name,columns in thirteen.items() if name!='song_sources'}
         twelve['songs']-={name for name,_ in song_additions}
@@ -218,7 +231,8 @@ def upgrade_state(original):
     from songranker.storage.catalog_source_state import upgrade_state as upgrade_sources
     from songranker.storage.source_storage import upgrade_state as upgrade_storage
     from songranker.storage.tag_limits import upgrade_state as upgrade_tags
-    return upgrade_tags(upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original)))))
+    from songranker.storage.vibe_state import upgrade_state as upgrade_vibes
+    return upgrade_vibes(upgrade_tags(upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original))))))
 
 
 def replay(songs, seeds, events, overrides, cutoff, boundary):

@@ -4,6 +4,7 @@ import random
 import statistics
 import sys
 import time
+from songranker.modes.vibe_similarity import SongVibeBias, AlbumVibeBias
 
 EXPLORATION = 0.08
 MATCH_FLOOR = 0.20
@@ -12,6 +13,9 @@ GUESS_FLOOR = 0.05
 GUESS_TARGET_WEIGHT = 0.95
 GUESS_WIDTH = 0.10
 GUESS_PREVIOUS = 0.25
+VIBE_FIRST_PASS = 0.95
+VIBE_LATER_PASS = 0.75
+VIBE_PREVIOUS = 0.25
 
 
 def nonnegative(value):
@@ -128,7 +132,9 @@ def choose_match(songs, rng=random, *, counts=None, previous=()):
         gap = abs(songs[i]['elo_score'] - songs[first]['elo_score'])
         distance = gap / scale if scale else 0
         return 1 / (1 + distance * distance)
-    second = candidates[weighted_index([base[i] * (stage['match_floor'] + stage['match_close'] * closeness(i)) for i in candidates], rng)]
+    vibe = SongVibeBias(songs)
+    second = candidates[weighted_index([base[i] * (stage['match_floor'] + stage['match_close'] * closeness(i)) *
+        vibe.multiplier(songs[first]['id'],songs[i]['id']) for i in candidates], rng)]
     pair = songs[first], songs[second]
     return pair[::-1] if rng.random() < 0.5 else pair
 
@@ -141,6 +147,44 @@ def choose_single(songs, rng=random, *, counts=None, previous=None):
     if len(songs) > 1:
         base = [0 if s['id'] == previous else w for s, w in zip(songs, base)]
     return songs[weighted_index(base, rng)]
+
+
+def vibe_probabilities(songs, *, counts=None, previous=None, now=None):
+    """Adaptive draws with extra mass for the least-completed Vibe Map pass.
+
+    Counts are completed Vibe Map rounds, never Elo/Trivia exposures. A caller
+    without saved repeat counts supplies the first-pass 0/1 coverage projection.
+    Recency is a soft penalty within both distributions, so a lone unfinished
+    song retains its priority even if it was the previous draw.
+    """
+    values = [nonnegative(c) for c in counts_for(songs, counts, 'vibe_attempts')]
+    if not values:
+        return []
+    base = exposure_probabilities(values, [s.get('added_at', 0) for s in songs], now)
+    base = [w * (VIBE_PREVIOUS if s['id'] == previous else 1)
+            for s, w in zip(songs, base)]
+    total = math.fsum(base)
+    base = [w / total for w in base]
+    least = min(values)
+    priority = VIBE_FIRST_PASS if least == 0 else VIBE_LATER_PASS
+    cohort_total = math.fsum(w for w, count in zip(base, values) if count == least)
+    return [(1 - priority) * w + (priority * w / cohort_total if count == least else 0)
+            for w, count in zip(base, values)]
+
+
+def choose_vibe_song(songs, rng=random, *, counts=None, previous=None):
+    """One unique eligible song; coverage first, no rating or preview requirement."""
+    pool = []
+    seen = set()
+    for row in songs:
+        song = dict(row)
+        if song.get('id') is not None and song['id'] not in seen:
+            pool.append(song)
+            seen.add(song['id'])
+    if not pool:
+        return None
+    weights = vibe_probabilities(pool, counts=counts, previous=previous)
+    return pool[weighted_index(weights, rng)]
 
 
 def gap_positions(values, tolerance=0.0):
@@ -173,6 +217,8 @@ def choose_guess_pair(songs, rng=random, *, counts=None, previous=(), target=0.6
     positions = gap_positions(gaps, tolerance)
     weights = [base[i] * (GUESS_FLOOR + GUESS_TARGET_WEIGHT * math.exp(-0.5 * ((p - target) / GUESS_WIDTH) ** 2)) *
                (GUESS_PREVIOUS if songs[i]['id'] in previous else 1) for i, p in zip(candidates, positions)]
+    vibe = SongVibeBias(songs)
+    weights = [w*vibe.multiplier(songs[first]['id'],songs[i]['id']) for w,i in zip(weights,candidates)]
     second = candidates[weighted_index(weights, rng)]
     return songs[first], songs[second]
 
@@ -182,10 +228,15 @@ def draw_entries(pool, size, rng=random, *, counts=None):
     if type(size) is not int or size < 1 or len(pool) < size:
         return None
     weights = pool_probabilities(pool,counts,'tournament_entries')
+    vibe = SongVibeBias(pool)
     chosen = []
+    factors = None
     for _ in range(size):
-        index = weighted_index(weights, rng)
+        adjusted = [w*f for w,f in zip(weights,factors)] if factors is not None else weights
+        index = weighted_index(adjusted, rng)
         chosen.append(pool[index]); weights[index] = 0
+        if factors is None:
+            factors = [vibe.multiplier(chosen[0]['id'],song['id']) for song in pool]
     return chosen
 
 
@@ -206,7 +257,7 @@ def shelves_feasible(groups, available, count):
     return len(available) >= count and sum(sorted((len(groups[i]) for i in available), reverse=True)[:count]) >= 10
 
 
-def draw_shelves(groups, album_counts, track_counts, history, count=0, rng=random):
+def draw_shelves(groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None):
     """Album-first fairness; frozen ten-track draws with capacity lookahead."""
     if type(count) is not int or count not in (0, 2, 3):
         return None
@@ -222,6 +273,7 @@ def draw_shelves(groups, album_counts, track_counts, history, count=0, rng=rando
     if shelves_feasible(groups, fresh, n):
         ids = fresh
     all_ids = list(groups)
+    vibe = AlbumVibeBias({aid: (vibe_groups or groups).get(aid,groups[aid]) for aid in all_ids})
     base = dict(zip(all_ids, exposure_probabilities([album_counts.get(aid, 0) for aid in all_ids])))
     ages = {}
     for age, albums in enumerate(reversed(history)):
@@ -237,6 +289,8 @@ def draw_shelves(groups, album_counts, track_counts, history, count=0, rng=rando
         eligible = [aid for aid in remaining if capacity + len(groups[aid]) +
                     sum(len(groups[a]) for a in [a for a in largest if a != aid][:left]) >= 10]
         weights = [base[aid] * (1.0 if aid not in ages else -math.expm1(-(ages[aid] + 1) / expected_cycle)) for aid in eligible]
+        if chosen:
+            weights = [w*vibe.multiplier(chosen[0],aid) for w,aid in zip(weights,eligible)]
         chosen.append(eligible[weighted_index(weights, rng)])
     allocation = dict.fromkeys(chosen, 2)
     while sum(allocation.values()) < 10:

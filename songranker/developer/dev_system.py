@@ -90,7 +90,7 @@ def purpose(name):
     if name in ('rolling_1.db','rolling_2.db','rolling_3.db'):return 'Rotating requested / shutdown backup'
     for prefix,label in [('incoming_git_','Incoming Git database — compare before restore'),('pre_git_database_','Before Git database update'),('pre_v5_v2_','V2 archive before V5'),('pre_git_update_','Before code update'),('pre_restore_','Before restore'),('pre_upgrade_','Before schema upgrade'),
         ('pre_tag_edit_','Before tag change'),('pre_move_single_','Before Single move'),('pre_source_refresh_','Before source refresh'),
-        ('pre_delete_song_','Before song removal'),('pre_reset_','Before competition reset'),('manual_mode_delete_','Before result removal'),
+        ('pre_delete_song_','Before song removal'),('pre_merge_vibe_v11_','Before Vibe merge cleanup'),('pre_reset_','Before competition reset'),('manual_mode_delete_','Before result removal'),
         ('manual_','Manual backup'),('song_ranker_','Database backup')]:
         if name.startswith(prefix):return label
     return 'Other database backup'
@@ -113,6 +113,7 @@ def area(name,kind):
     if name.startswith('album_shelf'):return 'Album Shelves'
     if name=='competition_state':return 'Competition'
     if name=='listening_observations':return 'Listening analysis'
+    if name in ('vibe_maps','song_vibe_positions','song_vibe_progress','vibe_rounds'):return 'Vibe Map'
     if name=='elo_guess_rounds':return 'Elo Guesser'
     if name in ('challenge_runs','global_stats'):return 'Runs and records'
     if name in ('songs','albums','artists','genres','song_artists','song_genres','song_sources','song_details'):return 'Catalogue'

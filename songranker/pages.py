@@ -240,3 +240,56 @@ def trivia_stats():
     finally:
         conn.close()
     return render_template('trivia_stats.html', **data)
+
+
+@app.get('/vibe_map_stats')
+def vibe_map_stats():
+    from songranker.reports.vibe_stats_data import build_vibe_stats
+    from songranker.storage.vibe_state import VIBE_MAP_VERSION
+    conn=get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        data=build_vibe_stats(conn)
+        response=app.make_response(render_template('vibe_stats.html',page='vibe_stats',vibe_version=VIBE_MAP_VERSION,**data))
+        response.headers['Cache-Control']='no-store'
+        return response
+    finally:conn.close()
+
+
+@app.get('/api/vibe-map/stats')
+def api_vibe_map_stats():
+    from songranker.reports.vibe_stats_data import build_vibe_stats
+    conn=get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        response=jsonify(build_vibe_stats(conn));response.headers['Cache-Control']='no-store'
+        return response
+    finally:conn.close()
+
+
+@app.get('/api/vibe-map/inspect/<int:song_id>')
+def api_vibe_map_inspect(song_id):
+    from songranker.modes.vibe_map import respond
+    from songranker.reports.vibe_song_data import build_song_vibe
+    return respond(lambda conn, data: build_song_vibe(conn, song_id, show_identity=request.args.get('context')!='profile'))
+
+
+@app.get('/api/vibe-map/entity/<kind>/<int:entity_id>')
+def api_vibe_map_entity(kind, entity_id):
+    from songranker.modes.vibe_map import respond
+    from songranker.reports.vibe_entity_data import build_entity_vibe
+    return respond(lambda conn, data: build_entity_vibe(conn, kind, entity_id))
+
+
+@app.get('/api/vibe-map/library')
+def api_vibe_map_library():
+    from songranker.modes.vibe_map import respond
+    from songranker.reports.vibe_library_data import build_library_vibe
+    return respond(lambda conn,data: build_library_vibe(conn))
+
+
+@app.get('/api/vibe-map/rankings')
+def api_vibe_map_rankings():
+    from songranker.modes.vibe_map import respond
+    from songranker.reports.vibe_library_data import build_vibe_rankings
+    return respond(lambda conn,data: build_vibe_rankings(conn,request.args.get('entity','albums'),request.args.get('view','top')))

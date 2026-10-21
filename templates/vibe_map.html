@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block page_kind %}vibe_map{% endblock %}
+{% block title %}Vibe Map · Song Ranker{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{url_for('static',filename='css/vibe_charts.css',v=vibe_version)}}">
+<link rel="stylesheet" href="{{url_for('static',filename='css/vibe_map.css',v=vibe_version)}}">
+{% endblock %}
+{% block content %}
+<div class="game-head vibe-head"><h1>📍 Vibe Map</h1><a class="btn vibe vibe-stats-link" href="/vibe_map_stats">Stats ↗</a></div>
+<div id="vibe-error" class="vibe-error" role="alert" hidden><span></span><button class="btn" type="button" id="vibe-retry">Retry</button><button class="btn" type="button" id="vibe-reload">Reload round</button></div>
+<div id="vibe-loading" class="empty" role="status">Loading song…</div>
+<div id="vibe-layout" class="vibe-layout" hidden>
+  <section class="panel vibe-song" id="vibe-song" aria-label="Current song"></section>
+  <section class="panel vibe-workspace" id="vibe-workspace" aria-label="Vibe maps"></section>
+</div>
+<noscript>Enable JavaScript to place songs on the maps.</noscript>
+{% endblock %}
+{% block extra_js %}
+<script src="{{url_for('static',filename='js/vibe_charts.js',v=vibe_version)}}" defer></script>
+<script src="{{url_for('static',filename='js/vibe_map.js',v=vibe_version)}}" defer></script>
+{% endblock %}

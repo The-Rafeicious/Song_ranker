@@ -1,0 +1,34 @@
+/* Vibe profile cards mount independently above Overall and preserve hero playback. */
+const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert/strict');
+const flush=async()=>{for(let i=0;i<50;i++)await Promise.resolve()};
+(async()=>{
+ const dom=new JSDOM('<body data-page="song" data-entity="1"><main><audio id="hero"></audio><div class="profile-key-stats"></div><div class="song-sections"></div></main></body>',{url:'http://localhost/song/1',runScripts:'outside-only'});
+ const w=dom.window,d=w.document,calls=[],hero=d.querySelector('audio');
+ w.fetch=(url,options)=>new Promise((resolve,reject)=>calls.push({url,options,resolve,reject}));
+ for(const file of ['ui.js','vibe_charts.js','overall.js','vibe_profiles.js'])w.eval(fs.readFileSync('static/js/'+file,'utf8'));
+ w.Overall.bindUI({api:async()=>({entities:{songs:[],albums:[],artists:[],tags:[]}}),records:()=>[{id:1}],profile:()=>({type:'albums',item:{id:1}})});
+ const data={profile_ready:true,song:{title:'Source'},profile:{radar:{spokes:Array.from({length:8},(_,i)=>({label:'Pole '+i,low:'Low',high:'High',radius:i===0?null:.5}))}},html:'<div class="vibe-song-panel"><div data-vibe-song-radar></div></div>'};
+ const ok=(index,payload=data)=>calls[index].resolve({ok:true,json:async()=>payload});
+ w.VibeProfiles.mount({kind:'song',id:1});await w.Overall.mount('song');
+ assert.equal(calls[0].url,'/api/vibe-map/inspect/1?context=profile');
+ assert.equal(d.querySelector('.profile-key-stats').nextElementSibling.id,'profile-vibe');
+ assert.equal(d.querySelector('#profile-vibe').nextElementSibling.id,'overall-profile');
+ ok(0);await flush();assert.equal(d.querySelectorAll('#profile-vibe .radar-axis').length,8);assert.equal(d.querySelectorAll('#profile-vibe .radar-point').length,7);
+ assert.equal(d.querySelector('audio'),hero);
+ const group={profile_ready:true,html:'<div class="vibe-entity-card"><div class="vibe-profile-maps">'+Array.from({length:4},()=>'<figure class="vibe-mini-map"></figure>').join('')+'</div></div>'};
+ w.VibeProfiles.mount({kind:'album',id:2});w.VibeProfiles.mount({kind:'artist',id:3});
+ assert.ok(calls[1].options.signal.aborted);ok(2,group);await flush();ok(1,data);await flush();
+ assert.equal(d.querySelectorAll('#profile-vibe .vibe-mini-map').length,4);assert.equal(d.querySelectorAll('.vibe-radar').length,0);
+ assert.equal(calls[2].url,'/api/vibe-map/entity/artist/3');
+ w.VibeProfiles.mount({kind:'tag',id:4});calls[3].resolve({ok:false,status:404});await flush();
+ assert.ok(d.querySelector('#profile-vibe [role="alert"]').textContent.includes('no longer available'));
+ assert.ok(d.querySelector('#overall-profile'));assert.equal(d.querySelector('audio'),hero);
+ d.querySelector('[data-vibe-profile-retry]').click();ok(4,group);await flush();assert.equal(d.querySelectorAll('.vibe-mini-map').length,4);
+ w.VibeProfiles.mount({kind:'song',id:1});w.dispatchEvent(new w.Event('pagehide'));assert.ok(calls[5].options.signal.aborted);ok(5);await flush();
+ assert.equal(d.querySelector('#profile-vibe').getAttribute('aria-busy'),'false');
+ w.dispatchEvent(new w.PageTransitionEvent('pageshow',{persisted:true}));ok(6);await flush();assert.ok(d.querySelector('.vibe-radar'));
+ w.VibeProfiles.mount({kind:'album',id:99});ok(7,{...group,profile_ready:false});await flush();assert.ok(d.querySelector('#profile-vibe').hidden);assert.equal(d.querySelector('.vibe-profile-content').childElementCount,0);assert.ok(d.querySelector('#overall-profile'));
+ w.VibeProfiles.mount({kind:'song',id:2});ok(8,{...data,profile_ready:false});await flush();assert.ok(d.querySelector('#profile-vibe').hidden);
+ const count=calls.length;w.VibeProfiles.mount({kind:'unknown',id:1});w.VibeProfiles.mount({kind:'tag',id:-1});assert.equal(calls.length,count);
+ dom.window.close();console.log('Vibe profile cards: placement above Overall, song/group rendering, partial radar, stale responses, retry, preview identity and history restoration passed.');
+})().catch(error=>{console.error(error);process.exitCode=1});
