@@ -463,7 +463,7 @@ def api_dev_reset_preview():
         'song_artist_links':'SELECT COUNT(*) FROM song_artists','song_genre_links':'SELECT COUNT(*) FROM song_genres'}.items()}
     clear={k:conn.execute(q).fetchone()[0] for k,q in {
         'votes_and_history':'SELECT COUNT(*) FROM history','trivia_stats':'SELECT COUNT(*) FROM trivia_stats','tournaments':'SELECT COUNT(*) FROM tournaments',
-        'tournament_matches':'SELECT COUNT(*) FROM tournament_matches','trivia_rounds':'SELECT COUNT(*) FROM trivia_rounds','elo_guesses':'SELECT COUNT(*) FROM elo_guess_rounds WHERE completed_at IS NOT NULL','shelf_rounds':'SELECT COUNT(*) FROM album_shelf_rounds WHERE completed_at IS NOT NULL'}.items()}
+        'tournament_matches':'SELECT COUNT(*) FROM tournament_matches','trivia_rounds':'SELECT COUNT(*) FROM trivia_rounds','elo_guesses':'SELECT COUNT(*) FROM elo_guess_rounds WHERE completed_at IS NOT NULL','vibe_songs':"SELECT COUNT(DISTINCT song_id) FROM song_vibe_positions WHERE status!='unmapped'",'shelf_rounds':'SELECT COUNT(*) FROM album_shelf_rounds WHERE completed_at IS NOT NULL'}.items()}
     conn.close(); return jsonify({'keep':keep,'clear':clear})
 
 
@@ -473,44 +473,15 @@ def reset_competition_data(scope):
     try:
         conn=get_db_connection()
         conn.execute('BEGIN IMMEDIATE')
-        listening_modes={'matches':('standard','blind'),'trivia':('trivia',),'tournaments':('tournament',),'guesser':('guesser',),'shelves':('shelves',)}
-        if scope=='all':
-            conn.execute('DELETE FROM listening_observations')
-            conn.execute('UPDATE competition_state SET started_at=unixepoch() WHERE id=1')
-        elif scope in listening_modes:
-            modes=listening_modes[scope]
-            conn.execute('DELETE FROM listening_observations WHERE mode IN ('+','.join('?' for _ in modes)+')',modes)
-        if scope in ('all','matches'):
-            from songranker.modes.preferences import reset_preferences
-            reset_preferences(conn)
-            if conn.execute("SELECT 1 FROM sqlite_master WHERE type='table' AND name='legacy_elo_changes'").fetchone():
-                conn.execute('DELETE FROM legacy_elo_changes')
-        if scope in ('all','trivia'):
-            conn.execute('DELETE FROM trivia_rounds')
-            conn.execute("DELETE FROM challenge_runs WHERE mode='trivia'")
-            conn.execute('DELETE FROM trivia_adjustments')
-            conn.execute("UPDATE global_stats SET value=0 WHERE key IN ('trivia_high_score','trivia_high_streak')")
-            conn.execute("INSERT INTO global_stats(key,value) VALUES('trivia_scoring_version',2) ON CONFLICT(key) DO UPDATE SET value=2")
-        if scope in ('all','tournaments'):
-            from songranker.modes.preferences import void_tournament_preferences
-            void_tournament_preferences(conn)
-            for table in ('tournament_matches','tournament_entries','tournaments'):
-                conn.execute(f'DELETE FROM {table}')
-            conn.execute('UPDATE songs SET tournament_wins=0')
-        if scope in ('all','guesser'):
-            conn.execute('DELETE FROM elo_guess_rounds')
-            conn.execute("DELETE FROM challenge_runs WHERE mode='guesser'")
-        if scope in ('all','shelves'):
-            conn.execute('DELETE FROM album_shelf_rounds')
-        if scope=='all':
-            conn.execute("UPDATE global_stats SET value=CASE WHEN key='trivia_scoring_version' THEN 2 ELSE 0 END")
+        from songranker.storage.competition_reset import reset_results
+        reset_results(conn,scope)
         conn.commit()
         if scope in ('all','trivia'):
             for key in ('trivia_score','trivia_streak','trivia_round_token','trivia_scoring_version'):
                 session.pop(key,None)
         if scope in ('all','guesser'):session.pop('guess_token',None)
         if scope in ('all','shelves'):session.pop('shelf_token',None)
-        labels={'guesser':'Elo Guesser history','shelves':'Album Shelves history','all':'All competition data','matches':'Elo and match history','trivia':'Trivia history and records','tournaments':'Tournament history and records'}
+        labels={'vibe':'Vibe Map selections','guesser':'Elo Guesser history','shelves':'Album Shelves history','all':'All competition data','matches':'Elo and match history','trivia':'Trivia history and records','tournaments':'Tournament history and records'}
         return jsonify(status='success',message=labels[scope]+' reset. Music library kept.',backup=None)
     except Exception:
         if conn:conn.rollback()
@@ -523,9 +494,9 @@ def reset_competition_data(scope):
 @app.route('/api/dev/reset-history/<scope>',methods=['POST'])
 @admin_required
 def api_dev_reset_history(scope):
-    if scope not in ('matches','trivia','tournaments','guesser','shelves'):
-        return jsonify(message='Choose match, trivia, tournament, Elo Guesser or Album Shelves history.'),400
-    phrases={'guesser':'RESET GUESSER','shelves':'RESET SHELVES','matches':'RESET MATCHES','trivia':'RESET TRIVIA','tournaments':'RESET TOURNAMENTS'}
+    if scope not in ('matches','trivia','tournaments','guesser','shelves','vibe'):
+        return jsonify(message='Choose match, trivia, tournament, Elo Guesser, Album Shelves or Vibe Map data.'),400
+    phrases={'vibe':'RESET VIBE','guesser':'RESET GUESSER','shelves':'RESET SHELVES','matches':'RESET MATCHES','trivia':'RESET TRIVIA','tournaments':'RESET TOURNAMENTS'}
     if json_fields().get('confirmation')!=phrases[scope]:
         return jsonify(message='Type '+phrases[scope]+' to confirm.'),400
     return reset_competition_data(scope)
@@ -799,3 +770,6 @@ def api_dev_tournament_placements(tournament_id):
     finally:conn.close()
 
 
+
+
+from songranker.developer import dev_vibe  # Authenticated Vibe maintenance routes.

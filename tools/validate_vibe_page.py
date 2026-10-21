@@ -17,6 +17,7 @@ def main():
     if not chrome:raise SystemExit('A Chromium browser is required for this integration check.')
     with tempfile.TemporaryDirectory(prefix='vibe-browser-') as temporary:
         os.environ['SONG_RANKER_DB']=str(Path(temporary)/'vibe.db')
+        os.environ['SONG_RANKER_PIN']='vibe-test-pin'
         from songranker.storage.database import initialize_database
         initialize_database(os.environ['SONG_RANKER_DB'])
         with sqlite3.connect(os.environ['SONG_RANKER_DB']) as conn:

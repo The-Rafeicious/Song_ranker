@@ -1,5 +1,21 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.1 — Dev maintenance and merge preparation
+
+Add authenticated Vibe Records search, four-map average/count edits, per-map
+clear, whole-song deletion and mode reset. Validate all values atomically and
+reject stale versions including draft changes. Invalidate buffered rounds on
+edits so old contributions cannot return. Keep exact unchanged averages.
+
+Share competition-reset logic between Dev and the explicit merge tool; the
+existing all-mode reset now includes Vibe. Add preview-first one-time
+`tools/prepare_vibe_merge.py` with verified backup, catalogue preservation,
+all-mode cleanup, permanent marker and verified SQL export. It never starts
+automatically or pushes/merges Git. Only disposable tests run cleanup during
+implementation; project databases and SQL backups remain untouched. See
+`docs/VIBE_MAP_DEV.md` for commands, rerun behavior and production merge guidance.
+
+
 ## Vibe-Map-v1.0.7.1 — banner, coverage and activity polish
 
 Mix the top twenty albums, artists and tags into one consistency-ordered Home

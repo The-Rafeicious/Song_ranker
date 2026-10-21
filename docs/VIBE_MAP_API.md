@@ -315,3 +315,11 @@ Both readers use one read-only/no-store snapshot, with no play offers, ratings,
 placements or schema writes. Rank ordering uses unrounded consistency; no more
 than twenty items are returned. `/mode_rankings/vibe` supplies the shared UI.
 See [eligibility, tie-breaking and surface layout](VIBE_MAP_STATS.md).
+
+
+## Developer maintenance · v1.1
+
+Authenticated edit/delete/reset endpoints and the optional one-time test cleanup
+are documented in [Vibe Map Dev and merge preparation](VIBE_MAP_DEV.md). Player
+map definitions, schema 19, continuous coordinates and normal save APIs remain
+unchanged. Dev edits invalidate pending song rounds and use version checks.
