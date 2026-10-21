@@ -250,10 +250,11 @@ def shelf_pool(conn):
 
 def shelf_candidates(conn,count):
     from songranker.modes.selection import draw_shelves
-    from songranker.modes.selection_data import (mode_counts, shelf_history)
+    from songranker.modes.selection_data import (mode_counts, shelf_history, album_vibe_groups)
     grouped=shelf_pool(conn)
     exposure={r['album_id']:r['appearances'] for r in conn.execute('SELECT * FROM shelf_album_exposures')}
-    return draw_shelves(grouped,exposure,mode_counts(conn,'shelves'),shelf_history(conn),count)
+    return draw_shelves(grouped,exposure,mode_counts(conn,'shelves'),shelf_history(conn),count,
+                        vibe_groups=album_vibe_groups(conn,grouped))
 
 
 def shelf_payload(conn,row):

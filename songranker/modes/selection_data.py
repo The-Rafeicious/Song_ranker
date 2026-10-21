@@ -49,6 +49,17 @@ def vibe_song(conn, *, counts=None, previous=None, rng=random):
     return get_song_full(chosen['id'], conn) if chosen is not None else None
 
 
+def album_vibe_groups(conn, album_ids):
+    """All songs belonging to eligible albums, including unnumbered tracks."""
+    from songranker.vibe_maps import with_vibe_maps
+    groups = {aid:[] for aid in album_ids}
+    rows = [dict(row) for row in conn.execute('SELECT id,album_id FROM songs')
+            if row['album_id'] in groups]
+    for song in with_vibe_maps(conn,rows):
+        groups[song['album_id']].append(song)
+    return groups
+
+
 def previous_preference(conn, mode, owner=None):
     from songranker.modes.preferences import owner_hash
     previous = None
@@ -85,7 +96,7 @@ def shelf_history(conn):
 
 
 def with_catalogue_age(conn,rows):
-    """Read age and vibe metadata; selectors do not yet use Vibe Map weights."""
+    """Read age and vibe metadata for shared adaptive selectors."""
     rows=[dict(row) for row in rows]
     exists=conn.execute("SELECT 1 FROM sqlite_master WHERE name='song_details'").fetchone()
     ages=dict(conn.execute('SELECT song_id,added_at FROM song_details')) if exists else {}

@@ -2,10 +2,12 @@
 
 **V5.0.5.1 · V3 competition database · schema 17 (test branch)**
 
-`New-modes-test` adds **Vibe-Map-v1.0.1**: four independent two-axis song maps
-and a coverage-first song picker. See the [Vibe Map implementation log](update_logs/VIBE_MAP.md)
-for axes, data contracts and selection policy. Gameplay and result saving are
-still pending; use a separate test database when switching branches.
+`New-modes-test` adds **Vibe-Map-v1.0.2**: four independent two-axis song maps,
+a coverage-first mapper picker, and gentle coverage-scaled similarity preferences
+in voting, tournaments, Elo Guesser and Album Shelves. See the
+[Vibe Map implementation log](update_logs/VIBE_MAP.md) for the selection limits.
+Vibe Map gameplay and result saving are still pending; use a separate test
+database when switching branches.
 
 Vote between songs, identify previews, run tournaments, guess Elo and arrange
 album shelves. V5 keeps your music catalogue and starts the competition again

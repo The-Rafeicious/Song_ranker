@@ -133,13 +133,11 @@ class VibeMapTests(unittest.TestCase):
         self.assertEqual(len(backups),1)
         with readonly(backups[0]) as c:self.assertEqual(capture(c),before)
 
-    def test_map_metadata_does_not_change_existing_match_selectors(self):
+    def test_unmapped_metadata_does_not_change_existing_match_selectors(self):
         import random
         from songranker.modes.selection import choose_match, choose_guess_pair
         songs = [dict(id=i,elo_score=1100+i*25,matches_played=i) for i in range(1,11)]
         annotated = with_vibe_maps(self.conn,songs)
-        annotated[0]['vibe_maps']['mood_energy'] = dict(x=-1,y=1,status='placed',updated_at=1)
-        annotated[1]['vibe_maps']['mood_energy'] = dict(x=1,y=-1,status='placed',updated_at=1)
         for selector in (choose_match,choose_guess_pair):
             for seed in range(20):
                 original = selector(songs,random.Random(seed))
