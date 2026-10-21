@@ -9,7 +9,7 @@ from songranker.services import app, get_db_connection, get_song_full
 from songranker.modes.preferences import transaction, owner_hash, snapshot_song
 from songranker.modes.selection_data import vibe_song
 from songranker.modes.vibe_similarity import compare_profiles
-from songranker.storage.vibe_state import MAPS, VIBE_MAP_VERSION, RADAR_ORDER
+from songranker.storage.vibe_state import MAPS, VIBE_MAP_VERSION, RADAR_ORDER, DISPLAY_MAPS
 from songranker.vibe_maps import map_definitions, song_profiles, pass_counts
 
 READJUST_SECONDS = 5
@@ -63,7 +63,7 @@ def radar(points):
     """Eight labelled spokes preserve both axes of all four independent maps."""
     # Related positive poles are neighbours; raw bipolar values remain available.
     order=RADAR_ORDER
-    definitions={values[0]:values for values in MAPS}
+    definitions={values[0]:values for values in DISPLAY_MAPS}
     result=[]
     for key,axis,label in order:
         _,title,x_low,x_high,y_low,y_high=definitions[key]

@@ -2,7 +2,7 @@
 
 **V5.0.5.1 · V3 competition database · schema 19 (test branch)**
 
-`New-modes-test` adds **Vibe-Map-v1.0.6**: open **📍 Vibe Map** from Home or
+`New-modes-test` adds **Vibe-Map-v1.0.6.1**: open **📍 Vibe Map** from Home or
 Game Modes to place a song on four continuous red maps. Adjust a pin, let its
 five-second timer save it, and use the arrows to revisit saved maps. Finish
 opens a clean eight-axis radar and two similar songs with comparison percentages;
@@ -22,8 +22,11 @@ groups with mapped-track counts. This update keeps schema 19 and existing
 placements. Click a heatmap point to inspect a compact song radar and its two
 closest matches without leaving stats. Explicit song, album and artist links
 remain in the panel, with the selected song centred at the top. Song pages now
-show this radar card immediately above Overall; albums, artists and tags show
-compact 2×2 heatmaps with consistency and mapped-track counts in the same spot.
+show this radar card immediately above Overall once all four maps are placed,
+without repeating the song header; albums, artists and tags show
+four compact heatmaps in one row on wider screens, with consistency and mapped
+counts in the same spot once two tracks are fully mapped. Phones use two columns.
+Connection now labels its early-attachment end Budding; saved coordinates are unchanged.
 Restart and refresh after updating. See the [stats definitions](docs/VIBE_MAP_STATS.md).
 
 This is descriptive data, with no performance score or Overall contribution.

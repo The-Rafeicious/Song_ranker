@@ -31,6 +31,12 @@ def main():
                 conn.execute('INSERT INTO song_genres VALUES(?,?)',(sid,1 if sid<=3 else 2))
                 if sid>1:
                     conn.execute("UPDATE song_vibe_positions SET x=?,y=?,status='placed',sample_count=1,updated_at=1 WHERE song_id=?",((sid-3)/3,(sid-4)/4,sid))
+            conn.execute("INSERT INTO albums(id,title) VALUES(3,'Unmapped album')")
+            conn.execute("INSERT INTO artists(id,name) VALUES(2,'Unmapped artist')")
+            conn.execute("INSERT INTO genres(id,name) VALUES(3,'Unmapped tag')")
+            conn.execute("INSERT INTO songs(id,title,album_id) VALUES(7,'Unmapped song',3)")
+            conn.execute('INSERT INTO song_artists VALUES(7,2)')
+            conn.execute('INSERT INTO song_genres VALUES(7,3)')
         import main as application  # WSGI import never launches the Git updater.
         from flask import Response
         from werkzeug.serving import make_server

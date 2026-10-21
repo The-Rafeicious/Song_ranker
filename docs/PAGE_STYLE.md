@@ -1335,3 +1335,18 @@ positions and show track names on hover. No disclosure or explanatory blocks.
 Vibe cards load independently of Overall and never remount the hero preview.
 Show short retry states locally. Missing maps are absent points; consistency
 requires two fully mapped tracks and uses the existing dashboard definition.
+
+
+## Compact Vibe profile follow-up — Vibe-Map-v1.0.6.1
+
+Hide the profile panel completely, including its loading placeholder, until a
+song has four placed maps or a collection has two fully mapped members. Keep
+its hidden anchor for stable placement above Overall; unknown/failed requests
+still get a short local retry state. The main stats inspector retains partial
+maps and the selected identity. Dedicated song cards omit that duplicate identity.
+
+Collection maps occupy one row of four above 760 px, capped at 960 px across;
+narrow screens keep two columns for readable labels. Keep every caption aligned,
+small charts and fixed 11 px dots. Display Connection's low Y pole as Budding
+rather than Casual, using a presentation override only; keep stored definitions,
+map keys, generation, coordinates and similarity unchanged.

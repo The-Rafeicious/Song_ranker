@@ -40,5 +40,5 @@ def build_entity_vibe(conn, kind, entity_id):
     maximum = max((m['max_nearby'] for m in maps), default=0)
     for definition in maps:
         colour_points(definition['points'], maximum)
-    data = dict(kind=kind, entity=dict(entity), summary=summary, maps=maps)
+    data = dict(profile_ready=len(full)>=2, kind=kind, entity=dict(entity), summary=summary, maps=maps)
     return dict(data, html=render_template('vibe_entity_stats_panel.html', **data))
