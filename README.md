@@ -33,6 +33,9 @@ Global Stats has a Vibe summary below Overall; its activity chart and recent res
 shows top/bottom twenty albums, artists and tags by consistency; there is no
 song board. Ranked collections need two fully mapped songs; proper-album rules
 exclude Singles. These descriptions do not contribute to Overall scores.
+Vibe Map v1.1 adds **Dev → Records → Vibe Map** for editing/clearing maps and
+counts. A separate preview-first cleanup script can remove test results before
+merging; it is not run automatically. See [Dev and merge preparation](docs/VIBE_MAP_DEV.md).
 Restart and refresh after updating. See the [stats definitions](docs/VIBE_MAP_STATS.md).
 
 This is descriptive data, with no performance score or Overall contribution.

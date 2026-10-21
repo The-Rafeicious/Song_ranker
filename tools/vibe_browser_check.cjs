@@ -192,6 +192,21 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.goto(base+'/');await page.locator('#home-vibe[aria-busy="false"]').waitFor();
   await page.setViewportSize({width:390,height:844});await bounded(page,390,'home-vibe',folder);
   await page.locator('#home-vibe').screenshot({path:folder+'/library-home-phone.png'});await page.locator('#home-vibe-banner').screenshot({path:folder+'/vibe-banner-phone.png'});
+  await page.goto(base+'/dev/login');await page.locator('input[name="pin"]').fill('vibe-test-pin');
+  await Promise.all([page.waitForURL('**/dev/dashboard'),page.locator('.login-panel button[type="submit"]').click()]);
+  await page.goto(base+'/dev/dashboard?view=vibe_records');await page.locator('[data-vibe-edit="1"]').waitFor();
+  await page.locator('[data-vibe-edit="1"]').click();await page.locator('#dev-vibe-save').waitFor();
+  await page.locator('[name="pace_mood:x"]').fill('4.25');
+  await page.locator('#dev-vibe-save button[type="submit"]').click();
+  await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data saved'));
+  const maintained=await (await page.request.get(base+'/api/dev/vibe/1')).json();
+  assert.equal(maintained.maps.find(m=>m.id==='pace_mood').x,.85);
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-vibe',folder);await page.locator('#dev-vibe-editor').screenshot({path:folder+'/dev-vibe-'+width+'.png'});}
+  await page.locator('[data-vibe-clear-map="pace_mood"]').click();await page.locator('#dev-vibe-save button[type="submit"]').click();
+  await page.waitForFunction(()=>document.querySelector('#dev-vibe-save button[type=submit]')?.disabled===false);
+  await page.locator('#dev-vibe-delete [name="confirmation"]').fill('DELETE VIBE');await page.locator('#dev-vibe-delete button[type="submit"]').click();
+  await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data deleted'));
+  const removed=await (await page.request.get(base+'/api/dev/vibe/1')).json();assert.ok(removed.maps.every(m=>m.status==='unmapped'));assert.equal(removed.completed_passes,0);
   assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

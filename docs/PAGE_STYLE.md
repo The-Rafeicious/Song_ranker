@@ -1379,3 +1379,13 @@ caption margins to the direct caption; the progress fill must fill the track’s
 height with no text margin. Include Vibe saves in Global’s activity chart and
 recent-results colour blend. One retained update per song is the available
 activity unit; do not label it a complete pass or an exhaustive round history.
+
+
+## Vibe Dev maintenance — Vibe-Map-v1.1
+
+Put 📍 Vibe Map in Dev's Records group. Use existing Dev panels, pagination,
+search, number inputs and destructive confirmation patterns; Vibe headers and
+map fieldsets are red, song/album links keep their identity colours. Show four
+map editors in two columns on desktop and one on phones. Use explicit save,
+clear-map, song-delete and mode-reset labels. Never expose an automatic merge
+cleanup action in the app: the standalone tool is run deliberately after testing.
