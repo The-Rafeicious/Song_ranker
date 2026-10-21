@@ -1,5 +1,16 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.7.1 — banner, coverage and activity polish
+
+Mix the top twenty albums, artists and tags into one consistency-ordered Home
+banner, without category pills. Retain shared scrolling controls and semantic
+colours. Narrow the coverage caption selector so the progress fill has no
+eight-pixel text margin and occupies the full track height. Include each song’s
+latest retained Vibe save in Global’s fourteen-day chart and recent mode
+results; keep partial evidence, red activity colours and the existing feed
+limit. No invented round history, accuracy score, database reset or migration.
+
+
 ## Vibe-Map-v1.0.7 — Home, Global Stats and collection consistency boards
 
 Add compact all-song maps below Home's Overall Leaders and a final scrolling

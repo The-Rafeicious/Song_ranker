@@ -81,3 +81,47 @@ class VibeLibraryTests(unittest.TestCase):
         for url in ('/','/global_stats','/mode_rankings/vibe'):
             response=client.get(url);self.assertEqual(response.status_code,200,response.data[:500]);self.assertIn('js/vibe_library.js',response.get_data(as_text=True))
         self.assertEqual(capture(self.conn),before)
+
+
+class VibeActivityTests(unittest.TestCase):
+    setUp=fixture.PreferenceTests.setUp
+    connect=fixture.PreferenceTests.connect
+
+    def test_latest_track_updates_join_global_activity_without_inventing_rounds(self):
+        from datetime import datetime,timezone
+        from songranker.reports.stats_activity import build_activity,latest_vibe_saves
+        from songranker.reports.global_stats_data import build_global_stats
+        now=datetime.now(timezone.utc).timestamp()
+        keys=[key for key,*_ in vibe_map.MAPS]
+        for sid,count in [(1,4),(2,1)]:
+            for key in keys[:count]:
+                self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=0,y=0,sample_count=1,updated_at=? WHERE song_id=? AND map_id=?",(now-60,sid,key))
+        # Repeated saves change one retained event, not the activity count.
+        self.conn.execute("UPDATE song_vibe_positions SET updated_at=?,sample_count=2 WHERE song_id=1 AND map_id=?",(now,keys[0]))
+        self.conn.commit();before=capture(self.conn)
+        self.assertEqual(len(latest_vibe_saves(self.conn)),2)
+        pulse=build_activity(self.conn,'global',now=now)
+        self.assertEqual(pulse['total'],2)
+        self.assertEqual(pulse['denominator'],0)
+        self.assertEqual(pulse['legend'],[dict(kind='vibe',label='Vibe Map',count=2)])
+        self.assertEqual(build_activity(self.conn,'voting',now=now)['total'],0)
+        data=build_global_stats(self.conn)
+        events=[r for r in data['recent_activity'] if r['kind']=='vibe']
+        self.assertEqual([r['id'] for r in events],[1,2])
+        self.assertEqual(events[0]['metrics'][0]['value'],'4 / 4')
+        self.assertEqual(events[1]['metrics'][0]['value'],'1 / 4')
+        self.assertEqual(events[0]['related'][0]['id'],1)
+        self.assertEqual(capture(self.conn),before)
+        with pages.app.test_client() as client:
+            html=client.get('/global_stats').get_data(as_text=True)
+        self.assertIn('data-activity-kind="vibe"',html)
+        self.assertIn('class="vibe" style="height:',html)
+
+    def test_future_and_old_selections_do_not_become_recent_chart_results(self):
+        from songranker.reports.stats_activity import build_activity
+        self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=0,y=0,sample_count=1,updated_at=1 WHERE song_id=1")
+        self.conn.execute("UPDATE song_vibe_positions SET status='not_applicable',updated_at=2100000000 WHERE song_id=2")
+        self.conn.commit()
+        data=build_activity(self.conn,'global',now=2000000000)
+        self.assertEqual(data['total'],0)
+        self.assertEqual(data['undated'],0)

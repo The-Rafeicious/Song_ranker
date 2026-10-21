@@ -4,7 +4,7 @@ body[data-page=vibe_stats] { --page-color: var(--vibe); --page-rgb: 237,101,115;
 .vibe-stats-page [hidden] { display: none !important; }
 .vibe-stats-page .vibe-coverage { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 20px; align-items: center; }
 .vibe-coverage > strong { color: var(--vibe); font-size: 32px; }
-.vibe-coverage span { display: block; margin-top: 8px; color: #c7adb5; font-size: 15px; }
+.vibe-coverage > div > span { display: block; margin-top: 8px; color: #c7adb5; font-size: 15px; }
 .vibe-density-key { display: flex; justify-content: center; align-items: center; gap: 12px; color: #c8adb5; font-size: 14px; }
 .vibe-density-key i { width: 100px; height: 8px; border-radius: 9px; background: linear-gradient(90deg,#963449,#ffd3bc); }
 .vibe-heatmaps { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }

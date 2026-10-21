@@ -1357,8 +1357,8 @@ map keys, generation, coordinates and similarity unchanged.
 Place Home's compact all-song map card immediately below Overall Leaders, and
 Global Stats' Vibe summary immediately below Overall. Keep four small maps per
 wide row and two columns on phones. Use existing joined metrics and dashboard
-glows. The final Home banner has Albums/Artists/Tags pills and twenty entries
-per selected category, using existing shelf cards, scroll buttons and autoplay
+glows. The final Home banner mixes the top twenty albums, artists and tags in one
+consistency-ordered strip without category pills, using existing shelf cards, scroll buttons and autoplay
 ownership. Scores/frames are Vibe red; entity names, artwork shapes and track
 counts retain purple/blue/gold/green semantics. Pause scrolling for focus/hover
 and honour hidden tabs/reduced motion through the shared owner.
@@ -1369,3 +1369,13 @@ artwork, semantic identity links and red rank-dependent glows. Show mapped/total
 counts with consistency; retain absolute ranks on the bottom board. Add context
 ranking links to collection profile cards and the dedicated Vibe stats page.
 Do not add a performance score or Overall contribution for Vibe Map.
+
+
+## Vibe follow-up — Vibe-Map-v1.0.7.1
+
+Keep one shared scrolling owner and its arrow controls for the combined banner.
+Preserve entity colours/art shapes and Vibe-red frames/scores. Scope coverage
+caption margins to the direct caption; the progress fill must fill the track’s
+height with no text margin. Include Vibe saves in Global’s activity chart and
+recent-results colour blend. One retained update per song is the available
+activity unit; do not label it a complete pass or an exhaustive round history.

@@ -3,8 +3,8 @@
 {% from 'components.html' import stat, art, versus_row %}
 {% block title %}Global Stats · Song Ranker{% endblock %}
 {% block page_kind %}global_stats{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/global_stats.css',v=app_version) }}">{% endblock %}
-{% block extra_js %}<script src="{{ url_for('static',filename='js/global_stats.js',v=app_version) }}" defer></script>{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/global_stats.css',v=vibe_version) }}">{% endblock %}
+{% block extra_js %}<script src="{{ url_for('static',filename='js/global_stats.js',v=vibe_version) }}" defer></script>{% endblock %}
 {% macro entity_link(row,kind='song',name='') -%}
   {% set title = name or row.title|default(row.name|default('')) %}
   {% if kind=='song' and row.id %}<a class="song stats-name{{ ' match-loser' if row.outcome|default('')=='loser' else '' }}" href="{{ url_for('song_page',song_id=row.id) }}" title="{{ title }}">{{ title }}</a>
