@@ -281,3 +281,10 @@ a.shelf-card:hover,a.mode-card:hover,a.result-card:hover{text-decoration:none}
 /* Vibe Map is descriptive, with its own red mode accent. */
 :root { --vibe: #ed6573; }
 .vibe { color: var(--vibe); }
+/* Keep the shared header inside narrow phones, including the six-mode menu. */
+@media (max-width: 520px) {
+  .navbar .nav-inner { grid-template-columns: minmax(0, 1fr); }
+  .navbar .wordmark { grid-column: 1; grid-row: 1; justify-self: center; }
+  .navbar .nav-right { grid-column: 1; grid-row: 2; justify-content: center; flex-wrap: wrap; min-width: 0; }
+  .navbar .nav-left { grid-column: 1; grid-row: 3; flex-wrap: wrap; }
+}

@@ -31,6 +31,7 @@
   if(next)next.disabled=locked||index>=Math.min(3,round.map_index)||phase==='results';
   if(finish)finish.disabled=!allDone()||locked||phase==='results';
   const skip=$('#vibe-na');if(skip)skip.disabled=advancing||failed;
+  document.querySelectorAll('.vibe-values input').forEach(input=>input.disabled=advancing||failed);
   const plane=$('#vibe-plane');if(plane)plane.setAttribute('aria-disabled',String(advancing||failed));
   document.querySelectorAll('[data-vibe-next-song],[data-vibe-results]').forEach(b=>b.disabled=locked);
  }

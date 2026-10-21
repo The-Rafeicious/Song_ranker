@@ -1,6 +1,14 @@
 /* Real served assets + Python saves. Screenshots are CI artifacts, not source data. */
 const {chromium}=require('playwright-core');
 const assert=require('node:assert/strict'),fs=require('node:fs');
+async function bounded(page,width,phase,folder){
+ const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
+ if(overflow){
+  await page.screenshot({path:folder+'/'+phase+'-overflow-'+width+'.png',fullPage:true});
+  console.log(await page.evaluate(()=>[...document.querySelectorAll('body *')].map(e=>({tag:e.tagName,id:e.id,class:e.className?.baseVal??e.className,left:e.getBoundingClientRect().left,right:e.getBoundingClientRect().right})).filter(e=>e.right>innerWidth+1||e.left< -1).slice(0,20)));
+ }
+ assert.ok(!overflow,phase+' overflow at '+width);
+}
 (async()=>{
  const browser=await chromium.launch({executablePath:process.env.VIBE_TEST_CHROME,headless:true,args:['--no-sandbox']});
  try{
@@ -26,13 +34,13 @@ const assert=require('node:assert/strict'),fs=require('node:fs');
   await page.screenshot({path:folder+'/results-desktop.png',fullPage:true});
   for(const width of [320,360,390,430,768]){
    await page.setViewportSize({width,height:900});
-   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Results overflow at '+width);
+   await bounded(page,width,'results',folder);
   }
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:folder+'/results-phone.png',fullPage:true});
   await page.locator('#vibe-edit-results').click();
   for(const width of [320,360,390,430,768]){
    await page.setViewportSize({width,height:900});
-   assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Map overflow at '+width);
+   await bounded(page,width,'map',folder);
   }
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:folder+'/map-phone.png',fullPage:true});
   await page.locator('#vibe-finish').click();await page.locator('[data-vibe-next-song]').click();
