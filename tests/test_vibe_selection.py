@@ -92,9 +92,9 @@ class VibeSelectionDataTests(unittest.TestCase):
         self.conn=sqlite3.connect(self.path);self.conn.row_factory=sqlite3.Row
         self.conn.execute('PRAGMA foreign_keys=ON');self.addCleanup(self.conn.close)
         self.conn.execute("INSERT INTO songs(id,title) VALUES(1,'Untouched'),(2,'Partial'),(3,'Complete')")
-        self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=0,y=0,updated_at=1 WHERE song_id=2 AND map_id='mood_energy'")
+        self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=0,y=0,updated_at=1 WHERE song_id=2 AND map_id='pace_mood'")
         self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=.2,y=.4,updated_at=1 WHERE song_id=3")
-        self.conn.execute("UPDATE song_vibe_positions SET status='not_applicable',x=NULL,y=NULL WHERE song_id=3 AND map_id='relationships'")
+        self.conn.execute("UPDATE song_vibe_positions SET status='not_applicable',x=NULL,y=NULL WHERE song_id=3 AND map_id='sound_impact'")
         self.conn.commit()
 
     def test_reader_counts_only_resolved_passes_and_hydrates_the_chosen_song(self):

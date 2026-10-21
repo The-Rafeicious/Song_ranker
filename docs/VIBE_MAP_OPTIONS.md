@@ -1,7 +1,10 @@
 # Vibe Map axis options
 
-These are design choices for a future map change, not changes to the four live
-maps. Keep at most four maps per song. The options below draw on the catalogue's
+**V1.0.4.2 selects a new set:** Pace & mood, Sound & impact, Connection and
+Perspective. See [the selected definitions and reset](VIBE_MAP_V1042.md). The
+options below are the earlier design library, not the current live definitions.
+
+These remain design choices for a future map change. Keep at most four maps per song. The options below draw on the catalogue's
 existing tags and gaps in the present eight axes.
 
 In the reviewed backup, tags include sad (88 songs), brake-up (66), past-love

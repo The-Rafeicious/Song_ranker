@@ -18,7 +18,7 @@ async function harness(){
  const play=audio=>{playCount++;playing.add(audio);ended.delete(audio);audio.dispatchEvent(new w.Event('play'));return Promise.resolve()};
  w.PreviewPlayback={source:(id,url)=>'/api/previews/'+id,bind:()=>{},syncVolume:()=>{},play,
   preloadPair:async audios=>{warmCount+=audios.length},forgetPair:async audios=>{forgetCount+=audios.length;audios.forEach(a=>{a.pause();a.remove()})}};
- const maps=['mood_energy','relationships','self_social','reflection_escape'].map((id,i)=>({id,title:'Map '+(i+1),x_low:'Low X',x_high:'High X',y_low:'Low Y',y_high:'High Y'}));
+ const maps=['pace_mood','sound_impact','connection','perspective'].map((id,i)=>({id,title:'Map '+(i+1),x_low:'Low X',x_high:'High X',y_low:'Low Y',y_high:'High Y',x_center:i===3?'Present':null}));
  const newRound=()=>({token:'token-'+(++seq),song:{id:seq,title:'Song '+seq,album:'Album',artist:'Artist',artist_links:[{name:'Artist'}],cover_url:'/art.jpg',audio_url:'https://audio-ssl.itunes.apple.com/test.m4a'},maps,map_index:0,revision:0,status:'active',saved_maps:[],draft:null,remaining_ms:null});
  function summary(){const spokes=Array.from({length:8},(_,i)=>({key:''+i,low:'Sad',high:'Happy',label:'Happy',radius:i/8,value:i-4}));server.summary={selection_radar:{spokes},aggregate:{radar:{spokes},completed_passes:1}};}
  const calls=[];w.fetch=async(url,options={})=>{
@@ -77,6 +77,7 @@ async function harness(){
  await h.click('#vibe-forward');
  for(let i=0;i<3;i++){await h.place(0,0);await h.advance();}
  check(!d.querySelector('#vibe-finish').disabled&&!d.querySelector('.vibe-radar'),'all saved maps wait for Finish');
+ check(d.querySelector('.vibe-axis-center').textContent==='Present','Perspective labels the present midpoint');
  check(d.querySelector('audio')===audio,'audio element survives every map');
  h.setHidden(true);await h.advance(10000);check(!d.querySelector('.vibe-radar'),'hidden tab does not open results');h.setHidden(false);
  await h.advance(10000);check(!d.querySelector('.vibe-radar'),'results never open automatically');

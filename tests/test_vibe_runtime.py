@@ -75,7 +75,7 @@ class VibeRuntimeTests(unittest.TestCase):
         self.assertEqual(self.conn.execute('SELECT SUM(sample_count) FROM song_vibe_positions').fetchone()[0],0)
         self.now+=3;result,request=self.advance(row)
         self.assertEqual(result['round']['map_index'],1)
-        point=self.conn.execute("SELECT * FROM song_vibe_positions WHERE song_id=1 AND map_id='mood_energy'").fetchone()
+        point=self.conn.execute("SELECT * FROM song_vibe_positions WHERE song_id=1 AND map_id='pace_mood'").fetchone()
         self.assertAlmostEqual(point['x'],4.98765/5)
         self.assertAlmostEqual(point['y'],-4.22222/5)
         self.assertEqual(point['sample_count'],1)
@@ -89,7 +89,7 @@ class VibeRuntimeTests(unittest.TestCase):
         self.assertEqual(row['status'],'complete');self.assertEqual(len(row['saved_maps']),4)
         spokes=row['summary']['selection_radar']['spokes']
         self.assertEqual(len(spokes),8)
-        self.assertEqual([p['radius'] for p in spokes],[0,0,0,1,1,0,1,1])
+        self.assertEqual([p['radius'] for p in spokes],[1,1,0,0,1,1,0,0])
         self.assertEqual(row['summary']['aggregate']['completed_passes'],1)
         self.assertEqual(self.start()['token'],row['token'])
         next_round=self.start(previous=row['token'])
@@ -123,9 +123,9 @@ class VibeRuntimeTests(unittest.TestCase):
 
     def test_reordered_stale_and_foreign_requests_are_rejected_without_writes(self):
         row,_=self.draft(self.start());before=capture(self.conn)
-        data=dict(token=row['token'],map_id='relationships',revision=row['revision'],request_id='wrong')
-        for owner,body in [('browser',data),('other',dict(data,map_id='mood_energy')),
-                           ('browser',dict(data,map_id='mood_energy',revision=0)),
+        data=dict(token=row['token'],map_id='sound_impact',revision=row['revision'],request_id='wrong')
+        for owner,body in [('browser',data),('other',dict(data,map_id='pace_mood')),
+                           ('browser',dict(data,map_id='pace_mood',revision=0)),
                            ('browser',dict(data,map_id=['bad']))]:
             with self.assertRaises(V.VibeError):V.advance(self.conn,owner,body)
             self.assertEqual(capture(self.conn),before)
@@ -157,7 +157,7 @@ class VibeRuntimeTests(unittest.TestCase):
 
     def test_simultaneous_duplicate_saves_count_once(self):
         row,_=self.draft(self.start());self.now+=5
-        body=dict(token=row['token'],map_id='mood_energy',revision=row['revision'],request_id='same-save')
+        body=dict(token=row['token'],map_id='pace_mood',revision=row['revision'],request_id='same-save')
         barrier=Barrier(2)
         def save():
             c=self.connect()
@@ -171,7 +171,7 @@ class VibeRuntimeTests(unittest.TestCase):
         a,_=self.draft(self.start('a'),x=-5,y=-5,owner='a')
         b,_=self.draft(self.start('b'),x=5,y=5,owner='b');self.now+=5
         self.advance(a,'a');self.advance(b,'b')
-        p=V.profile(self.conn,1)['maps']['mood_energy']
+        p=V.profile(self.conn,1)['maps']['pace_mood']
         self.assertEqual(p['sample_count'],2);self.assertEqual(p['x'],0);self.assertEqual(p['y'],0)
 
     def test_active_draft_and_receipts_survive_rebuild_and_restart(self):
@@ -212,21 +212,21 @@ class VibeRuntimeTests(unittest.TestCase):
         self.assertEqual(capture(self.conn),before)
         row=client.post('/api/vibe-map/round',json={}).json['round']
         self.assertEqual(client.get('/api/vibe-map/state').json['round']['token'],row['token'])
-        response=client.post('/api/vibe-map/draft',json=dict(token=row['token'],map_id='mood_energy',revision=0,request_id='http',x=1,y=2))
+        response=client.post('/api/vibe-map/draft',json=dict(token=row['token'],map_id='pace_mood',revision=0,request_id='http',x=1,y=2))
         self.assertEqual(response.status_code,200)
         self.assertEqual(response.headers['Cache-Control'],'no-store')
-        self.assertEqual(services.app.test_client().post('/api/vibe-map/advance',json=dict(token=row['token'],map_id='mood_energy',revision=1,request_id='foreign')).status_code,409)
+        self.assertEqual(services.app.test_client().post('/api/vibe-map/advance',json=dict(token=row['token'],map_id='pace_mood',revision=1,request_id='foreign')).status_code,409)
         self.assertEqual(client.post('/api/vibe-map/round',json={},headers={'Origin':'https://elsewhere.example'}).status_code,403)
         self.assertEqual(client.post('/api/vibe-map/round',data='{}').status_code,403)
         self.assertEqual(client.post('/api/vibe-map/round',json=[]).status_code,400)
         self.assertEqual(client.get('/api/vibe-map/heatmap?kind=album&id=nope').status_code,400)
         self.assertEqual(client.get('/api/vibe-map/profile/999999').status_code,404)
 
-    def test_schema17_migration_infers_only_one_historical_sample_and_pass(self):
+    def test_schema17_migration_clears_incompatible_old_points_once(self):
         old=self.path.parent/'v17.db';c=sqlite3.connect(old);c.row_factory=sqlite3.Row
         c.executescript(Path('tests/fixtures/schema_v17.sql').read_text())
         from songranker.storage.vibe_state import seed_definitions
-        seed_definitions(c)
+        seed_definitions(c,legacy=True)
         c.execute("INSERT INTO songs(id,title) VALUES(1,'Mapped'),(2,'Partial')")
         c.execute("UPDATE song_vibe_positions SET x=.123456789,y=-.5,status='placed',updated_at=42 WHERE song_id=1")
         c.execute("UPDATE song_vibe_positions SET x=.4,y=.2,status='placed',updated_at=43 WHERE song_id=2 AND map_id='mood_energy'")
@@ -234,9 +234,9 @@ class VibeRuntimeTests(unittest.TestCase):
         initialize_database(old)
         with readonly(old) as c:
             validate(c);reconcile(before,capture(c))
-            self.assertEqual(pass_counts(c,[1,2]),{1:1,2:0})
-            p=c.execute("SELECT * FROM song_vibe_positions WHERE song_id=1 AND map_id='mood_energy'").fetchone()
-            self.assertEqual(p['sample_count'],1);self.assertEqual(p['x'],.123456789)
+            self.assertEqual(pass_counts(c,[1,2]),{1:0,2:0})
+            p=c.execute("SELECT * FROM song_vibe_positions WHERE song_id=1 AND map_id='pace_mood'").fetchone()
+            self.assertEqual(p['sample_count'],0);self.assertIsNone(p['x'])
             self.assertEqual(c.execute('SELECT COUNT(*) FROM vibe_rounds').fetchone()[0],0)
 
 

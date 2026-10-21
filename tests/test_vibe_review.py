@@ -15,7 +15,7 @@ class VibeReviewTests(unittest.TestCase):
     draft=runtime.VibeRuntimeTests.draft
     advance=runtime.VibeRuntimeTests.advance
     finish=runtime.VibeRuntimeTests.finish
-    def edit(self,row,map_id='mood_energy',x=5,y=-5,status='placed',owner='browser'):
+    def edit(self,row,map_id='pace_mood',x=5,y=-5,status='placed',owner='browser'):
         body=dict(token=row['token'],map_id=map_id,revision=row['revision'],request_id='edit-'+str(row['revision']),status=status)
         if status=='placed':body.update(x=x,y=y)
         row=V.draft(self.conn,owner,body)['round'];self.now+=5
@@ -26,11 +26,11 @@ class VibeReviewTests(unittest.TestCase):
     def test_review_completed_round_replaces_sample_without_counting_pass(self):
         row=self.finish(self.start(),x=-5,y=5)
         row,request=self.edit(row)
-        point=V.profile(self.conn,1)['maps']['mood_energy']
+        point=V.profile(self.conn,1)['maps']['pace_mood']
         self.assertEqual((point['x'],point['y'],point['sample_count']),(5,-5,1))
         self.assertEqual(row['summary']['aggregate']['completed_passes'],1)
         self.assertTrue(V.advance(self.conn,'browser',request)['replayed'])
-        self.assertEqual(V.profile(self.conn,1)['maps']['mood_energy']['sample_count'],1)
+        self.assertEqual(V.profile(self.conn,1)['maps']['pace_mood']['sample_count'],1)
         self.assertEqual(row['map_index'],4)
         validate(self.conn)
 
@@ -38,37 +38,37 @@ class VibeReviewTests(unittest.TestCase):
         a=self.finish(self.start('a'),x=-5,y=-5,owner='a')
         b=self.finish(self.start('b'),x=5,y=5,owner='b')
         a,_=self.edit(a,x=0,y=0,owner='a')
-        point=V.profile(self.conn,1)['maps']['mood_energy']
+        point=V.profile(self.conn,1)['maps']['pace_mood']
         self.assertEqual((point['x'],point['y'],point['sample_count']),(2.5,2.5,2))
         self.assertEqual(V.profile(self.conn,1)['completed_passes'],2)
         b,_=self.edit(b,status='not_applicable',owner='b')
-        point=V.profile(self.conn,1)['maps']['mood_energy']
+        point=V.profile(self.conn,1)['maps']['pace_mood']
         self.assertEqual((point['x'],point['y'],point['sample_count'],point['not_applicable_count']),(0,0,1,1))
         a,_=self.edit(a,status='not_applicable',owner='a')
-        point=V.profile(self.conn,1)['maps']['mood_energy']
+        point=V.profile(self.conn,1)['maps']['pace_mood']
         self.assertEqual((point['status'],point['sample_count'],point['not_applicable_count']),('not_applicable',0,2))
         b,_=self.edit(b,x=4,y=-3,owner='b')
-        point=V.profile(self.conn,1)['maps']['mood_energy']
+        point=V.profile(self.conn,1)['maps']['pace_mood']
         self.assertEqual((point['x'],point['y'],point['sample_count'],point['not_applicable_count']),(4,-3,1,1))
 
     def test_backtracking_never_unlocks_uncompleted_map(self):
         row,_=self.draft(self.start());self.now+=5;row=self.advance(row)[0]['round']
         row,_=self.edit(row,x=3,y=4)
         self.assertEqual(row['map_index'],1)
-        self.assertEqual(row['current_map']['id'],'relationships')
-        with self.assertRaises(V.VibeError):self.edit(row,map_id='self_social')
+        self.assertEqual(row['current_map']['id'],'sound_impact')
+        with self.assertRaises(V.VibeError):self.edit(row,map_id='connection')
         self.assertEqual(len(row['saved_maps']),1)
 
     def test_pending_review_restores_target_and_survives_canonical_export(self):
         row=self.finish(self.start())
-        body=dict(token=row['token'],map_id='relationships',revision=row['revision'],request_id='review-draft',x=1,y=3)
+        body=dict(token=row['token'],map_id='sound_impact',revision=row['revision'],request_id='review-draft',x=1,y=3)
         row=V.draft(self.conn,'browser',body)['round']
-        self.assertEqual(row['draft']['map_id'],'relationships')
+        self.assertEqual(row['draft']['map_id'],'sound_impact')
         self.assertEqual(self.start(previous=row['token'])['token'],row['token'])
         state=capture(self.conn);target=self.path.parent/'review.db';rebuild(state,target)
         with readonly(target) as conn:
             validate(conn);self.assertEqual(capture(conn),state)
-            self.assertEqual(V.payload(conn,V.current(conn,'browser'))['round']['draft']['map_id'],'relationships')
+            self.assertEqual(V.payload(conn,V.current(conn,'browser'))['round']['draft']['map_id'],'sound_impact')
 
     def test_similarity_ranks_coordinates_and_ignores_missing_or_na(self):
         self.finish(self.start(),x=-5,y=-5)
@@ -84,9 +84,9 @@ class VibeReviewTests(unittest.TestCase):
         self.assertEqual(capture(self.conn),before)
         self.assertEqual(V.similar_songs(self.conn,4)['matches'],[])
         self.assertIsNone(compare_profiles({}, {})['similarity'])
-        one={'mood_energy':dict(status='placed',x=0,y=0)}
+        one={'pace_mood':dict(status='placed',x=0,y=0)}
         self.assertEqual(compare_profiles(one,one)['coverage'],.25)
-        self.assertEqual(compare_profiles(one,{'mood_energy':dict(status='not_applicable',x=None,y=None)})['shared_maps'],0)
+        self.assertEqual(compare_profiles(one,{'pace_mood':dict(status='not_applicable',x=None,y=None)})['shared_maps'],0)
         client=V.app.test_client()
         self.assertEqual(client.get('/api/vibe-map/similar/1').json['matches'][0]['song']['id'],2)
         self.assertEqual(client.get('/api/vibe-map/similar/1?limit=0').status_code,400)
@@ -101,7 +101,7 @@ class VibeReviewTests(unittest.TestCase):
         self.assertAlmostEqual(score,100*math.exp(-.5/(2*.65**2)))
         self.assertLess(score,60)  # Old diagonal-normalised formula said 75%.
         second={key:dict(status='placed',x=0,y=0) for key,*_ in MAPS}
-        second['relationships'].update(x=1,y=1)
+        second['sound_impact'].update(x=1,y=1)
         self.assertAlmostEqual(compare_profiles(first,second)['similarity'],score)
         self.assertEqual(compare_profiles(first,first)['similarity'],100)
         self.assertEqual(compare_profiles(second,first),compare_profiles(first,second))

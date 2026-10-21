@@ -1,5 +1,32 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.4.2 — simpler generation-2 maps and one-time test reset
+
+Select four maps with one-word endpoints: Pace & mood (Slow/Upbeat, Sad/Happy),
+Sound & impact (Acoustic/Electronic, Soft/Powerful), Connection
+(Fractured/Secure, Casual/Devoted), Perspective (Past/Future, Regretful/Hopeful).
+Perspective labels its midpoint Present. Musical pace, mood and chorus impact
+are independent; a troubled bond can still be deeply devoted. Self/life songs
+can remain near Connection's centre when that theme is weak or mixed.
+
+Use new stable keys and definition generation 2, never relabel old coordinates.
+Schema 19 resets only the old Vibe Map definitions/points/counters/rounds, inside
+normal backed-up transactional migration. Each song has four fresh empty slots.
+The standalone reset script requires an explicit test DB and is a no-op on 19,
+so new results survive reruns, restarts and plain SQL restore. No new history or
+retired-map table is added. Legacy definition code exists only to validate and
+migrate old backups safely. Other catalogue/game facts remain unchanged.
+
+Reorder the radar to Happy, Hopeful, Future, Secure, Devoted, Powerful, Electronic,
+Upbeat. Preserve the fixed similarity curve, adaptive gentle draw bias and manual
+results flow. Document examples using the user's descriptions, the limits of
+four maps, and the one-time script/startup/reset/rollback behaviour.
+
+Validated a disposable copy of the pushed backup: all 1,003 songs retained,
+60 old placed slots removed, 4,012 new unmapped slots; every other table's values
+unchanged. Pre-upgrade backup kept and a second reset is a no-op. Regression and
+browser verification are recorded in the PR checks.
+
 ## Vibe-Map-v1.0.4.1 — testing polish and clearer similarity
 
 - Centre the desktop song card beside the map container and keep it visible with

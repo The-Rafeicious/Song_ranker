@@ -1,8 +1,10 @@
-# Vibe-Map-v1.0.4.1 mode and API contract
+# Vibe-Map-v1.0.4.2 mode and API contract
 
 The test branch now serves `/vibe-map` with its template, CSS, JavaScript and
 Home/Game Modes entries. Existing LAN/origin policy and shutdown guards apply.
-Schema remains 18; no extra attempt/history tables are needed.
+Schema 19 replaces incompatible old test definitions/results once, with a
+pre-upgrade backup. No extra attempt/history tables are needed. See
+[the new maps and reset guide](VIBE_MAP_V1042.md).
 
 ## Coordinates and charts
 
@@ -17,7 +19,8 @@ precision. `display_x`/`display_y` and radar `value` are rounded to two decimal
 places for labels; a frontend can format them with exactly two digits. Use raw
 X/Y for graph placement. Each map definition provides endpoints, `min=-5`,
 `max=5`, `step=null`, `display_decimals=2` and the reserved red colour. The four
-map definitions and their meanings are unchanged.
+map definitions are generation 2. Perspective also returns `x_center: "Present"`.
+Stable keys are pace_mood, sound_impact, connection and perspective.
 
 Completed-round summaries contain two representations:
 
@@ -60,7 +63,7 @@ An example first draft (coordinates are illustrative, not assigned to a real son
 ```json
 {
   "token": "server-issued-round-token",
-  "map_id": "mood_energy",
+  "map_id": "pace_mood",
   "revision": 0,
   "request_id": "fresh-client-uuid-for-this-adjustment",
   "status": "placed",
@@ -113,7 +116,7 @@ Readers send no-store headers and read one database snapshot.
 
 ## Averages, counts and storage
 
-Schema **17 → 18** adds `sample_count` and `not_applicable_count` to each existing
+The historical schema **17 → 18** added `sample_count` and `not_applicable_count` to each existing
 song/map row, one `song_vibe_progress` counter row per song, and `vibe_rounds`
 containing one replaceable round per browser. There is no per-play history table.
 The round stores its current draft and at most four accepted-map receipts. Starting
@@ -158,8 +161,8 @@ changes update both counters correctly. Other browsers' or previous passes'
 contributions remain intact. Editing never adds another completed pass.
 
 The draft target occupies one reserved `_draft_map` key in the existing bounded
-round JSON; map receipts remain limited to four. Legacy schema-18 drafts without
-that key use the first-uncompleted index. No schema migration is required.
+round JSON; map receipts remain limited to four. Schema 19 drops incompatible old
+rounds/receipts and starts these new definitions unmapped. No old point is relabelled.
 A completed round with a pending review draft cannot be replaced by Next song.
 Once Next song replaces the row, its previous pass is no longer editable.
 
@@ -178,8 +181,8 @@ reload; a completed round that was not finished stays on its map. Hidden tabs
 pause automatic progression. Already-sent writes may finish normally.
 
 The shared `VibeCharts.radar()` renderer and `vibe_charts.css` keep related poles
-adjacent: Happy → Hopeful → Confident → Social → Close → New love → Dreamlike →
-Intense. Missing spokes stay gaps. Results show the aggregate radar, without raw
+adjacent: Happy → Hopeful → Future → Secure → Devoted → Powerful → Electronic →
+Upbeat. Missing spokes stay gaps. Results show the aggregate radar, without raw
 coordinate figures or a detailed legend. Pole meanings remain available through
 SVG labels/titles. The public API retains coordinates and selection_radar for
 future consumers; removing displayed figures does not discard stored precision.
@@ -213,7 +216,8 @@ matches. The gentle adaptive draw multiplier is unchanged: this sharper display
 percentage does not increase clustering or restrict who can face whom.
 
 See [map options](VIBE_MAP_OPTIONS.md) for alternative axes and four-map sets.
-None are activated, and existing coordinates are not reinterpreted.
+The selected generation-2 set is documented in VIBE_MAP_V1042.md; other
+alternatives remain unselected, and old coordinates are never reinterpreted.
 
 ## Preview ownership and cache
 

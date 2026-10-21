@@ -26,6 +26,8 @@ async function bounded(page,width,phase,folder){
   }
   await page.waitForFunction(()=>!document.querySelector('#vibe-finish').disabled);
   assert.equal(await page.locator('.vibe-radar').count(),0);
+  assert.equal(await page.locator('.vibe-axis-center').textContent(),'Present');
+  await page.screenshot({path:folder+'/perspective-desktop.png',fullPage:true});
   await page.locator('#vibe-back').click();
   await page.locator('#vibe-plane').press('ArrowRight');
   await page.waitForFunction(()=>document.querySelector('#vibe-save-status').textContent==='All maps saved · finish when ready.');

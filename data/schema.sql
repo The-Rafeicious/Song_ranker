@@ -545,15 +545,15 @@ BEGIN
     SELECT RAISE(ABORT, 'A song can have at most 8 tags. Remove a tag before adding another.');
 END;
 
--- Vibe-Map-v1.0.0: four independent two-axis descriptions, never preference scores.
+-- Vibe-Map-v1.0.4.2 / schema 19: four independent two-axis descriptions, never preference scores.
 CREATE TABLE IF NOT EXISTS vibe_maps (
-    id TEXT PRIMARY KEY CHECK(id IN ('mood_energy','relationships','self_social','reflection_escape')),
+    id TEXT PRIMARY KEY CHECK(id IN ('pace_mood','sound_impact','connection','perspective')),
     title TEXT NOT NULL,
     x_low TEXT NOT NULL,
     x_high TEXT NOT NULL,
     y_low TEXT NOT NULL,
     y_high TEXT NOT NULL,
-    definition_version INTEGER NOT NULL CHECK(definition_version=1),
+    definition_version INTEGER NOT NULL CHECK(definition_version=2),
     colour TEXT NOT NULL DEFAULT '#d94b58',
     display_order INTEGER NOT NULL UNIQUE CHECK(display_order BETWEEN 1 AND 4)
 ) WITHOUT ROWID;

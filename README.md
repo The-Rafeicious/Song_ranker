@@ -1,13 +1,19 @@
 # Song Ranker V5
 
-**V5.0.5.1 · V3 competition database · schema 18 (test branch)**
+**V5.0.5.1 · V3 competition database · schema 19 (test branch)**
 
-`New-modes-test` adds **Vibe-Map-v1.0.4.1**: open **📍 Vibe Map** from Home or
+`New-modes-test` adds **Vibe-Map-v1.0.4.2**: open **📍 Vibe Map** from Home or
 Game Modes to place a song on four continuous red maps. Adjust a pin, let its
 five-second timer save it, and use the arrows to revisit saved maps. Finish
 opens a clean eight-axis radar and two similar songs with comparison percentages;
 the same button then becomes Next song. Results wait for Finish.
 Your preview stays with the song through every map and result screen.
+
+The four maps are **Pace & mood**, **Sound & impact**, **Connection** and
+**Perspective**, with one-word endpoints and Present at the time-axis centre.
+This update resets the incompatible old Vibe Map test results once, after a
+backup; catalogue and other game data stay intact. See the
+[new axes and reset instructions](docs/VIBE_MAP_V1042.md).
 
 This is descriptive data, with no performance score or Overall contribution.
 Repeated passes update compact averages; reviewing the current pass replaces
