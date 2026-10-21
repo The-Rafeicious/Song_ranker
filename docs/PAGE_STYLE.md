@@ -1248,3 +1248,11 @@ capacity message live and disable Review for an overflowing draft. Preserve
 choices so the user can fix them; do not silently trim new submissions.
 
 
+
+## V5.0.5 database sync status
+
+Show the last database comparison separately from Git code/commit status in
+Dev’s Git summary. Remote-ahead, split and failed-validation states need a clear
+error-coloured status message. Explain that normal startup checks existing data
+after a manual pull, and link split recovery to the existing backup review.
+Keep status text escaped and retain explicit upload/stop/restore controls.

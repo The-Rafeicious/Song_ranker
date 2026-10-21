@@ -1,5 +1,23 @@
 # V5 update log
 
+## V5.0.5 — safe cross-computer database sync
+
+21 October 2026 · schema 16 retained.
+
+- Fix the stale-laptop path: normal startup now checks the committed remote
+  database after code/schema initialization, including after a manual Git pull.
+- Validate SQL candidates, track per-device shared baselines and compare actual
+  stored rows, edits, removals, high-water marks and extension objects.
+- Archive and transactionally adopt a safe newer remote snapshot. Detect local
+  writes during preparation and roll back replacement failures.
+- Keep both copies on a split, expose the incoming candidate in backup review
+  and block stale/conflicting uploads, including shutdown uploads.
+- Report database status separately from code Git status; retain confirmed
+  success if only a later local receipt/status write fails.
+- Verify the repository snapshot restores all 1,003 songs and every stored value.
+
+See [installation, baseline limits and split recovery](../docs/UPGRADE_V5_0_5.md).
+
 ## V5.0.4.3.1 — search collection counts and contained achievements
 
 21 October 2026 · schema 16 unchanged.

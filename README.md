@@ -1,6 +1,6 @@
 # Song Ranker V5
 
-**V5.0.4.3.1 · V3 competition database · schema 16**
+**V5.0.5 · V3 competition database · schema 16**
 
 Vote between songs, identify previews, run tournaments, guess Elo and arrange
 album shelves. V5 keeps your music catalogue and starts the competition again
@@ -28,7 +28,7 @@ python main.py
 
 Use `python3` if that is your Python command. Python 3.10+ is required; validation
 used 3.12. Open **http://127.0.0.1:5000**, then hard-refresh existing browser tabs.
-The footer should show **V5.0.4.3.1**.
+The footer should show **V5.0.5**.
 
 On first launch, V5 makes a complete SQLite backup of V2, verifies a catalogue-only
 transfer and publishes **`data/song_ranker_v3.db`**. Song/artist/album/tag IDs,
@@ -140,7 +140,9 @@ reintroduced. See [recovery](docs/UPGRADE_V5.md#recovery) before changing files.
 
 Git upload/check/restart controls remain explicit in Dev; launch-time code
 updates happen before Flask imports. SQL snapshots from a V3 competition retain
-its results when restored to a missing database. Older V2 SQL snapshots carry
+its results when restored to a missing database. V5.0.5 also checks an existing
+V3 database against the committed remote snapshot before the normal launcher
+serves pages, including after a manual Git pull. Older V2 SQL snapshots carry
 catalogue data into a fresh competition. A plain downloaded folder works without
 Git. [Technical guide](docs/TECHNICAL_GUIDE.md#hosting-and-recovery) covers both.
 
@@ -269,3 +271,25 @@ Album and artist search cards show a separate green song-count line. Artists
 with proper albums also show a purple album count; Singles are excluded.
 Achievement badges stay in a bounded single row, with up to three whole badges
 that fit the card width. Restart and hard-refresh after updating.
+
+## V5.0.5 laptop / desktop database sync
+
+Previously, Git could pull a newer SQL backup while the app kept using an older
+live database. The normal `python main.py` launcher now checks database sync
+after code update and schema bootstrap, even when Git was already pulled.
+
+- A validated newer remote snapshot loads when it includes all local changes
+  relative to the shared baseline. Updates and deleted rows are checked too.
+- A complete `pre_git_database_…db` archive is made before replacement. The
+  replacement is transactional and rechecks for intervening local writes.
+- A split keeps the local database, saves an `incoming_git_…db` for review and
+  blocks uploads that would overwrite remote changes. Dev shows database state
+  separately from whether code commits are up to date.
+- Shutdown uploads recheck the same baseline before committing the SQL file.
+  Use **Stop app** with Git upload selected and wait for its success receipt.
+  Closing a browser tab alone does not upload the database.
+
+Apply the update on both computers. On the stale laptop, stop the app, pull the
+update, then run `python main.py` and check the startup outcome / song total.
+Do not delete the old database to force a reload. See the
+[upgrade and split-recovery guide](docs/UPGRADE_V5_0_5.md). Schema remains 16.

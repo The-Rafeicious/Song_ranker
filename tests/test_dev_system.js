@@ -109,6 +109,11 @@ async function gitFlows(){
  for(const extra of [{pending_code:true,ahead:1},{in_progress:true},{tracking_head:null}]){
   h.state.git=git(extra);h.w.testDev.setView('export');await flush();check(h.d.querySelector('[data-system-upload]').disabled,'unsafe Git state disables upload');
  }
+ for(const code of ['database_remote_ahead','database_conflict','database_check_failed']){
+  h.state.git=git({database_sync:{code,message:'Database <needs> review & retry'}});h.w.testDev.setView('export');await flush();
+  check(h.d.querySelector('p.error[role="status"]').textContent.includes('Database <needs> review & retry'),'database state shown separately from code commits');
+  check(!h.d.querySelector('p.error needs'),'database message escaped');
+ }
  h.state.git={available:false,message:'Git unavailable',history:[]};h.w.testDev.setView('export');await flush();
  check(h.d.querySelector('[data-system-check]').disabled,'missing Git disables remote controls');
  check(h.d.querySelector('.dev-taskbar [data-system-backup]')&&!h.d.querySelector('.dev-taskbar [data-system-backup]').disabled,'local backups available without Git');
@@ -194,4 +199,5 @@ async function stopFlows(){
 }
 module.exports={harness,flush};
 if(require.main===module)(async()=>{await entryAndShortcuts();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
+
 

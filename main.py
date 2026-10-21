@@ -40,6 +40,9 @@ from songranker.developer import dev_shutdown  # Registers fresh-PIN, acknowledg
 init_db()
 
 if __name__ == '__main__':
+    # Also runs when Git was pulled manually or there was no incoming code update.
+    database_update = updater.reconcile_database()
+    print(database_update['message'], flush=True)
     try:
         from waitress import create_server
     except ImportError as error:

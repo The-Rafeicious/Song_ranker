@@ -45,7 +45,7 @@ def git_payload(state=None):
 def git_reply(result):
     result=dict(result);result['git']=git_payload(result.pop('git',None))
     result['status']='success' if result['ok'] else 'error'
-    status=200 if result['ok'] else 409 if result['code'] in ('busy','stale_target','pending_code','behind','diverged','operation_in_progress') else 502
+    status=200 if result['ok'] else 409 if result['code'] in ('busy','stale_target','pending_code','behind','diverged','operation_in_progress','database_behind','database_conflict','database_check_failed') else 502
     return jsonify(result),status
 
 
@@ -88,7 +88,7 @@ def backup_path(name):
 
 def purpose(name):
     if name in ('rolling_1.db','rolling_2.db','rolling_3.db'):return 'Rotating requested / shutdown backup'
-    for prefix,label in [('pre_v5_v2_','V2 archive before V5'),('pre_git_update_','Before code update'),('pre_restore_','Before restore'),('pre_upgrade_','Before schema upgrade'),
+    for prefix,label in [('incoming_git_','Incoming Git database — compare before restore'),('pre_git_database_','Before Git database update'),('pre_v5_v2_','V2 archive before V5'),('pre_git_update_','Before code update'),('pre_restore_','Before restore'),('pre_upgrade_','Before schema upgrade'),
         ('pre_tag_edit_','Before tag change'),('pre_move_single_','Before Single move'),('pre_source_refresh_','Before source refresh'),
         ('pre_delete_song_','Before song removal'),('pre_reset_','Before competition reset'),('manual_mode_delete_','Before result removal'),
         ('manual_','Manual backup'),('song_ranker_','Database backup')]:
