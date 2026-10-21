@@ -1,5 +1,87 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.2 — gentle similarity across existing modes
+
+Added shared similarity helpers in `songranker/modes/vibe_similarity.py` and
+integrated them with Standard Vote, blind voting (the shared pair selector),
+tournament entries, Elo Guesser and Album Shelves. The mapper's coverage-first
+picker is unchanged. Schema remains 17; no database writes, stored clusters,
+extra tables, scoring changes or UI changes are introduced.
+
+### Adaptive strength and safeguards against isolated pockets
+
+For each eligible draw pool, coverage is the number of valid placed map slots
+divided by four times the number of distinct songs. Only finite coordinates
+inside [-1,1] with status placed count. Unmapped and not-applicable maps are
+unknown evidence, not fake neutral coordinates. The maximum adjustment is
+`strength = 0.15 * coverage`, recomputed from current data whenever a draw runs.
+There is no activation threshold or stale cached coverage. A catalogue with 10%
+of its slots mapped has at most a ±1.5% weight adjustment; 100% coverage permits
+at most ±15%. Partial shared map evidence reduces the adjustment further.
+
+For a pair, compare the placed maps shared by both songs using a smooth
+two-dimensional Gaussian distance kernel (coordinate bandwidth 0.65). Average
+its signed closeness across the four possible maps, with unshared maps
+contributing zero. Multiply the existing candidate weight by
+`1 + strength * signed_closeness`. Nearby coordinates get a small boost;
+widely different ones get a small reduction. This does not rank musical quality.
+
+- Keep the first song or album's existing exposure-based draw unmodified.
+- Bias only the second song, or subsequent tournament entries/albums relative
+  to the first randomly drawn reference. Do not repeatedly multiply adjustments,
+  compare against an ever-growing consensus, or walk from one neighbour to
+  another. Tournament similarities to the reference are computed once per draw.
+- Multipliers always stay within [0.85,1.15], usually much closer to 1 when
+  mapping is sparse. Similarity can change a candidate's odds relative to
+  another by at most 1.15/0.85, about 1.35 times.
+- After normalisation, an otherwise eligible candidate retains at least
+  0.85/1.15, about 74%, of its previous conditional probability. This bounds the
+  effect even for opposite corners of every map. No vibe-based hard exclusion,
+  bucket, cluster or similarity cutoff exists.
+- No map evidence gives multiplier 1. Unmapped catalogues produce the same
+  draws with the same random seeds. New unmapped tracks retain their original
+  exposure and age support. An unknown anchor produces no similarity bias.
+
+Existing mode constraints still apply: recent-pair cooling, distinct-rating
+requirements for Elo Guesser, preview requirements for blind pools, tournament
+scope/size, and shelf capacity/track eligibility. Vibe differences introduce no
+new eligibility restriction. Existing exposure weights, Elo kernels, Guesser
+target quantile, champion seeding, shelf recency and randomness remain in place.
+Tournament entries receive the small membership preference; the established
+seeding and bracket placement are not replaced by vibe clusters.
+
+### Album hotspots and scopes
+
+Build each eligible album's profile from **all** songs belonging to it, including
+unnumbered songs that cannot be drawn as shelf questions. For each map, distribute
+the placed coordinates over a 5×5 grid with bilinear interpolation, then smooth
+the density using the same Gaussian bandwidth. Compare the normalised density
+vectors by cosine overlap. This retains multiple hotspots and the album's spread:
+an album split between sad/gentle and happy/intense does not collapse to the same
+profile as one whose songs all occupy the centre.
+
+Use the smaller mapped fraction of the two albums for each shared map as an
+additional confidence factor. One mapped song in a mostly unmapped album cannot
+pretend to represent its whole scope. Normalised densities compare proportions,
+so a longer album does not receive extra strength just for having more songs.
+Album-level strength uses placed-slot coverage across the eligible albums' songs.
+The first album is selected through the existing policy; later albums get one
+bounded comparison to it. Track allocation and the ten-track ordering question
+remain unchanged. No density/profile tables are persisted.
+
+### Validation
+
+83 focused tests passed, including 12 new similarity/integration tests, existing
+mapper selection/storage, preference, developer-polish and developer-system
+checks. Tests cover full/sparse/no evidence, malformed or missing coordinates,
+conditional probability bounds, unbiased first draws, tournament selection,
+cross-vibe pairs, multimodal album profiles, unnumbered album tracks, shelf
+capacity and read-only database behaviour. A fully mapped two-vibe simulation
+still produces cross-vibe pairs frequently; the four-thousand-draw regression
+requires a cross-vibe share between 45% and 55%, rather than isolated pockets.
+One historical preference migration method remains unavailable because its
+upstream schema_v9.sql fixture is missing. No gameplay results are fabricated.
+
 ## Vibe-Map-v1.0.1 — coverage-first song selection
 
 Added the pure picker beside the other mode selectors in
