@@ -1,5 +1,21 @@
 # V5 update log
 
+## V5.0.4.3 — cleaner search cards
+
+21 October 2026 · schema 16 unchanged.
+
+- Remove repeated Song/Album/Artist/Tag badges above search result titles.
+- Add a gold attached-tag count below each song’s metadata, including zero
+  and singular counts, so lightly tagged songs are easy to spot.
+- Space result copy consistently across all four categories and phone layouts.
+- Update the README, shared style guidance and asset-cache version.
+
+Validation: 54 search DOM checks pass at 390/1280 viewport settings, plus
+JavaScript syntax and diff whitespace checks. Browser painting and measured
+responsive geometry were not verified.
+
+Restart and hard-refresh to load the updated search assets.
+
 ## V5.0.4.2 — eight tags per song
 
 21 October 2026 · database schema 16.
@@ -200,5 +216,6 @@ for exact scope and physical-device limits. Install/recovery are in the
 - Retain source/tag review, Git/shutdown and backup safeguards; remove outdated
   Classic-record UI and automatic-backup wording. No schema/scoring changes.
 - [Upgrade, per-tool audit and validation limits](../docs/UPGRADE_V5_0_4.md).
+
 
 

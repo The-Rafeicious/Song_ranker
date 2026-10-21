@@ -2,7 +2,7 @@
    in site.js; this module only owns the main Search page. */
 window.SearchPage=(()=>{
  'use strict';
- const {$,$$,esc,ratio,sumFields,entityTypes,entityLabels,entityColour}=window.SongRankerUI;
+ const {$,$$,esc,ratio,sumFields,entityTypes,entityColour}=window.SongRankerUI;
  let U,type='songs',query='',tag=null,limit=40,sort='random',observer,randomOrders=new Map();
  const keys=['championships','runner_ups','third_places','correct','available_points','guess_correct','guess_attempts','shelf_order_right','shelf_order_pairs'];
  function achievementCandidates(tracks){
@@ -45,7 +45,8 @@ window.SearchPage=(()=>{
  }
  function card(r){
    const tracks=U.linkedSongs(type,r),kind=entityColour(type),info=type==='songs'||type==='albums'?U.rankingMetadata(type==='songs'&&!U.properAlbum(U.records('albums').find(a=>a.id===r.album_id))?{...r,album:''}:r,type):{html:`${tracks.length} songs`,text:`${tracks.length} songs`};
-   return `<article class="result-card ${kind} dashboard-surface"><div class="search-art">${U.artwork(r,type)}</div><div class="result-info"><span class="badge ${kind}">${entityLabels[type]}</span><h2><a class="${kind}" href="${U.urlFor(type,r)}" title="${esc(r.name)}">${type==='tags'?'# ':''}${esc(r.name)}</a></h2><div class="search-metadata" title="${esc(info.text)}">${info.html}</div>${type==='tags'&&r.description?`<p class="search-description" title="${esc(r.description)}">${esc(r.description)}</p>`:''}</div><div class="result-score ${type==='songs'?'standard':kind}">${type==='songs'?Math.round(r.score):window.SongRankerUI.impactText(r.score)}<small>${type==='songs'?'Elo':'Impact'}</small></div>${badges(tracks)}</article>`;
+   const tagCount=type==='songs'?new Set(r.tag_ids||[]).size:0;
+   return `<article class="result-card ${kind} dashboard-surface"><div class="search-art">${U.artwork(r,type)}</div><div class="result-info"><h2><a class="${kind}" href="${U.urlFor(type,r)}" title="${esc(r.name)}">${type==='tags'?'# ':''}${esc(r.name)}</a></h2><div class="search-metadata" title="${esc(info.text)}">${info.html}</div>${type==='songs'?`<p class="search-tag-count">${tagCount} ${tagCount===1?'tag':'tags'}</p>`:''}${type==='tags'&&r.description?`<p class="search-description" title="${esc(r.description)}">${esc(r.description)}</p>`:''}</div><div class="result-score ${type==='songs'?'standard':kind}">${type==='songs'?Math.round(r.score):window.SongRankerUI.impactText(r.score)}<small>${type==='songs'?'Elo':'Impact'}</small></div>${badges(tracks)}</article>`;
  }
  function randomOrder(category){
    if(!randomOrders.has(category)){
@@ -139,3 +140,4 @@ window.SearchPage=(()=>{
  window.addEventListener('resize',()=>{if(U){fitBadges();if(!$('#search-sort-menu').hidden)closeSort(true);}});
  return {init,achievementCandidates,fitBadgeRow};
 })();
+

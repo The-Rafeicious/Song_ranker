@@ -46,11 +46,13 @@ body.search-page #main .search-art .art-wrap {
   aspect-ratio: 1; flex-shrink: 0;
 }
 body.search-page #main .search-art .tag-cover { font-size: 48px; color: var(--tag); }
-body.search-page #main .result-info h2 { font-size: 26px; font-weight: 900; line-height: 1.25; margin: 6px 0; min-width: 0; }
+body.search-page #main .result-info { display: grid; gap: 8px; min-width: 0; }
+body.search-page #main .search-tag-count { margin: 0; color: var(--tag); font-size: 16px; font-weight: 800; }
+body.search-page #main .result-info h2 { font-size: 26px; font-weight: 900; line-height: 1.25; margin: 0; min-width: 0; }
 body.search-page #main :is(.result-info h2 a,.search-metadata,.search-description) { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; max-width: 100%; }
 body.search-page #main .search-metadata { font-size: 18px; color: var(--muted); }
 body.search-page #main .search-metadata a { font-weight: 800; }
-body.search-page #main .search-description { margin: 6px 0 0; color: var(--muted); font-size: 16px; }
+body.search-page #main .search-description { margin: 0; color: var(--muted); font-size: 16px; }
 body.search-page #main .result-card a:hover,
 body.search-page #main .result-card a:focus-visible { text-decoration: underline; text-underline-offset: 4px; outline-color: currentColor; }
 body.search-page #main .result-score { font-size: 32px; min-width: 0; max-width: 100%; }
@@ -70,9 +72,9 @@ body.search-page #main .search-tag-filter .btn { font-size: 15px; }
 @media (max-width: 520px) {
   body.search-page #main .result-card { --search-art-size: 72px; grid-template-columns: var(--search-art-size) minmax(0,1fr); gap: 10px 14px; }
   body.search-page #main .search-art { grid-row: 1 / span 2; }
-  body.search-page #main .result-info { grid-column: 2; grid-row: 1; }
+  body.search-page #main .result-info { grid-column: 2; grid-row: 1; gap: 6px; }
   body.search-page #main .result-info h2 { font-size: 22px; }
-  body.search-page #main :is(.search-metadata,.search-description) { font-size: 15px; }
+  body.search-page #main :is(.search-metadata,.search-description,.search-tag-count) { font-size: 15px; }
   body.search-page #main .result-score { grid-column: 2; grid-row: 2; justify-self: end; display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px; font-size: 28px; white-space: normal; overflow-wrap: anywhere; }
   body.search-page #main .result-score small { font-size: 12px; }
   body.search-page #main .search-toolbar { grid-template-columns: minmax(0,1fr); }
@@ -80,3 +82,4 @@ body.search-page #main .search-tag-filter .btn { font-size: 15px; }
   body.search-page #main .search-toolbar .pill-nav { gap: 8px; }
   body.search-page #main .search-toolbar .pill { padding: 9px 12px; }
 }
+
