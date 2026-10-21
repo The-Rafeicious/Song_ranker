@@ -1285,7 +1285,7 @@ The existing Finish control becomes Next song. Keep the audio element stable.
 
 Shared radar geometry/styles live in `vibe_charts.js`/`vibe_charts.css`; follow the
 API's related-pole order, retain accessible pole labels, and leave missing spokes
-as gaps. Future stats pages place Vibe Map below Overall; future mode rankings put
+as gaps. Entity stats pages place Vibe Map immediately above Overall; future mode rankings put
 it last. Those pages are not part of this mode patch.
 
 Generation 2 uses Pace & mood, Sound & impact, Connection and Perspective.
@@ -1319,3 +1319,19 @@ Use the shared `vibe_song_stats_panel.html` / `vibe_song_stats.css` layout for
 future song-page integration. Missing maps stay gaps. Show short loading/retry
 states and protect the latest selection from stale responses. Do not show Vibe
 listening metrics until the mode actually records supported observations.
+
+
+## Vibe Map entity cards — Vibe-Map-v1.0.6
+
+Centre the selected identity block at the top of the reusable song card,
+including its metadata. Song profiles use that same compact radar/matches card
+immediately above Overall. Album, artist and tag profiles use the same red mode
+panel in that position, with consistency and fully mapped/total counts first;
+show partly mapped counts when nonzero. Place four small maps in two rows of two,
+including on phones, and cap the combined grid at 480 px. Keep endpoint labels
+readable, use fixed 11 px dots (larger than the main stats dots), retain exact
+positions and show track names on hover. No disclosure or explanatory blocks.
+
+Vibe cards load independently of Overall and never remount the hero preview.
+Show short retry states locally. Missing maps are absent points; consistency
+requires two fully mapped tracks and uses the existing dashboard definition.

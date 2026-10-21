@@ -1,0 +1,14 @@
+{% from 'mode_stats_components.html' import figure, rate %}
+<div class="vibe-entity-card">
+  <dl class="joined-metrics mode-stats-small-metrics" data-columns="2">{{figure('Consistency',rate(summary.consistency))}}<div><dt>Fully mapped{% if summary.partial %}<small class="vibe-partial-count">{{summary.partial}} partly mapped</small>{% endif %}</dt><dd>{{summary.full}} / {{summary.total}}</dd></div></dl>
+  <div class="vibe-profile-maps">{% for map in maps %}<figure class="vibe-mini-map">
+    <figcaption><h3>{{map.title}}</h3><span class="song">{{map.count}} tracks</span></figcaption>
+    <div class="vibe-mini-plot" role="img" aria-label="{{map.title}} · {{map.count}} placed tracks">
+      <span class="vibe-mini-pole vibe-mini-high">{{map.y_high}}</span><span class="vibe-mini-pole vibe-mini-low">{{map.y_low}}</span>
+      <span class="vibe-mini-pole vibe-mini-left">{{map.x_low}}</span><span class="vibe-mini-pole vibe-mini-right">{{map.x_high}}</span>
+      {% if map.x_center %}<span class="vibe-mini-centre">{{map.x_center}}</span>{% endif %}
+      {% for point in map.points %}<span class="vibe-mini-dot" data-vibe-mini-song="{{point.song_id}}" style="left:{{(point.x+1)*50}}%;top:{{(1-point.y)*50}}%;background:{{point.colour}};opacity:{{point.opacity}}" title="{{point.title}}" aria-label="{{point.title}}"></span>{% endfor %}
+      {% if not map.count %}<span class="vibe-mini-empty">No placements yet</span>{% endif %}
+    </div>
+  </figure>{% endfor %}</div>
+</div>

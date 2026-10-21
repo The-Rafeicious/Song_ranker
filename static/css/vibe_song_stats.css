@@ -1,7 +1,9 @@
 /* Compact Vibe Map song summary; shared with future dedicated song pages. */
 .vibe-song-panel { display: grid; grid-template-columns: minmax(220px,.8fr) minmax(0,1.2fr); gap: 14px 24px; align-items: center; }
-.vibe-song-identity { grid-column: 1 / -1; display: grid; grid-template-columns: 56px minmax(0,1fr); align-items: center; gap: 14px; }
+.vibe-song-identity { grid-column: 1 / -1; width: fit-content; max-width: 100%; justify-self: center; margin-inline: auto; display: grid; grid-template-columns: 56px minmax(0,1fr); align-items: center; gap: 14px; }
 .vibe-song-panel .small-art { width: 56px; height: 56px; min-width: 56px; min-height: 56px; max-width: 56px; max-height: 56px; border-radius: 12px; }
+.vibe-song-identity .mode-stats-copy { text-align: center; }
+.vibe-song-identity .mode-stats-meta { justify-content: center; }
 .vibe-song-panel .mode-stats-name { font-size: 20px; }
 .vibe-song-panel .mode-stats-meta { font-size: 14px; margin-top: 5px; gap: 4px 12px; }
 .vibe-song-evidence { display: block; color: #c6adb5; font-size: 13px; margin-top: 6px; }

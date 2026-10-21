@@ -1,4 +1,4 @@
-# Vibe Map stats · v1.0.5.1
+# Vibe Map stats · v1.0.6
 
 Open Stats → 📍 Vibe Map Stats, or the Stats link on the mode page.
 The dedicated page is `/vibe_map_stats`; its read-only JSON projection is
@@ -66,8 +66,7 @@ and five least consistent groups are shown; ties prefer more mapped tracks,
 then coverage and ID. Small libraries can show a group in both lists.
 
 There are no invented activity timelines: the mode retains compact averages,
-sample counts and completion counters, not an attempt-history table. Individual
-song/album/artist/tag profile stats and mode rankings remain future work.
+sample counts and completion counters, not an attempt-history table. Dedicated profile cards are available in v1.0.6; mode rankings remain future work.
 
 ## Compact song inspector · v1.0.5.1
 
@@ -85,13 +84,44 @@ It uses the mode's existing fixed similarity and a single read transaction;
 no play round, completion, listening observation or placement is created.
 
 `templates/vibe_song_stats_panel.html` and `static/css/vibe_song_stats.css` own
-the compact reusable layout for future song profile integration. Load shared
+the compact reusable layout shared with song profiles. Load shared
 mode stats and Vibe chart assets too. `VibeCharts.radar(data, label, true)` uses
 compact geometry; existing mode results keep their original default geometry.
-This patch does not yet add the panel to dedicated song pages.
+Version 1.0.6 mounts the same component on dedicated song pages, immediately
+above Overall.
 
 Listening observations currently support Standard, Blind, Tournament, Trivia,
 Guesser and Shelves only. The schema excludes Vibe Map and the mode sends no
 listening payload. Consequently no Vibe listening mean/high/low container is
 shown; unrelated playback data and unknown durations are not treated as zero.
 Listening capture/schema changes are outside this conditional display patch.
+
+## Dedicated profile cards · v1.0.6
+
+Song, album, artist and tag pages mount Vibe Map directly above Overall. The
+song card uses the saved-average radar and two comparable matches from the same
+inspector endpoint. Its selected identity and metadata are centred at the top,
+including when opened from the main stats heatmaps.
+
+Collection cards show consistency, fully mapped / total songs and a partly
+mapped count when nonzero. Their four small heatmaps stay in a 2×2 grid, capped
+at 480 px across. A fixed 11 px dot represents one song on each placed map;
+hover reveals its name. The continuous axes and density calculation are the
+same as the main stats report, with one colour scale shared across the four
+scoped maps. Coordinates are not rounded or snapped. No fake centre points are
+created. These compact plots are summaries; the Stats link opens the larger
+interactive dashboard.
+
+Consistency uses only fully mapped member tracks and needs at least two. Empty
+or single-track evidence gives an unavailable rate, not 0% or 100%. Partial
+songs appear only on the maps they placed. Artist/tag membership uses EXISTS,
+so collaborative or multiply tagged tracks never duplicate within a collection.
+Single-release album pages can show their own descriptive card even though the
+main dashboard's proper-album rankings exclude Singles.
+
+`GET /api/vibe-map/entity/<kind>/<entity_id>` supports album, artist and tag.
+It validates identity, bulk-loads only that collection's songs and returns
+`kind`, `entity`, `summary`, `maps` and an autoescaped `html` fragment from one
+read-only/no-store transaction. The profile loader owns local loading/retry and
+cancellation, refreshes on browser history restoration, and does not block
+Overall or replace the hero audio. Schema 19, saved maps and scoring stay unchanged.

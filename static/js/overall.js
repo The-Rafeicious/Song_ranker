@@ -22,9 +22,9 @@ window.Overall=(()=>{
    return `<section class="panel overall-panel" id="${id}"><div class="section-head"><h2 class="overall">${title}</h2>${showLink?'<a class="overall" href="/overall_rankings">Rankings ↗</a>':''}</div><div class="overall-highlights">${types.map(type=>{const row=data.highlights[type];return row?`<a class="overall-highlight" href="${U.urlFor(type,row)}"><span class="overall-highlight-art">${U.artwork(row,type)}</span><strong class="${U.colour(type)}" title="${esc(row.name)}">${esc(row.name)}</strong><b class="overall">${pct(row.score)}</b>${bar(row.score,row.name+' Overall score')}</a>`:`<div class="overall-highlight empty"><span>${labels[type]}</span><small>Not tested</small></div>`;}).join('')}</div></section>`;
  }
  async function mount(page){
-   const profile=['song','artist','album','tag'].includes(page),root=profile?$('.profile-key-stats'):page==='home'?$('.home-record-stats'):$('#overall-global');
+   const profile=['song','artist','album','tag'].includes(page),root=profile?($('#profile-vibe')||$('.profile-key-stats')):page==='home'?$('.home-record-stats'):$('#overall-global');
    if(!root)return;let placeholder;
-   if(profile){$('#overall-profile')?.remove();$('.profile-key-stats + [data-overall-loading]')?.remove();}else if(page==='home'){$('#overall-highlights')?.remove();$('[data-overall-loading]')?.remove();}
+   if(profile){$('#overall-profile')?.remove();$('[data-overall-loading]')?.remove();}else if(page==='home'){$('#overall-highlights')?.remove();$('[data-overall-loading]')?.remove();}
    if(page==='global_stats')placeholder=root;
    else{placeholder=document.createElement('section');placeholder.className='panel overall-panel';placeholder.dataset.overallLoading='true';placeholder.innerHTML='<h2 class="overall">Overall</h2><div class="empty" role="status">Calculating…</div>';if(profile)root.after(placeholder);else root.before(placeholder);}
    try{

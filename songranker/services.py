@@ -18,7 +18,8 @@ from songranker.version import APP_VERSION
 
 @app.context_processor
 def project_version():
-    return dict(app_version=APP_VERSION)
+    from songranker.storage.vibe_state import VIBE_MAP_VERSION
+    return dict(app_version=APP_VERSION, vibe_version=VIBE_MAP_VERSION)
 
 from songranker.storage.competition import configured_paths
 DB_PATH, LEGACY_DB_PATH = configured_paths(ROOT)

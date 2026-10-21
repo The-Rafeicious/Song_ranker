@@ -1,5 +1,23 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.6 — dedicated entity cards
+
+Centre the selected song identity/metadata in the shared compact card. Mount
+that saved-average radar and two nearest matches directly above Overall on song
+profiles. Album, artist and tag profiles get red cards in the same position,
+with consistency, fully mapped/total tracks, partial counts and four compact
+heatmaps in a fixed 2×2 layout. Keep maps small and dots at 11 rendered pixels;
+preserve exact positions, shared density colouring and hover names.
+
+Reuse the dashboard's four-map consistency and missing-value rules. New scoped
+read-only endpoint validates entities and bulk-loads only their songs, using
+EXISTS membership for artist/tag deduplication. Local loading/retry is independent
+of Overall and hero audio; cancel stale requests and refresh on history restore.
+Version profile assets with the current mode release. Update README, API/stats
+docs and style rules. Schema 19, placements, draw bias and Overall calculations
+are unchanged; no database or backup snapshot is modified.
+
+
 ## Vibe-Map-v1.0.5.1 — compact heatmap song inspection
 
 Heatmap point clicks and Enter/Space now inspect a song in place. Add a compact
