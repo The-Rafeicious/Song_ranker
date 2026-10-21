@@ -84,13 +84,14 @@ class AlbumVibeBias:
 
 
 def compare_profiles(first,second):
-    """Public percentage, independent of the small adaptive draw multiplier.
+    """Fixed Gaussian closeness of shared maps' RMS distance, not a probability.
 
-    Each shared map has equal weight. Identical points are 100%; opposite
-    corners are 0%. Missing/N/A maps supply no evidence, never a zero point.
+    Squared distance makes a mismatched map count instead of being diluted by
+    other close maps. WIDTH is fixed, so more catalogue data never rescales a pair.
+    Missing/N/A maps supply no evidence, never a zero point. Draw bias is unchanged.
     """
     a,b=positions({'vibe_maps':first}),positions({'vibe_maps':second})
     shared=[values[0] for values in MAPS if values[0] in a and values[0] in b]
-    closeness=(sum(1-math.dist(a[key],b[key])/(2*math.sqrt(2)) for key in shared)/len(shared)) if shared else None
-    return dict(similarity=100*max(0,min(1,closeness)) if closeness is not None else None,
+    mean_squared=(sum(sum((x-y)**2 for x,y in zip(a[key],b[key])) for key in shared)/len(shared)) if shared else None
+    return dict(similarity=100*math.exp(-mean_squared/(2*WIDTH**2)) if mean_squared is not None else None,
                 shared_maps=len(shared),map_ids=shared,coverage=len(shared)/len(MAPS))

@@ -320,7 +320,7 @@ def vibe_map_page():
 
 
 def similar_songs(conn,song_id,limit=2):
-    """Rank shared placed maps by diagonal-normalised coordinate closeness."""
+    """Rank shared placed maps by fixed Gaussian RMS closeness."""
     profile(conn,song_id)  # Validate identity, including an entirely unmapped source.
     profiles=song_profiles(conn,[r[0] for r in conn.execute('SELECT id FROM songs ORDER BY id')])
     source=profiles[song_id];ranked=[]

@@ -78,7 +78,8 @@ class VibeReviewTests(unittest.TestCase):
             self.finish(self.start('three'),x=5,y=5,owner='three')
         before=capture(self.conn);result=V.similar_songs(self.conn,1)
         self.assertEqual([m['song_id'] for m in result['matches']],[2,3])
-        self.assertEqual([m['similarity'] for m in result['matches']],[100,0])
+        self.assertEqual(result['matches'][0]['similarity'],100)
+        self.assertLessEqual(result['matches'][1]['similarity'],.01)
         self.assertTrue(all(m['shared_maps']==4 for m in result['matches']))
         self.assertEqual(capture(self.conn),before)
         self.assertEqual(V.similar_songs(self.conn,4)['matches'],[])
@@ -90,6 +91,20 @@ class VibeReviewTests(unittest.TestCase):
         self.assertEqual(client.get('/api/vibe-map/similar/1').json['matches'][0]['song']['id'],2)
         self.assertEqual(client.get('/api/vibe-map/similar/1?limit=0').status_code,400)
         self.assertEqual(client.get('/api/vibe-map/similar/9999').status_code,404)
+
+    def test_similarity_has_fixed_curve_and_penalises_a_mismatched_map(self):
+        import math
+        from songranker.storage.vibe_state import MAPS
+        first={key:dict(status='placed',x=0,y=0) for key,*_ in MAPS}
+        second={key:dict(status='placed',x=.5,y=.5) for key,*_ in MAPS}
+        score=compare_profiles(first,second)['similarity']
+        self.assertAlmostEqual(score,100*math.exp(-.5/(2*.65**2)))
+        self.assertLess(score,60)  # Old diagonal-normalised formula said 75%.
+        second={key:dict(status='placed',x=0,y=0) for key,*_ in MAPS}
+        second['relationships'].update(x=1,y=1)
+        self.assertAlmostEqual(compare_profiles(first,second)['similarity'],score)
+        self.assertEqual(compare_profiles(first,first)['similarity'],100)
+        self.assertEqual(compare_profiles(second,first),compare_profiles(first,second))
 
     def test_play_page_loads_real_assets_and_no_write_on_get(self):
         before=capture(self.conn)

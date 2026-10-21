@@ -1,5 +1,31 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.4.1 — testing polish and clearer similarity
+
+- Centre the desktop song card beside the map container and keep it visible with
+  bounded sticky positioning. Adapt short screens; keep stacked layouts clear.
+- Move save/countdown feedback below the song controls. Raise the map heading;
+  remove its subtitle, X/Y sliders/readouts and N/A action. Keep keyboard placement.
+- Replace contour circles with a soft central glow and solid axes. Pulse outward
+  along the axes when a pin changes; honour reduced motion. Put X endpoint labels
+  beside the axis inside the graph so scrolling is unnecessary to identify them.
+- Keep automatic map saving, but wait for Finish after the fourth map. Results
+  contain the radar and similarity matches without a raw coordinate legend or
+  Readjust action. The existing Finish button becomes Next song.
+- Replace the inflated linear similarity display with a fixed Gaussian of RMS
+  shared-map distance. Keep missing evidence explicit and keep all existing
+  opponent-selection biases unchanged. No score depends on catalogue percentiles.
+- Inspect the pushed backup read-only: 15 fully mapped songs/105 pairs show the
+  old median 72.47% versus 43.40% with the new curve. No placement is edited.
+- Document 20 possible two-axis maps and six four-map sets based on current tag
+  themes and sonic gaps. These are choices for later; the four live definitions,
+  their meanings, schema 18 and stored coordinates remain unchanged.
+
+Validation is recorded in the PR checks: Python regressions, serial/retry/media
+UI tests and served-browser checks for manual Finish, Next song, centred/sticky
+placement, clean results and 320–1365 px layouts. No database/backup snapshot is
+part of this source patch. The existing code-only merge guide still applies.
+
 ## Vibe-Map-v1.0.4 — continuous play page, review and similarity results
 
 Implemented on the test branch; app version remains V5.0.5.1 and schema stays 18.
