@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% from 'components.html' import art %}
+{% from 'mode_stats_components.html' import figure, rate, progress, metadata %}
+{% block title %}Vibe Map Stats · Song Ranker{% endblock %}
+{% block page_kind %}vibe_stats{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="{{url_for('static',filename='css/mode_stats.css',v=app_version)}}">
+<link rel="stylesheet" href="{{url_for('static',filename='css/vibe_stats.css',v=vibe_version)}}">
+{% endblock %}
+{% macro pair_list(rows,empty) -%}
+<div class="vibe-stats-pairs">{% for row in rows %}<article class="mode-stats-inset vibe-stats-pair">
+  {% for song in [row.first,row.second] %}<div class="vibe-pair-track"><span class="mode-stats-art">{{art(song.cover_url)}}</span><div class="mode-stats-copy"><a class="song mode-stats-name" href="{{url_for('song_page',song_id=song.id)}}" title="{{song.title}}">{{song.title}}</a>{{metadata(song)}}</div></div>{% endfor %}
+  <div class="vibe-pair-score"><strong>{{rate(row.similarity)}}</strong><span>similarity · 4 maps</span></div>
+</article>{% else %}<p class="empty">{{empty}}</p>{% endfor %}</div>
+{%- endmacro %}
+{% macro group_list(rows,kind) -%}
+<ol class="mode-stats-list mode-stats-dense vibe-consistency-list">
+{% for row in rows %}<li class="mode-stats-row">
+  <span class="mode-stats-art">{% if kind=='tag' %}<span class="vibe-tag-art tag" aria-hidden="true">#</span>{% else %}{{art(row.cover_url,kind=='artist')}}{% endif %}</span>
+  <div class="mode-stats-copy">{% if kind=='album' %}{% set href=url_for('album_page',album_title=row.name) %}{% elif kind=='artist' %}{% set href=url_for('artist_page',artist_name=row.name) %}{% else %}{% set href=url_for('tag_page',tag_name=row.name) %}{% endif %}<a class="{{kind}} mode-stats-name" href="{{href}}" title="{{row.name}}">{{row.name}}</a><span class="vibe-group-count"><b class="song">{{row.mapped}} / {{row.total}}</b> tracks mapped</span></div>
+  <div class="mode-stats-result"><strong>{{rate(row.consistency)}}</strong><span>consistency</span></div>
+</li>{% else %}<li class="empty">No {{kind}}s with two fully mapped tracks yet.</li>{% endfor %}</ol>
+{%- endmacro %}
+{% block content %}
+<div class="mode-stats-page vibe-stats-page">
+  <div class="page-head"><h1 class="vibe">Vibe Map Stats</h1><a class="btn vibe" href="/vibe-map">Play Vibe Map →</a></div>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-overview">
+    <div class="section-head"><h2 class="vibe" id="vibe-overview">Overview</h2></div>
+    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Tracks with selections',overview.selected)}}{{figure('Fully mapped',overview.full)}}{{figure('Partly mapped',overview.partial)}}{{figure('Still to map',overview.unselected)}}</dl>
+    <dl class="joined-metrics mode-stats-small-metrics" data-columns="4">{{figure('Completed passes',overview.passes)}}{{figure('Repeat-mapped tracks',overview.repeated)}}{{figure('Saved placements',overview.samples)}}{{figure('Library tracks',overview.total)}}</dl>
+    <div class="vibe-coverage"><strong>{{rate(overview.coverage)}}</strong><div>{{progress('Tracks with Vibe Map selections',overview.coverage)}}<span>{{overview.selected}} / {{overview.total}} tracks · {{overview.placed}} / {{overview.slots}} map positions</span></div></div>
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-heatmaps">
+    <div class="section-head"><h2 class="vibe" id="vibe-heatmaps">All tracks</h2></div>
+    <div class="vibe-density-key"><span>Fewer neighbours</span><i aria-hidden="true"></i><span>More neighbours</span></div>
+    <div class="vibe-heatmaps">{% for map in maps %}<figure class="mode-stats-inset vibe-heatmap" data-vibe-chart>
+      <div class="vibe-chart-head"><h3 id="chart-{{map.id}}">{{map.title}}</h3><span class="song">{{map.count}} tracks · {{rate(map.coverage)}}</span></div>
+      <svg viewBox="0 0 540 420" class="vibe-density-map" tabindex="0" role="group" aria-labelledby="chart-{{map.id}}" aria-describedby="vibe-chart-help">
+        <defs><radialGradient id="heat-{{map.id}}"><stop stop-color="#ed657321"/><stop offset="1" stop-color="#ed657300"/></radialGradient></defs>
+        <rect x="18" y="18" width="504" height="380" rx="18" fill="url(#heat-{{map.id}})"/>
+        <path class="vibe-map-axis" d="M270 28V388M28 208H512"/>
+        <text class="vibe-map-pole" x="30" y="196">{{map.x_low}}</text><text class="vibe-map-pole" x="510" y="196" text-anchor="end">{{map.x_high}}</text>
+        <text class="vibe-map-pole" x="270" y="15" text-anchor="middle">{{map.y_high}}</text><text class="vibe-map-pole" x="270" y="416" text-anchor="middle">{{map.y_low}}</text>
+        {% if map.x_center %}<text class="vibe-map-centre" x="270" y="230" text-anchor="middle">{{map.x_center}}</text>{% endif %}
+        {% for point in map.points %}<a href="{{url_for('song_page',song_id=point.song_id)}}" tabindex="-1" data-vibe-point data-song-title="{{point.title}}" data-song-artist="{{point.artist}}" data-nearby="{{point.nearby}}" aria-label="{{point.title}} · {{point.artist}}"><circle class="vibe-map-dot" cx="{{point.cx}}" cy="{{point.cy}}" r="4.5" fill="{{point.colour}}" fill-opacity="{{point.opacity}}"><title>{{point.title}} · {{point.artist}}</title></circle></a>{% endfor %}
+        {% if not map.count %}<text class="vibe-map-empty" x="270" y="280" text-anchor="middle">No placements yet</text>{% endif %}
+      </svg>
+      <figcaption><span class="vibe-chart-selection" aria-live="polite" aria-atomic="true">{{map.count}} placed · {{map.unmapped}} without a point</span><span class="vibe-hotspot">Largest neighbourhood <b>{{map.max_nearby}}</b></span></figcaption>
+    </figure>{% endfor %}</div>
+    <span class="vibe-visually-hidden" id="vibe-chart-help">Arrow keys browse songs. Home and End move to the first and last song. Enter opens the selected song.</span>
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-patterns">
+    <div class="section-head"><h2 class="vibe" id="vibe-patterns">Common combinations</h2></div>
+    <div class="vibe-pattern-grid">{% for row in patterns %}<div class="mode-stats-inset vibe-pattern"><h3>{{row.label}}</h3><strong>{{row.count}} <small>tracks</small></strong>{{progress(row.label,row.share)}}<span>{{row.count}} / {{row.total}} tracks · {{rate(row.share)}}</span></div>{% else %}<p class="empty">Place tracks away from the centre to see common combinations.</p>{% endfor %}</div>
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-balance">
+    <div class="section-head"><h2 class="vibe" id="vibe-balance">Vibe balance</h2></div>
+    <div class="vibe-balances">{% for row in balances %}<div class="vibe-balance-row"><div class="vibe-balance-poles"><span>{{row.low}} <b>{{row.low_count}}</b></span><span>{{row.high}} <b>{{row.high_count}}</b></span></div><div class="vibe-balance-bar" role="img" aria-label="{{row.low}} {{row.low_count}}, {{row.centre}} {{row.middle_count}}, {{row.high}} {{row.high_count}}"><span class="vibe-low" style="width:{{row.low_share}}%"></span><span class="vibe-middle" style="width:{{row.middle_share}}%"></span><span class="vibe-high" style="width:{{row.high_share}}%"></span></div><small>{{row.centre}} {{row.middle_count}} · {{row.total}} mapped</small></div>{% endfor %}</div>
+  </section>
+
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-pairs"><div class="section-head"><h2 class="vibe" id="vibe-pairs">Closest matches</h2></div>{{pair_list(closest,'Fully map two songs to reveal a pair.')}}</section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-contrasts"><div class="section-head"><h2 class="vibe" id="vibe-contrasts">Biggest contrasts</h2></div>{{pair_list(contrasts,'Fully map two songs to reveal a contrast.')}}</section>
+
+  {% for group in groups %}<section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-{{group.kind}}s"><div class="section-head"><h2 class="{{group.kind}}" id="vibe-{{group.kind}}s">{{group.title}} · consistency</h2></div><div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3 class="{{group.kind}}">Most consistent</h3>{{group_list(group.most,group.kind)}}</div><div class="mode-stats-inset"><h3 class="{{group.kind}}">Least consistent</h3>{{group_list(group.least,group.kind)}}</div></div></section>{% endfor %}
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{{url_for('static',filename='js/vibe_stats.js',v=vibe_version)}}" defer></script>{% endblock %}

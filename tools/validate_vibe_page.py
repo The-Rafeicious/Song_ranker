@@ -21,13 +21,16 @@ def main():
         initialize_database(os.environ['SONG_RANKER_DB'])
         with sqlite3.connect(os.environ['SONG_RANKER_DB']) as conn:
             conn.execute("INSERT INTO albums(id,title,cover_url) VALUES(1,'A long album title for responsive testing','/vibe-test-art.svg')")
-            conn.execute("INSERT INTO artists(id,name) VALUES(1,'Artist with a longer name')")
+            conn.execute("INSERT INTO artists(id,name,cover_url) VALUES(1,'Artist with a longer name','/vibe-test-art.svg')")
+            conn.execute("INSERT INTO genres(id,name) VALUES(1,'Melancholy'),(2,'Hopeful')")
+            conn.execute("INSERT INTO albums(id,title,cover_url) VALUES(2,'Second album','/vibe-test-art.svg')")
             for sid in range(1,7):
-                conn.execute('INSERT INTO songs(id,title,album_id,track_number) VALUES(?,?,1,?)',
-                             (sid,'A song with a long title '+str(sid),sid))
+                conn.execute('INSERT INTO songs(id,title,album_id,track_number) VALUES(?,?,?,?)',
+                             (sid,'A song with a long title '+str(sid),1 if sid<=3 else 2,sid))
                 conn.execute('INSERT INTO song_artists VALUES(?,1)',(sid,))
+                conn.execute('INSERT INTO song_genres VALUES(?,?)',(sid,1 if sid<=3 else 2))
                 if sid>1:
-                    conn.execute("UPDATE song_vibe_positions SET x=.4,y=-.3,status='placed',sample_count=1,updated_at=1 WHERE song_id=?",(sid,))
+                    conn.execute("UPDATE song_vibe_positions SET x=?,y=?,status='placed',sample_count=1,updated_at=1 WHERE song_id=?",((sid-3)/3,(sid-4)/4,sid))
         import main as application  # WSGI import never launches the Git updater.
         from flask import Response
         from werkzeug.serving import make_server

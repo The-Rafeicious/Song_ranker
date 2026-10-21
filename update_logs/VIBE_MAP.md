@@ -1,5 +1,25 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.5 — dedicated descriptive stats
+
+Add Stats → 📍 Vibe Map Stats and a mode-page Stats link. Start with distinct
+selected/full/partial/unmapped songs, passes, samples and coverage. Draw all
+placed songs on four continuous maps with a shared neighbour-density colour
+scale and keyboard/hover song links. Show eight common two-axis combinations,
+eight axis balances, two closest pairs and two biggest contrasts. Finish with
+five most/least consistent albums, artists and tags, including mapped counts.
+
+Use one read transaction and bulk catalogue/profile loading. Consistency uses
+all four maps and an exact linear-time pair-distance mean per group. Pair
+highlights stream candidates without storing a quadratic matrix. Missing/N/A
+points remain missing; repeats affect saved averages, never dot multiplicity.
+Keep shared stats styling and explicit empty states without disclosures.
+
+Schema 19, generation-2 axes, stored results, draw weights, public similarity
+and Overall remain unchanged. No live database or SQL backup is modified.
+See docs/VIBE_MAP_STATS.md for metric definitions and limits.
+
+
 ## Vibe-Map-v1.0.4.2 — simpler generation-2 maps and one-time test reset
 
 Select four maps with one-word endpoints: Pace & mood (Slow/Upbeat, Sad/Happy),

@@ -240,3 +240,28 @@ def trivia_stats():
     finally:
         conn.close()
     return render_template('trivia_stats.html', **data)
+
+
+@app.get('/vibe_map_stats')
+def vibe_map_stats():
+    from songranker.reports.vibe_stats_data import build_vibe_stats
+    from songranker.storage.vibe_state import VIBE_MAP_VERSION
+    conn=get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        data=build_vibe_stats(conn)
+        response=app.make_response(render_template('vibe_stats.html',page='vibe_stats',vibe_version=VIBE_MAP_VERSION,**data))
+        response.headers['Cache-Control']='no-store'
+        return response
+    finally:conn.close()
+
+
+@app.get('/api/vibe-map/stats')
+def api_vibe_map_stats():
+    from songranker.reports.vibe_stats_data import build_vibe_stats
+    conn=get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        response=jsonify(build_vibe_stats(conn));response.headers['Cache-Control']='no-store'
+        return response
+    finally:conn.close()

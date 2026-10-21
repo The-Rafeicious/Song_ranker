@@ -74,6 +74,28 @@ async function bounded(page,width,phase,folder){
   await page.setViewportSize({width:430,height:844});
   const widths=await page.locator('.mode-card').evaluateAll(nodes=>nodes.map(e=>Math.round(e.getBoundingClientRect().width)));
   assert.ok(widths.every(w=>w===widths[0]),'All six phone cards have equal width');
-  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, 320–1365 px.');
+  await page.setViewportSize({width:1365,height:1050});await page.goto(base+'/vibe_map_stats');
+  await page.locator('[data-vibe-chart]').first().waitFor();
+  assert.equal(await page.locator('[data-vibe-chart]').count(),4);
+  assert.equal(await page.locator('[data-vibe-point]').count(),24);
+  assert.equal(await page.locator('.vibe-balance-row').count(),8);
+  assert.equal(await page.locator('.vibe-stats-pair').count(),4);
+  assert.equal(await page.locator('.vibe-consistency-list').count(),6);
+  assert.equal(await page.locator('.vibe-stats-page details,.vibe-stats-page select').count(),0);
+  const report=await (await page.request.get(base+'/api/vibe-map/stats')).json();
+  assert.equal(report.overview.full,6);assert.ok(report.maps.every(m=>m.points.length===6));
+  assert.ok(report.groups.every(g=>g.most.length>0));
+  const chart=page.locator('[data-vibe-chart]').first(),svg=chart.locator('svg');
+  await svg.focus();await svg.press('Home');
+  assert.ok(await chart.locator('[data-vibe-point]').first().evaluate(e=>e===document.activeElement));
+  await page.keyboard.press('ArrowRight');
+  assert.ok(await chart.locator('.vibe-chart-selection a').isVisible());
+  await page.locator('h1').click();
+  await page.screenshot({path:folder+'/stats-desktop.png',fullPage:true});
+  for(const width of [320,360,390,430,768,1365]){
+   await page.setViewportSize({width,height:900});await bounded(page,width,'stats',folder);
+  }
+  await page.setViewportSize({width:390,height:844});await page.screenshot({path:folder+'/stats-phone.png',fullPage:true});
+  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, keyboard links, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

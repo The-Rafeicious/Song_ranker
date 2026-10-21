@@ -1293,3 +1293,14 @@ All endpoints are single words; Perspective alone labels its X midpoint Present
 just below the central axis. Radar order is Happy, Hopeful, Future, Secure,
 Devoted, Powerful, Electronic, Upbeat. Keep all eight dimensions, no raw legend,
 and the existing manual Finish → Next song flow.
+
+## Vibe Map dashboard — Vibe-Map-v1.0.5
+
+Reuse shared mode stats panels, joined metrics, dense artwork rows and formatting
+macros with the red Vibe accent. Keep song/artist/album/tag identity colours.
+Order coverage, all-track maps, common combinations, axis balance, closest pairs,
+contrasts, then album/artist/tag consistency. Show useful evidence counts inline,
+without data disclosures or explanatory paragraphs. All four maps stay visible;
+one exact-position dot per placed song, one shared density scale. Support point
+hover and keyboard browsing, including overlapping tracks. Collapse map/pair and
+comparison columns on phones, retaining all data and bounded names/scores.

@@ -1,0 +1,60 @@
+/* Vibe Map dashboard composition; mode_stats.css owns shared rows and metrics. */
+body[data-page=vibe_stats] { --page-color: var(--vibe); --page-rgb: 237,101,115; }
+.vibe-stats-page { --section-color: var(--vibe); --surface-accent: var(--vibe); --mode-stats-border: #ed65734d; --mode-stats-rule: #ed65732b; --mode-stats-divider: #ed657322; }
+.vibe-stats-page [hidden] { display: none !important; }
+.vibe-stats-page .vibe-coverage { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 20px; align-items: center; }
+.vibe-coverage > strong { color: var(--vibe); font-size: 32px; }
+.vibe-coverage span { display: block; margin-top: 8px; color: #c7adb5; font-size: 15px; }
+.vibe-density-key { display: flex; justify-content: center; align-items: center; gap: 12px; color: #c8adb5; font-size: 14px; }
+.vibe-density-key i { width: 100px; height: 8px; border-radius: 9px; background: linear-gradient(90deg,#963449,#ffd3bc); }
+.vibe-heatmaps { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.vibe-stats-page .vibe-heatmap { margin: 0; padding: 18px; }
+.vibe-chart-head { display: grid; gap: 7px; text-align: center; }
+.vibe-chart-head h3 { margin: 0; }
+.vibe-chart-head > span { font-size: 15px; }
+.vibe-density-map { width: 100%; height: auto; display: block; overflow: visible; margin-top: 14px; }
+.vibe-density-map:focus-visible { outline: 2px solid var(--vibe); outline-offset: 4px; border-radius: 18px; }
+.vibe-map-axis { stroke: #ed65734d; stroke-width: 1; }
+.vibe-map-pole { fill: #dbb8c2; font: 700 14px Arial,sans-serif; pointer-events: none; }
+.vibe-map-centre, .vibe-map-empty { fill: #b296a0; font: 13px Arial,sans-serif; pointer-events: none; }
+.vibe-map-dot { stroke: #ffc5cd33; stroke-width: .7; }
+.vibe-density-map a:hover .vibe-map-dot, .vibe-density-map a:focus .vibe-map-dot { stroke: white; stroke-width: 3; fill-opacity: 1; }
+.vibe-heatmap figcaption { min-height: 62px; display: grid; gap: 8px; margin: 16px 0 0; color: #ccb4bb; font-size: 14px; }
+.vibe-chart-selection { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.vibe-chart-selection a { color: var(--song); font-weight: 800; }
+.vibe-hotspot b { color: var(--vibe); }
+.vibe-visually-hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+.vibe-pattern-grid { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 16px; }
+.vibe-stats-page .vibe-pattern { text-align: center; padding: 18px 14px; }
+.vibe-stats-page .vibe-pattern h3 { font-size: 18px; line-height: 1.35; min-height: 49px; }
+.vibe-pattern > strong { display: block; color: var(--vibe); font-size: 32px; }
+.vibe-pattern > strong small { font-size: 15px; }
+.vibe-pattern > span { display: block; font-size: 13px; color: #cbb0b9; }
+.vibe-balances { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px 28px; }
+.vibe-balance-row { min-width: 0; }
+.vibe-balance-poles { display: flex; justify-content: space-between; gap: 12px; color: #dfbac6; font-size: 17px; }
+.vibe-balance-poles b { color: var(--vibe); margin-left: 5px; }
+.vibe-balance-bar { display: flex; height: 12px; border-radius: 20px; overflow: hidden; background: #151515; margin: 10px 0 8px; }
+.vibe-low { background: #a54c68; }.vibe-middle { background: #62515b; }.vibe-high { background: #ef8895; }
+.vibe-balance-row > small { color: #bdabb2; font-size: 14px; }
+.vibe-stats-pairs { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 20px; }
+.vibe-pair-track { --mode-stats-art-size: 72px; display: grid; grid-template-columns: 72px minmax(0,1fr); gap: 14px; align-items: center; }
+.vibe-pair-track .mode-stats-name { font-size: 23px; }
+.vibe-pair-track .mode-stats-meta { font-size: 15px; }
+.vibe-pair-score { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; align-items: baseline; padding-top: 14px; border-top: 1px solid var(--mode-stats-rule); color: #d2b4bf; }
+.vibe-pair-score > strong { color: var(--vibe); font-size: 30px; font-weight: 900; }
+.vibe-pair-score > span { font-size: 15px; }
+.vibe-tag-art { width: 72px; height: 72px; display: grid; place-items: center; font-size: 36px; background: #453925; border: 1px solid #d5b15d33; border-radius: 18px; }
+.vibe-consistency-list .mode-stats-result > strong { font-size: 26px; }
+@media (max-width: 1100px) { .vibe-pattern-grid { grid-template-columns: repeat(2,minmax(0,1fr)); } }
+@media (max-width: 850px) { .vibe-heatmaps, .vibe-stats-pairs { grid-template-columns: minmax(0,1fr); } }
+@media (max-width: 600px) {
+  .vibe-balances { grid-template-columns: minmax(0,1fr); }
+  .vibe-density-key { gap: 8px; font-size: 12px; }.vibe-density-key i { width: 65px; }
+  .vibe-stats-page .vibe-heatmap { padding: 12px; }
+  .vibe-stats-page .vibe-pattern { padding: 16px 10px; }
+  .vibe-stats-page .vibe-pattern h3 { font-size: 16px; }
+  .vibe-tag-art { width: 64px; height: 64px; }
+  .vibe-stats-page .vibe-coverage { grid-template-columns: minmax(0,1fr); text-align: center; gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .vibe-stats-page * { scroll-behavior: auto; transition: none; } }

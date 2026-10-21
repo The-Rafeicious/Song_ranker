@@ -243,3 +243,16 @@ This update builds the mode only. Future mode rankings put Vibe Map last;
 individual stats pages place its descriptive container immediately below Overall.
 Neither those pages nor a second new game mode are added here. See the
 [code-only merge guide](VIBE_MAP_MERGE.md) before promoting test-branch code.
+
+## Dedicated stats · v1.0.5
+
+`GET /vibe_map_stats` renders the mode dashboard. `GET /api/vibe-map/stats`
+returns `overview`, `maps`, `balances`, `patterns`, `closest`, `contrasts` and
+`groups` from one read-only transaction snapshot. Both responses are no-store.
+This report's chart points use normalized storage coordinates (-1..1), plus
+precomputed SVG cx/cy, neighbour counts and colour. This differs from the
+existing mode heatmap endpoint's public -5..5 coordinate projection above.
+Pairs/group consistency require all four placed maps; map coverage and patterns
+use available numeric evidence. No persisted grids, history, reset, new schema
+or weighting change is introduced. Definitions and denominators are in
+[Vibe Map stats](VIBE_MAP_STATS.md). Dedicated entity profiles remain future work.
