@@ -283,3 +283,16 @@ pair-distance mean as the dashboard. At least two are required. Partial evidence
 still supplies per-map dots; repeat samples do not duplicate or weight tracks.
 No full-library pair search runs for a collection card. See
 [profile layout and evidence rules](VIBE_MAP_STATS.md).
+
+
+## Compact profile display · v1.0.6.1
+
+Inspection and entity-card responses add `profile_ready`: a complete four-map
+song profile, or at least two fully mapped collection members. The profile UI
+hides unavailable cards; the main stats inspector remains available for partial
+evidence. Inspection accepts `?context=profile` to omit the duplicate selected
+song identity from its HTML fragment. Default inspection includes the identity.
+
+Budding replaces Casual only in public/display labels for Connection's low Y
+pole. Canonical stored definitions, schema version, positions, pass/sample counts,
+radar geometry and comparison calculations remain unchanged.

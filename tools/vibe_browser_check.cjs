@@ -122,8 +122,7 @@ async function bounded(page,width,phase,folder){
    assert.equal(await page.locator('#profile-vibe .vibe-radar').count(),kind==='song'?1:0);
    if(kind==='song'){
     assert.equal(await page.locator('#profile-vibe .vibe-song-matches .mode-stats-row').count(),2);
-    const offset=await page.locator('#profile-vibe .vibe-song-identity').evaluate(e=>{const a=e.getBoundingClientRect(),b=e.parentElement.getBoundingClientRect();return Math.abs(a.x+a.width/2-b.x-b.width/2)});
-    assert.ok(offset<2,'Centred current song');
+    assert.equal(await page.locator('#profile-vibe .vibe-song-identity').count(),0,'No repeated profile identity');
    }else{
     assert.equal(await page.locator('#profile-vibe .vibe-mini-dot').count(),count);
     assert.equal(await page.locator('#profile-vibe .vibe-mini-map').count(),4);
@@ -134,13 +133,19 @@ async function bounded(page,width,phase,folder){
     await page.setViewportSize({width,height:900});await bounded(page,width,'profile-'+kind,folder);
     if(kind!=='song'){
      const rows=await page.locator('#profile-vibe .vibe-mini-map').evaluateAll(nodes=>nodes.map(e=>e.offsetTop));
-     assert.deepEqual(rows,[rows[0],rows[0],rows[2],rows[2]]);assert.ok(rows[2]>rows[0],kind+' two rows of two at '+width);
+     if(width>760)assert.ok(rows.every(top=>top===rows[0]),kind+' four maps in one row');
+     else{assert.deepEqual(rows,[rows[0],rows[0],rows[2],rows[2]]);assert.ok(rows[2]>rows[0],kind+' responsive two rows');}
      const plotOffsets=await page.locator('#profile-vibe .vibe-mini-plot').evaluateAll(nodes=>nodes.map(e=>e.getBoundingClientRect().y-e.parentElement.getBoundingClientRect().y));
      assert.ok(Math.max(...plotOffsets)-Math.min(...plotOffsets)<2,'Aligned map captions at '+width);
     }
    }
    await page.setViewportSize({width:390,height:844});await page.locator('#profile-vibe').screenshot({path:folder+'/profile-'+kind+'-phone.png'});
   }
-  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact 2×2 maps, 320–1365 px.');
+  for(const path of ['/song/7','/album/Unmapped%20album','/artist/Unmapped%20artist','/tag/Unmapped%20tag']){
+   await page.goto(base+path);await page.waitForFunction(()=>document.querySelector('#profile-vibe')?.getAttribute('aria-busy')==='false');
+   await page.locator('#overall-profile').waitFor();assert.ok(await page.locator('#profile-vibe').isHidden(),'Unmapped profile stays compact');
+   assert.equal(await page.locator('#profile-vibe .vibe-profile-content').textContent(),'');
+  }
+  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

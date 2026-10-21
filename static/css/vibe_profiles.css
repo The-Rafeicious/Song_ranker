@@ -1,12 +1,12 @@
-/* Dedicated entity cards: fixed two-by-two compact plots, no effect on hero audio. */
+/* Dedicated entity cards: compact responsive map rows, no effect on hero audio. */
 body.profile-page #main .vibe-profile-panel { --section-color: var(--vibe); --surface-accent: var(--vibe); --mode-stats-rule: #ed65732b; --mode-stats-divider: #ed657322; margin-bottom: var(--site-gap); }
 .vibe-profile-content { min-width: 0; }
 .vibe-profile-panel .mode-stats-page { display: block; }
 .vibe-profile-panel .mode-stats-small-metrics { color: var(--vibe); }
 .vibe-partial-count { display: block; color: #bba3ad; font-size: 12px; margin-top: 4px; }
-.vibe-profile-maps { width: min(100%,480px); display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 14px; margin: 18px auto 0; }
+.vibe-profile-maps { width: min(100%,960px); display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 14px; margin: 18px auto 0; }
 .vibe-mini-map { min-width: 0; margin: 0; padding: 10px; border: 1px solid #ed65732b; border-radius: var(--site-inner-radius); background: var(--raised); }
-.vibe-mini-map figcaption { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 8px; text-align: center; }
+.vibe-mini-map figcaption { display: grid; justify-items: center; gap: 4px; text-align: center; }
 .vibe-mini-map figcaption h3 { margin: 0; color: var(--vibe); font-size: 15px; line-height: 1.25; }
 .vibe-mini-map figcaption > span { font-size: 13px; }
 .vibe-mini-plot { position: relative; aspect-ratio: 1.8; margin: 22px 6px; background: radial-gradient(ellipse at center,#ed65731c,transparent 72%); }
@@ -30,3 +30,6 @@ body.profile-page #main .vibe-profile-panel { --section-color: var(--vibe); --su
  .vibe-profile-panel .mode-stats-small-metrics dd { font-size: 23px; }
  .vibe-profile-panel .mode-stats-small-metrics dt { font-size: 13px; }
 }
+
+.vibe-profile-panel[hidden] { display: none !important; }
+@media (max-width: 760px) { .vibe-profile-maps { width: min(100%,480px); grid-template-columns: repeat(2,minmax(0,1fr)); } }

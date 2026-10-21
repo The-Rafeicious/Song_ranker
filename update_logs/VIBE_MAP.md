@@ -1,5 +1,20 @@
 # Vibe Map implementation log
 
+## Vibe-Map-v1.0.6.1 — compact conditional profile cards
+
+Hide song cards until all four maps are placed; hide collection cards until two
+tracks are fully mapped. Reserve no room for unknown/insufficient data. Omit the
+selected identity only in dedicated song-page context; keep it on main stats
+inspection. Put collection maps in one compact row on wider screens and retain
+two columns on phones. Keep aligned captions and 11 px dots.
+
+Rename Connection's low Y display label to Budding across maps, radar labels,
+common patterns and balances. Retain the canonical stored Casual definition so
+existing schema-19 databases, active rounds and SQL backups validate unchanged.
+No migration, reset or scoring/coordinate change. Document visibility rules and
+context flags; test both hidden and visible cards and read-only label behaviour.
+
+
 ## Vibe-Map-v1.0.6 — dedicated entity cards
 
 Centre the selected song identity/metadata in the shared compact card. Mount

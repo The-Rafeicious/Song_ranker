@@ -82,6 +82,34 @@ class VibeEntityTests(unittest.TestCase):
             response=pages.app.test_client().get(path)
             self.assertEqual(response.status_code,200,response.data[:500])
             source=response.get_data(as_text=True)
-            self.assertIn('js/vibe_profiles.js?v=Vibe-Map-v1.0.6',source)
-            self.assertIn('css/vibe_song_stats.css?v=Vibe-Map-v1.0.6',source)
+            self.assertIn('js/vibe_profiles.js?v=Vibe-Map-v1.0.6.1',source)
+            self.assertIn('css/vibe_song_stats.css?v=Vibe-Map-v1.0.6.1',source)
             self.assertLess(source.index('js/vibe_profiles.js'),source.index('js/site.js'))
+
+
+    def test_profile_visibility_thresholds_and_song_header_context(self):
+        client=pages.app.test_client()
+        self.place(1,maps=3)
+        self.assertFalse(client.get('/api/vibe-map/inspect/1?context=profile').json['profile_ready'])
+        self.place(1)
+        song=client.get('/api/vibe-map/inspect/1?context=profile').json
+        self.assertTrue(song['profile_ready']);self.assertNotIn('class="vibe-song-identity"',song['html'])
+        self.assertIn('class="vibe-song-identity"',client.get('/api/vibe-map/inspect/1').json['html'])
+        self.assertFalse(client.get('/api/vibe-map/entity/album/1').json['profile_ready'])
+        self.place(2)
+        self.assertTrue(client.get('/api/vibe-map/entity/album/1').json['profile_ready'])
+
+    def test_budding_is_a_read_only_display_label_not_a_stored_definition_change(self):
+        from songranker.vibe_maps import map_definitions
+        from songranker.storage.vibe_state import validate_schema
+        from songranker.reports.vibe_stats_data import common_patterns
+        self.place(1,-.6,-.6)
+        before=capture(self.conn)
+        validate_schema(self.conn)
+        self.assertEqual(self.conn.execute("SELECT y_low FROM vibe_maps WHERE id='connection'").fetchone()[0],'Casual')
+        self.assertEqual(next(m for m in map_definitions(self.conn) if m['id']=='connection')['y_low'],'Budding')
+        saved=vibe_map.profile(self.conn,1)
+        self.assertEqual(next(s for s in saved['radar']['spokes'] if s['key']=='connection_y')['low'],'Budding')
+        balances,_=common_patterns({1:{'connection':(-.6,-.6)}})
+        self.assertEqual(next(b for b in balances if b['id']=='connection_y')['low'],'Budding')
+        self.assertEqual(capture(self.conn),before)

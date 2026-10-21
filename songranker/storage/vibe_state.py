@@ -1,7 +1,7 @@
 """Fixed Vibe Map definitions and versioned schema-17/18 transport and one-time schema-19 test reset."""
 from copy import deepcopy
 
-VIBE_MAP_VERSION = 'Vibe-Map-v1.0.6'
+VIBE_MAP_VERSION = 'Vibe-Map-v1.0.6.1'
 VIBE_MAP_COLOUR = '#d94b58'
 # Stable keys and endpoint meanings: coordinate -1 is low, +1 is high.
 LEGACY_MAPS = (
@@ -20,6 +20,9 @@ MAPS = (
     ('connection', 'Connection', 'Fractured', 'Secure', 'Casual', 'Devoted'),
     ('perspective', 'Perspective', 'Past', 'Future', 'Regretful', 'Hopeful'),
 )
+# Presentation only: retain stored definitions and schema-19 validation unchanged.
+LABEL_OVERRIDES = {'connection': {'y_low': 'Budding'}}
+DISPLAY_MAPS = tuple((*values[:4], LABEL_OVERRIDES.get(values[0], {}).get('y_low', values[4]), values[5]) for values in MAPS)
 CENTER_LABELS = {'perspective': {'x_center': 'Present'}}
 RADAR_ORDER = (('pace_mood','y','Happy'),('perspective','y','Hopeful'),
                ('perspective','x','Future'),('connection','x','Secure'),

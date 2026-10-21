@@ -1,4 +1,4 @@
-# Vibe Map stats · v1.0.6
+# Vibe Map stats · v1.0.6.1
 
 Open Stats → 📍 Vibe Map Stats, or the Stats link on the mode page.
 The dedicated page is `/vibe_map_stats`; its read-only JSON projection is
@@ -125,3 +125,23 @@ It validates identity, bulk-loads only that collection's songs and returns
 read-only/no-store transaction. The profile loader owns local loading/retry and
 cancellation, refreshes on browser history restoration, and does not block
 Overall or replace the hero audio. Schema 19, saved maps and scoring stay unchanged.
+
+## Compact profile follow-up · v1.0.6.1
+
+Profile cards are hidden without reserving space until songs have all four maps
+placed, or collections have at least two fully mapped tracks. Public responses
+include `profile_ready`; missing data remains available to read-only consumers.
+Loading placeholders stay hidden to avoid flashing empty panels. A request
+failure remains a short retry state rather than pretending data is absent.
+
+Song profiles request `/api/vibe-map/inspect/<id>?context=profile`, which omits
+the repeated identity block. Default inspection on the main stats page retains
+that block and continues to support partial radars. Collection cards now lay
+out four small maps in one row above 760 px (maximum grid width 960 px); phones
+retain two columns. All points and consistency calculations remain unchanged.
+
+Connection displays Budding → Devoted for its Y axis: an early, unestablished
+bond growing into devotion. This is a label-only presentation override across
+maps, radar labels, common combinations and balances. The stored schema-19
+Casual label is retained for snapshot validation/compatibility. No migration,
+reset, coordinate reinterpretation or database write is required.

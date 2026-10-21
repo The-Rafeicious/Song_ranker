@@ -6,7 +6,7 @@ import math
 
 from songranker.catalog import proper_album, versus_metadata
 from songranker.modes.vibe_similarity import WIDTH, positions, compare_positions
-from songranker.storage.vibe_state import MAPS
+from songranker.storage.vibe_state import MAPS, DISPLAY_MAPS
 from songranker.vibe_maps import map_definitions, song_profiles, pass_counts
 
 SIGNAL = .2  # One unit on the displayed -5..5 axes; neutral points are not poles.
@@ -72,7 +72,7 @@ def paired_highlights(complete,songs,vectors):
 
 def common_patterns(vectors):
     axes=[dict(id=key+'_'+axis,map_id=key,axis=index,low=low,high=high)
-          for key,_,xl,xh,yl,yh in MAPS for axis,index,low,high in (('x',0,xl,xh),('y',1,yl,yh))]
+          for key,_,xl,xh,yl,yh in DISPLAY_MAPS for axis,index,low,high in (('x',0,xl,xh),('y',1,yl,yh))]
     balances=[]
     for a in axes:
         values=[v[a['map_id']][a['axis']] for v in vectors.values() if a['map_id'] in v]
