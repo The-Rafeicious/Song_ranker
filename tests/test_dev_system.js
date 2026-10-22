@@ -43,12 +43,14 @@ async function entryAndShortcuts(){
  check(h.d.querySelectorAll('.dev-category').length===4,'four category menus');
  check(!h.d.querySelector('.dev-navbar [data-system-backup],.dev-navbar [data-dev-quick-push]'),'no backup header actions');
  const panels=[...h.d.querySelectorAll('.dev-home-grid > section')];
- check(panels.map(n=>n.querySelector('h2').textContent).join('|')==='Library|Database health ↗|Git sync ↗|Local backups ↗|Catalogue coverage|Stored rounds & votes','requested panel order');
+ check(panels.map(n=>n.querySelector('h2').textContent).join('|')==='Library|Database health ↗|Git sync ↗|Local backups ↗|Tag Workshop ↗|Catalogue coverage|Stored rounds & votes','requested panel order');
  check(h.d.querySelectorAll('.dev-home-grid .system-actions').length===0,'no home action rows');
- check(h.d.querySelectorAll('.dev-home-summary').length===3,'three aligned service summaries');
+ check(h.d.querySelectorAll('.dev-home-summary').length===4,'three health summaries and compact Tag Workshop');
+ check(panels[4].querySelector('.dev-service-metrics')?.children.length===2,'Tag Workshop shows two light metrics');
  check(!panels[1].textContent.includes('backup'),'health does not repeat backup count');
  check(!panels[2].textContent.includes('Destination'),'Git overview stays compact');
  for(const kind of ['songs','artists','albums','tags']){h.w.testDev.setView('overview');await flush();h.click('.dev-library-link[data-dev="'+kind+'"]');await flush();check(h.w.location.search.includes('view='+kind),'library count opens '+kind)}
+ h.w.testDev.setView('overview');await flush();h.click('.dev-home-tag-workshop [data-dev="tag_workbench"]');await flush();check(h.w.location.search.includes('view=tag_workbench')&&!!h.d.querySelector('.tag-single'),'Home title opens the Tag workbench, not Tags table');
  h.w.testDev.setView('overview');await flush();h.click('.dev-title-link[data-dev="database"]');await flush();check(!!h.d.querySelector('#system-backups'),'backup heading opens recovery');
  h.w.testDev.setView('overview');await flush();h.click('.dev-title-link[data-dev="export"]');await flush();check(!!h.d.querySelector('[data-system-upload]'),'Git heading opens Git');
  check(h.requests.some(r=>r.url==='/api/dev/git/check'),'Git navigation refreshes comparison');h.w.testDev.setView('overview');await flush();h.handler(url=>url==='/api/dev/integrity'?{integrity:['ok'],foreign_key_errors:[],track_number_conflicts:[{id:1,title:'<unsafe>',album:'Album',track_number:1,issue:'Duplicate position'}]}:undefined);h.click('[data-tool="Database integrity"]');await flush();check(h.d.querySelectorAll('.integrity-metrics > div').length===3,'integrity uses three metrics');check(h.d.querySelector('#editor-submit').hidden,'integrity is read-only');check(!h.d.querySelector('.integrity-review unsafe'),'integrity issue labels escaped');
