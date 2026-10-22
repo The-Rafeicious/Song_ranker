@@ -155,3 +155,11 @@ its companion is `tests/test_dev_pages.js` (requires Node and jsdom).
 Optional benchmark/legacy tools remain tools, not current setup instructions.
 The [documentation index](README.md) maps current guides; release details live
 only in [release-family logs](../update_logs/README.md).
+
+## v5.2 Dev shell owners
+
+- `templates/dev_nav.html`: Dev header and grouped-page mount.
+- `static/css/dev_shell.css`: shared stop button and scoped Dev layout overrides.
+- `static/js/app_stop.js`: one shared PIN/backup/acknowledgement dialog on every page.
+- `static/js/dev_system.js`: service home, local backup and guarded Git shortcuts.
+- `docs/DEV_GUIDE.md`: Dev controls and page reference.

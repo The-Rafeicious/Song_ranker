@@ -4,7 +4,7 @@ import time
 from threading import Lock
 from flask import g,jsonify,request
 from songranker import services
-from songranker.services import app,admin_required
+from songranker.services import app
 from songranker.hosting import StopCoordinator
 from songranker.developer.catalog_sources import owner
 from songranker.developer.dev_system import signed,unpack
@@ -34,7 +34,6 @@ def release_stop_request(error):
 
 
 @app.route('/api/dev/stop')
-@admin_required
 def stop_status():
     state=coordinator.status(owner())
     if state['state']=='idle' or state['state'] in ('failed','cancelled'):
@@ -45,7 +44,6 @@ def stop_status():
 
 
 @app.route('/api/dev/stop/prepare',methods=['POST'])
-@admin_required
 def stop_prepare():
     data=request.get_json(silent=True);browser=owner()
     if not isinstance(data,dict) or type(data.get('sync_git')) is not bool:return jsonify(message='Choose whether to upload to Git.'),400
@@ -70,7 +68,6 @@ def stop_prepare():
 
 @app.route('/api/dev/stop/confirm',methods=['POST'])
 @app.route('/api/dev/stop/cancel',methods=['POST'])
-@admin_required
 def stop_signal():
     data=request.get_json(silent=True)
     try:

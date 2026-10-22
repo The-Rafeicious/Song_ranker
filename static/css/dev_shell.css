@@ -1,0 +1,57 @@
+/* V5.2 Dev shell. Scoped layout; shared surface and type tokens stay authoritative. */
+.app-stop-button { color:var(--danger); flex-shrink:0; font-size:22px; min-width:44px; min-height:44px; }
+body[data-page=dev] #main.page { width:100%; max-width:1800px; padding:24px clamp(16px,2.5vw,44px) 48px; }
+.dev-navbar .dev-nav-inner { max-width:1900px; margin:auto; padding:14px 24px; display:grid; grid-template-columns:minmax(220px,1fr) auto minmax(0,1fr); align-items:center; gap:20px; }
+.dev-nav-inner > * { min-width:0; }
+.dev-nav-inner summary { cursor:pointer; min-height:44px; display:flex; align-items:center; gap:8px; font-weight:750; }
+.dev-nav-inner .dev-lock { white-space:nowrap; color:var(--song); }
+.dev-nav-actions { display:flex; justify-content:flex-end; align-items:center; flex-wrap:wrap; gap:10px; }
+.dev-nav-actions .btn { min-height:44px; padding:10px 14px; font-size:15px; white-space:nowrap; }
+.dev-nav-actions .nav-search { flex:1 1 160px; max-width:260px; min-width:120px; }
+.dev-nav-actions .nav-search input { width:100%; min-width:0; font-size:16px; }
+#dev-page-picker { position:relative; }
+.dev-page-menu { position:absolute; z-index:80; top:calc(100% + 12px); left:0; width:min(860px,calc(100vw - 48px)); max-height:75dvh; overflow:auto; padding:20px; display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:18px; border:1px solid var(--line); border-radius:20px; background:var(--panel); box-shadow:0 14px 40px #0008; }
+.dev-menu-group h2 { color:var(--muted); font-size:14px; margin:0 0 10px; text-transform:uppercase; letter-spacing:.06em; }
+.dev-menu-group button { display:flex; align-items:center; gap:8px; width:100%; min-height:44px; padding:10px; border:0; border-radius:10px; background:transparent; color:var(--text); text-align:left; font:inherit; font-size:15px; cursor:pointer; }
+.dev-menu-group button:hover,.dev-menu-group button.active { background:#50cf9218; color:var(--song); }
+body[data-page=dev] #main .dev-home-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; align-items:start; }
+body[data-page=dev] #main .dev-home-library { grid-column:1/-1; }
+body[data-page=dev] #main .dev-home-grid .panel { padding:24px; }
+body[data-page=dev] #main .dev-home-grid .section-head { justify-content:flex-start; margin-bottom:14px; }
+body[data-page=dev] #main .dev-home-grid .section-head h2 { font-size:23px; margin:0; }
+body[data-page=dev] #main .dev-home-grid .health-row { padding:10px 0; font-size:16px; gap:8px; }
+body[data-page=dev] #main .dev-home-grid .health-row strong { overflow-wrap:anywhere; }
+body[data-page=dev] #main .dev-home-grid .system-actions { gap:8px; }
+body[data-page=dev] #main .dev-home-grid .system-actions .btn { min-height:44px; padding:10px 14px; font-size:15px; }
+body[data-page=dev] #main .dev-service-metrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
+.dev-service-metrics b,.dev-service-metrics span { display:block; }
+.dev-service-metrics b { font-size:28px; }
+.dev-service-metrics span { color:var(--muted); font-size:15px; margin-top:6px; }
+body[data-page=dev] #main .page-head { margin-bottom:24px; }
+@media(max-width:1300px) {
+ .dev-navbar .dev-nav-inner { grid-template-columns:1fr auto; }
+ .dev-nav-actions { grid-column:1/-1; justify-content:flex-end; }
+ .dev-nav-actions .nav-search { margin-right:auto; max-width:420px; }
+ body[data-page=dev] #main .dev-home-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+}
+@media(max-width:650px) {
+ .dev-navbar .dev-nav-inner { padding:12px 16px; gap:12px; }
+ .dev-nav-actions { display:grid; grid-template-columns:minmax(0,1fr) minmax(0,1fr) 44px; width:100%; }
+ .dev-nav-actions .nav-search { grid-column:1/-1; max-width:none; margin:0; width:100%; }
+ .dev-nav-actions .btn { white-space:normal; }
+ .dev-page-menu { left:0; width:calc(100vw - 32px); grid-template-columns:repeat(2,minmax(0,1fr)); padding:14px; }
+ body[data-page=dev] #main .dev-home-grid { grid-template-columns:minmax(0,1fr); }
+ body[data-page=dev] #main .dev-home-grid .panel { padding:18px; }
+}
+
+body[data-page=dev] #main .dev-page-head h1 { margin:0; font-size:32px; }
+#editor .catalog-dialog { display:grid; gap:14px; min-width:0; }
+#editor .catalog-dialog p { margin:0; overflow-wrap:anywhere; }
+#editor .catalog-dialog .field { display:grid; gap:8px; }
+#editor .catalog-dialog input[type=password] { width:100%; min-height:44px; font-size:16px; }
+#editor .catalog-dialog .health-row { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
+
+#dev-current-page { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+body[data-page=dev] #main .dev-home-grid .health-row { flex-direction:row; align-items:center; }
+body[data-page=dev] #main .dev-home-grid .health-row > strong { text-align:right; }

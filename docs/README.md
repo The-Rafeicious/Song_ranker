@@ -7,6 +7,7 @@ patch's old install steps do not compete with today's instructions.
 | --- | --- |
 | Setup, all modes, pages and Dev tools | [Main README](../README.md) |
 | Architecture, algorithms, API lookup, configuration and hosting | [Technical guide](TECHNICAL_GUIDE.md) |
+| Developer navigation, service home and quick actions | [Dev guide](DEV_GUIDE.md) |
 | Transfer, schema upgrades, backups, computer sync and recovery | [Upgrades](UPGRADES.md) |
 | Tables, fields, units and stored/derived facts | [Database dictionary](DATABASE.md) |
 | Python/frontend/maintenance ownership | [File map](FILES.md) |

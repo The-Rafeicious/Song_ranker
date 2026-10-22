@@ -92,3 +92,12 @@ Dev DOM tests exercise the comparison and busy controls. Browser CI additionally
 checks the served review at phone and desktop widths. Schema-20 tests verify
 complete old backups, exact retention of all other tables, old SQL restore,
 idempotence and refusal of dependent extensions.
+
+## v5.2.0 Dev shell coverage
+
+Check all twenty existing tool destinations on the served Dev page. Header tests
+cover grouped navigation, busy backup actions, remote-check-before-push and blocked
+upload review. Shutdown tests cover a fresh PIN without a Dev login, unchanged
+Dev authorization and rejection of another browser’s review/job. Browser CI
+checks the service grid/header at phone, tablet and wide desktop widths, menu
+selection, search handoff, lock-to-home and direct Stop on the app header.

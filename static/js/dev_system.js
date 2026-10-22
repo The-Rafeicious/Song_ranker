@@ -3,24 +3,24 @@ window.DevSystem=(()=>{
  'use strict';
  const {$,$$,esc}=window.SongRankerUI,managed=new Set(['overview','database','export']);
  let U,view=null,data=null,gitState=null,loadId=0,reviewId=0,loadError='',loading=false;
- let stopDialog=false,stopState=null,stopTimer=null,stopBusy=false,stopAcknowledged=false;
  let gitBusy=false,backupBusy=false,restoreBusy=false,restoreReview=null,localReview=null,backupQuery='',backupLimit=10,inventoryQuery='',inventoryKind='all',note='';
  const bytes=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':n>=1024?(n/1024).toFixed(1)+' KB':n+' B';
  const date=s=>{const d=new Date(s);return Number.isFinite(d.getTime())?d.toLocaleString():s||'Not recorded'};
  const button=(label,attr,kind='')=>`<button class="btn ${kind}" type="button" ${attr}>${label}</button>`;
  const tile=(label,detail,attr,kind='song')=>`<button class="system-task" type="button" ${attr}><strong class="${kind}">${label}</strong><span>${detail}</span></button>`;
- const header=()=>`<header class="dev-taskbar"><div><h1>Developer dashboard</h1><p>Library tasks, backups and sync</p></div><div class="system-actions">${button('Upload to Git','data-system-git-open','primary')}${button('Create backup','data-system-backup')}<a class="btn" href="/api/dev/database/export">Download full export</a>${button('Lock','data-tool="Lock database"')}${button('Stop app','data-system-stop','danger')}</div></header>`;
+ const header=()=>'';
  function viewChanged(next){if(next!==view){view=managed.has(next)?next:null;++loadId;++reviewId;restoreReview=null;localReview=null;loadError=''}}
  function render(next){view=next;draw();load()}
  function controls(){
-  $$('[data-system-git-open]').forEach(b=>{b.disabled=restoreBusy;b.textContent=gitBusy?'Git task running…':'Upload to Git'});
-  $$('[data-system-backup]').forEach(b=>{b.disabled=backupBusy||restoreBusy;b.textContent=backupBusy?'Creating backup…':'Create backup'});
+  $$('[data-system-git-open]').forEach(b=>{b.disabled=restoreBusy;b.textContent=gitBusy?'Git task running…':'Review Git'});
+  $$('[data-system-backup]').forEach(b=>{b.disabled=backupBusy||restoreBusy;b.textContent=backupBusy?'Backing up…':b.hasAttribute('data-dev-header')?'Local backup':'Create backup'});
+  $$('[data-dev-quick-push]').forEach(b=>b.disabled=gitBusy||restoreBusy||backupBusy);
   $$('[data-system-check],[data-system-upload]').forEach(b=>b.disabled=b.disabled||gitBusy||restoreBusy);
  }
  function status(){return `<p id="system-note" role="status" aria-live="polite">${esc(note)}</p>${loadError?`<p class="error" role="alert">${esc(loadError)}</p>${button('Retry status','data-system-retry')}`:''}`}
  function draw(){
   if(!view||!U.root())return;
-  const title={overview:'Tasks & health',database:'Database & backups',export:'Git upload & updates'}[view];
+  const title={overview:'Developer home',database:'Database & backups',export:'Git upload & updates'}[view];
   U.root().innerHTML=U.title(title)+`<div class="dev-system">${status()}<div id="system-content">${data?content():'<section class="panel"><p role="status">Loading local status…</p></section>'}</div></div>`;
   if(view==='database'&&data){drawBackups();drawInventory();drawRestore()}
   if(view==='export')drawLocalChoice();
@@ -28,11 +28,18 @@ window.DevSystem=(()=>{
  }
  function content(){return view==='overview'?overview():view==='database'?database():sync()}
  function overview(){
-  const t=data.totals;
-  return `<section class="panel dashboard-surface"><div class="joined-metrics" data-columns="4">${[[t.songs,'Songs','song'],[t.artists,'Artists','artist'],[t.releases,'Releases incl. Singles','album'],[t.tags,'Tags','tag']].map(([n,label,c])=>`<div><b class="${c}">${n}</b><span>${label}</span></div>`).join('')}</div></section>
-   <section class="panel dashboard-surface"><div class="section-head"><h2>Frequent tasks</h2></div><div class="system-task-grid">${tile('Add from Apple','Search versions and hide existing library matches','data-dev="import"')}${tile('Tags & previews',t.untagged+' untagged songs','data-system-filter="untagged"','tag')}${tile('Inspect album tracks','Check ordering, sources and Singles moves','data-dev="albums"','album')}${tile('Check source links',t.missing_sources+' songs need an Apple source link','data-system-sources')}${tile('Missing previews',t.missing_previews+' songs have no preview URL','data-system-filter="missing"','artist')}${tile('Bulk edits','Source review and album placement','data-dev="bulk"','tag')}</div></section>
-   <section class="panel dashboard-surface"><div class="section-head"><h2>Local health</h2></div>${health()}<div class="system-actions">${button('Database & backups','data-dev="database"')}${button('Check detailed integrity','data-tool="Database integrity"')}${button('Review saved votes','data-tool="Review saved votes"')}</div></section>
-   <section class="panel dashboard-surface"><div class="section-head"><h2>Git at a glance</h2></div>${gitSummary()}<div class="system-actions">${button('Open upload & update controls','data-system-git-open','primary')}</div></section>`;
+  const t=data.totals,inventory=data.inventory||[];
+  const count=name=>inventory.find(r=>r.name===name)?.rows||0;
+  const metric=(n,label,c='song')=>`<div><b class="${c}">${n}</b><span>${label}</span></div>`;
+  const row=(label,value,tone='')=>`<div class="health-row"><span>${label}</span><strong class="${tone}">${esc(value)}</strong></div>`;
+  return `<div class="dev-home-grid">
+   <section class="panel dashboard-surface dev-home-library"><div class="section-head"><h2>Library</h2></div><div class="joined-metrics" data-columns="4">${[[t.songs,'Songs','song'],[t.artists,'Artists','artist'],[t.releases,'Releases','album'],[t.tags,'Tags','tag']].map(v=>metric(...v)).join('')}</div><div class="system-actions">${button('Explore library','data-dev="explorer"')}${button('Add from Apple','data-dev="import"')}</div></section>
+   <section class="panel dashboard-surface"><div class="section-head"><h2>Database health</h2></div>${health()}<div class="system-actions">${button('Integrity details','data-tool="Database integrity"')}${button('Database & backups','data-dev="database"')}</div></section>
+   <section class="panel dashboard-surface"><div class="section-head"><h2>Catalogue coverage</h2></div>${row('Untagged songs',t.untagged,'tag')}${row('Missing previews',t.missing_previews,'artist')}${row('Missing Apple links',t.missing_sources,'album')}<div class="system-actions">${button('Untagged songs','data-system-filter="untagged"')}${button('Tags & previews','data-dev="tag_workbench"')}${button('Missing previews','data-system-filter="missing"')}${button('Check sources','data-system-sources')}</div></section>
+   <section class="panel dashboard-surface"><div class="section-head"><h2>Stored rounds & votes</h2></div><div class="dev-service-metrics">${metric(count('history'),'Votes','standard')}${metric(count('trivia_rounds'),'Trivia rounds','recognition')}${metric(count('tournaments'),'Tournaments','tournament')}${metric(count('elo_guess_rounds'),'Elo guesses','guesser')}${metric(count('album_shelf_rounds'),'Shelves rounds','shelves')}${metric(t.vibe_mapped??'—','Fully mapped songs','vibe')}</div></section>
+   <section class="panel dashboard-surface"><div class="section-head"><h2>Git sync</h2></div>${gitSummary()}<div class="system-actions">${button('Review Git','data-system-git-open','primary')}</div></section>
+   <section class="panel dashboard-surface"><div class="section-head"><h2>Local backups</h2></div>${row('Saved copies',data.backups.length)}${row('Latest backup',data.backups[0]?date(data.backups[0].modified):'None yet')}${row('Database size',bytes(data.database_bytes||0))}<div class="system-actions">${button('Create backup','data-system-backup')}${button('Review backups','data-dev="database"')}<a class="btn" href="/api/dev/database/export">Full export</a></div></section>
+   </div>`;
  }
  function health(){return `<div class="health-row"><span>App / schema</span><strong>V${esc(data.version)} / ${data.schema}</strong></div><div class="health-row"><span>SQLite integrity</span><strong class="${data.integrity==='ok'?'song':'error'}">${esc(data.integrity)}</strong></div><div class="health-row"><span>Foreign-key errors</span><strong>${data.foreign_key_errors}</strong></div><div class="health-row"><span>Local database backups</span><strong>${data.backups.length}</strong></div>`}
  function database(){return `<section class="panel dashboard-surface"><div class="section-head"><h2>Backups & recovery</h2></div>${health()}<div class="system-actions">${button('Create backup','data-system-backup')}<a class="btn" href="/api/dev/database/export">Download full export</a><a class="btn" href="/api/dev/database/guide">Download technical guide</a></div><p class="muted">A local .db backup restores the whole database. The JSON export preserves every stored field for validation/rebuild. The Git SQL snapshot is a separate upload file.</p><div id="system-restore"></div><label class="system-search">Find a backup<input id="system-backup-query" type="search" value="${esc(backupQuery)}" placeholder="Date, filename or purpose…"></label><div id="system-backups"></div></section>
@@ -74,6 +81,15 @@ window.DevSystem=(()=>{
   if(backupBusy||restoreBusy)return;backupBusy=true;controls();
   try{const r=await U.api('/api/dev/backup',{});note='Created '+r.backup;U.toast(note);if(view)await load()}
   catch(e){note=e.message;U.toast(e.message)}finally{backupBusy=false;if(view)draw();controls()}
+ }
+ async function quickPush(){
+  if(gitBusy||restoreBusy)return;
+  U.navigate('export');gitBusy=true;controls();note='Checking remote before backup upload…';
+  try{const checked=await U.api('/api/dev/git/check',{});++loadId;gitState=checked.git;if(data)data.git=checked.git;
+   const g=gitState;if(!g?.available||!g.review_token||!g.tracking_head||g.in_progress||g.pending_code||g.behind)throw new Error('Review Git status below before uploading: incoming code, unpublished commits or an unavailable target need attention.');
+   const r=await U.api('/api/dev/git/upload',{review_token:g.review_token});++loadId;gitState=r.git;if(data)data.git=r.git;note=r.message;U.toast(note);
+  }catch(e){if(e.details?.git){gitState=e.details.git;if(data)data.git=e.details.git}note=e.message;U.toast(note)}
+  finally{gitBusy=false;if(view)draw();controls()}
  }
  async function gitTask(kind){
   if(gitBusy||restoreBusy)return;const g=gitState||data?.git;if(!g?.available)return;
@@ -120,52 +136,6 @@ window.DevSystem=(()=>{
   finally{restoreBusy=false;if(view)draw();else U.toast(note);controls()}
  }
 
- function stopResults(s){return `<div class="health-row"><span>Local database backup</span><strong class="${s.backup?'song':''}">${esc(s.backup||'Not completed')}</strong></div><div class="health-row"><span>Git database upload</span><strong class="${s.git?.ok?'song':s.git?.ok===false?'error':''}">${esc(s.git?.message||'Not completed')}</strong></div>`}
- function drawStop(){
-  if(!stopDialog)return;const s=stopState,active=['draining','backup','git','ready','stopping'].includes(s.state);
-  $('#editor-submit').hidden=true;
-  $('#editor-fields').innerHTML=`<div class="catalog-dialog"><p id="stop-message" role="status" aria-live="polite" class="${s.state==='failed'?'error':''}">${esc(s.message||'Save a rotating backup and stop this app.')}</p>${active||s.backup?stopResults(s):''}${!active?`<p class="catalog-note">Requested and shutdown backups rotate through three slots. Update archives are kept separately.</p><p>${esc(s.target?.available?`${s.target.branch} → ${s.target.remote}/${s.target.target} · ${s.target.destination}`:s.target?.message||'Git is not configured.')}</p><label class="catalog-check"><input id="stop-sync-git" type="checkbox" ${s.target?.available?'checked':'disabled'}>Upload the database snapshot to Git before stopping</label><div class="field"><label for="stop-pin">Developer PIN</label><input id="stop-pin" type="password" inputmode="numeric" autocomplete="off" maxlength="128"></div><button class="btn danger" type="button" data-stop-prepare ${s.supported?'':'disabled'}>Back up & stop app</button>${!s.supported?'<p class="error">Website shutdown requires the normal python main.py launcher. This server is managed externally.</p>':''}`:''}${s.state==='ready'?'<p class="song">Backup results confirmed. Stopping in four seconds…</p>':''}${active&&s.state!=='stopping'?'<button class="btn" type="button" data-stop-cancel>Cancel stop · keep app running</button>':''}<p id="stop-error" class="error" role="alert" hidden></p></div>`;
- }
- async function openStop(){
-  if(stopBusy||restoreBusy||gitBusy)return;
-  clearTimeout(stopTimer);U.openDialog('Stop app','<p role="status">Checking shutdown and Git status…</p>');stopDialog=true;stopAcknowledged=false;$('#editor-submit').hidden=true;
-  try{stopState=await U.api('/api/dev/stop');if(!stopDialog)return;drawStop();if(['draining','backup','git','ready'].includes(stopState.state))pollStop()}
-  catch(e){if(stopDialog)$('#editor-fields').innerHTML=`<p class="error" role="alert">${esc(e.message)}</p>`}
- }
- async function prepareStop(){
-  if(stopBusy||!stopDialog)return;stopBusy=true;
-  const pin=$('#stop-pin')?.value||'',sync=!!$('#stop-sync-git')?.checked;
-  if($('#stop-pin'))$('#stop-pin').value='';const b=$('[data-stop-prepare]');if(b)b.disabled=true;
-  try{stopState=await U.api('/api/dev/stop/prepare',{pin,sync_git:sync,review_token:stopState.review_token});if(stopDialog){drawStop();pollStop()}}
-  catch(e){if(stopDialog){$('#stop-error').hidden=false;$('#stop-error').textContent=e.message;if(b?.isConnected)b.disabled=false}}
-  finally{stopBusy=false}
- }
- async function pollStop(){
-  clearTimeout(stopTimer);if(!stopDialog)return;
-  try{stopState=await U.api('/api/dev/stop');if(!stopDialog)return;drawStop();
-   if(stopState.state==='ready'){stopTimer=setTimeout(confirmStop,4000);return}
-   if(['draining','backup','git','stopping'].includes(stopState.state))stopTimer=setTimeout(pollStop,500);
-   else if(stopState.state==='stopped')stoppedReceipt();
-  }catch(e){if(stopAcknowledged)stoppedReceipt();else if(stopDialog){const n=$('#stop-error');if(n){n.hidden=false;n.textContent=e.message+' Reopen Stop app to check the task.'}}}
- }
- async function confirmStop(){
-  if(!stopDialog||stopState.state!=='ready')return;
-  if(document.hidden){stopTimer=setTimeout(confirmStop,4000);return}
-  try{await U.api('/api/dev/stop/confirm',{job_id:stopState.id});stopAcknowledged=true;stopState.state='stopping';stopState.message='Backups confirmed. Stopping the app…';drawStop();stopTimer=setTimeout(pollStop,500)}
-  catch(e){if(stopDialog){$('#stop-error').hidden=false;$('#stop-error').textContent=e.message}}
- }
- function stoppedReceipt(){
-  if(!stopDialog)return;clearTimeout(stopTimer);
-  $('#editor-fields').innerHTML=`<div class="catalog-dialog"><h3 class="song">Shutdown requested · server connection closed</h3>${stopResults(stopState)}<p>You can close this tab. Run python main.py again to restart the app.</p></div>`;
- }
- async function cancelStop(){
-  clearTimeout(stopTimer);if(!stopState?.id)return;
-  try{await U.api('/api/dev/stop/cancel',{job_id:stopState.id});if(stopDialog){stopState.message='Cancelling stop…';drawStop();stopTimer=setTimeout(pollStop,300)}}
-  catch(e){if(stopDialog){$('#stop-error').hidden=false;$('#stop-error').textContent=e.message}}
- }
- document.addEventListener('visibilitychange',()=>{if(stopDialog&&stopState?.state==='ready'){clearTimeout(stopTimer);if(!document.hidden)stopTimer=setTimeout(confirmStop,4000)}});
- document.addEventListener('submit',e=>{if(stopDialog&&e.target.id==='editor-form'){e.preventDefault();e.stopImmediatePropagation();if($('#stop-pin'))prepareStop()}},true);
- document.addEventListener('close',e=>{if(e.target.id!=='editor'||!stopDialog)return;stopDialog=false;clearTimeout(stopTimer);if(!stopAcknowledged&&['draining','backup','git','ready'].includes(stopState?.state))cancelStop()},true);
  async function handleTool(name){
   if(!U)return false;
   if(name==='Sync database'){U.navigate('export');return true}
@@ -175,10 +145,8 @@ window.DevSystem=(()=>{
  }
  document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!U||!b||b.disabled)return;
-  if(b.hasAttribute('data-system-stop'))openStop();
-  if(b.hasAttribute('data-stop-prepare'))prepareStop();
-  if(b.hasAttribute('data-stop-cancel'))cancelStop();
   if(b.hasAttribute('data-system-git-open'))U.navigate('export');
+  if(b.hasAttribute('data-dev-quick-push'))quickPush();
   if(b.hasAttribute('data-system-backup'))makeBackup();
   if(b.hasAttribute('data-system-retry'))load();
   if(b.hasAttribute('data-system-check'))gitTask('check');
@@ -195,5 +163,5 @@ window.DevSystem=(()=>{
  });
  document.addEventListener('input',e=>{if(e.target.id==='system-local-confirmation'){$('[data-system-local-apply]').disabled=gitBusy||e.target.value!=='KEEP LOCAL';}if(e.target.id==='system-backup-query'){backupQuery=e.target.value;backupLimit=10;drawBackups()}if(e.target.id==='system-inventory-query'){inventoryQuery=e.target.value;drawInventory()}});
  document.addEventListener('change',e=>{if(e.target.id==='system-inventory-kind'){inventoryKind=e.target.value;drawInventory()}});
- return {bindUI:ui=>U=ui,header,viewChanged,render,handleTool,canNavigate:()=>!restoreBusy};
+ return {busy:()=>restoreBusy||gitBusy||backupBusy,bindUI:ui=>U=ui,header,viewChanged,render,handleTool,canNavigate:()=>!restoreBusy};
 })();
