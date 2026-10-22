@@ -46,3 +46,15 @@ Move Home outside the System dropdown into its own navigation link.
 - Test real Git code-current/data-behind and stale-SQL/local-addition cases, raw
   types, keyless/generated tables, injection, paging and stale UI responses.
 - No schema or user-data changes.
+
+## V5.2.2 — single-song tag bench
+
+- Default to a focused song editor beside a searchable queue. Add strict less/more/
+  exact tag-count filters and retain artist/album filters and fewest-tags sorting.
+- Start checkboxes with current tags; support new tag names and the eight-tag cap.
+  Save one song and advance in the pre-save queue order; Skip makes no changes.
+- Add native looping and a seekable 30-second preview line. Keep identity, album,
+  local track and saved-source facts visible, including missing-preview states.
+- Retain reviewed bulk Add/Remove/Replace editing. Protect dirty drafts, stale
+  server membership, failed saves/refreshes and lost-response retries.
+- Update the Dev/technical/style guides; no schema or game-score changes.

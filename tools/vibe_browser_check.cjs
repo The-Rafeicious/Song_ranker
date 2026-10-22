@@ -207,6 +207,25 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.locator('#dev-vibe-delete [name="confirmation"]').fill('DELETE VIBE');await page.locator('#dev-vibe-delete button[type="submit"]').click();
   await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data deleted'));
   const removed=await (await page.request.get(base+'/api/dev/vibe/1')).json();assert.ok(removed.maps.every(m=>m.status==='unmapped'));assert.equal(removed.completed_passes,0);
+  // Real tag review/apply and native 30-second preview; all data is disposable.
+  await page.request.post(base+'/tag-test-enable');await page.goto(base+'/dev/dashboard?view=tag_workbench');await page.locator('.tag-single').waitFor();
+  assert.equal(await page.locator('[data-tags-mode="single"]').getAttribute('aria-pressed'),'true');
+  await page.locator('#tag-sort').selectOption('title',{force:true});await page.locator('[data-tags-edit="1"]').click();
+  await page.waitForFunction(()=>{const a=document.querySelector('#tag-audio');return a&&!a.paused&&a.readyState>=2});
+  assert.ok(await page.locator('[data-tags-choice="1"]').isChecked());assert.ok(await page.locator('#tag-audio').evaluate(a=>a.loop));
+  await page.locator('#tag-seek').evaluate(e=>{e.value='15';e.dispatchEvent(new Event('input',{bubbles:true}))});
+  await page.waitForFunction(()=>document.querySelector('#tag-audio').currentTime>=14.9);
+  await page.locator('#tag-audio').evaluate(a=>a.currentTime=29.8);await page.waitForFunction(()=>document.querySelector('#tag-audio').currentTime<2);
+  await page.locator('[data-tags-choice="2"]').check();await page.locator('#tag-new-names').fill('Bench test tag');await page.locator('#tag-review-button').click();
+  await page.waitForFunction(()=>document.querySelector('[data-tag-song="2"]')?.classList.contains('tag-selected'));
+  const tagged=await (await page.request.get(base+'/api/collection')).json(),taggedSong=tagged.songs.find(s=>s.id===1);
+  assert.ok(taggedSong.tag_ids.includes(tagged.tags.find(t=>t.name==='Bench test tag').id));assert.ok(taggedSong.tag_ids.includes(2));
+  assert.ok(await page.locator('[data-tags-choice="1"]').isChecked());assert.ok(!(await page.locator('[data-tags-choice="2"]').isChecked()));
+  await page.locator('[data-tags-next-song]').click();await page.waitForFunction(()=>document.querySelector('[data-tag-song="3"]')?.classList.contains('tag-selected'));
+  await page.locator('#tag-count-rule').selectOption('less',{force:true});await page.locator('#tag-count-value').fill('2');
+  assert.equal(await page.locator('[data-tag-song="1"]').count(),0);
+  for(const width of [320,390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'tag-bench',folder);await page.screenshot({path:folder+'/tag-bench-'+width+'.png',fullPage:true});}
+  await page.locator('[data-tags-mode="bulk"]').click();assert.equal(await page.locator('[data-tags-mode="bulk"]').getAttribute('aria-pressed'),'true');
   // Isolate only the Git transport: real served Dev markup/scripts and confirmation UI.
   const gitChoice={available:true,state:'behind',branch:'main',remote:'origin',target:'main',destination:'example.org/owner/app',tracking_head:'abc',ahead:0,behind:1,pending_code:false,code_changes:0,in_progress:false,review_token:'browser-git-review',history:[],snapshot:{exists:true,name:'database_backup.sql',bytes:20}};
   await page.route('**/api/dev/system',async route=>{const response=await route.fetch();const body=await response.json();body.git=gitChoice;await route.fulfill({json:body});});

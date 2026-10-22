@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application v5.2.1 · integrated modes v5.1.0 · competition generation 3 · schema 20**
+**Application v5.2.2 · integrated modes v5.1.0 · competition generation 3 · schema 20**
 
-Current implementation reference. `APP_VERSION` is `5.2.1`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.2.2`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -630,3 +630,22 @@ status_source=checked, upload_ready and an independent database_sync comparison,
 including per-table local/remote deltas. Opening Git performs that check. Code
 up_to_date alone cannot enable upload or represent database equality. The existing
 shared-baseline algorithm and server-side upload/stop guards remain authoritative.
+
+## v5.2.2 tag queue
+
+`static/js/dev_tags.js` owns single/bulk mode, queue selection, filter/sort state,
+drafts, signed review/apply requests and its preview timeline. Single mode sends
+replace_tags for one song, checks the server Before IDs against the tags captured
+when the draft opened, then applies that signed review. A changed baseline pauses
+for reload; bulk continues to show explicit Before/After. Server stale checks
+remain authoritative between review/apply. The next eligible ID is chosen from
+the pre-save order after refresh, excluding already visited IDs and respecting
+the current filter. Failures never claim an advance or a save that was not confirmed.
+
+Preview audio uses the shared PreviewPlayback owner and its approved proxy/cache.
+Native loop is set on each bound/replaced element; clips over 30 seconds rewind
+on the timeline boundary. Seeking before metadata is loaded is deferred. Same-URL
+recordings restart when the selected song changes; leaving/mode switching releases
+the old element. Source details reuse DevCatalog's cached song-source summaries;
+no per-row Apple requests or new telemetry are introduced. Existing tag APIs,
+transactional new-name creation and the eight-tag cap remain unchanged.

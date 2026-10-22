@@ -1,6 +1,6 @@
 # Developer guide
 
-**v5.2.1 · navigation, Git and database tools**
+**v5.2.2 · Dev tools**
 
 Open **System Access** on the hosting computer and enter the Dev PIN. Dev replaces
 the app header and gives the active tool the full content width. Existing editing
@@ -38,7 +38,7 @@ Coverage and stored activity remain below; Home has no separate action rows.
 | Group | Pages / purpose |
 | --- | --- |
 | Library | Library Explorer searches all entity types. Songs, artists, albums and tags provide existing record tables and editing actions. |
-| Editing | Apple Music adds/reviews source versions; Tags & previews handles the eight-tag song limit and preview workbench; Bulk edits reviews sources/album placement; Fill missing metadata runs bounded reviewed requests. |
+| Editing | Apple Music adds/reviews source versions; Tag workbench handles single-song queues and reviewed bulk edits; Bulk edits reviews sources/album placement; Fill missing metadata runs bounded reviewed requests. |
 | Records | Match history and corrections; Trivia / Elo maintenance; tournament brackets/podiums; Elo Guesser, Album Shelves and Vibe Map maintenance. |
 | System | Overall calculator; Selection health; Database backups/inventory/restore and typed resets; Git & exports. |
 
@@ -110,3 +110,45 @@ another tab may change page offsets. A changed row invalidates its value review.
 Tables with primary keys use key order; keyless tables/views use SQLite's current
 result order. Each request uses one read transaction, a read-only connection and
 a bounded query time. There is no SQL input, edit, save or delete action.
+
+## Tag workbench
+
+**Single song** is the default on a fresh page. The first matching song is selected
+without starting audio. Search matches titles, artists, albums, tags and #IDs; the
+artist/album selectors narrow by exact catalogue links. Sort by fewest tags first
+(the default), most tags, title, artist or album. Tag count supports **Less than**,
+**More than** and **Exactly** a number from zero to eight; these comparisons are
+strict, so Less than 1 selects untagged songs.
+
+The song queue shows title, artist, album, local track number, current tags and
+Apple-link identity. Select a title to edit/listen. The selected card adds artwork,
+store, source ID, known content status/duration, source album differences, links
+and source review. Missing previews do not prevent tag editing. Selecting another
+song stops the previous preview.
+
+Checkboxes start with the song’s actual tags. Tick/untick the desired complete set
+and optionally enter new tag names separated by commas. **Save tags & next** saves
+only that song, creates genuinely new names atomically, deselects it and selects
+the next eligible song from the pre-save queue order. Existing names are reused.
+The eight-tag limit includes new names. Unchanged saves can also advance.
+
+**Skip song →** advances without saving; a dirty draft requires explicit discard.
+A session pass avoids revisiting saved/skipped songs; at the end, choose a song or
+change filters to start another pass. Filter changes retain a dirty current draft
+even if it is outside the new filter; a clean draft follows the new queue.
+
+The preview loops automatically, with a seek/progress line for up to 30 seconds.
+Dragging to 15 seconds jumps to the middle. Shorter clips use their actual length;
+longer clips loop the first 30 seconds. Playback may need a manual Play click when
+the browser blocks automatic starts. Tag choices do not rebuild the audio element.
+
+Single saves use the existing server review/apply contract internally. If tags
+changed since the song was opened, **Reload song** is required before continuing.
+A failed save does not advance. A confirmed save whose catalogue refresh fails
+pauses the queue until reloaded. Retrying an unconfirmed apply uses the same signed
+review so a lost reply cannot create duplicate links/tags.
+
+**Bulk edit** retains multi-selection and explicit Add/Remove/Replace operations,
+including paged Before/After review before Save. Its preview controls are separate
+from the selected editing scope. Changing modes with unsaved choices asks before
+discarding them. Returning to single mode clears bulk-only hidden filters.

@@ -1708,3 +1708,19 @@ place. Keep wide data inside its own scroll area, a visible pager and type label
 Long values open a read-only paged dialog without Save. Protect dialog ownership
 and late table requests. Inputs retain 16 px text and actions 44 px targets; stack
 workspaces on phones and keep the document width bounded.
+
+### V5.2.2 single-song tag bench
+
+Default to Single song, with an explicit Bulk edit tab and guide link. Put compact
+search/artist/album/count/sort filters above a bounded song queue and adjacent
+editor. Highlight the selected song in amber. Show every row’s artist, album,
+track, tag membership/count and source identity. Use a compact artwork/identity
+block with relevant source facts and explicit links in the selected editor.
+
+Checkboxes reflect actual current membership. Keep audio and the progress/seek
+line stable through checkbox changes. Existing tags have amber labels; selected
+song/artist/album retain semantic colours. Bound the tag list and queue, use short
+descriptions with full accessible text, and put Save tags & next beside Skip song.
+Keep the save row visible while scrolling choices. Stack the editor before the
+queue on phones. Dirty navigation requires explicit discard; no auto-advance on
+save failure or unresolved stale data. Bulk keeps its explicit review surface.
