@@ -125,3 +125,16 @@ body[data-page=dev] #main .tag-editor-layout .tag-save-actions { position:sticky
 body[data-page=dev] #main .tag-editor-layout .tag-queue > .section-head { align-items:center; gap:12px; }
 body[data-page=dev] #main .tag-editor-layout #tag-count { font-size:14px; }
 body[data-page=dev] #main .tag-editor-layout .tag-choice > span > small { display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden; }
+
+/* Preview quality uses the shared Dev review dialog. */
+body[data-page=dev] #main .tag-player-inline { grid-template-columns:auto auto auto minmax(80px,1fr) auto; }
+body[data-page=dev] #main .tag-player-inline [data-preview-quality] { white-space:nowrap; }
+@media(max-width:760px) {
+ body[data-page=dev] #main .tag-player-inline { grid-template-columns:repeat(3,minmax(0,1fr)); }
+ body[data-page=dev] #main .tag-player-inline #tag-seek { grid-column:1/3; width:100%; }
+ body[data-page=dev] #main .tag-player-inline #tag-time { text-align:right; }
+}
+@media(max-width:420px) {
+ body[data-page=dev] #main .tag-player-inline { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ body[data-page=dev] #main .tag-player-inline [data-preview-quality] { grid-column:1/-1; }
+}

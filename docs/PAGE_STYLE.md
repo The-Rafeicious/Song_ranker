@@ -1741,3 +1741,7 @@ with the established joined-card sizing and entity colours.
 ### V5.2.3 Dev catalogue tables
 
 Songs, Artists, Albums and Tags share one compact table shell. Give IDs and artwork fixed narrow columns, and allocate flexible width to names and relationships. Scroll the table itself on narrow screens. Keep a visible record count and pager. The toolbar holds search, a bounded field-filter panel, the displayed-column checklist, and order controls. Show core columns by default; allow optional data columns without duplicating controls in every header cell. Keep clear filters separate from reset order and expose the active-filter count. Use semantic entity colours for record links and existing surface, border, button and focus tokens. Edit popups group related fields inside consistent panels and retain the shared dialog actions and error area.
+
+### V5.2.3.1 table controls and preview review
+
+Center the search and secondary catalogue controls in two aligned rows with breathing room. Keep filter and column menus bounded; Enter in a field filter closes the menu after the live filter applies. Anchor More actions near the row button in a compact, full-width button list instead of expanding the table cell. Preview quality uses the standard grouped Dev editor panel and is reachable beside the Tag Workbench player for the currently previewed song.

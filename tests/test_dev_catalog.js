@@ -148,6 +148,9 @@ async function sourcePersistenceChecks(){
  check(t.querySelector('#manage-rows a[href="https://music.apple.com/gb/song/9002"]')?.rel.includes('noopener'),'Apple link opens the saved recording safely');
  const filter=t.querySelector('[data-column="apple_track_id"]');filter.value='9002';filter.dispatchEvent(new table.w.Event('input',{bubbles:true}));
  check(t.querySelectorAll('#manage-rows tr').length===1,'source ID participates in the existing column filters');
+  const panel=t.querySelector('.table-filter-panel');panel.open=true;const enter=new table.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true});filter.dispatchEvent(enter);
+  check(!panel.open&&enter.defaultPrevented,'Enter closes the field filter panel without submitting');
+  check(t.querySelector('#table-order')&&t.querySelector('[data-table-reset-order]'),'shared order controls stay available');
  table.dom.window.close();
 }
 async function sourceRefreshChecks(){

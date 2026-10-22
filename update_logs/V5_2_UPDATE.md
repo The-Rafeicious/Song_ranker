@@ -78,3 +78,9 @@ Move Home outside the System dropdown into its own navigation link.
 - Simplify row actions to Edit plus a short More menu for operations specific to the catalogue. Preserve source review, Single conversion, preview quality, album import and deletion.
 - Group the four record edit dialogs into consistent identity, tag and media sections where applicable. Save requests and validation use the existing catalogue endpoints.
 - No schema migration or change to stored catalogue values.
+
+## V5.2.3.1 — catalogue control polish
+
+- Center and space the catalogue search and table controls in aligned rows. Enter in a field filter closes its panel while preserving the applied filter.
+- Open each More menu as a bounded, consistently sized action list near its row control; close it on table scrolling.
+- Bring Preview quality into the shared grouped edit dialog, with a flag and review note. Add the same action beside the preview player in both single and bulk Tag Workbench modes, bound to the song currently shown there.

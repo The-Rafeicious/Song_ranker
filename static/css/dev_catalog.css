@@ -133,3 +133,22 @@ body[data-page=dev] #editor .catalog-edit-section .tag-info-field { grid-column:
  body[data-page=dev] #main .table-order-label select { flex:1; max-width:none; }
 }
 body[data-page=dev] #main .dev-catalog-table { min-width:980px; }
+
+/* V5.2.3.1 catalogue toolbar, row menu and preview review. */
+body[data-page=dev] #main .dev-table-toolbar { justify-items:center; gap:16px; padding:8px 0 12px; }
+body[data-page=dev] #main .dev-table-toolbar > .search-form { width:min(100%,660px); }
+body[data-page=dev] #main .dev-table-tools { width:100%; justify-content:center; align-items:center; flex-wrap:wrap; gap:10px 14px; }
+body[data-page=dev] #main .dev-table-tools > :is(.btn,.dev-table-popover,.table-order-label) { flex:0 0 auto; }
+body[data-page=dev] #main .dev-table-tools > .btn, body[data-page=dev] #main .dev-table-tools > .dev-table-popover > summary, body[data-page=dev] #main .table-order-label select { min-height:44px; }
+body[data-page=dev] #main .dev-catalog-table .dev-row-menu .dev-row-tools { position:fixed; z-index:40; top:var(--menu-top); left:var(--menu-left); display:grid; gap:7px; width:180px; max-height:min(330px,calc(100dvh - var(--menu-top) - 12px)); overflow:auto; padding:10px; border:1px solid var(--line); border-radius:12px; background:#242424; box-shadow:0 14px 30px #000a; }
+body[data-page=dev] #main .dev-catalog-table .dev-row-tools .btn { width:100%; min-height:40px; padding:8px 10px; text-align:left; white-space:normal; line-height:1.25; }
+body[data-page=dev] #editor .quality-dialog { display:grid; gap:8px; }
+body[data-page=dev] #editor .quality-dialog .catalog-edit-section { display:grid; gap:12px; }
+body[data-page=dev] #editor .quality-dialog .quality-flag { display:flex; align-items:center; gap:10px; min-height:44px; padding:10px 12px; border:1px solid var(--line); border-radius:12px; }
+body[data-page=dev] #editor .quality-dialog .quality-flag:has(:checked) { border-color:var(--song); }
+body[data-page=dev] #editor .quality-dialog .field textarea { width:100%; min-height:104px; resize:vertical; }
+body[data-page=dev] #editor .quality-dialog .muted { margin:0; font-size:14px; line-height:1.4; }
+@media(max-width:480px) {
+ body[data-page=dev] #main .dev-table-toolbar > .search-form { width:100%; }
+ body[data-page=dev] #main .dev-table-tools { justify-content:center; }
+}
