@@ -14534,6 +14534,7 @@ INSERT INTO "vibe_maps"("id","title","x_low","x_high","y_low","y_high","definiti
 INSERT INTO "vibe_maps"("id","title","x_low","x_high","y_low","y_high","definition_version","colour","display_order") VALUES('pace_mood','Pace & mood','Slow','Upbeat','Sad','Happy',2,'#d94b58',1);
 INSERT INTO "vibe_maps"("id","title","x_low","x_high","y_low","y_high","definition_version","colour","display_order") VALUES('perspective','Perspective','Past','Future','Regretful','Hopeful',2,'#d94b58',4);
 INSERT INTO "vibe_maps"("id","title","x_low","x_high","y_low","y_high","definition_version","colour","display_order") VALUES('sound_impact','Sound & impact','Acoustic','Electronic','Soft','Powerful',2,'#d94b58',2);
+INSERT INTO "vibe_rounds"("owner_hash","token","song_id","map_index","status","revision","draft_status","draft_x","draft_y","draft_at","draft_key","answers","started_at","finished_at") VALUES('9973e5beaefbb6eabf985bd9c9e763b1b8a982135f951dfa8e311e8a39403e19','ukWALInLl3FkyBc8evArNg6qJhI7mzx8YdVu8igaDIk',152,0,'active',0,NULL,NULL,NULL,NULL,NULL,'{}',1792636255.576581,NULL);
 DELETE FROM sqlite_sequence;
 INSERT INTO sqlite_sequence(name,seq) VALUES('album_shelf_rounds',1);
 INSERT INTO sqlite_sequence(name,seq) VALUES('albums',271);
