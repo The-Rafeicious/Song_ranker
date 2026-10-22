@@ -1,6 +1,6 @@
 # Song Ranker
 
-**Application v5.2.0.1 · Vibe Map integration v5.1.0 · competition generation 3 · SQLite schema 20**
+**Application v5.2.1 · Vibe Map integration v5.1.0 · competition generation 3 · SQLite schema 20**
 
 Rank your music, recognise previews, play brackets and quizzes, arrange albums,
 and describe songs on continuous Vibe Maps. Your songs, albums, artists and tags
@@ -28,7 +28,7 @@ restore a generation-3 SQL snapshot, use an optional catalogue seed, or start
 empty. A **first V2-to-V3 transfer** resets results; a routine code update does
 not repeat that reset. See [upgrades and recovery](docs/UPGRADES.md).
 
-The app reports `5.2.0.1`; Vibe Map retains its internal mode version `1.1`.
+The app reports `5.2.1`; Vibe Map retains its internal mode version `1.1`.
 
 ## Modes
 
@@ -92,8 +92,10 @@ Preview playback and Trivia’s answer timer remain available.
 
 ## Dev tools
 
-Dev has its own header with four category menus, central Lock Dev, Stop and
+Dev has its own header with a Home link, four category menus, central Lock Dev, Stop and
 rightmost library search. Home uses linked counts and service titles.
+Git shows separate freshly checked code/database states. Database & backups
+includes a read-only table, column and row inspector.
 Use the ⏻ button in either header for a single-PIN backup and stop.
 See the [Dev guide](docs/DEV_GUIDE.md) for controls and page lookup.
 

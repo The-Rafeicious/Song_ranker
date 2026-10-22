@@ -51,7 +51,7 @@ class DeveloperSystemTests(unittest.TestCase):
             r=self.client.get('/api/dev/system');fetch.assert_not_called()
         self.assertEqual(r.status_code,200);self.assertEqual(before,capture(self.conn))
         rows={r['name']:r for r in r.json['inventory']}
-        self.assertEqual(len(rows),sum(kind in ('table','view') for kind,_,_ in definitions())+2);
+        self.assertEqual(len(rows),sum(kind in ('table','view') for kind,_,_ in definitions())+3);
         self.assertEqual(rows['vibe_maps']['group'],'Vibe Map')
         self.assertEqual(rows['song_vibe_positions']['rows'],40); self.assertEqual(rows['custom notes']['group'],'Extensions')
         self.assertEqual(rows['custom view']['role'],'Derived / read-only')

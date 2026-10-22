@@ -210,10 +210,11 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   // Isolate only the Git transport: real served Dev markup/scripts and confirmation UI.
   const gitChoice={available:true,state:'behind',branch:'main',remote:'origin',target:'main',destination:'example.org/owner/app',tracking_head:'abc',ahead:0,behind:1,pending_code:false,code_changes:0,in_progress:false,review_token:'browser-git-review',history:[],snapshot:{exists:true,name:'database_backup.sql',bytes:20}};
   await page.route('**/api/dev/system',async route=>{const response=await route.fetch();const body=await response.json();body.git=gitChoice;await route.fulfill({json:body});});
+  await page.route('**/api/dev/git/check',route=>route.fulfill({json:{ok:true,message:'Fresh comparison complete',git:{...gitChoice,status_source:'checked',checked_at:'2026-10-22T12:00:00Z',upload_ready:false,database_sync:{code:'database_remote_ahead',message:'Remote snapshot is newer; local data kept.'}}}}));
   await page.route('**/api/dev/git/keep-local/review',route=>route.fulfill({json:{ok:true,local:{Songs:7,'Vibe positions':0},remote:{Songs:7,'Vibe positions':24},choice_token:'browser-choice',git:gitChoice,message:'Compare both copies.'}}));
   let kept=0;
   await page.route('**/api/dev/git/keep-local',async route=>{assert.deepEqual(route.request().postDataJSON(),{choice_token:'browser-choice',confirmation:'KEEP LOCAL'});kept++;await route.fulfill({json:{ok:true,git:gitChoice,message:'Local database kept. Restart then upload.'}});});
-  await page.goto(base+'/dev/dashboard?view=export');await page.locator('[data-system-local-review]:enabled').waitFor();
+  await page.goto(base+'/dev/dashboard?view=export');await page.locator('[data-system-local-review]:enabled').waitFor();await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Fresh comparison'));for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-git',folder);await page.screenshot({path:folder+'/dev-git-'+width+'.png',fullPage:true});}
   assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('[data-system-local-review]').click();await page.locator('#system-local-confirmation').waitFor();
   assert.ok(await page.locator('[data-system-local-apply]').isDisabled());
@@ -226,7 +227,11 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   assert.equal(await page.locator('.dev-home-grid > section').count(),6);assert.equal(await page.locator('.dev-category').count(),4);assert.equal(await page.locator('.dev-nav-actions .btn').count(),0);assert.equal(await page.locator('.dev-home-grid .system-actions').count(),0);
   for(const width of [390,768,1365,1800]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-home',folder);if(width>900){const sizes=await page.locator('.dev-home-summary').evaluateAll(nodes=>nodes.map(e=>({y:e.getBoundingClientRect().y,h:e.getBoundingClientRect().height})));assert.ok(sizes.every(s=>Math.abs(s.y-sizes[0].y)<2&&Math.abs(s.h-sizes[0].h)<2),'Aligned equal service cards');}await page.screenshot({path:folder+'/dev-home-'+width+'.png',fullPage:true});}
   await page.locator('.dev-category summary').first().click();assert.equal(await page.locator('#dev-page-menu [data-dev]').count(),20);
-  await page.locator('.dev-category summary').last().click();await page.locator('#dev-page-menu [data-dev="database"]').click();await page.locator('#system-backups').waitFor();assert.ok(await page.locator('.dev-category').evaluateAll(nodes=>nodes.every(e=>!e.open)));
+  await page.locator('.dev-category summary').last().click();await page.locator('#dev-page-menu [data-dev="database"]').click();await page.locator('#system-backups').waitFor();await page.locator('[data-db-object="songs"]').click();await page.locator('.db-rows').waitFor();
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-database',folder);await page.screenshot({path:folder+'/dev-database-'+width+'.png',fullPage:true});}
+  await page.locator('[data-db-tab="columns"]').click();assert.ok((await page.locator('#db-content').textContent()).includes('Primary key'));
+  await page.locator('[data-db-tab="definition"]').click();assert.ok((await page.locator('.db-definition').textContent()).includes('CREATE TABLE'));
+  await page.locator('[data-db-tab="rows"]').click();await page.locator('[data-db-cell="0"][data-db-column="1"]').click();await page.locator('.db-cell-detail').waitFor();assert.ok(await page.locator('#editor-submit').isHidden());await page.locator('#editor-close').click();assert.ok(await page.locator('.dev-category').evaluateAll(nodes=>nodes.every(e=>!e.open)));
   await page.locator('.dev-nav-actions input[name=q]').fill('long title');await page.locator('.dev-nav-actions form button').click();await page.locator('#dev-query').waitFor();assert.equal(await page.locator('#dev-query').inputValue(),'long title');
   await page.locator('.dev-lock').click();await page.waitForURL(base+'/');
   // Main-header shutdown needs a PIN once and does not unlock Dev.

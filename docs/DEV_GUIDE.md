@@ -1,6 +1,6 @@
 # Developer guide
 
-**v5.2.0.1 · step one of the Dev revamp**
+**v5.2.1 · navigation, Git and database tools**
 
 Open **System Access** on the hosting computer and enter the Dev PIN. Dev replaces
 the app header and gives the active tool the full content width. Existing editing
@@ -10,6 +10,7 @@ and record tools remain available while their later revamp steps are pending.
 
 | Control | Action |
 | --- | --- |
+| Home | Standalone link back to the service overview. |
 | Category menus | Four dropdowns: Library, Editing, Records and System. All twenty existing destinations remain available. |
 | Lock Dev, centre | Ends the Dev session and returns to the app home page. |
 | Search library | Opens Library Explorer with your query. The current explorer is retained for the next revamp steps. |
@@ -39,7 +40,7 @@ Coverage and stored activity remain below; Home has no separate action rows.
 | Library | Library Explorer searches all entity types. Songs, artists, albums and tags provide existing record tables and editing actions. |
 | Editing | Apple Music adds/reviews source versions; Tags & previews handles the eight-tag song limit and preview workbench; Bulk edits reviews sources/album placement; Fill missing metadata runs bounded reviewed requests. |
 | Records | Match history and corrections; Trivia / Elo maintenance; tournament brackets/podiums; Elo Guesser, Album Shelves and Vibe Map maintenance. |
-| System | Developer home; Overall calculator; Selection health; Database backups/inventory/restore and typed resets; Git & exports. |
+| System | Overall calculator; Selection health; Database backups/inventory/restore and typed resets; Git & exports. |
 
 Detailed source-request rules: [Apple Music](APPLE_MUSIC.md). Vibe edit/delete/reset:
 [Vibe Dev maintenance](VIBE_MAP_DEV.md). Storage and recovery:
@@ -57,3 +58,55 @@ Backup or Git errors keep the server running. Use **Review in Dev** to inspect t
 For a deliberately restored/wiped local save, use **Git & exports → Keep local
 database…**, compare both copies and type `KEEP LOCAL`, then upload normally.
 See [split recovery](UPGRADES.md#database-sync-and-split-recovery) before replacing data.
+
+## Git & database sync
+
+Opening Git refreshes the remote and compares its committed SQL snapshot with the
+**live database**, not the older local SQL export. Refresh status repeats that
+check. The page shows the check time and two independent results:
+
+| Result | Meaning / next step |
+| --- | --- |
+| Code commits | Branch, target, local/remote commits and incoming/local counts. Incoming code requires a restart/update even when the local database is newer. |
+| Database matches | Both logical snapshots match. |
+| Local data ready to upload | The live database contains the remote changes plus local changes. Use Upload database backup. |
+| Remote data is newer | The remote snapshot contains the local changes plus newer facts. Review before deciding which copy to keep. |
+| Copies need review | Both have unmatched edits/deletions, or no shared baseline is proved. Compare the per-table added/removed/edited counts and backups. |
+| Not freshly checked | A cached result is displayed. It is not proof of the current remote or live data. Refresh before uploading. |
+
+An **Up to date** code status never means that the databases match. Home explicitly
+labels its code summary as cached. Shutdown fetches/rechecks independently; it may
+find changes made after the page's last check. Upload rechecks again and still
+blocks unsafe overwrites, source conflicts and unpublished code commits. The page
+shows per-table deltas when a shared baseline is available. No automatic row merge
+or force-push is introduced. **Keep local database…** retains its reviewed, typed
+confirmation and two-copy backup flow. For a deliberate local reset/restoration,
+review both copies and choose that option before normal upload.
+
+Recent outcomes retain the latest operations in a bounded panel. Detailed sync
+ancestry/backup rules are in [Upgrades](UPGRADES.md#database-sync-and-split-recovery)
+and the [technical guide](TECHNICAL_GUIDE.md). Both pages link to these guides.
+
+## Database & backups
+
+Create backup makes a verified rotating local copy. Full export downloads the
+lossless JSON transport. Find a backup by date/name/purpose; Review restore shows
+its counts beside the backup list, with a safety copy before replacement. Advanced
+resets retain their existing confirmations.
+
+**What is stored** is a read-only SQLite browser, including extension tables, views
+and SQLite's internal sequence table. Select an object or filter the object list:
+
+| Tab | Information |
+| --- | --- |
+| Rows | Paged stored values, with explicit SQLite types. Select a value to read longer text or binary chunks. Integers are represented exactly as text; NULL remains distinct from empty text. |
+| Columns | Names, declared types, not-null flags, default expressions, primary-key order and generated/hidden flags. |
+| Definition | The stored CREATE statement, foreign-key definitions and index metadata. |
+
+Rows are 25 per page, capped at 50 and reduced for very wide tables. Cell previews
+are bounded; the value viewer pages through 4096 characters/bytes at a time. BLOBs
+are base64, not executable content. Refresh reads current rows/counts; changes in
+another tab may change page offsets. A changed row invalidates its value review.
+Tables with primary keys use key order; keyless tables/views use SQLite's current
+result order. Each request uses one read transaction, a read-only connection and
+a bounded query time. There is no SQL input, edit, save or delete action.

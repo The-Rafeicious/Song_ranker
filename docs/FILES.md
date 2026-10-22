@@ -163,3 +163,11 @@ only in [release-family logs](../update_logs/README.md).
 - `static/js/app_stop.js`: one shared PIN/backup/acknowledgement dialog on every page.
 - `static/js/dev_system.js`: service home, local backup and guarded Git shortcuts.
 - `docs/DEV_GUIDE.md`: Dev controls and page reference.
+
+## v5.2.1 raw inspection
+
+- `songranker/developer/database_inspector.py`: bounded read-only object/column/row
+  and signed long-value inspection routes.
+- `static/js/dev_database.js`: table browser, tabs, paging and read-only value dialog.
+- `developer/git_sync.py`: independent freshly checked code/database readiness.
+- `docs/DEV_GUIDE.md`: Git statuses, backup workflow and raw browser reference.

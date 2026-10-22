@@ -27,3 +27,22 @@ database health, catalogue coverage, stored rounds/votes, Git state and backups.
 - Align health, slim branch/commit/status Git and backups in one equal-sized row.
   Keep coverage and stored activity below, without repeating service data.
 - Present integrity totals as compact metrics with bounded issue details.
+
+## V5.2.0.2 — direct Dev Home
+
+Move Home outside the System dropdown into its own navigation link.
+
+## V5.2.1 — Git and database page rebuild
+
+- Rebuild Git around freshly checked, separate code and live-database states,
+  check time, per-table deltas, guarded upload/local choice and bounded outcomes.
+  Fix the misleading code-only Up to date presentation; keep overwrite safeguards.
+- Rebuild backups with compact health, a bounded list and adjacent restore review.
+  Move longer explanations into linked Dev/technical guides.
+- Add authenticated read-only raw inspection for tables/views (including SQLite
+  sequence metadata), column attributes, definitions/indexes/FKs and paged rows.
+  Support exact integers, NULL, escaped text and base64 BLOB chunks. Protect signed
+  value review against changed rows or another browser; accept no executable SQL.
+- Test real Git code-current/data-behind and stale-SQL/local-addition cases, raw
+  types, keyless/generated tables, injection, paging and stale UI responses.
+- No schema or user-data changes.

@@ -1692,3 +1692,19 @@ on desktop, in that order. Coverage and activity stay below. Health owns version
 and integrity, Git owns branch/short commit/status, backups owns copy count/latest
 time/file size. Do not repeat backup counts in health. The integrity dialog uses
 three compact metrics and bounded issue lists; no irrelevant Save button.
+
+### V5.2.0.2 / V5.2.1 maintenance pages
+
+Home is a standalone navigation link outside System. Git replaces the older
+explanation panels with independent code/live-database columns, a fresh-check
+timestamp, guarded actions, explicit blockers and bounded recent outcomes. Label
+cached results; never use code Up to date as a whole-database status. Link guides
+in the heading instead of explanatory walls of text.
+
+Database uses a backup workspace and compact health summary, followed by a raw
+read-only inspector. Restore review sits beside the backup list on wide screens.
+Object selection has a bounded scroller; tabs switch rows/columns/definition in
+place. Keep wide data inside its own scroll area, a visible pager and type labels.
+Long values open a read-only paged dialog without Save. Protect dialog ownership
+and late table requests. Inputs retain 16 px text and actions 44 px targets; stack
+workspaces on phones and keep the document width bounded.
