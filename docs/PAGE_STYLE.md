@@ -1681,3 +1681,14 @@ two on smaller desktop and one on phone. Use shared surfaces, semantic entity/mo
 colours, short labels and explicit service outcomes; avoid explanatory paragraphs
 on Home. Detailed usage belongs in DEV_GUIDE.md. Other tool internals remain for
 later steps. `dev_shell.css` loads after the baseline only for scoped shell rules.
+
+### V5.2.0.1 Dev shell refinement
+
+Four category dropdowns replace the single menu. Remove header backup actions;
+place Stop immediately left of the rightmost search. Keep the central Lock Dev.
+Home has no action rows. Library metrics are full-tile buttons to their entity
+tables. Health, Git and backups use linked titles and equal-height aligned cards
+on desktop, in that order. Coverage and activity stay below. Health owns version
+and integrity, Git owns branch/short commit/status, backups owns copy count/latest
+time/file size. Do not repeat backup counts in health. The integrity dialog uses
+three compact metrics and bounded issue lists; no irrelevant Save button.

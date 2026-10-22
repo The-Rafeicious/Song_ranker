@@ -223,10 +223,10 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   assert.equal(kept,1);assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.goto(base+'/dev/dashboard');await page.locator('.dev-home-grid').waitFor();
   assert.equal(await page.locator('.dev-navbar').count(),1);assert.equal(await page.locator('.nav-matches,.dev-sidebar,.dev-taskbar').count(),0);
-  assert.equal(await page.locator('.dev-home-grid > section').count(),6);
-  for(const width of [390,768,1365,1800]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-home',folder);await page.screenshot({path:folder+'/dev-home-'+width+'.png',fullPage:true});}
-  await page.locator('#dev-page-picker summary').click();assert.equal(await page.locator('#dev-page-menu [data-dev]').count(),20);
-  await page.locator('#dev-page-menu [data-dev="database"]').click();await page.locator('#system-backups').waitFor();assert.ok(await page.locator('#dev-page-picker').evaluate(e=>!e.open));
+  assert.equal(await page.locator('.dev-home-grid > section').count(),6);assert.equal(await page.locator('.dev-category').count(),4);assert.equal(await page.locator('.dev-nav-actions .btn').count(),0);assert.equal(await page.locator('.dev-home-grid .system-actions').count(),0);
+  for(const width of [390,768,1365,1800]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-home',folder);if(width>900){const sizes=await page.locator('.dev-home-summary').evaluateAll(nodes=>nodes.map(e=>({y:e.getBoundingClientRect().y,h:e.getBoundingClientRect().height})));assert.ok(sizes.every(s=>Math.abs(s.y-sizes[0].y)<2&&Math.abs(s.h-sizes[0].h)<2),'Aligned equal service cards');}await page.screenshot({path:folder+'/dev-home-'+width+'.png',fullPage:true});}
+  await page.locator('.dev-category summary').first().click();assert.equal(await page.locator('#dev-page-menu [data-dev]').count(),20);
+  await page.locator('.dev-category summary').last().click();await page.locator('#dev-page-menu [data-dev="database"]').click();await page.locator('#system-backups').waitFor();assert.ok(await page.locator('.dev-category').evaluateAll(nodes=>nodes.every(e=>!e.open)));
   await page.locator('.dev-nav-actions input[name=q]').fill('long title');await page.locator('.dev-nav-actions form button').click();await page.locator('#dev-query').waitFor();assert.equal(await page.locator('#dev-query').inputValue(),'long title');
   await page.locator('.dev-lock').click();await page.waitForURL(base+'/');
   // Main-header shutdown needs a PIN once and does not unlock Dev.

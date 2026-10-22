@@ -14,7 +14,6 @@ window.DevSystem=(()=>{
  function controls(){
   $$('[data-system-git-open]').forEach(b=>{b.disabled=restoreBusy;b.textContent=gitBusy?'Git task running…':'Review Git'});
   $$('[data-system-backup]').forEach(b=>{b.disabled=backupBusy||restoreBusy;b.textContent=backupBusy?'Backing up…':b.hasAttribute('data-dev-header')?'Local backup':'Create backup'});
-  $$('[data-dev-quick-push]').forEach(b=>b.disabled=gitBusy||restoreBusy||backupBusy);
   $$('[data-system-check],[data-system-upload]').forEach(b=>b.disabled=b.disabled||gitBusy||restoreBusy);
  }
  function status(){return `<p id="system-note" role="status" aria-live="polite">${esc(note)}</p>${loadError?`<p class="error" role="alert">${esc(loadError)}</p>${button('Retry status','data-system-retry')}`:''}`}
@@ -32,15 +31,9 @@ window.DevSystem=(()=>{
   const count=name=>inventory.find(r=>r.name===name)?.rows||0;
   const metric=(n,label,c='song')=>`<div><b class="${c}">${n}</b><span>${label}</span></div>`;
   const row=(label,value,tone='')=>`<div class="health-row"><span>${label}</span><strong class="${tone}">${esc(value)}</strong></div>`;
-  return `<div class="dev-home-grid">
-   <section class="panel dashboard-surface dev-home-library"><div class="section-head"><h2>Library</h2></div><div class="joined-metrics" data-columns="4">${[[t.songs,'Songs','song'],[t.artists,'Artists','artist'],[t.releases,'Releases','album'],[t.tags,'Tags','tag']].map(v=>metric(...v)).join('')}</div><div class="system-actions">${button('Explore library','data-dev="explorer"')}${button('Add from Apple','data-dev="import"')}</div></section>
-   <section class="panel dashboard-surface"><div class="section-head"><h2>Database health</h2></div>${health()}<div class="system-actions">${button('Integrity details','data-tool="Database integrity"')}${button('Database & backups','data-dev="database"')}</div></section>
-   <section class="panel dashboard-surface"><div class="section-head"><h2>Catalogue coverage</h2></div>${row('Untagged songs',t.untagged,'tag')}${row('Missing previews',t.missing_previews,'artist')}${row('Missing Apple links',t.missing_sources,'album')}<div class="system-actions">${button('Untagged songs','data-system-filter="untagged"')}${button('Tags & previews','data-dev="tag_workbench"')}${button('Missing previews','data-system-filter="missing"')}${button('Check sources','data-system-sources')}</div></section>
-   <section class="panel dashboard-surface"><div class="section-head"><h2>Stored rounds & votes</h2></div><div class="dev-service-metrics">${metric(count('history'),'Votes','standard')}${metric(count('trivia_rounds'),'Trivia rounds','recognition')}${metric(count('tournaments'),'Tournaments','tournament')}${metric(count('elo_guess_rounds'),'Elo guesses','guesser')}${metric(count('album_shelf_rounds'),'Shelves rounds','shelves')}${metric(t.vibe_mapped??'—','Fully mapped songs','vibe')}</div></section>
-   <section class="panel dashboard-surface"><div class="section-head"><h2>Git sync</h2></div>${gitSummary()}<div class="system-actions">${button('Review Git','data-system-git-open','primary')}</div></section>
-   <section class="panel dashboard-surface"><div class="section-head"><h2>Local backups</h2></div>${row('Saved copies',data.backups.length)}${row('Latest backup',data.backups[0]?date(data.backups[0].modified):'None yet')}${row('Database size',bytes(data.database_bytes||0))}<div class="system-actions">${button('Create backup','data-system-backup')}${button('Review backups','data-dev="database"')}<a class="btn" href="/api/dev/database/export">Full export</a></div></section>
-   </div>`;
+  return `<div class="dev-home-grid"><section class="panel dashboard-surface dev-home-library"><div class="section-head"><h2>Library</h2></div><div class="joined-metrics" data-columns="4">${[[t.songs,'Songs','song'],[t.artists,'Artists','artist'],[t.releases,'Releases','album'],[t.tags,'Tags','tag']].map(([n,label,c])=>`<button type="button" class="dev-library-link" data-dev="${{song:'songs',artist:'artists',album:'albums',tag:'tags'}[c]}"><b class="${c}">${n}</b><span>${label}</span></button>`).join('')}</div></section><section class="panel dashboard-surface dev-home-summary"><div class="section-head"><h2><button type="button" class="dev-title-link" data-tool="Database integrity">Database health ↗</button></h2></div>${row('App / schema','V'+data.version+' / '+data.schema)}${row('SQLite integrity',data.integrity,data.integrity==='ok'?'song':'error')}${row('Foreign-key errors',data.foreign_key_errors,data.foreign_key_errors?'error':'song')}</section><section class="panel dashboard-surface dev-home-summary"><div class="section-head"><h2><button type="button" class="dev-title-link" data-dev="export">Git sync ↗</button></h2></div>${gitOverview(row)}</section><section class="panel dashboard-surface dev-home-summary"><div class="section-head"><h2><button type="button" class="dev-title-link" data-dev="database">Local backups ↗</button></h2></div>${row('Saved copies',data.backups.length)}${row('Latest backup',data.backups[0]?date(data.backups[0].modified):'None yet')}${row('Database size',bytes(data.database_bytes||0))}</section><section class="panel dashboard-surface"><div class="section-head"><h2>Catalogue coverage</h2></div>${row('Untagged songs',t.untagged,'tag')}${row('Missing previews',t.missing_previews,'artist')}${row('Missing Apple links',t.missing_sources,'album')}</section><section class="panel dashboard-surface"><div class="section-head"><h2>Stored rounds & votes</h2></div><div class="dev-service-metrics">${metric(count('history'),'Votes','standard')}${metric(count('trivia_rounds'),'Trivia rounds','recognition')}${metric(count('tournaments'),'Tournaments','tournament')}${metric(count('elo_guess_rounds'),'Elo guesses','guesser')}${metric(count('album_shelf_rounds'),'Shelves rounds','shelves')}${metric(t.vibe_mapped??'—','Fully mapped songs','vibe')}</div></section></div>`;
  }
+ function gitOverview(row){const g=gitState||data?.git;if(!g?.available)return `<p class="muted">${esc(g?.message||'Git unavailable')}</p>`;return row('Branch',g.branch)+row('Commit',g.head?.slice(0,10)||'Unknown')+row('Status',labels[g.state]||g.state,g.state==='up_to_date'?'song':'');}
  function health(){return `<div class="health-row"><span>App / schema</span><strong>V${esc(data.version)} / ${data.schema}</strong></div><div class="health-row"><span>SQLite integrity</span><strong class="${data.integrity==='ok'?'song':'error'}">${esc(data.integrity)}</strong></div><div class="health-row"><span>Foreign-key errors</span><strong>${data.foreign_key_errors}</strong></div><div class="health-row"><span>Local database backups</span><strong>${data.backups.length}</strong></div>`}
  function database(){return `<section class="panel dashboard-surface"><div class="section-head"><h2>Backups & recovery</h2></div>${health()}<div class="system-actions">${button('Create backup','data-system-backup')}<a class="btn" href="/api/dev/database/export">Download full export</a><a class="btn" href="/api/dev/database/guide">Download technical guide</a></div><p class="muted">A local .db backup restores the whole database. The JSON export preserves every stored field for validation/rebuild. The Git SQL snapshot is a separate upload file.</p><div id="system-restore"></div><label class="system-search">Find a backup<input id="system-backup-query" type="search" value="${esc(backupQuery)}" placeholder="Date, filename or purpose…"></label><div id="system-backups"></div></section>
    <section class="panel dashboard-surface" id="system-inventory-panel"><div class="section-head"><h2>What is stored</h2></div><p class="muted">Stored facts, rebuildable projections and derived views are labelled separately. Counts come from one database snapshot.</p><div class="system-filters"><label>Find a table/view<input id="system-inventory-query" type="search" value="${esc(inventoryQuery)}"></label><label>Show<select id="system-inventory-kind"><option value="all">All objects</option><option value="table">Stored tables</option><option value="view">Derived views</option><option value="extensions">Extensions</option></select></label></div><div id="system-inventory"></div></section>
@@ -81,15 +74,6 @@ window.DevSystem=(()=>{
   if(backupBusy||restoreBusy)return;backupBusy=true;controls();
   try{const r=await U.api('/api/dev/backup',{});note='Created '+r.backup;U.toast(note);if(view)await load()}
   catch(e){note=e.message;U.toast(e.message)}finally{backupBusy=false;if(view)draw();controls()}
- }
- async function quickPush(){
-  if(gitBusy||restoreBusy)return;
-  U.navigate('export');gitBusy=true;controls();note='Checking remote before backup upload…';
-  try{const checked=await U.api('/api/dev/git/check',{});++loadId;gitState=checked.git;if(data)data.git=checked.git;
-   const g=gitState;if(!g?.available||!g.review_token||!g.tracking_head||g.in_progress||g.pending_code||g.behind)throw new Error('Review Git status below before uploading: incoming code, unpublished commits or an unavailable target need attention.');
-   const r=await U.api('/api/dev/git/upload',{review_token:g.review_token});++loadId;gitState=r.git;if(data)data.git=r.git;note=r.message;U.toast(note);
-  }catch(e){if(e.details?.git){gitState=e.details.git;if(data)data.git=e.details.git}note=e.message;U.toast(note)}
-  finally{gitBusy=false;if(view)draw();controls()}
  }
  async function gitTask(kind){
   if(gitBusy||restoreBusy)return;const g=gitState||data?.git;if(!g?.available)return;
@@ -146,7 +130,6 @@ window.DevSystem=(()=>{
  document.addEventListener('click',e=>{
   const b=e.target.closest('button');if(!U||!b||b.disabled)return;
   if(b.hasAttribute('data-system-git-open'))U.navigate('export');
-  if(b.hasAttribute('data-dev-quick-push'))quickPush();
   if(b.hasAttribute('data-system-backup'))makeBackup();
   if(b.hasAttribute('data-system-retry'))load();
   if(b.hasAttribute('data-system-check'))gitTask('check');
