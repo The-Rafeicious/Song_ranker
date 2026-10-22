@@ -198,7 +198,7 @@ window.DevTags=(()=>{
     chosen=new Set((accepted.target_tags||[]).map(t=>t.id||tags().find(x=>norm(x.name)===norm(t.name))?.id).filter(Boolean));
     newNames='';dirty=false;
    }
-   if(active){stats();renderRows();renderEditor();drawPlayer();message(result.message)}else U.toast(result.message);
+   if(active){renderRows();renderEditor();drawPlayer();message(result.message)}else U.toast(result.message);
   }
   busy=false;drawButtons();
  }
