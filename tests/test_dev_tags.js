@@ -62,7 +62,8 @@ async function harness(width=1280,view='tag_workbench',configure=()=>{},editing=
 }
 async function filterChecks(){
  const h=await harness(),{d}=h;
- check(d.querySelectorAll('[data-tag-song]').length===20,'song list paged at twenty');check(d.querySelector('#tag-stats').textContent.includes('15'),'untagged count uses all songs');
+ check(d.querySelectorAll('[data-tag-song]').length===20,'song list paged at twenty');check(d.querySelector('#tag-count').textContent.startsWith('45 matching'),'queue count uses all songs');
+ check(!!d.querySelector('.tag-bulk .tag-queue #tag-song-rows')&&!!d.querySelector('.tag-bulk .tag-editor #tag-now-playing'),'bulk queue and editor share the single bench layout');
  check(h.plays.length===0,'workbench never autoplays on entry');check(d.querySelectorAll('[data-tags-choice]').length===3,'all existing tags available');
  check(!d.querySelector('.tag-choice script'),'descriptions escaped');
  h.change('#tag-status','untagged');check(d.querySelectorAll('[data-tag-song]').length===15,'untagged filter exact');
