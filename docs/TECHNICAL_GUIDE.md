@@ -1,11 +1,53 @@
-# Song Ranker V5 technical guide
+# Song Ranker technical guide
 
-**Application 5.0.3.1 · competition database generation 3 · SQLite schema 15**
+**Documentation v5.1.1 · integrated modes v5.1.0 · competition generation 3 · schema 19**
 
-This is the current implementation reference. Installation is in the
-[main README](../README.md); the one-time reset is described in
-[UPGRADE_V5.md](UPGRADE_V5.md). Historical changes belong in
-[update_logs/](../update_logs/README.md), not in the running app's help copy.
+Current implementation reference. `APP_VERSION` remains `5.0.5.1` and the mode
+version remains `Vibe-Map-v1.1`; this documentation release changes neither.
+Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
+and historical changes in [release notes](../update_logs/README.md).
+
+- [Feature and page lookup](#feature-and-page-lookup)
+- [Architecture and ownership](#architecture-and-ownership)
+- [Database lifecycle](#database-lifecycle)
+- [Connections and transactions](#connections-and-transactions)
+- [Preferences and Elo](#preferences-and-elo)
+- [Game scoring](#game-scoring)
+- [Vibe Map runtime and reporting](#vibe-map-runtime-and-reporting)
+- [Stage-aware selection](#stage-aware-selection)
+- [Impact and Overall](#impact-and-overall)
+- [Reporting and presentation](#reporting-and-presentation)
+- [Listening and private preview analysis](#listening-and-private-preview-analysis)
+- [Health reporting](#health-reporting)
+- [Catalogue editing and imports](#catalogue-editing-and-imports)
+- [Reviewed source groups](#reviewed-source-groups)
+- [Apple adding and request behaviour](#apple-adding-and-request-behaviour)
+- [Developer maintenance](#developer-maintenance)
+- [API map](#api-map)
+- [Configuration](#configuration)
+- [Hosting and recovery](#hosting-and-recovery)
+- [Backups and controlled shutdown](#backups-and-controlled-shutdown)
+- [Git database reconciliation](#git-database-reconciliation)
+- [Validation and maintenance](#validation-and-maintenance)
+
+## Feature and page lookup
+
+| Concern | User surface | Implementation owner |
+| --- | --- | --- |
+| Voting and tournament Elo | Vote, bracket, histories, visibility comparisons | `modes/games.py`, `preferences.py`, `mode_ratings.py`, `elo_history.py` |
+| Trivia and Guesser challenges | Timed fields, streaks, frozen difficulty/answers | `modes/trivia.py`, `challenges.py`, `challenge_rules.py`, `special_modes.py` |
+| Album Shelves | Album assignment, track ordering, staged reveal | `modes/special_modes.py`, shared game/round flow assets |
+| Vibe Map | Continuous placement, averages, radar, similar tracks | `modes/vibe_map.py`, `vibe_similarity.py`, `vibe_maps.py`, `static/js/vibe_map.js` |
+| Vibe reporting | Stats, profiles, Home/Global and collection rankings | `reports/vibe_*_data.py`, `vibe_charts.js`, `vibe_profiles.js`, `vibe_library.js` |
+| Search and profiles | Tag counts, proper-album counts, achievements, Show more | `pages.py`, `catalog.py`, `site.js`, `search.js`, `profiles.js` |
+| Ratings and health | Collection Impact, Overall, selection/data diagnostics | `impact.py`, `overall.py`, `reports/selection_health.py`, `data_health.py` |
+| Catalogue and Apple | Import, source-only repair, reviewed bulk edits and fill | `developer/dev_catalog.py`, `catalog_sources.py`, `metadata_tools.py`, `metadata_fill.py` |
+| Tags and previews | Eight-tag capacity, Add/Replace/Remove, private quality flags | `storage/tag_limits.py`, `developer/dev_tags.py`, `tag_operations.py`, `apple_access.py` |
+| Vibe maintenance | Average/count edit, map clear, song delete, mode reset | `developer/dev_vibe.py`, `storage/competition_reset.py`, `static/js/dev_vibe.js` |
+| Recovery and Git | Backup, export/rebuild, restore, guarded upload/adoption, Stop app | `storage/database_io.py`, `git_database.py`, `developer/dev_system.py`, `git_sync.py`, `dev_shutdown.py`, `hosting.py` |
+
+Public routes and detailed mode contracts are indexed below. The complete
+operator tool list is in the [main README](../README.md#dev-tools).
 
 ## Architecture and ownership
 
@@ -30,8 +72,8 @@ Waitress is the normal local/private-LAN host.
 
 No old root Python-module wrappers are needed. Imports explicitly use the
 `songranker` package, so a merged installation works before obsolete root files
-are removed. [FILES.md](FILES.md) and [TRIMMED_FILES.txt](TRIMMED_FILES.txt) map the
-old locations. Application notes live in `docs/`; release-family logs remain in
+are removed. [FILES.md](FILES.md) maps current locations; old package trimming lists are
+[expired](RETIRED.md). Application notes live in `docs/`; release-family logs remain in
 `update_logs/`.
 
 ## Database lifecycle
@@ -142,12 +184,58 @@ bracket points are not reduced by this preference-evidence policy.
 | Trivia challenge | Below 10 streak: any correct available field; 10–24: song or album when eligible; 25+: song and album. Without an eligible album, song is required from streak 10 onward. The offered rule is frozen with the round. |
 | Tournament | An 8/16/32-track champion's bracket path totals seven points before display rounding. Round points are `7 × 2**(round−1)/(size−1)`. Bronze awards half the semifinal value. Placement requires the completed bracket. |
 | Elo Guesser | Choose the higher frozen offered rating. One correct point and a progressive streak. Target relative gap rank is `0.60/(1 + streak/10)`; frozen ratings are never replaced by current Elo when grading. |
+| Vibe Map | Four continuous descriptions saved as compact means/counts; radar, similarity and consistency are descriptive, without a performance score. |
 | Album Shelves | Ten tracks across two or three proper albums. Correct album placement earns 0.5; correct relative-order comparisons earn up to 2.5 per track. Relative-order percentage is the primary accuracy; points retain their own saved denominator. |
 
 Pending/prepared questions add no completed exposure, listening or result. A
 prepared Trivia round starts neither the answer clock nor playback. Missing
 identities remain explicit; reports do not invent answers or substitute current
 ratings for absent saved snapshots.
+
+## Vibe Map runtime and reporting
+
+V5.1.0 integrates the mode; its internal release is Vibe-Map-v1.1, schema 19,
+definition generation 2. The four maps are Pace & mood (Slow/Upbeat, Sad/Happy),
+Sound & impact (Acoustic/Electronic, Soft/Powerful), Connection
+(Fractured/Secure, Budding/Devoted), and Perspective
+(Past/Future, Regretful/Hopeful; Present at X centre). Budding is a display-only
+rename of canonical stored Casual. Every song has four linked slots.
+
+Play coordinates are continuous −5…+5; storage/comparison readers use −1…+1.
+The browser owns one current round. Draft/advance revision and request IDs reject
+stale saves and replay accepted requests once. A five-second deadline restarts
+on adjustment. Advancing accepts the latest draft, saves its averaged contribution
+and moves to the next map. Reviewing a saved map replaces this pass's contribution.
+A full pass increments progress once. One buffered round per browser and compact
+per-map means/counts avoid an ever-growing placement-attempt table.
+
+The page keeps one song/preview through maps and manual Finish. Completed results
+show an ordered eight-axis radar and two related songs, then wait for Next song.
+No map may be skipped by navigation. Missing points stay absent from comparisons.
+Similarity is descriptive; coverage and Gaussian coordinate distance are distinct.
+
+The coverage-first selector prioritises never-mapped songs. A bounded similarity
+factor softly biases voting, tournament, Guesser and album-hotspot selection;
+coverage adapts its strength, while positive random support prevents isolated
+pockets. It does not rewrite Elo, quality scores or preferences.
+
+Read-only/no-store reports share saved profiles and consistency helpers. The
+main stats page supplies density maps, patterns, balances, pairs/contrasts and
+five most/least consistent groups. Song profile cards need four placed maps;
+collection cards and ranking eligibility need two fully mapped members and
+proper albums. Home's final banner mixes up to twenty per entity category;
+ranking boards expose albums/artists/tags with shared top/bottom-twenty limits.
+Global activity uses each song's latest retained save, including partial maps,
+not an exhaustive history of completed passes. Vibe writes no listening records
+and contributes no Overall performance component.
+
+Dev edits are atomic and fingerprint maps, progress and round drafts. Coordinates
+are entered in −5…+5, with sample/pass constraints and preservation of unchanged
+exact means. Edits/delete invalidate buffered rounds for that song. All-mode reset
+shares `storage/competition_reset.py` and includes Vibe. The standalone merge
+cleanup is explicit, preview-first and never an automatic migration.
+
+See [complete API/statistics](VIBE_MAP.md) and [Dev/cleanup commands](VIBE_MAP_DEV.md).
 
 ## Stage-aware selection
 
@@ -186,68 +274,6 @@ then uses the retained relative noisy seeding/champion spread. Shelves chooses
 albums by exposure and recency with capacity lookahead, then distributes ten
 tracks and draws within each album by exposure. All prepared questions remain
 frozen even when the pool changes later.
-
-## Health reporting
-
-Selection health uses the same production eligibility, exposure and probability
-functions. The table shows actual per-pool probabilities, recency exclusions,
-mean, support strength and the current voting floor/bandwidth. Its starting
-kernel card is explicitly a baseline, not a claim that all pools use that floor.
-
-Balance dispersion is `population_stddev(exposure)/(1+mean)`. Empty pools are
-Unavailable, no exposure is New competition and mean below one is Building
-evidence. Above that, dispersion over 1 is Poor balance, over 0.6 Uneven, over
-0.35 Fair, over 0.15 Good and otherwise Excellent. Coverage categories use the
-actual eligible numerator/denominator; exact counts remain visible.
-
-The Elo reference IQR is approximately `1.349 × 16 × sqrt(mean)` for an equal-rating
-K32 random-result process. The displayed reference band is half to twice that
-value. Mean exposure below two remains Still settling. Other labels are Compact,
-Within reference and Wide preference spread. This is a stage-relative diagnostic,
-not an “ideal” rating target: consistent preferences may legitimately make a
-wider range. Health never changes Elo, grades or K.
-
-The release simulations cover eight seeds, 3,000 draws each, V4/V5 comparison,
-80 initial tracks and ten additions after round 1,500. The final policy improves
-mature exposure balance and newcomer catch-up in that scenario; results and
-limits are recorded in [VALIDATION.md](VALIDATION.md).
-
-## Listening and private preview analysis
-
-`static/js/listening.js` is loaded once on the five game pages. A question begins
-one measurement session keyed by mode and offered token/match. The tracker uses
-media identity plus actual playback progress, capped by elapsed wall time.
-Playing/time-update/pause/waiting/end/seek events distinguish audible progress
-from preloads, pauses, buffering, muted audio and jumps through a clip. Shelf's
-reused player updates its song identity. Reveals are not part of the submitted
-sample. An abandoned round has no accepted measurement.
-
-The accepted answer carries optional `{version, decision_ms, songs}` data. Server
-callers supply the authoritative mode, reference and offered IDs; clients cannot
-attach measurements to arbitrary tracks. Only a complete, finite, bounded sample
-is inserted. Invalid telemetry is ignored without losing the valid game answer.
-`UNIQUE(mode,reference,song_key)` makes samples idempotent. An unplayed track can
-be a measured zero; a request without telemetry remains unmeasured. Measurements
-are self-reported browser observations, not proof that the user heard the clip.
-
-References identify `preference_events.id` for Standard/Blind,
-`tournament_matches.id`, `trivia_rounds.id`, `elo_guess_rounds.id` or
-`album_shelf_rounds.id` for other modes. `selected` records the original chosen
-track for pair decisions, and is null for Trivia/Shelves. Corrections do not
-rewrite observed listening or the original measured choice. Mode/full resets and
-explicit round removals clear the corresponding measurements. Removed songs
-leave their original `song_key` while their live foreign key becomes null.
-
-Shared dashboards show measured decisions, track samples, total seconds and
-sample-weighted mean seconds, with mode details in a disclosure. Profiles pool
-linked songs once. New measurements have no influence on game grades, ranking
-formulas or selectors.
-
-`song_details.preview_bad`, `preview_note` and `flagged_at` are private Dev data.
-Only authenticated quality/analysis/full-export endpoints return the annotations;
-normal collection/library/profile/game responses omit them. Flagging does not
-rewrite audio, tags, album placement or evidence. Dev analysis exports raw
-observations and per-song summaries alongside flagged preview notes.
 
 ## Impact and Overall
 
@@ -295,6 +321,68 @@ media/request/cancellation ownership. Styles preserve semantic mode colours and
 entity-coloured names, green success and danger red failures. Phone breakpoints,
 native disclosures, 44 px controls, complete accessible names and reduced-motion
 behavior remain part of the baseline.
+
+## Listening and private preview analysis
+
+`static/js/listening.js` is loaded once on the five game pages. A question begins
+one measurement session keyed by mode and offered token/match. The tracker uses
+media identity plus actual playback progress, capped by elapsed wall time.
+Playing/time-update/pause/waiting/end/seek events distinguish audible progress
+from preloads, pauses, buffering, muted audio and jumps through a clip. Shelf's
+reused player updates its song identity. Reveals are not part of the submitted
+sample. An abandoned round has no accepted measurement.
+
+The accepted answer carries optional `{version, decision_ms, songs}` data. Server
+callers supply the authoritative mode, reference and offered IDs; clients cannot
+attach measurements to arbitrary tracks. Only a complete, finite, bounded sample
+is inserted. Invalid telemetry is ignored without losing the valid game answer.
+`UNIQUE(mode,reference,song_key)` makes samples idempotent. An unplayed track can
+be a measured zero; a request without telemetry remains unmeasured. Measurements
+are self-reported browser observations, not proof that the user heard the clip.
+
+References identify `preference_events.id` for Standard/Blind,
+`tournament_matches.id`, `trivia_rounds.id`, `elo_guess_rounds.id` or
+`album_shelf_rounds.id` for other modes. `selected` records the original chosen
+track for pair decisions, and is null for Trivia/Shelves. Corrections do not
+rewrite observed listening or the original measured choice. Mode/full resets and
+explicit round removals clear the corresponding measurements. Removed songs
+leave their original `song_key` while their live foreign key becomes null.
+
+Shared dashboards show measured decisions, track samples, total seconds and
+sample-weighted mean seconds, with mode details in a disclosure. Profiles pool
+linked songs once. New measurements have no influence on game grades, ranking
+formulas or selectors.
+
+`song_details.preview_bad`, `preview_note` and `flagged_at` are private Dev data.
+Only authenticated quality/analysis/full-export endpoints return the annotations;
+normal collection/library/profile/game responses omit them. Flagging does not
+rewrite audio, tags, album placement or evidence. Dev analysis exports raw
+observations and per-song summaries alongside flagged preview notes.
+
+## Health reporting
+
+Selection health uses the same production eligibility, exposure and probability
+functions. The table shows actual per-pool probabilities, recency exclusions,
+mean, support strength and the current voting floor/bandwidth. Its starting
+kernel card is explicitly a baseline, not a claim that all pools use that floor.
+
+Balance dispersion is `population_stddev(exposure)/(1+mean)`. Empty pools are
+Unavailable, no exposure is New competition and mean below one is Building
+evidence. Above that, dispersion over 1 is Poor balance, over 0.6 Uneven, over
+0.35 Fair, over 0.15 Good and otherwise Excellent. Coverage categories use the
+actual eligible numerator/denominator; exact counts remain visible.
+
+The Elo reference IQR is approximately `1.349 × 16 × sqrt(mean)` for an equal-rating
+K32 random-result process. The displayed reference band is half to twice that
+value. Mean exposure below two remains Still settling. Other labels are Compact,
+Within reference and Wide preference spread. This is a stage-relative diagnostic,
+not an “ideal” rating target: consistent preferences may legitimately make a
+wider range. Health never changes Elo, grades or K.
+
+The release simulations cover eight seeds, 3,000 draws each, V4/V5 comparison,
+80 initial tracks and ten additions after round 1,500. The final policy improves
+mature exposure balance and newcomer catch-up in that scenario; results and
+limits are recorded in [VALIDATION.md](VALIDATION.md).
 
 ## Catalogue editing and imports
 
@@ -361,6 +449,38 @@ moves/source changes use a signed review without an automatic backup. Dev table 
 independent across categories, including reloads in the same tab. Other row
 actions stay inside the bounded Actions expansion.
 
+## Reviewed source groups
+
+`POST /api/dev/song-sources/bulk` accepts `changes` (1–500 objects with
+`song_id`, `source_token`, `fingerprint`). Administrator authentication, signed
+session-owned Apple offers and per-song review fingerprints are required.
+Validation, source replacement and commit run under one `BEGIN IMMEDIATE`.
+Duplicate song/track IDs are rejected. `save_source(..., replacing=ids)` permits
+exchanging assignments only among songs that all have reviewed replacements;
+external conflicts still roll back every source write. From V5.0.3.1, source
+changes commit without making an automatic backup.
+No catalogue or game metadata is written. Source row IDs remain stable.
+
+`dev_catalog.js` owns the in-memory review queue, stage/skip/revisit controls,
+shared release search cache and final batch request. A closed modal retains its
+queue until save, discard, restore or page reload. Individual source choices
+show five plus ten collapsed results; import browsing keeps its own paging.
+
+## Apple adding and request behaviour
+
+See [Apple Music](APPLE_MUSIC.md) for song/album links, the album checklist,
+source review versus import, metadata/preview request limits and error handling.
+
+## Developer maintenance
+
+The [Dev tool index](../README.md#dev-tools) maps each area to its workflow; [Vibe maintenance](VIBE_MAP_DEV.md) adds map/count edits, clear/delete and reset.
+Artist/album/tag mutations share catalogue validation and transaction cleanup.
+The old overview response reuses current inventory and backup discovery, keeping
+its response shape for clients. Bulk catalogue mutations accept up to 500
+positive integer IDs. The interface uses reviewed restore and Git tools; older
+backend aliases remain compatible. Developer-only assets load from one template
+include; metadata polling and archive paging have separate script owners.
+
 ## API map
 
 | Area | Endpoints |
@@ -370,6 +490,9 @@ actions stay inside the bounded Actions expansion.
 | Trivia | `/api/trivia/round`, `/api/trivia/<token>/start`, `/pause`, `/field`, `/finish`. |
 | Tournament | `/api/generate_bracket`, `/api/tournament_vote`, `/api/tournaments`, `/api/tournaments/<id>`, completion/stats routes. |
 | Guesser/Shelves | `/api/elo-guesser/round`, `/answer`, `/api/album-shelves/round`, `/answer`; saved server questions own grading. |
+| Vibe play | `/api/vibe-map/state`, `/round`, `/draft`, `/advance`, `/cancel`, `/profile/<song_id>`, `/similar/<song_id>`, `/heatmap`. Exact methods/bodies: [mode reference](VIBE_MAP.md#flow-and-endpoints). |
+| Vibe reports | `/api/vibe-map/stats`, `/inspect/<song_id>`, `/entity`, `/library`, `/rankings`; page `/vibe_map_stats` and board `/mode_rankings/vibe`. |
+| Vibe Dev | `/api/dev/vibe` search, `/api/dev/vibe/<song_id>` GET/POST/DELETE, `/api/dev/reset-history/vibe`; [maintenance contract](VIBE_MAP_DEV.md#api). |
 | Preview | `/api/previews/<song_id>`, `/status`, `/api/previews/cache`; bounded in-memory audio cache/diagnostics, not a listening history. |
 | Private analysis | `/api/dev/song-quality/<id>` GET/POST, `/api/dev/analysis`, `/api/dev/selection-health`. |
 | Backups | `/api/dev/system`, `/api/dev/backups/review`, `/restore`, backup download, `/api/dev/database/export`, `/api/dev/database/guide`. |
@@ -414,7 +537,7 @@ creates a safety backup and uses exclusive maintenance before replacement.
 Restore invalidates old game tabs; reload before continuing. Old V2 archives are
 read-only transfer/recovery sources, not normal full-restoration candidates.
 
-Offline tools always write a new file. From the app root:
+General `db_tools` recovery/export commands write new files. The separately confirmed [test merge cleanup](VIBE_MAP_DEV.md#prepare-the-test-branch-for-merging) deliberately resets its explicit database and replaces an explicit SQL export. From the app root:
 
 ```sh
 python -m songranker.developer.db_tools audit --db data/song_ranker_v3.db
@@ -429,40 +552,7 @@ live databases, private keys, backups and generated files from source updates.
 An unchanged SQL snapshot does not make another upload commit. No remote is
 contacted by opening the Dev status panel.
 
-## Validation and maintenance
-
-Run `python -m unittest discover -s tests` from the root with normal requirements
-installed. JavaScript suites use Node and jsdom as test-only dependencies and
-run with `node tests/test_NAME.js`. Historical schema fixtures stay in `tests/`
-to test transport/recovery, not to make parallel runtime schemas.
-
-The release's migration, listening, selection, UI, live-route, seed, CRC/overlay
-and original-DB preservation checks are in [VALIDATION.md](VALIDATION.md). The
-DOM/computed-style harness does not render browser paint or physical audio;
-those remain device installation checks. New app work should follow [AGENTS.md](../AGENTS.md)
-and [PAGE_STYLE.md](PAGE_STYLE.md), keep one shared owner per concern and update
-the current documentation rather than adding another root note file.
-
-
-## V5.0.3 reviewed source groups
-
-`POST /api/dev/song-sources/bulk` accepts `changes` (1–500 objects with
-`song_id`, `source_token`, `fingerprint`). Administrator authentication, signed
-session-owned Apple offers and per-song review fingerprints are required.
-Validation, source replacement and commit run under one `BEGIN IMMEDIATE`.
-Duplicate song/track IDs are rejected. `save_source(..., replacing=ids)` permits
-exchanging assignments only among songs that all have reviewed replacements;
-external conflicts still roll back every source write. From V5.0.3.1, source
-changes commit without making an automatic backup.
-No catalogue or game metadata is written. Source row IDs remain stable.
-
-`dev_catalog.js` owns the in-memory review queue, stage/skip/revisit controls,
-shared release search cache and final batch request. A closed modal retains its
-queue until save, discard, restore or page reload. Individual source choices
-show five plus ten collapsed results; import browsing keeps its own paging.
-
-
-## V5.0.3.1 backup policy and controlled shutdown
+## Backups and controlled shutdown
 
 `storage/database_io.create_rolling_backup` serializes requested snapshots into
 three atomic slots, validating SQLite integrity and foreign keys before replace.
@@ -492,23 +582,7 @@ gate and resume the app. The normal launcher registers its callback after server
 creation; WSGI imports leave it unsupported. Stop does not close a browser-owned
 tab. Three slots do not limit Git commit history or old/update recovery archives.
 
-## Apple adding and request behaviour
-
-See [Apple Music](APPLE_MUSIC.md) for song/album links, the album checklist,
-source review versus import, metadata/preview request limits and error handling.
-
-
-## V5.0.4 developer maintenance
-
-[The developer audit](UPGRADE_V5_0_4.md) maps each tool to its current workflow.
-Artist/album/tag mutations share catalogue validation and transaction cleanup.
-The old overview response reuses current inventory and backup discovery, keeping
-its response shape for clients. Bulk catalogue mutations accept up to 500
-positive integer IDs. The interface uses reviewed restore and Git tools; older
-backend aliases remain compatible. Developer-only assets load from one template
-include; metadata polling and archive paging have separate script owners.
-
-## V5.0.5 Git database reconciliation
+## Git database reconciliation
 
 `developer/git_sync.py` still owns Git transport, locking, code fast-forward and
 snapshot-only uploads. `storage/git_database.py` owns committed SQL validation,
@@ -532,4 +606,14 @@ Status is cached locally in Git’s private state folder and returned as
 `git.database_sync`; Dev labels it separately from code status. Check remote
 compares read-only. WSGI import bootstrap does not fetch or auto-adopt snapshots.
 Details, first-upgrade limits and recovery are in
-[UPGRADE_V5_0_5.md](UPGRADE_V5_0_5.md).
+[UPGRADES.md](UPGRADES.md).
+
+## Validation and maintenance
+
+Use [VALIDATION.md](VALIDATION.md) for reproducible Python, JavaScript,
+served-Dev and Chromium checks. Frozen schema fixtures are present; earlier
+missing-fixture/browser-unavailable statements are expired historical limits.
+Automated checks use disposable databases. Current platform/audio behaviour
+still needs the intended installation/device. New work follows
+[AGENTS.md](../AGENTS.md) and [PAGE_STYLE.md](PAGE_STYLE.md), with one owner per
+shared concern and updated current references.

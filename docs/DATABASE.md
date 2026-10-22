@@ -1,12 +1,13 @@
 # V5 database dictionary
 
-**V3 competition database · schema 16 · application V5.0.4.2**
+**Generation-3 competition · schema 19 · documentation v5.1.1**
 
 The active default is `data/song_ranker_v3.db`. The schema registry is
 [data/schema.sql](../data/schema.sql); this dictionary is derived from it.
-There are 28 stored tables, five views, 23 explicit indexes and three triggers.
+There are 32 stored tables, five views, 24 explicit indexes and nine triggers
+(excluding SQLite internal/automatic objects).
 IDs/relationships and exact catalogue values survive first transfer; old results
-do not. See [UPGRADE_V5.md](UPGRADE_V5.md) for the catalogue whitelist and backup.
+do not. See [UPGRADES.md](UPGRADES.md) for the catalogue whitelist and backup.
 
 ## Fact ownership
 
@@ -123,7 +124,7 @@ Foreign keys: `artist_id` → `artists.id` (delete NO ACTION); `song_id` → `so
 Schema 16 limits each song to eight tag links with insert/update triggers. The
 backed-up upgrade retains the earliest eight stored link rowids per song and
 removes later memberships; tag definitions and all game facts remain. Normal
-writes reject overflow. See [tag-limit upgrade](UPGRADE_V5_0_4_2.md).
+writes reject overflow. See [tag-limit upgrade](UPGRADES.md).
 
 | Column | SQLite type | Required / key | Default |
 | --- | --- | --- | --- |
@@ -451,6 +452,49 @@ Foreign keys: `song_id` → `songs.id` (delete CASCADE).
 
 Foreign keys: `song_id` → `songs.id` (delete SET NULL).
 
+### Vibe Map definitions and positions
+
+`vibe_maps` defines the four generation-2 maps. Columns are `id`, `title`,
+`x_low`, `x_high`, `y_low`, `y_high`, `definition_version`, `colour`, and
+`display_order`. Stable IDs are `pace_mood`, `sound_impact`, `connection`,
+`perspective`. The stored Casual label remains canonical; Budding is a display
+rename. Definitions are fixed/versioned, not per-song tags or editable results.
+
+`song_vibe_positions` has one required `(song_id,map_id)` slot per song/map.
+`x`/`y` are normalized −1…+1 means, or null when not placed; `status` is
+`unmapped`, `placed`, or legacy-supported `not_applicable`. `updated_at` is the
+last saved timestamp. `sample_count` counts placed contributions and
+`not_applicable_count` counts skipped contributions. Current play exposes no N/A
+button. Missing maps remain absent evidence. Link triggers seed all four slots
+and guard accidental deletion/reassignment while the song exists.
+
+### Vibe progress and browser rounds
+
+`song_vibe_progress` stores `song_id` and `completed_passes`. A completed pass
+increments once; editing the same pass replaces its contribution. This is an
+exposure counter, not a scored result or an attempt-history table.
+
+`vibe_rounds` keeps at most one current buffered round per browser owner:
+
+| Columns | Meaning |
+| --- | --- |
+| `owner_hash`, `token`, `song_id` | Browser ownership, server round identity and catalogue link. Song removal cascades the buffer. |
+| `map_index`, `status`, `revision` | Sequential map progress, active/complete/cancelled state and optimistic save version. |
+| `draft_status`, `draft_x`, `draft_y`, `draft_at`, `draft_key` | Last acknowledged pending placement and readjustment deadline/request identity. |
+| `answers` | Compact current-pass contributions, used to replace a reviewed map rather than double-count it. |
+| `started_at`, `finished_at` | Buffered-round lifecycle; this is not a permanent full history of every pass. |
+
+Starting the next song replaces the browser's buffer. Saved song means/counts
+remain. Dev edits fingerprint maps/progress/drafts and invalidate that song's
+round buffers; mode/all resets clear Vibe means, samples, passes and buffers while
+keeping required slots and definitions. Schema 19's incompatible-map migration
+ran once; ordinary current-schema startup keeps existing placements.
+
+[Mode/API and statistics](VIBE_MAP.md) define comparison/consistency units;
+[Dev maintenance](VIBE_MAP_DEV.md) documents corrections and the explicit test
+cleanup marker stored inside `competition_state.migration_report`. No new schema
+or score table is introduced by documentation v5.1.1.
+
 ## Derived views
 
 | View | Purpose |
@@ -472,5 +516,4 @@ Do not hand-edit grading tables or restore an old archive over the active V3 fil
 
 V5.0.3.1 backup policy: requested and website-shutdown snapshots share three
 `rolling_*.db` slots. Ordinary edits create none. Migration archives and existing
-backups remain separate. See [backup and stop workflow](UPGRADE_V5_0_3_1.md).
-
+backups remain separate. See [backup and stop workflow](UPGRADES.md).

@@ -1,199 +1,153 @@
-# Song Ranker V5
+# Song Ranker
 
-**V5.0.5.1 · V3 competition database · schema 19 (test branch)**
+**Documentation v5.1.1 · Vibe Map integration v5.1.0 · competition generation 3 · SQLite schema 19**
 
-`New-modes-test` adds **Vibe-Map-v1.0.7**: open **📍 Vibe Map** from Home or
-Game Modes to place a song on four continuous red maps. Adjust a pin, let its
-five-second timer save it, and use the arrows to revisit saved maps. Finish
-opens a clean eight-axis radar and two similar songs with comparison percentages;
-the same button then becomes Next song. Results wait for Finish.
-Your preview stays with the song through every map and result screen.
+Rank your music, recognise previews, play brackets and quizzes, arrange albums,
+and describe songs on continuous Vibe Maps. Your songs, albums, artists and tags
+share one catalogue; each mode keeps its own evidence and results.
 
-The four maps are **Pace & mood**, **Sound & impact**, **Connection** and
-**Perspective**, with one-word endpoints and Present at the time-axis centre.
-The earlier v1.0.4.2 upgrade resets incompatible generation-1 test results once, after a
-backup; catalogue and other game data stay intact. See the
-[new axes and reset instructions](docs/VIBE_MAP_V1042.md).
+[Start](#start) · [Modes](#modes) · [Results](#results-and-discovery) ·
+[Dev tools](#dev-tools) · [Backups and sync](#backups-and-computer-switching) ·
+[Phone access](#phone-access) · [Help](#troubleshooting) · [Documentation](docs/README.md)
 
-Open **Stats → 📍 Vibe Map Stats**, or Stats from the mode, for coverage, four
-all-track density maps, common combinations, axis balances, closest pairs and
-biggest contrasts. Album, artist and tag lists show five most/least consistent
-groups with mapped-track counts. This update keeps schema 19 and existing
-placements. Click a heatmap point to inspect a compact song radar and its two
-closest matches without leaving stats. Explicit song, album and artist links
-remain in the panel, with the selected song centred at the top. Song pages now
-show this radar card immediately above Overall once all four maps are placed,
-without repeating the song header; albums, artists and tags show
-four compact heatmaps in one row on wider screens, with consistency and mapped
-counts in the same spot once two tracks are fully mapped. Phones use two columns.
-Connection now labels its early-attachment end Budding; saved coordinates are unchanged.
-Home now puts all-track Vibe maps below Overall Leaders and a scrolling consistency
-banner at the bottom, mixing the top twenty albums, artists and tags in one consistency-ordered strip.
-Global Stats has a Vibe summary below Overall; its activity chart and recent results include each track’s latest Vibe save. **Mode Rankings → Vibe Map**
-shows top/bottom twenty albums, artists and tags by consistency; there is no
-song board. Ranked collections need two fully mapped songs; proper-album rules
-exclude Singles. These descriptions do not contribute to Overall scores.
-Vibe Map v1.1 adds **Dev → Records → Vibe Map** for editing/clearing maps and
-counts. A separate preview-first cleanup script can remove test results before
-merging; it is not run automatically. See [Dev and merge preparation](docs/VIBE_MAP_DEV.md).
-Restart and refresh after updating. See the [stats definitions](docs/VIBE_MAP_STATS.md).
+## Start
 
-This is descriptive data, with no performance score or Overall contribution.
-Repeated passes update compact averages; reviewing the current pass replaces
-its contribution. See the [mode/API contract](docs/VIBE_MAP_API.md),
-[implementation log](update_logs/VIBE_MAP.md) and
-[code-only merge guide](docs/VIBE_MAP_MERGE.md). Alternative axes and four-map
-sets are listed in [map options](docs/VIBE_MAP_OPTIONS.md). Keep a separate test database.
-
-Vote between songs, identify previews, run tournaments, guess Elo and arrange
-album shelves. V5 keeps your music catalogue and starts the competition again
-at 1200 Elo, using the complete V4.1.6 feature set with cleaner reporting,
-stage-aware selection and listening analysis.
-
-Already on V5? Apply the [V5.0.2 storage follow-up](docs/UPGRADE_V5_STORAGE.md).
-It backs up your current database, compresses source metadata losslessly and
-keeps one current source per song. Competition results continue unchanged.
-Apple ID and Apple link are available as optional columns in Dev → Songs.
-
-## Start or upgrade
-
-1. Stop the app. Merge the V5 `Song_ranker` folder into your existing app folder,
-   or extract the full app into a new folder.
-2. For your latest catalogue, keep your current `song_ranker_v2.db` beside
-   `main.py` before the first launch. An existing V2 file takes priority over the
-   catalogue supplied with the full download.
-3. In that folder, run:
-
-```sh
+```console
 python -m pip install -r requirements.txt
 python main.py
 ```
 
-Use `python3` if that is your Python command. Python 3.10+ is required; validation
-used 3.12. Open **http://127.0.0.1:5000**, then hard-refresh existing browser tabs.
-The footer should show **V5.0.5.1**.
+Use Python 3.10+ (`python3` where appropriate), then open
+<http://127.0.0.1:5000>. Stop the app before pulling updates; restart and
+hard-refresh browser tabs afterwards. Keep the active database, backups,
+`instance/` secret and Git metadata when updating code.
 
-On first launch, V5 makes a complete SQLite backup of V2, verifies a catalogue-only
-transfer and publishes **`data/song_ranker_v3.db`**. Song/artist/album/tag IDs,
-relationships, artwork, previews, dates and current Apple source observations stay
-intact. Votes, brackets, quiz results, streaks, records, ratings and listening
-history start fresh. An existing V3 competition is reused on later launches.
+The normal database is **`data/song_ranker_v3.db`**. Existing V3 competitions
+are reused and upgraded with backups. First creation can transfer a V2 catalogue,
+restore a generation-3 SQL snapshot, use an optional catalogue seed, or start
+empty. A **first V2-to-V3 transfer** resets results; a routine code update does
+not repeat that reset. See [upgrades and recovery](docs/UPGRADES.md).
 
-The full download contains a fresh catalogue seed from the supplied app: **507
-songs, 65 artists, 151 albums and 54 tags**, with no competition results. The
-smaller upgrade contains code and notes only. Neither package overwrites an
-active V3 database. To carry changes made since the supplied snapshot, use your
-current V2 file when first launching either package.
+This PR changes documentation only. The code still reports application
+`5.0.5.1` and Vibe Map `1.1`; these runtime/cache versions are separate from the
+v5.1.0 integration and v5.1.1 documentation release headings.
 
-Read the [V5 upgrade and patch guide](docs/UPGRADE_V5.md) for transfer details,
-custom paths, recovery and the [obsolete-file list](docs/TRIMMED_FILES.txt).
-Do not copy an old database over the active V3 file to undo an upgrade.
+## Modes
 
-## What changed in V5
-
-- A new competition database with a verified one-time catalogue transfer.
-- Mean-based catch-up weights, a small fading bonus for recently added tracks
-  and slightly tighter Elo pairing as a pool gains experience.
-- Categorical data health, current exposure averages and stage-relative Elo
-  spread references, alongside precise draw probabilities.
-- Measured playback seconds before answers in all five game modes. Statistics
-  show measured samples; missing measurements remain unknown.
-- A private **Preview quality** annotation in Dev → Songs → Actions, included in
-  analysis downloads without changing public pages or automatic selection.
-- Consistent Voting Records, compact history and shared listening summaries.
-  Old Classic-record captions no longer occupy current stats pages.
-- A grouped backend, one canonical schema and one documentation folder. Release
-  history stays in `update_logs/`.
-
-## Play
-
-| Mode | What you do | Recorded results |
+| Mode | Play | Results and requirements |
 | --- | --- | --- |
-| Standard Vote | Pick between two tracks; Non-blind shows identities and Blind hides them until the result. | Public Elo, independent visibility-mode Elo and weighted preference outcomes. |
-| Trivia | Identify song, artist and eligible album from a preview. | Available-field accuracy, time-sensitive points and progressive challenge records. |
-| Tournament | Play an 8/16/32-track bracket across the library or an artist/album/tag. | Bracket points, placements and first-round Elo. |
-| Elo Guesser | Pick the track with the higher frozen Elo. | Accuracy and a challenge streak whose pairs become harder. |
-| Album Shelves | Place ten songs into two or three albums and arrange their relative track order. | Order accuracy, album placement and points. |
+| 🔥 Standard Vote | Choose between two tracks; Non-blind shows identities, Blind reveals them afterwards. | Public Elo, separate visibility Elo, wins/losses and comparisons. Blind needs previews. |
+| 🧠 Trivia | Identify the song, artist and eligible album from a preview. | Field accuracy, timed points, challenge streaks and records. Needs preview audio. |
+| 🏆 Tournament | Play 8/16/32-track brackets across the library or an artist, album or tag. | Points, placements and first-round Elo; later rounds and bronze award bracket points. |
+| 🎯 Elo Guesser | Pick the track with the higher saved Elo. | Correct picks and progressively harder challenge streaks. Play voting/tournaments first to create different ratings. |
+| 🗂️ Album Shelves | Place ten tracks into two or three albums and arrange their relative order. | Album placement, order accuracy and points. Needs proper albums, valid track positions and enough eligible tracks. |
+| 📍 Vibe Map | Place each track on four continuous graphs. | Descriptive averages, radar, similarities, density maps and collection consistency. No performance score or Overall contribution. |
 
-Every song starts at 1200. **Play Standard Vote or Tournament before Elo
-Guesser** so there are different ratings to compare. Blind/Trivia need previews;
-Shelves needs proper albums with unambiguous positive track numbers and enough
-capacity for ten tracks. An unavailable mode explains what it needs.
+Elo begins at 1200. Global tournament first rounds carry full Elo influence;
+artist/album/tag first rounds carry half. Ordinary votes carry full influence.
+The clock menu controls Standard/Quick reveal speed and next-question preparation.
+Playback, loop and preparation state are owned by the current mode; navigation
+ends its players. Unavailable modes report the eligibility they need.
 
-The clock menu beside volume controls Standard/Quick result speed and preparing
-next questions. Audio continues when changing browser tabs; explicit pause stays
-in effect. Actual page navigation ends that page's players. Shelf points count
-on each album cover before transferring once to the main score.
+### Vibe Map
 
-Whole-library first-round tournaments use full Elo influence; artist/album/tag
-first rounds use half. Later/bronze matches award tournament points only. A
-half-influence preference contributes 0.5 to win/loss evidence, selection exposure
-and Overall support. Actual match counts remain whole events. Saved Elo deltas
-already contain their influence and are not halved again.
+| Map | Horizontal | Vertical |
+| --- | --- | --- |
+| Pace & mood | Slow → Upbeat | Sad → Happy |
+| Sound & impact | Acoustic → Electronic | Soft → Powerful |
+| Connection | Fractured → Secure | Budding → Devoted |
+| Perspective | Past → Future, with Present at the centre | Regretful → Hopeful |
 
-## Explore results
+Place the cover-art pin anywhere on the graph, using pointer or keyboard.
+Five seconds after the last adjustment, the map saves and the next appears.
+Revisit completed maps with the arrows; all four must be completed. **Finish**
+opens the eight-spoke radar and two similar tracks, then becomes **Next song**.
+The preview stays with the song throughout. Repeated passes update compact
+averages rather than adding a permanent row for every attempt.
 
-Rankings and profiles cover Songs, Artists, Albums and Tags. Collection Impact
-adapts to the current catalogue; Overall combines tested game families with
-relative evidence. Nonempty collections also begin at 1200 Impact. Both scores are derived from
-current data rather than imported old competition scores.
+Mapped similarity gently influences voting, tournament, Guesser and Shelves
+draws, adapting to available coverage while retaining randomness and every
+eligible pairing. The Vibe selector strongly favours unmapped songs. Full
+[mode, API and statistics reference](docs/VIBE_MAP.md).
 
-Global Stats and the detailed mode pages mix counts, rates, charts and history.
-History includes ordinary votes and eligible tournament first rounds, with
-mode/source filters, saved rating changes and bracket links. Profiles pool linked
-tracks without counting the same song twice.
+## Results and discovery
 
-**Listening before decisions** reports browser-measured audible playback up to
-submission. Pauses, buffering, preloading and muted playback are excluded. Zero
-means a measured offered track was not listened to; an absent measurement is
-unknown. These measurements are diagnostic and do not change scores or selection.
+| Page | What to find |
+| --- | --- |
+| Home | Six mode buttons, catalogue totals, Overall leaders, compact library Vibe maps, mode summaries and scrolling records. The final Vibe banner mixes top-twenty albums/artists/tags by consistency. |
+| Search | Songs, albums, artists and tags with identity colours, song tag counts, collection song counts, proper-album counts and contained achievement badges. |
+| Song profiles | Artwork/player, catalogue links, compact mode records, a Vibe radar above Overall once four maps are placed, and similar tracks. |
+| Album/artist/tag profiles | Linked tracks/releases, pooled mode evidence and four compact Vibe heatmaps once two members are fully mapped. Tags initially show six albums; collection song lists show thirty, with Show more. |
+| Rankings | Song and collection Elo/Impact, Overall, and detailed mode boards. Vibe boards have albums/artists/tags only, top/bottom twenty, with absolute ranks. |
+| Global Stats | Catalogue/mode totals, recent activity, listening diagnostics, Overall, Vibe summary, detailed records and recent mode results. Vibe activity counts each song’s latest retained save. |
+| Detailed mode stats | Coverage, distributions, trends, records and histories relevant to that mode. Vibe adds all-track heatmaps, patterns, pairs, contrasts and most/least consistent groups. |
+| Match history | Ordinary votes and eligible tournament first rounds, visibility/source filters, saved Elo changes and bracket links. |
 
-## Manage the catalogue
+Collection **Impact** adapts to the current catalogue. **Overall** combines
+eligible tested game families with relative evidence. Distinct linked songs are
+pooled once; missing evidence is unavailable rather than a fabricated zero rate.
+Vibe consistency requires at least two fully mapped songs; Singles/unknown
+releases stay outside proper-album records.
 
-Open **System Access** in the footer and enter your Dev PIN (the retained default
-is `9042`; set `SONG_RANKER_PIN` to change it). Dev groups catalogue search,
-imports, tags, metadata, histories, records, selection health, backups and Git.
-Table searches/conditions persist independently across categories.
+**Listening before decisions** reports measured audible preview time from the
+five scored play modes (both voting visibilities), excluding pauses, buffering,
+preloading and muted playback. Zero is a measured unlistened offer; missing is
+unknown. Vibe Map does not add listening observations to that system. Listening
+and private preview flags are diagnostic, not score adjustments.
 
-- Apple source review and missing-information fill keep their scan/review/
-  apply workflow. Fill-only retains art, previews, attached albums and tag links;
-  exact song dates and other missing source fields can be filled when identified.
-- Unmarked explicitness displays Not explicit; explicit/cleaned source statements
-  remain authoritative. Attached tags are independent of Apple content labels.
-- **Songs → Actions → Preview quality** stores a private bad-preview flag and note.
-  Fix the preview URL through the usual edit/source tools when appropriate. The
-  flag alone neither hides a track nor removes it from a game.
-- **Selection health → Download analysis** exports listening observations,
-  per-song summaries and preview flags. The public catalogue omits private notes.
-- Corrections preserve submitted preference facts and rebuild effective Elo.
-  Mode resets also clear that mode's listening measurements. Create a backup first if needed.
+## Dev tools
 
-## Backups and recovery
+Open **System Access** in the footer. Set `SONG_RANKER_PIN` to choose your PIN;
+the retained default is `9042`. Searches, filters and optional columns support
+catalogue maintenance without editing stored game facts unintentionally.
 
-Use Dev → **Create backup** or **Download full export**. Requested/shutdown backups
-rotate through three verified slots; routine edits do not make backups. Backups sit in
-`data/database_backups/` with the default active path; custom database locations
-use a sibling `database_backups/` folder. Keep `instance/session_secret`, which
-signs sessions and reviewed tasks. It is not a competition result.
+| Group | Tools |
+| --- | --- |
+| Library | Explorer plus Songs, Artists, Albums and Tags tables; edit/delete, track placement, source details, preview quality and Vibe shortcuts. |
+| Editing | Apple song/album import, reviewed source changes, Singles moves, bulk album/source work, tag/preview workbench and missing-information scan → review → apply. |
+| Records | Saved-vote review/correction and Elo overrides; Trivia totals; tournament view/delete/podium edits; Guesser/Shelves records; Vibe map/count edits, map clear, song delete and mode reset. |
+| System | Tasks & health, Overall diagnostics, selection health and analysis downloads, inventory, backups, reviewed restore, lossless export/rebuild, Git check/upload and controlled Stop app. |
 
-The first-transfer `pre_v5_v2_…db` archive contains the complete old competition.
-The original V2 file is also left untouched. Normal V5 restore accepts V3
-competition backups; it refuses V2 archives so old results are not accidentally
-reintroduced. See [recovery](docs/UPGRADE_V5.md#recovery) before changing files.
+Each song has at most **eight tags**, including imported genres. Add/Replace
+checks the final membership of every selected song; Remove stays available.
+The first schema-16 migration retained the earliest eight attachments on any
+over-limit song. Suggested complementary tags are in [upgrades](docs/UPGRADES.md#tags-and-catalogue-policy).
 
-Git upload/check/restart controls remain explicit in Dev; launch-time code
-updates happen before Flask imports. SQL snapshots from a V3 competition retain
-its results when restored to a missing database. V5.0.5 also checks an existing
-V3 database against the committed remote snapshot before the normal launcher
-serves pages, including after a manual Git pull. Older V2 SQL snapshots carry
-catalogue data into a fresh competition. A plain downloaded folder works without
-Git. [Technical guide](docs/TECHNICAL_GUIDE.md#hosting-and-recovery) covers both.
+Apple **song links** select one recording; **album links** open a track checklist.
+Untick unwanted tracks before Add selected songs. Trailing “ - EP” is removed
+from new local album names and the release uses normal album placement.
+Source-only repair preserves local names, artwork, previews and relationships;
+metadata replacement has separate options. See [Apple requests by Dev area](docs/APPLE_MUSIC.md).
 
-## Use a phone
+Vibe maintenance edits the saved average and sample/pass counts, checks for newer
+changes, and invalidates old round buffers. [Dev instructions](docs/VIBE_MAP_DEV.md)
+also cover the optional one-time test cleanup script. It is never automatic.
 
-Connect the host and phone to the same private network. Set the phone's exact
-current IP before launching, then browse to `http://HOST-IP:5000` on the phone.
-The existing private-LAN gate is retained; this is not a public hosting setup.
+## Backups and computer switching
+
+- Use **Create backup** or **Download full export**. Requested/shutdown backups
+  rotate through three verified slots. Routine edits do not create backups;
+  migration, sync and recovery archives are separate.
+- Use **Stop app** with Git upload selected, enter the fresh PIN and wait for the
+  local/Git success receipt before changing computers. Closing a tab does not
+  upload or stop the server.
+- Normal startup compares the live database with the committed upstream SQL,
+  including after a manual pull. It adopts a newer snapshot only when the
+  baseline proves it contains all local changes, including deletions.
+- A split keeps the local database, saves an incoming review copy and blocks
+  an unsafe upload. Compare backups and use reviewed restore deliberately;
+  there is no automatic row union or force-push.
+
+Preserve `instance/session_secret`. Default backups are beside the live file in
+`data/database_backups/`; custom database paths use a sibling folder. Keep test
+and production databases separate when promoting code. [Recovery and sync](docs/UPGRADES.md#database-sync-and-split-recovery)
+explains baseline limits and incoming-copy review.
+
+## Phone access
+
+Use the same private network, allow the phone’s exact IP, and browse to
+`http://HOST-IP:5000`. Keep the host awake and allow Python through its private
+network firewall. Loopback remains available on the host.
 
 PowerShell:
 
@@ -208,135 +162,28 @@ macOS/Linux:
 SONG_RANKER_ALLOWED_IPS="192.168.1.42" python3 main.py
 ```
 
-Replace the example address with your phone's address. The computer's address is
-the one used in the browser URL. Loopback access on the host remains allowed.
-Keep the host awake and allow its Python server through the private-network
-firewall. The full [configuration reference](docs/TECHNICAL_GUIDE.md#configuration)
-includes custom ports, hostnames, secrets and database paths.
+Replace the example with the phone’s IP. The full [configuration table](docs/TECHNICAL_GUIDE.md#configuration)
+covers the host, port, allowed names, database, PIN and signing secret. This is a
+local/private-LAN app.
 
-## Find files and technical details
+## Troubleshooting
 
-| Location | Contents |
+| Symptom | Check |
 | --- | --- |
-| `main.py` | The only root launcher / WSGI entry point. |
-| `songranker/` | Shared application helpers and grouped `storage/`, `modes/`, `reports/`, `developer/` code. |
-| `data/` | Canonical schema, optional catalogue seed and active V3 database after startup. |
-| `templates/`, `static/` | Shared HTML, feature JavaScript and existing styled assets. |
-| `docs/` | [Upgrade guide](docs/UPGRADE_V5.md), [technical guide](docs/TECHNICAL_GUIDE.md), [database dictionary](docs/DATABASE.md), [style rules](docs/PAGE_STYLE.md), [file map](docs/FILES.md) and [validation](docs/VALIDATION.md). |
-| `update_logs/` | Current and historical release notes, starting with [V5](update_logs/V5_UPDATE.md). |
-| `tests/`, `tools/` | Regression tests and offline maintenance/selection tools. |
+| Updated page still looks old | Stop/restart the app and hard-refresh; ensure templates and feature assets were updated together. |
+| A mode has no eligible tracks | Preview availability, differing Elo, bracket size, or proper-album/track-number requirements. |
+| Vibe card is hidden | Song needs all four maps; collection needs two fully mapped songs. Partial saves remain visible on dedicated stats. |
+| Laptop catalogue is old | Use normal startup, read the database sync status and check the upstream branch; follow split recovery rather than deleting the live database. |
+| Import partly succeeded | Read the saved count, fix the failed item and retry remaining checked tracks; saved tracks stay excluded. |
+| Restore or migration fails | Keep the original and its backups; read the validation error before selecting a recovered copy. |
 
-If a page looks unchanged after copying files, stop/restart and hard-refresh. If
-transfer fails, V5 leaves the source intact and does not publish a partial V3
-file; read the terminal error and the [upgrade guide](docs/UPGRADE_V5.md). Fresh
-zero rates should show `—`, not an invented percentage.
+## Reference library
 
-V5.0.4 validation passed **196 available Python tests**, **424 JavaScript
-assertions** and **39 served-app DOM/HTTP cases**. Full discovery remains blocked
-by missing upstream historical schema fixtures; browser painting and real-device
-layout/audio were not validated here. Scope and commands are in
-[VALIDATION.md](docs/VALIDATION.md).
+[Documentation index](docs/README.md) · [Technical guide](docs/TECHNICAL_GUIDE.md) ·
+[Database dictionary](docs/DATABASE.md) · [File owners](docs/FILES.md) ·
+[Styling guide](docs/PAGE_STYLE.md) · [Validation](docs/VALIDATION.md) ·
+[Release notes](update_logs/README.md) · [Retired references](docs/RETIRED.md)
 
-V5.0.3 adds five-choice source selection and reviewed bulk source updates.
-See [V5.0.3 installation and workflow](docs/UPGRADE_V5_0_3.md).
-
-
-V5.0.3.1 adds a fresh-PIN **Stop app** button in the developer header: save a
-rotating backup, optionally upload the database snapshot to Git, show the results,
-then stop the normal launcher. See [installation and backup policy](docs/UPGRADE_V5_0_3_1.md).
-
-V5.0.3.2 adds selection feedback, collapsed source alternatives and aligned bulk
-controls. See [patch notes](docs/UPGRADE_V5_0_3_2.md).
-
-## Apple Music imports — V5.0.3.3
-
-Album links open a track checklist: untick unwanted songs, then add the selection.
-Song links still select one recording. A trailing “ - EP” is removed from new
-local album names. See [Apple adding and developer request behaviour](docs/APPLE_MUSIC.md)
-for each dev-panel area, caching, throttling and partial-import recovery.
-
-V5.0.3.3.1 fixes the album checklist Add button so checked songs are submitted,
-the saved count is confirmed and the popup closes after success. Restart and
-hard-refresh after updating to load the corrected JavaScript.
-
-
-## V5.0.4 developer polish
-
-Dev has searchable tool navigation, clearer shared controls, bounded bulk and
-record lists, an improved album-import checklist and a separate metadata task
-module with retry/polling ownership. Catalogue edits share validation and
-transaction handling; current inventory/backup discovery has one owner.
-Saved edits now report refresh failures separately, and old frontend restore/Git
-paths and obsolete Classic Trivia record editing have been removed.
-
-See the [V5.0.4 upgrade and developer audit](docs/UPGRADE_V5_0_4.md).
-Restart and hard-refresh after updating, including all new scripts/templates.
-Schema remains 15. Existing catalogue, competition and backup policy are kept.
-
-
-## V5.0.4.1 profile pages
-
-Song, artist, album and tag pages share compact mode records with inline
-breakdowns. Overall keeps its Mode balance dropdown without explanatory copy.
-Hero artwork and player overlays share rounded corners; artists remain circular.
-Tags show six albums initially, and artist/album/tag pages show thirty songs,
-with centred Show more buttons for additional items.
-
-See the [profile patch guide](docs/UPGRADE_V5_0_4_1.md). Restart and hard-refresh.
-
-
-## V5.0.4.2 song tag limit
-
-Songs now have up to **eight tags**. The tag workbench and song details editor
-show capacity and prevent adding a ninth tag. Bulk changes check each song’s
-resulting set; checked tags can always be removed. Typed names are checked too.
-
-The first launch upgrades to schema 16 with a pre-upgrade database backup. Songs
-over eight retain their earliest eight saved tag links; later links are removed.
-Tag definitions and competition records remain. Normal saves reject overflow
-instead of silently dropping your choices. Apple-supplied genres count too.
-
-See the [upgrade notes and suggested new tags](docs/UPGRADE_V5_0_4_2.md).
-Restart and hard-refresh after applying the patch.
-
-
-## V5.0.4.3 search result labels
-
-Search cards use coloured titles without repeated Song/Album/Artist/Tag badges.
-Song cards now show their attached tag count in tag gold, including **0 tags**
-and **1 tag**. Copy has consistent spacing across all four result categories.
-Restart and hard-refresh after updating. Schema remains 16.
-
-
-## V5.0.4.3.1 search counts and achievements
-
-Album and artist search cards show a separate green song-count line. Artists
-with proper albums also show a purple album count; Singles are excluded.
-Achievement badges stay in a bounded single row, with up to three whole badges
-that fit the card width. Restart and hard-refresh after updating.
-
-## V5.0.5 laptop / desktop database sync
-
-Previously, Git could pull a newer SQL backup while the app kept using an older
-live database. The normal `python main.py` launcher now checks database sync
-after code update and schema bootstrap, even when Git was already pulled.
-
-- A validated newer remote snapshot loads when it includes all local changes
-  relative to the shared baseline. Updates and deleted rows are checked too.
-- A complete `pre_git_database_…db` archive is made before replacement. The
-  replacement is transactional and rechecks for intervening local writes.
-- A split keeps the local database, saves an `incoming_git_…db` for review and
-  blocks uploads that would overwrite remote changes. Dev shows database state
-  separately from whether code commits are up to date.
-- Shutdown uploads recheck the same baseline before committing the SQL file.
-  Use **Stop app** with Git upload selected and wait for its success receipt.
-  Closing a browser tab alone does not upload the database.
-
-Apply the update on both computers. On the stale laptop, stop the app, pull the
-update, then run `python main.py` and check the startup outcome / song total.
-Do not delete the old database to force a reload. See the
-[upgrade and split-recovery guide](docs/UPGRADE_V5_0_5.md). Schema remains 16.
-
-V5.0.5.1 fixes the Windows Stop app socket race: after backup, optional Git upload
-and confirmation, Waitress closes sockets on its event-loop thread. Database sync
-and split-recovery rules are unchanged.
+The release notes separate **v5.1.0 mode integration** from **v5.1.1 documentation
+consolidation**. Earlier patch instructions are historical and marked accordingly;
+current setup and operating rules live in the references above.

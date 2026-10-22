@@ -1,6 +1,19 @@
-# V4.1 update log
+# V4.1 release notes
 
-## V4.1.6 — Voting Record balance and half-match evidence
+## V4.1.0 — overall release summary
+
+Developer dashboard, game refinements, health/listening reports, metadata fill, adaptive collection Impact and combined first-round Elo evidence.
+
+**Historical reference.** Installation commands, schemas, validation totals and
+then-planned features below describe their original release. Expired setup
+instructions are no longer necessary for current installs; use the
+[current upgrade guide](../docs/UPGRADES.md). Exact repeated prose is recorded once.
+
+## Detailed updates
+
+### V4.1 update log
+
+#### V4.1.6 — Voting Record balance and half-match evidence
 
 18 October 2026 · cumulative over completed V4.0 and every prior V4.1 patch.
 
@@ -28,7 +41,7 @@ mode/origin distinctions, raw counts, unchanged Elo snapshots, correction/void/
 retry behavior and profile layouts. DOM/computed-style QA does not render paint;
 see [validation](../docs/VALIDATION.md) for limits.
 
-### Install V4.1.6
+##### Install V4.1.6
 
 Stop the app, merge this patch's `Song_ranker` contents into your completed
 V4.0/V4.1 folder, restart and hard-refresh. Earlier V4.1 changes are included.
@@ -36,7 +49,7 @@ Keep the existing database in place. Preference rates, draw weights and Overall
 may update immediately from existing saved influence; stored Elo is unchanged.
 
 
-## V4.1.5 — Dev controls, Shelf counters and combined preference evidence
+#### V4.1.5 — Dev controls, Shelf counters and combined preference evidence
 
 18 October 2026 · cumulative over completed V4.0 and every prior V4.1 patch.
 
@@ -68,7 +81,7 @@ corrections/voids and exclusion of later/legacy points-only matches. New UI test
 cover per-category state/reload, actual count-up timing at both speeds, overlay
 stacking and scoped origin histories. See [validation](../docs/VALIDATION.md).
 
-### Install V4.1.5
+##### Install V4.1.5
 
 Stop the completed V4.0/V4.1 app. Merge the patch's `Song_ranker` contents into
 your existing matching folder, restart and hard-refresh. Earlier V4.1 patches
@@ -77,7 +90,7 @@ Preference statistics/Overall may change as existing round-one evidence is now
 included; stored Elo and Impact calculations are unchanged.
 
 
-## V4.1.4 — proportional catalogue Impact
+#### V4.1.4 — proportional catalogue Impact
 
 18 October 2026 · cumulative over the completed V4.0/V4.1 app.
 
@@ -110,14 +123,14 @@ Validation: **485 Python tests**, **1,587 JavaScript assertions**, policy parity
 new/flat/mature/growing collection cases, and **148 live server/browser
 projection checks** pass. See [current validation](../docs/VALIDATION.md) for scope.
 
-### Install V4.1.4
+##### Install V4.1.4
 
 Stop the completed V4.0/V4.1 app, merge this patch's `Song_ranker` files into the
 matching folder, restart and hard-refresh. All earlier V4.1 updates are included.
 Existing data stays in place; rankings recalculate without a migration or reset.
 
 
-## V4.1.3 — expanded fill-only metadata
+#### V4.1.3 — expanded fill-only metadata
 
 18 October 2026 · cumulative over completed V4.0 and all prior V4.1 patches.
 
@@ -148,14 +161,14 @@ review/apply/report. Seventeen new DOM assertions cover new-field-only plans,
 escaped review values, save/error/no-op state and source refresh. Apple responses
 are mocked; no live metadata fill was run on the supplied database.
 
-### Install V4.1.3
+##### Install V4.1.3
 
 Stop the completed V4.0/V4.1 app. Merge this patch's `Song_ranker` contents over
 the matching existing folder, restart and hard-refresh. Keep existing data.
 All prior V4.1 changes are included. See `INSTALL_V4_1_3.md` in the patch.
 
 
-## V4.1.2 — stats, tournament Elo history and selection health
+#### V4.1.2 — stats, tournament Elo history and selection health
 
 18 October 2026 · cumulative over the completed V4.0.0 app, including V4.1.0/.1.
 
@@ -184,7 +197,7 @@ app integration checks** pass using disposable/copied data. All 19 Dev sections,
 six stats pages, full history and song history load with actual modules/assets.
 See [current validation](../docs/VALIDATION.md) for coverage and environment limits.
 
-### Install V4.1.2
+##### Install V4.1.2
 
 Stop the completed V4.0/V4.1.0/V4.1.1 app. Copy this patch's `Song_ranker`
 contents over the matching existing folder, merge/replace files, restart and
@@ -192,7 +205,7 @@ hard-refresh. Keep existing data. This changed/new-file patch includes the prior
 V4.1 updates; it is not a standalone app. See `INSTALL_V4_1_2.md` in the patch.
 
 
-## V4.1.1 — concise game screens, background previews and tournament Elo reveal
+#### V4.1.1 — concise game screens, background previews and tournament Elo reveal
 
 18 October 2026 · cumulative over V4.0.0, including the V4.1.0 Dev refinement.
 
@@ -223,14 +236,14 @@ Validation: 99 targeted Python tests and 628 JavaScript assertions pass. All
 five game entry points/settings/assets load on copied data. Source DB unchanged.
 See [VALIDATION.md](../docs/VALIDATION.md) for scope and browser/device limits.
 
-### Install V4.1.1
+##### Install V4.1.1
 
 Stop the completed V4.0.0 or V4.1.0 app. Merge the contents of the ZIP's
 `Song_ranker` folder into the matching existing folder, replacing the supplied
 files, then restart and hard-refresh. The cumulative patch includes V4.1.0 Dev
 files and contains no database, SQL dump, signing key or backups.
 
-## V4.1.0 — developer dashboard usability
+#### V4.1.0 — developer dashboard usability
 
 18 October 2026 · first V4.1 patch · based on the completed V4.0.0 app.
 
@@ -265,7 +278,7 @@ integration checks pass. All 18 Dev sections load from a copied database.
 The supplied DB hash is unchanged. Rendered browser/device QA remains a manual
 installation check; details are in [VALIDATION.md](../docs/VALIDATION.md).
 
-### Install this patch
+##### Install this patch
 
 Stop V4.0.0. Copy the contents of the ZIP's `Song_ranker` folder over the
 matching folder in your existing app, merging folders and replacing the files

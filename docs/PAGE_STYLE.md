@@ -1,13 +1,37 @@
-# Song Ranker — page layout and styling
+# Styling guide
 
-Read this before changing a page or page group. It records the user's accepted
-V3.4 direction; later user corrections take priority. Update the relevant rule
-when a correction is adopted, then use it on the next pages. Each page can have
-a different composition while sharing these elements. Global Stats was the first
-page converted, in V3.4.1. V3.4.2.1 applies the chosen shared baseline across the
-site; later page updates can still adjust their individual composition.
+Shared design rules and detailed page/tool specifications, organised by where
+you need them. This is a documentation reordering: CSS and layouts are unchanged.
+Original version labels are provenance, not a sequence to reapply. Within each
+group, a later correction overrides an earlier conflicting rule. Explicitly
+expired passages are historical context; retained detail remains available.
 
-## Approved shared baseline — V3.4.2.1
+- [Shared foundations](#shared-foundations)
+- [Home](#home)
+- [Rankings and search](#rankings-and-search)
+- [Entity profiles](#entity-profiles)
+- [Game screens](#game-screens)
+- [Statistics pages](#statistics-pages)
+- [Developer tools](#developer-tools)
+
+## Shared foundations
+
+- [Approved shared baseline](#approved-shared-baseline)
+- [Shared owners](#shared-owners)
+- [Composition](#composition)
+- [Type and hierarchy](#type-and-hierarchy)
+- [Colour and interaction](#colour-and-interaction)
+- [Artwork and rows](#artwork-and-rows)
+- [Detailed-mode shared components](#detailed-mode-shared-components)
+- [Phone use](#phone-use)
+- [Implementing later page updates](#implementing-later-page-updates)
+
+
+<a id="approved-shared-baseline--v3421"></a>
+
+### Approved shared baseline
+
+*Origin: Approved shared baseline — V3.4.2.1*
 
 Selected by the user from the Style Previews pack:
 **T2 · F2 · W3 · A3 · D2 · R3 · G2 · C1 · B1 · H1 · N1**.
@@ -40,7 +64,11 @@ Below 760 px, primary ranking covers are 88 px, titles/metadata/scores use
 and rank span the two copy/score rows so their vertical clearance stays equal.
 Colours, data order, layouts and game/audio behavior remain page-specific.
 
-## Shared owners — V3.4.3.3
+<a id="shared-owners--v3433"></a>
+
+### Shared owners
+
+*Origin: Shared owners — V3.4.3.3*
 
 Keep a single owner for common rules; update it before adding a page override.
 All eight existing stylesheets and six scripts were reviewed during this patch.
@@ -84,7 +112,9 @@ and priority already supersede them. Preserve intentional fallback sequences,
 separate states and distinct responsive layouts. Do not accumulate patch layers
 for headers, cover sizing or joined-row boundaries now owned above.
 
-## Composition
+### Composition
+
+*Origin: Composition*
 
 - Keep the existing page title/navigation unless the user asks to change them.
 - Use the available width for larger text, artwork and meaningful data. Avoid
@@ -107,7 +137,9 @@ for headers, cover sizing or joined-row boundaries now owned above.
   boxes are welcome when they organise data or fill empty space; their contrast
   should stay below the main panel's border/glow.
 
-## Type and hierarchy
+### Type and hierarchy
+
+*Origin: Type and hierarchy*
 
 | Element | Desktop shared baseline | Narrow-screen behavior |
 | --- | --- | --- |
@@ -124,7 +156,9 @@ not an explanation of the implementation. Use single-line ellipses for variable 
 the full text retained in the DOM and a title attribute. Keep scores, counts and
 outcomes in separate wrapping fields so they stay visible. Avoid horizontal page scroll.
 
-## Colour and interaction
+### Colour and interaction
+
+*Origin: Colour and interaction*
 
 | Meaning | Existing token |
 | --- | --- |
@@ -150,7 +184,9 @@ For statistical records and voting leaders, link the entity's name, not the
 whole row or box. Artwork/counts should not quietly become separate hit targets.
 Keep visible previous/next/play controls labelled for their actual page/entity.
 
-## Artwork and rows
+### Artwork and rows
+
+*Origin: Artwork and rows*
 
 - Songs and albums use square artwork; artists use circles. Use the existing
   artwork fallback and image-error behavior. Never stretch an image.
@@ -167,83 +203,95 @@ Keep visible previous/next/play controls labelled for their actual page/entity.
 - Labels/counts stay useful when there are no results: show a short empty state,
   zero for an actual count and `—` for a rate without a denominator.
 
-## Global Stats reference
+<a id="detailed-mode-shared-components--v346-through-v348"></a>
 
-The accepted major order is: top collection/mode totals, Collection Records,
-Overall Stats, Voting Results (including Frequent Matchups), Elo Distribution,
-Recognisability, Tournaments, Elo Guesser, Album Shelves, Artist Average Elo,
-Album Average Elo, Top Tags, Recent Mode Results.
+### Detailed-mode shared components
 
-- Top totals have two rows of four cards. The second row follows the mode
-  sections: Trivia, Tournament, Elo Guesser, Album Shelves.
-- Every joined metric group, including dynamically mounted Overall, uses the
-  shared dividers. Use two/three/four fields as appropriate and reset divider
-  placement when four fields wrap to two columns.
-- Overall keeps tested songs, evidence and active modes; its mean score is
-  omitted. Keep one in-section link to Overall rankings and the existing leaders.
-- Frequent Matchups shows three pairs. Offer Show five only when at least four
-  pairs have repeated encounters. Elo bands are 50 points wide, in their own
-  framed group above the separate number-stat group. Omit the average Elo label.
-- Collection records include distinct proper albums per artist and album track
-  counts. Singles/unknown albums stay outside proper-album records and averages.
-  Use three cards per desktop row; centre a final row of two as a pair between
-  the columns above. Collapse to two cards on tablets and one on phones.
-- Recognition misses describe the actual track/artist/album being tested. Raw
-  incorrect guess text is not saved, so do not present a made-up wrong-guess list.
-  Artist/album summaries follow current catalogue links and saved field totals;
-  a collaborative track can contribute to each of its linked artists.
-- Tournament totals show unfinished brackets inline only when nonzero, plus
-  32/16/8-track counts. Show the latest podium and at most five recent champions.
-- Artist and album averages each show at most five entries. Top Tags shows up to
-  ten linked tags. Recent results mix all modes by completion time; one tournament
-  or Shelves round is one item, regardless of its internal matches/track placements.
-- Trivia's stored unit is a completed round, not a separately recorded session.
-- The Recent Mode Results panel blends only the colours represented in its visible
-  rows, weighted by their occurrence counts. A single-mode list keeps that mode's
-  colour; an empty list is neutral. Recompute the mix when entries/visibility change.
-  Each row retains its own mode colour, with entity names in their entity colours.
-- Recent Shelves rounds identify the saved albums and show actual points/available
-  points, percent earned, correct album placements and order comparisons. Do not
-  represent a ten-track round with a random single song. Preserve saved shelf slots
-  when albums are deleted; display missing identities without broken links.
-- Tournament results include champion, bracket size, saved matches/points and
-  scope. A blind tournament is still pink Tournament; Blind Audition is mint.
-- Elo Guesser results identify the chosen track and frozen comparison ratings,
-  rather than today's Elo. Trivia exposes only the fields available in that round.
-  Correct/perfect outcomes use green and misses use danger red; mode labels and
-  other result figures retain the mode's accent.
+*Origin: Detailed-mode shared components — V3.4.6 through V3.4.8*
 
-## Standard Rankings reference — V3.4.2 / V3.4.2.1
+Recognisability, Tournament, Elo Guesser and Album Shelves Stats share
+`mode_stats.css` and the formatting
+macros in `mode_stats_components.html`. The accepted Recognisability values,
+links, section order and visual scale stay the same. Page wrappers supply
+`--section-color`, `--surface-accent`, `--mode-stats-border`, `--mode-stats-rule`
+and `--mode-stats-divider`; avoid copying a new dashboard's base geometry.
+Use the existing shared `joined-metrics` and `dashboard-surface` components.
+Page styles own field states, podiums, bracket rounds, saved shelves and other
+unique content. Numeric formatting is shared through the `number` macro too.
 
-The Songs, Artists, Albums and Tags standard ranking boards share this baseline.
-Preserve the rank-dependent glow falloff, entity-coloured Top/Bottom switch,
-simple centred category selector with its active underline, and existing voting
-stat arrangement. Keep Elo orange, Blind mint and collection Impact in the
-entity colour. The V3.4.2 content/link fixes remain specific to these boards;
-the chosen shared baseline now also styles other ranking groups.
+<a id="phone-use--v3461"></a>
 
-- Entity titles always use their own colour, including before hover. Hover and
-  keyboard focus underline the text. Song artist/album metadata uses bold linked
-  blue/purple names; album rows show bold blue artist links from actual artist
-  relationships, including collaborators and names containing commas.
-- Desktop titles are 30 px/900, metadata 18 px with linked names at weight 800,
-  voting figures 15 px, primary scores 36 px and score labels 13 px. Covers are
-  120 px. Equal 24 px vertical padding and centred grid alignment keep the cover
-  the same distance from the top and bottom, even when stats wrap.
-- Below 760 px, use 26 px titles, 16 px metadata, 14 px voting figures, 32 px
-  scores and 88 px covers. Below 520 px, use 22/15/14/28 px respectively with
-  72 px covers. The score moves below the text, while the cover/rank span the
-  two rows and remain vertically centred. Keep all cover dimensions constrained
-  together; artist art remains circular and tag art remains square.
-- Long titles/metadata retain single-line ellipses and full title attributes.
-  Counts and scores stay in their existing separate fields.
+### Phone use
 
-The separate Style Previews ZIP offers labelled experiments and a reusable demo
-template. Its original default was B. The custom codes recorded above are now
-approved and applied; other preview alternatives remain proposals. Record later
-corrections here before applying them in a future page update.
+*Origin: Phone use — V3.4.6.1*
 
-## Home reference — V3.4.3 through V3.4.3.3
+Phone layout is a required part of every subsequent page/page-group update.
+The user already uses modes and rankings successfully from a phone; preserve
+those interactions while improving each page. This hosting patch changes no
+page composition or CSS. Keep the approved type, geometry, colours and artwork
+rules, using their existing smaller-screen sizes rather than shrinking an
+entire desktop page.
+
+- Check 320, 360, 390 and 430 px portrait widths, plus compact landscape and a
+  tablet width. Include populated/empty states and unusually long names. Check
+  readable wrapping, browser zoom and no document-wide horizontal overflow;
+  deliberately wide tables may use a clearly bounded local scroller.
+- Main dashboard sections stack when needed. Joined metrics follow the shared
+  component rules, including Home's three-column totals. Important values and
+  outcomes keep their own space rather than disappearing behind an ellipsis.
+  Keep covers square with all six dimensions constrained, and artists circular.
+- Use roughly 44 px touch areas for action/icon controls, with space between
+  adjacent controls. Retain clear selected, disabled, loading and focus states.
+  Keep text-entry inputs at least 16 px on phones; check selectors, sliders,
+  volume, play/pause/skip and submit/next controls using touch as well as keys.
+- Navigation, menus, dialogs and expandable history must fit the viewport and
+  remain scrollable. Place actions beneath headings when the shared header
+  pattern needs more room. Keep a usable close/back action in dialogs.
+- Retain ellipses and full accessible names on variable text, but do not make
+  essential information or actions depend on hover. Full entity details should
+  remain available by following the name link or opening an explicit detail.
+  Give icon-only controls accessible labels; keep visible text on core actions.
+- Preserve non-drag alternatives, including Album Shelves menus/up/down
+  buttons. Confirm game selection, answering, next rounds and preview controls
+  remain usable on touch devices. New audio must respect browser interaction
+  requirements; do not assume desktop autoplay permission on a phone.
+
+Record what was actually checked in `VALIDATION.md`. Viewport/DOM checks help
+catch overflow and missing controls, but do not claim an on-device Safari or
+Android playback/paint check unless one was performed. The user's successful
+phone use is the current baseline, not a substitute for checking later edits.
+
+### Implementing later page updates
+
+*Origin: Implementing later page updates*
+
+Use shared components/tokens where their behavior fits. Scope a page's new CSS
+for individual page composition changes; keep the approved common baseline
+shared across the site. For this reference,
+see `templates/global_stats.html`, `static/css/global_stats.css` and the Overall
+global summary in `static/js/overall.js`. The data projection is read-only in
+`global_stats_data.py`; visual patches do not change scoring rules or add counters.
+
+Check representative populated and empty states, long names, keyboard links,
+the phone checklist above, tablet rules and meaningful data calculations. Keep the supplied database
+out of validation writes and deliverable ZIPs. Change `version.py` for each patch.
+The V3.4 styling rollout's notes all go in `update_logs/V3_4_UPDATE.md`, under
+the exact patch number; do not create a separate notes file for every page.
+
+## Home
+
+- [Home reference](#home-reference)
+- [Vibe library surfaces](#vibe-library-surfaces)
+- [Vibe follow-up](#vibe-follow-up)
+
+
+<a id="home-reference--v343-through-v3433"></a>
+
+### Home reference
+
+*Origin: Home reference — V3.4.3 through V3.4.3.3*
+
+> **Current exception:** there are six mode buttons. The Vibe library card and combined top-twenty-per-category banner are additional Home surfaces; its limit overrides the older ten-entry banner rule for Vibe only.
 
 Below Ways to Play, keep exactly three collection total cards: Songs, Artists
 and proper Albums. Omit the Tournament total from this group. Keep all three
@@ -295,235 +343,88 @@ positions. Scope home composition in `static/css/home.css`; joined rows and
 main-box glows are shared in `static/css/components.css`, while the approved
 type/geometry baseline remains in `static/css/site_baseline.css`.
 
-## Match History reference — V3.4.4
+<a id="vibe-library-surfaces--vibe-map-v107"></a>
 
-Keep the selectors above the history list. A shared versus row places the two
-covers beside the central VS, with the song/artist/proper-album names outside
-on desktop. Names link independently and underline on hover/focus; artwork and
-whole rows are not links. Winner songs are green, losers red, artists blue and
-proper albums purple. Saved dates sit below VS; frozen before/after Elo belongs
-to that saved result, with an explicit current-Elo fallback for older rows.
-Standard/blind colours wash in softly from the row edges. Keep the same row
-composition in Global Stats Frequent Matchups, whose aggregate pairs show
-current Elo and encounter counts rather than a made-up single-match outcome.
+### Vibe library surfaces
 
-## Recognisability Stats reference — V3.4.5
+*Origin: Vibe library surfaces — Vibe-Map-v1.0.7*
 
-Keep the existing page title and Play Trivia action. Major panels occupy their
-own rows, in this order: Trivia overview, Round results, Collection coverage,
-Most recognised tracks, Least recognised tracks, Artist answers, Album answers,
-Recognition by tag, Recent Trivia. Use `dashboard-surface` with the recognition
-accent for every main panel; use shared joined metrics and their dividers for
-related figures. Fields and comparisons are quiet inset groups. All statistics,
-bars and labels remain gold; entity names use their own semantic colours.
+Place Home's compact all-song map card immediately below Overall Leaders, and
+Global Stats' Vibe summary immediately below Overall. Keep four small maps per
+wide row and two columns on phones. Use existing joined metrics and dashboard
+glows. The final Home banner mixes the top twenty albums, artists and tags in one
+consistency-ordered strip without category pills, using existing shelf cards, scroll buttons and autoplay
+ownership. Scores/frames are Vibe red; entity names, artwork shapes and track
+counts retain purple/blue/gold/green semantics. Pause scrolling for focus/hover
+and honour hidden tabs/reduced motion through the shared owner.
 
-The overview puts four summary figures above a full-width pooled field-accuracy
-bar, then the song/artist/eligible-album field cards. Correct and missed counts
-share a divided row, with correct-answer timing below. Round results separate
-outcome counts/a stacked split from points and 7/30-day activity. Coverage is
-explicitly about tracks with current audio previews. Empty rates/timings use an
-em dash; an unknown saved result is distinct from a miss or an ineligible album.
+Vibe Map is last in Mode Rankings, with albums/artists/tags and no song tab.
+Reuse shared Top/Bottom twenty controls and ranking row geometry, bounded names,
+artwork, semantic identity links and red rank-dependent glows. Show mapped/total
+counts with consistency; retain absolute ranks on the bottom board. Add context
+ranking links to collection profile cards and the dedicated Vibe stats page.
+Do not add a performance score or Overall contribution for Vibe Map.
 
-Track lists retain ten results, with five visible and five expandable using
-native keyboard-accessible details. They use the shared 120/88/72 px ranking-art
-scale and 30/26/22 px titles; scores move below the names on phones. Artist/album/
-tag comparisons show five highest-accuracy and five most-missed records, inside
-one full-width main panel per category. These paired comparisons stack below
-1050 px; field cards stack below 760 px. Dense category/recent art is 72 px,
-64 px on phones. Constrain all six art dimensions; artist art stays circular.
+<a id="vibe-follow-up--vibe-map-v1071"></a>
 
-Use actual relationship links, proper albums only, single-line ellipses with
-full title attributes and links on names only. Recent Trivia shows ten saved
-rounds initially, with the next ten expandable. Each keeps field outcomes,
-round points, saved running score/streak and a local-time date. Avoid nested
-scrolling lists. Keep less obvious aggregation/timing/eligibility explanations
-in the release notes rather than adding long help text to the stats page.
+### Vibe follow-up
 
-## Tournament Stats reference — V3.4.6
+*Origin: Vibe follow-up — Vibe-Map-v1.0.7.1*
 
-Use the accepted Recognisability dashboard as the reference, with tournament
-pink for headings, data, bars and border glows. Entity names keep green/blue/
-purple/amber; match losses stay red. Keep the title and Play Tournament action.
-The full-width section order is overview, latest podium, bracket breakdowns,
-match activity, collection coverage, track records, artist records, album
-records, tag records, seed patterns, bracket history. Frequent summaries come
-first; detailed records and individual rounds sit lower down.
+Keep one shared scrolling owner and its arrow controls for the combined banner.
+Preserve entity colours/art shapes and Vibe-red frames/scores. Scope coverage
+caption margins to the direct caption; the progress fill must fill the track’s
+height with no text margin. Include Vibe saves in Global’s activity chart and
+recent-results colour blend. One retained update per song is the available
+activity unit; do not label it a complete pass or an exhaustive round history.
 
-The overview joins bracket count (unfinished count inline only when nonzero),
-match decisions and track-entry slots. A full-width bar shows completion. Show
-the latest top-three podium with 120/88/72 px square covers, centred names and
-actual bracket points; previous champions form a compact list of at most five.
-Sizes, visibility and scopes have their own quiet, divided rows and pink stacked
-bars. A blind tournament stays pink. Distinguish bracket matches from bronze
-playoffs; stage names follow saved round numbers and bracket sizes, never the
-last currently created round. Keep activity counts separate from stage counts.
+## Rankings and search
 
-Track records are six compact record cards, rather than Top/Bottom boards.
-The existing full mode rankings have a link. Artist/album/tag sections show at
-most five entries with titles, podiums, points, track and bracket counts. Only
-proper albums are linked. Seed patterns use saved seeds, with short labels and
-sample denominators; detailed definitions belong in release notes.
-
-History uses native expandable details, ten brackets per page, active brackets
-first. Existing `?tournament=ID` links select the correct archive page and open
-that bracket; archive links include its anchor. Each bracket keeps its scope,
-blind setting, saved matches/results/points/dates and a link to open the game or
-podium. Missing/legacy data is explicit, with no guessed identity or result.
-Artist art stays circular; all cover sizes constrain all six dimensions. Dense
-match art is 52 px (44 px on phones); text and results wrap into their own space.
-
-## Elo Guesser Stats reference — V3.4.7
-
-Use the accepted Recognisability/Tournament dashboards, with Elo Guesser's
-red-orange for section headings, figures, bars, borders and soft glows. Entity
-names retain their semantic colours. Main panels each occupy one full row:
-overview, recent form, collection coverage, Elo gaps, card choices, top tracks,
-tracks to practise, artist records, album records, tag records, frequent
-comparisons, guess history. Keep the title and a Play Elo Guesser action.
-
-The overview joins completed/correct/wrong/best-streak figures above a full-width
-accuracy bar. Four-field groups become two columns on phones, with dividers
-reset between rows. Recent form uses current streak, longest miss run and active
-days, then the latest ten and rolling 7/30-day accuracy groups. Coverage refers
-to finite, different-rated live tracks, with no audio requirement. Gap rows use
-short, explicit ranges, a bar and the correct/total/wrong counts; their supporting
-records remain below. First/second card labels describe the saved offered order,
-so they still make sense when the game stacks its cards on a phone.
-
-Top/practice tracks retain ten results, five visible and five in native details,
-using shared 120/88/72 px art and the accepted responsive text scale. Category
-records show five high-accuracy and five most-missed entries in quiet insets;
-comparisons stack below 1050 px. Pool appearances rather than averaging rates.
-Keep denominators visible; explanations of pooling and eligibility live in the
-release notes. Proper albums only; artist covers remain circular.
-
-Repeated pairs show at most five comparisons. History has ten native expandable
-results per page, newest first, with the first open. Keep the chosen track,
-result/points and date in the summary; show both saved ratings, pick/higher-Elo
-labels and the running streak inside. Correct pick labels use green, wrong
-labels red; other stats stay red-orange. Song links stay green independently of
-the answer. Covers flank the centred VS on desktop, with names outside them.
-Below 760 px, the two tracks stack around the VS divider, retaining 64 px art
-and readable metadata. All six art constraints agree. Pagination, details and
-page actions have at least 44 px touch targets. Full entity text is available
-through the expandable result/name links, not only a hover title.
-
-Do not use current Elo to rewrite old answers or expose pending questions/tokens.
-Missing identities stay unlinked; unavailable rates use an em dash. This page
-is a read-only report; changes to its visuals or aggregates must not alter game
-selection, scoring, Overall, other mode dashboards or preview behavior.
-
-## Album Shelves Stats reference — V3.4.8
-
-Use the same shared detailed-mode dashboard as Recognisability, Tournament and
-Elo Guesser. Shelves data/headings/bars use mauve; borders and soft glows use the
-existing deeper aubergine family. Entity names retain green/blue/purple/amber.
-Each main panel gets one row, in order: overview, round results, recent form,
-round formats, collection coverage, top tracks, tracks to practise, albums
-played, artist records, tag records, optional placement breakdown, round history.
-
-Keep **relative track order** as the primary full-width percentage bar above
-the later points/placement details. Overview figures are completed rounds,
-track appearances, albums played and perfect rounds. Points keep their actual
-earned/available denominator; they are not the ordering percentage. Short
-rolling-window/format groups pool comparisons and keep counts visible. Join
-related figures with the shared quiet dividers; four-column groups become two
-columns on phones. Break the long page heading/action onto separate lines by
-1050 px, with the action on the right below the centred title.
-
-Track lists keep ten entries, five visible/five expandable, with shared
-120/88/72 px covers and linked artist/proper-album metadata. Practice entries
-must have missed ordering comparisons. Album/artist/tag records show five
-high-accuracy and five most-missed entries. All played albums remain accessible
-through a native expandable list with ten per page; avoid nested scrolling.
-Artist art stays circular; all other covers remain square with all six sizes
-constrained. Names link independently and underline on hover/focus.
-
-Round history has ten native expandable entries per page. Open the first by
-default, or the selected `?round=ID` on its correct page. The summary shows the
-round/shelf count, date, ordering rate, outcome and points. Inside, give each
-saved shelf a quiet inset with its album art/title, ordering/points totals and
-tracks in original saved track-number order. Retain submitted shelf/position
-and individual points. Correct labels are green, wrong album/order labels red,
-and other result data mauve. Song links keep their own green independently.
-Keep frozen shelf identity/track number separate from current profile metadata;
-missing identities stay unlinked and separate saved shelf slots are retained.
-
-Saved shelves stack below 1100 px, comparison/format/window groups below 1050
-px. Dense covers become 64 px on phones; metadata stays readable and important
-scores wrap in their own space. Details, pagination and page actions retain
-44 px touch targets. Full names remain in accessible text/name links. Empty
-rates use an em dash; unavailable history does not become a zero score or a
-perfect round. Definitions and legacy scoring details belong in the release
-notes. These reports do not change game selection, scoring or previews.
-
-## Detailed-mode shared components — V3.4.6 through V3.4.8
-
-Recognisability, Tournament, Elo Guesser and Album Shelves Stats share
-`mode_stats.css` and the formatting
-macros in `mode_stats_components.html`. The accepted Recognisability values,
-links, section order and visual scale stay the same. Page wrappers supply
-`--section-color`, `--surface-accent`, `--mode-stats-border`, `--mode-stats-rule`
-and `--mode-stats-divider`; avoid copying a new dashboard's base geometry.
-Use the existing shared `joined-metrics` and `dashboard-surface` components.
-Page styles own field states, podiums, bracket rounds, saved shelves and other
-unique content. Numeric formatting is shared through the `number` macro too.
-
-## Phone use — V3.4.6.1
-
-Phone layout is a required part of every subsequent page/page-group update.
-The user already uses modes and rankings successfully from a phone; preserve
-those interactions while improving each page. This hosting patch changes no
-page composition or CSS. Keep the approved type, geometry, colours and artwork
-rules, using their existing smaller-screen sizes rather than shrinking an
-entire desktop page.
-
-- Check 320, 360, 390 and 430 px portrait widths, plus compact landscape and a
-  tablet width. Include populated/empty states and unusually long names. Check
-  readable wrapping, browser zoom and no document-wide horizontal overflow;
-  deliberately wide tables may use a clearly bounded local scroller.
-- Main dashboard sections stack when needed. Joined metrics follow the shared
-  component rules, including Home's three-column totals. Important values and
-  outcomes keep their own space rather than disappearing behind an ellipsis.
-  Keep covers square with all six dimensions constrained, and artists circular.
-- Use roughly 44 px touch areas for action/icon controls, with space between
-  adjacent controls. Retain clear selected, disabled, loading and focus states.
-  Keep text-entry inputs at least 16 px on phones; check selectors, sliders,
-  volume, play/pause/skip and submit/next controls using touch as well as keys.
-- Navigation, menus, dialogs and expandable history must fit the viewport and
-  remain scrollable. Place actions beneath headings when the shared header
-  pattern needs more room. Keep a usable close/back action in dialogs.
-- Retain ellipses and full accessible names on variable text, but do not make
-  essential information or actions depend on hover. Full entity details should
-  remain available by following the name link or opening an explicit detail.
-  Give icon-only controls accessible labels; keep visible text on core actions.
-- Preserve non-drag alternatives, including Album Shelves menus/up/down
-  buttons. Confirm game selection, answering, next rounds and preview controls
-  remain usable on touch devices. New audio must respect browser interaction
-  requirements; do not assume desktop autoplay permission on a phone.
-
-Record what was actually checked in `VALIDATION.md`. Viewport/DOM checks help
-catch overflow and missing controls, but do not claim an on-device Safari or
-Android playback/paint check unless one was performed. The user's successful
-phone use is the current baseline, not a substitute for checking later edits.
-
-## Implementing later page updates
-
-Use shared components/tokens where their behavior fits. Scope a page's new CSS
-for individual page composition changes; keep the approved common baseline
-shared across the site. For this reference,
-see `templates/global_stats.html`, `static/css/global_stats.css` and the Overall
-global summary in `static/js/overall.js`. The data projection is read-only in
-`global_stats_data.py`; visual patches do not change scoring rules or add counters.
-
-Check representative populated and empty states, long names, keyboard links,
-the phone checklist above, tablet rules and meaningful data calculations. Keep the supplied database
-out of validation writes and deliverable ZIPs. Change `version.py` for each patch.
-The V3.4 styling rollout's notes all go in `update_logs/V3_4_UPDATE.md`, under
-the exact patch number; do not create a separate notes file for every page.
+- [Standard Rankings reference](#standard-rankings-reference)
+- [Mode Rankings](#mode-rankings)
+- [Mode ranking correction](#mode-ranking-correction)
+- [Search reference](#search-reference)
 
 
-## Mode Rankings — V3.4.9
+<a id="standard-rankings-reference--v342--v3421"></a>
+
+### Standard Rankings reference
+
+*Origin: Standard Rankings reference — V3.4.2 / V3.4.2.1*
+
+The Songs, Artists, Albums and Tags standard ranking boards share this baseline.
+Preserve the rank-dependent glow falloff, entity-coloured Top/Bottom switch,
+simple centred category selector with its active underline, and existing voting
+stat arrangement. Keep Elo orange, Blind mint and collection Impact in the
+entity colour. The V3.4.2 content/link fixes remain specific to these boards;
+the chosen shared baseline now also styles other ranking groups.
+
+- Entity titles always use their own colour, including before hover. Hover and
+  keyboard focus underline the text. Song artist/album metadata uses bold linked
+  blue/purple names; album rows show bold blue artist links from actual artist
+  relationships, including collaborators and names containing commas.
+- Desktop titles are 30 px/900, metadata 18 px with linked names at weight 800,
+  voting figures 15 px, primary scores 36 px and score labels 13 px. Covers are
+  120 px. Equal 24 px vertical padding and centred grid alignment keep the cover
+  the same distance from the top and bottom, even when stats wrap.
+- Below 760 px, use 26 px titles, 16 px metadata, 14 px voting figures, 32 px
+  scores and 88 px covers. Below 520 px, use 22/15/14/28 px respectively with
+  72 px covers. The score moves below the text, while the cover/rank span the
+  two rows and remain vertically centred. Keep all cover dimensions constrained
+  together; artist art remains circular and tag art remains square.
+- Long titles/metadata retain single-line ellipses and full title attributes.
+  Counts and scores stay in their existing separate fields.
+
+The separate Style Previews ZIP offers labelled experiments and a reusable demo
+template. Its original default was B. The custom codes recorded above are now
+approved and applied; other preview alternatives remain proposals. Record later
+corrections here before applying them in a future page update.
+
+<a id="mode-rankings--v349"></a>
+
+### Mode Rankings
+
+*Origin: Mode Rankings — V3.4.9*
 
 Overall, Recognisability, Tournament, Elo Guesser and Album Shelves use the
 standard ranking board rather than miniature stats dashboards. Share navigation
@@ -550,8 +451,11 @@ never truncate the sample count or force horizontal scrolling. Category links
 wrap and have at least 44 px height. Rankings remain at twenty rows per view;
 the home banners' ten-entry limit does not apply here.
 
+<a id="mode-ranking-correction--v3491"></a>
 
-## Mode ranking correction — V3.4.9.1
+### Mode ranking correction
+
+*Origin: Mode ranking correction — V3.4.9.1*
 
 All five mode boards offer Songs, Artists, Albums and Tags. Tags pool the saved
 mode counters of their linked tracks, using the same denominators as the other
@@ -562,8 +466,11 @@ the entity colour: green song, blue artist, purple album, amber tag. Row scores,
 rank glows and Top/Bottom switching retain the mode colour. Category links
 continue to wrap with 44 px targets on phones.
 
+<a id="search-reference--v3410-through-v34102"></a>
 
-## Search reference — V3.4.10 through V3.4.10.2
+### Search reference
+
+*Origin: Search reference — V3.4.10 through V3.4.10.2*
 
 The header search is unchanged. The main Search page uses one controls panel,
 entity-coloured category pills with result counts, live search, rating/name/random sort,
@@ -636,8 +543,23 @@ URL sort choices remain usable; query links without a sort default to Highest
 rating. Persist all sort choices in the URL, including Highest rating on an
 empty search. Reloading a random view produces a fresh shuffle.
 
+## Entity profiles
 
-## Entity profiles — V3.4.11 / V3.4.11.1
+- [Shared profile layout](#shared-profile-layout)
+- [Independent Elo comparisons](#independent-elo-comparisons)
+- [Overall direct display](#overall-direct-display)
+- [Entity profile simplification](#entity-profile-simplification)
+- [Vibe Map entity cards](#vibe-map-entity-cards)
+- [Compact Vibe profile follow-up](#compact-vibe-profile-follow-up)
+
+
+<a id="entity-profiles--v3411--v34111"></a>
+
+### Shared profile layout
+
+*Origin: Entity profiles — V3.4.11 / V3.4.11.1*
+
+> **Partly expired:** disclosure/listening instructions in this earlier profile specification are superseded by “Entity profile simplification” and the compact Vibe profile rules below.
 
 Song, Album, Artist and Tag profiles share `profiles.js` for key-stat markup,
 mode summaries, visible detail groups and preview captions, and `profiles.css` for
@@ -701,43 +623,132 @@ labels stay muted and Blind subgroups keep their mint section colour. Top key
 stats retain their existing entity/Elo colours. Review the actual CSS load order
 when verifying semantic colours, including expanded/open inset groups.
 
+<a id="independent-elo-comparisons--v4003"></a>
 
-## Standard Voting Stats — V3.4.12
+### Independent Elo comparisons
 
-`/voting_stats` reports Standard Vote's Non-blind and Blind history. Use the
-shared mode_stats template macros, joined metrics, record rows and artwork,
-plus shared VS geometry. Keep a dedicated read-only reader and one consistent
-SELECT snapshot. The page loads its own composition CSS only on this route;
-no extra client controller or scoring counters are needed.
+*Origin: Independent Elo comparisons — V4.0.0.3*
 
-Order: overview/mode mix → Non-blind/Blind comparison → activity → coverage →
-shared current Elo distribution → saved Elo movement/gaps → track Elo movement
-→ track records → across-mode rate differences → frequent matchups → upsets →
-artist records → proper-album records → tag records → paged recent votes.
-Major panels occupy full rows. Lists show at most five records; recent votes
-show ten per page. Keep the data visible rather than adding metric tabs or
-expansion controls. Add the page to Stats navigation and profile voting links.
+Keep the existing profile Voting Record panel and key public-Elo/Impact stats.
+Add independent mode ratings in its open detail group, using existing two-column
+insets, joined metric rows and phone stacking. Non-blind stays orange and Blind
+mint. Show rated vote/appearance counts and the first-round tournament subset.
+Unplayed mode ratings/gaps show an em dash, even though their internal baseline
+is 1200. Artist/album/tag means use the same distinct tracks rated in both modes;
+show cohort coverage and keep the existing public Impact metric unchanged.
 
-Combined voting/Elo panels use orange; Blind comparison insets, figures and
-result labels use mint. Entity names keep green/blue/purple/amber and losing
-match names use danger red. Use quiet divided metric rows and existing soft
-surface glows, with readable empty/unknown states. Side-by-side comparisons
-stack below 1050 px. Record results move below copy on phones; compact VS rows
-stack artwork/name on each side of a central VS separator below 600 px, keeping
-both covers, ratings, mode and dates. Category artist art remains circular.
-All six fixed artwork constraints must agree.
+Voting Stats adds one Independent Elo across modes section after the ordinary
+mode comparison. Reuse existing dense record rows and responsive result placement;
+show signed raw Elo differences and both stream counts, at most five per direction
+with three rated votes in each mode. Describe differences as observed, without
+claiming causal bias. No percentile scaling or new ranking order is introduced.
+Tournament setup explains new first-round influence before Start; each active
+match states full/half Elo influence or points only. Preserve hidden blind
+identities, pink tournament styling, points reveals and audio handoffs.
 
-Shared Elo is the current combined rating across both voting modes, not a
-separate mode rating. Match gaps, gains, upsets and win rates use saved history;
-never substitute today's Elo for missing snapshots. Skip self-pairs and missing
-participant IDs, retain unavailable track identities without broken links, and
-keep unknown rates unavailable. Collection rates pool saved track appearances.
-Use short units/labels on the page and document less obvious denominators,
-UTC activity days, sample minimums, streak eligibility and Elo spread in notes.
-The recent-history mode filter and pagination do not change lifetime panels.
+<a id="overall-direct-display--v4004"></a>
+
+### Overall direct display
+
+*Origin: Overall direct display — V4.0.0.4*
+
+All Overall figures/bars use the existing composite percentage directly. Keep
+rank separate, with exact ties sharing competition rank and full precision
+ordering. Profiles show rank beside relative evidence or collection confidence;
+Overall ranking rows use the same standing, including Bottom. The shared
+`modeRankingRow` accepts an optional rank for Overall; other mode boards retain
+their existing positions. Preserve Home/Global leader geometry and entity colours.
+Unknown scores show an em dash and have no numeric progress state.
+
+Keep Mode balance as a native disclosure with its marker, keyboard behaviour
+and a 44 px target. Each quiet mode inset shows Adjusted score, Effective weight,
+Contribution in points and Relative evidence, with mode-coloured values/bars.
+Collection effective weights include confidence; show the neutral share so all
+unrounded contributions reconcile with Overall. The confidence prior adds no
+tested modes or evidence. Keep the weighted-score/evidence distinction visible.
+
+Use two inset columns on wide screens and one below 760 px; inside each inset,
+keep a bounded two-column metric grid with wrapping labels/values. Below 540 px,
+the main score spans the card above its two context columns. Reuse the shared
+dark panels, corners and typography, preserving 320–430 px usability. Dev lookup
+explains direct composites and collection arithmetic without the superseded
+percentile transformation. No other page layout is changed in this step.
+
+<a id="entity-profile-simplification--v5041"></a>
+
+### Entity profile simplification
+
+*Origin: Entity profile simplification — V5.0.4.1*
+
+This replaces earlier profile disclosure/listening-summary instructions; other
+pages retain their existing reporting. Song, artist, album and tag profiles use
+one shared panel structure: heading with stats links, joined summary, primary
+rate and useful inline breakdowns. Keep Non-blind/Blind Elo cards, recognition
+fields, podium counts and shelf rates visible. Remove repeated explanations,
+per-bracket history, nested independent-rating disclosures and profile listening
+diagnostics. Overall alone retains Mode balance, with figures and short labels
+but no explanatory paragraphs.
+
+Artwork, play overlay and player frame must use the same inner corner radius.
+Artist hero layers remain circular, including clipping; song/album heroes retain
+rounded corners. Preserve the over-art playback controls and current hero sizes.
+
+Tag album lists begin with six cards and expand by six. Artist, album and tag
+song lists begin with thirty rows and expand by thirty. Put Show more centred
+at the bottom of each list and remove it when exhausted. Expansion appends rows
+to preserve active previews; the hero queue still includes every linked preview.
+
+<a id="vibe-map-entity-cards--vibe-map-v106"></a>
+
+### Vibe Map entity cards
+
+*Origin: Vibe Map entity cards — Vibe-Map-v1.0.6*
+
+Centre the selected identity block at the top of the reusable song card,
+including its metadata. Song profiles use that same compact radar/matches card
+immediately above Overall. Album, artist and tag profiles use the same red mode
+panel in that position, with consistency and fully mapped/total counts first;
+show partly mapped counts when nonzero. Place four small maps in two rows of two,
+including on phones, and cap the combined grid at 480 px. Keep endpoint labels
+readable, use fixed 11 px dots (larger than the main stats dots), retain exact
+positions and show track names on hover. No disclosure or explanatory blocks.
+
+Vibe cards load independently of Overall and never remount the hero preview.
+Show short retry states locally. Missing maps are absent points; consistency
+requires two fully mapped tracks and uses the existing dashboard definition.
+
+<a id="compact-vibe-profile-follow-up--vibe-map-v1061"></a>
+
+### Compact Vibe profile follow-up
+
+*Origin: Compact Vibe profile follow-up — Vibe-Map-v1.0.6.1*
+
+Hide the profile panel completely, including its loading placeholder, until a
+song has four placed maps or a collection has two fully mapped members. Keep
+its hidden anchor for stable placement above Overall; unknown/failed requests
+still get a short local retry state. The main stats inspector retains partial
+maps and the selected identity. Dedicated song cards omit that duplicate identity.
+
+Collection maps occupy one row of four above 760 px, capped at 960 px across;
+narrow screens keep two columns for readable labels. Keep every caption aligned,
+small charts and fixed 11 px dots. Display Connection's low Y pole as Budding
+rather than Casual, using a presentation override only; keep stored definitions,
+map keys, generation, coordinates and similarity unchanged.
+
+## Game screens
+
+- [Shared game layout](#shared-game-layout)
+- [Challenge runs](#challenge-runs)
+- [Final V4 pacing](#final-v4-pacing)
+- [Game screen refinements](#game-screen-refinements)
+- [Vibe Map play screen](#vibe-map-play-screen)
 
 
-## Game screens — V3.4.13
+<a id="game-screens--v3413"></a>
+
+### Shared game layout
+
+*Origin: Game screens — V3.4.13*
 
 Standard Vote (Non-blind and Blind), Trivia, Tournament, Elo Guesser and Album
 Shelves share game-only `gameplay.css` and `gameplay.js`, included only on those
@@ -790,67 +801,11 @@ pending transfers must stop on cancellation/page exit. Reduced motion removes
 flips/pulses/count animation while retaining the same sequence. Scoring,
 per-track denominators, preview buffering and fades remain unchanged.
 
+<a id="challenge-runs--v4006"></a>
 
-## Preference corrections — V4.0.0.2
+### Challenge runs
 
-Dev Match History offers Review saved votes using the existing dialog, field,
-compact-copy and health-row components. Keep active/voided state, the original
-choice, correction notes and a clear restore action. Long names retain full
-accessible text; action buttons remain usable on phones. Ordinary voting retains
-its accepted card/reveal layout and audio sequencing.
-
-Public Match History reads the active corrected history. Mark a changed choice
-as Corrected and affected later rating snapshots as Recalculated, beside the
-saved date in the existing quiet text style. Original submitted snapshots stay
-in Dev review; never present a reconstructed value as a newly saved original.
-
-
-## Independent Elo comparisons — V4.0.0.3
-
-Keep the existing profile Voting Record panel and key public-Elo/Impact stats.
-Add independent mode ratings in its open detail group, using existing two-column
-insets, joined metric rows and phone stacking. Non-blind stays orange and Blind
-mint. Show rated vote/appearance counts and the first-round tournament subset.
-Unplayed mode ratings/gaps show an em dash, even though their internal baseline
-is 1200. Artist/album/tag means use the same distinct tracks rated in both modes;
-show cohort coverage and keep the existing public Impact metric unchanged.
-
-Voting Stats adds one Independent Elo across modes section after the ordinary
-mode comparison. Reuse existing dense record rows and responsive result placement;
-show signed raw Elo differences and both stream counts, at most five per direction
-with three rated votes in each mode. Describe differences as observed, without
-claiming causal bias. No percentile scaling or new ranking order is introduced.
-Tournament setup explains new first-round influence before Start; each active
-match states full/half Elo influence or points only. Preserve hidden blind
-identities, pink tournament styling, points reveals and audio handoffs.
-
-
-## Overall direct display — V4.0.0.4
-
-All Overall figures/bars use the existing composite percentage directly. Keep
-rank separate, with exact ties sharing competition rank and full precision
-ordering. Profiles show rank beside relative evidence or collection confidence;
-Overall ranking rows use the same standing, including Bottom. The shared
-`modeRankingRow` accepts an optional rank for Overall; other mode boards retain
-their existing positions. Preserve Home/Global leader geometry and entity colours.
-Unknown scores show an em dash and have no numeric progress state.
-
-Keep Mode balance as a native disclosure with its marker, keyboard behaviour
-and a 44 px target. Each quiet mode inset shows Adjusted score, Effective weight,
-Contribution in points and Relative evidence, with mode-coloured values/bars.
-Collection effective weights include confidence; show the neutral share so all
-unrounded contributions reconcile with Overall. The confidence prior adds no
-tested modes or evidence. Keep the weighted-score/evidence distinction visible.
-
-Use two inset columns on wide screens and one below 760 px; inside each inset,
-keep a bounded two-column metric grid with wrapping labels/values. Below 540 px,
-the main score spans the card above its two context columns. Reuse the shared
-dark panels, corners and typography, preserving 320–430 px usability. Dev lookup
-explains direct composites and collection arithmetic without the superseded
-percentile transformation. No other page layout is changed in this step.
-
-
-## Challenge runs — V4.0.0.6
+*Origin: Challenge runs — V4.0.0.6*
 
 Trivia and Elo Guesser retain their accepted game composition, controls, semantic
 colours and reveal timing. Show the active streak requirement above Trivia's
@@ -874,83 +829,11 @@ Trivia identities stay readable without fabricated entity links. Developer
 manual record edits explicitly refer to classic records; challenge bests come
 from completed runs.
 
+<a id="final-v4-pacing--v400--step-8"></a>
 
-## Developer catalogue — V4.0.0.7.1 / step 7A
+### Final V4 pacing
 
-Scope this subpatch to import cards, source/Single dialogs, quick album tracks
-and their Songs/Albums actions. Dashboard/task/Git layout remains for 7C.
-`dev_catalog.css` loads only for Dev and follows the shared baseline. Use existing
-dark panels, quiet insets, typography and shared developer actions. Keep 16 px
-body/input text, at least 44 px action targets, wrapping metadata and bounded
-children. Artwork is 80 px wide on desktop and 64 px on phone; image, wrapper
-and fallback dimensions agree. Import cards use artwork/details/actions columns,
-then two columns with a full-width action row on phones.
-
-Show result counts, hidden library matches and a deliberate Show library matches
-control. A verified Apple identity and a possible name match need different text.
-Never use a censored title to label audio Cleaned; Unknown is a valid state.
-Source review defaults to saving the observation only, with separate opt-ins for
-metadata and source album/position. Single review shows carried date/origin and
-whether the old album can be removed before the backup/move action. All dialogs
-reuse the existing editor dialog, close/reopen correctly and keep error text
-visible. Switching panels or completing an older request cannot replace a newer
-review. Previews are user-started, with explicit stop ownership on dialog exit.
-
-
-## Developer tags and previews — V4.0.0.7.2 / step 7B
-
-Keep this scope within the workbench and direct Songs/Tags/bulk-tag entry points;
-the general dashboard and Git panels remain for 7C. `dev_tags.css`/`dev_tags.js`
-load only in Dev. Reuse shared panels, joined metrics, controls, artwork and media
-ownership. Tag surfaces use amber; song/artist/release names retain green/blue/
-purple. Keep 16 px inputs/body, at least 44 px controls and explicit loading,
-disabled, error and selected states. All six artwork dimensions agree at 72 px
-desktop / 56 px phone. The baseline remains the last stylesheet.
-
-Order: all-library counts/filters/selection → persistent preview player → tag
-editor/review → paged songs. Filters use four columns, two on tablets and one on
-phones. Tag choices and Before/After groups use two columns, one on phones.
-The tag-choice list has a bounded scroller; song/review pages each have twenty
-rows. Song cards keep selection/art/name columns; actions move below on narrower
-screens. Long names truncate with full accessible text; review metadata wraps.
-Touch controls never require hover. Hidden selected songs have a visible count.
-
-Preview controls identify the playing song separately from the edit scope.
-Playback/selection must not rebuild during a successful tag save. Single edits
-start from the actual current tags; Add/Remove/Replace and the empty-replacement
-effect are explicit. Review shows current Before/After sets and changed/unchanged
-totals. Input changes discard an obsolete review; switching a dirty single-song
-draft needs reset/review or explicit discard. Late requests must preserve the
-current panel and report save success separately from a catalogue-refresh failure.
-
-
-## Developer tasks and recovery — V4.0.0.7.3 / step 7C
-
-`dev_system.css` and `dev_system.js` load only in Dev. The dashboard defaults to
-Tasks & health. Keep the centred page title, always-visible Upload to Git,
-Create backup, full export and Lock actions, then grouped navigation beside the
-active task panel. Existing library/import/tag/record panels retain their owners.
-Use the baseline Arial/type scale, 24 px main panels, 18 px quiet groups, green
-system accent and existing entity colours. Joined catalogue counts use shared
-four-field metrics. Task cards have 22 px labels and 16 px descriptions.
-
-The sidebar is 230 px desktop, 200 px on smaller desktop and moves above content
-below 800 px. Frequent tasks use three/two/one columns; Git explanations and
-search/filter controls collapse on phones. Inputs are 16 px, actions at least
-44 px and main title 32 px on phones. Long filenames, URLs and extension-object
-names wrap; inventory counts and backup actions keep separate bounded columns.
-
-Opening status never fetches a Git remote. Show the branch/target, redacted
-remote, cached state and actual outcome. Distinguish check, SQL upload and
-restart update. Disabled/busy/retry states remain visible. Keep local backup and
-full export available without Git. Competition resets stay in a collapsed group
-with their existing typed confirmations. Restore review shows live/backup counts,
-whole-database scope and pre-restore safety backup; stale data needs a new review.
-Navigation waits while the restore applies. Late requests cannot replace the
-current panel or newer catalogue state. Task shortcuts filter without autoplay.
-
-
-## Final V4 pacing — V4.0.0 / step 8
+*Origin: Final V4 pacing — V4.0.0 / step 8*
 
 Keep the approved five game compositions, colours, controls and scoring. A
 collapsed Round pacing disclosure sits above the game, outside the replaced
@@ -969,34 +852,11 @@ Keep all pair games/Shelves silent on fresh entry and preserve continuous audio
 only within an already started Trivia run. Shared flow timing lives in
 `round_flow.js`; audio/caching remains with the existing preview owners.
 
+<a id="game-screen-refinements--v411"></a>
 
-## Developer dashboard reference — V4.1.0
+### Game screen refinements
 
-Developer controls and dialogs share sizing/layout rules in
-`static/css/dev_system.css`; the site baseline still loads last. Keep 44 px
-minimum action targets, 15 px button text, 16 px fields, wrapping labels and
-visible keyboard focus. Scope these rules to Dev. Do not restore the old 11 px
-table-action text inside tall buttons. Group heading actions in a wrapping row
-and use a separate selection toolbar rather than placing multiple controls in
-the centred heading slot.
-
-Keep Edit visible in record tables. Put other song/album/entity actions in the
-row's expandable Actions group; only one group opens at a time. Expansion stays
-inside the table and does not create a page-wide action column or a clipped
-floating menu. Preserve columns, per-column filters, values and all actions.
-Long values keep their complete DOM text and title even when visually ellipsised.
-
-In the tag workbench keep the frequent filters visible and group artist,
-release, tag and tag-match filters behind a labelled summary with an active
-filter count. Artist/release/tag filters and long entity lists use the shared
-searchable picker in `static/js/dev_controls.js`, retaining their native select
-as form/state owner. Support keyboard selection, Escape, clear/reset, full
-option labels, selected states and narrow screens. Keep all options searchable.
-The bounded, keyboard-focusable song list precedes the player/editor; all
-selection, review, preview and backup safeguards remain in their feature modules.
-
-
-## Game screen refinements — V4.1.1
+*Origin: Game screen refinements — V4.1.1*
 
 Keep play screens concise: retain identities, scores, errors, live progress,
 eligibility and a short frozen Trivia streak target. Put general rule/policy,
@@ -1023,8 +883,336 @@ while hidden, while active Trivia's audio and answer clock continue together.
 Explicit pause/stop stays in effect across tab return; actual page navigation
 still cleans up owned players and timers.
 
+<a id="vibe-map-play-screen--vibe-map-v1042"></a>
 
-## Stats and selection health — V4.1.2
+### Vibe Map play screen
+
+*Origin: Vibe Map play screen — Vibe-Map-v1.0.4.2*
+
+Home has six modes, three by two on desktop, two columns on tablets and one on
+small phones. Vibe Map is last, labelled 📍 Vibe Map in Home/Game Modes, with
+red `--vibe` lighting and song/album/artist identity colours preserved.
+
+The stable song card sits beside the map container's vertical centre. On desktop
+it sticks within that container as the page scrolls, centred in the viewport when
+possible; compact its cover at shorter viewport heights. Measure actual card
+height rather than assuming all titles are one line. Stacked tablet/phone layouts
+use normal document flow so the player never covers the graph.
+
+Keep the current map title at the top, followed by concise progress. No placement
+subtitle, X/Y sliders, coordinate readouts or N/A button. Retain continuous pointer
+and keyboard positioning. X endpoint labels sit inside the graph alongside the
+horizontal axis, not below it. Y endpoints stay above/below the graph. Use a soft
+central glow, solid axes and a subtle outward axis pulse on placement/movement;
+no rigid contour circles. Suppress the pulse for reduced motion.
+
+Save state and its progress bar sit below the song's back/Finish/forward controls,
+not at the bottom of the map. Automatic next-map saves remain; completed maps stay
+editable until Finish. Never automatically open results. On results, show the
+radar and two similarity matches without a raw-value legend or Readjust button.
+The existing Finish control becomes Next song. Keep the audio element stable.
+
+Shared radar geometry/styles live in `vibe_charts.js`/`vibe_charts.css`; follow the
+API's related-pole order, retain accessible pole labels, and leave missing spokes
+as gaps. Entity stats pages place Vibe Map immediately above Overall; future mode rankings put
+it last. Those pages are not part of this mode patch.
+
+Generation 2 uses Pace & mood, Sound & impact, Connection and Perspective.
+All endpoints are single words; Perspective alone labels its X midpoint Present
+just below the central axis. Radar order is Happy, Hopeful, Future, Secure,
+Devoted, Powerful, Electronic, Upbeat. Keep all eight dimensions, no raw legend,
+and the existing manual Finish → Next song flow.
+
+## Statistics pages
+
+- [Global Stats reference](#global-stats-reference)
+- [Match History reference](#match-history-reference)
+- [Recognisability Stats reference](#recognisability-stats-reference)
+- [Tournament Stats reference](#tournament-stats-reference)
+- [Elo Guesser Stats reference](#elo-guesser-stats-reference)
+- [Album Shelves Stats reference](#album-shelves-stats-reference)
+- [Standard Voting Stats](#standard-voting-stats)
+- [Stats and selection health](#stats-and-selection-health)
+- [Adaptive Impact](#adaptive-impact)
+- [Dev searches, Shelves and combined Elo](#dev-searches-shelves-and-combined-elo)
+- [Voting Record balance](#voting-record-balance)
+- [Vibe Map dashboard](#vibe-map-dashboard)
+- [Vibe Map song inspection](#vibe-map-song-inspection)
+
+
+### Global Stats reference
+
+*Origin: Global Stats reference*
+
+The accepted major order is: top collection/mode totals, Collection Records,
+Overall Stats, Voting Results (including Frequent Matchups), Elo Distribution,
+Recognisability, Tournaments, Elo Guesser, Album Shelves, Artist Average Elo,
+Album Average Elo, Top Tags, Recent Mode Results.
+
+- Top totals have two rows of four cards. The second row follows the mode
+  sections: Trivia, Tournament, Elo Guesser, Album Shelves.
+- Every joined metric group, including dynamically mounted Overall, uses the
+  shared dividers. Use two/three/four fields as appropriate and reset divider
+  placement when four fields wrap to two columns.
+- Overall keeps tested songs, evidence and active modes; its mean score is
+  omitted. Keep one in-section link to Overall rankings and the existing leaders.
+- Frequent Matchups shows three pairs. Offer Show five only when at least four
+  pairs have repeated encounters. Elo bands are 50 points wide, in their own
+  framed group above the separate number-stat group. Omit the average Elo label.
+- Collection records include distinct proper albums per artist and album track
+  counts. Singles/unknown albums stay outside proper-album records and averages.
+  Use three cards per desktop row; centre a final row of two as a pair between
+  the columns above. Collapse to two cards on tablets and one on phones.
+- Recognition misses describe the actual track/artist/album being tested. Raw
+  incorrect guess text is not saved, so do not present a made-up wrong-guess list.
+  Artist/album summaries follow current catalogue links and saved field totals;
+  a collaborative track can contribute to each of its linked artists.
+- Tournament totals show unfinished brackets inline only when nonzero, plus
+  32/16/8-track counts. Show the latest podium and at most five recent champions.
+- Artist and album averages each show at most five entries. Top Tags shows up to
+  ten linked tags. Recent results mix all modes by completion time; one tournament
+  or Shelves round is one item, regardless of its internal matches/track placements.
+- Trivia's stored unit is a completed round, not a separately recorded session.
+- The Recent Mode Results panel blends only the colours represented in its visible
+  rows, weighted by their occurrence counts. A single-mode list keeps that mode's
+  colour; an empty list is neutral. Recompute the mix when entries/visibility change.
+  Each row retains its own mode colour, with entity names in their entity colours.
+- Recent Shelves rounds identify the saved albums and show actual points/available
+  points, percent earned, correct album placements and order comparisons. Do not
+  represent a ten-track round with a random single song. Preserve saved shelf slots
+  when albums are deleted; display missing identities without broken links.
+- Tournament results include champion, bracket size, saved matches/points and
+  scope. A blind tournament is still pink Tournament; Blind Audition is mint.
+- Elo Guesser results identify the chosen track and frozen comparison ratings,
+  rather than today's Elo. Trivia exposes only the fields available in that round.
+  Correct/perfect outcomes use green and misses use danger red; mode labels and
+  other result figures retain the mode's accent.
+
+<a id="match-history-reference--v344"></a>
+
+### Match History reference
+
+*Origin: Match History reference — V3.4.4*
+
+Keep the selectors above the history list. A shared versus row places the two
+covers beside the central VS, with the song/artist/proper-album names outside
+on desktop. Names link independently and underline on hover/focus; artwork and
+whole rows are not links. Winner songs are green, losers red, artists blue and
+proper albums purple. Saved dates sit below VS; frozen before/after Elo belongs
+to that saved result, with an explicit current-Elo fallback for older rows.
+Standard/blind colours wash in softly from the row edges. Keep the same row
+composition in Global Stats Frequent Matchups, whose aggregate pairs show
+current Elo and encounter counts rather than a made-up single-match outcome.
+
+<a id="recognisability-stats-reference--v345"></a>
+
+### Recognisability Stats reference
+
+*Origin: Recognisability Stats reference — V3.4.5*
+
+Keep the existing page title and Play Trivia action. Major panels occupy their
+own rows, in this order: Trivia overview, Round results, Collection coverage,
+Most recognised tracks, Least recognised tracks, Artist answers, Album answers,
+Recognition by tag, Recent Trivia. Use `dashboard-surface` with the recognition
+accent for every main panel; use shared joined metrics and their dividers for
+related figures. Fields and comparisons are quiet inset groups. All statistics,
+bars and labels remain gold; entity names use their own semantic colours.
+
+The overview puts four summary figures above a full-width pooled field-accuracy
+bar, then the song/artist/eligible-album field cards. Correct and missed counts
+share a divided row, with correct-answer timing below. Round results separate
+outcome counts/a stacked split from points and 7/30-day activity. Coverage is
+explicitly about tracks with current audio previews. Empty rates/timings use an
+em dash; an unknown saved result is distinct from a miss or an ineligible album.
+
+Track lists retain ten results, with five visible and five expandable using
+native keyboard-accessible details. They use the shared 120/88/72 px ranking-art
+scale and 30/26/22 px titles; scores move below the names on phones. Artist/album/
+tag comparisons show five highest-accuracy and five most-missed records, inside
+one full-width main panel per category. These paired comparisons stack below
+1050 px; field cards stack below 760 px. Dense category/recent art is 72 px,
+64 px on phones. Constrain all six art dimensions; artist art stays circular.
+
+Use actual relationship links, proper albums only, single-line ellipses with
+full title attributes and links on names only. Recent Trivia shows ten saved
+rounds initially, with the next ten expandable. Each keeps field outcomes,
+round points, saved running score/streak and a local-time date. Avoid nested
+scrolling lists. Keep less obvious aggregation/timing/eligibility explanations
+in the release notes rather than adding long help text to the stats page.
+
+<a id="tournament-stats-reference--v346"></a>
+
+### Tournament Stats reference
+
+*Origin: Tournament Stats reference — V3.4.6*
+
+Use the accepted Recognisability dashboard as the reference, with tournament
+pink for headings, data, bars and border glows. Entity names keep green/blue/
+purple/amber; match losses stay red. Keep the title and Play Tournament action.
+The full-width section order is overview, latest podium, bracket breakdowns,
+match activity, collection coverage, track records, artist records, album
+records, tag records, seed patterns, bracket history. Frequent summaries come
+first; detailed records and individual rounds sit lower down.
+
+The overview joins bracket count (unfinished count inline only when nonzero),
+match decisions and track-entry slots. A full-width bar shows completion. Show
+the latest top-three podium with 120/88/72 px square covers, centred names and
+actual bracket points; previous champions form a compact list of at most five.
+Sizes, visibility and scopes have their own quiet, divided rows and pink stacked
+bars. A blind tournament stays pink. Distinguish bracket matches from bronze
+playoffs; stage names follow saved round numbers and bracket sizes, never the
+last currently created round. Keep activity counts separate from stage counts.
+
+Track records are six compact record cards, rather than Top/Bottom boards.
+The existing full mode rankings have a link. Artist/album/tag sections show at
+most five entries with titles, podiums, points, track and bracket counts. Only
+proper albums are linked. Seed patterns use saved seeds, with short labels and
+sample denominators; detailed definitions belong in release notes.
+
+History uses native expandable details, ten brackets per page, active brackets
+first. Existing `?tournament=ID` links select the correct archive page and open
+that bracket; archive links include its anchor. Each bracket keeps its scope,
+blind setting, saved matches/results/points/dates and a link to open the game or
+podium. Missing/legacy data is explicit, with no guessed identity or result.
+Artist art stays circular; all cover sizes constrain all six dimensions. Dense
+match art is 52 px (44 px on phones); text and results wrap into their own space.
+
+<a id="elo-guesser-stats-reference--v347"></a>
+
+### Elo Guesser Stats reference
+
+*Origin: Elo Guesser Stats reference — V3.4.7*
+
+Use the accepted Recognisability/Tournament dashboards, with Elo Guesser's
+red-orange for section headings, figures, bars, borders and soft glows. Entity
+names retain their semantic colours. Main panels each occupy one full row:
+overview, recent form, collection coverage, Elo gaps, card choices, top tracks,
+tracks to practise, artist records, album records, tag records, frequent
+comparisons, guess history. Keep the title and a Play Elo Guesser action.
+
+The overview joins completed/correct/wrong/best-streak figures above a full-width
+accuracy bar. Four-field groups become two columns on phones, with dividers
+reset between rows. Recent form uses current streak, longest miss run and active
+days, then the latest ten and rolling 7/30-day accuracy groups. Coverage refers
+to finite, different-rated live tracks, with no audio requirement. Gap rows use
+short, explicit ranges, a bar and the correct/total/wrong counts; their supporting
+records remain below. First/second card labels describe the saved offered order,
+so they still make sense when the game stacks its cards on a phone.
+
+Top/practice tracks retain ten results, five visible and five in native details,
+using shared 120/88/72 px art and the accepted responsive text scale. Category
+records show five high-accuracy and five most-missed entries in quiet insets;
+comparisons stack below 1050 px. Pool appearances rather than averaging rates.
+Keep denominators visible; explanations of pooling and eligibility live in the
+release notes. Proper albums only; artist covers remain circular.
+
+Repeated pairs show at most five comparisons. History has ten native expandable
+results per page, newest first, with the first open. Keep the chosen track,
+result/points and date in the summary; show both saved ratings, pick/higher-Elo
+labels and the running streak inside. Correct pick labels use green, wrong
+labels red; other stats stay red-orange. Song links stay green independently of
+the answer. Covers flank the centred VS on desktop, with names outside them.
+Below 760 px, the two tracks stack around the VS divider, retaining 64 px art
+and readable metadata. All six art constraints agree. Pagination, details and
+page actions have at least 44 px touch targets. Full entity text is available
+through the expandable result/name links, not only a hover title.
+
+Do not use current Elo to rewrite old answers or expose pending questions/tokens.
+Missing identities stay unlinked; unavailable rates use an em dash. This page
+is a read-only report; changes to its visuals or aggregates must not alter game
+selection, scoring, Overall, other mode dashboards or preview behavior.
+
+<a id="album-shelves-stats-reference--v348"></a>
+
+### Album Shelves Stats reference
+
+*Origin: Album Shelves Stats reference — V3.4.8*
+
+Use the same shared detailed-mode dashboard as Recognisability, Tournament and
+Elo Guesser. Shelves data/headings/bars use mauve; borders and soft glows use the
+existing deeper aubergine family. Entity names retain green/blue/purple/amber.
+Each main panel gets one row, in order: overview, round results, recent form,
+round formats, collection coverage, top tracks, tracks to practise, albums
+played, artist records, tag records, optional placement breakdown, round history.
+
+Keep **relative track order** as the primary full-width percentage bar above
+the later points/placement details. Overview figures are completed rounds,
+track appearances, albums played and perfect rounds. Points keep their actual
+earned/available denominator; they are not the ordering percentage. Short
+rolling-window/format groups pool comparisons and keep counts visible. Join
+related figures with the shared quiet dividers; four-column groups become two
+columns on phones. Break the long page heading/action onto separate lines by
+1050 px, with the action on the right below the centred title.
+
+Track lists keep ten entries, five visible/five expandable, with shared
+120/88/72 px covers and linked artist/proper-album metadata. Practice entries
+must have missed ordering comparisons. Album/artist/tag records show five
+high-accuracy and five most-missed entries. All played albums remain accessible
+through a native expandable list with ten per page; avoid nested scrolling.
+Artist art stays circular; all other covers remain square with all six sizes
+constrained. Names link independently and underline on hover/focus.
+
+Round history has ten native expandable entries per page. Open the first by
+default, or the selected `?round=ID` on its correct page. The summary shows the
+round/shelf count, date, ordering rate, outcome and points. Inside, give each
+saved shelf a quiet inset with its album art/title, ordering/points totals and
+tracks in original saved track-number order. Retain submitted shelf/position
+and individual points. Correct labels are green, wrong album/order labels red,
+and other result data mauve. Song links keep their own green independently.
+Keep frozen shelf identity/track number separate from current profile metadata;
+missing identities stay unlinked and separate saved shelf slots are retained.
+
+Saved shelves stack below 1100 px, comparison/format/window groups below 1050
+px. Dense covers become 64 px on phones; metadata stays readable and important
+scores wrap in their own space. Details, pagination and page actions retain
+44 px touch targets. Full names remain in accessible text/name links. Empty
+rates use an em dash; unavailable history does not become a zero score or a
+perfect round. Definitions and legacy scoring details belong in the release
+notes. These reports do not change game selection, scoring or previews.
+
+<a id="standard-voting-stats--v3412"></a>
+
+### Standard Voting Stats
+
+*Origin: Standard Voting Stats — V3.4.12*
+
+`/voting_stats` reports Standard Vote's Non-blind and Blind history. Use the
+shared mode_stats template macros, joined metrics, record rows and artwork,
+plus shared VS geometry. Keep a dedicated read-only reader and one consistent
+SELECT snapshot. The page loads its own composition CSS only on this route;
+no extra client controller or scoring counters are needed.
+
+Order: overview/mode mix → Non-blind/Blind comparison → activity → coverage →
+shared current Elo distribution → saved Elo movement/gaps → track Elo movement
+→ track records → across-mode rate differences → frequent matchups → upsets →
+artist records → proper-album records → tag records → paged recent votes.
+Major panels occupy full rows. Lists show at most five records; recent votes
+show ten per page. Keep the data visible rather than adding metric tabs or
+expansion controls. Add the page to Stats navigation and profile voting links.
+
+Combined voting/Elo panels use orange; Blind comparison insets, figures and
+result labels use mint. Entity names keep green/blue/purple/amber and losing
+match names use danger red. Use quiet divided metric rows and existing soft
+surface glows, with readable empty/unknown states. Side-by-side comparisons
+stack below 1050 px. Record results move below copy on phones; compact VS rows
+stack artwork/name on each side of a central VS separator below 600 px, keeping
+both covers, ratings, mode and dates. Category artist art remains circular.
+All six fixed artwork constraints must agree.
+
+Shared Elo is the current combined rating across both voting modes, not a
+separate mode rating. Match gaps, gains, upsets and win rates use saved history;
+never substitute today's Elo for missing snapshots. Skip self-pairs and missing
+participant IDs, retain unavailable track identities without broken links, and
+keep unknown rates unavailable. Collection rates pool saved track appearances.
+Use short units/labels on the page and document less obvious denominators,
+UTC activity days, sample minimums, streak eligibility and Elo spread in notes.
+The recent-history mode filter and pagination do not change lifetime panels.
+
+<a id="stats-and-selection-health--v412"></a>
+
+### Stats and selection health
+
+*Origin: Stats and selection health — V4.1.2*
 
 Keep the six detailed/global dashboards in their existing semantic colours and
 dark panel language. Lead with key numbers; use one shared Last 14 days report,
@@ -1049,24 +1237,11 @@ Refresh reads a new snapshot; navigation/late responses cannot replace another
 view. Preserve the existing catalogue, game and Overall layouts outside this
 stats/health scope. The baseline remains the last stylesheet.
 
+<a id="adaptive-impact--v414"></a>
 
-## Missing-information fill — V4.1.3
+### Adaptive Impact
 
-Retain the existing scan/review/backup/apply/report controls and layout. Show
-separate counts for local positions, album dates, song dates and Apple source
-updates. New song-date/source reviews are native collapsed details with complete
-escaped names and exact dates; unresolved counts link to the existing report
-flow. New-field-only plans must enable Apply, while no-op plans stay disabled.
-Refresh source summaries after a fill so content labels update immediately.
-
-The latest user policy defaults unmarked content to Not explicit. Preserve
-Explicit/Cleaned labels when stated, distinguish an assumed default in source
-badges, and retain raw unknown observations. Attached genre/tag memberships are
-independent and unchanged. Fill-only never changes local art, previews or album
-placement. This supersedes earlier Unknown-as-display-default wording.
-
-
-## Adaptive Impact — V4.1.4
+*Origin: Adaptive Impact — V4.1.4*
 
 The latest user request replaces the public collection Impact formula while
 keeping the accepted board/profile layout, colours, art and controls. Artists,
@@ -1077,8 +1252,11 @@ Overall retain their existing calculations/display. Empty collections retain
 search/edit/profile access with `—` for Impact/rank and do not occupy board or
 home leader slots. This supersedes earlier keep-Impact-unchanged wording.
 
+<a id="dev-searches-shelves-and-combined-elo--v415"></a>
 
-## Dev searches, Shelves and combined Elo — V4.1.5
+### Dev searches, Shelves and combined Elo
+
+*Origin: Dev searches, Shelves and combined Elo — V4.1.5*
 
 Dev library/table searches use query and text-action grid columns with bounded
 children, individual 44 px fields and natural-width buttons. Apple search uses
@@ -1103,8 +1281,11 @@ and optional bounded round-one history; primary figures stay visible. This
 supersedes the earlier ordinary-only lifetime/exposure presentation rule. Keep
 legacy stored ordinary counters available and label them explicitly when shown.
 
+<a id="voting-record-balance--v416"></a>
 
-## Voting Record balance — V4.1.6
+### Voting Record balance
+
+*Origin: Voting Record balance — V4.1.6*
 
 Song, artist, album and tag Voting Records lead with win weight, loss weight and
 actual match/track-appearance counts. Wins are green and losses danger red;
@@ -1122,8 +1303,215 @@ profiles, showing at most four recent first-round events and stacking below
 joined metrics and responsive geometry. Weight-based rates/evidence identify
 selective first rounds as half; actual match counts remain distinct.
 
+<a id="vibe-map-dashboard--vibe-map-v105"></a>
 
-## V5 competition and analysis
+### Vibe Map dashboard
+
+*Origin: Vibe Map dashboard — Vibe-Map-v1.0.5*
+
+Reuse shared mode stats panels, joined metrics, dense artwork rows and formatting
+macros with the red Vibe accent. Keep song/artist/album/tag identity colours.
+Order coverage, all-track maps, common combinations, axis balance, closest pairs,
+contrasts, then album/artist/tag consistency. Show useful evidence counts inline,
+without data disclosures or explanatory paragraphs. All four maps stay visible;
+one exact-position dot per placed song, one shared density scale. Keep axis
+labels at least 12 rendered pixels on phones. Support point
+hover and keyboard browsing, including overlapping tracks. Collapse map/pair and
+comparison columns on phones, retaining all data and bounded names/scores.
+
+<a id="vibe-map-song-inspection--vibe-map-v1051"></a>
+
+### Vibe Map song inspection
+
+*Origin: Vibe Map song inspection — Vibe-Map-v1.0.5.1*
+
+Heatmap dots are inspection buttons, not immediate navigation links. Mouse,
+Enter and Space open a compact Song vibe panel immediately after the maps;
+hover and arrow browsing retain the lightweight caption. Keep explicit coloured
+song, album and artist links in the selected identity and match rows. Reuse a
+compact eight-spoke radar and two closest matches, labelled by shared evidence.
+Keep the desktop panel below 450 px tall and stack chart/matches on phones.
+Use the shared `vibe_song_stats_panel.html` / `vibe_song_stats.css` layout for
+future song-page integration. Missing maps stay gaps. Show short loading/retry
+states and protect the latest selection from stale responses. Do not show Vibe
+listening metrics until the mode actually records supported observations.
+
+## Developer tools
+
+- [Preference corrections](#preference-corrections)
+- [Developer catalogue](#developer-catalogue)
+- [Developer tags and previews](#developer-tags-and-previews)
+- [Developer tasks and recovery](#developer-tasks-and-recovery)
+- [Developer dashboard reference](#developer-dashboard-reference)
+- [Missing-information fill](#missing-information-fill)
+- [Competition and analysis](#competition-and-analysis)
+- [V5.0.1 Apple source visibility](#v501-apple-source-visibility)
+- [Source review](#source-review)
+- [Stop and backup controls](#stop-and-backup-controls)
+- [Source confirmation and bulk alignment](#source-confirmation-and-bulk-alignment)
+- [Album import](#album-import)
+- [Developer polish](#developer-polish)
+- [Song tag capacity](#song-tag-capacity)
+- [Database sync status](#database-sync-status)
+- [Vibe Dev maintenance](#vibe-dev-maintenance)
+
+
+<a id="preference-corrections--v4002"></a>
+
+### Preference corrections
+
+*Origin: Preference corrections — V4.0.0.2*
+
+Dev Match History offers Review saved votes using the existing dialog, field,
+compact-copy and health-row components. Keep active/voided state, the original
+choice, correction notes and a clear restore action. Long names retain full
+accessible text; action buttons remain usable on phones. Ordinary voting retains
+its accepted card/reveal layout and audio sequencing.
+
+Public Match History reads the active corrected history. Mark a changed choice
+as Corrected and affected later rating snapshots as Recalculated, beside the
+saved date in the existing quiet text style. Original submitted snapshots stay
+in Dev review; never present a reconstructed value as a newly saved original.
+
+<a id="developer-catalogue--v40071--step-7a"></a>
+
+### Developer catalogue
+
+*Origin: Developer catalogue — V4.0.0.7.1 / step 7A*
+
+Scope this subpatch to import cards, source/Single dialogs, quick album tracks
+and their Songs/Albums actions. Dashboard/task/Git layout remains for 7C.
+`dev_catalog.css` loads only for Dev and follows the shared baseline. Use existing
+dark panels, quiet insets, typography and shared developer actions. Keep 16 px
+body/input text, at least 44 px action targets, wrapping metadata and bounded
+children. Artwork is 80 px wide on desktop and 64 px on phone; image, wrapper
+and fallback dimensions agree. Import cards use artwork/details/actions columns,
+then two columns with a full-width action row on phones.
+
+Show result counts, hidden library matches and a deliberate Show library matches
+control. A verified Apple identity and a possible name match need different text.
+Never use a censored title to label audio Cleaned; Unknown is a valid state.
+Source review defaults to saving the observation only, with separate opt-ins for
+metadata and source album/position. Single review shows carried date/origin and
+whether the old album can be removed before the backup/move action. All dialogs
+reuse the existing editor dialog, close/reopen correctly and keep error text
+visible. Switching panels or completing an older request cannot replace a newer
+review. Previews are user-started, with explicit stop ownership on dialog exit.
+
+<a id="developer-tags-and-previews--v40072--step-7b"></a>
+
+### Developer tags and previews
+
+*Origin: Developer tags and previews — V4.0.0.7.2 / step 7B*
+
+Keep this scope within the workbench and direct Songs/Tags/bulk-tag entry points;
+the general dashboard and Git panels remain for 7C. `dev_tags.css`/`dev_tags.js`
+load only in Dev. Reuse shared panels, joined metrics, controls, artwork and media
+ownership. Tag surfaces use amber; song/artist/release names retain green/blue/
+purple. Keep 16 px inputs/body, at least 44 px controls and explicit loading,
+disabled, error and selected states. All six artwork dimensions agree at 72 px
+desktop / 56 px phone. The baseline remains the last stylesheet.
+
+Order: all-library counts/filters/selection → persistent preview player → tag
+editor/review → paged songs. Filters use four columns, two on tablets and one on
+phones. Tag choices and Before/After groups use two columns, one on phones.
+The tag-choice list has a bounded scroller; song/review pages each have twenty
+rows. Song cards keep selection/art/name columns; actions move below on narrower
+screens. Long names truncate with full accessible text; review metadata wraps.
+Touch controls never require hover. Hidden selected songs have a visible count.
+
+Preview controls identify the playing song separately from the edit scope.
+Playback/selection must not rebuild during a successful tag save. Single edits
+start from the actual current tags; Add/Remove/Replace and the empty-replacement
+effect are explicit. Review shows current Before/After sets and changed/unchanged
+totals. Input changes discard an obsolete review; switching a dirty single-song
+draft needs reset/review or explicit discard. Late requests must preserve the
+current panel and report save success separately from a catalogue-refresh failure.
+
+<a id="developer-tasks-and-recovery--v40073--step-7c"></a>
+
+### Developer tasks and recovery
+
+*Origin: Developer tasks and recovery — V4.0.0.7.3 / step 7C*
+
+`dev_system.css` and `dev_system.js` load only in Dev. The dashboard defaults to
+Tasks & health. Keep the centred page title, always-visible Upload to Git,
+Create backup, full export and Lock actions, then grouped navigation beside the
+active task panel. Existing library/import/tag/record panels retain their owners.
+Use the baseline Arial/type scale, 24 px main panels, 18 px quiet groups, green
+system accent and existing entity colours. Joined catalogue counts use shared
+four-field metrics. Task cards have 22 px labels and 16 px descriptions.
+
+The sidebar is 230 px desktop, 200 px on smaller desktop and moves above content
+below 800 px. Frequent tasks use three/two/one columns; Git explanations and
+search/filter controls collapse on phones. Inputs are 16 px, actions at least
+44 px and main title 32 px on phones. Long filenames, URLs and extension-object
+names wrap; inventory counts and backup actions keep separate bounded columns.
+
+Opening status never fetches a Git remote. Show the branch/target, redacted
+remote, cached state and actual outcome. Distinguish check, SQL upload and
+restart update. Disabled/busy/retry states remain visible. Keep local backup and
+full export available without Git. Competition resets stay in a collapsed group
+with their existing typed confirmations. Restore review shows live/backup counts,
+whole-database scope and pre-restore safety backup; stale data needs a new review.
+Navigation waits while the restore applies. Late requests cannot replace the
+current panel or newer catalogue state. Task shortcuts filter without autoplay.
+
+<a id="developer-dashboard-reference--v410"></a>
+
+### Developer dashboard reference
+
+*Origin: Developer dashboard reference — V4.1.0*
+
+Developer controls and dialogs share sizing/layout rules in
+`static/css/dev_system.css`; the site baseline still loads last. Keep 44 px
+minimum action targets, 15 px button text, 16 px fields, wrapping labels and
+visible keyboard focus. Scope these rules to Dev. Do not restore the old 11 px
+table-action text inside tall buttons. Group heading actions in a wrapping row
+and use a separate selection toolbar rather than placing multiple controls in
+the centred heading slot.
+
+Keep Edit visible in record tables. Put other song/album/entity actions in the
+row's expandable Actions group; only one group opens at a time. Expansion stays
+inside the table and does not create a page-wide action column or a clipped
+floating menu. Preserve columns, per-column filters, values and all actions.
+Long values keep their complete DOM text and title even when visually ellipsised.
+
+In the tag workbench keep the frequent filters visible and group artist,
+release, tag and tag-match filters behind a labelled summary with an active
+filter count. Artist/release/tag filters and long entity lists use the shared
+searchable picker in `static/js/dev_controls.js`, retaining their native select
+as form/state owner. Support keyboard selection, Escape, clear/reset, full
+option labels, selected states and narrow screens. Keep all options searchable.
+The bounded, keyboard-focusable song list precedes the player/editor; all
+selection, review, preview and backup safeguards remain in their feature modules.
+
+<a id="missing-information-fill--v413"></a>
+
+### Missing-information fill
+
+*Origin: Missing-information fill — V4.1.3*
+
+Retain the existing scan/review/backup/apply/report controls and layout. Show
+separate counts for local positions, album dates, song dates and Apple source
+updates. New song-date/source reviews are native collapsed details with complete
+escaped names and exact dates; unresolved counts link to the existing report
+flow. New-field-only plans must enable Apply, while no-op plans stay disabled.
+Refresh source summaries after a fill so content labels update immediately.
+
+The latest user policy defaults unmarked content to Not explicit. Preserve
+Explicit/Cleaned labels when stated, distinguish an assumed default in source
+badges, and retain raw unknown observations. Attached genre/tag memberships are
+independent and unchanged. Fill-only never changes local art, previews or album
+placement. This supersedes earlier Unknown-as-display-default wording.
+
+<a id="v5-competition-and-analysis"></a>
+
+### Competition and analysis
+
+*Origin: V5 competition and analysis*
+
+> Vibe Map is now a sixth mode. Listening measurements described here remain limited to the five scored modes; Vibe remains descriptive.
 
 The fresh V3 competition database carries catalogue data only. Current dashboards
 lead with V5 results and do not show Classic/V3 record captions or legacy-anchor
@@ -1162,8 +1550,11 @@ V5.0.2.1 shows only the current saved source. Remove the previous-observations
 disclosure; retain the recording ID, store, advisory flag, URLs and save controls.
 Compression is a storage detail and does not belong in the song/source flow.
 
+<a id="v503-source-review"></a>
 
-## V5.0.3 source review
+### Source review
+
+*Origin: V5.0.3 source review*
 
 Show five source choices, with at most ten more inside a labelled native details
 control. Keep release, advisory flag, date and Apple identity visible per choice.
@@ -1172,16 +1563,22 @@ workbench. The source queue shows progress, previous/skip/review actions, then a
 single group review and save. Reuse catalogue rows, semantic entity colours,
 44 px action targets and the existing phone stacking rules.
 
+<a id="v5031-stop-and-backup-controls"></a>
 
-## V5.0.3.1 stop and backup controls
+### Stop and backup controls
+
+*Origin: V5.0.3.1 stop and backup controls*
 
 Keep Stop app in the developer header action group, using the existing danger
 button and wrapping responsive layout. Require a fresh masked PIN, show the Git
 destination, and show local/Git outcomes before closing the server. Keep the
 final receipt readable in the tab. Routine edit labels must not promise backups.
 
+<a id="v5032-source-confirmation-and-bulk-alignment"></a>
 
-## V5.0.3.2 source confirmation and bulk alignment
+### Source confirmation and bulk alignment
+
+*Origin: V5.0.3.2 source confirmation and bulk alignment*
 
 After choosing a recording, show a green selected state, collapse the alternatives
 behind Change selected recording and focus/scroll to confirmation. Keep the
@@ -1190,15 +1587,22 @@ Bulk filter labels use one shared gap and 44 px controls for native and enhanced
 selects; align Selected only with the controls. Action and release-link fields
 use the same label spacing and existing narrow-screen stacking.
 
-## V5.0.3.3 album import
+<a id="v5033-album-import"></a>
+
+### Album import
+
+*Origin: V5.0.3.3 album import*
 
 Reuse the editor dialog with a bounded track checklist and labelled native
 checkboxes, 44 px targets and song/artist/album colours. New tracks start checked;
 library matches start unchecked. Save only on Add selected songs. Show progress
 and partial failure counts, and disable saved tracks before retry.
 
+<a id="v504-developer-polish"></a>
 
-## V5.0.4 developer polish
+### Developer polish
+
+*Origin: V5.0.4 developer polish*
 
 Keep Dev assets in `dev_assets.html` and feature state with its owning module.
 Tool search filters the grouped sidebar and restores expansion when cleared.
@@ -1216,29 +1620,11 @@ Metadata summaries use four joined metrics and collapsed change reviews; long
 names wrap within bounded columns. Desktop/mobile layout uses the existing
 breakpoints and shared baseline remains last.
 
+<a id="song-tag-capacity--v5042"></a>
 
-## Entity profile simplification — V5.0.4.1
+### Song tag capacity
 
-This replaces earlier profile disclosure/listening-summary instructions; other
-pages retain their existing reporting. Song, artist, album and tag profiles use
-one shared panel structure: heading with stats links, joined summary, primary
-rate and useful inline breakdowns. Keep Non-blind/Blind Elo cards, recognition
-fields, podium counts and shelf rates visible. Remove repeated explanations,
-per-bracket history, nested independent-rating disclosures and profile listening
-diagnostics. Overall alone retains Mode balance, with figures and short labels
-but no explanatory paragraphs.
-
-Artwork, play overlay and player frame must use the same inner corner radius.
-Artist hero layers remain circular, including clipping; song/album heroes retain
-rounded corners. Preserve the over-art playback controls and current hero sizes.
-
-Tag album lists begin with six cards and expand by six. Artist, album and tag
-song lists begin with thirty rows and expand by thirty. Put Show more centred
-at the bottom of each list and remove it when exhausted. Expansion appends rows
-to preserve active previews; the hero queue still includes every linked preview.
-
-
-## Song tag capacity — V5.0.4.2
+*Origin: Song tag capacity — V5.0.4.2*
 
 Song details and the tag workbench show an eight-tag capacity. Disable only
 unselected additions that would exceed the limit; selected tags stay removable.
@@ -1247,9 +1633,11 @@ and allow unrestricted Remove targets. Typed new names count too. Keep the
 capacity message live and disable Review for an overflowing draft. Preserve
 choices so the user can fix them; do not silently trim new submissions.
 
+<a id="v505-database-sync-status"></a>
 
+### Database sync status
 
-## V5.0.5 database sync status
+*Origin: V5.0.5 database sync status*
 
 Show the last database comparison separately from Git code/commit status in
 Dev’s Git summary. Remote-ahead, split and failed-validation states need a clear
@@ -1257,131 +1645,11 @@ error-coloured status message. Explain that normal startup checks existing data
 after a manual pull, and link split recovery to the existing backup review.
 Keep status text escaped and retain explicit upload/stop/restore controls.
 
+<a id="vibe-dev-maintenance--vibe-map-v11"></a>
 
-## Vibe Map play screen — Vibe-Map-v1.0.4.2
+### Vibe Dev maintenance
 
-Home has six modes, three by two on desktop, two columns on tablets and one on
-small phones. Vibe Map is last, labelled 📍 Vibe Map in Home/Game Modes, with
-red `--vibe` lighting and song/album/artist identity colours preserved.
-
-The stable song card sits beside the map container's vertical centre. On desktop
-it sticks within that container as the page scrolls, centred in the viewport when
-possible; compact its cover at shorter viewport heights. Measure actual card
-height rather than assuming all titles are one line. Stacked tablet/phone layouts
-use normal document flow so the player never covers the graph.
-
-Keep the current map title at the top, followed by concise progress. No placement
-subtitle, X/Y sliders, coordinate readouts or N/A button. Retain continuous pointer
-and keyboard positioning. X endpoint labels sit inside the graph alongside the
-horizontal axis, not below it. Y endpoints stay above/below the graph. Use a soft
-central glow, solid axes and a subtle outward axis pulse on placement/movement;
-no rigid contour circles. Suppress the pulse for reduced motion.
-
-Save state and its progress bar sit below the song's back/Finish/forward controls,
-not at the bottom of the map. Automatic next-map saves remain; completed maps stay
-editable until Finish. Never automatically open results. On results, show the
-radar and two similarity matches without a raw-value legend or Readjust button.
-The existing Finish control becomes Next song. Keep the audio element stable.
-
-Shared radar geometry/styles live in `vibe_charts.js`/`vibe_charts.css`; follow the
-API's related-pole order, retain accessible pole labels, and leave missing spokes
-as gaps. Entity stats pages place Vibe Map immediately above Overall; future mode rankings put
-it last. Those pages are not part of this mode patch.
-
-Generation 2 uses Pace & mood, Sound & impact, Connection and Perspective.
-All endpoints are single words; Perspective alone labels its X midpoint Present
-just below the central axis. Radar order is Happy, Hopeful, Future, Secure,
-Devoted, Powerful, Electronic, Upbeat. Keep all eight dimensions, no raw legend,
-and the existing manual Finish → Next song flow.
-
-## Vibe Map dashboard — Vibe-Map-v1.0.5
-
-Reuse shared mode stats panels, joined metrics, dense artwork rows and formatting
-macros with the red Vibe accent. Keep song/artist/album/tag identity colours.
-Order coverage, all-track maps, common combinations, axis balance, closest pairs,
-contrasts, then album/artist/tag consistency. Show useful evidence counts inline,
-without data disclosures or explanatory paragraphs. All four maps stay visible;
-one exact-position dot per placed song, one shared density scale. Keep axis
-labels at least 12 rendered pixels on phones. Support point
-hover and keyboard browsing, including overlapping tracks. Collapse map/pair and
-comparison columns on phones, retaining all data and bounded names/scores.
-
-
-## Vibe Map song inspection — Vibe-Map-v1.0.5.1
-
-Heatmap dots are inspection buttons, not immediate navigation links. Mouse,
-Enter and Space open a compact Song vibe panel immediately after the maps;
-hover and arrow browsing retain the lightweight caption. Keep explicit coloured
-song, album and artist links in the selected identity and match rows. Reuse a
-compact eight-spoke radar and two closest matches, labelled by shared evidence.
-Keep the desktop panel below 450 px tall and stack chart/matches on phones.
-Use the shared `vibe_song_stats_panel.html` / `vibe_song_stats.css` layout for
-future song-page integration. Missing maps stay gaps. Show short loading/retry
-states and protect the latest selection from stale responses. Do not show Vibe
-listening metrics until the mode actually records supported observations.
-
-
-## Vibe Map entity cards — Vibe-Map-v1.0.6
-
-Centre the selected identity block at the top of the reusable song card,
-including its metadata. Song profiles use that same compact radar/matches card
-immediately above Overall. Album, artist and tag profiles use the same red mode
-panel in that position, with consistency and fully mapped/total counts first;
-show partly mapped counts when nonzero. Place four small maps in two rows of two,
-including on phones, and cap the combined grid at 480 px. Keep endpoint labels
-readable, use fixed 11 px dots (larger than the main stats dots), retain exact
-positions and show track names on hover. No disclosure or explanatory blocks.
-
-Vibe cards load independently of Overall and never remount the hero preview.
-Show short retry states locally. Missing maps are absent points; consistency
-requires two fully mapped tracks and uses the existing dashboard definition.
-
-
-## Compact Vibe profile follow-up — Vibe-Map-v1.0.6.1
-
-Hide the profile panel completely, including its loading placeholder, until a
-song has four placed maps or a collection has two fully mapped members. Keep
-its hidden anchor for stable placement above Overall; unknown/failed requests
-still get a short local retry state. The main stats inspector retains partial
-maps and the selected identity. Dedicated song cards omit that duplicate identity.
-
-Collection maps occupy one row of four above 760 px, capped at 960 px across;
-narrow screens keep two columns for readable labels. Keep every caption aligned,
-small charts and fixed 11 px dots. Display Connection's low Y pole as Budding
-rather than Casual, using a presentation override only; keep stored definitions,
-map keys, generation, coordinates and similarity unchanged.
-
-
-## Vibe library surfaces — Vibe-Map-v1.0.7
-
-Place Home's compact all-song map card immediately below Overall Leaders, and
-Global Stats' Vibe summary immediately below Overall. Keep four small maps per
-wide row and two columns on phones. Use existing joined metrics and dashboard
-glows. The final Home banner mixes the top twenty albums, artists and tags in one
-consistency-ordered strip without category pills, using existing shelf cards, scroll buttons and autoplay
-ownership. Scores/frames are Vibe red; entity names, artwork shapes and track
-counts retain purple/blue/gold/green semantics. Pause scrolling for focus/hover
-and honour hidden tabs/reduced motion through the shared owner.
-
-Vibe Map is last in Mode Rankings, with albums/artists/tags and no song tab.
-Reuse shared Top/Bottom twenty controls and ranking row geometry, bounded names,
-artwork, semantic identity links and red rank-dependent glows. Show mapped/total
-counts with consistency; retain absolute ranks on the bottom board. Add context
-ranking links to collection profile cards and the dedicated Vibe stats page.
-Do not add a performance score or Overall contribution for Vibe Map.
-
-
-## Vibe follow-up — Vibe-Map-v1.0.7.1
-
-Keep one shared scrolling owner and its arrow controls for the combined banner.
-Preserve entity colours/art shapes and Vibe-red frames/scores. Scope coverage
-caption margins to the direct caption; the progress fill must fill the track’s
-height with no text margin. Include Vibe saves in Global’s activity chart and
-recent-results colour blend. One retained update per song is the available
-activity unit; do not label it a complete pass or an exhaustive round history.
-
-
-## Vibe Dev maintenance — Vibe-Map-v1.1
+*Origin: Vibe Dev maintenance — Vibe-Map-v1.1*
 
 Put 📍 Vibe Map in Dev's Records group. Use existing Dev panels, pagination,
 search, number inputs and destructive confirmation patterns; Vibe headers and
