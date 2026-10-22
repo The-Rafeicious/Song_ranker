@@ -8,7 +8,6 @@ or opens a database when checking structure or generating documentation.
 import argparse
 import ast
 from collections import Counter
-import json
 from pathlib import Path
 import re
 import subprocess

@@ -1687,17 +1687,17 @@ Source/asset checks, generated function ownership and unified test commands.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [sources](../tools/check.py#L92) | `` | Enumerate maintained Python files, excluding generated caches and dependencies. |
-| [definitions](../tools/check.py#L106) | `tree, parents=()` | Yield every function/method, including nested closures, with a qualified name. |
-| [routes](../tools/check.py#L116) | `node` | Read literal Flask decorators without importing route modules. |
-| [purpose](../tools/check.py#L139) | `name, node` | Describe a definition from its contract, route, validation name and SQL access. |
-| [markdown](../tools/check.py#L220) | `value` | Escape content that is embedded in a Markdown table cell. |
-| [function_index](../tools/check.py#L225) | `` | Generate a deterministic, source-linked index of every Python definition. |
-| [documentation](../tools/check.py#L270) | `write=False` | Write the function index, or fail when source changes made it stale. |
-| [structure](../tools/check.py#L285) | `` | Check imports, duplicate definitions, template references and asset ownership. |
-| [structure.scopes](../tools/check.py#L296) | `node, path` | Scopes. |
-| [run](../tools/check.py#L367) | `command` | Run one validation command from the repository root and propagate failures. |
-| [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
-| [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
+| [sources](../tools/check.py#L91) | `` | Enumerate maintained Python files, excluding generated caches and dependencies. |
+| [definitions](../tools/check.py#L105) | `tree, parents=()` | Yield every function/method, including nested closures, with a qualified name. |
+| [routes](../tools/check.py#L115) | `node` | Read literal Flask decorators without importing route modules. |
+| [purpose](../tools/check.py#L138) | `name, node` | Describe a definition from its contract, route, validation name and SQL access. |
+| [markdown](../tools/check.py#L219) | `value` | Escape content that is embedded in a Markdown table cell. |
+| [function_index](../tools/check.py#L224) | `` | Generate a deterministic, source-linked index of every Python definition. |
+| [documentation](../tools/check.py#L269) | `write=False` | Write the function index, or fail when source changes made it stale. |
+| [structure](../tools/check.py#L284) | `` | Check imports, duplicate definitions, template references and asset ownership. |
+| [structure.scopes](../tools/check.py#L295) | `node, path` | Scopes. |
+| [run](../tools/check.py#L366) | `command` | Run one validation command from the repository root and propagate failures. |
+| [javascript](../tools/check.py#L372) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
+| [main](../tools/check.py#L382) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
 Total: **1150 Python definitions**.
