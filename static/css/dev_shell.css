@@ -127,3 +127,8 @@ body[data-page=dev] #main .db-inspection pre,#editor .db-cell-detail pre { max-h
 }
 
 body[data-page=dev] #main #db-content { max-height:480px; overflow:auto; min-width:0; }
+body[data-page=dev] #main #system-content { display:grid; gap:20px; min-width:0; }
+body[data-page=dev] #main :is(.git-status-grid,.dev-maintenance-grid) .health-row { flex-direction:row; align-items:center; gap:10px; padding:10px 0; }
+body[data-page=dev] #main :is(.git-status-grid,.dev-maintenance-grid) .health-row > strong { text-align:right; }
+body[data-page=dev] #main .git-status-grid .error { color:var(--danger); }
+body[data-page=dev] #main .backup-workspace #system-restore { max-height:520px; overflow:auto; }
