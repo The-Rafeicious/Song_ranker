@@ -751,6 +751,8 @@ INSERT INTO "preference_mode_ratings"("rowid","song_id","mode","elo","matches","
 INSERT INTO "preference_mode_ratings"("rowid","song_id","mode","elo","matches","tournament_matches") VALUES(2003,1015,'standard',1200.0,0,0);
 INSERT INTO "preference_mode_ratings"("rowid","song_id","mode","elo","matches","tournament_matches") VALUES(2006,1016,'blind',1200.0,0,0);
 INSERT INTO "preference_mode_ratings"("rowid","song_id","mode","elo","matches","tournament_matches") VALUES(2005,1016,'standard',1200.0,0,0);
+INSERT INTO "preference_mode_ratings"("rowid","song_id","mode","elo","matches","tournament_matches") VALUES(2008,1017,'blind',1200.0,0,0);
+INSERT INTO "preference_mode_ratings"("rowid","song_id","mode","elo","matches","tournament_matches") VALUES(2007,1017,'standard',1200.0,0,0);
 INSERT INTO "preference_mode_ratings"("rowid","song_id","mode","elo","matches","tournament_matches") VALUES(82,102,'blind',1200.0,0,0);
 INSERT INTO "preference_mode_ratings"("rowid","song_id","mode","elo","matches","tournament_matches") VALUES(81,102,'standard',1200.0,0,0);
 INSERT INTO "preference_mode_ratings"("rowid","song_id","mode","elo","matches","tournament_matches") VALUES(564,103,'blind',1200.0,0,0);
@@ -2738,6 +2740,7 @@ INSERT INTO "preference_rating_seeds"("rowid","song_id","elo","matches","highest
 INSERT INTO "preference_rating_seeds"("rowid","song_id","elo","matches","highest_elo","highest_rank") VALUES(1014,1014,1200.0,0,1200.0,9999);
 INSERT INTO "preference_rating_seeds"("rowid","song_id","elo","matches","highest_elo","highest_rank") VALUES(1015,1015,1200.0,0,1200.0,9999);
 INSERT INTO "preference_rating_seeds"("rowid","song_id","elo","matches","highest_elo","highest_rank") VALUES(1016,1016,1200.0,0,1200.0,9999);
+INSERT INTO "preference_rating_seeds"("rowid","song_id","elo","matches","highest_elo","highest_rank") VALUES(1017,1017,1200.0,0,1200.0,9999);
 INSERT INTO "preference_rating_seeds"("rowid","song_id","elo","matches","highest_elo","highest_rank") VALUES(102,102,1200.0,0,1200.0,9999);
 INSERT INTO "preference_rating_seeds"("rowid","song_id","elo","matches","highest_elo","highest_rank") VALUES(103,103,1200.0,0,1200.0,9999);
 INSERT INTO "preference_rating_seeds"("rowid","song_id","elo","matches","highest_elo","highest_rank") VALUES(104,104,1200.0,0,1200.0,9999);
