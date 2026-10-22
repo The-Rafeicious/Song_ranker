@@ -57,7 +57,7 @@ body[data-page=dev] .tag-replace-note { color:var(--tag); }
 body[data-page=dev] #main .tag-mode-tabs { display:flex; gap:10px; align-items:center; margin-bottom:20px; }
 body[data-page=dev] #main .tag-mode-tabs [aria-pressed=true] { color:var(--tag); border-color:var(--tag); }
 body[data-page=dev] #main .tag-mode-tabs > a { margin-left:auto; }
-body[data-page=dev] #main .tag-single { grid-template-columns:minmax(0,1fr) minmax(0,1.25fr); gap:20px; align-items:start; }
+body[data-page=dev] #main .tag-single { grid-template-columns:minmax(280px,.78fr) minmax(0,1.42fr); gap:20px; align-items:start; }
 body[data-page=dev] #main .tag-single > .tag-filter-panel { grid-column:1/-1; padding:20px; }
 body[data-page=dev] #main .tag-single-filters { display:grid; grid-template-columns:minmax(200px,2fr) repeat(4,minmax(0,1fr)); gap:14px; align-items:end; }
 body[data-page=dev] #main .tag-single-filters label { display:grid; min-width:0; gap:7px; }
@@ -69,8 +69,9 @@ body[data-page=dev] #main .tag-single .tag-song-row { display:grid; grid-templat
 body[data-page=dev] #main .tag-single .tag-art,body[data-page=dev] #main .tag-current-cover { width:56px; height:56px; }
 body[data-page=dev] #main :is(.tag-single .tag-art,.tag-current-cover) :is(.art-wrap,img,.cover-fallback,.no-cover) { width:56px; height:56px; min-width:56px; max-width:56px; object-fit:cover; border-radius:12px; }
 body[data-page=dev] #main .tag-single .tag-selected { border-color:var(--tag); background:#ffb8330a; border-radius:14px; }
-body[data-page=dev] #main .tag-song-title { display:block; min-height:44px; padding:0; border:0; background:transparent; font:inherit; font-size:19px; font-weight:750; text-align:left; width:100%; overflow-wrap:anywhere; }
-body[data-page=dev] #main .tag-single .tag-copy > :is(p,small) { white-space:normal; overflow-wrap:anywhere; }
+body[data-page=dev] #main .tag-song-title { display:-webkit-box; min-height:44px; max-height:48px; padding:0; border:0; background:transparent; font:inherit; font-size:19px; line-height:24px; font-weight:750; text-align:left; width:100%; overflow:hidden; overflow-wrap:anywhere; -webkit-box-orient:vertical; -webkit-line-clamp:2; }
+body[data-page=dev] #main .tag-single .tag-copy { overflow:hidden; }
+body[data-page=dev] #main .tag-single .tag-copy > :is(p,small) { max-width:100%; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 body[data-page=dev] #main .tag-single .tag-copy p { margin:3px 0; font-size:15px; }
 body[data-page=dev] #main .tag-single .tag-editor { position:sticky; top:16px; min-width:0; }
 body[data-page=dev] #main .tag-single #tag-now-playing { display:grid; grid-template-columns:56px minmax(0,1fr); gap:14px; margin:16px 0; }

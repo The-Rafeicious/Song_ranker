@@ -58,3 +58,12 @@ Move Home outside the System dropdown into its own navigation link.
 - Retain reviewed bulk Add/Remove/Replace editing. Protect dirty drafts, stale
   server membership, failed saves/refreshes and lost-response retries.
 - Update the Dev/technical/style guides; no schema or game-score changes.
+
+## V5.2.2.1 — tag bench layout polish
+
+- Rebalance the single-song bench so the tag editor has more room than the song
+  queue, and keep long song titles and album names inside their queue cards.
+- Add a full-width Tag Workshop row below the main Dev health services with a
+  direct link plus tagged, untagged and available-tag totals.
+- Keep the established Dev panels, semantic colours and responsive stacking.
+  No schema, membership or game-score changes.

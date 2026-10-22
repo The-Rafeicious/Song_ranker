@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application v5.2.2 · integrated modes v5.1.0 · competition generation 3 · schema 20**
+**Application v5.2.2.1 · integrated modes v5.1.0 · competition generation 3 · schema 20**
 
-Current implementation reference. `APP_VERSION` is `5.2.2`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.2.2.1`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -457,8 +457,10 @@ include; metadata polling and archive paging have separate script owners.
 
 `templates/dev_nav.html` replaces the main navigation only on authenticated Dev
 pages. `dev_shell.css` widens the working canvas and controls the responsive menu
-and service grid. `app_stop.js` owns the shared stop dialog; `dev_system.js` owns
-service/backup/Git tasks. Stop endpoints accept a fresh PIN without a Dev session,
+and service grid, including the full-width Tag Workshop summary. `dev_tags.css`
+keeps the single-song queue narrower than its editor and bounds identity text.
+`app_stop.js` owns the shared stop dialog; `dev_system.js` owns service/backup/Git
+tasks. Stop endpoints accept a fresh PIN without a Dev session,
 but retain localhost-only access, signed browser-owned target review, rate limits
 and job ownership. Stop grants no Dev session. All other Dev endpoints keep their
 admin requirements. See [Dev guide](DEV_GUIDE.md).
@@ -631,7 +633,7 @@ including per-table local/remote deltas. Opening Git performs that check. Code
 up_to_date alone cannot enable upload or represent database equality. The existing
 shared-baseline algorithm and server-side upload/stop guards remain authoritative.
 
-## v5.2.2 tag queue
+## v5.2.2.1 tag queue
 
 `static/js/dev_tags.js` owns single/bulk mode, queue selection, filter/sort state,
 drafts, signed review/apply requests and its preview timeline. Single mode sends

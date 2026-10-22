@@ -1,6 +1,6 @@
 # Developer guide
 
-**v5.2.2 · Dev tools**
+**v5.2.2.1 · Dev tools**
 
 Open **System Access** on the hosting computer and enter the Dev PIN. Dev replaces
 the app header and gives the active tool the full content width. Existing editing
@@ -25,13 +25,15 @@ Backup and upload controls live on their dedicated pages. A restore in progress 
 | --- | --- |
 | Library | Clickable songs, artists, releases (including Singles) and tags open the corresponding tables. |
 | Database health | Application/schema version, SQLite integrity and foreign-key errors. Click the title for the compact integrity report. |
+| Tag Workshop | Direct link to the tag bench, with tagged songs, untagged songs and available tag definitions. |
 | Catalogue coverage | Untagged songs, missing preview URLs and missing Apple source links. These are stored-data checks, not network playback tests. |
 | Stored rounds & votes | Stored vote/round/bracket counts, including prepared rounds where those modes store them, plus songs with all four Vibe positions placed. |
 | Git sync | Branch, short commit and cached remote status. Click the title for Git controls; opening Home does not fetch a remote. |
 | Local backups | Backup count, newest timestamp and live database file size. Click the title for Database & backups. File size excludes transient SQLite sidecar files. |
 
 Database health, Git sync and Local backups share one aligned row on desktop.
-Coverage and stored activity remain below; Home has no separate action rows.
+The full-width Tag Workshop summary follows that service row; coverage and stored
+activity remain below. Home has no separate action rows.
 
 ## Page lookup
 

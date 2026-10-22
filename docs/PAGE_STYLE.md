@@ -1724,3 +1724,9 @@ descriptions with full accessible text, and put Save tags & next beside Skip son
 Keep the save row visible while scrolling choices. Stack the editor before the
 queue on phones. Dirty navigation requires explicit discard; no auto-advance on
 save failure or unresolved stale data. Bulk keeps its explicit review surface.
+
+V5.2.2.1 gives the editor more width than the song queue. Queue titles may use
+up to two bounded lines; album, artist and source facts stay on single ellipsised
+lines so no identity field escapes its card. On Dev Home, the Tag Workshop is a
+full-width service row immediately below the health/Git/backup row, using the
+existing joined metrics and tag/entity colours rather than a new card style.
