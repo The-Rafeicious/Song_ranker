@@ -8,7 +8,7 @@ function fixture(){return {songs:Array.from({length:45},(_,i)=>({id:i+1,title:`S
  elo_score:1200,matches_played:0,track_number:null})),artists:[{id:1,name:'Artist, One'},{id:2,name:'Another <artist>'}],
  albums:[{id:1,title:'Album <one>'},{id:2,title:'A song - Single'}],tags:[{id:1,name:'Bright',description:'Playful <description>'},{id:2,name:'Night',description:'Late listening'},{id:3,name:'Calm',description:'Quiet'}],
  history:[],tournaments:[],tournament_matches:[],tournament_entries:[],global_stats:{},special_modes:{}};}
-async function harness(width=1280,view='tag_workbench',configure=()=>{}){
+async function harness(width=1280,view='tag_workbench',configure=()=>{},editing='bulk'){
  const dom=new JSDOM('<body data-page="dev" class="site-style-baseline"><main id="main"><div id="loading"></div></main><input id="volume-range" value=".5"><span id="volume-value"></span><button id="volume-btn"></button><div id="volume-panel" hidden></div><div id="preview-status" hidden></div><dialog id="editor"><form id="editor-form"><h2 id="editor-title"></h2><div id="editor-fields"></div><button type="button" id="editor-close">Close</button><button id="editor-submit" type="submit">Save</button></form></dialog><div id="toast" hidden></div></body>',{url:'http://localhost/dev/dashboard?view='+view,runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,d=w.document,data=fixture(),requests=[],plays=[],errors=[],paused=new WeakMap();let handler=()=>undefined,playHook=null,nextToken=0;
  configure(data);w.innerWidth=width;w.scrollTo=()=>{};w.matchMedia=()=>({matches:true});w.HTMLElement.prototype.scrollIntoView=function(){};
@@ -52,7 +52,7 @@ async function harness(width=1280,view='tag_workbench',configure=()=>{}){
  };
  w.Overall={bindUI(){}};for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js'])w.eval(source(file));
  const expose="window.testDev={setView:v=>{devView=v;renderDevView()},applyBulk,setBulk:ids=>{bulkSelection=new Set(ids);devView='bulk';renderDevView()}};window.DevTags?.bindUI(";
- await w.eval(source('site.js').replace('window.DevTags?.bindUI(',expose));await flush();
+ await w.eval(source('site.js').replace('window.DevTags?.bindUI(',expose));await flush();if(view==='tag_workbench'&&editing==='bulk'){d.querySelector('[data-tags-mode="bulk"]')?.click();await flush()}
  const click=selector=>{const n=d.querySelector(selector);assert.ok(n,'missing '+selector);n.click();return n};
  const change=(selector,value)=>{const n=d.querySelector(selector);assert.ok(n,'missing '+selector);if(n.type==='checkbox')n.checked=value;else n.value=value;n.dispatchEvent(new w.Event('change',{bubbles:true}))};
  const input=(selector,value)=>{const n=d.querySelector(selector);assert.ok(n,'missing '+selector);n.value=value;n.dispatchEvent(new w.Event('input',{bubbles:true}))};
@@ -211,6 +211,7 @@ async function tagLimitChecks(){
  check(h.errors.length===0,'no script errors with limit controls');h.close();
 }
 
-(async()=>{await tagLimitChecks();await filterChecks();await bulkChecks();await singleAndPreviewChecks();await draftChecks();await failureChecks();await navigationChecks();await recoveredNewTagChecks();await mediaFailureChecks();await bulkBridgeCheck();for(const w of [320,360,390,430,568,768,1280])await viewportChecks(w);if(process.env.SNAPSHOT_OUTPUT)fs.writeFileSync(process.env.SNAPSHOT_OUTPUT,JSON.stringify(snapshots,null,2));console.log(assertions+' tag workbench assertions passed')})().catch(error=>{console.error(error);process.exitCode=1});
+module.exports={harness,flush};
+if(require.main===module)(async()=>{await tagLimitChecks();await filterChecks();await bulkChecks();await singleAndPreviewChecks();await draftChecks();await failureChecks();await navigationChecks();await recoveredNewTagChecks();await mediaFailureChecks();await bulkBridgeCheck();for(const w of [320,360,390,430,568,768,1280])await viewportChecks(w);if(process.env.SNAPSHOT_OUTPUT)fs.writeFileSync(process.env.SNAPSHOT_OUTPUT,JSON.stringify(snapshots,null,2));console.log(assertions+' tag workbench assertions passed')})().catch(error=>{console.error(error);process.exitCode=1});
 
 

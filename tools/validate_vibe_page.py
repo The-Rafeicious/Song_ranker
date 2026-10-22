@@ -49,6 +49,22 @@ def main():
         def cover():
             return Response('<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#8b465c"/><circle cx="200" cy="180" r="100" fill="#352f47"/></svg>',mimetype='image/svg+xml')
 
+        # Tag-bench-only transport and music data; never reachable in the real app.
+        @application.app.post('/tag-test-enable')
+        def tag_audio_enable():
+            with sqlite3.connect(os.environ['SONG_RANKER_DB']) as conn:
+                conn.execute("UPDATE songs SET audio_url='/tag-test-audio.wav' WHERE id IN (1,2)")
+            return {'ok':True}
+
+        @application.app.get('/tag-test-audio.wav')
+        def tag_audio():
+            import io,wave
+            buf=io.BytesIO()
+            with wave.open(buf,'wb') as clip:
+                clip.setnchannels(1);clip.setsampwidth(2);clip.setframerate(8000)
+                clip.writeframes(bytes(30*8000*2))
+            return Response(buf.getvalue(),mimetype='audio/wav')
+
         server=make_server('127.0.0.1',0,application.app,threaded=True)
         thread=Thread(target=server.serve_forever,daemon=True);thread.start()
         try:
