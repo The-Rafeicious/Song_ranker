@@ -26,7 +26,7 @@ feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 4. Use the new code with upgraded databases. Older code may refuse a newer schema;
    source rollback alone does not roll back database structure.
 
-`APP_VERSION` is `5.1.2`; Vibe reports `Vibe-Map-v1.1`.
+`APP_VERSION` is `5.2.0`; Vibe reports `Vibe-Map-v1.1`.
 The documentation release labels v5.1.0/v5.1.1 do not change the runtime footer.
 Install dependencies from `requirements.txt`; configuration is in the
 [technical guide](TECHNICAL_GUIDE.md#configuration).
@@ -283,3 +283,9 @@ and apply. Both databases are backed up; the live database stays unchanged.
 Use normal upload afterwards. If source is behind, restart to update code first;
 the reviewed database choice survives that restart. This does not force-push or
 resolve diverged source commits. Any newer remote data needs a new review.
+
+## v5.2.0 Dev navigation
+
+No database migration. Hard-refresh tabs after upgrading. Stop is now available
+from either header with one fresh PIN and no separate Dev login; localhost and
+normal-launcher requirements remain. Existing bookmarks and tool URLs still work.

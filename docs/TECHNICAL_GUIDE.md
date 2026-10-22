@@ -1,9 +1,9 @@
 # Song Ranker technical guide
 
-**Application v5.1.2 · integrated modes v5.1.0 · competition generation 3 · schema 20**
+**Application v5.2.0 · integrated modes v5.1.0 · competition generation 3 · schema 20**
 
-Current implementation reference. `APP_VERSION` remains `5.0.5.1` and the mode
-version remains `Vibe-Map-v1.1`; this documentation release changes neither.
+Current implementation reference. `APP_VERSION` is `5.2.0`; the internal mode
+version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
 
@@ -452,6 +452,16 @@ its response shape for clients. Bulk catalogue mutations accept up to 500
 positive integer IDs. The interface uses reviewed restore and Git tools; older
 backend aliases remain compatible. Developer-only assets load from one template
 include; metadata polling and archive paging have separate script owners.
+
+## Dev shell and shutdown
+
+`templates/dev_nav.html` replaces the main navigation only on authenticated Dev
+pages. `dev_shell.css` widens the working canvas and controls the responsive menu
+and service grid. `app_stop.js` owns the shared stop dialog; `dev_system.js` owns
+service/backup/Git tasks. Stop endpoints accept a fresh PIN without a Dev session,
+but retain localhost-only access, signed browser-owned target review, rate limits
+and job ownership. Stop grants no Dev session. All other Dev endpoints keep their
+admin requirements. See [Dev guide](DEV_GUIDE.md).
 
 ## API map
 

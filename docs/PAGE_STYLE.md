@@ -1,7 +1,7 @@
 # Styling guide
 
 Shared design rules and detailed page/tool specifications, organised by where
-you need them. This is a documentation reordering: CSS and layouts are unchanged.
+you need them. Current changes are recorded below; older origin labels are historical.
 Original version labels are provenance, not a sequence to reapply. Within each
 group, a later correction overrides an earlier conflicting rule. Explicitly
 expired passages are historical context; retained detail remains available.
@@ -1433,6 +1433,9 @@ current panel and report save success separately from a catalogue-refresh failur
 
 *Origin: Developer tasks and recovery — V4.0.0.7.3 / step 7C*
 
+> **Layout superseded in v5.2.0:** the Dev header and full-width service grid
+> replace the taskbar/sidebar described below. Backup and safety behavior remains.
+
 `dev_system.css` and `dev_system.js` load only in Dev. The dashboard defaults to
 Tasks & health. Keep the centred page title, always-visible Upload to Git,
 Create backup, full export and Lock actions, then grouped navigation beside the
@@ -1660,3 +1663,21 @@ cleanup action in the app: the standalone tool is run deliberately after testing
 Use the shared review container and local/remote comparison table. Keep the
 explicit `KEEP LOCAL` confirmation next to the apply button, with clear busy and
 stale-review states. Keep ordinary upload guards visible after the choice.
+
+### V5.2.0 Dev shell and service home
+
+Dev replaces the main navigation. Left: grouped native page dropdown. Centre:
+Lock Dev returns to the app home. Right: library search, Git backup & push, local
+backup and a small red ⏻ stop control. App navigation also has the same stop control.
+All destinations remain reachable; active page has a visible label and state.
+Escape and outside clicks close the menu. Keep the header usable at 390–1800 px;
+move actions to a second row before crowding the centre, with search spanning the
+phone action row. Use 44 px targets and 16 px search text.
+
+Dev content uses up to 1800 px with responsive gutters, no permanent sidebar and
+a compact page heading. Home uses six service containers: full-row library counts,
+health, coverage, stored activity, Git and backups. Three columns on wide screens,
+two on smaller desktop and one on phone. Use shared surfaces, semantic entity/mode
+colours, short labels and explicit service outcomes; avoid explanatory paragraphs
+on Home. Detailed usage belongs in DEV_GUIDE.md. Other tool internals remain for
+later steps. `dev_shell.css` loads after the baseline only for scoped shell rules.

@@ -198,12 +198,12 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.locator('[data-vibe-edit="1"]').click();await page.locator('#dev-vibe-save').waitFor();
   await page.locator('[name="pace_mood:x"]').fill('4.25');
   await page.locator('#dev-vibe-save button[type="submit"]').click();
-  await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data saved'));
+  await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data saved'));await page.locator('#dev-vibe-search button:enabled').waitFor();
   const maintained=await (await page.request.get(base+'/api/dev/vibe/1')).json();
   assert.equal(maintained.maps.find(m=>m.id==='pace_mood').x,.85);
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-vibe',folder);await page.locator('#dev-vibe-editor').screenshot({path:folder+'/dev-vibe-'+width+'.png'});}
   await page.locator('[data-vibe-clear-map="pace_mood"]').click();await page.locator('#dev-vibe-save button[type="submit"]').click();
-  await page.waitForFunction(()=>document.querySelector('#dev-vibe-save button[type=submit]')?.disabled===false);
+  await page.locator('#dev-vibe-search button:enabled').waitFor();
   await page.locator('#dev-vibe-delete [name="confirmation"]').fill('DELETE VIBE');await page.locator('#dev-vibe-delete button[type="submit"]').click();
   await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data deleted'));
   const removed=await (await page.request.get(base+'/api/dev/vibe/1')).json();assert.ok(removed.maps.every(m=>m.status==='unmapped'));assert.equal(removed.completed_passes,0);
@@ -221,6 +221,18 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.locator('#system-local-confirmation').fill('KEEP LOCAL');await page.locator('[data-system-local-apply]').click();
   await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Local database kept'));
   assert.equal(kept,1);assert.ok(await page.locator('[data-system-upload]').isDisabled());
+  await page.goto(base+'/dev/dashboard');await page.locator('.dev-home-grid').waitFor();
+  assert.equal(await page.locator('.dev-navbar').count(),1);assert.equal(await page.locator('.nav-matches,.dev-sidebar,.dev-taskbar').count(),0);
+  assert.equal(await page.locator('.dev-home-grid > section').count(),6);
+  for(const width of [390,768,1365,1800]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-home',folder);await page.screenshot({path:folder+'/dev-home-'+width+'.png',fullPage:true});}
+  await page.locator('#dev-page-picker summary').click();assert.equal(await page.locator('#dev-page-menu [data-dev]').count(),20);
+  await page.locator('#dev-page-menu [data-dev="database"]').click();await page.locator('#system-backups').waitFor();assert.ok(await page.locator('#dev-page-picker').evaluate(e=>!e.open));
+  await page.locator('.dev-nav-actions input[name=q]').fill('long title');await page.locator('.dev-nav-actions form button').click();await page.locator('#dev-query').waitFor();assert.equal(await page.locator('#dev-query').inputValue(),'long title');
+  await page.locator('.dev-lock').click();await page.waitForURL(base+'/');
+  // Main-header shutdown needs a PIN once and does not unlock Dev.
+  await page.locator('.app-stop-button').click();await page.locator('#stop-pin').waitFor();
+  assert.ok(await page.locator('[data-stop-prepare]').isDisabled(),'Externally served browser fixture cannot terminate its host');
+  await page.locator('#editor-close').click();
   await page.goto(base+'/global_stats');assert.equal(await page.locator('.listening-panel,script[src*="/listening.js"]').count(),0);
   assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}

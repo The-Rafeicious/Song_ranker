@@ -160,7 +160,8 @@ def inventory():
             untagged=conn.execute('SELECT COUNT(*) FROM songs WHERE NOT EXISTS(SELECT 1 FROM song_genres WHERE song_id=songs.id)').fetchone()[0],
             missing_previews=sum(not str(r['audio_url'] or '').strip() for r in song_rows),
             missing_sources=len(song_rows)-conn.execute('SELECT COUNT(DISTINCT song_id) FROM song_sources').fetchone()[0])
-        return dict(version=APP_VERSION,schema=conn.execute('PRAGMA user_version').fetchone()[0],totals=totals,inventory=items,
+        totals['vibe_mapped']=conn.execute("SELECT COUNT(*) FROM (SELECT song_id FROM song_vibe_positions WHERE status='placed' GROUP BY song_id HAVING COUNT(*)=4)").fetchone()[0]
+        return dict(database_bytes=Path(services.DB_NAME).stat().st_size,version=APP_VERSION,schema=conn.execute('PRAGMA user_version').fetchone()[0],totals=totals,inventory=items,
             integrity=conn.execute('PRAGMA integrity_check').fetchone()[0],foreign_key_errors=len(conn.execute('PRAGMA foreign_key_check').fetchall()))
     finally:conn.close()
 

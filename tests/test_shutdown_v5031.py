@@ -98,4 +98,19 @@ class ShutdownTests(unittest.TestCase):
             while manager.busy and time.monotonic()<end:time.sleep(.005)
             self.assertFalse(manager.busy);manager.shutdown.assert_not_called()
 
+    def test_home_stop_needs_one_pin_without_unlocking_dev(self):
+        manager=self.manager();client=services.app.test_client();other=services.app.test_client()
+        with patch.object(dev_shutdown,'coordinator',manager):
+            review=client.get('/api/dev/stop');self.assertEqual(review.status_code,200)
+            data=dict(pin=services.DEV_PIN,sync_git=False,review_token=review.json['review_token'])
+            self.assertEqual(other.post('/api/dev/stop/prepare',json=data).status_code,409)
+            response=client.post('/api/dev/stop/prepare',json=data);self.assertEqual(response.status_code,202,response.json)
+            with client.session_transaction() as session:self.assertFalse(session.get('is_admin'))
+            self.assertEqual(other.get('/api/dev/stop').json['state'],'idle')
+            self.assertEqual(other.post('/api/dev/stop/confirm',json={'job_id':response.json['id']}).status_code,409)
+            client.post('/api/dev/stop/cancel',json={'job_id':response.json['id']})
+            end=time.monotonic()+2
+            while manager.busy and time.monotonic()<end:time.sleep(.005)
+            manager.shutdown.assert_not_called()
+
 if __name__=='__main__':unittest.main()

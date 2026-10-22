@@ -9,7 +9,7 @@ function status(){return {version:'4.0.0.7.3',schema:13,integrity:'ok',foreign_k
  backups:Array.from({length:12},(_,i)=>({name:'manual_'+i+'.db',purpose:'Manual backup',modified:'2026-10-18T12:00:00Z',bytes:1024})),
  inventory:[{name:'songs',kind:'table',group:'Catalogue',role:'Stored facts',rows:4},{name:'preference_mode_ratings',kind:'table',group:'Voting',role:'Rebuildable projection',rows:8},{name:'v_history',kind:'view',group:'Derived views',role:'Derived / read-only',rows:2},{name:'extra <notes>',kind:'table',group:'Extensions',role:'Stored facts',rows:1}],git:git()}}
 async function harness(view='',width=1280,session={}){
- const dom=new JSDOM('<body data-page="dev"><main id="main"><div id="loading"></div></main><input id="volume-range" value=".5"><span id="volume-value"></span><button id="volume-btn"></button><div id="volume-panel" hidden></div><div id="preview-status" hidden></div><dialog id="editor"><form id="editor-form"><h2 id="editor-title"></h2><div id="editor-fields"></div><button type="button" id="editor-close">Close</button><button id="editor-submit">Save</button></form></dialog><div id="toast" hidden></div></body>',{url:'http://localhost/dev/dashboard'+(view?'?view='+view:''),runScripts:'outside-only',pretendToBeVisual:true});
+ const dom=new JSDOM('<body data-page="dev"><header class="navbar dev-navbar"><div class="dev-nav-inner"> <nav aria-label="Developer pages"><details id="dev-page-picker"><summary><span aria-hidden="true">⚙</span> <span id="dev-current-page">Developer home</span> ▾</summary><div id="dev-page-menu" class="dev-page-menu"><a href="/dev/dashboard">Developer home</a></div></details></nav> <a class="btn dev-lock" href="/dev/logout" aria-label="Lock Dev and return home">🔒 Lock Dev</a> <div class="dev-nav-actions"><form class="nav-search" action="/dev/dashboard" method="get"><input type="hidden" name="view" value="explorer"><input type="search" name="q" placeholder="Search library…" aria-label="Search Dev library"><button type="submit" aria-label="Search library">↵</button></form><button type="button" class="btn" data-dev-quick-push title="Back up database and push to Git">Git backup & push</button><button type="button" class="btn" data-system-backup data-dev-header>Local backup</button><button type="button" class="icon-btn app-stop-button" data-system-stop aria-label="Stop app" title="Back up and stop app">⏻</button></div> </div></header><main id="main"><div id="loading"></div></main><input id="volume-range" value=".5"><span id="volume-value"></span><button id="volume-btn"></button><div id="volume-panel" hidden></div><div id="preview-status" hidden></div><dialog id="editor"><form id="editor-form"><h2 id="editor-title"></h2><div id="editor-fields"></div><button type="button" id="editor-close">Close</button><button id="editor-submit">Save</button></form></dialog><div id="toast" hidden></div></body>',{url:'http://localhost/dev/dashboard'+(view?'?view='+view:''),runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,d=w.document,requests=[],errors=[],plays=[],data={songs:Array.from({length:4},(_,i)=>({id:i+1,title:'Song '+(i+1),artist_ids:[1],album_id:1,tag_ids:i%2?[1]:[],audio_url:i===3?'':'preview',elo_score:1200})),artists:[{id:1,name:'Artist'}],albums:[{id:1,title:'Album'}],tags:[{id:1,name:'Tag'}],history:[],tournaments:[],tournament_matches:[],tournament_entries:[],global_stats:{},special_modes:{}};
  let state=status(),handler=()=>undefined,backups=0;
  for(const [key,value] of Object.entries(session))w.sessionStorage.setItem(key,value);
@@ -30,7 +30,7 @@ async function harness(view='',width=1280,session={}){
   throw Error('Unexpected request '+url);
  };
  w.Overall={bindUI(){}};
- for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js','dev_system.js'])w.eval(source(file));
+ for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js','dev_system.js','app_stop.js'])w.eval(source(file));
  const expose="window.testDev={refreshData,records,setView:v=>{devView=v;renderDevView()}};window.DevSystem?.bindUI(";
  await w.eval(source('site.js').replace('window.DevSystem?.bindUI(',expose));await flush();
  const click=sel=>{const n=d.querySelector(sel);assert.ok(n,'missing '+sel);n.click();return n};
@@ -39,13 +39,13 @@ async function harness(view='',width=1280,session={}){
 }
 async function entryAndShortcuts(){
  const h=await harness();
- check(h.d.querySelector('h1').textContent==='Developer dashboard','shared visible dashboard title');
- check(h.d.querySelector('#dev-main h2').textContent==='Tasks & health','default lands on frequent tasks');
- check(h.d.querySelectorAll('.system-task').length===6,'six frequent tasks');
+ check(h.d.querySelector('h1').textContent==='Developer home','visible service home title');
+ check(h.d.querySelector('#dev-main h1').textContent==='Developer home','default lands on frequent tasks');
+ check(h.d.querySelectorAll('.dev-home-grid > section').length===6,'six service containers');
  check(h.requests.filter(r=>r.url==='/api/dev/system').length===1,'one local system load on entry');
  check(!h.requests.some(r=>r.url.includes('/git/')),'opening dashboard performs no remote Git task');
- check(h.d.querySelector('.dev-taskbar [data-system-git-open]'),'upload always in top bar');
- check(h.d.querySelector('.dev-taskbar a[href="/api/dev/database/export"]'),'full export visible');
+ check(h.d.querySelector('.dev-navbar [data-dev-quick-push]'),'upload always in top bar');
+ check(h.d.querySelector('a[href="/api/dev/database/export"]'),'full export visible');
  check(h.plays.length===0,'dashboard never autoplays');
  h.click('[data-system-filter="untagged"]');await flush();
  check(h.d.querySelector('#tag-status').value==='untagged','untagged shortcut applies filter');
@@ -56,10 +56,10 @@ async function entryAndShortcuts(){
  check(h.d.querySelectorAll('[data-tag-song]').length===1,'missing preview shortcut exact row');
  h.click('[data-dev="overview"]');await flush();h.click('[data-system-sources]');await flush();
  check(h.d.querySelector('#missing-apple-only').checked,'source shortcut shows missing-link filter');
- check(h.d.querySelector('.dev-taskbar [data-system-backup]'),'top bar survives all views');
+ check(h.d.querySelector('.dev-navbar [data-system-backup]'),'top bar survives all views');
  check(h.w.location.search.includes('view=songs'),'view bookmark stays current');
  check(h.errors.length===0,'entry and task navigation have no script errors');h.close();
- const unknown=await harness('unknown');check(unknown.d.querySelector('#dev-main h2').textContent==='Tasks & health','unknown view returns to tasks');unknown.close();
+ const unknown=await harness('unknown');check(unknown.d.querySelector('#dev-main h1').textContent==='Developer home','unknown view returns to tasks');unknown.close();
 }
 async function inventoryAndBackups(){
  const h=await harness('database');
@@ -76,12 +76,12 @@ async function inventoryAndBackups(){
  check(h.d.querySelector('.dev-system details summary').textContent.includes('Competition resets'),'destructive tools collapsed');
  check(!h.d.querySelector('details:has([data-tool="Reset competition"])').open,'reset tools not initially open');
  const pending=deferred();h.handler(async url=>url==='/api/dev/backup'?pending.promise:undefined);
- h.click('.dev-taskbar [data-system-backup]');h.click('.dev-taskbar [data-system-backup]');await flush();
+ h.click('.dev-navbar [data-system-backup]');h.click('.dev-navbar [data-system-backup]');await flush();
  check(h.requests.filter(r=>r.url==='/api/dev/backup').length===1,'double click makes one backup');
- check(h.d.querySelector('.dev-taskbar [data-system-backup]').disabled,'backup button disabled while running');
+ check(h.d.querySelector('.dev-navbar [data-system-backup]').disabled,'backup button disabled while running');
  pending.resolve({backup:'manual_created.db'});await flush();
  check(h.d.querySelector('#system-note').textContent.includes('manual_created.db'),'backup result visible');
- check(!h.d.querySelector('.dev-taskbar [data-system-backup]').disabled,'backup action recovers');
+ check(!h.d.querySelector('.dev-navbar [data-system-backup]').disabled,'backup action recovers');
  check(h.errors.length===0,'backup and inventory flows have no script errors');h.close();
 }
 async function gitFlows(){
@@ -116,7 +116,7 @@ async function gitFlows(){
  }
  h.state.git={available:false,message:'Git unavailable',history:[]};h.w.testDev.setView('export');await flush();
  check(h.d.querySelector('[data-system-check]').disabled,'missing Git disables remote controls');
- check(h.d.querySelector('.dev-taskbar [data-system-backup]')&&!h.d.querySelector('.dev-taskbar [data-system-backup]').disabled,'local backups available without Git');
+ check(h.d.querySelector('.dev-navbar [data-system-backup]')&&!h.d.querySelector('.dev-navbar [data-system-backup]').disabled,'local backups available without Git');
  check(h.errors.length===0,'Git flows have no script errors');h.close();
 }
 async function restoreFlows(){
@@ -132,7 +132,7 @@ async function restoreFlows(){
  h.handler(()=>undefined);h.click('[data-system-review]');await flush();const pending=deferred();h.handler(url=>url==='/api/dev/backups/restore'?pending.promise:undefined);
  h.click('[data-system-restore]');h.click('[data-dev="songs"]');await flush();
  check(h.d.querySelector('#system-restore'),'navigation waits for restore');
- check(h.d.querySelector('.dev-taskbar [data-system-backup]').disabled,'backup waits for restore');
+ check(h.d.querySelector('.dev-navbar [data-system-backup]').disabled,'backup waits for restore');
  check(h.d.querySelector('[data-system-restore]').disabled,'restore cannot be double applied');
  pending.resolve({message:'Backup restored. Reload open game tabs.',safety_backup:'pre_restore_fixture.db'});await flush();
  const sent=JSON.parse(h.requests.filter(r=>r.url==='/api/dev/backups/restore').at(-1).options.body);
@@ -141,7 +141,7 @@ async function restoreFlows(){
  check(h.requests.filter(r=>r.url==='/api/collection').length===2,'catalogue refreshed after restore');
  check(h.requests.filter(r=>r.url==='/api/dev/song-sources').length===2,'source cache refreshed after restore');
  check(!h.d.querySelector('[data-system-restore]'),'completed review cleared');
- check(!h.d.querySelector('.dev-taskbar [data-system-backup]').disabled,'dashboard usable after restore');
+ check(!h.d.querySelector('.dev-navbar [data-system-backup]').disabled,'dashboard usable after restore');
  check(h.errors.length===0,'restore flows have no script errors');h.close();
 }
 async function staleResponses(){
@@ -162,7 +162,7 @@ async function responsiveContracts(){
  check(css.includes('minmax(0,1fr)')&&css.includes('overflow-wrap:anywhere'),'long names/paths can wrap within grid');
  for(const width of [1440,768,390]){const h=await harness('database',width);
   check(h.d.querySelector('a[href="/api/dev/database/guide"]'),'guide available at '+width);
-  check(h.d.querySelector('.dev-taskbar [data-system-git-open]'),'Git shortcut available at '+width);
+  check(h.d.querySelector('.dev-navbar [data-dev-quick-push]'),'Git shortcut available at '+width);
   check(h.d.querySelectorAll('.system-store-row').length===4,'inventory accessible at '+width);
   check(h.plays.length===0&&h.errors.length===0,'no playback/errors at '+width);h.close();
  }
@@ -180,7 +180,7 @@ async function stopFlows(){
   if(url==='/api/dev/stop/confirm'){confirmVisible=d.querySelector('#editor-fields').textContent.includes('rolling_1.db')&&d.querySelector('#editor-fields').textContent.includes('Database backup uploaded.');phase='stopping';return {status:'success'}}
   if(url==='/api/dev/stop/cancel'){phase='cancelled';return {status:'success'}}
  });
- check(!!d.querySelector('.dev-taskbar [data-system-stop]'),'Stop app stays easy to reach in dashboard header');
+ check(!!d.querySelector('.dev-navbar [data-system-stop]'),'Stop app stays easy to reach in dashboard header');
  h.click('[data-system-stop]');await flush();
  check(d.querySelector('#stop-pin').type==='password'&&d.querySelector('#stop-sync-git').checked,'fresh PIN and configured Git upload required in stop review');
  check(d.querySelector('#editor-fields').textContent.includes('main → origin/main'),'Git destination shown before request');
@@ -215,7 +215,22 @@ async function localDatabaseChoice(){
  check(!h.d.querySelector('#system-local-confirmation'),'accepted review removed');check(h.d.querySelector('#system-note').textContent.includes('Local database kept'),'success explains next step');
  check(h.d.querySelector('[data-system-upload]').disabled,'local choice does not bypass code update guard');h.close();
 }
+async function shellQuickPush(){
+ const h=await harness();
+ check(h.d.querySelectorAll('#dev-page-menu [data-dev]').length===20,'all twenty pages in header');
+ check(!h.d.querySelector('.dev-sidebar'),'no permanent sidebar');
+ const pending=deferred();h.handler(url=>url==='/api/dev/git/upload'?pending.promise:undefined);
+ h.click('[data-dev-quick-push]');await flush();
+ const tasks=h.requests.filter(r=>r.url.startsWith('/api/dev/git/')).map(r=>r.url);
+ check(tasks.join(',')==='/api/dev/git/check,/api/dev/git/upload','header checks remote before snapshot push');
+ check(h.d.querySelector('[data-dev-quick-push]').disabled,'header Git action busy');
+ pending.resolve({ok:true,message:'Uploaded local database',git:h.state.git});await flush();
+ check(h.d.querySelector('#system-note').textContent.includes('Uploaded'),'upload outcome visible in Git');
+ h.state.git=git({behind:1,state:'behind'});h.click('[data-dev-quick-push]');await flush();
+ check(h.requests.filter(r=>r.url==='/api/dev/git/upload').length===1,'incoming code prevents another upload');
+ check(h.w.location.search.includes('view=export'),'blocked shortcut lands in Git for review');h.close();
+}
 module.exports={harness,flush};
-if(require.main===module)(async()=>{await entryAndShortcuts();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
+if(require.main===module)(async()=>{await entryAndShortcuts();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();await shellQuickPush();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
 
 
