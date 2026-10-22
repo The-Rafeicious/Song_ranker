@@ -30,7 +30,7 @@ def dev_login():
 @app.route('/dev/logout')
 def dev_logout():
     session.pop('is_admin', None)
-    return redirect(url_for('index'))
+    return redirect('/')
 
 
 @app.route('/dev/dashboard')

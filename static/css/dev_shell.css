@@ -52,3 +52,6 @@ body[data-page=dev] #main .dev-page-head h1 { margin:0; font-size:32px; }
 #editor .catalog-dialog .health-row { display:flex; justify-content:space-between; flex-wrap:wrap; gap:10px; }
 
 #dev-current-page { min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+
+body[data-page=dev] #main .dev-home-grid .health-row { flex-direction:row; align-items:center; }
+body[data-page=dev] #main .dev-home-grid .health-row > strong { text-align:right; }

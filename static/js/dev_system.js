@@ -12,7 +12,7 @@ window.DevSystem=(()=>{
  function viewChanged(next){if(next!==view){view=managed.has(next)?next:null;++loadId;++reviewId;restoreReview=null;localReview=null;loadError=''}}
  function render(next){view=next;draw();load()}
  function controls(){
-  $$('[data-system-git-open]').forEach(b=>{b.disabled=restoreBusy;b.textContent=gitBusy?'Git task running…':'Upload to Git'});
+  $$('[data-system-git-open]').forEach(b=>{b.disabled=restoreBusy;b.textContent=gitBusy?'Git task running…':'Review Git'});
   $$('[data-system-backup]').forEach(b=>{b.disabled=backupBusy||restoreBusy;b.textContent=backupBusy?'Backing up…':b.hasAttribute('data-dev-header')?'Local backup':'Create backup'});
   $$('[data-dev-quick-push]').forEach(b=>b.disabled=gitBusy||restoreBusy||backupBusy);
   $$('[data-system-check],[data-system-upload]').forEach(b=>b.disabled=b.disabled||gitBusy||restoreBusy);

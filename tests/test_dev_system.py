@@ -185,5 +185,11 @@ class DeveloperSystemTests(unittest.TestCase):
             self.assertEqual(other.post('/api/dev/git/keep-local',json={'choice_token':signed,'confirmation':'KEEP LOCAL'}).status_code,400)
 
 
+    def test_lock_returns_main_home_and_clears_dev_session(self):
+        response=self.client.get('/dev/logout')
+        self.assertEqual(response.status_code,302)
+        self.assertEqual(response.headers['Location'],'/')
+        with self.client.session_transaction() as session:self.assertFalse(session.get('is_admin'))
+
 if __name__=='__main__':unittest.main()
 
