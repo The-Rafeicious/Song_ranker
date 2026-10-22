@@ -1737,3 +1737,7 @@ On Dev Home, Tag Workshop is a compact service card in the row below the
 health/Git/backup row, alongside coverage and activity. Its title links to the
 bench (not the Tags table); show only tagged-song and tag-definition counts,
 with the established joined-card sizing and entity colours.
+
+### V5.2.3 Dev catalogue tables
+
+Songs, Artists, Albums and Tags share one compact table shell. Give IDs and artwork fixed narrow columns, and allocate flexible width to names and relationships. Scroll the table itself on narrow screens. Keep a visible record count and pager. The toolbar holds search, a bounded field-filter panel, the displayed-column checklist, and order controls. Show core columns by default; allow optional data columns without duplicating controls in every header cell. Keep clear filters separate from reset order and expose the active-filter count. Use semantic entity colours for record links and existing surface, border, button and focus tokens. Edit popups group related fields inside consistent panels and retain the shared dialog actions and error area.

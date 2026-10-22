@@ -70,3 +70,11 @@ Move Home outside the System dropdown into its own navigation link.
   directly to the bench with light tagged-song/tag-definition counts.
 - Preserve semantic colours and mobile stacking. No schema, membership or
   game-score changes.
+
+## V5.2.3 — Dev catalogue tables
+
+- Rework Songs, Artists, Albums and Tags around one compact table layout. Narrow ID, artwork and numeric columns so names and relationships have room; link names to their records.
+- Put text search, field filters, ordering, direction and displayed columns in a common toolbar. Keep per-table search/filter/order state, offer a default column set, and make clear filters and reset order separate one-click actions.
+- Simplify row actions to Edit plus a short More menu for operations specific to the catalogue. Preserve source review, Single conversion, preview quality, album import and deletion.
+- Group the four record edit dialogs into consistent identity, tag and media sections where applicable. Save requests and validation use the existing catalogue endpoints.
+- No schema migration or change to stored catalogue values.

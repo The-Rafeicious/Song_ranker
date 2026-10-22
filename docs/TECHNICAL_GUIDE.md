@@ -652,3 +652,7 @@ recordings restart when the selected song changes; leaving/mode switching releas
 the old element. Source details reuse DevCatalog's cached song-source summaries;
 no per-row Apple requests or new telemetry are introduced. Existing tag APIs,
 transactional new-name creation and the eight-tag cap remain unchanged.
+
+### Dev catalogue table UI (V5.2.3)
+
+The shared Songs/Artists/Albums/Tags table schema, filtering, sorting, column preferences, row rendering and edit dialog grouping live in `static/js/site.js`. `static/css/dev_catalog.css` owns the scoped compact table and dialog panels. Column preferences use the existing `tableColumns` localStorage key; per-type query, filters, page and sort use the existing session state. Editing still calls the existing `/api/dev/edit_*` endpoints and refreshes the collection. No database migration is involved.

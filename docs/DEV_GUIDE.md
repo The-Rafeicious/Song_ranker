@@ -156,3 +156,7 @@ matches; the selected cards get amber outlines. The editor retains explicit
 Add/Remove/Replace operations and paged Before/After review before Save. Its
 preview controls are separate from the selected editing scope. Changing modes
 with unsaved choices asks before discarding them. Returning to single mode clears bulk-only hidden filters.
+
+### Catalogue tables (V5.2.3)
+
+Songs, Artists, Albums and Tags use the same controls. Search matches words across record fields. Filters opens per-field text filters (and the missing Apple source switch for Songs); Clear filters restores all rows. Order selects a field, the arrow reverses direction, and Reset order returns to ascending ID. Column headings also sort; clicking the active heading reverses it. Columns toggles displayed fields and Default restores the compact set. Search, filters and order remain separate for each table during the browser session; displayed columns persist locally. Open a record by its name, use Edit for its metadata, or More for catalogue-specific maintenance and deletion. The pager shows 30 matches at a time.
