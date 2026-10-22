@@ -1,4 +1,5 @@
 """Small, coverage-scaled similarity adjustments; no eligibility or rating changes."""
+
 import math
 from songranker.storage.vibe_state import MAPS
 

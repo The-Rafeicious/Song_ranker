@@ -1,6 +1,6 @@
 # Song Ranker
 
-**Application v5.2.2.1 · Vibe Map integration v5.1.0 · competition generation 3 · SQLite schema 20**
+**Application v5.3 · Vibe Map integration v5.1.0 · competition generation 3 · SQLite schema 20**
 
 Rank your music, recognise previews, play brackets and quizzes, arrange albums,
 and describe songs on continuous Vibe Maps. Your songs, albums, artists and tags
@@ -8,7 +8,7 @@ share one catalogue; each mode keeps its own evidence and results.
 
 [Start](#start) · [Modes](#modes) · [Results](#results-and-discovery) ·
 [Dev tools](#dev-tools) · [Backups and sync](#backups-and-computer-switching) ·
-[Phone access](#phone-access) · [Help](#troubleshooting) · [Documentation](docs/README.md)
+[Phone access](#phone-access) · [Help](#troubleshooting) · [Documentation](docs/README.md) · [Development map](docs/FILES.md) · [Function index](docs/FUNCTIONS.md)
 
 ## Start
 
@@ -28,7 +28,7 @@ restore a generation-3 SQL snapshot, use an optional catalogue seed, or start
 empty. A **first V2-to-V3 transfer** resets results; a routine code update does
 not repeat that reset. See [upgrades and recovery](docs/UPGRADES.md).
 
-The app reports `5.2.2.1`; Vibe Map retains its internal mode version `1.1`.
+The app reports `5.3`; Vibe Map retains its internal mode version `1.1`.
 
 ## Modes
 
@@ -125,7 +125,7 @@ metadata replacement has separate options. See [Apple requests by Dev area](docs
 
 Vibe maintenance edits the saved average and sample/pass counts, checks for newer
 changes, and invalidates old round buffers. [Dev instructions](docs/VIBE_MAP_DEV.md)
-also cover the optional one-time test cleanup script. It is never automatic.
+cover reviewed maintenance controls. Retired one-time release-cleanup scripts are available only in Git history.
 
 ## Backups and computer switching
 
@@ -193,3 +193,15 @@ local/private-LAN app.
 The release notes separate **v5.1.0 mode integration** from **v5.1.1 documentation
 consolidation**. Earlier patch instructions are historical and marked accordingly;
 current setup and operating rules live in the references above.
+
+## V5.3 development
+
+Related mode operations/statistics now share one owner. Catalogue queries, Dev
+operations and common CSS/JavaScript have been consolidated; all assets load from
+`templates/assets.html`. See the [consolidation report](docs/CONSOLIDATION.md).
+
+```sh
+npm ci
+python tools/check.py all
+python tools/check.py docs --write  # after adding/moving Python definitions
+```

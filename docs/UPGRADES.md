@@ -63,11 +63,9 @@ and catalogue present on your installation determine current counts.
 | 18 | Vibe progress and browser-round state. | Compact running averages/counts rather than an unbounded attempt log. |
 | 19 | Generation-2 Vibe map meanings. | Back up and reset incompatible generation-1 Vibe test data once; catalogue and other modes remain. Current schema-19 placements are retained. |
 
-Use normal backed-up migrations. `tools/reset_vibe_maps_v1042.py` is a
-**historical compatibility helper**, no longer necessary on schema 19; it is not
-a general reset command. The optional `tools/prepare_vibe_merge.py` is a different,
-explicit test-results cleanup tool, documented in [Vibe Dev maintenance](VIBE_MAP_DEV.md).
-It is not part of startup or a routine main-branch update.
+Use normal backed-up migrations. Historical one-time Vibe reset/merge-cleanup
+helpers were removed in V5.3; routine code updates never reset current results.
+Use the explicit reviewed Dev controls when an intentional reset is needed.
 
 ## Tags and catalogue policy
 

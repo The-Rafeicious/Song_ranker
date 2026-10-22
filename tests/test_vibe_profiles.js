@@ -5,7 +5,7 @@ const flush=async()=>{for(let i=0;i<50;i++)await Promise.resolve()};
  const dom=new JSDOM('<body data-page="song" data-entity="1"><main><audio id="hero"></audio><div class="profile-key-stats"></div><div class="song-sections"></div></main></body>',{url:'http://localhost/song/1',runScripts:'outside-only'});
  const w=dom.window,d=w.document,calls=[],hero=d.querySelector('audio');
  w.fetch=(url,options)=>new Promise((resolve,reject)=>calls.push({url,options,resolve,reject}));
- for(const file of ['ui.js','vibe_charts.js','overall.js','vibe_profiles.js'])w.eval(fs.readFileSync('static/js/'+file,'utf8'));
+ for(const file of ['ui.js','vibe_charts.js','overall.js'])w.eval(fs.readFileSync('static/js/'+file,'utf8'));
  w.Overall.bindUI({api:async()=>({entities:{songs:[],albums:[],artists:[],tags:[]}}),records:()=>[{id:1}],profile:()=>({type:'albums',item:{id:1}})});
  const data={profile_ready:true,song:{title:'Source'},profile:{radar:{spokes:Array.from({length:8},(_,i)=>({label:'Pole '+i,low:'Low',high:'High',radius:i===0?null:.5}))}},html:'<div class="vibe-song-panel"><div data-vibe-song-radar></div></div>'};
  const ok=(index,payload=data)=>calls[index].resolve({ok:true,json:async()=>payload});

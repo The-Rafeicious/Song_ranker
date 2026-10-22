@@ -1,10 +1,11 @@
 """Authenticated Vibe Map maintenance; catalogue and preference facts stay separate."""
+
 import hashlib
 import json
 import math
 import time
-from flask import jsonify,request
-from songranker.services import app,admin_required,get_db_connection
+from flask import jsonify, request
+from songranker.services import app, admin_required, get_db_connection
 from songranker.vibe_maps import map_definitions
 from songranker.storage.vibe_state import MAPS
 from songranker.storage.competition_reset import reset_vibes

@@ -1,4 +1,5 @@
 """One-time catalogue-only V2 -> V3 competition bootstrap. Never edits the source."""
+
 from pathlib import Path
 import hashlib
 import json
@@ -6,10 +7,10 @@ import os
 import sqlite3
 import tempfile
 import time
-
 from songranker.storage.database import initialize_database
-from songranker.storage.database_io import (DatabaseValidationError, readonly, validate, publish, quote)
+from songranker.storage.database_io import DatabaseValidationError, readonly, validate, publish, quote
 from songranker.storage.database_schema import SCHEMA_VERSION
+
 
 CATALOGUE = {
     'albums': ('id','title','cover_url','release_date'),

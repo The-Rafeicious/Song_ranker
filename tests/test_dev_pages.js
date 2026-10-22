@@ -1,7 +1,7 @@
 /* Served templates, feature scripts and real DB routes; disposable fixture only. */
 const {JSDOM,CookieJar,VirtualConsole}=require('jsdom'),fs=require('fs');
 (async()=>{
- const base=process.env.SONG_RANKER_QA_URL;if(!base)throw Error('Run through python tools/validate_dev_pages.py');const first=await fetch(base+'/dev/login'),html=await first.text(),csrf=html.match(/name="csrf_token" value="([^"]+)"/)[1];
+ const base=process.env.SONG_RANKER_QA_URL;if(!base)throw Error('Run through python tools/browser_check.py --suite dev');const first=await fetch(base+'/dev/login'),html=await first.text(),csrf=html.match(/name="csrf_token" value="([^"]+)"/)[1];
  const login=await fetch(base+'/dev/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded',Cookie:first.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ')},body:new URLSearchParams({pin:'qa-test-pin',csrf_token:csrf}),redirect:'manual'});
  const cookie=login.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ');if(login.status!==302)throw Error('Login failed');
  const views=['overview','explorer','songs','artists','albums','tags','import','tag_workbench','bulk','metadata','history','trivia','tournaments','guesser_records','shelves_records','vibe_records','overall','selection_health','database','export'],results=[],errors=[];
@@ -12,6 +12,7 @@ const {JSDOM,CookieJar,VirtualConsole}=require('jsdom'),fs=require('fs');
   for(let i=0;i<250&&!d.querySelector('#dev-main h1,#dev-main h2,#dev-main h3');i++)await new Promise(r=>setTimeout(r,20));
   const title=d.querySelector('#dev-main h1')?.textContent||d.querySelector('#dev-main h2')?.textContent||d.querySelector('#dev-main h3')?.textContent;results.push({width,view,title,errors:pageErrors});if(!title||pageErrors.length)errors.push({width,view,title,errors:pageErrors});
   if(view==='overview'&&width===1280){
+   for(let i=0;i<250&&!d.querySelector('.dev-home-tag-workshop');i++)await new Promise(r=>setTimeout(r,20));
    const card=d.querySelector('.dev-home-tag-workshop');
    if(!card||card.querySelector('[data-dev="tag_workbench"]')?.textContent!=='Tag Workshop ↗'||card.querySelectorAll('.dev-service-metrics > div').length!==2)errors.push({issue:'Tag Workshop Home card/link'});
   }

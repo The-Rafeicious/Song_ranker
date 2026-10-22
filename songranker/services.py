@@ -1,27 +1,25 @@
 from flask import Flask, redirect, url_for, session
 from functools import wraps
 from difflib import SequenceMatcher
-import random
 import re
 import sqlite3
 import os
-from datetime import datetime
 from pathlib import Path
 import weakref
 from songranker.storage.database_access import gate
-
 from songranker.paths import ROOT
-app = Flask(__name__,template_folder=str(ROOT/'templates'),static_folder=str(ROOT/'static'))
 from songranker.lan_security import configure_security
-configure_security(app, ROOT)
 from songranker.version import APP_VERSION
+from songranker.storage.competition import configured_paths
+
+app = Flask(__name__,template_folder=str(ROOT/'templates'),static_folder=str(ROOT/'static'))
+configure_security(app, ROOT)
 
 @app.context_processor
 def project_version():
     from songranker.storage.vibe_state import VIBE_MAP_VERSION
     return dict(app_version=APP_VERSION, vibe_version=VIBE_MAP_VERSION)
 
-from songranker.storage.competition import configured_paths
 DB_PATH, LEGACY_DB_PATH = configured_paths(ROOT)
 DB_NAME = str(DB_PATH)
 DEV_PIN = os.environ.get('SONG_RANKER_PIN', '9042')
@@ -61,21 +59,10 @@ def get_db_connection():
         raise
 
 
-def git_pull():
-    """Compatibility helper for stopped-server scripts; main owns startup ordering."""
-    from songranker.developer.git_sync import GitSync
-    return GitSync(ROOT, DB_NAME).startup()
 
 
-def git_push():
-    """Compatibility result; the Dev endpoint returns the full structured outcome."""
-    from songranker.developer.git_sync import GitSync
-    return GitSync(ROOT, DB_NAME).upload().get('ok', False)
 
 
-def ensure_tournament_schema(conn):
-    from songranker.storage.database_schema import ensure_tournament_schema as ensure
-    ensure(conn)
 
 
 def init_db():
@@ -151,9 +138,6 @@ def export_rankings():
             f.write(f"{rank:<5} | {elo:<6} | {song['matches_played']:<7} | {song['title']} by {song['artist']}\n")
 
 
-def calculate_new_elo(winner_elo, loser_elo, k_factor=32):
-    from songranker.storage.preference_state import calculate_new_elo as calculate
-    return calculate(winner_elo, loser_elo, k_factor)
 
 
 def is_close_match(guess, actual, threshold=0.75):
@@ -194,7 +178,8 @@ def fetch_match_history(conn, song_id=None, limit=50, *, offset=0, mode='all', o
     Elo in the template. This reader never changes the database.
     """
     from songranker.catalog import versus_metadata
-    from songranker.elo_history import (source_sql, filters)
+    from songranker.catalog import source_sql
+    from songranker.catalog import filters
     mode, origin = filters(mode, origin)
 
     rows = [dict(row) for row in conn.execute(f'''
@@ -243,14 +228,6 @@ def fetch_match_history(conn, song_id=None, limit=50, *, offset=0, mode='all', o
     return rows
 
 
-def get_matchup(is_blind=False):
-    from songranker.modes.selection_data import preference_pair
-    conn = get_db_connection()
-    try:
-        conn.execute('BEGIN')
-        return preference_pair(conn, 'blind' if is_blind else 'standard')
-    finally:
-        conn.close()
 
 
 def create_database_backup(prefix='song_ranker'):
@@ -319,6 +296,3 @@ def link_genres_to_song(conn, song_id, genre_string):
             genre_id = cursor.lastrowid
 
         conn.execute('INSERT OR IGNORE INTO song_genres (song_id, genre_id) VALUES (?, ?)', (song_id, genre_id))
-
-
-

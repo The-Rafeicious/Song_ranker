@@ -1,0 +1,57 @@
+{# Single asset registry. Feature CSS precedes shared components and the approved baseline.
+   Scripts run in dependency order: UI → feature owners → site orchestration. #}
+{% set path = request.path %}
+{% set profile = page|default('') in ['song','artist','album','tag'] %}
+{% set dev = page|default('') == 'dev' %}
+{% set game = path in ['/game','/trivia','/tournament','/elo_guesser','/album_shelves'] %}
+{% set report = path in ['/global_stats','/voting_stats','/trivia_stats','/tournament_stats','/elo_guesser_stats','/album_shelves_stats','/vibe_map_stats','/history'] %}
+{% set vibe = profile or path in ['/','/global_stats','/mode_rankings/vibe','/vibe_map_stats','/vibe-map'] %}
+{% set ranked = path in ['/leaderboard','/artists','/albums','/tags','/overall_rankings','/artist_stats','/album_stats'] or path.startswith('/mode_rankings/') %}
+
+{% macro css(name) -%}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/' ~ name ~ '.css', v=app_version) }}">
+{%- endmacro %}
+{% macro js(name) -%}
+<script src="{{ url_for('static', filename='js/' ~ name ~ '.js', v=app_version) }}" defer></script>
+{%- endmacro %}
+
+{% macro styles() %}
+{{ css('style') }}
+{% if path == '/' %}{{ css('home') }}{% endif %}
+{% if page|default('') == 'search' %}{{ css('search') }}{% endif %}
+{% if ranked %}{{ css('standard_rankings') }}{% endif %}
+{% if profile %}{{ css('profiles') }}{% endif %}
+{% if game %}{{ css('gameplay') }}{% endif %}
+{% if path == '/vibe-map' %}{{ css('vibe_map') }}{% endif %}
+{% if path == '/history' %}{{ css('history') }}{% endif %}
+{% if report or profile or vibe or dev %}{{ css('reports') }}{% endif %}
+{% if vibe %}{{ css('vibe') }}{% endif %}
+{% if dev %}
+  {{ css('dev_catalog') }}{{ css('dev_tags') }}{{ css('developer') }}
+{% endif %}
+{{ css('components') }}
+{{ css('site_baseline') }}
+{% endmacro %}
+
+{% macro scripts() %}
+{{ js('ui') }}
+{% if game %}{{ js('gameplay') }}{% endif %}
+{{ js('preview') }}
+{% if path in ['/','/game','/elo_guesser','/album_shelves'] or ranked or dev %}{{ js('special_modes') }}{% endif %}
+{% if path in ['/','/global_stats','/overall_rankings'] or profile or dev %}{{ js('overall') }}{% endif %}
+{% if page|default('') == 'search' %}{{ js('search') }}{% endif %}
+{% if profile %}{{ js('profiles') }}{% endif %}
+{% if vibe %}{{ js('vibe_charts') }}{% endif %}
+{% if path in ['/','/global_stats','/mode_rankings/vibe'] %}{{ js('vibe_library') }}{% endif %}
+{% if path == '/vibe_map_stats' %}{{ js('vibe_stats') }}{% endif %}
+{% if path == '/global_stats' %}{{ js('global_stats') }}{% endif %}
+{% if path == '/vibe-map' %}{{ js('vibe_map') }}{% endif %}
+{% if path == '/trivia' %}{{ js('trivia') }}{% endif %}
+{% if dev %}
+  {{ js('dev_controls') }}{{ js('dev_catalog') }}{{ js('dev_metadata') }}
+  {{ js('dev_records') }}{{ js('dev_vibe') }}{{ js('dev_tags') }}
+  {{ js('dev_system') }}
+{% endif %}
+{{ js('app_stop') }}
+{{ js('site') }}
+{% endmacro %}

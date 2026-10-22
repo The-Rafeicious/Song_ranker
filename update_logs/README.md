@@ -6,6 +6,7 @@ Substantial families keep their own file; small patches stay as sections.
 
 | Family | Overall change |
 | --- | --- |
+| [V5.3](V5_3_UPDATE.md) | Repository consolidation, current styling contract and generated function ownership. |
 | [V5.2](V5_2_UPDATE.md) | Dev revamp: dedicated navigation, service home and shared quick stop. |
 | [V5.1](V5_1_UPDATE.md) | V5.1.0 integrates Vibe Map; V5.1.1 consolidates documentation. |
 | [V5.0](V5_0_UPDATE.md) | Fresh generation-3 competition, catalogue/Dev/storage and computer sync. |

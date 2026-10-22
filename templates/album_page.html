@@ -1,5 +1,0 @@
-{% extends 'base.html' %}
-{% set profile_assets = true %}
-{% block title %}{{ album_name }} · Song Ranker{% endblock %}
-{% block page_kind %}album{% endblock %}
-{% block content %}<script id="profile-data" type="application/json">{{ {'kind':'albums','name':album_name}|tojson }}</script><div id="loading" class="empty" role="status">Loading…</div><noscript>Enable JavaScript to view this page.</noscript>{% endblock %}

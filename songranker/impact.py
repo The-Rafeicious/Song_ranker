@@ -1,4 +1,5 @@
 """Read-only catalogue-relative Impact, in the current public Elo scale."""
+
 from math import isfinite
 from statistics import fmean, median
 

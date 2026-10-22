@@ -1,9 +1,11 @@
 """Library Vibe summaries, consistency boards and top-twenty boundaries."""
 import unittest
 from songranker import pages
-from songranker.modes import special_modes, vibe_map
-from songranker.reports.vibe_library_data import build_library_vibe, build_vibe_rankings
-from songranker.reports.vibe_stats_data import build_vibe_stats
+from songranker.modes import guesser, shelves
+from songranker.modes import vibe_map
+from songranker.modes.vibe_map import build_library_vibe
+from songranker.modes.vibe_map import build_vibe_rankings
+from songranker.modes.vibe_map import build_vibe_stats
 from songranker.storage.database_io import capture
 import test_preferences as fixture
 

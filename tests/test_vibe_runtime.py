@@ -10,7 +10,7 @@ import unittest
 import test_preferences as fixture
 from songranker import services
 from songranker.modes import vibe_map as V
-from songranker.modes import special_modes  # Register production routes before HTTP tests.
+from songranker.modes import guesser, shelves
 from songranker.storage.database import initialize_database
 from songranker.storage.database_io import capture, readonly, rebuild, reconcile, validate, sql_dump
 from songranker.vibe_maps import pass_counts

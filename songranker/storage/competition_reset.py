@@ -1,5 +1,6 @@
 """Shared transactional result reset. Caller owns locks, backup and commit."""
 
+
 def reset_vibes(conn,song_id=None):
     where=' WHERE song_id=?' if song_id is not None else ''
     params=(song_id,) if song_id is not None else ()

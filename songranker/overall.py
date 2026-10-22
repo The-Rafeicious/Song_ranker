@@ -3,6 +3,7 @@
 Display the existing composite directly, with category rank kept separate.
 Participation adapts weights/evidence on each snapshot; ineligible inputs never count.
 """
+
 from collections import defaultdict, OrderedDict
 import hashlib
 import json
@@ -10,11 +11,11 @@ import math
 import statistics
 import threading
 import time
-
 from flask import abort, jsonify, render_template, request, session, has_request_context
 from songranker import services
-from songranker.services import (app, admin_required)
-from songranker.catalog import (collection, proper_album)
+from songranker.services import app, admin_required
+from songranker.catalog import collection, proper_album
+
 
 VERSION=6
 # Five equally based game families. Voting's three correlated views share 20%.

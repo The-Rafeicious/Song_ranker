@@ -1,4 +1,5 @@
 """Pure preference replay and schema-8/9 transport upgrade; no Flask imports."""
+
 from bisect import bisect_right, insort
 from copy import deepcopy
 import json
@@ -194,8 +195,8 @@ def upgrade_state(original):
     """Apply lossless upgrades; recognize complete known SQL-dump layouts."""
     if original['user_version']==0:
         from songranker.storage.database_schema import table_columns
-        from songranker.storage.challenge_state import ADDITIONS as quiz_additions
-        from songranker.storage.catalog_source_state import ADDITIONS as song_additions
+        from songranker.storage.schema_compat import CHALLENGE_ADDITIONS as quiz_additions
+        from songranker.storage.schema_compat import SOURCE_ADDITIONS as song_additions
         current={name:set(columns) for name,columns in table_columns().items()}
         from songranker.storage.vibe_state import TABLES as vibe_tables
         # Layout 18/19 is identical; definition generation disambiguates dumps.
@@ -203,7 +204,7 @@ def upgrade_state(original):
         columns=maps.get('columns',[])
         generation=(19 if 'definition_version' in columns and maps.get('rows') and
                     all(row[columns.index('definition_version')]==2 for row in maps['rows']) else 18)
-        from songranker.storage.retired_listening import LEGACY_COLUMNS as listening_columns
+        from songranker.storage.schema_compat import LISTENING_COLUMNS as listening_columns
         legacy_current=dict(current,listening_observations=set(listening_columns))
         layouts=[(20,current),(generation,legacy_current)]
         current=legacy_current
@@ -230,12 +231,12 @@ def upgrade_state(original):
             if (set(original['tables'])&set(current)==set(layout) and
                 all(set(original['tables'][name]['columns'])==columns for name,columns in layout.items())):
                 original=deepcopy(original);original['user_version']=version;break
-    from songranker.storage.challenge_state import upgrade_state as upgrade_challenges
-    from songranker.storage.catalog_source_state import upgrade_state as upgrade_sources
+    from songranker.storage.schema_compat import upgrade_challenges as upgrade_challenges
+    from songranker.storage.schema_compat import upgrade_sources as upgrade_sources
     from songranker.storage.source_storage import upgrade_state as upgrade_storage
     from songranker.storage.tag_limits import upgrade_state as upgrade_tags
     from songranker.storage.vibe_state import upgrade_state as upgrade_vibes
-    from songranker.storage.retired_listening import upgrade_state as retire_listening
+    from songranker.storage.schema_compat import retire_listening as retire_listening
     return retire_listening(upgrade_vibes(upgrade_tags(upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original)))))))
 
 
@@ -279,4 +280,3 @@ def replay(songs, seeds, events, overrides, cutoff, boundary):
                 result[sid]['highest_rank'] = min(result[sid]['highest_rank'], rank)
     apply_before(float('inf'))
     return result, projected
-

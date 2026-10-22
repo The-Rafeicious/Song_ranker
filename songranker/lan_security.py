@@ -1,4 +1,5 @@
 """Direct private-LAN access policy. This app is not an internet-facing service."""
+
 import hmac
 import ipaddress
 import os
@@ -6,8 +7,8 @@ import secrets
 import time
 from pathlib import Path
 from urllib.parse import urlsplit
-
 from flask import abort, jsonify, request, session
+
 
 DEFAULT_ALLOWED_IPS = '10.104.13.115'  # Phone address from the supplied launcher.
 MAX_REQUEST_BYTES = 4 * 1024 * 1024

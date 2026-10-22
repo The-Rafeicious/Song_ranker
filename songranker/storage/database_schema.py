@@ -1,11 +1,11 @@
 """The schema.sql registry. Execute statements without executescript's implicit COMMIT."""
+
 from functools import lru_cache
-from pathlib import Path
 import re
 import sqlite3
+from songranker.paths import ROOT
 
 SCHEMA_VERSION = 20
-from songranker.paths import ROOT
 SCHEMA_PATH = ROOT/'data/schema.sql'
 
 
@@ -42,25 +42,3 @@ def table_columns():
                 for kind, name, _ in definitions() if kind == 'table'}
     finally:
         conn.close()
-
-
-def ensure_tournament_schema(conn):
-    """Compatibility adapter for pre-9 databases and isolated report fixtures."""
-    create_objects(conn, names={'tournament_entries', 'tournament_matches',
-        'idx_tournament_matches_tournament_round', 'idx_tournament_matches_winner',
-        'idx_tournament_matches_loser'})
-    columns = {r[1] for r in conn.execute('PRAGMA table_info(tournaments)')}
-    for name, declaration in {
-        'status': "TEXT NOT NULL DEFAULT 'completed'", 'created_at': 'DATETIME',
-        'updated_at': 'DATETIME', 'completed_at': 'DATETIME',
-        'current_round': 'INTEGER NOT NULL DEFAULT 1',
-        'points_version': 'INTEGER NOT NULL DEFAULT 1',
-        'is_blind': 'BOOLEAN NOT NULL DEFAULT 0'
-    }.items():
-        if name not in columns:
-            conn.execute(f'ALTER TABLE tournaments ADD COLUMN {name} {declaration}')
-    create_objects(conn, names={'idx_tournaments_status'})
-    conn.execute("UPDATE tournaments SET status='completed' WHERE champion_id IS NOT NULL AND status IS NULL")
-    conn.execute('UPDATE tournaments SET created_at=COALESCE(created_at,timestamp,CURRENT_TIMESTAMP)')
-    conn.execute('UPDATE tournaments SET completed_at=COALESCE(completed_at,timestamp) WHERE champion_id IS NOT NULL')
-

@@ -1,173 +1,89 @@
 # File ownership map
 
-The root keeps the launcher, requirements, README and contributor rules. Runtime
-Python code is grouped below; assets/templates retain their existing feature names.
-Old root/packaging inventories are [expired](RETIRED.md); current owners are listed here.
+V5.3 has one current owner per responsibility. Use the [function index](FUNCTIONS.md) for every definition, signature and source location.
 
-## Shared application
-
-`songranker/storage/source_storage.py` owns the schema-15 current-source upgrade,
-lossless snapshot codec and small/large SQLite page policy.
+## Python owners
 
 | File | Responsibility |
 | --- | --- |
-| `songranker/apple_access.py` | Bounded in-memory lookup/preview caching and streamed Apple diagnostics. |
-| `songranker/catalog.py` | Shared library projections and aggregation. Each song contributes once. |
-| `songranker/elo_history.py` | Read-only public Elo feed; ordinary vote/exposure views keep their meaning. |
-| `songranker/impact.py` | Read-only catalogue-relative Impact, in the current public Elo scale. |
-| `songranker/lan_security.py` | Direct private-LAN access policy. This app is not an internet-facing service. |
-| `songranker/storage/retired_listening.py` | Schema-20 backed-up retirement of legacy playback observations. |
-| `songranker/overall.py` | A personal composite score, derived on demand. No database writes or schema. |
-| `songranker/pages.py` | Shared implementation helpers. |
-| `songranker/vibe_maps.py` | Shared four-map definitions, display labels, profile reads and pass counts. |
-| `songranker/paths.py` | Single project-root owner for data, templates, assets and documentation. |
-| `songranker/services.py` | Flask, connections, hydration and shared service helpers. |
-| `songranker/version.py` | Single version source for the footer and shared asset cache keys. |
+| [main.py](../main.py) | Startup Git handoff, explicit route registration, database bootstrap and Waitress hosting. |
+| [songranker/apple_access.py](../songranker/apple_access.py) | Apple request gates, bounded lookup/preview caches and streaming diagnostics. |
+| [songranker/catalog.py](../songranker/catalog.py) | Shared catalogue projections, cross-mode results and Elo history queries. |
+| [songranker/developer/catalog_sources.py](../songranker/developer/catalog_sources.py) | Source validation/tokens, placement plans and track-number constraints. |
+| [songranker/developer/db_tools.py](../songranker/developer/db_tools.py) | Offline audit/export/rebuild/restore/compare CLI. |
+| [songranker/developer/dev.py](../songranker/developer/dev.py) | Developer authentication, catalogue edits, records and controlled resets. |
+| [songranker/developer/dev_catalog.py](../songranker/developer/dev_catalog.py) | Reviewed Apple source changes, release inspection and Singles moves. |
+| [songranker/developer/dev_shutdown.py](../songranker/developer/dev_shutdown.py) | Fresh-PIN stop preparation/acknowledgement and in-flight request leases. |
+| [songranker/developer/dev_system.py](../songranker/developer/dev_system.py) | Git/backups/recovery, inventory, database inspection and analysis routes. |
+| [songranker/developer/dev_tags.py](../songranker/developer/dev_tags.py) | Canonical tag proposals, reviews and atomic membership apply routes. |
+| [songranker/developer/dev_vibe.py](../songranker/developer/dev_vibe.py) | Authenticated stale-safe Vibe coordinate/count maintenance. |
+| [songranker/developer/git_sync.py](../songranker/developer/git_sync.py) | Guarded startup fast-forwards and explicit database-only Git uploads. |
+| [songranker/developer/metadata.py](../songranker/developer/metadata.py) | Fill-only metadata planning/apply, scan lifecycle and HTTP reports. |
+| [songranker/hosting.py](../songranker/hosting.py) | Drained single-process shutdown and the Waitress stop callback. |
+| [songranker/impact.py](../songranker/impact.py) | Pure catalogue-relative Impact calculations; JavaScript parity lives in ui.js. |
+| [songranker/lan_security.py](../songranker/lan_security.py) | Private-LAN addresses/hosts, session secret, origin and local-write policy. |
+| [songranker/modes/challenge_rules.py](../songranker/modes/challenge_rules.py) | Pure streak/difficulty rules, reusable without Flask or a database. |
+| [songranker/modes/challenges.py](../songranker/modes/challenges.py) | Browser-owned persisted challenge runs and public pure-rule exports. |
+| [songranker/modes/guesser.py](../songranker/modes/guesser.py) | Elo Guesser rounds, frozen-answer results and detailed Guesser Stats. |
+| [songranker/modes/preferences.py](../songranker/modes/preferences.py) | Preference offers, idempotent writes, corrections/replay and rating projections. |
+| [songranker/modes/selection.py](../songranker/modes/selection.py) | Adaptive draw algorithms plus the shared SQL exposure/recency adapters. |
+| [songranker/modes/shelves.py](../songranker/modes/shelves.py) | Album Shelves eligibility, ordering/grading and detailed Shelves Stats. |
+| [songranker/modes/tournament.py](../songranker/modes/tournament.py) | Bracket generation, tournament voting/results and detailed Tournament Stats. |
+| [songranker/modes/trivia.py](../songranker/modes/trivia.py) | Timed field recognition, answer grading/corrections and detailed Trivia Stats. |
+| [songranker/modes/vibe_map.py](../songranker/modes/vibe_map.py) | Vibe round state, saving, similarity, stats, profile/library queries and APIs. |
+| [songranker/modes/vibe_similarity.py](../songranker/modes/vibe_similarity.py) | Pure coordinate similarity and coverage-aware selector affinity. |
+| [songranker/modes/voting.py](../songranker/modes/voting.py) | Standard/blind voting operations, history page and detailed Voting Stats. |
+| [songranker/overall.py](../songranker/overall.py) | Derived, calibrated Overall scores and their rankings/details APIs. |
+| [songranker/pages.py](../songranker/pages.py) | Home, catalogue/search/rankings, shared collection profiles and Global Stats routes. |
+| [songranker/paths.py](../songranker/paths.py) | One resolved project root for data, templates, assets and documentation. |
+| [songranker/reports/global_stats_data.py](../songranker/reports/global_stats_data.py) | Read-only cross-mode Global Stats from one SQLite snapshot. |
+| [songranker/reports/health.py](../songranker/reports/health.py) | Shared exposure/coverage health and diagnostics using production selectors. |
+| [songranker/reports/stats_activity.py](../songranker/reports/stats_activity.py) | Shared dated activity, comparison charts and report attachments. |
+| [songranker/services.py](../songranker/services.py) | Flask configuration, managed connections, song hydration and catalogue writes. |
+| [songranker/storage/competition.py](../songranker/storage/competition.py) | Configured database paths and one-time V2-to-V3 catalogue-only bootstrap. |
+| [songranker/storage/competition_reset.py](../songranker/storage/competition_reset.py) | Transactional per-mode/all result resets; caller owns backup/commit. |
+| [songranker/storage/database.py](../songranker/storage/database.py) | Backed-up transactional bootstrap and versioned migration. |
+| [songranker/storage/database_access.py](../songranker/storage/database_access.py) | Connection gate and exclusive, drained maintenance context. |
+| [songranker/storage/database_io.py](../songranker/storage/database_io.py) | Lossless capture/export/rebuild, validation, restore and backup rotation. |
+| [songranker/storage/database_schema.py](../songranker/storage/database_schema.py) | Canonical schema.sql registry and transaction-safe DDL execution. |
+| [songranker/storage/git_database.py](../songranker/storage/git_database.py) | Whole-snapshot reconciliation, deletion-aware baselines and adoption. |
+| [songranker/storage/preference_state.py](../songranker/storage/preference_state.py) | Pure preference replay and lossless historical state transport. |
+| [songranker/storage/schema_compat.py](../songranker/storage/schema_compat.py) | Offline historical quiz/source/retirement adapters; no Flask imports. |
+| [songranker/storage/source_storage.py](../songranker/storage/source_storage.py) | Lossless current-source codec, schema-15 adapter and SQLite page policy. |
+| [songranker/storage/tag_limits.py](../songranker/storage/tag_limits.py) | Eight-tag policy and the historical schema-16 membership adapter. |
+| [songranker/storage/vibe_state.py](../songranker/storage/vibe_state.py) | Fixed Vibe definitions, schema validation and schema-17/18/19 adapters. |
+| [songranker/version.py](../songranker/version.py) | One application version for display and every asset cache key. |
+| [songranker/vibe_maps.py](../songranker/vibe_maps.py) | Shared map display definitions, compact saved profiles and pass counts. |
 
-## Storage
-
-`songranker/storage/git_database.py` owns V5.0.5 whole-snapshot reconciliation:
-committed SQL candidates, row/key comparisons, deletion-aware device baselines
-and transactional adoption. `tests/test_git_database.py` uses two local
-checkouts and a bare remote; [upgrade notes](UPGRADES.md) cover recovery.
-
-`songranker/storage/tag_limits.py` owns the eight-tag policy, unique-name
-counting and schema-16 membership cleanup. Database insert/update guards live in
-`data/schema.sql`. [Tag-limit upgrade notes](UPGRADES.md) include suggested
-new tag definitions; `tests/test_tag_limits.py` covers policy and migration.
-
-| File | Responsibility |
-| --- | --- |
-| `songranker/storage/catalog_source_state.py` | Lossless schema-13 upgrade: unknown legacy source identities/dates stay unknown. |
-| `songranker/storage/challenge_state.py` | Pure schema-12 transport upgrade. Historical quiz rows remain classic facts. |
-| `songranker/storage/competition_reset.py` | Shared transactional mode/all result resets, including Vibe; caller owns backup/commit. |
-| `songranker/storage/vibe_state.py` | Fixed map definitions, mode asset version and schema-17/18/19 transport/migrations. |
-| `songranker/storage/competition.py` | One-time catalogue-only V2 -> V3 competition bootstrap. Never edits the source. |
-| `songranker/storage/database.py` | Versioned database bootstrap and backed-up, transactional schema migration. |
-| `songranker/storage/database_access.py` | Allow normal concurrent DB use; drain connections during local maintenance. |
-| `songranker/storage/database_io.py` | Lossless SQLite transport, reconciliation and canonical rebuilding (stdlib only). |
-| `songranker/storage/database_schema.py` | The schema.sql registry. Execute statements without executescript's implicit COMMIT. |
-| `songranker/storage/preference_state.py` | Pure preference replay and schema-8/9 transport upgrade; no Flask imports. |
-| `songranker/storage/schema_compat.py` | Offline schema adapters for recovery and historical fixtures; current DDL has one owner. |
-
-## Modes
-
-| File | Responsibility |
-| --- | --- |
-| `songranker/modes/challenge_rules.py` | Pure versioned streak rules shared by the server and offline checks. |
-| `songranker/modes/challenges.py` | Server-owned quiz runs. Frozen round rules govern progress, never cookie counters. |
-| `songranker/modes/games.py` | Shared implementation helpers. |
-| `songranker/modes/mode_ratings.py` | Read-only independent Elo projections and evidence for public comparisons. |
-| `songranker/modes/preferences.py` | The ordinary preference write path: offers, receipts, corrections and replay. |
-| `songranker/modes/selection.py` | Adaptive draws from eligible pools; standard library only, no stored counters. |
-| `songranker/modes/selection_data.py` | Read the shared exposure projections and saved recency for game selectors. |
-| `songranker/modes/special_modes.py` | Elo predictions and album-order quizzes. Neither writes voting/trivia records. |
-| `songranker/modes/vibe_map.py` | Continuous mode state/draft/advance flow, compact averages, profiles and heatmap/similarity APIs. |
-| `songranker/modes/vibe_similarity.py` | Coordinate-distance comparisons and coverage-aware gentle draw affinity, including album profiles. |
-| `songranker/modes/trivia.py` | Field-by-field trivia: one persisted round, with summaries derived by a view. |
-
-## Reports
-
-| File | Responsibility |
-| --- | --- |
-| `songranker/reports/data_health.py` | Stage-relative diagnostics, not a target that rewrites or normalises Elo. |
-| `songranker/reports/global_stats_data.py` | Read-only Global Stats projections from one SQLite snapshot. |
-| `songranker/reports/guesser_stats_data.py` | Read-only Elo Guesser dashboard, using saved comparisons rather than today's Elo. |
-| `songranker/reports/recognition_stats_data.py` | Read-only Trivia dashboard. Field totals and saved-round records stay distinct. |
-| `songranker/reports/selection_health.py` | Read-only selector diagnostics using the production pools, counts and kernels. |
-| `songranker/reports/shelves_stats_data.py` | Read-only Shelves reporting. Saved shelf slots/numbers remain scoring facts. |
-| `songranker/reports/stats_activity.py` | Dated, completed result trends. Counts and pooled rates share one read snapshot. |
-| `songranker/reports/tournament_stats_data.py` | Read-only tournament dashboard, derived from saved brackets, entries and matches. |
-| `songranker/reports/vibe_stats_data.py` | Dedicated density/pattern/pair/consistency statistics. |
-| `songranker/reports/vibe_song_data.py` | Compact song radar, metadata and nearest matches. |
-| `songranker/reports/vibe_entity_data.py` | Collection profile readiness, maps and consistency. |
-| `songranker/reports/vibe_library_data.py` | Home/Global Vibe projections and fixed-limit collection rankings. |
-| `songranker/reports/voting_stats_data.py` | Read-only standard/blind voting report. No migrations or counter writes. |
-
-## Developer
-
-| File | Responsibility |
-| --- | --- |
-| `songranker/developer/catalog_operations.py` | Reviewable Singles moves. Catalogue placement never rewrites game facts. |
-| `songranker/developer/catalog_sources.py` | Verified Apple observations and conservative catalogue matching; no lookup side effects. |
-| `songranker/developer/db_tools.py` | Offline maintenance: audit, lossless export, rebuild, restore and compare. |
-| `songranker/developer/dev.py` | Authenticated catalogue maintenance, records, resets and reviews. |
-| `songranker/developer/dev_catalog.py` | Authenticated source review and atomic bulk source saves, album inspection and Singles moves. |
-| `songranker/hosting.py` | Drained, acknowledged single-process shutdown and Waitress callback. |
-| `songranker/developer/dev_shutdown.py` | Fresh-PIN stop routes, reviewed Git target and request leases. |
-| `songranker/developer/dev_system.py` | Local-admin dashboard inventory, explicit Git tasks and reviewed recovery. |
-| `songranker/developer/dev_vibe.py` | Authenticated Vibe search, stale-safe average/count edits and song deletion. |
-| `songranker/developer/dev_tags.py` | Authenticated, browser-bound review/apply endpoints for tag-only catalogue work. |
-| `songranker/developer/git_sync.py` | Database-only Git uploads and guarded, startup-only fast-forward updates. |
-| `songranker/developer/metadata_fill.py` | Conservative, fill-only Apple metadata planning. No library import helpers. |
-| `songranker/developer/metadata_tools.py` | Authenticated, single-job developer metadata scan and report endpoints. |
-| `songranker/developer/tag_operations.py` | Reviewed tag membership changes. No ratings, identities or game facts are edited. |
-| `songranker/developer/track_numbers.py` | Album track positions: gaps and blanks are valid; occupied slots are not. |
-
-## Other directories
+## Frontend owners
 
 | Location | Responsibility |
 | --- | --- |
-| `data/schema.sql` | Canonical SQLite DDL. |
-| `data/catalogue_seed.db` | Full-package fallback catalogue; no old results. Not in the upgrade ZIP. |
-| `data/song_ranker_v3.db` | Created on first start; active competition, never shipped in a package. |
-| `templates/` | Shared base, macros, game/profile/report pages. |
-| `static/css/v5.css` | Small shared V5 report/health additions; baseline loads last. |
-| `docs/` | Current user/technical/upgrade/database/style/validation references. |
-| `docs/RETIRED.md` | Expired references and their current replacements; original texts remain in Git history. |
-| `update_logs/` | Release-family history, retained. |
-| `tests/` | Python/JavaScript regression tests and historical transport fixtures. |
-| `tools/` | Optional offline audits/simulations; never started in the background by the app. |
-| `instance/` | Locally generated/preserved signing secret; not bundled. |
+| `templates/base.html`, `assets.html` | Shared navigation/editor shell and the only asset registry |
+| `templates/app_page.html`, `profile.html` | Dynamic application and shared named-collection shells |
+| `templates/components.html`, `mode_stats_components.html`, `stats_visuals.html` | Shared artwork/record/report macros |
+| `static/css/style.css`, `components.css`, `site_baseline.css` | Core tokens/layouts, common components and approved final baseline |
+| `static/css/reports.css`, `vibe.css`, `profiles.css` | Report geometry and shared descriptive/profile presentation |
+| `static/css/developer.css`, `dev_catalog.css`, `dev_tags.css` | Shared Dev shell/controls plus catalogue/tag compositions |
+| Remaining feature CSS | Home, search, rankings, history, gameplay and Vibe play layouts |
+| `static/js/ui.js` | Shared presentation and text policies |
+| `static/js/preview.js`, `gameplay.js` | Audio/volume and shared game geometry/round lifecycle |
+| `static/js/site.js` | Catalogue page assembly and shared navigation/editor orchestration |
+| `static/js/dev_catalog.js`, `dev_controls.js`, `dev_tags.js`, `dev_metadata.js` | Catalogue/source, searchable controls, tag editing and metadata task lifecycles |
+| `static/js/dev_system.js`, `dev_records.js`, `dev_vibe.js` | System/database/selection, preference/record and Vibe maintenance controllers |
+| `static/js/vibe_charts.js`, `vibe_map.js`, `vibe_stats.js`, `vibe_library.js` | Shared radar/profile, Vibe gameplay, statistics and library/ranking controllers |
+| Remaining feature JS | Search, profile summaries, special modes/rankings, Overall, Global Stats and shared Stop |
 
-Two tiny schema adapters were combined into `storage/schema_compat.py`; the old
-standalone missing-metadata script was superseded by the reviewed Dev workflow. Old snapshot-based selector
-experiments and V4 shadow comparisons were retired in favour of the current V5
-benchmark and regression suite.
-Listening tracker/writer/report components were removed in v5.1.2.
-There are no compatibility copies of the moved root modules.
+## Maintenance
 
-
-V5.0.4 adds `static/js/dev_metadata.js` for metadata task state/polling and
-`static/js/dev_records.js` for searchable developer history/archive lists.
-`templates/dev_assets.html` owns Dev stylesheet/script declarations.
-`tools/validate_dev_pages.py` runs the disposable served-page DOM/HTTP checks;
-its companion is `tests/test_dev_pages.js` (requires Node and jsdom).
-
-
-## Frontend and maintenance lookup
-
-| Owner | Function |
+| Location | Responsibility |
 | --- | --- |
-| `templates/base.html`, `dev_assets.html` | Navigation/shared asset order; Dev-only feature declarations. |
-| `static/js/ui.js` | Shared escaping, entity semantics, ranking rows/controls and banner headers. |
-| `static/js/site.js` | Page assembly, shared catalogue/editor wiring and shared scroll ownership. |
-| `static/js/dev_vibe.js`, `static/css/dev_vibe.css` | Vibe Records search/edit/reset interface and responsive composition. |
-| `static/js/vibe_map.js`, `static/css/vibe_map.css`, `templates/vibe_map.html` | Play state, pin movement/timing, audio handoff, review and manual results. |
-| `static/js/vibe_charts.js`, `static/css/vibe_charts.css` | Shared radar/compact heatmap rendering. |
-| `static/js/vibe_stats.js`, `static/css/vibe_stats.css`, `templates/vibe_stats.html` | Dedicated stats charts and point inspection. |
-| `static/js/vibe_profiles.js`, `static/css/vibe_profiles.css` | Conditional profile cards above Overall. |
-| `static/js/vibe_library.js`, `static/css/vibe_library.css` | Home/Global Vibe mounts, combined banner and collection-only rankings. |
-| `templates/vibe_song_stats_panel.html`, `vibe_entity_stats_panel.html`, `vibe_global_stats_panel.html` | Shared compact server-rendered fragments. |
-| `tools/prepare_vibe_merge.py` | Explicit one-time test cleanup/backup/verified SQL export; preview by default. |
-| `tools/validate_vibe_page.py`, `tools/vibe_browser_check.cjs` | Disposable server plus Chromium play/stats/Dev integration and screenshots. |
+| `tools/check.py` | Unified validation and deterministic function-index generation |
+| `tools/browser_check.py`, `tests/browser_check.cjs` | Disposable HTTP/DOM and Chromium integration fixtures |
+| `tools/benchmark_selection.py` | Current seeded production-selector benchmark |
+| `tests/` | Behavior-owned regressions; shared fixtures in support.py and necessary historical schema inputs |
+| `data/schema.sql` | Canonical DDL; V5.3 retains schema 20 |
+| `docs/`, `update_logs/` | Current guides and historical release notes |
+| `package.json`, `package-lock.json` | Pinned Node test dependencies and convenient check commands |
 
-Optional benchmark/legacy tools remain tools, not current setup instructions.
-The [documentation index](README.md) maps current guides; release details live
-only in [release-family logs](../update_logs/README.md).
-
-## v5.2 Dev shell owners
-
-- `templates/dev_nav.html`: Dev header and grouped-page mount.
-- `static/css/dev_shell.css`: shared stop button and scoped Dev layout overrides.
-- `static/js/app_stop.js`: one shared PIN/backup/acknowledgement dialog on every page.
-- `static/js/dev_system.js`: service home, local backup and guarded Git shortcuts.
-- `docs/DEV_GUIDE.md`: Dev controls and page reference.
-
-## v5.2.1 raw inspection
-
-- `songranker/developer/database_inspector.py`: bounded read-only object/column/row
-  and signed long-value inspection routes.
-- `static/js/dev_database.js`: table browser, tabs, paging and read-only value dialog.
-- `developer/git_sync.py`: independent freshly checked code/database readiness.
-- `docs/DEV_GUIDE.md`: Git statuses, backup workflow and raw browser reference.
+Do not create compatibility copies of moved modules. Historical migrations remain because old exports and databases must still restore. One-time release cleanup tools, prototype selectors, IDE metadata and tracked bytecode were removed; active data and backups are preserved.

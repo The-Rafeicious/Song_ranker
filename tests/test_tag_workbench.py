@@ -11,7 +11,9 @@ import test_preferences as fixture
 from songranker import services
 from songranker.developer import dev_tags
 from songranker.storage.database_io import (capture, write_export, read_export, rebuild, readonly, reconcile)
-from songranker.developer.tag_operations import (normalized, proposal, canonical_proposal)
+from songranker.developer.dev_tags import normalized
+from songranker.developer.dev_tags import proposal
+from songranker.developer.dev_tags import canonical_proposal
 
 
 class TagProposalTests(unittest.TestCase):
@@ -67,7 +69,7 @@ class TagWorkbenchTests(unittest.TestCase):
 
     def test_review_is_read_only_and_returns_exact_before_after(self):
         self.add_tag();before=self.state()
-        with patch.object(dev_tags,'create_database_backup') as backup:
+        with patch.object(services,'create_database_backup') as backup:
             r=self.review(self.client());backup.assert_not_called()
         self.assertEqual(before,self.state());self.assertEqual(r['changed_songs'],2)
         self.assertEqual(r['added_links'],2);self.assertEqual(r['removed_links'],0)
@@ -77,7 +79,7 @@ class TagWorkbenchTests(unittest.TestCase):
 
     def test_add_keeps_unselected_links_and_all_game_catalogue_cells(self):
         self.add_tag();client=self.client();r=self.review(client);before=self.state()
-        with patch.object(dev_tags,'create_database_backup',return_value='pre_tag_edit_fixture.db') as backup:
+        with patch.object(services,'create_database_backup',return_value='pre_tag_edit_fixture.db') as backup:
             saved=self.apply(client,r)
         self.assertEqual(saved.status_code,200);self.assertEqual(saved.json['updated'],2);backup.assert_not_called()
         after=self.state()
@@ -86,14 +88,14 @@ class TagWorkbenchTests(unittest.TestCase):
 
     def test_remove_touches_memberships_without_deleting_tag_definitions(self):
         self.add_tag();client=self.client();r=self.review(client,action='remove_tags',tag_ids=[1])
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db'):saved=self.apply(client,r)
+        with patch.object(services,'create_database_backup',return_value='backup.db'):saved=self.apply(client,r)
         self.assertEqual(saved.json['removed_links'],2);self.assertEqual(self.tags(1),[])
         self.assertEqual(self.tags(3),[1]);self.assertEqual(self.scalar('SELECT COUNT(*) FROM genres'),2)
 
     def test_replace_lists_all_removals_and_can_clear_selected_songs(self):
         client=self.client();r=self.review(client,action='replace_tags',tag_ids=[])
         self.assertEqual(r['removed_links'],2);self.assertEqual(r['rows'][0]['after'],[])
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db'):saved=self.apply(client,r)
+        with patch.object(services,'create_database_backup',return_value='backup.db'):saved=self.apply(client,r)
         self.assertEqual(saved.status_code,200);self.assertEqual(self.tags(1),[]);self.assertEqual(self.tags(3),[1])
 
     def test_new_names_reuse_existing_unicode_case_and_description(self):
@@ -101,7 +103,7 @@ class TagWorkbenchTests(unittest.TestCase):
         r=self.review(client,tag_ids=[],new_tags=[' #ＮＩＧＨＴ ','night'])
         self.assertEqual(r['new_tags'],[]);self.assertEqual(r['rows'][0]['added'][0]['description'],'Keep this description')
         self.assertEqual([t['id'] for t in r['target_tags']],[2])
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db'):self.apply(client,r)
+        with patch.object(services,'create_database_backup',return_value='backup.db'):self.apply(client,r)
         self.assertEqual(self.scalar('SELECT COUNT(*) FROM genres'),2)
 
     def test_ambiguous_existing_names_require_an_explicit_tag_id(self):
@@ -113,7 +115,7 @@ class TagWorkbenchTests(unittest.TestCase):
     def test_new_tags_created_only_when_apply_saves_and_retry_is_a_no_op(self):
         client=self.client();r=self.review(client,tag_ids=[],new_tags=['Night'])
         self.assertEqual(self.scalar('SELECT COUNT(*) FROM genres'),1)
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db') as backup:
+        with patch.object(services,'create_database_backup',return_value='backup.db') as backup:
             saved=self.apply(client,r);again=self.apply(client,r)
         self.assertEqual(saved.status_code,200);self.assertEqual(saved.json['created_tags'][0]['name'],'Night')
         self.assertEqual(again.status_code,200);self.assertTrue(again.json['already_matches']);self.assertIsNone(again.json['backup'])
@@ -122,7 +124,7 @@ class TagWorkbenchTests(unittest.TestCase):
     def test_repeated_existing_tag_add_and_unchanged_review_need_no_backup(self):
         client=self.client();r=self.review(client,tag_ids=[1])
         self.assertEqual(r['changed_songs'],0)
-        with patch.object(dev_tags,'create_database_backup') as backup:saved=self.apply(client,r);backup.assert_not_called()
+        with patch.object(services,'create_database_backup') as backup:saved=self.apply(client,r);backup.assert_not_called()
         self.assertEqual(saved.json['updated'],0);self.assertTrue(saved.json['already_matches'])
 
     def test_concurrent_tabs_save_once_and_create_one_new_tag(self):
@@ -131,7 +133,7 @@ class TagWorkbenchTests(unittest.TestCase):
         def work(_):
             local=services.app.test_client();local.set_cookie(services.app.config['SESSION_COOKIE_NAME'],cookie);gate.wait()
             result=self.apply(local,r);return result.status_code,result.json
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db') as backup,ThreadPoolExecutor(4) as pool:results=list(pool.map(work,range(4)))
+        with patch.object(services,'create_database_backup',return_value='backup.db') as backup,ThreadPoolExecutor(4) as pool:results=list(pool.map(work,range(4)))
         self.assertTrue(all(status==200 for status,_ in results));self.assertEqual(sum(not r['already_matches'] for _,r in results),1)
         self.assertEqual(backup.call_count,0);self.assertEqual(self.scalar("SELECT COUNT(*) FROM genres WHERE name='Night'"),1)
 
@@ -147,13 +149,13 @@ class TagWorkbenchTests(unittest.TestCase):
 
     def test_extra_client_fields_cannot_substitute_reviewed_targets(self):
         self.add_tag();client=self.client();r=self.review(client)
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db'):saved=self.apply(client,r,song_ids=[3],tag_ids=[1],action='remove_tags')
+        with patch.object(services,'create_database_backup',return_value='backup.db'):saved=self.apply(client,r,song_ids=[3],tag_ids=[1],action='remove_tags')
         self.assertEqual(saved.status_code,200);self.assertEqual(self.tags(1),[1,2]);self.assertEqual(self.tags(3),[1])
 
     def test_stale_memberships_reject_before_backup_or_writes(self):
         self.add_tag();self.add_tag('Other',tid=3);client=self.client();r=self.review(client)
         self.conn.execute('INSERT INTO song_genres VALUES(1,3)');self.conn.commit();before=self.state()
-        with patch.object(dev_tags,'create_database_backup') as backup:saved=self.apply(client,r);backup.assert_not_called()
+        with patch.object(services,'create_database_backup') as backup:saved=self.apply(client,r);backup.assert_not_called()
         self.assertEqual(saved.status_code,409);self.assertEqual(before,self.state())
 
     def test_selected_identity_or_tag_metadata_changes_make_review_stale(self):
@@ -167,13 +169,13 @@ class TagWorkbenchTests(unittest.TestCase):
     def test_game_activity_does_not_stale_review_or_get_overwritten(self):
         self.add_tag();client=self.client();r=self.review(client)
         self.conn.execute('UPDATE songs SET elo_score=1301,matches_played=42 WHERE id=1');self.conn.commit()
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db'):self.assertEqual(self.apply(client,r).status_code,200)
+        with patch.object(services,'create_database_backup',return_value='backup.db'):self.assertEqual(self.apply(client,r).status_code,200)
         self.assertEqual(tuple(self.conn.execute('SELECT elo_score,matches_played FROM songs WHERE id=1').fetchone()),(1301,42))
 
     def test_unrelated_tag_metadata_does_not_stale_selected_review(self):
         self.add_tag();self.add_tag('Unrelated',tid=3);client=self.client();r=self.review(client)
         self.conn.execute("UPDATE genres SET description='new info' WHERE id=3");self.conn.commit()
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db'):self.assertEqual(self.apply(client,r).status_code,200)
+        with patch.object(services,'create_database_backup',return_value='backup.db'):self.assertEqual(self.apply(client,r).status_code,200)
 
     def test_deleted_song_or_selected_tag_rejects_stale_review(self):
         self.add_tag();client=self.client();r=self.review(client)
@@ -184,7 +186,7 @@ class TagWorkbenchTests(unittest.TestCase):
 
     def test_concurrent_identical_new_definition_can_be_reused(self):
         client=self.client();r=self.review(client,tag_ids=[],new_tags=['Night']);self.add_tag('Night','')
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db'):saved=self.apply(client,r)
+        with patch.object(services,'create_database_backup',return_value='backup.db'):saved=self.apply(client,r)
         self.assertEqual(saved.status_code,200);self.assertEqual(saved.json['created_tags'],[]);self.assertEqual(self.tags(1),[1,2])
 
     def test_concurrent_new_name_with_different_description_requires_new_review(self):
@@ -198,13 +200,13 @@ class TagWorkbenchTests(unittest.TestCase):
 
     def test_tag_save_does_not_require_backup_storage(self):
         client=self.client();r=self.review(client,tag_ids=[],new_tags=['Night']);before=self.state()
-        with patch.object(dev_tags,'create_database_backup',side_effect=OSError('injected backup failure')),patch.dict(services.app.config,TESTING=False):saved=self.apply(client,r)
+        with patch.object(services,'create_database_backup',side_effect=OSError('injected backup failure')),patch.dict(services.app.config,TESTING=False):saved=self.apply(client,r)
         self.assertEqual(saved.status_code,200);self.assertIsNone(saved.json['backup']);self.assertNotEqual(before,self.state())
 
     def test_mid_apply_failure_rolls_back_new_definition_and_earlier_links(self):
         client=self.client();r=self.review(client,tag_ids=[],new_tags=['Night'])
         self.conn.execute("CREATE TRIGGER fail_tags BEFORE INSERT ON song_genres WHEN NEW.song_id=2 BEGIN SELECT RAISE(ABORT,'injected tag failure');END");self.conn.commit();before=self.state()
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db'),patch.dict(services.app.config,TESTING=False):saved=self.apply(client,r)
+        with patch.object(services,'create_database_backup',return_value='backup.db'),patch.dict(services.app.config,TESTING=False):saved=self.apply(client,r)
         self.assertEqual(saved.status_code,500);self.assertEqual(before,self.state())
         self.assertIn('No tag changes were applied',saved.json['message'])
 
@@ -220,12 +222,12 @@ class TagWorkbenchTests(unittest.TestCase):
         self.add_tag();self.conn.executemany('INSERT INTO songs(id,title,album_id) VALUES(?,?,1)',[(i,'Song '+str(i)) for i in range(11,1016)]);self.conn.commit()
         client=self.client();r=self.review(client,song_ids=list(range(1,1016))+[1,2])
         self.assertEqual(r['selected_count'],1015);self.assertEqual(r['changed_songs'],1015)
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db'):saved=self.apply(client,r)
+        with patch.object(services,'create_database_backup',return_value='backup.db'):saved=self.apply(client,r)
         self.assertEqual(saved.json['updated'],1015);self.assertEqual(self.scalar('SELECT COUNT(*) FROM song_genres WHERE genre_id=2'),1015)
 
     def test_new_links_and_definitions_survive_full_export_rebuild(self):
         client=self.client();r=self.review(client,action='replace_tags',tag_ids=[],new_tags=['Night'])
-        with patch.object(dev_tags,'create_database_backup',return_value='backup.db'):self.assertEqual(self.apply(client,r).status_code,200)
+        with patch.object(services,'create_database_backup',return_value='backup.db'):self.assertEqual(self.apply(client,r).status_code,200)
         export=Path(self.temp.name)/'all.json';out=Path(self.temp.name)/'rebuilt.db';write_export(self.path,export);rebuild(read_export(export),out)
         with readonly(out) as conn:reconcile(self.state(),capture(conn));self.assertFalse(conn.execute('PRAGMA foreign_key_check').fetchall())
 

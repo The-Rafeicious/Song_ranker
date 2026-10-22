@@ -9,7 +9,7 @@ from unittest.mock import patch
 
 from songranker.modes.selection import (choose_vibe_song, vibe_probabilities,
     exposure_probabilities)
-from songranker.modes.selection_data import vibe_song
+from songranker.modes.selection import vibe_song
 from songranker.storage.database import initialize_database
 from songranker.storage.database_io import capture
 

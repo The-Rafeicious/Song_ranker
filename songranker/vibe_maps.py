@@ -1,4 +1,5 @@
 """Read-only Vibe Map projections; no scoring or selection weights here."""
+
 from songranker.storage.vibe_state import MAPS, CENTER_LABELS, LABEL_OVERRIDES
 
 

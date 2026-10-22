@@ -1,4 +1,5 @@
 """Versioned lossless source compression and bounded SQLite storage maintenance."""
+
 import base64
 from copy import deepcopy
 import json

@@ -4,6 +4,7 @@ No catalogue cleanup is guessed here: ambiguous metadata and historical answers
 are facts. Rebuilding standardises structure, preserves IDs/high-water marks and
 keeps extension objects. All destructive replacement is owned by the caller.
 """
+
 from contextlib import contextmanager
 from datetime import datetime, timezone
 from pathlib import Path
@@ -16,8 +17,8 @@ import re
 import sqlite3
 import tempfile
 from threading import Lock
+from songranker.storage.database_schema import SCHEMA_VERSION, create_objects, definitions, table_columns
 
-from songranker.storage.database_schema import (SCHEMA_VERSION, create_objects, definitions, table_columns)
 
 EXPORT_FORMAT = 'song-ranker-database/1'
 
@@ -338,7 +339,7 @@ def audit(filename):
         validate(conn)
         state = capture(conn)
         known = {name for _, name, _ in definitions()}
-        from songranker.developer.track_numbers import track_position_conflicts
+        from songranker.developer.catalog_sources import track_position_conflicts
         return {'schema_version': state['user_version'], 'integrity': 'ok',
                 'foreign_key_errors': 0,
                 'counts': {name: len(data['rows']) for name, data in state['tables'].items()},
@@ -464,4 +465,3 @@ def restore_live_database(source, filename, *, expected_live=None, expected_back
                         target.close()
                 raise
     return backup
-

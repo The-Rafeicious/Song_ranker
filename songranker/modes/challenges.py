@@ -1,11 +1,11 @@
 """Server-owned quiz runs. Frozen round rules govern progress, never cookie counters."""
+
 import secrets
 import sqlite3
 import time
-
 from flask import session
+from songranker.modes.challenge_rules import RULES_VERSION as RULES_VERSION, TRIVIA_LABELS as TRIVIA_LABELS, trivia_rule as trivia_rule, trivia_passed as trivia_passed, guess_target as guess_target
 
-from songranker.modes.challenge_rules import (RULES_VERSION, TRIVIA_LABELS, trivia_rule, trivia_passed, guess_target)
 
 TABLES = {'trivia': 'trivia_rounds', 'guesser': 'elo_guess_rounds'}
 

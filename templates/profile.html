@@ -1,0 +1,8 @@
+{% extends 'base.html' %}
+{% block title %}{{ profile_name }} · Song Ranker{% endblock %}
+{% block page_kind %}{{ page }}{% endblock %}
+{% block content %}
+<script id="profile-data" type="application/json">{{ {'kind':profile_kind,'name':profile_name}|tojson }}</script>
+<div id="loading" class="empty" role="status">Loading…</div>
+<noscript>Enable JavaScript to view this page.</noscript>
+{% endblock %}
