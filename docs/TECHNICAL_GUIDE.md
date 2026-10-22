@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application v5.2.0 · integrated modes v5.1.0 · competition generation 3 · schema 20**
+**Application v5.2.1 · integrated modes v5.1.0 · competition generation 3 · schema 20**
 
-Current implementation reference. `APP_VERSION` is `5.2.0`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.2.1`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -609,3 +609,24 @@ remote snapshot as the baseline. No live rows are changed. Normal upload then
 publishes local data with the usual Git guards. Pending source updates require
 a restart; the accepted choice survives that restart and prevents adopting the
 rejected database. Later remote changes require another review.
+
+## v5.2.1 maintenance inspection
+
+`developer/database_inspector.py` owns authenticated GET `/api/dev/database/inspect`
+(`name`, `offset`, `limit`) and `/api/dev/database/cell` (signed `review_token`,
+`column`, `start`). Names must exist as tables/views in sqlite_master; identifiers
+are quoted, values/limits bound, and user SQL is never accepted. Column metadata
+uses table_xinfo; the inspector includes generated/hidden columns. Row previews
+cap cell sizes and total cells per response. Long-value tokens bind the browser,
+object, row offset and a type-sensitive row digest; changed rows return 409.
+Read-only URI mode and query_only apply, with a three-second progress budget and
+one-second busy timeout. BLOBs use base64 and integer values remain exact strings.
+`static/js/dev_database.js` owns object/tab/page/value state and stale-response
+protection; `dev_system.js` owns backups and Git status. GET `/api/dev/help/dev`
+and `/api/dev/help/technical` serve the two allowlisted guides to authenticated Dev.
+
+Git status reads are marked cached. Explicit checks return checked_at,
+status_source=checked, upload_ready and an independent database_sync comparison,
+including per-table local/remote deltas. Opening Git performs that check. Code
+up_to_date alone cannot enable upload or represent database equality. The existing
+shared-baseline algorithm and server-side upload/stop guards remain authoritative.

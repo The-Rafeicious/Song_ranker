@@ -4,7 +4,7 @@ const source=n=>fs.readFileSync(path.join(__dirname,'../static/js',n),'utf8');
 let assertions=0;const check=(v,label)=>{assert.ok(v,label);assertions++};
 async function flush(){for(let i=0;i<120;i++)await Promise.resolve()}
 const deferred=()=>{let resolve;const promise=new Promise(r=>resolve=r);return {promise,resolve}};
-function git(extra={}){return {available:true,state:'up_to_date',branch:'main',remote:'origin',target:'main',destination:'example.org/owner/app',tracking_head:'abc',ahead:0,behind:0,pending_code:false,code_changes:0,in_progress:false,review_token:'git-review',history:[],snapshot:{exists:true,name:'database_backup.sql',bytes:20},...extra}}
+function git(extra={}){return {available:true,state:'up_to_date',branch:'main',remote:'origin',target:'main',destination:'example.org/owner/app',tracking_head:'abc',status_source:'checked',upload_ready:true,checked_at:'2026-10-22T12:00:00Z',ahead:0,behind:0,pending_code:false,code_changes:0,in_progress:false,review_token:'git-review',history:[],snapshot:{exists:true,name:'database_backup.sql',bytes:20},...extra}}
 function status(){return {version:'4.0.0.7.3',schema:13,integrity:'ok',foreign_key_errors:0,totals:{songs:4,artists:1,releases:1,tags:1,untagged:2,missing_previews:1,missing_sources:4},
  backups:Array.from({length:12},(_,i)=>({name:'manual_'+i+'.db',purpose:'Manual backup',modified:'2026-10-18T12:00:00Z',bytes:1024})),
  inventory:[{name:'songs',kind:'table',group:'Catalogue',role:'Stored facts',rows:4},{name:'preference_mode_ratings',kind:'table',group:'Voting',role:'Rebuildable projection',rows:8},{name:'v_history',kind:'view',group:'Derived views',role:'Derived / read-only',rows:2},{name:'extra <notes>',kind:'table',group:'Extensions',role:'Stored facts',rows:1}],git:git()}}
@@ -21,6 +21,7 @@ async function harness(view='',width=1280,session={}){
  w.fetch=async(url,options={})=>{requests.push({url,options});const custom=await handler(url,options);if(custom!==undefined)return custom.status?respond(custom.body,custom.status):respond(custom);
   if(url==='/api/collection')return respond(data);
   if(url==='/api/dev/song-sources')return respond({songs:Object.fromEntries(data.songs.map(s=>[s.id,{status:'needs_link',content_label:'Unknown'}]))});
+  if(url.startsWith('/api/dev/database/inspect?'))return respond({object:{name:'songs',sql:'CREATE TABLE songs(id INTEGER)'},columns:[{name:'id',type:'INTEGER',pk:1,notnull:0,hidden:0,dflt_value:null}],rows:[{cells:[{type:'integer',value:'1',truncated:false}],review_token:'row'}],total:4,offset:0,limit:25,foreign_keys:[],indexes:[]});
   if(url==='/api/dev/system')return respond(state);
   if(url==='/api/dev/backup')return respond({backup:'manual_new_'+(++backups)+'.db'});
   if(url==='/api/dev/git/check')return respond({message:'Remote checked.',git:state.git});
@@ -30,7 +31,7 @@ async function harness(view='',width=1280,session={}){
   throw Error('Unexpected request '+url);
  };
  w.Overall={bindUI(){}};
- for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js','dev_system.js','app_stop.js'])w.eval(source(file));
+ for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js','dev_database.js','dev_system.js','app_stop.js'])w.eval(source(file));
  const expose="window.testDev={refreshData,records,setView:v=>{devView=v;renderDevView()}};window.DevSystem?.bindUI(";
  await w.eval(source('site.js').replace('window.DevSystem?.bindUI(',expose));await flush();
  const click=sel=>{const n=d.querySelector(sel);assert.ok(n,'missing '+sel);n.click();return n};
@@ -50,7 +51,7 @@ async function entryAndShortcuts(){
  for(const kind of ['songs','artists','albums','tags']){h.w.testDev.setView('overview');await flush();h.click('.dev-library-link[data-dev="'+kind+'"]');await flush();check(h.w.location.search.includes('view='+kind),'library count opens '+kind)}
  h.w.testDev.setView('overview');await flush();h.click('.dev-title-link[data-dev="database"]');await flush();check(!!h.d.querySelector('#system-backups'),'backup heading opens recovery');
  h.w.testDev.setView('overview');await flush();h.click('.dev-title-link[data-dev="export"]');await flush();check(!!h.d.querySelector('[data-system-upload]'),'Git heading opens Git');
- check(!h.requests.some(r=>r.url.includes('/git/')),'navigation does not contact remote');h.w.testDev.setView('overview');await flush();h.handler(url=>url==='/api/dev/integrity'?{integrity:['ok'],foreign_key_errors:[],track_number_conflicts:[{id:1,title:'<unsafe>',album:'Album',track_number:1,issue:'Duplicate position'}]}:undefined);h.click('[data-tool="Database integrity"]');await flush();check(h.d.querySelectorAll('.integrity-metrics > div').length===3,'integrity uses three metrics');check(h.d.querySelector('#editor-submit').hidden,'integrity is read-only');check(!h.d.querySelector('.integrity-review unsafe'),'integrity issue labels escaped');
+ check(h.requests.some(r=>r.url==='/api/dev/git/check'),'Git navigation refreshes comparison');h.w.testDev.setView('overview');await flush();h.handler(url=>url==='/api/dev/integrity'?{integrity:['ok'],foreign_key_errors:[],track_number_conflicts:[{id:1,title:'<unsafe>',album:'Album',track_number:1,issue:'Duplicate position'}]}:undefined);h.click('[data-tool="Database integrity"]');await flush();check(h.d.querySelectorAll('.integrity-metrics > div').length===3,'integrity uses three metrics');check(h.d.querySelector('#editor-submit').hidden,'integrity is read-only');check(!h.d.querySelector('.integrity-review unsafe'),'integrity issue labels escaped');
  check(h.errors.length===0,'shell has no script errors');h.close();
 }
 async function inventoryAndBackups(){
@@ -59,13 +60,10 @@ async function inventoryAndBackups(){
  check(h.d.querySelectorAll('.system-backup').length===12,'more backups accessible');h.input('#system-backup-query','manual_11');
  check(h.d.querySelectorAll('.system-backup').length===1,'backup search exact');
  check(h.d.querySelector('.system-backup a').getAttribute('href').includes('manual_11.db/download'),'binary backup direct download');
- check(h.d.querySelectorAll('.system-store-row').length===4,'all stored/derived/extension objects shown');
- h.input('#system-inventory-kind','extensions','change');check(h.d.querySelectorAll('.system-store-row').length===1,'extension group filter');
- check(h.d.querySelector('.system-store-row code').textContent==='extra <notes>','untrusted object names escaped');
- check(!h.d.querySelector('.system-store-row notes'),'extension name never becomes markup');
- h.input('#system-inventory-kind','view','change');check(h.d.querySelector('.system-store-row').textContent.includes('Derived / read-only'),'views identified');
- h.input('#system-inventory-kind','all','change');h.input('#system-inventory-query','projection');check(h.d.querySelectorAll('.system-store-row').length===1,'role searchable');
- check(h.d.querySelector('.dev-system details summary').textContent.includes('Competition resets'),'destructive tools collapsed');
+ check(h.d.querySelectorAll('.db-object').length===4,'all stored/view/extension objects selectable');h.input('#db-object-query','extra');check([...h.d.querySelectorAll('.db-object')].filter(b=>!b.hidden).length===1,'object search works');
+ check(!h.d.querySelector('.db-object notes'),'extension names escaped');
+ h.click('[data-db-tab="columns"]');check(h.d.querySelector('#db-content').textContent.includes('Primary key'),'column attributes available');
+ check(h.d.querySelector('.dev-system details summary').textContent.includes('Resets & advanced'),'destructive tools collapsed');
  check(!h.d.querySelector('details:has([data-tool="Reset competition"])').open,'reset tools not initially open');
  const pending=deferred();h.handler(async url=>url==='/api/dev/backup'?pending.promise:undefined);
  h.click('[data-system-backup]');h.click('[data-system-backup]');await flush();
@@ -79,10 +77,10 @@ async function inventoryAndBackups(){
 async function gitFlows(){
  const h=await harness('export');
  check(!h.d.querySelector('[data-system-upload]').disabled,'safe cached target allows upload');
- check(h.requests.every(r=>!r.url.startsWith('/api/dev/git/')),'Git panel entry local only');
+ check(h.requests.filter(r=>r.url==='/api/dev/git/check').length===1,'Git entry refreshes remote and database');
  const pending=deferred();h.handler(url=>url==='/api/dev/git/check'?pending.promise:undefined);
  h.click('[data-system-check]');h.click('[data-system-check]');await flush();
- check(h.requests.filter(r=>r.url==='/api/dev/git/check').length===1,'one Git task in flight');
+ check(h.requests.filter(r=>r.url==='/api/dev/git/check').length===2,'one additional Git task in flight');
  check(h.d.querySelector('[data-system-upload]').disabled,'upload disabled during check');
  pending.resolve({message:'Incoming updates found.',git:git({state:'behind',behind:2})});await flush();
  check(h.d.querySelector('[data-system-upload]').disabled,'incoming code blocks upload');
@@ -153,9 +151,9 @@ async function responsiveContracts(){
  check(css.includes('@media(max-width:800px)')&&css.includes('@media(max-width:520px)'),'phone/tablet breakpoints defined');
  check(css.includes('minmax(0,1fr)')&&css.includes('overflow-wrap:anywhere'),'long names/paths can wrap within grid');
  for(const width of [1440,768,390]){const h=await harness('database',width);
-  check(h.d.querySelector('a[href="/api/dev/database/guide"]'),'guide available at '+width);
+  check(h.d.querySelector('a[href="/api/dev/help/technical"]'),'guide available at '+width);
   check(h.d.querySelector('#dev-page-menu [data-dev="export"]'),'Git shortcut available at '+width);
-  check(h.d.querySelectorAll('.system-store-row').length===4,'inventory accessible at '+width);
+  check(h.d.querySelectorAll('.db-object').length===4,'inventory accessible at '+width);
   check(h.plays.length===0&&h.errors.length===0,'no playback/errors at '+width);h.close();
  }
 }
@@ -207,7 +205,15 @@ async function localDatabaseChoice(){
  check(!h.d.querySelector('#system-local-confirmation'),'accepted review removed');check(h.d.querySelector('#system-note').textContent.includes('Local database kept'),'success explains next step');
  check(h.d.querySelector('[data-system-upload]').disabled,'local choice does not bypass code update guard');h.close();
 }
+async function freshDatabaseReadiness(){
+ const h=await harness('export');const pending=deferred();h.handler(url=>url==='/api/dev/git/check'?pending.promise:undefined);
+ h.w.testDev.setView('export');await flush();check(h.d.querySelector('[data-system-upload]').disabled,'fresh check in progress blocks upload');
+ pending.resolve({ok:true,message:'Database newer on remote',git:git({state:'up_to_date',status_source:'checked',upload_ready:false,database_sync:{code:'database_remote_ahead',message:'Remote data needs review',local_songs:4,remote_songs:5}})});await flush();
+ check(h.d.querySelector('[data-system-upload]').disabled,'current code does not override newer remote data');
+ check(h.d.querySelector('.git-status-grid').textContent.includes('Up to date')&&h.d.querySelector('.git-status-grid').textContent.includes('Remote data is newer'),'code and data states shown independently');
+ check(h.d.querySelectorAll('.git-status-grid > section').length===2,'separate status sections');h.close();
+}
 module.exports={harness,flush};
-if(require.main===module)(async()=>{await entryAndShortcuts();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
+if(require.main===module)(async()=>{await entryAndShortcuts();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();await freshDatabaseReadiness();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
 
 

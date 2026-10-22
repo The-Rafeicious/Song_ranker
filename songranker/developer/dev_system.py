@@ -149,11 +149,11 @@ def inventory():
     try:
         conn.execute('BEGIN')
         known={name for _,name,_ in definitions()};items=[]
-        for row in conn.execute("SELECT name,type FROM sqlite_master WHERE type IN ('table','view') AND name NOT LIKE 'sqlite_%' ORDER BY type,name"):
+        for row in conn.execute("SELECT name,type FROM sqlite_master WHERE type IN ('table','view') ORDER BY type,name"):
             try:count=conn.execute('SELECT COUNT(*) FROM '+quote(row['name'])).fetchone()[0]
             except sqlite3.Error:count=None
             items.append(dict(name=row['name'],kind=row['type'],group=area(row['name'],row['type']) if row['name'] in known else 'Extensions',
-                rows=count,role='Derived / read-only' if row['type']=='view' else 'Rebuildable projection' if row['name'] in ('preference_rating_projection','preference_mode_ratings') else 'Stored facts'))
+                rows=count,role='SQLite internal' if row['name'].startswith('sqlite_') else 'Derived / read-only' if row['type']=='view' else 'Rebuildable projection' if row['name'] in ('preference_rating_projection','preference_mode_ratings') else 'Stored facts'))
         counts={r['name']:r['rows'] for r in items}
         song_rows=conn.execute('SELECT id,audio_url FROM songs').fetchall()
         totals=dict(songs=len(song_rows),artists=counts.get('artists',0),releases=counts.get('albums',0),tags=counts.get('genres',0),
@@ -299,3 +299,14 @@ def require_v3_backup(path):
         if not exists or not conn.execute('SELECT 1 FROM competition_state WHERE id=1 AND generation=3').fetchone():
             raise DatabaseValidationError('This is a V2 archive. V5 restores accept V3 competition backups; retain the V2 archive for catalogue recovery.')
 
+
+# Routes share the authenticated system-review signer; no user SQL is executed.
+from songranker.developer import database_inspector
+
+
+@app.get('/api/dev/help/<guide>')
+@admin_required
+def developer_guide(guide):
+    filename={'dev':'DEV_GUIDE.md','technical':'TECHNICAL_GUIDE.md'}.get(guide)
+    if not filename:return jsonify(message='Choose a listed guide.'),404
+    return send_file(services.ROOT/'docs'/filename,mimetype='text/plain; charset=utf-8')

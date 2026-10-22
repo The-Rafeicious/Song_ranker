@@ -297,4 +297,20 @@ class GitDatabaseTests(unittest.TestCase):
         self.assertEqual(self.sync.reconcile_database()['code'],'database_check_failed');self.assertEqual(self.state(),before)
 
 
+    def test_fresh_check_separates_current_code_from_newer_remote_database(self):
+        self.pair();self.edit(self.desktop_db,"INSERT INTO songs(id,title) VALUES(2,'Remote new song')");self.publish();self.sync.startup()
+        result=self.sync.check();self.assertTrue(result['ok'],result)
+        state=result['git'];self.assertEqual(state['state'],'up_to_date')
+        self.assertEqual(state['database_sync']['code'],'database_remote_ahead')
+        self.assertFalse(state['upload_ready']);self.assertEqual(state['status_source'],'checked')
+        self.assertIn('checked_at',state)
+        self.assertEqual(self.sync.status()['status_source'],'cached')
+
+    def test_fresh_check_allows_live_local_additions_with_stale_sql_file(self):
+        self.pair();self.edit(self.db,"INSERT INTO songs(id,title) VALUES(2,'Local new song')")
+        result=self.sync.check();self.assertTrue(result['ok'],result)
+        self.assertEqual(result['git']['database_sync']['code'],'database_local_ahead')
+        self.assertTrue(result['git']['upload_ready'])
+        self.assertTrue(self.sync.upload()['ok'])
+
 if __name__=='__main__':unittest.main()

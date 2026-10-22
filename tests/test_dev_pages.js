@@ -23,7 +23,7 @@ const {JSDOM,CookieJar,VirtualConsole}=require('jsdom'),fs=require('fs');
    await wait(()=>d.querySelector('#toast').textContent.includes('Vibe data deleted'));await wait(()=>!d.querySelector('#dev-vibe-search button').disabled);
    results.push({vibeEditDelete:true});
   }
-  dom.window.DevVibe?.viewChanged('overview');dom.window.DevControls?.dispose();dom.window.close();
+  dom.window.DevDatabase?.close();dom.window.DevVibe?.viewChanged('overview');dom.window.DevControls?.dispose();dom.window.close();
  }
  console.log(JSON.stringify({checks:results.length,errors},null,2));if(errors.length)process.exitCode=1;
 })().catch(e=>{console.error(e);process.exitCode=1});

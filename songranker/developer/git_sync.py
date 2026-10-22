@@ -219,7 +219,8 @@ class GitSync:
             return result
 
     def status(self):
-        try:return self.inspect()
+        try:
+            state=self.inspect();state['status_source']='cached';return state
         except SyncError as error:return dict(available=False,state=error.code,message=str(error),history=self.history() if self.gitdir else [])
 
     def fetch(self,state):
@@ -231,9 +232,12 @@ class GitSync:
             self.discover()
             with self.lock():
                 before=self.inspect();self.fetch(before);after=self.inspect()
-                if self.database.is_file():self.review_database(after)
-                self.record(dict(ok=True,action='check',code=after['state'],message='Remote and database snapshot checked. Local code and live database were not changed.'))
-                return dict(ok=True,code=after['state'],message='Remote checked. Local code and live database were not changed.',git=self.inspect())
+                comparison=self.review_database(after) if self.database.is_file() else dict(code='database_missing',message='Live database is missing.')
+                self.record(dict(ok=True,action='check',code=comparison['code'],message='Code: '+after['state']+'. '+comparison['message']))
+                current=self.inspect();current.update(status_source='checked',checked_at=stamp(),database_sync=comparison)
+                blocked=after['behind'] or after['pending_code'] or after['in_progress'] or comparison['code'] not in ('database_matches','database_local_ahead','no_remote_snapshot')
+                current['upload_ready']=not bool(blocked)
+                return dict(ok=True,code=after['state'],message=('Check complete. '+comparison['message']),git=current)
         except SyncError as error:return self.failure('check',error)
         except (OSError,sqlite3.Error,ValueError):return self.failure('check',SyncError('database_check_failed','The remote database snapshot could not be validated. Local data was kept.'))
 
@@ -388,7 +392,7 @@ class GitSync:
                     self.database_report(dict(code='database_uploaded',message='The uploaded snapshot is the shared database baseline. New local edits remain local until the next backup.'))
                 except OSError:message+=' The local sync receipt could not be saved; next launch will recheck snapshot history.'
                 result=self.record(dict(ok=True,action='upload',code=code,message=message,commit=commit,database_binding=policy.binding))
-                return dict(result,git=self.inspect())
+                return dict(result,git=dict(self.inspect(),status_source='checked',checked_at=stamp(),upload_ready=True))
         except (SyncError,OSError,sqlite3.Error,ValueError) as error:
             if published:
                 return dict(ok=True,action='upload',code='uploaded',commit=commit,message='The remote accepted the database backup. Local status could not be saved; check remote before retrying.')

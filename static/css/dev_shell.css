@@ -89,3 +89,41 @@ body[data-page=dev] #main .dev-library-link { display:block; width:100%; border:
  body[data-page=dev] #main .dev-home-summary { min-height:0; }
  #editor .integrity-metrics { grid-template-columns:minmax(0,1fr); }
 }
+/* V5.2.1 maintenance workspaces */
+.dev-home-nav { color:var(--song); background:transparent; border:0; font:inherit; font-weight:750; cursor:pointer; min-height:44px; }
+body[data-page=dev] #main .dev-maintenance-grid { display:grid; grid-template-columns:minmax(0,2fr) minmax(250px,1fr); gap:20px; align-items:start; }
+body[data-page=dev] #main .git-status-grid { display:grid; grid-template-columns:minmax(240px,1fr) minmax(0,2fr); gap:28px; margin-top:16px; }
+body[data-page=dev] #main .git-status-grid > section { min-width:0; }
+body[data-page=dev] #main .system-bounded { max-height:380px; overflow:auto; overscroll-behavior:contain; scrollbar-gutter:stable; }
+body[data-page=dev] #main .backup-workspace { display:grid; grid-template-columns:minmax(0,1fr); gap:16px; }
+body[data-page=dev] #main .backup-workspace:has(.system-restore-review) { grid-template-columns:minmax(0,1fr) minmax(0,1fr); }
+body[data-page=dev] #main .system-backup { gap:10px; padding:12px 0; align-items:start; flex-direction:column; }
+body[data-page=dev] #main .system-backup p { font-size:14px; }
+body[data-page=dev] #main .db-browser { display:grid; grid-template-columns:230px minmax(0,1fr); gap:20px; align-items:start; }
+body[data-page=dev] #main .db-browser > * { min-width:0; }
+body[data-page=dev] #main .db-browser label { display:grid; gap:8px; }
+body[data-page=dev] #main .db-objects { max-height:460px; overflow:auto; margin-top:10px; }
+body[data-page=dev] #main .db-object { display:block; width:100%; padding:12px; min-height:44px; color:var(--text); background:transparent; border:1px solid transparent; border-radius:12px; cursor:pointer; text-align:left; }
+body[data-page=dev] #main .db-object.active { border-color:var(--song); background:#1db95412; }
+body[data-page=dev] #main .db-object code { overflow-wrap:anywhere; }
+body[data-page=dev] #main .db-object small { display:block; color:var(--muted); margin-top:6px; }
+body[data-page=dev] #main .db-tabs { margin-top:0; gap:8px; }
+body[data-page=dev] #main .db-tabs [aria-pressed=true] { border-color:var(--song); color:var(--song); }
+body[data-page=dev] #main .db-scroll { max-height:400px; overflow:auto; min-width:0; border:1px solid var(--line); border-radius:14px; }
+body[data-page=dev] #main .db-scroll table { min-width:100%; width:max-content; }
+body[data-page=dev] #main .db-scroll th { position:sticky; top:0; background:#202020; z-index:1; }
+body[data-page=dev] #main .db-rows td { width:210px; max-width:280px; vertical-align:top; }
+body[data-page=dev] #main .db-rows td button { width:100%; min-width:90px; min-height:44px; border:0; background:transparent; color:var(--text); cursor:pointer; text-align:left; font:inherit; padding:4px; }
+body[data-page=dev] #main .db-rows td small { display:block; color:var(--muted); font-size:12px; margin-bottom:6px; }
+body[data-page=dev] #main .db-rows td span { display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; overflow-wrap:anywhere; white-space:pre-wrap; max-width:250px; }
+body[data-page=dev] #main .db-pager,#editor .db-pager { display:flex; gap:12px; justify-content:space-between; align-items:center; margin-top:14px; flex-wrap:wrap; }
+body[data-page=dev] #main .db-inspection pre,#editor .db-cell-detail pre { max-height:350px; overflow:auto; white-space:pre-wrap; overflow-wrap:anywhere; padding:16px; background:#161616; border-radius:12px; font-size:14px; }
+@media(max-width:1000px) { body[data-page=dev] #main :is(.dev-maintenance-grid,.git-status-grid) { grid-template-columns:minmax(0,1fr); } }
+@media(max-width:650px) {
+ body[data-page=dev] #main .db-browser { grid-template-columns:minmax(0,1fr); }
+ body[data-page=dev] #main .db-objects { max-height:180px; }
+ body[data-page=dev] #main .backup-workspace:has(.system-restore-review) { grid-template-columns:minmax(0,1fr); }
+ .dev-category-nav { flex-wrap:wrap; justify-content:center; }
+}
+
+body[data-page=dev] #main #db-content { max-height:480px; overflow:auto; min-width:0; }
