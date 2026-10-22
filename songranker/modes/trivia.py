@@ -275,8 +275,7 @@ def api_trivia_finish(token):
                 conn.execute('INSERT INTO global_stats(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=MAX(value,excluded.value)',(key,value))
         else:
             challenges.close_on_miss(conn,row['run_id'],passed,now)
-        from songranker.listening import record as record_listening
-        record_listening(conn,'trivia',row['id'],[row['song_id']],None,data.get('listening'))
+
         conn.commit()
         if classic:
             session['trivia_score']=final_score if passed else 0

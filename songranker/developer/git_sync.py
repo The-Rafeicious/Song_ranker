@@ -272,6 +272,78 @@ class GitSync:
             self.archive_sql('before_upload');os.replace(name,self.sql)
         finally:Path(name).unlink(missing_ok=True)
 
+    def local_choice_review(self, expected=None):
+        """Review both snapshots without adopting either, even before a source update."""
+        try:
+            self.discover()
+            with self.lock():
+                state=self.inspect()
+                if expected and state['fingerprint']!=expected:raise SyncError('stale_target','Git changed. Check remote and review the database choice again.')
+                if state['in_progress']:raise SyncError('operation_in_progress','Finish the current Git operation before choosing a database.')
+                self.fetch(state);state=self.inspect()
+                from songranker.storage.git_database import DatabaseSync
+                policy=DatabaseSync(self,state)
+                with policy.review() as review:
+                    if 'candidate' not in review:raise SyncError('database_check_failed','There is no validated remote database to review. Use the normal upload when no remote snapshot exists.')
+                    from songranker.storage.database_io import snapshot,readonly,capture,digest as data_digest
+                    def counts(conn):
+                        result={label:conn.execute('SELECT COUNT(*) FROM '+table).fetchone()[0] for label,table in
+                            [('Songs','songs'),('Albums','albums'),('Artists','artists'),('Tags','genres'),('Votes','history'),('Trivia rounds','trivia_rounds'),('Tournaments','tournaments'),('Elo guesses','elo_guess_rounds'),('Shelves rounds','album_shelf_rounds')]}
+                        result['Vibe positions']=conn.execute("SELECT COUNT(*) FROM song_vibe_positions WHERE status='placed'").fetchone()[0]
+                        return result
+                    with snapshot(self.database) as live:
+                        if data_digest(capture(live))!=review['live_hash']:raise SyncError('stale_database','Local data changed. Review the database choice again.')
+                        local=counts(live)
+                    with readonly(review['candidate']) as remote:incoming=counts(remote)
+                    choice={key:review[key] for key in ('commit','blob','live_hash')}
+                    choice.update(fingerprint=state['fingerprint'],binding=policy.binding)
+                    return dict(ok=True,action='keep_local_review',code='reviewed',message='Compare both copies before keeping local. Neither database has been replaced.',
+                        local=local,remote=incoming,comparison=review['code'],choice=choice,git=state)
+        except (SyncError,OSError,sqlite3.Error,ValueError) as error:
+            if not isinstance(error,SyncError):error=SyncError('database_check_failed','Could not validate both databases. Nothing was replaced.')
+            return self.failure('keep_local_review',error)
+
+    def keep_local(self, choice):
+        """Acknowledge the exact remote as baseline; keep local bytes and normal Git guards."""
+        accepted=False;result=None
+        try:
+            self.discover()
+            with self.lock():
+                state=self.inspect()
+                if state['fingerprint']!=choice.get('fingerprint'):raise SyncError('stale_target','Git changed after review. Review the database choice again.')
+                if state['in_progress']:raise SyncError('operation_in_progress','Finish the current Git operation before choosing a database.')
+                self.fetch(state);state=self.inspect()
+                if state['fingerprint']!=choice.get('fingerprint'):raise SyncError('stale_target','Git changed during review. Review the database choice again.')
+                from songranker.storage.git_database import DatabaseSync
+                from songranker.storage.database_access import gate
+                from songranker.storage.database_io import create_backup,readonly,capture,digest as data_digest
+                policy=DatabaseSync(self,state)
+                if policy.binding!=choice.get('binding'):raise SyncError('stale_target','The database or Git destination changed. Review again.')
+                with policy.review() as review:
+                    if any(review.get(k)!=choice.get(k) for k in ('commit','blob','live_hash')):raise SyncError('stale_database','Local or remote data changed after review. Neither copy was replaced; review again.')
+                    with gate.maintenance():
+                        incoming=policy.incoming_backup(review)
+                        backup=create_backup(self.database,'pre_git_keep_local')
+                        with readonly(backup) as saved:
+                            if data_digest(capture(saved))!=choice['live_hash']:raise SyncError('stale_database','Local data changed while backing up. Review again.')
+                        conn=sqlite3.connect(self.database,timeout=30);conn.row_factory=sqlite3.Row
+                        try:
+                            conn.execute('BEGIN IMMEDIATE')
+                            if data_digest(capture(conn))!=choice['live_hash'] or self.inspect()['fingerprint']!=state['fingerprint']:
+                                raise SyncError('stale_database','Data or Git changed while preparing the choice. Review again.')
+                            policy.remember(review['commit'],review['blob']);accepted=True
+                        finally:conn.rollback();conn.close()
+                    message='Local database kept. Both copies are backed up. '+('Resolve the diverged Git commits in your terminal before uploading.' if state['state']=='diverged' else 'Restart to load incoming code, then upload this local database.' if state['behind'] else 'Upload database backup to publish this local copy.')
+                    result=dict(ok=True,action='keep_local',code='database_local_kept',message=message,commit=review['commit'],
+                        database_binding=policy.binding,backup=backup.name,incoming_backup=incoming)
+                    self.database_report(result)
+                    self.record(result)
+                    return dict(result,git=self.inspect())
+        except (SyncError,OSError,sqlite3.Error,ValueError) as error:
+            if accepted:return dict(result or {},ok=True,action='keep_local',code='database_local_kept',message='The reviewed local database was kept and backed up. Local status could not be saved; check Git before uploading.')
+            if not isinstance(error,SyncError):error=SyncError('database_check_failed','Could not preserve the reviewed copies and record the choice. No database was replaced.')
+            return self.failure('keep_local',error)
+
     def upload(self,expected=None):
         commit=None;published=False
         try:

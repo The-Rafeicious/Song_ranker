@@ -194,8 +194,7 @@ def save_vote(conn, owner, data):
             raise PreferenceError('Choose the two songs from the offered round.', 409)
         snapshots = {item['id']: item for item in (json.loads(offer['song1_snapshot']), json.loads(offer['song2_snapshot']))}
         event_id = record_preference(conn, w, l, mode, snapshots, offer_token=offered_token)
-        from songranker.listening import record as record_listening
-        record_listening(conn,mode,event_id,(w,l),w,data.get('listening'))
+
         conn.execute("UPDATE preference_offers SET status='answered',closed_at=CURRENT_TIMESTAMP,song1_snapshot=NULL,song2_snapshot=NULL WHERE token=?", (offered_token,))
         return receipt(conn.execute('SELECT * FROM preference_events WHERE id=?', (event_id,)).fetchone())
 

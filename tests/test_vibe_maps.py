@@ -162,6 +162,7 @@ class VibeMapTests(unittest.TestCase):
             self.assertEqual(c.execute('SELECT COUNT(*) FROM song_vibe_positions').fetchone()[0],4)
             self.assertEqual(c.execute("SELECT COUNT(*) FROM song_vibe_positions WHERE status='placed'").fetchone()[0],0)
         for name,table in before['tables'].items():
+            if name=='listening_observations':continue  # Deliberately retired in schema 20.
             self.assertEqual(after['tables'][name],table,name)
         reconcile(before,after)
         self.assertEqual(upgrade_state(before),upgrade_state(upgrade_state(before)))

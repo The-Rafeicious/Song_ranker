@@ -82,3 +82,13 @@ remote catalogue or production result set is used as disposable test input.
 Reproduce a new report with `python tools/validate_v5_selection.py --output NEW_REPORT.json`;
 `--reference` accepts a saved old selector when available. Do not treat an old
 benchmark as current coverage of the later Vibe bias.
+
+## v5.1.2 coverage
+
+Regression coverage adds real two-clone Git tests for a reviewed local save,
+restart/code fast-forward, normal upload, stale local/remote data, receipt recovery
+and backup failure. HTTP tests enforce browser-bound review and exact confirmation;
+Dev DOM tests exercise the comparison and busy controls. Browser CI additionally
+checks the served review at phone and desktop widths. Schema-20 tests verify
+complete old backups, exact retention of all other tables, old SQL restore,
+idempotence and refusal of dependent extensions.

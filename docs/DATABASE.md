@@ -1,10 +1,10 @@
 # V5 database dictionary
 
-**Generation-3 competition · schema 19 · documentation v5.1.1**
+**Generation-3 competition · schema 20 · app v5.1.2**
 
 The active default is `data/song_ranker_v3.db`. The schema registry is
 [data/schema.sql](../data/schema.sql); this dictionary is derived from it.
-There are 32 stored tables, five views, 24 explicit indexes and nine triggers
+There are 31 stored tables, five views, 23 explicit indexes and nine triggers
 (excluding SQLite internal/automatic objects).
 IDs/relationships and exact catalogue values survive first transfer; old results
 do not. See [UPGRADES.md](UPGRADES.md) for the catalogue whitelist and backup.
@@ -19,19 +19,13 @@ do not. See [UPGRADES.md](UPGRADES.md) for the catalogue whitelist and backup.
 | Trivia / Guesser | Saved questions, choices, grades, field time and challenge runs | Completed accuracy, streaks and reports; pending rows add no result. |
 | Tournament | Bracket, entries, match facts and placements | Bracket points and eligible weighted first-round preference events. |
 | Shelves | Offered album/track facts and submitted positions | Regraded relative order/placement totals from frozen facts. |
-| Listening | `listening_observations` | Accepted-decision samples with mode/reference, original song key and chosen state. |
 
 ## Units and privacy
 
 - `songs.elo_score` and independent ratings start at 1200. Preference influence
   is 1 or 0.5; it is already applied to saved rating changes.
-- `song_details.added_at`, competition/listening/source epoch times are seconds
+- `song_details.added_at`, competition/source epoch times are seconds
   since Unix epoch. Imported catalogue age is zero; future inserts are timestamped.
-- Listening `seconds` is actual measured playback up to answer submission;
-  `decision_ms` is elapsed browser question time in milliseconds. Missing rows
-  are unknown, not zero. `selected` is nullable for non-pair games.
-- The listening reference is the server result ID in that mode. `song_key`
-  preserves the original ID after removal; nullable `song_id` links a live song.
 - Preview `preview_bad`, `preview_note` and `flagged_at` never appear in public
   catalogue/game/profile payloads. They do appear in authenticated analysis
   downloads and full database exports/backups.
@@ -436,22 +430,6 @@ Foreign keys: `song_id` → `songs.id` (delete CASCADE).
 | `started_at` | REAL | Not null |  |
 | `migration_report` | TEXT | Not null | '{}' |
 
-### listening_observations
-
-| Column | SQLite type | Required / key | Default |
-| --- | --- | --- | --- |
-| `id` | INTEGER | Primary key 1 |  |
-| `mode` | TEXT | Not null |  |
-| `reference` | TEXT | Not null |  |
-| `song_key` | INTEGER | Not null |  |
-| `song_id` | INTEGER | Nullable |  |
-| `seconds` | REAL | Not null |  |
-| `decision_ms` | REAL | Not null |  |
-| `selected` | INTEGER | Nullable |  |
-| `recorded_at` | REAL | Not null |  |
-
-Foreign keys: `song_id` → `songs.id` (delete SET NULL).
-
 ### Vibe Map definitions and positions
 
 `vibe_maps` defines the four generation-2 maps. Columns are `id`, `title`,
@@ -517,3 +495,10 @@ Do not hand-edit grading tables or restore an old archive over the active V3 fil
 V5.0.3.1 backup policy: requested and website-shutdown snapshots share three
 `rolling_*.db` slots. Ordinary edits create none. Migration archives and existing
 backups remain separate. See [backup and stop workflow](UPGRADES.md).
+
+## Schema 20 retirement
+
+The backed-up migration removes `listening_observations` and its index; all other
+catalogue and mode facts are preserved. Old backups remain readable and are
+upgraded when restored. Unknown extensions depending on the retired table stop
+the migration for review rather than being silently removed.

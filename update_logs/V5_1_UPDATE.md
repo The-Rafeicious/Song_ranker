@@ -1,5 +1,18 @@
 # V5.1 release notes
 
+## V5.1.2 — listening retirement and local-save Git recovery
+
+- Remove browser/server listening-time capture, stored observations, public
+  summaries and the unused listening analysis export. Keep preview playback,
+  manual preview flags and Trivia answer timing.
+- Advance to schema 20 through the backed-up migration; retain catalogue, scores
+  and Vibe results. Historical backups still restore through migration.
+- Add Dev Git **Keep local database…** with local/remote counts, explicit typed
+  confirmation, backups of both copies and stale-review checks. It preserves the
+  local save through code-update restarts, then uses ordinary guarded upload.
+- Test split saves, unwiped remote Vibe data, changed reviews, receipt recovery,
+  backup failure, browser ownership and the Dev interaction.
+
 ## V5.1.0 — overall mode integration
 
 Bring the completed 📍 Vibe Map mode into the main application: four continuous

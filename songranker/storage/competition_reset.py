@@ -9,13 +9,7 @@ def reset_vibes(conn,song_id=None):
 
 
 def reset_results(conn,scope):
-    listening_modes={'matches':('standard','blind'),'trivia':('trivia',),'tournaments':('tournament',),'guesser':('guesser',),'shelves':('shelves',)}
-    if scope=='all':
-        conn.execute('DELETE FROM listening_observations')
-        conn.execute('UPDATE competition_state SET started_at=unixepoch() WHERE id=1')
-    elif scope in listening_modes:
-        modes=listening_modes[scope]
-        conn.execute('DELETE FROM listening_observations WHERE mode IN ('+','.join('?' for _ in modes)+')',modes)
+    if scope=='all':conn.execute('UPDATE competition_state SET started_at=unixepoch() WHERE id=1')
     if scope in ('all','matches'):
         from songranker.modes.preferences import reset_preferences
         reset_preferences(conn)

@@ -161,6 +161,8 @@ def validate(conn):
     tables = {row[0] for row in conn.execute("SELECT name FROM sqlite_master WHERE type='table'")}
     if not {'songs', 'albums', 'artists', 'genres', 'song_artists', 'song_genres'} <= tables:
         raise DatabaseValidationError('Not a complete relational Song Ranker database.')
+    if conn.execute('PRAGMA user_version').fetchone()[0]>=20 and 'listening_observations' in tables:
+        raise DatabaseValidationError('Current schema contains retired listening storage; restore a verified backup.')
     if conn.execute('PRAGMA user_version').fetchone()[0] >= 16:
         if conn.execute('SELECT 1 FROM song_genres GROUP BY song_id HAVING COUNT(*)>8 LIMIT 1').fetchone():
             raise DatabaseValidationError('A song exceeds the eight-tag limit in this schema-16 database.')

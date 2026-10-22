@@ -166,7 +166,7 @@ class DatabaseSync:
                 for event in self.git.history():
                     if not isinstance(event,dict) or event.get('database_binding')!=self.binding:continue
                     commit=event.get('commit')
-                    confirmed=event.get('action')=='upload' or (event.get('action')=='database' and event.get('code') in ('database_matches','database_updated'))
+                    confirmed=event.get('action') in ('upload','keep_local') or (event.get('action')=='database' and event.get('code') in ('database_matches','database_updated'))
                     if event.get('ok') and confirmed and isinstance(commit,str) and len(commit)==40 and all(c in '0123456789abcdef' for c in commit):
                         old_blob=self.blob(commit)
                         if old_blob:

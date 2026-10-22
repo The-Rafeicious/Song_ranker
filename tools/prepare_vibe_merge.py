@@ -10,7 +10,7 @@ import time
 import uuid
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from songranker.storage.database_io import capture,digest,readonly,sql_dump,validate,quote
-from songranker.storage.database_schema import table_columns
+from songranker.storage.database_schema import table_columns,SCHEMA_VERSION
 from songranker.storage.competition import CATALOGUE
 from songranker.storage.competition_reset import reset_results
 
@@ -20,7 +20,7 @@ KEEP={**CATALOGUE,'song_details':('song_id','added_at','preview_bad','preview_no
 RESULT_TABLES=('preference_events','preference_corrections','preference_rating_projection','preference_offers',
     'preference_rating_overrides','trivia_rounds','trivia_adjustments','challenge_runs','tournaments',
     'tournament_entries','tournament_matches','elo_guess_rounds','album_shelf_rounds','album_shelf_items',
-    'listening_observations','vibe_rounds')
+    'vibe_rounds')
 
 
 def catalogue(conn):
@@ -64,7 +64,7 @@ def prepare(database,output=None,apply=False,confirmation=''):
     if output and Path(output).resolve()==path:raise ValueError('Database and SQL output paths must differ.')
     with readonly(path) as conn:
         conn.execute('BEGIN');validate(conn)
-        if conn.execute('PRAGMA user_version').fetchone()[0]!=19:raise ValueError('Update the test branch database before cleanup.')
+        if conn.execute('PRAGMA user_version').fetchone()[0]!=SCHEMA_VERSION:raise ValueError('Update the test branch database before cleanup.')
         known={r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'")}
         if known-set(table_columns())-{'legacy_elo_changes'}:raise ValueError('Unknown extension tables found; review them before cleanup.')
         report=json.loads(conn.execute('SELECT migration_report FROM competition_state WHERE id=1').fetchone()[0])

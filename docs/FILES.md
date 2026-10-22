@@ -16,7 +16,7 @@ lossless snapshot codec and small/large SQLite page policy.
 | `songranker/elo_history.py` | Read-only public Elo feed; ordinary vote/exposure views keep their meaning. |
 | `songranker/impact.py` | Read-only catalogue-relative Impact, in the current public Elo scale. |
 | `songranker/lan_security.py` | Direct private-LAN access policy. This app is not an internet-facing service. |
-| `songranker/listening.py` | Optional bounded browser playback measurements, stored with accepted game facts. |
+| `songranker/storage/retired_listening.py` | Schema-20 backed-up retirement of legacy playback observations. |
 | `songranker/overall.py` | A personal composite score, derived on demand. No database writes or schema. |
 | `songranker/pages.py` | Shared implementation helpers. |
 | `songranker/vibe_maps.py` | Shared four-map definitions, display labels, profile reads and pass counts. |
@@ -112,7 +112,6 @@ new tag definitions; `tests/test_tag_limits.py` covers policy and migration.
 | `data/catalogue_seed.db` | Full-package fallback catalogue; no old results. Not in the upgrade ZIP. |
 | `data/song_ranker_v3.db` | Created on first start; active competition, never shipped in a package. |
 | `templates/` | Shared base, macros, game/profile/report pages. |
-| `static/js/listening.js` | Shared playback measurement; other feature scripts retain their existing owners. |
 | `static/css/v5.css` | Small shared V5 report/health additions; baseline loads last. |
 | `docs/` | Current user/technical/upgrade/database/style/validation references. |
 | `docs/RETIRED.md` | Expired references and their current replacements; original texts remain in Git history. |
@@ -125,7 +124,7 @@ Two tiny schema adapters were combined into `storage/schema_compat.py`; the old
 standalone missing-metadata script was superseded by the reviewed Dev workflow. Old snapshot-based selector
 experiments and V4 shadow comparisons were retired in favour of the current V5
 benchmark and regression suite.
-One browser tracker/server writer/report macro handles the new listening feature.
+Listening tracker/writer/report components were removed in v5.1.2.
 There are no compatibility copies of the moved root modules.
 
 

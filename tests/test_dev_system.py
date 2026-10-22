@@ -165,6 +165,25 @@ class DeveloperSystemTests(unittest.TestCase):
         with patch.object(system.GitSync,'check',return_value=dict(ok=True,code='up_to_date',message='Checked')),patch.object(system.GitSync,'status',return_value=dict(available=False,state='not_repo')):
             self.assertEqual(self.client.post('/api/dev/git/check',json={}).status_code,200)
 
+    def test_keep_local_requires_a_browser_bound_review_and_confirmation(self):
+        state=dict(available=True,fingerprint='target-1',branch='main')
+        choice=dict(fingerprint='target-1',commit='a'*40,blob='b'*40,live_hash='live',binding='bound')
+        with patch.object(system.GitSync,'status',return_value=state):
+            token=self.client.get('/api/dev/git/status').json['review_token']
+            with patch.object(system.GitSync,'local_choice_review',return_value=dict(ok=True,code='reviewed',choice=choice,local={'Songs':10},remote={'Songs':11},message='Compare')) as review:
+                result=self.client.post('/api/dev/git/keep-local/review',json={'review_token':token})
+                self.assertEqual(result.status_code,200);review.assert_called_once_with('target-1')
+                self.assertNotIn('choice',result.json)
+                signed=result.json['choice_token']
+            with patch.object(system.GitSync,'keep_local',return_value=dict(ok=True,code='database_local_kept',message='Kept')) as apply:
+                self.assertEqual(self.client.post('/api/dev/git/keep-local',json={'choice_token':signed}).status_code,400)
+                self.assertEqual(self.client.post('/api/dev/git/keep-local',json={'choice_token':token,'confirmation':'KEEP LOCAL'}).status_code,400)
+                self.assertEqual(self.client.post('/api/dev/git/keep-local',json={'choice_token':signed,'confirmation':'KEEP LOCAL'}).status_code,200)
+                apply.assert_called_once()
+            other=services.app.test_client()
+            with other.session_transaction() as session:session['is_admin']=True
+            self.assertEqual(other.post('/api/dev/git/keep-local',json={'choice_token':signed,'confirmation':'KEEP LOCAL'}).status_code,400)
+
 
 if __name__=='__main__':unittest.main()
 

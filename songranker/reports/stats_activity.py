@@ -111,8 +111,6 @@ def build_activity(conn, mode, now=None):
 
 def attach_reports(conn, data, mode, now=None):
     data['pulse_data']=build_activity(conn, mode, now=now)
-    from songranker.listening import summary as listening_summary
-    data['listening_data']=listening_summary(conn,mode)
     if mode=='tournament':
         from songranker.elo_history import source_sql
         rows=[dict(r) for r in conn.execute('SELECT * FROM '+source_sql(conn)+" WHERE origin='tournament'")]

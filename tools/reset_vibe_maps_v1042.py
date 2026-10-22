@@ -6,6 +6,7 @@ import sys
 
 sys.path.insert(0,str(Path(__file__).resolve().parents[1]))
 from songranker.storage.database import initialize_database
+from songranker.storage.database_schema import SCHEMA_VERSION
 from songranker.storage.database_io import readonly, validate
 
 
@@ -14,15 +15,15 @@ def reset_test_vibes(filename):
     with readonly(path) as conn:
         validate(conn)
         version=conn.execute('PRAGMA user_version').fetchone()[0]
-    if version==19:
-        return dict(reset=False,database=str(path),schema=19,message='Already updated; new Vibe Map results kept.')
+    if 19<=version<=SCHEMA_VERSION:
+        return dict(reset=False,database=str(path),schema=version,message='Already updated; new Vibe Map results kept.')
     if version not in (17,18):
         raise ValueError('Choose the Vibe Map test database (schema 17 or 18), not a production/legacy database.')
     directory=path.parent/'database_backups'
     before=set(directory.glob('pre_upgrade_*.db'))
     initialize_database(path)  # Backed-up, validated, transactional schema 19 reset.
     backups=set(directory.glob('pre_upgrade_*.db'))-before
-    return dict(reset=True,database=str(path),schema=19,backups=[str(p) for p in sorted(backups)],
+    return dict(reset=True,database=str(path),schema=SCHEMA_VERSION,backups=[str(p) for p in sorted(backups)],
                 message='Old Vibe Map results cleared. Catalogue and other game results kept.')
 
 

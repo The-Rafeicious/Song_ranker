@@ -207,6 +207,21 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.locator('#dev-vibe-delete [name="confirmation"]').fill('DELETE VIBE');await page.locator('#dev-vibe-delete button[type="submit"]').click();
   await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data deleted'));
   const removed=await (await page.request.get(base+'/api/dev/vibe/1')).json();assert.ok(removed.maps.every(m=>m.status==='unmapped'));assert.equal(removed.completed_passes,0);
+  // Isolate only the Git transport: real served Dev markup/scripts and confirmation UI.
+  const gitChoice={available:true,state:'behind',branch:'main',remote:'origin',target:'main',destination:'example.org/owner/app',tracking_head:'abc',ahead:0,behind:1,pending_code:false,code_changes:0,in_progress:false,review_token:'browser-git-review',history:[],snapshot:{exists:true,name:'database_backup.sql',bytes:20}};
+  await page.route('**/api/dev/system',async route=>{const response=await route.fetch();const body=await response.json();body.git=gitChoice;await route.fulfill({json:body});});
+  await page.route('**/api/dev/git/keep-local/review',route=>route.fulfill({json:{ok:true,local:{Songs:7,'Vibe positions':0},remote:{Songs:7,'Vibe positions':24},choice_token:'browser-choice',git:gitChoice,message:'Compare both copies.'}}));
+  let kept=0;
+  await page.route('**/api/dev/git/keep-local',async route=>{assert.deepEqual(route.request().postDataJSON(),{choice_token:'browser-choice',confirmation:'KEEP LOCAL'});kept++;await route.fulfill({json:{ok:true,git:gitChoice,message:'Local database kept. Restart then upload.'}});});
+  await page.goto(base+'/dev/dashboard?view=export');await page.locator('[data-system-local-review]:enabled').waitFor();
+  assert.ok(await page.locator('[data-system-upload]').isDisabled());
+  await page.locator('[data-system-local-review]').click();await page.locator('#system-local-confirmation').waitFor();
+  assert.ok(await page.locator('[data-system-local-apply]').isDisabled());
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-keep-local',folder);await page.locator('#system-local-choice').screenshot({path:folder+'/dev-keep-local-'+width+'.png'});}
+  await page.locator('#system-local-confirmation').fill('KEEP LOCAL');await page.locator('[data-system-local-apply]').click();
+  await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Local database kept'));
+  assert.equal(kept,1);assert.ok(await page.locator('[data-system-upload]').isDisabled());
+  await page.goto(base+'/global_stats');assert.equal(await page.locator('.listening-panel,script[src*="/listening.js"]').count(),0);
   assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -1,6 +1,6 @@
 # Vibe Map reference
 
-**Integrated in app v5.1.0 · internal mode v1.1 · schema 19 · definition generation 2**
+**Integrated in app v5.1.0 · internal mode v1.1 · schema 20 · definition generation 2**
 
 The current six-mode application serves `/vibe-map`, `/vibe_map_stats` and
 `/mode_rankings/vibe`. This reference owns map meanings, play/storage/API rules,
@@ -461,7 +461,5 @@ do not. Repeats replace the retained song timestamp rather than adding a complet
 pass history. This activity contributes no accuracy denominator, Elo result or
 Overall score.
 
-Listening observations support Standard, Blind, Tournament, Trivia, Guesser and
-Shelves. The schema excludes Vibe and the mode sends no listening payload, so
-there is no Vibe mean/high/low listening card. Missing duration is unknown; the
-mode does not borrow unrelated playback measurements.
+Listening-time capture and storage were retired across the app in v5.1.2.
+Preview playback remains available; no listening-duration cards are shown.

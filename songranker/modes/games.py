@@ -243,8 +243,7 @@ def api_tournament_vote():
                              (next_round, tournament_id))
             else:
                 conn.execute('UPDATE tournaments SET updated_at = CURRENT_TIMESTAMP WHERE id = ?', (tournament_id,))
-        from songranker.listening import record as record_listening
-        record_listening(conn,'tournament',match_id,(winner_id,loser_id),winner_id,data.get('listening'))
+
         conn.commit()
         return jsonify({'success': True, 'points_awarded': points, 'preference_event_id': event_id, 'elo_result': elo_result,
                         'matches': _tournament_matches(conn, tournament_id)})

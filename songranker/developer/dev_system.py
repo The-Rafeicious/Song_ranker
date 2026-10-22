@@ -45,7 +45,7 @@ def git_payload(state=None):
 def git_reply(result):
     result=dict(result);result['git']=git_payload(result.pop('git',None))
     result['status']='success' if result['ok'] else 'error'
-    status=200 if result['ok'] else 409 if result['code'] in ('busy','stale_target','pending_code','behind','diverged','operation_in_progress','database_behind','database_conflict','database_check_failed') else 502
+    status=200 if result['ok'] else 409 if result['code'] in ('busy','stale_target','pending_code','behind','diverged','operation_in_progress','database_behind','database_conflict','database_check_failed','stale_database') else 502
     return jsonify(result),status
 
 
@@ -75,6 +75,31 @@ def upload_database():
 def git_upload():return upload_database()
 
 
+@app.post('/api/dev/git/keep-local/review')
+@admin_required
+def review_local_database():
+    data=request.get_json(silent=True)
+    try:
+        if not isinstance(data,dict):raise ValueError('Open Git status before reviewing.')
+        reviewed=unpack(data.get('review_token'),'git')
+    except ValueError as error:return jsonify(message=str(error)),400
+    result=git().local_choice_review(reviewed['fingerprint'])
+    choice=result.pop('choice',None)
+    if choice:result['choice_token']=signed('git_keep_local',**choice)
+    return git_reply(result)
+
+
+@app.post('/api/dev/git/keep-local')
+@admin_required
+def keep_local_database():
+    data=request.get_json(silent=True)
+    try:
+        if not isinstance(data,dict) or data.get('confirmation')!='KEEP LOCAL':raise ValueError('Type KEEP LOCAL to confirm this database choice.')
+        choice=unpack(data.get('choice_token'),'git_keep_local')
+    except ValueError as error:return jsonify(message=str(error)),400
+    return git_reply(git().keep_local(choice))
+
+
 def backup_folder():return Path(services.DB_NAME).resolve().parent/'database_backups'
 
 
@@ -88,7 +113,7 @@ def backup_path(name):
 
 def purpose(name):
     if name in ('rolling_1.db','rolling_2.db','rolling_3.db'):return 'Rotating requested / shutdown backup'
-    for prefix,label in [('incoming_git_','Incoming Git database — compare before restore'),('pre_git_database_','Before Git database update'),('pre_v5_v2_','V2 archive before V5'),('pre_git_update_','Before code update'),('pre_restore_','Before restore'),('pre_upgrade_','Before schema upgrade'),
+    for prefix,label in [('incoming_git_','Incoming Git database — compare before restore'),('pre_git_keep_local_','Before keeping local Git database'),('pre_git_database_','Before Git database update'),('pre_v5_v2_','V2 archive before V5'),('pre_git_update_','Before code update'),('pre_restore_','Before restore'),('pre_upgrade_','Before schema upgrade'),
         ('pre_tag_edit_','Before tag change'),('pre_move_single_','Before Single move'),('pre_source_refresh_','Before source refresh'),
         ('pre_delete_song_','Before song removal'),('pre_merge_vibe_v11_','Before Vibe merge cleanup'),('pre_reset_','Before competition reset'),('manual_mode_delete_','Before result removal'),
         ('manual_','Manual backup'),('song_ranker_','Database backup')]:
@@ -112,7 +137,6 @@ def area(name,kind):
     if name.startswith('tournament'):return 'Tournaments'
     if name.startswith('album_shelf'):return 'Album Shelves'
     if name=='competition_state':return 'Competition'
-    if name=='listening_observations':return 'Listening analysis'
     if name in ('vibe_maps','song_vibe_positions','song_vibe_progress','vibe_rounds'):return 'Vibe Map'
     if name=='elo_guess_rounds':return 'Elo Guesser'
     if name in ('challenge_runs','global_stats'):return 'Runs and records'
@@ -259,13 +283,11 @@ def song_quality(song_id):
 @app.route('/api/dev/analysis')
 @admin_required
 def analysis_data():
-    from songranker.listening import (summary, song_summaries)
     from songranker.developer.catalog_sources import current_sources
     conn=get_db_connection()
     try:
         conn.execute('BEGIN')
         return jsonify(sources=[{key:value for key,value in saved.items() if key!='snapshot'} for saved in current_sources(conn).values()],
-            listening=summary(conn),songs=song_summaries(conn),observations=[dict(r) for r in conn.execute('SELECT o.*,s.title,q.preview_bad,q.preview_note FROM listening_observations o LEFT JOIN songs s ON s.id=o.song_id LEFT JOIN song_details q ON q.song_id=o.song_id ORDER BY o.id')],
             preview_flags=[dict(r) for r in conn.execute('SELECT s.id,s.title,q.preview_note,q.flagged_at FROM song_details q JOIN songs s ON s.id=q.song_id WHERE q.preview_bad=1 ORDER BY s.id')])
     finally:conn.close()
 

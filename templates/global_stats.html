@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'stats_visuals.html' import pulse, listening_panel %}
+{% from 'stats_visuals.html' import pulse %}
 {% from 'components.html' import stat, art, versus_row %}
 {% block title %}Global Stats · Song Ranker{% endblock %}
 {% block page_kind %}global_stats{% endblock %}
@@ -28,7 +28,6 @@
     <div class="stats global-stat-grid global-mode-totals">{% for row in mode_totals %}{{ stat(row.label,row.value,row.kind) }}{% endfor %}</div>
   </div>
   {{pulse(pulse_data)}}
-  {{listening_panel(listening_data)}}
   <section class="panel stats-glow glow-voting"><div class="section-head"><h2 class="standard">Public Elo activity</h2><a class="standard" href="/history">History ↗</a></div><div class="joined-metrics" data-columns="3">{{metric('Elo matches',elo_summary.total,'standard')}}{{metric('Voting',elo_summary.ordinary,'standard')}}{{metric('Tournament first rounds',elo_summary.tournament,'tournament')}}</div><p class="mode-stats-caption tournament">Round 1 · {{elo_summary.tournament_standard}} Non-blind · {{elo_summary.tournament_blind}} Blind</p></section>
   <section id="global-collection" class="panel stats-glow glow-collection" data-global-section="collection">
     <div class="section-head"><h2 class="song">Collection Records</h2></div>
