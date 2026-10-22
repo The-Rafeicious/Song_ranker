@@ -17,3 +17,13 @@ database health, catalogue coverage, stored rounds/votes, Git state and backups.
   and the externally managed server safeguard.
 - Start the [Dev guide](../docs/DEV_GUIDE.md); retain existing editing/record tools
   for future revamp steps. No schema or stored-result changes.
+
+## V5.2.0.1 — compact Dev navigation and Home
+
+- Split navigation into Library, Editing, Records and System dropdowns. Remove
+  header backup buttons; place Stop directly before the rightmost search.
+- Remove Home action rows. Make entity metrics open their tables and service
+  titles open integrity details, Git controls and Database & backups.
+- Align health, slim branch/commit/status Git and backups in one equal-sized row.
+  Keep coverage and stored activity below, without repeating service data.
+- Present integrity totals as compact metrics with bounded issue details.

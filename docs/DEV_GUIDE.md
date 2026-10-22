@@ -1,6 +1,6 @@
 # Developer guide
 
-**v5.2.0 · step one of the Dev revamp**
+**v5.2.0.1 · step one of the Dev revamp**
 
 Open **System Access** on the hosting computer and enter the Dev PIN. Dev replaces
 the app header and gives the active tool the full content width. Existing editing
@@ -10,26 +10,27 @@ and record tools remain available while their later revamp steps are pending.
 
 | Control | Action |
 | --- | --- |
-| Page menu, left | All library, editing, record and system pages, grouped by task. The label follows the current page. |
+| Category menus | Four dropdowns: Library, Editing, Records and System. All twenty existing destinations remain available. |
 | Lock Dev, centre | Ends the Dev session and returns to the app home page. |
 | Search library | Opens Library Explorer with your query. The current explorer is retained for the next revamp steps. |
-| Git backup & push | Opens Git, checks the remote, creates the database SQL snapshot and uploads using the normal safety checks. Issues remain in Git for review. Source-code changes are not published. |
-| Local backup | Creates a verified rotating database backup. Does not contact Git. |
 | ⏻ Stop app | Opens the same backup-and-stop dialog from either app header. Enter the PIN once; a separate Dev login is unnecessary. |
 
 The page menu supports keyboard navigation, Escape and clicking outside to close.
-Quick actions show busy states. A restore in progress must finish before changing tools.
+Backup and upload controls live on their dedicated pages. A restore in progress must finish before changing tools.
 
 ## Developer home
 
 | Container | Shows |
 | --- | --- |
-| Library | Songs, artists, releases (including Singles), tags and direct catalogue actions. |
-| Database health | Application/schema version, SQLite integrity, foreign-key errors and backup count. |
+| Library | Clickable songs, artists, releases (including Singles) and tags open the corresponding tables. |
+| Database health | Application/schema version, SQLite integrity and foreign-key errors. Click the title for the compact integrity report. |
 | Catalogue coverage | Untagged songs, missing preview URLs and missing Apple source links. These are stored-data checks, not network playback tests. |
 | Stored rounds & votes | Stored vote/round/bracket counts, including prepared rounds where those modes store them, plus songs with all four Vibe positions placed. |
-| Git sync | Current branch/target, saved remote status and last database-sync outcome. Opening Home does not fetch a remote. |
-| Local backups | Backup count, newest timestamp, live database file size, backup review and full export. File size excludes transient SQLite sidecar files. |
+| Git sync | Branch, short commit and cached remote status. Click the title for Git controls; opening Home does not fetch a remote. |
+| Local backups | Backup count, newest timestamp and live database file size. Click the title for Database & backups. File size excludes transient SQLite sidecar files. |
+
+Database health, Git sync and Local backups share one aligned row on desktop.
+Coverage and stored activity remain below; Home has no separate action rows.
 
 ## Page lookup
 
