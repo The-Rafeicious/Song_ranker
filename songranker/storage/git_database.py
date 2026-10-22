@@ -1,16 +1,14 @@
 """Whole-snapshot database sync. No row merge and no network or Flask imports."""
+
 from contextlib import contextmanager
 from pathlib import Path
 import json
 import os
 import sqlite3
 import tempfile
-
 from songranker.storage.database import initialize_database
-from songranker.storage.database_io import (
-    DatabaseValidationError, capture, create_backup, digest, publish, quote,
-    readonly, replace_contents, snapshot, validate,
-)
+from songranker.storage.database_io import DatabaseValidationError, capture, create_backup, digest, publish, quote, readonly, replace_contents, snapshot, validate
+
 
 HISTORY_LIMIT = 32
 MAX_SQL_BYTES = 64 * 1024 * 1024

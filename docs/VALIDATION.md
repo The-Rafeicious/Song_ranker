@@ -1,103 +1,59 @@
 # Validation
 
-## Current evidence
-
-The integrated Vibe Map v1.1 code passed **358 Python tests**, the complete
-JavaScript suite and the Chromium integration run on feature commit
-`962ef3a50cc79967da1ee6fab380c68c37dd0306`:
-[successful workflow](https://github.com/The-Rafeicious/Song_ranker/actions/runs/39692077626).
-That is recorded code-validation evidence, not a claim that documentation edits
-change or retest gameplay. This documentation PR additionally checks local links,
-anchors, file references, family coverage and a documentation-only diff.
-
-The frozen `tests/fixtures/schema_v9.sql` and `schema_v12.sql` files are present.
-Old “missing fixtures / full discovery blocked” statements are **expired**;
-[fixture provenance](../tests/fixtures/README.md) explains the restored inputs.
-Historical test totals referred to different releases/suites and are not current
-counts. Long repeated validation transcripts and old package hash manifests have
-been retired; see [retired references](RETIRED.md).
-
-## Reproduce the automated checks
-
-From the repository root, install runtime requirements and test-only Node tools:
+Install runtime and pinned test dependencies from the repository root:
 
 ```sh
 python -m pip install -r requirements.txt
-npm install --no-save --no-package-lock jsdom@26 playwright-core@1.58.2
-python -m unittest discover -s tests -v
+npm ci
+python tools/check.py all
 ```
 
-Run JavaScript suites with the served-Dev harness for its integration test:
+The single entry point runs source/asset checks, verifies the generated function
+index, runs Python regressions and JavaScript DOM suites, serves the real Dev
+pages against disposable data, then runs Chromium integration/screenshots.
+Individual groups are available:
+
+| Command | Checks |
+| --- | --- |
+| `python tools/check.py structure` | Syntax, current imports, duplicate definitions, template references and one owner per asset |
+| `python tools/check.py docs` | Every Python function/method/closure has a current source-linked index entry |
+| `python tools/check.py docs --write` | Regenerate the index after a source change |
+| `python tools/check.py python` | Database, modes, sources, metadata, tags, Dev, sync, recovery and shutdown regressions |
+| `python tools/check.py javascript` | Script syntax, real-controller DOM/media mocks and served Dev HTTP/DOM checks |
+| `python tools/check.py browser` | Actual Chromium gameplay/stats/profile/Dev checks at desktop/tablet/phone widths |
+
+The browser group requires installed Chrome/Chromium. Set
+`SONG_RANKER_TEST_CHROME` to an explicit executable when it is not on PATH.
+Screenshots are written to `artifacts/vibe-map/` and uploaded by CI. Missing
+runtime/browser dependencies fail clearly; they are not counted as passed tests.
+
+The frozen schema fixtures remain necessary regression inputs. Their version
+numbers describe migration formats, not obsolete tests. See
+[fixture provenance](../tests/fixtures/README.md). The V5.3 route fixture captures
+all pre-consolidation URL/method/endpoint contracts and guards route registration.
+
+| Area | What the evidence establishes |
+| --- | --- |
+| Storage/recovery | Backed-up migrations, lossless typed values/rowids/sequences, rollback, restore and extension refusal |
+| Modes/results | Preference idempotency/corrections, weighted first-round Elo, frozen quiz facts, grading and Vibe averages |
+| Catalogue/Dev | Signed source offers, reviewed bulk/tag edits, eight-tag limits, metadata fill, transaction boundaries and authentication |
+| Git/shutdown | Two disposable clones/bare remotes, baselines/deletions/splits, guarded uploads and acknowledged stops |
+| Frontend | Real scripts/templates/routes, one asset load/order, shared profile contracts, request races and responsive geometry |
+| Shared shell | Static reports initialise without catalogue hydration; persisted volume works without a slider; common text policies agree |
+
+Live Apple transport is mocked in regression fixtures. Physical audio output and
+the user's private-LAN/device installation still need device testing. No active
+user database or backup is disposable test input.
+
+For a new seeded selector report, run:
 
 ```sh
-for test in tests/test_*.js; do
-  case "$test" in
-    tests/test_dev_pages.js) python tools/validate_dev_pages.py ;;
-    *) node "$test" ;;
-  esac || exit 1
-done
-python tools/validate_vibe_page.py
+python tools/benchmark_selection.py --output NEW_REPORT.json
 ```
 
-The shell loop is for a POSIX shell; PowerShell users can run the individual
-`node tests/test_NAME.js` suites and the Python harnesses. The browser harness
-requires an installed Chromium/Chrome executable; GitHub Actions supplies the
-Linux environment. CI runs on pull requests and pushes to `main` and
-`New-modes-test`, and fails on errors rather than ignoring missing tests.
-See [workflow](../.github/workflows/tests.yml) for the maintained commands.
+The benchmark uses the production standard-library selector. Old V4 shadow
+scripts, frozen prototype comparisons and one-time Vibe release-cleanup commands
+were retired in V5.3. Current migrations and reviewed Dev resets remain tested.
 
-## What these checks establish
-
-| Area | Evidence |
-| --- | --- |
-| Storage and recovery | Frozen-schema migration, lossless export/rebuild, exact values/rowids/sequences, validation, rollback and backed-up restoration. |
-| Preference and game facts | Retry/idempotency, stale offers, corrections/replay, weighted tournament Elo, frozen quiz answers and mode-specific scoring. |
-| Catalogue/Apple/Dev | Signed offers, current-source storage, bulk review, tag limits, metadata fill, transaction boundaries and Dev authentication. Apple transport is mocked. |
-| Sync and shutdown | Disposable checkouts/bare remotes, branch/baseline/deletion conflicts, no unsafe upload, launcher ordering and acknowledged stop. |
-| Browser/served pages | Real templates/scripts/routes, Home/Global/rankings/profiles, Vibe placement/results/inspection, Dev save/map-clear/delete, desktop/phone geometry and screenshots. |
-| Merge cleanup | Preview no-op, multi-mode clear, exact catalogue retention, restore backup, stale/invalid requests, transaction rollback, one-time marker and export retry. Disposable databases only. |
-
-Browser screenshots and DOM/media mocks do not prove physical audio output or
-every Windows/Python/browser combination. Live Apple responses and the user's
-private-LAN installation still depend on the service/device. No user database,
-remote catalogue or production result set is used as disposable test input.
-
-## Historical selector benchmark
-
-**Expired experiment, retained for context.** Eight seeds, 3,000 rounds each,
-80 starting tracks, ten added at round 1,500. These figures are the former
-`SELECTION_VALIDATION.json`, not a new simulation or a target for live Elo.
-
-| Policy | Rounds | Mean exposure | Exposure CV | Least | Most | New-track mean |
-| --- | ---: | ---: | ---: | ---: | ---: | ---: |
-| V4.1.6 | 100 | 2.5 | 0.4416 | 0.5 | 6.0 | — |
-| V5 | 100 | 2.5 | 0.434 | 0.12 | 6.25 | — |
-| V4.1.6 | 1000 | 25.0 | 0.0613 | 22.25 | 30.62 | — |
-| V5 | 1000 | 25.0 | 0.0545 | 22.38 | 29.62 | — |
-| V4.1.6 | 1700 | 37.78 | 0.129 | 21.25 | 45.38 | 25.21 |
-| V5 | 1700 | 37.78 | 0.1037 | 24.88 | 45.0 | 27.98 |
-| V4.1.6 | 3000 | 66.67 | 0.023 | 63.88 | 71.88 | 66.67 |
-| V5 | 3000 | 66.67 | 0.0209 | 64.12 | 71.88 | 66.94 |
-
-Reproduce a new report with `python tools/validate_v5_selection.py --output NEW_REPORT.json`;
-`--reference` accepts a saved old selector when available. Do not treat an old
-benchmark as current coverage of the later Vibe bias.
-
-## v5.1.2 coverage
-
-Regression coverage adds real two-clone Git tests for a reviewed local save,
-restart/code fast-forward, normal upload, stale local/remote data, receipt recovery
-and backup failure. HTTP tests enforce browser-bound review and exact confirmation;
-Dev DOM tests exercise the comparison and busy controls. Browser CI additionally
-checks the served review at phone and desktop widths. Schema-20 tests verify
-complete old backups, exact retention of all other tables, old SQL restore,
-idempotence and refusal of dependent extensions.
-
-## v5.2.0 Dev shell coverage
-
-Check all twenty existing tool destinations on the served Dev page. Header tests
-cover grouped navigation, busy backup actions, remote-check-before-push and blocked
-upload review. Shutdown tests cover a fresh PIN without a Dev login, unchanged
-Dev authorization and rejection of another browser’s review/job. Browser CI
-checks the service grid/header at phone, tablet and wide desktop widths, menu
-selection, search handoff, lock-to-home and direct Stop on the app header.
+V5.3 validation results and review limits are recorded in
+[the consolidation report](CONSOLIDATION.md) and its pull request.

@@ -1,0 +1,949 @@
+[
+  {
+    "path": "/",
+    "endpoint": "home",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/album/<path:album_title>",
+    "endpoint": "album_page",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/album_shelves",
+    "endpoint": "album_shelves",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/album_shelves_stats",
+    "endpoint": "shelf_stats",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/album_stats",
+    "endpoint": "album_performance",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/albums",
+    "endpoint": "albums_leaderboard",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/album-shelves/answer",
+    "endpoint": "shelf_answer",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/album-shelves/round",
+    "endpoint": "shelf_round",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/collection",
+    "endpoint": "api_collection",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/activity",
+    "endpoint": "api_dev_activity",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/add_song",
+    "endpoint": "api_add_song",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/album-tracks/<int:album_id>",
+    "endpoint": "album_tracks",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/analysis",
+    "endpoint": "analysis_data",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/backup",
+    "endpoint": "api_dev_backup",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/backups/<name>/download",
+    "endpoint": "backup_download",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/backups/restore",
+    "endpoint": "backup_restore",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/backups/review",
+    "endpoint": "backup_review",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/bulk_songs",
+    "endpoint": "api_dev_bulk_songs",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/database/cell",
+    "endpoint": "inspect_cell",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/database/export",
+    "endpoint": "full_export",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/database/guide",
+    "endpoint": "database_guide",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/database/inspect",
+    "endpoint": "inspect_object",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/delete_album/<int:album_id>",
+    "endpoint": "api_delete_album",
+    "methods": [
+      "DELETE"
+    ]
+  },
+  {
+    "path": "/api/dev/delete_artist/<int:artist_id>",
+    "endpoint": "api_delete_artist",
+    "methods": [
+      "DELETE"
+    ]
+  },
+  {
+    "path": "/api/dev/delete_genre/<int:genre_id>",
+    "endpoint": "api_delete_genre",
+    "methods": [
+      "DELETE"
+    ]
+  },
+  {
+    "path": "/api/dev/delete_song/<int:song_id>",
+    "endpoint": "api_delete_song",
+    "methods": [
+      "DELETE"
+    ]
+  },
+  {
+    "path": "/api/dev/edit_album/<int:album_id>",
+    "endpoint": "api_edit_album",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/edit_artist/<int:artist_id>",
+    "endpoint": "api_edit_artist",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/edit_genre/<int:genre_id>",
+    "endpoint": "api_edit_genre",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/edit_song/<int:song_id>",
+    "endpoint": "api_edit_song",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/elo-correction",
+    "endpoint": "api_dev_elo_correction",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/export",
+    "endpoint": "api_export",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/git/check",
+    "endpoint": "git_check",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/git/keep-local",
+    "endpoint": "keep_local_database",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/git/keep-local/review",
+    "endpoint": "review_local_database",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/git/status",
+    "endpoint": "git_status",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/git/upload",
+    "endpoint": "git_upload",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/help/<guide>",
+    "endpoint": "developer_guide",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/integrity",
+    "endpoint": "api_dev_integrity",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/metadata",
+    "endpoint": "metadata_scan",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/metadata/<token>/apply",
+    "endpoint": "apply_scan",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/metadata/<token>/cancel",
+    "endpoint": "cancel_scan",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/metadata/<token>/report",
+    "endpoint": "scan_report",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/overall/recalibrate",
+    "endpoint": "recalibrate_overall",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/overview",
+    "endpoint": "api_dev_overview",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/preferences",
+    "endpoint": "api_dev_preferences",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/preferences/<int:event_id>",
+    "endpoint": "api_dev_preference",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/reset-database",
+    "endpoint": "api_dev_reset_database",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/reset-history/<scope>",
+    "endpoint": "api_dev_reset_history",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/reset-preview",
+    "endpoint": "api_dev_reset_preview",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/restore-backup",
+    "endpoint": "api_dev_restore_backup",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/search_apple",
+    "endpoint": "api_search_apple",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/selection-health",
+    "endpoint": "selection_health",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/single/<int:song_id>",
+    "endpoint": "song_single",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/song-quality/<int:song_id>",
+    "endpoint": "song_quality",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/song-source/<int:song_id>",
+    "endpoint": "song_source",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/song-sources",
+    "endpoint": "song_sources",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/song-sources/bulk",
+    "endpoint": "bulk_song_sources",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/special-round/<mode>/<int:round_id>",
+    "endpoint": "delete_special_round",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/stop",
+    "endpoint": "stop_status",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/stop/cancel",
+    "endpoint": "stop_signal",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/stop/confirm",
+    "endpoint": "stop_signal",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/stop/prepare",
+    "endpoint": "stop_prepare",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/sync",
+    "endpoint": "api_sync",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/system",
+    "endpoint": "system_status",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/tags/apply",
+    "endpoint": "apply_tags",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/tags/review",
+    "endpoint": "review_tags",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/tournaments/<int:tournament_id>",
+    "endpoint": "api_dev_delete_tournament",
+    "methods": [
+      "DELETE"
+    ]
+  },
+  {
+    "path": "/api/dev/tournaments/<int:tournament_id>/placements",
+    "endpoint": "api_dev_tournament_placements",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/trivia-records",
+    "endpoint": "api_dev_trivia_records",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/trivia/<int:song_id>",
+    "endpoint": "api_dev_edit_trivia",
+    "methods": [
+      "DELETE",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/dev/vibe",
+    "endpoint": "vibe_records",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/dev/vibe/<int:song_id>",
+    "endpoint": "vibe_record",
+    "methods": [
+      "DELETE",
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/elo-guesser/answer",
+    "endpoint": "guess_answer",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/elo-guesser/round",
+    "endpoint": "guess_round",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/generate_bracket",
+    "endpoint": "api_generate_bracket",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/library",
+    "endpoint": "api_library",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/matchup",
+    "endpoint": "api_matchup",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/overall",
+    "endpoint": "overall_api",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/overall/details",
+    "endpoint": "overall_details",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/previews/<int:song_id>",
+    "endpoint": "api_preview",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/previews/<int:song_id>/status",
+    "endpoint": "api_preview_status",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/previews/cache",
+    "endpoint": "api_preview_cache",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/special-modes/stats",
+    "endpoint": "special_stats",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/tournament_complete",
+    "endpoint": "api_tournament_complete",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/tournament_stats",
+    "endpoint": "api_tournament_stats",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/tournament_vote",
+    "endpoint": "api_tournament_vote",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/tournaments",
+    "endpoint": "api_tournaments_list",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/tournaments/<int:tournament_id>",
+    "endpoint": "api_tournament_detail",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/trivia/<token>/field",
+    "endpoint": "api_trivia_field",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/trivia/<token>/finish",
+    "endpoint": "api_trivia_finish",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/trivia/<token>/pause",
+    "endpoint": "api_trivia_pause",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/trivia/<token>/start",
+    "endpoint": "api_trivia_start",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/trivia/round",
+    "endpoint": "api_trivia_round",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/advance",
+    "endpoint": "api_vibe_map_advance",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/cancel",
+    "endpoint": "api_vibe_map_cancel",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/draft",
+    "endpoint": "api_vibe_map_draft",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/entity/<kind>/<int:entity_id>",
+    "endpoint": "api_vibe_map_entity",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/heatmap",
+    "endpoint": "api_vibe_map_heatmap",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/inspect/<int:song_id>",
+    "endpoint": "api_vibe_map_inspect",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/library",
+    "endpoint": "api_vibe_map_library",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/profile/<int:song_id>",
+    "endpoint": "api_vibe_map_profile",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/rankings",
+    "endpoint": "api_vibe_map_rankings",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/round",
+    "endpoint": "api_vibe_map_round",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/similar/<int:song_id>",
+    "endpoint": "api_vibe_map_similar",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/state",
+    "endpoint": "api_vibe_map_state",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/vibe-map/stats",
+    "endpoint": "api_vibe_map_stats",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/api/vote",
+    "endpoint": "api_vote",
+    "methods": [
+      "POST"
+    ]
+  },
+  {
+    "path": "/artist/<path:artist_name>",
+    "endpoint": "artist_page",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/artist_stats",
+    "endpoint": "artist_performance",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/artists",
+    "endpoint": "artists_leaderboard",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/dev/dashboard",
+    "endpoint": "dev_dashboard",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/dev/login",
+    "endpoint": "dev_login",
+    "methods": [
+      "GET",
+      "POST"
+    ]
+  },
+  {
+    "path": "/dev/logout",
+    "endpoint": "dev_logout",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/elo_guesser",
+    "endpoint": "elo_guesser",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/elo_guesser_stats",
+    "endpoint": "guesser_stats",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/game",
+    "endpoint": "index",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/global_stats",
+    "endpoint": "global_stats",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/history",
+    "endpoint": "history",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/leaderboard",
+    "endpoint": "leaderboard",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/mode_rankings/<mode>",
+    "endpoint": "special_rankings",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/overall_rankings",
+    "endpoint": "overall_rankings",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/search",
+    "endpoint": "search",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/song/<int:song_id>",
+    "endpoint": "song_page",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/static/<path:filename>",
+    "endpoint": "static",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/tag/<path:tag_name>",
+    "endpoint": "tag_page",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/tags",
+    "endpoint": "tags_index",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/tournament",
+    "endpoint": "tournament",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/tournament_stats",
+    "endpoint": "tournament_stats_page",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/trivia",
+    "endpoint": "trivia_mode",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/trivia_stats",
+    "endpoint": "trivia_stats",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/vibe-map",
+    "endpoint": "vibe_map_page",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/vibe_map_stats",
+    "endpoint": "vibe_map_stats",
+    "methods": [
+      "GET"
+    ]
+  },
+  {
+    "path": "/voting_stats",
+    "endpoint": "voting_stats",
+    "methods": [
+      "GET"
+    ]
+  }
+]

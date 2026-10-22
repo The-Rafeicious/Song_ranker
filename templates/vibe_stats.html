@@ -3,12 +3,7 @@
 {% from 'mode_stats_components.html' import figure, rate, progress, metadata %}
 {% block title %}Vibe Map Stats · Song Ranker{% endblock %}
 {% block page_kind %}vibe_stats{% endblock %}
-{% block extra_css %}
-<link rel="stylesheet" href="{{url_for('static',filename='css/mode_stats.css',v=app_version)}}">
-<link rel="stylesheet" href="{{url_for('static',filename='css/vibe_stats.css',v=vibe_version)}}">
-<link rel="stylesheet" href="{{url_for('static',filename='css/vibe_charts.css',v=vibe_version)}}">
-<link rel="stylesheet" href="{{url_for('static',filename='css/vibe_song_stats.css',v=vibe_version)}}">
-{% endblock %}
+
 {% macro pair_list(rows,empty) -%}
 <div class="vibe-stats-pairs">{% for row in rows %}<article class="mode-stats-inset vibe-stats-pair">
   {% for song in [row.first,row.second] %}<div class="vibe-pair-track"><span class="mode-stats-art">{{art(song.cover_url)}}</span><div class="mode-stats-copy"><a class="song mode-stats-name" href="{{url_for('song_page',song_id=song.id)}}" title="{{song.title}}">{{song.title}}</a>{{metadata(song)}}</div></div>{% endfor %}
@@ -74,4 +69,4 @@
   {% for group in groups %}<section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-{{group.kind}}s"><div class="section-head"><h2 class="{{group.kind}}" id="vibe-{{group.kind}}s">{{group.title}} · consistency</h2></div><div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3 class="{{group.kind}}">Most consistent</h3>{{group_list(group.most,group.kind)}}</div><div class="mode-stats-inset"><h3 class="{{group.kind}}">Least consistent</h3>{{group_list(group.least,group.kind)}}</div></div></section>{% endfor %}
 </div>
 {% endblock %}
-{% block extra_js %}<script src="{{url_for('static',filename='js/vibe_charts.js',v=vibe_version)}}" defer></script><script src="{{url_for('static',filename='js/vibe_stats.js',v=vibe_version)}}" defer></script>{% endblock %}
+{% block extra_js %}{% endblock %}

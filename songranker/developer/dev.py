@@ -4,10 +4,13 @@ import re
 import sqlite3
 import os
 from datetime import datetime
-
-from songranker.apple_access import (apple_lookup, AppleRequestError)
-from songranker.developer.track_numbers import (parse_track_number, check_track_position, track_position_conflicts, TrackNumberConflict)
-from songranker.services import (app, DB_NAME, DEV_PIN, admin_required, get_db_connection, get_song_full, export_rankings, create_database_backup, get_or_create_album, link_artists_to_song, link_genres_to_song)
+from songranker.apple_access import apple_lookup, AppleRequestError
+from songranker.developer.catalog_sources import parse_track_number
+from songranker.developer.catalog_sources import check_track_position
+from songranker.developer.catalog_sources import track_position_conflicts
+from songranker.developer.catalog_sources import TrackNumberConflict
+from songranker.services import app, DEV_PIN, admin_required, get_db_connection, get_song_full, export_rankings, create_database_backup, get_or_create_album, link_artists_to_song, link_genres_to_song
+from songranker.developer import dev_vibe
 
 
 def json_fields():
@@ -37,9 +40,6 @@ def dev_logout():
 @admin_required
 def dev_dashboard():
     return render_template('app_page.html', page='dev')
-
-
-from songranker.developer.catalog_sources import apple_metadata
 
 
 def apple_lookup_url(link):
@@ -89,7 +89,6 @@ def api_search_apple():
         finally:conn.close()
     except AppleRequestError as exc:return exc.response()
     except ValueError as exc:return jsonify(message=str(exc)),400
-
 
 
 def verified_song_source(data):
@@ -176,7 +175,8 @@ def write_song(data, song_id=None):
     conn = get_db_connection()
     try:
         from songranker.developer.catalog_sources import (catalogue_matches, source_conflict, save_source, current_source, public_source, normalized, review_fingerprint, artist_names as source_artist_names)
-        from songranker.developer.catalog_operations import (single_title, remove_empty_album)
+        from songranker.developer.catalog_sources import single_title
+        from songranker.developer.catalog_sources import remove_empty_album
         conn.execute('BEGIN IMMEDIATE')
         old = conn.execute('SELECT * FROM songs WHERE id=?', (song_id,)).fetchone() if song_id is not None else None
         if song_id is not None and not old:
@@ -681,7 +681,7 @@ def api_export():
 @app.route('/api/dev/bulk_songs', methods=['POST'])
 @admin_required
 def api_dev_bulk_songs():
-    from songranker.developer.tag_operations import identifiers
+    from songranker.developer.dev_tags import identifiers
     data=request.get_json(silent=True)
     if not isinstance(data,dict):return jsonify(message='Send a bulk change as an object.'),400
     conn=get_db_connection()
@@ -765,8 +765,3 @@ def api_dev_tournament_placements(tournament_id):
     except (ValueError,TypeError) as exc:
         conn.rollback();return jsonify(message=str(exc)),400
     finally:conn.close()
-
-
-
-
-from songranker.developer import dev_vibe  # Authenticated Vibe maintenance routes.

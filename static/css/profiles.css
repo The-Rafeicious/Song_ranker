@@ -1,110 +1,487 @@
 /* Entity profile composition. Shared tokens, joined rows and surface glows stay
    in site_baseline.css/components.css; every rule here is profile-scoped. */
-body.profile-page #main .song-profile { --profile-art-size: 240px; grid-template-columns: var(--profile-art-size) minmax(0,1fr); gap: 28px; margin-bottom: var(--site-gap); }
-body.profile-page #main .profile-media { --profile-cover-radius: var(--site-inner-radius); width: var(--profile-art-size); min-width: 0; }
-body.profile-page #main .profile-artist .profile-media { --profile-cover-radius: 50%; }
-body.profile-page #main .profile-media :is(.album-cover-player,.cover-button,.art-wrap,.art-fallback,.play-overlay) { border-radius: var(--profile-cover-radius); }
-body.profile-page #main .profile-media .album-cover-player { overflow: hidden; isolation: isolate; }
-body.profile-page #main .profile-media .art-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
-body.profile-page #main .profile-media :is(.cover-button,.album-cover-player) { width: 100%; }
-body.profile-page #main .profile-media .cover-button { display: block; line-height: 0; }
-body.profile-page #main .profile-media .art-wrap { width: var(--profile-art-size); height: var(--profile-art-size); min-width: var(--profile-art-size); min-height: var(--profile-art-size); max-width: var(--profile-art-size); max-height: var(--profile-art-size); aspect-ratio: 1; flex-shrink: 0; }
-body.profile-page #main .song-profile .profile-page-title { margin: 0; padding-bottom: 4px; text-align: left; min-width: 0; max-width: 100%; line-height: 1.25; }
-body.profile-page #main .profile-copy .metadata { min-width: 0; }
-body.profile-page #main .profile-copy .metadata a { font-weight: 800; }
-body.profile-page #main .tag-description { font-size: 18px; color: var(--muted); overflow-wrap: anywhere; }
-body.profile-page #main .profile-facts { flex-wrap: wrap; gap: 10px 18px; font-size: 15px; }
-body.profile-page #main .profile-facts b { color: var(--page-color); }
-body.profile-page #main .album-cover-step { opacity: 1; width: 44px; height: 44px; border-radius: 50%; font-size: 30px; background: #101010d9; color: var(--page-color); }
-body.profile-page #main .album-cover-step.previous { left: 8px; }
-body.profile-page #main .album-cover-step.next { right: 8px; }
-body.profile-page #main .album-cover-step:hover { background: var(--raised); border-color: var(--page-color); }
-body.profile-page #main :is(.album-cover-step,.cover-button,.profile-track-row .btn):focus-visible { outline: 2px solid var(--page-color); outline-offset: 3px; }
-body.profile-page #main .album-player-info { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; display: grid; grid-template-columns: minmax(0,1fr) auto; align-items: end; gap: 8px; margin: 0; min-height: 0; padding: 28px 12px 12px; border-radius: 0 0 var(--profile-cover-radius) var(--profile-cover-radius); background: linear-gradient(transparent,#000d); color: #fff; font-size: 15px; line-height: 1.3; pointer-events: none; }
-body.profile-page #main .album-player-info:empty { display: none; }
-body.profile-page #main .album-player-info a { display: block; min-width: 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--song); font-size: 16px; font-weight: 800; text-shadow: 0 1px 4px #000; pointer-events: auto; }
-body.profile-page #main .profile-preview-position { color: #eee; font-size: 12px; white-space: nowrap; }
-body.profile-page #main .profile-artist .album-player-info { left: 14%; right: 14%; bottom: 20%; padding: 8px 10px; border-radius: 12px; background: #101010df; }
-body.profile-page #main .profile-artist .album-player-info a { font-size: 15px; }
-body.profile-page #main .profile-tag-list { position: relative; display: flex; flex-wrap: wrap; align-content: start; gap: 8px; max-height: 80px; overflow: hidden; }
-body.profile-page #main .profile-tag-list .badge { display: inline-flex; align-items: center; gap: 8px; height: 36px; max-width: 100%; min-width: 0; margin: 0; white-space: nowrap; }
-body.profile-page #main .profile-tag-list .badge[hidden] { display: none; }
-body.profile-page #main .profile-tag-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
-body.profile-page #main .profile-tag-list small { font-size: 13px; flex-shrink: 0; }
-body.profile-page #main .profile-key-stats { grid-template-columns: repeat(4,minmax(0,1fr)); gap: var(--site-gap); margin-bottom: var(--site-gap); }
-body.profile-page #main .profile-key-stats .stat { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 8px; min-width: 0; }
-body.profile-page #main .profile-key-stats .stat-label { font-size: 16px; text-transform: none; letter-spacing: 0; }
-body.profile-page #main .profile-key-stats .stat-value { font-size: 36px; overflow-wrap: anywhere; }
-body.profile-page #main #overall-profile { margin-bottom: var(--site-gap); }
-body.profile-page #main .song-sections { gap: var(--site-gap); margin-top: var(--site-gap); }
-body.profile-page #main .profile-mode-panel { min-width: 0; border-color: color-mix(in srgb,var(--section-color) 38%,var(--line)); }
-body.profile-page #main .profile-mode-panel .section-head { margin-bottom: 20px; }
-body.profile-page #main .profile-stat-links { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: 16px; }
-body.profile-page #main .joined-metrics { color: var(--section-color,var(--page-color)); margin: 0; }
-body.profile-page #main .joined-metrics b { font-size: 36px; color: var(--section-color,var(--page-color)); overflow-wrap: anywhere; }
-body.profile-page #main .joined-metrics small { font-size: 16px; color: var(--muted); }
-body.profile-page #main .profile-rate { margin-top: 18px; min-width: 0; color: var(--section-color,var(--page-color)); }
-body.profile-page #main .profile-rate-caption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 14px; align-items: baseline; font-size: 18px; }
-body.profile-page #main .profile-rate-caption strong { font-size: 28px; color: var(--section-color,var(--page-color)); }
-body.profile-page #main .profile-rate .overall-progress { height: 12px; margin: 8px 0; }
-body.profile-page #main .profile-rate .overall-progress span { background: var(--section-color,var(--page-color)); }
-body.profile-page #main .profile-rate > small { font-size: 15px; color: var(--muted); overflow-wrap: anywhere; }
-body.profile-page #main .profile-detail-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(100%,230px),1fr)); gap: 16px; }
-body.profile-page #main .profile-inset { min-width: 0; }
-body.profile-page #main .profile-inset .profile-rate { margin-top: 6px; }
+body.profile-page #main .song-profile {
+  --profile-art-size: 240px;
+  grid-template-columns: var(--profile-art-size) minmax(0, 1fr);
+  gap: 28px;
+  margin-bottom: var(--site-gap);
+}
+body.profile-page #main .profile-media {
+  --profile-cover-radius: var(--site-inner-radius);
+  width: var(--profile-art-size);
+  min-width: 0;
+}
+body.profile-page #main .profile-artist .profile-media {
+  --profile-cover-radius: 50%;
+}
+body.profile-page
+  #main
+  .profile-media
+  :is(
+    .album-cover-player,
+    .cover-button,
+    .art-wrap,
+    .art-fallback,
+    .play-overlay
+  ) {
+  border-radius: var(--profile-cover-radius);
+}
+body.profile-page #main .profile-media .album-cover-player {
+  overflow: hidden;
+  isolation: isolate;
+}
+body.profile-page #main .profile-media .art-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+body.profile-page #main .profile-media :is(.cover-button, .album-cover-player) {
+  width: 100%;
+}
+body.profile-page #main .profile-media .cover-button {
+  display: block;
+  line-height: 0;
+}
+body.profile-page #main .profile-media .art-wrap {
+  width: var(--profile-art-size);
+  height: var(--profile-art-size);
+  min-width: var(--profile-art-size);
+  min-height: var(--profile-art-size);
+  max-width: var(--profile-art-size);
+  max-height: var(--profile-art-size);
+  aspect-ratio: 1;
+  flex-shrink: 0;
+}
+body.profile-page #main .song-profile .profile-page-title {
+  margin: 0;
+  padding-bottom: 4px;
+  text-align: left;
+  min-width: 0;
+  max-width: 100%;
+  line-height: 1.25;
+}
+body.profile-page #main .profile-copy .metadata {
+  min-width: 0;
+}
+body.profile-page #main .profile-copy .metadata a {
+  font-weight: 800;
+}
+body.profile-page #main .tag-description {
+  font-size: 18px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+body.profile-page #main .profile-facts {
+  flex-wrap: wrap;
+  gap: 10px 18px;
+  font-size: 15px;
+}
+body.profile-page #main .profile-facts b {
+  color: var(--page-color);
+}
+body.profile-page #main .album-cover-step {
+  opacity: 1;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 30px;
+  background: #101010d9;
+  color: var(--page-color);
+}
+body.profile-page #main .album-cover-step.previous {
+  left: 8px;
+}
+body.profile-page #main .album-cover-step.next {
+  right: 8px;
+}
+body.profile-page #main .album-cover-step:hover {
+  background: var(--raised);
+  border-color: var(--page-color);
+}
+body.profile-page
+  #main
+  :is(.album-cover-step, .cover-button, .profile-track-row .btn):focus-visible {
+  outline: 2px solid var(--page-color);
+  outline-offset: 3px;
+}
+body.profile-page #main .album-player-info {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 3;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: end;
+  gap: 8px;
+  margin: 0;
+  min-height: 0;
+  padding: 28px 12px 12px;
+  border-radius: 0 0 var(--profile-cover-radius) var(--profile-cover-radius);
+  background: linear-gradient(transparent, #000d);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.3;
+  pointer-events: none;
+}
+body.profile-page #main .album-player-info:empty {
+  display: none;
+}
+body.profile-page #main .album-player-info a {
+  display: block;
+  min-width: 0;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--song);
+  font-size: 16px;
+  font-weight: 800;
+  text-shadow: 0 1px 4px #000;
+  pointer-events: auto;
+}
+body.profile-page #main .profile-preview-position {
+  color: #eee;
+  font-size: 12px;
+  white-space: nowrap;
+}
+body.profile-page #main .profile-artist .album-player-info {
+  left: 14%;
+  right: 14%;
+  bottom: 20%;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #101010df;
+}
+body.profile-page #main .profile-artist .album-player-info a {
+  font-size: 15px;
+}
+body.profile-page #main .profile-tag-list {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: start;
+  gap: 8px;
+  max-height: 80px;
+  overflow: hidden;
+}
+body.profile-page #main .profile-tag-list .badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 36px;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  white-space: nowrap;
+}
+body.profile-page #main .profile-tag-list .badge[hidden] {
+  display: none;
+}
+body.profile-page #main .profile-tag-name {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.profile-page #main .profile-tag-list small {
+  font-size: 13px;
+  flex-shrink: 0;
+}
+body.profile-page #main .profile-key-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--site-gap);
+  margin-bottom: var(--site-gap);
+}
+body.profile-page #main .profile-key-stats .stat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 8px;
+  min-width: 0;
+}
+body.profile-page #main .profile-key-stats .stat-label {
+  font-size: 16px;
+  text-transform: none;
+  letter-spacing: 0;
+}
+body.profile-page #main .profile-key-stats .stat-value {
+  font-size: 36px;
+  overflow-wrap: anywhere;
+}
+body.profile-page #main #overall-profile {
+  margin-bottom: var(--site-gap);
+}
+body.profile-page #main .song-sections {
+  gap: var(--site-gap);
+  margin-top: var(--site-gap);
+}
+body.profile-page #main .profile-mode-panel {
+  min-width: 0;
+  border-color: color-mix(in srgb, var(--section-color) 38%, var(--line));
+}
+body.profile-page #main .profile-mode-panel .section-head {
+  margin-bottom: 20px;
+}
+body.profile-page #main .profile-stat-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  font-size: 16px;
+}
+body.profile-page #main .joined-metrics {
+  color: var(--section-color, var(--page-color));
+  margin: 0;
+}
+body.profile-page #main .joined-metrics b {
+  font-size: 36px;
+  color: var(--section-color, var(--page-color));
+  overflow-wrap: anywhere;
+}
+body.profile-page #main .joined-metrics small {
+  font-size: 16px;
+  color: var(--muted);
+}
+body.profile-page #main .profile-rate {
+  margin-top: 18px;
+  min-width: 0;
+  color: var(--section-color, var(--page-color));
+}
+body.profile-page #main .profile-rate-caption {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 6px 14px;
+  align-items: baseline;
+  font-size: 18px;
+}
+body.profile-page #main .profile-rate-caption strong {
+  font-size: 28px;
+  color: var(--section-color, var(--page-color));
+}
+body.profile-page #main .profile-rate .overall-progress {
+  height: 12px;
+  margin: 8px 0;
+}
+body.profile-page #main .profile-rate .overall-progress span {
+  background: var(--section-color, var(--page-color));
+}
+body.profile-page #main .profile-rate > small {
+  font-size: 15px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+body.profile-page #main .profile-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
+  gap: 16px;
+}
+body.profile-page #main .profile-inset {
+  min-width: 0;
+}
+body.profile-page #main .profile-inset .profile-rate {
+  margin-top: 6px;
+}
 /* Shared record hierarchy: summary, rate and inline breakdowns. */
-body.profile-page #main #voting-record .vote-win { --section-color:var(--song); color:var(--song); }
-body.profile-page #main #voting-record .vote-loss { --section-color:var(--danger); color:var(--danger); }
-body.profile-page #main :is(.profile-vote-grid,.profile-field-grid,.profile-secondary-metrics) { margin-top:18px; }
-body.profile-page #main .profile-list-actions { display:flex; justify-content:center; margin-top:20px; }
-body.profile-page #main .profile-list-actions:empty { display:none; }
-body.profile-page #main .profile-list-actions .btn { min-height:44px; }
-body.profile-page #main .profile-album-card .art-wrap { border-radius:var(--site-inner-radius); }
-body.profile-page #main .profile-vote-mode { padding:16px; border:1px solid color-mix(in srgb,var(--section-color) 24%,var(--line)); border-radius:var(--site-inner-radius); background:var(--raised); }
-body.profile-page #main .profile-vote-mode h3 { margin:0 0 12px; text-align:center; color:var(--section-color); font-size:22px; }
-body.profile-page #main .profile-vote-mode .joined-metrics { margin-top:16px; }
-body.profile-page #main .profile-vote-mode .joined-metrics b { font-size:28px; }
+body.profile-page #main #voting-record .vote-win {
+  --section-color: var(--song);
+  color: var(--song);
+}
+body.profile-page #main #voting-record .vote-loss {
+  --section-color: var(--danger);
+  color: var(--danger);
+}
+body.profile-page
+  #main
+  :is(.profile-vote-grid, .profile-field-grid, .profile-secondary-metrics) {
+  margin-top: 18px;
+}
+body.profile-page #main .profile-list-actions {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+}
+body.profile-page #main .profile-list-actions:empty {
+  display: none;
+}
+body.profile-page #main .profile-list-actions .btn {
+  min-height: 44px;
+}
+body.profile-page #main .profile-album-card .art-wrap {
+  border-radius: var(--site-inner-radius);
+}
+body.profile-page #main .profile-vote-mode {
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--section-color) 24%, var(--line));
+  border-radius: var(--site-inner-radius);
+  background: var(--raised);
+}
+body.profile-page #main .profile-vote-mode h3 {
+  margin: 0 0 12px;
+  text-align: center;
+  color: var(--section-color);
+  font-size: 22px;
+}
+body.profile-page #main .profile-vote-mode .joined-metrics {
+  margin-top: 16px;
+}
+body.profile-page #main .profile-vote-mode .joined-metrics b {
+  font-size: 28px;
+}
 body.profile-page #main a:hover,
-body.profile-page #main a:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
-body.profile-page #main .profile-highlight { min-width: 0; --surface-accent: var(--standard); border-color: color-mix(in srgb,var(--standard) 38%,var(--line)); background: color-mix(in srgb,var(--standard) 7%,var(--panel)); }
-body.profile-page #main .profile-highlight[data-highlight="low"] { --surface-accent: var(--danger); border-color: color-mix(in srgb,var(--danger) 38%,var(--line)); background: color-mix(in srgb,var(--danger) 7%,var(--panel)); }
-body.profile-page #main .profile-highlight a { display: block; color: var(--song); font-size: 22px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-body.profile-page #main .profile-highlight b.standard { color: var(--standard); }
-body.profile-page #main .profile-album-card > a { display: block; margin-top: 12px; font-size: 20px; font-weight: 800; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-body.profile-page #main .profile-track-row { display: grid; grid-template-columns: 28px 72px minmax(0,1fr) auto 48px; align-items: center; gap: 16px; padding: 18px 0; }
-body.profile-page #main .profile-track-row .small-art { width: 72px; height: 72px; min-width: 72px; min-height: 72px; max-width: 72px; max-height: 72px; }
-body.profile-page #main .profile-track-row .metadata { font-size: 17px; }
-body.profile-page #main .profile-track-row .compact-score { min-width: 0; margin-left: 0; }
-body.profile-page #main .profile-track-row .compact-score small { white-space: normal; }
-body.profile-page #main .profile-track-row .btn { margin: 0; width: 48px; min-height: 48px; padding: 8px; }
-body.profile-page #main .profile-track-row audio { display: none; }
-body.profile-page #main #history .pill-nav { margin-bottom: 16px; }
+body.profile-page #main a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+body.profile-page #main .profile-highlight {
+  min-width: 0;
+  --surface-accent: var(--standard);
+  border-color: color-mix(in srgb, var(--standard) 38%, var(--line));
+  background: color-mix(in srgb, var(--standard) 7%, var(--panel));
+}
+body.profile-page #main .profile-highlight[data-highlight="low"] {
+  --surface-accent: var(--danger);
+  border-color: color-mix(in srgb, var(--danger) 38%, var(--line));
+  background: color-mix(in srgb, var(--danger) 7%, var(--panel));
+}
+body.profile-page #main .profile-highlight a {
+  display: block;
+  color: var(--song);
+  font-size: 22px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.profile-page #main .profile-highlight b.standard {
+  color: var(--standard);
+}
+body.profile-page #main .profile-album-card > a {
+  display: block;
+  margin-top: 12px;
+  font-size: 20px;
+  font-weight: 800;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+body.profile-page #main .profile-track-row {
+  display: grid;
+  grid-template-columns: 28px 72px minmax(0, 1fr) auto 48px;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 0;
+}
+body.profile-page #main .profile-track-row .small-art {
+  width: 72px;
+  height: 72px;
+  min-width: 72px;
+  min-height: 72px;
+  max-width: 72px;
+  max-height: 72px;
+}
+body.profile-page #main .profile-track-row .metadata {
+  font-size: 17px;
+}
+body.profile-page #main .profile-track-row .compact-score {
+  min-width: 0;
+  margin-left: 0;
+}
+body.profile-page #main .profile-track-row .compact-score small {
+  white-space: normal;
+}
+body.profile-page #main .profile-track-row .btn {
+  margin: 0;
+  width: 48px;
+  min-height: 48px;
+  padding: 8px;
+}
+body.profile-page #main .profile-track-row audio {
+  display: none;
+}
+body.profile-page #main #history .pill-nav {
+  margin-bottom: 16px;
+}
 @media (max-width: 760px) {
-  body.profile-page #main .song-profile { --profile-art-size: 200px; gap: 20px; }
-  body.profile-page #main .profile-key-stats { grid-template-columns: repeat(2,minmax(0,1fr)); }
-  body.profile-page #main .joined-metrics b { font-size: 30px; }
+  body.profile-page #main .song-profile {
+    --profile-art-size: 200px;
+    gap: 20px;
+  }
+  body.profile-page #main .profile-key-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  body.profile-page #main .joined-metrics b {
+    font-size: 30px;
+  }
 }
 @media (max-width: 600px) {
-  body.profile-page #main .song-profile { grid-template-columns: minmax(0,1fr); }
-  body.profile-page #main .profile-media { justify-self: center; }
-  body.profile-page #main .song-profile .profile-page-title { text-align: center; }
+  body.profile-page #main .song-profile {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  body.profile-page #main .profile-media {
+    justify-self: center;
+  }
+  body.profile-page #main .song-profile .profile-page-title {
+    text-align: center;
+  }
   body.profile-page #main .profile-copy .metadata,
   body.profile-page #main .profile-copy .tags,
-  body.profile-page #main .profile-facts { justify-content: center; text-align: center; }
-  body.profile-page #main .tag-description { text-align: center; font-size: 16px; }
+  body.profile-page #main .profile-facts {
+    justify-content: center;
+    text-align: center;
+  }
+  body.profile-page #main .tag-description {
+    text-align: center;
+    font-size: 16px;
+  }
 }
 @media (max-width: 520px) {
-  body.profile-page #main .profile-key-stats .stat-value { font-size: 28px; }
-  body.profile-page #main .profile-key-stats .stat-label { font-size: 15px; }
-  body.profile-page #main .joined-metrics b { font-size: clamp(20px,5vw,25px); }
-  body.profile-page #main .joined-metrics small { font-size: 14px; }
-  body.profile-page #main .profile-stat-links { justify-content: flex-end; font-size: 15px; }
-  body.profile-page #main .profile-track-row { grid-template-columns: 20px 56px minmax(0,1fr) 48px; gap: 8px 10px; }
-  body.profile-page #main .profile-track-row :is(.compact-rank,.small-art) { grid-row: 1 / span 2; }
-  body.profile-page #main .profile-track-row .small-art { width: 56px; height: 56px; min-width: 56px; min-height: 56px; max-width: 56px; max-height: 56px; }
-  body.profile-page #main .profile-track-row .compact-copy { grid-column: 3 / -1; grid-row: 1; }
-  body.profile-page #main .profile-track-row .metadata { font-size: 15px; }
-  body.profile-page #main .profile-track-row .compact-score { grid-column: 3; grid-row: 2; }
-  body.profile-page #main .profile-track-row .btn { grid-column: 4; grid-row: 2; }
+  body.profile-page #main .profile-key-stats .stat-value {
+    font-size: 28px;
+  }
+  body.profile-page #main .profile-key-stats .stat-label {
+    font-size: 15px;
+  }
+  body.profile-page #main .joined-metrics b {
+    font-size: clamp(20px, 5vw, 25px);
+  }
+  body.profile-page #main .joined-metrics small {
+    font-size: 14px;
+  }
+  body.profile-page #main .profile-stat-links {
+    justify-content: flex-end;
+    font-size: 15px;
+  }
+  body.profile-page #main .profile-track-row {
+    grid-template-columns: 20px 56px minmax(0, 1fr) 48px;
+    gap: 8px 10px;
+  }
+  body.profile-page #main .profile-track-row :is(.compact-rank, .small-art) {
+    grid-row: 1 / span 2;
+  }
+  body.profile-page #main .profile-track-row .small-art {
+    width: 56px;
+    height: 56px;
+    min-width: 56px;
+    min-height: 56px;
+    max-width: 56px;
+    max-height: 56px;
+  }
+  body.profile-page #main .profile-track-row .compact-copy {
+    grid-column: 3 / -1;
+    grid-row: 1;
+  }
+  body.profile-page #main .profile-track-row .metadata {
+    font-size: 15px;
+  }
+  body.profile-page #main .profile-track-row .compact-score {
+    grid-column: 3;
+    grid-row: 2;
+  }
+  body.profile-page #main .profile-track-row .btn {
+    grid-column: 4;
+    grid-row: 2;
+  }
 }
-

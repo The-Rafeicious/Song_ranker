@@ -13,7 +13,7 @@ from songranker.storage.database_io import (capture, readonly, reconcile, write_
 from songranker.modes.preferences import (PreferenceError, correct_vote, event_detail, exposure_totals, get_offer, override_rating, rebuild_ratings, reset_preferences, save_vote)
 from songranker.services import fetch_songs
 from songranker import services
-from songranker.modes import games
+from songranker.modes import voting, tournament
 from songranker.developer import dev
 from songranker import pages
 
@@ -36,7 +36,7 @@ class PreferenceTests(unittest.TestCase):
             c.execute('INSERT INTO song_artists VALUES(?,1)', (sid,))
             c.execute('INSERT INTO song_genres VALUES(?,1)', (sid,))
         c.commit()
-        self.patches = [patch.object(services, 'DB_NAME', str(self.path)), patch.object(dev, 'DB_NAME', str(self.path))]
+        self.patches = [patch.object(services, 'DB_NAME', str(self.path))]
         for item in self.patches:
             item.start(); self.addCleanup(item.stop)
 
@@ -317,7 +317,7 @@ class PreferenceTests(unittest.TestCase):
                 try:
                     settings=c.execute('SELECT * FROM preference_replay_state').fetchone()
                     self.assertEqual(settings['baseline_kind'],'legacy_anchor' if anchored else 'verified_replay')
-                    from songranker.modes.mode_ratings import song_mode_ratings
+                    from songranker.modes.preferences import song_mode_ratings
                     self.assertEqual(song_mode_ratings(c)[1]['standard']['elo'],1216)
                     self.assertEqual(song_mode_ratings(c)[1]['blind']['matches'],0)
                     detail=event_detail(c,5)
@@ -338,7 +338,7 @@ class PreferenceTests(unittest.TestCase):
     def test_preference_changes_do_not_regrade_frozen_guesser_answers(self):
         self.conn.execute("INSERT INTO elo_guess_rounds(token,song1_id,song2_id,elo1,elo2,started_at,completed_at,chosen_slot) VALUES('frozen',1,2,1300,1200,1,2,1)")
         self.conn.commit()
-        from songranker.modes.special_modes import special_records
+        from songranker.catalog import special_records
         before=special_records(self.conn)[1]['guesser']
         event_id=self.vote()['event_id']
         correct_vote(self.conn,event_id,self.correction(event_id,'replace',winner_id=2,mode='blind'))

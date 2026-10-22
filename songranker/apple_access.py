@@ -5,6 +5,7 @@ request logs or database counters are stored. Search/lookup and
 preview media have separate safeguards; Apple's published search limit does not
 specify a preview-CDN quota.
 """
+
 from collections import OrderedDict, deque
 from email.utils import parsedate_to_datetime
 from datetime import datetime, timezone
@@ -15,7 +16,7 @@ import re
 import time
 import requests
 from flask import Response, jsonify, request, stream_with_context
-from songranker.services import (app, get_db_connection)
+from songranker.services import app, get_db_connection
 
 
 class AppleRequestError(Exception):

@@ -1,13 +1,13 @@
 {% extends 'base.html' %}
 {% block page_kind %}{{page}}{% endblock %}
-{% block title %}{{page.replace('_',' ').title()}} · Song Ranker{% endblock %}
+{% block title %}{{page_title|default(page.replace('_',' ').title())}} · Song Ranker{% endblock %}
 {% block extra_css %}
-{% if page == 'search' %}<link rel="stylesheet" href="{{url_for('static',filename='css/search.css',v=app_version)}}">{% endif %}
+{% if page == 'search' %}{% endif %}
 {% if page == 'home' %}
-<link rel="stylesheet" href="{{url_for('static',filename='css/home.css',v=app_version)}}">
+
 {% endif %}
 {% if page in ['rankings_songs', 'rankings_artists', 'rankings_albums', 'rankings_tags', 'overall_rankings'] or page.startswith('mode_rankings_') %}
-<link rel="stylesheet" href="{{url_for('static',filename='css/standard_rankings.css',v=app_version)}}">
+
 {% endif %}
 {% endblock %}
 {% block content %}{% if ranking_entity is defined %}<script id="mode-ranking-context" type="application/json">{{ {'entity':ranking_entity}|tojson }}</script>{% endif %}<div class="empty" id="loading" role="status">Loading…</div><noscript>Enable JavaScript to use this page.</noscript>{% endblock %}

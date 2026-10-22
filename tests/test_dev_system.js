@@ -31,7 +31,7 @@ async function harness(view='',width=1280,session={}){
   throw Error('Unexpected request '+url);
  };
  w.Overall={bindUI(){}};
- for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js','dev_database.js','dev_system.js','app_stop.js'])w.eval(source(file));
+ for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js','dev_system.js','app_stop.js'])w.eval(source(file));
  const expose="window.testDev={refreshData,records,setView:v=>{devView=v;renderDevView()}};window.DevSystem?.bindUI(";
  await w.eval(source('site.js').replace('window.DevSystem?.bindUI(',expose));await flush();
  const click=sel=>{const n=d.querySelector(sel);assert.ok(n,'missing '+sel);n.click();return n};
@@ -149,7 +149,7 @@ async function staleResponses(){
  check(bad.d.querySelector('[data-system-retry]'),'status failure offers retry');bad.handler(()=>undefined);bad.click('[data-system-retry]');await flush();check(!bad.d.querySelector('[data-system-retry]'),'retry recovers');bad.close();
 }
 async function responsiveContracts(){
- const css=fs.readFileSync(path.join(__dirname,'../static/css/dev_system.css'),'utf8');
+ const css=fs.readFileSync(path.join(__dirname,'../static/css/developer.css'),'utf8').replace(/\s+/g,'');
  check(css.includes('@media(max-width:800px)')&&css.includes('@media(max-width:520px)'),'phone/tablet breakpoints defined');
  check(css.includes('minmax(0,1fr)')&&css.includes('overflow-wrap:anywhere'),'long names/paths can wrap within grid');
  for(const width of [1440,768,390]){const h=await harness('database',width);

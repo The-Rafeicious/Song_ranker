@@ -15,7 +15,7 @@ from songranker.developer import dev
 from songranker.developer import dev_catalog
 from songranker import services
 from songranker.modes import trivia
-from songranker.modes import special_modes
+from songranker.modes import guesser, shelves
 from songranker.storage.database import (migrate, initialize_database)
 from songranker.storage.database_io import (capture, readonly, reconcile, write_export, read_export, rebuild)
 from songranker.storage.database_schema import SCHEMA_VERSION
@@ -89,7 +89,7 @@ class CatalogSourceTests(unittest.TestCase):
     def move(self,client,sid,**data):
         plan=client.get('/api/dev/single/'+str(sid))
         self.assertEqual(plan.status_code,200,plan.get_json())
-        with patch.object(dev_catalog,'create_database_backup',return_value=str(Path(self.temp.name)/'move.db')):
+        with patch.object(services,'create_database_backup',return_value=str(Path(self.temp.name)/'move.db')):
             return client.post('/api/dev/single/'+str(sid),json=dict(fingerprint=plan.json['fingerprint'],**data))
 
     def test_all_new_developer_routes_require_authentication(self):
@@ -321,7 +321,7 @@ class CatalogSourceTests(unittest.TestCase):
         def run(_):
             c=services.app.test_client();c.set_cookie(services.app.config['SESSION_COOKIE_NAME'],cookie);barrier.wait()
             return c.post('/api/dev/single/1',json={'fingerprint':plan['fingerprint']}).status_code
-        with patch.object(dev_catalog,'create_database_backup',return_value='backup.db'),ThreadPoolExecutor(max_workers=4) as pool:
+        with patch.object(services,'create_database_backup',return_value='backup.db'),ThreadPoolExecutor(max_workers=4) as pool:
             self.assertEqual(list(pool.map(run,range(4))),[200]*4)
         self.assertEqual(self.scalar("SELECT COUNT(*) FROM albums WHERE title='Song 1 - Single'"),1)
 

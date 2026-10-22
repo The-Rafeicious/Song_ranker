@@ -4,7 +4,7 @@
 {% from 'mode_stats_components.html' import figure, rate, progress, metadata, saved_date, scope_link %}
 {% block title %}Tournament Stats · Song Ranker{% endblock %}
 {% block page_kind %}tournament_stats{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/mode_stats.css',v=app_version) }}"><link rel="stylesheet" href="{{ url_for('static',filename='css/tournament_stats.css',v=app_version) }}">{% endblock %}
+
 
 {% macro song_name(song) -%}
 {% if song.id is not none %}<a class="song mode-stats-name" title="{{ song.title }}" href="{{ url_for('song_page',song_id=song.id) }}">{{ song.title }}</a>{% else %}<strong class="mode-stats-name muted">{{ song.title }}</strong>{% endif %}

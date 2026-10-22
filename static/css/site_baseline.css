@@ -1,4 +1,4 @@
-/* V3.4.2.1: approved T2 F2 W3 A3 D2 R3 G2 C1 B1 H1 N1 baseline.
+/* approved T2 F2 W3 A3 D2 R3 G2 C1 B1 H1 N1 baseline.
    Layouts, mode colours, rank-glow strength and large game/profile art keep
    their page-specific rules. Load after the page styles in base.html. */
 :root {
@@ -19,9 +19,15 @@ body.site-style-baseline,
 body.site-style-baseline :is(button, input, select, textarea) {
   font-family: var(--site-font);
 }
-body.site-style-baseline { font-size: 16px; }
-body.site-style-baseline :is(h1, h2, h3) { font-weight: 900; }
-body.site-style-baseline #main :is(.page-head > h1, .game-head h1, .login-panel h1) {
+body.site-style-baseline {
+  font-size: 16px;
+}
+body.site-style-baseline :is(h1, h2, h3) {
+  font-weight: 900;
+}
+body.site-style-baseline
+  #main
+  :is(.page-head > h1, .game-head h1, .login-panel h1) {
   font-size: var(--site-page-size);
   text-align: center;
 }
@@ -29,36 +35,124 @@ body.site-style-baseline #main :is(.section-head > h2, .game-card h2) {
   font-size: var(--site-title-size);
   font-weight: 900;
 }
-body.site-style-baseline #main :is(.stat-value, .global-metric > strong, .vote-total, .overall-global-summary b, .mini-stats b, .overall-value, .overall-highlight > b) {
+body.site-style-baseline
+  #main
+  :is(
+    .stat-value,
+    .global-metric > strong,
+    .vote-total,
+    .overall-global-summary b,
+    .mini-stats b,
+    .overall-value,
+    .overall-highlight > b
+  ) {
   font-size: var(--site-value-size);
   font-weight: 900;
 }
-body.site-style-baseline #main a:not(.btn):not(.cover-button) { font-weight: 800; }
-body.site-style-baseline #main .song-profile .profile-page-title { font-size: var(--site-page-size); }
-body.site-style-baseline #main :is(.metadata, .overall-meta) { font-size: var(--site-meta-size); }
-
+body.site-style-baseline #main a:not(.btn):not(.cover-button) {
+  font-weight: 800;
+}
+body.site-style-baseline #main .song-profile .profile-page-title {
+  font-size: var(--site-page-size);
+}
+body.site-style-baseline #main :is(.metadata, .overall-meta) {
+  font-size: var(--site-meta-size);
+}
 /* R3 outer panels; quieter R3 × .75 nested groups, as in the chosen preview. */
-body.site-style-baseline #main :is(.panel, .game-card, .leader-row, .mode-card, .stat, .shelf-card, .result-card, .spotlight, .profile-highlight, .profile-album-card, .archive-card, .overall-highlight, .profile-card, .stats-card, .stat-box, .info-box, .history-card, .dev-sidebar, .dev-result, .tool-tile, .data-scroll),
-body.site-style-baseline dialog { border-radius: var(--site-radius); }
-body.site-style-baseline #main :is(.collection-record, .stats-group, .global-metrics, .stats-subsection, .field-accuracy-grid, .field-accuracy-grid > div, .overall-global-summary, .stats-feature, .vote-column, .win-rate, .stats-tag, .mode-activity, .shelf-track) {
+body.site-style-baseline
+  #main
+  :is(
+    .panel,
+    .game-card,
+    .leader-row,
+    .mode-card,
+    .stat,
+    .shelf-card,
+    .result-card,
+    .spotlight,
+    .profile-highlight,
+    .profile-album-card,
+    .archive-card,
+    .overall-highlight,
+    .profile-card,
+    .stats-card,
+    .stat-box,
+    .info-box,
+    .history-card,
+    .dev-sidebar,
+    .dev-result,
+    .tool-tile,
+    .data-scroll
+  ),
+body.site-style-baseline dialog {
+  border-radius: var(--site-radius);
+}
+body.site-style-baseline
+  #main
+  :is(
+    .collection-record,
+    .stats-group,
+    .global-metrics,
+    .stats-subsection,
+    .field-accuracy-grid,
+    .field-accuracy-grid > div,
+    .overall-global-summary,
+    .stats-feature,
+    .vote-column,
+    .win-rate,
+    .stats-tag,
+    .mode-activity,
+    .shelf-track
+  ) {
   border-radius: var(--site-inner-radius);
 }
-
 /* C1 soft insets. Keep semantic borders, glows, live mode washes and outcomes. */
-body.site-style-baseline #main :is(.collection-record, .stats-group, .global-metrics, .stats-subsection, .field-accuracy-grid, .overall-global-summary, .stats-tag, .win-rate, .tool-tile) {
+body.site-style-baseline
+  #main
+  :is(
+    .collection-record,
+    .stats-group,
+    .global-metrics,
+    .stats-subsection,
+    .field-accuracy-grid,
+    .overall-global-summary,
+    .stats-tag,
+    .win-rate,
+    .tool-tile
+  ) {
   background: var(--raised);
 }
-body.site-style-baseline #main :is(.stat, .mode-card) { background-color: var(--panel); }
-body.site-style-baseline #main .panel:not(.song-profile):not(.special-panel):not(.overall-panel):not(#global-activity) {
+body.site-style-baseline #main :is(.stat, .mode-card) {
+  background-color: var(--panel);
+}
+body.site-style-baseline
+  #main
+  .panel:not(.song-profile):not(.special-panel):not(.overall-panel):not(
+    #global-activity
+  ) {
   background: var(--panel);
 }
-body.site-style-baseline #main :is(.panel, .game-card, .mode-card, .result-card, .profile-highlight, .spotlight) {
+body.site-style-baseline
+  #main
+  :is(
+    .panel,
+    .game-card,
+    .mode-card,
+    .result-card,
+    .profile-highlight,
+    .spotlight
+  ) {
   padding: var(--site-padding);
 }
-body.site-style-baseline #main .global-stats-page { gap: var(--site-gap); }
-body.site-style-baseline #main .global-stats-page > .panel { padding: var(--site-padding); }
-body.site-style-baseline #main .overall-card-body { gap: var(--site-gap); }
-
+body.site-style-baseline #main .global-stats-page {
+  gap: var(--site-gap);
+}
+body.site-style-baseline #main .global-stats-page > .panel {
+  padding: var(--site-padding);
+}
+body.site-style-baseline #main .overall-card-body {
+  gap: var(--site-gap);
+}
 /* H1: centred panel headings against the whole panel, actions at the right. */
 body.site-style-baseline #main :is(.section-head, .subsection-head) {
   display: grid;
@@ -66,7 +160,10 @@ body.site-style-baseline #main :is(.section-head, .subsection-head) {
   align-items: center;
   gap: 16px;
 }
-body.site-style-baseline #main :is(.section-head, .subsection-head) > :is(h2, h3) {
+body.site-style-baseline
+  #main
+  :is(.section-head, .subsection-head)
+  > :is(h2, h3) {
   grid-column: 2;
   grid-row: 1;
   justify-self: center;
@@ -74,18 +171,23 @@ body.site-style-baseline #main :is(.section-head, .subsection-head) > :is(h2, h3
   min-width: 0;
   margin: 0;
 }
-body.site-style-baseline #main :is(.section-head, .subsection-head) > :not(h2):not(h3) {
+body.site-style-baseline
+  #main
+  :is(.section-head, .subsection-head)
+  > :not(h2):not(h3) {
   grid-column: 3;
   grid-row: 1;
   justify-self: end;
   text-align: right;
   min-width: 0;
 }
-
 /* B1 applies to text actions. Icon/cover/drag/scope controls keep their shape. */
-body.site-style-baseline #main :is(.btn, .pill, .vote-btn, .next-btn, .mode-btn),
-body.site-style-baseline dialog .btn { border-radius: 999px; }
-
+body.site-style-baseline
+  #main
+  :is(.btn, .pill, .vote-btn, .next-btn, .mode-btn),
+body.site-style-baseline dialog .btn {
+  border-radius: 999px;
+}
 /* T2/W3/A3 ranking rows, with all cover dimensions constrained together. */
 body.site-style-baseline #main .leaderboard .leader-row {
   --ranking-art-size: var(--site-art-size);
@@ -94,7 +196,10 @@ body.site-style-baseline #main .leaderboard .leader-row {
   gap: var(--site-gap);
   padding: var(--site-padding);
 }
-body.site-style-baseline #main .leaderboard .leader-row > a { align-self: center; line-height: 0; }
+body.site-style-baseline #main .leaderboard .leader-row > a {
+  align-self: center;
+  line-height: 0;
+}
 body.site-style-baseline #main .leaderboard .leader-row > a .art-wrap {
   width: var(--ranking-art-size);
   height: var(--ranking-art-size);
@@ -109,13 +214,30 @@ body.site-style-baseline #main .leaderboard .leader-title {
   font-size: var(--site-title-size);
   font-weight: 900;
 }
-body.site-style-baseline #main .leaderboard a.leader-title { font-weight: 900; }
-body.site-style-baseline #main .leaderboard .leader-meta { font-size: var(--site-meta-size); }
-body.site-style-baseline #main .leaderboard .leader-score { font-size: var(--site-value-size); }
-body.site-style-baseline #main .global-podium .small-art { --stats-art-size: var(--site-art-size); }
-
+body.site-style-baseline #main .leaderboard a.leader-title {
+  font-weight: 900;
+}
+body.site-style-baseline #main .leaderboard .leader-meta {
+  font-size: var(--site-meta-size);
+}
+body.site-style-baseline #main .leaderboard .leader-score {
+  font-size: var(--site-value-size);
+}
+body.site-style-baseline #main .global-podium .small-art {
+  --stats-art-size: var(--site-art-size);
+}
 /* N1 variable names; scores and outcomes remain in their separate fields. */
-body.site-style-baseline #main :is(.leader-title, .leader-meta, .stats-name, .shelf-title, .result-name, .profile-album-card > strong, .overall-highlight > strong) {
+body.site-style-baseline
+  #main
+  :is(
+    .leader-title,
+    .leader-meta,
+    .stats-name,
+    .shelf-title,
+    .result-name,
+    .profile-album-card > strong,
+    .overall-highlight > strong
+  ) {
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
@@ -124,7 +246,10 @@ body.site-style-baseline #main :is(.leader-title, .leader-meta, .stats-name, .sh
   overflow-wrap: normal;
   -webkit-line-clamp: unset;
 }
-body.site-style-baseline #main .overall-highlight > strong { display: block; min-height: 0; }
+body.site-style-baseline #main .overall-highlight > strong {
+  display: block;
+  min-height: 0;
+}
 body.site-style-baseline #main .metadata a {
   min-width: 0;
   max-width: 100%;
@@ -132,36 +257,148 @@ body.site-style-baseline #main .metadata a {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
-
 @media (max-width: 760px) {
-  body.site-style-baseline #main :is(.page-head > h1, .game-head h1, .login-panel h1, .song-profile .profile-page-title) { font-size: 36px; }
-  body.site-style-baseline #main :is(.section-head > h2, .game-card h2) { font-size: 26px; }
-  body.site-style-baseline #main .leaderboard .leader-row { --ranking-art-size: 88px; grid-template-columns: 34px var(--ranking-art-size) minmax(0, 1fr) auto; gap: 16px; padding: 20px; }
-  body.site-style-baseline #main .leaderboard .leader-title { font-size: 26px; }
-  body.site-style-baseline #main .leaderboard .leader-meta { font-size: 16px; }
-  body.site-style-baseline #main :is(.metadata, .overall-meta) { font-size: 16px; }
-  body.site-style-baseline #main .leaderboard .leader-score { font-size: 32px; }
-  body.site-style-baseline #main :is(.panel, .game-card, .mode-card, .result-card, .profile-highlight, .spotlight),
-  body.site-style-baseline #main .global-stats-page > .panel { padding: 20px; }
-  body.site-style-baseline #main :is(.section-head, .subsection-head) { grid-template-columns: minmax(0, 1fr); gap: 10px; }
-  body.site-style-baseline #main :is(.section-head, .subsection-head) > :is(h2, h3) { grid-column: 1; }
-  body.site-style-baseline #main :is(.section-head, .subsection-head) > :not(h2):not(h3) { grid-column: 1; grid-row: 2; }
-  body.site-style-baseline #main .global-podium .small-art { --stats-art-size: 80px; }
+  body.site-style-baseline
+    #main
+    :is(
+      .page-head > h1,
+      .game-head h1,
+      .login-panel h1,
+      .song-profile .profile-page-title
+    ) {
+    font-size: 36px;
+  }
+  body.site-style-baseline #main :is(.section-head > h2, .game-card h2) {
+    font-size: 26px;
+  }
+  body.site-style-baseline #main .leaderboard .leader-row {
+    --ranking-art-size: 88px;
+    grid-template-columns: 34px var(--ranking-art-size) minmax(0, 1fr) auto;
+    gap: 16px;
+    padding: 20px;
+  }
+  body.site-style-baseline #main .leaderboard .leader-title {
+    font-size: 26px;
+  }
+  body.site-style-baseline #main .leaderboard .leader-meta,
+  body.site-style-baseline #main :is(.metadata, .overall-meta) {
+    font-size: 16px;
+  }
+  body.site-style-baseline #main .leaderboard .leader-score {
+    font-size: 32px;
+  }
+  body.site-style-baseline
+    #main
+    :is(
+      .panel,
+      .game-card,
+      .mode-card,
+      .result-card,
+      .profile-highlight,
+      .spotlight
+    ),
+  body.site-style-baseline #main .global-stats-page > .panel {
+    padding: 20px;
+  }
+  body.site-style-baseline #main :is(.section-head, .subsection-head) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 10px;
+  }
+  body.site-style-baseline
+    #main
+    :is(.section-head, .subsection-head)
+    > :is(h2, h3) {
+    grid-column: 1;
+  }
+  body.site-style-baseline
+    #main
+    :is(.section-head, .subsection-head)
+    > :not(h2):not(h3) {
+    grid-column: 1;
+    grid-row: 2;
+  }
+  body.site-style-baseline #main .global-podium .small-art {
+    --stats-art-size: 80px;
+  }
 }
 @media (max-width: 520px) {
-  body.site-style-baseline #main :is(.page-head > h1, .game-head h1, .login-panel h1, .song-profile .profile-page-title) { font-size: 32px; }
-  body.site-style-baseline #main :is(.section-head > h2, .game-card h2) { font-size: 24px; }
-  body.site-style-baseline #main :is(.stat-value, .global-metric > strong, .vote-total, .overall-global-summary b, .mini-stats b, .overall-value, .overall-highlight > b) { font-size: 28px; }
-  body.site-style-baseline #main .leaderboard .leader-row { --ranking-art-size: 72px; grid-template-columns: 24px var(--ranking-art-size) minmax(0, 1fr); gap: 10px 12px; padding: 18px 14px; }
+  body.site-style-baseline
+    #main
+    :is(
+      .page-head > h1,
+      .game-head h1,
+      .login-panel h1,
+      .song-profile .profile-page-title
+    ) {
+    font-size: 32px;
+  }
+  body.site-style-baseline #main :is(.section-head > h2, .game-card h2) {
+    font-size: 24px;
+  }
+  body.site-style-baseline
+    #main
+    :is(
+      .stat-value,
+      .global-metric > strong,
+      .vote-total,
+      .overall-global-summary b,
+      .mini-stats b,
+      .overall-value,
+      .overall-highlight > b
+    ) {
+    font-size: 28px;
+  }
+  body.site-style-baseline #main .leaderboard .leader-row {
+    --ranking-art-size: 72px;
+    grid-template-columns: 24px var(--ranking-art-size) minmax(0, 1fr);
+    gap: 10px 12px;
+    padding: 18px 14px;
+  }
   body.site-style-baseline #main .leaderboard .leader-rank,
-  body.site-style-baseline #main .leaderboard .leader-row > a { grid-row: 1 / span 2; }
-  body.site-style-baseline #main .leaderboard .leader-row > div:not(.leader-score) { grid-column: 3; }
-  body.site-style-baseline #main .leaderboard .leader-title { font-size: 22px; }
-  body.site-style-baseline #main .leaderboard .leader-meta { font-size: 15px; }
-  body.site-style-baseline #main :is(.metadata, .overall-meta) { font-size: 15px; }
-  body.site-style-baseline #main .leaderboard .leader-score { grid-column: 3; justify-self: end; display: flex; align-items: baseline; gap: 8px; margin-top: 0; font-size: 28px; }
-  body.site-style-baseline #main .leaderboard .leader-score small { font-size: 12px; margin: 0; }
-  body.site-style-baseline #main :is(.panel, .game-card, .mode-card, .result-card, .profile-highlight, .spotlight),
-  body.site-style-baseline #main .global-stats-page > .panel { padding: 18px; }
-  body.site-style-baseline #main .global-podium .small-art { --stats-art-size: 72px; }
+  body.site-style-baseline #main .leaderboard .leader-row > a {
+    grid-row: 1 / span 2;
+  }
+  body.site-style-baseline
+    #main
+    .leaderboard
+    .leader-row
+    > div:not(.leader-score) {
+    grid-column: 3;
+  }
+  body.site-style-baseline #main .leaderboard .leader-title {
+    font-size: 22px;
+  }
+  body.site-style-baseline #main .leaderboard .leader-meta,
+  body.site-style-baseline #main :is(.metadata, .overall-meta) {
+    font-size: 15px;
+  }
+  body.site-style-baseline #main .leaderboard .leader-score {
+    grid-column: 3;
+    justify-self: end;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-top: 0;
+    font-size: 28px;
+  }
+  body.site-style-baseline #main .leaderboard .leader-score small {
+    font-size: 12px;
+    margin: 0;
+  }
+  body.site-style-baseline
+    #main
+    :is(
+      .panel,
+      .game-card,
+      .mode-card,
+      .result-card,
+      .profile-highlight,
+      .spotlight
+    ),
+  body.site-style-baseline #main .global-stats-page > .panel {
+    padding: 18px;
+  }
+  body.site-style-baseline #main .global-podium .small-art {
+    --stats-art-size: 72px;
+  }
 }

@@ -7,7 +7,9 @@ from songranker.storage.database import initialize_database
 from songranker.storage.database_io import capture,readonly,reconcile,sql_dump
 from songranker.storage.database_schema import SCHEMA_VERSION
 from songranker import services
-from songranker.modes import special_modes,trivia,vibe_map
+from songranker.modes import guesser, shelves
+from songranker.modes import trivia
+from songranker.modes import vibe_map
 
 
 class RetireListeningTests(unittest.TestCase):

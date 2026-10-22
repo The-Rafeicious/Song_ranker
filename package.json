@@ -1,0 +1,18 @@
+{
+  "name": "song-ranker",
+  "version": "5.3.0",
+  "private": true,
+  "description": "Test dependencies for the Flask Song Ranker application",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "python tools/check.py javascript",
+    "test:browser": "python tools/check.py browser",
+    "check": "python tools/check.py all"
+  },
+  "devDependencies": {
+    "jsdom": "26.1.0",
+    "playwright-core": "1.58.2"
+  }
+}

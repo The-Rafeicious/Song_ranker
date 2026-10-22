@@ -4,7 +4,7 @@
 {% from 'mode_stats_components.html' import figure, rate, number, progress, metadata, saved_date %}
 {% block title %}Album Shelves Stats · Song Ranker{% endblock %}
 {% block page_kind %}shelves_stats{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/mode_stats.css',v=app_version) }}"><link rel="stylesheet" href="{{ url_for('static',filename='css/shelves_stats.css',v=app_version) }}">{% endblock %}
+
 
 {% macro score(value) -%}{{ number(value|round(2)) if value is not none else '—' }}{%- endmacro %}
 {% macro album_name(row) -%}

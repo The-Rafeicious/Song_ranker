@@ -1,10 +1,11 @@
 """Read-only Global Stats projections from one SQLite snapshot."""
+
 from songranker.reports.stats_activity import attach_reports, latest_vibe_saves
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 import math
-from songranker.catalog import (proper_album, versus_metadata, voting_records, summarize_votes)
-from songranker.modes.special_modes import special_records
+from songranker.catalog import proper_album, versus_metadata, voting_records, summarize_votes
+from songranker.catalog import special_records
 
 
 def timestamp(value):
@@ -51,7 +52,7 @@ def build_global_stats(conn):
         if not tracks:continue
         album_rows.append(dict(a,songs=len(tracks),avg_elo=sum(s['elo_score'] for s in tracks)/len(tracks),
             artist=', '.join(sorted({artists[x]['name'] for s in tracks for x in song_artists[s['id']]}))))
-    from songranker.elo_history import source_sql
+    from songranker.catalog import source_sql
     history=[dict(r) for r in conn.execute(f"SELECT * FROM {source_sql(conn)} WHERE mode IN ('standard','blind')")]
     valid=[h for h in history if h['winner_id'] in songs and h['loser_id'] in songs and h['winner_id']!=h['loser_id']]
     votes=voting_records(conn);voting=summarize_votes(votes.values());leaders={}
@@ -153,7 +154,8 @@ def build_global_stats(conn):
         delta=round(after-before,1) if before is not None and after is not None else None
         return dict(saved_song(h[role+'_id']),role='Winner' if role=='winner' else 'Loser',
                     outcome=role,elo_delta=f'{delta:+g}' if delta is not None else None)
-    from songranker.elo_history import (source_sql, summary as elo_summary)
+    from songranker.catalog import source_sql
+    from songranker.catalog import summary as elo_summary
     elo_feed=[dict(row) for row in conn.execute(f'SELECT * FROM {source_sql(conn)}')]
     for h in sorted(elo_feed,key=lambda h:(timestamp(h['created_at']),h['id']),reverse=True)[:10]:
         tournament_vote=h.get('origin')=='tournament'

@@ -1,4 +1,4 @@
-"""Vibe maintenance validation, stale writes and catalogue-only merge cleanup."""
+"""Vibe maintenance validation, stale writes and result resets."""
 from copy import deepcopy
 from pathlib import Path
 import sqlite3
@@ -9,7 +9,7 @@ from songranker import services
 from songranker.developer import dev,dev_vibe
 from songranker.storage.database_io import capture,readonly
 from songranker.modes import vibe_map
-from tools.prepare_vibe_merge import prepare,catalogue,assert_clean
+from support import catalogue, assert_clean
 
 
 class DevVibeTests(unittest.TestCase):
@@ -75,69 +75,4 @@ class DevVibeTests(unittest.TestCase):
         assert_clean(self.conn)
 
 
-class MergePreparationTests(unittest.TestCase):
-    setUp=fixture.PreferenceTests.setUp
-    connect=fixture.PreferenceTests.connect
-
-    def test_preview_apply_export_and_one_time_guard(self):
-        client=services.app.test_client()
-        with client.session_transaction() as session:session['is_admin']=True
-        self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=.2,y=.4,sample_count=1,updated_at=1 WHERE song_id=1")
-        self.conn.execute('UPDATE song_vibe_progress SET completed_passes=1 WHERE song_id=1')
-        self.conn.execute('UPDATE songs SET elo_score=1400,matches_played=5,tournament_wins=2 WHERE id=1')
-        self.conn.execute("UPDATE song_details SET preview_note='Keep catalogue note' WHERE song_id=1")
-        from songranker.modes.preferences import save_vote
-        offer=fixture.PreferenceTests.offer(self)
-        # Real preference writer plus saved/in-progress rows from the other modes.
-        save_vote(self.conn,'owner',fixture.PreferenceTests.payload(self,offer))
-        self.conn.execute("INSERT INTO trivia_rounds(token,song_id,album_available,completed_at,title_correct,artist_correct,album_correct) VALUES('quiz',1,1,1,1,1,0)")
-        self.conn.execute("INSERT INTO elo_guess_rounds(token,song1_id,song2_id,elo1,elo2,started_at,completed_at,chosen_slot) VALUES('guess',1,2,1200,1300,1,2,2)")
-        self.conn.execute("INSERT INTO album_shelf_rounds(id,token,started_at) VALUES(1,'shelf',1)")
-        self.conn.execute("INSERT INTO album_shelf_items(round_id,item_slot,song_id,album_id,album_slot,track_number) VALUES(1,1,1,1,1,1)")
-        self.conn.execute("INSERT INTO tournaments(id,size,scope_type,status) VALUES(1,8,'global','in_progress')")
-        self.conn.execute("INSERT INTO tournament_entries VALUES(1,1,1)")
-        self.conn.execute("INSERT INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id) VALUES(1,1,1,1,2)")
-
-        self.conn.commit();kept=catalogue(self.conn);before=capture(self.conn)
-        export=Path(self.temp.name)/'database_backup.sql'
-        preview=prepare(self.path,export)
-        self.assertFalse(preview['applied']);self.assertEqual(preview['mapped_positions'],4)
-        self.assertEqual(capture(self.conn),before);self.assertFalse(export.exists())
-        with self.assertRaises(ValueError):prepare(self.path,export,True,'wrong')
-        result=prepare(self.path,export,True,'RESET TEST COMPETITION')
-        self.assertTrue(result['applied']);assert_clean(self.conn);self.assertEqual(catalogue(self.conn),kept)
-        with readonly(result['backup']) as old:self.assertEqual(capture(old),before)
-        clone=sqlite3.connect(':memory:');clone.row_factory=sqlite3.Row;self.addCleanup(clone.close)
-        clone.executescript(export.read_text());assert_clean(clone);self.assertEqual(catalogue(clone),kept)
-        after=capture(self.conn)
-        self.assertFalse(prepare(self.path,export,True,'RESET TEST COMPETITION')['applied'])
-        self.assertEqual(capture(self.conn),after)
-        self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=0,y=0,sample_count=1,updated_at=2 WHERE song_id=1");self.conn.commit()
-        newer=capture(self.conn)
-        with self.assertRaises(ValueError):prepare(self.path,export,True,'RESET TEST COMPETITION')
-        self.assertEqual(capture(self.conn),newer)
-
-    def test_extensions_are_not_silently_kept_as_match_data(self):
-        self.conn.execute('CREATE TABLE extra_results (score INTEGER)');self.conn.commit()
-        with self.assertRaises(ValueError):prepare(self.path)
-
-
-    def test_failed_catalogue_verification_rolls_back_every_result_change(self):
-        self.conn.execute('UPDATE songs SET elo_score=1500 WHERE id=1');self.conn.commit();before=capture(self.conn)
-        original=catalogue(self.conn)
-        with patch('tools.prepare_vibe_merge.catalogue',side_effect=[original,{}]):
-            with self.assertRaisesRegex(ValueError,'Catalogue verification'):
-                prepare(self.path,Path(self.temp.name)/'snapshot.sql',True,'RESET TEST COMPETITION')
-        self.assertEqual(capture(self.conn),before)
-
-    def test_failed_export_can_retry_without_resetting_or_another_backup(self):
-        output=Path(self.temp.name)/'snapshot.sql'
-        with patch('tools.prepare_vibe_merge.export_sql',side_effect=OSError('Export denied')):
-            with self.assertRaisesRegex(ValueError,'Cleanup committed'):
-                prepare(self.path,output,True,'RESET TEST COMPETITION')
-        assert_clean(self.conn)
-        backups=list((self.path.parent/'database_backups').glob('pre_merge_vibe_v11_*.db'))
-        self.assertEqual(len(backups),1)
-        result=prepare(self.path,output,True,'RESET TEST COMPETITION')
-        self.assertFalse(result['applied']);self.assertTrue(output.exists())
-        self.assertEqual(list((self.path.parent/'database_backups').glob('pre_merge_vibe_v11_*.db')),backups)
+if __name__=='__main__':unittest.main()

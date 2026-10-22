@@ -144,8 +144,8 @@ class AlbumVibeDataTests(unittest.TestCase):
         return fixture.PreferenceTests.connect(self)
 
     def test_shelves_profile_includes_unnumbered_songs_without_drawing_them(self):
-        from songranker.modes.selection_data import album_vibe_groups
-        from songranker.modes.special_modes import shelf_candidates
+        from songranker.modes.selection import album_vibe_groups
+        from songranker.modes.shelves import shelf_candidates
         from songranker.storage.database_io import capture
         self.conn.execute("INSERT INTO songs(id,title,album_id) VALUES(11,'Unnumbered',1)")
         self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=-1,y=-1,updated_at=1 WHERE song_id=11")

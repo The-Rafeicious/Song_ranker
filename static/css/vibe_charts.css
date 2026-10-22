@@ -1,8 +1,0 @@
-/* Shared radar presentation; use VibeCharts.radar with the public API spokes. */
-.vibe-radar { display: block; width: min(100%, 460px); height: auto; margin: 0 auto; overflow: visible; }
-.vibe-radar .radar-ring { fill: none; stroke: #ffffff19; stroke-width: 1; }
-.vibe-radar .radar-neutral { stroke: #ed657355; stroke-dasharray: 4 5; }
-.vibe-radar .radar-axis { stroke: #ffffff20; }
-.vibe-radar .radar-shape { fill: #ed65732a; stroke: var(--vibe, #ed6573); stroke-width: 2; stroke-linejoin: round; }
-.vibe-radar .radar-point { fill: #ffbac3; stroke: #ed6573; stroke-width: 2; }
-.vibe-radar text { fill: #e6d5d8; font: 700 15px Arial, sans-serif; }

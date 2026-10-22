@@ -1,8 +1,0 @@
-/* V5 shared report additions. Existing palette, baseline and mode owners remain. */
-body.site-style-baseline #main .health-state { display:inline-flex; min-height:32px; align-items:center; padding:4px 12px; font-size:16px; font-weight:800; border:1px solid currentColor; border-radius:999px; }
-body.site-style-baseline #main .health-state[data-level="good"] { color:var(--song); }
-body.site-style-baseline #main .health-state[data-level="medium"] { color:var(--tag); }
-body.site-style-baseline #main .health-state[data-level="bad"] { color:var(--danger); }
-body.site-style-baseline #main .health-state[data-level="new"] { color:var(--muted); }
-body.site-style-baseline #main .quality-flag { display:flex; align-items:center; gap:12px; min-height:44px; }
-body.site-style-baseline #main .quality-flag input { width:22px; height:22px; }

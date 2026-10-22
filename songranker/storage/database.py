@@ -1,8 +1,9 @@
 """Versioned database bootstrap and backed-up, transactional schema migration."""
+
 from pathlib import Path
 from datetime import datetime
 import sqlite3
-from songranker.storage.database_schema import (SCHEMA_VERSION, create_objects, table_columns, definitions)
+from songranker.storage.database_schema import SCHEMA_VERSION, create_objects, table_columns, definitions
 
 LEGACY_SCHEMA_VERSION = 8
 

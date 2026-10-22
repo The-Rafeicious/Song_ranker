@@ -1,13 +1,14 @@
 """Fresh PIN, reviewed destination and browser acknowledgement for app shutdown."""
+
 import hmac
 import time
 from threading import Lock
-from flask import g,jsonify,request
+from flask import g, jsonify, request
 from songranker import services
 from songranker.services import app
 from songranker.hosting import StopCoordinator
 from songranker.developer.catalog_sources import owner
-from songranker.developer.dev_system import signed,unpack
+from songranker.developer.dev_system import signed, unpack
 from songranker.developer.git_sync import GitSync
 from songranker.lan_security import WRITE_GET_ENDPOINTS
 

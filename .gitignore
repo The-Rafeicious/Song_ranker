@@ -26,3 +26,5 @@ node_modules/
 # database_backup.sql is intentionally eligible for explicit backup uploads.
 
 /artifacts/
+
+.idea/

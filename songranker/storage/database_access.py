@@ -1,4 +1,5 @@
 """Allow normal concurrent DB use; drain connections during local maintenance."""
+
 from contextlib import contextmanager
 from threading import Condition, get_ident
 import time

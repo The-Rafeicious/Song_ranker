@@ -1,9 +1,10 @@
+from songranker.version import APP_VERSION
 """Scoped descriptive cards preserve membership, evidence and database state."""
 import unittest
 from songranker import pages
 from songranker.modes import vibe_map
-from songranker.reports.vibe_entity_data import build_entity_vibe
-from songranker.reports.vibe_stats_data import build_vibe_stats
+from songranker.modes.vibe_map import build_entity_vibe
+from songranker.modes.vibe_map import build_vibe_stats
 from songranker.storage.database_io import capture
 from songranker.storage.vibe_state import VIBE_MAP_VERSION
 import test_preferences as fixture
@@ -83,9 +84,9 @@ class VibeEntityTests(unittest.TestCase):
             response=pages.app.test_client().get(path)
             self.assertEqual(response.status_code,200,response.data[:500])
             source=response.get_data(as_text=True)
-            self.assertIn('js/vibe_profiles.js?v='+VIBE_MAP_VERSION,source)
-            self.assertIn('css/vibe_song_stats.css?v='+VIBE_MAP_VERSION,source)
-            self.assertLess(source.index('js/vibe_profiles.js'),source.index('js/site.js'))
+            self.assertIn('js/vibe_charts.js?v='+APP_VERSION,source)
+            self.assertIn('css/vibe.css?v='+APP_VERSION,source)
+            self.assertLess(source.index('js/vibe_charts.js'),source.index('js/site.js'))
 
 
     def test_profile_visibility_thresholds_and_song_header_context(self):
@@ -103,7 +104,7 @@ class VibeEntityTests(unittest.TestCase):
     def test_budding_is_a_read_only_display_label_not_a_stored_definition_change(self):
         from songranker.vibe_maps import map_definitions
         from songranker.storage.vibe_state import validate_schema
-        from songranker.reports.vibe_stats_data import common_patterns
+        from songranker.modes.vibe_map import common_patterns
         self.place(1,-.6,-.6)
         before=capture(self.conn)
         validate_schema(self.conn)

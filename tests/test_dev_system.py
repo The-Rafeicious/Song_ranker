@@ -19,6 +19,8 @@ class DeveloperSystemTests(unittest.TestCase):
     def setUp(self):
         fixture.PreferenceTests.setUp(self)
         p=patch.object(services,'ROOT',Path(self.temp.name));p.start();self.addCleanup(p.stop)
+        ceiling=patch.dict(__import__('os').environ, {'GIT_CEILING_DIRECTORIES':str(Path(self.temp.name).parent)})
+        ceiling.start();self.addCleanup(ceiling.stop)
         self.client=services.app.test_client()
         with self.client.session_transaction() as session:session['is_admin']=True
 

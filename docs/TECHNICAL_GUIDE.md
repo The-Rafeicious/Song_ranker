@@ -34,14 +34,14 @@ and historical changes in [release notes](../update_logs/README.md).
 
 | Concern | User surface | Implementation owner |
 | --- | --- | --- |
-| Voting and tournament Elo | Vote, bracket, histories, visibility comparisons | `modes/games.py`, `preferences.py`, `mode_ratings.py`, `elo_history.py` |
-| Trivia and Guesser challenges | Timed fields, streaks, frozen difficulty/answers | `modes/trivia.py`, `challenges.py`, `challenge_rules.py`, `special_modes.py` |
-| Album Shelves | Album assignment, track ordering, staged reveal | `modes/special_modes.py`, shared game/round flow assets |
+| Voting and tournament Elo | Vote, bracket, histories, visibility comparisons | `modes/voting.py`, `modes/tournament.py`, `modes/preferences.py`, `catalog.py` |
+| Trivia and Guesser challenges | Timed fields, streaks, frozen difficulty/answers | `modes/trivia.py`, `challenges.py`, `challenge_rules.py`, `guesser.py` |
+| Album Shelves | Album assignment, track ordering, staged reveal | `modes/shelves.py`, shared game/round flow assets |
 | Vibe Map | Continuous placement, averages, radar, similar tracks | `modes/vibe_map.py`, `vibe_similarity.py`, `vibe_maps.py`, `static/js/vibe_map.js` |
-| Vibe reporting | Stats, profiles, Home/Global and collection rankings | `reports/vibe_*_data.py`, `vibe_charts.js`, `vibe_profiles.js`, `vibe_library.js` |
+| Vibe reporting | Stats, profiles, Home/Global and collection rankings | `modes/vibe_map.py`, `vibe_charts.js`, `vibe_library.js` |
 | Search and profiles | Tag counts, proper-album counts, achievements, Show more | `pages.py`, `catalog.py`, `site.js`, `search.js`, `profiles.js` |
 | Ratings and health | Collection Impact, Overall, selection/data diagnostics | `impact.py`, `overall.py`, `reports/selection_health.py`, `data_health.py` |
-| Catalogue and Apple | Import, source-only repair, reviewed bulk edits and fill | `developer/dev_catalog.py`, `catalog_sources.py`, `metadata_tools.py`, `metadata_fill.py` |
+| Catalogue and Apple | Import, source-only repair, reviewed bulk edits and fill | `developer/dev_catalog.py`, `catalog_sources.py`, `metadata.py` |
 | Tags and previews | Eight-tag capacity, Add/Replace/Remove, private quality flags | `storage/tag_limits.py`, `developer/dev_tags.py`, `tag_operations.py`, `apple_access.py` |
 | Vibe maintenance | Average/count edit, map clear, song delete, mode reset | `developer/dev_vibe.py`, `storage/competition_reset.py`, `static/js/dev_vibe.js` |
 | Recovery and Git | Backup, export/rebuild, restore, guarded upload/adoption, Stop app | `storage/database_io.py`, `git_database.py`, `developer/dev_system.py`, `git_sync.py`, `dev_shutdown.py`, `hosting.py` |
@@ -313,9 +313,9 @@ history filters are applied before limits/pagination. Category rates pool
 numerators/denominators, not means of percentages.
 
 Shared owners are `ui.js` for formatting/escaping/entity links, shared template
-macros for repeated records/metrics, `mode_stats.css` for report geometry and
+macros for repeated records/metrics, `reports.css` for report geometry and
 `site_baseline.css` for the accepted type/corner/spacing baseline. The baseline
-loads last. V5's small additions live in `v5.css`; feature controllers retain
+loads last. Shared additions live in `components.css`; feature controllers retain
 media/request/cancellation ownership. Styles preserve semantic mode colours and
 entity-coloured names, green success and danger red failures. Phone breakpoints,
 native disclosures, 44 px controls, complete accessible names and reduced-motion

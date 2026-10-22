@@ -4,7 +4,7 @@
 {% from 'mode_stats_components.html' import figure, rate, number, progress, metadata, saved_date %}
 {% block title %}Elo Guesser Stats · Song Ranker{% endblock %}
 {% block page_kind %}guesser_stats{% endblock %}
-{% block extra_css %}<link rel="stylesheet" href="{{ url_for('static',filename='css/mode_stats.css',v=app_version) }}"><link rel="stylesheet" href="{{ url_for('static',filename='css/guesser_stats.css',v=app_version) }}">{% endblock %}
+
 
 {% macro track_list(rows, offset=0) -%}
 <ol class="mode-stats-list" start="{{ offset+1 }}">

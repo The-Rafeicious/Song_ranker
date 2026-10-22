@@ -1,4 +1,5 @@
 """Fixed Vibe Map definitions and versioned schema-17/18 transport and one-time schema-19 test reset."""
+
 from copy import deepcopy
 
 VIBE_MAP_VERSION = 'Vibe-Map-v1.1'

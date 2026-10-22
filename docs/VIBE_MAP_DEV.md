@@ -25,57 +25,11 @@ heatmaps, similarities, consistency and draw bias read the corrected data on the
 next request. Album/artist/tag Vibe summaries are derived, not separately editable.
 Use the existing Database backup action if you want a restore point for manual edits.
 
-## Prepare the test branch for merging
+## Retired release cleanup
 
-**Optional / no longer necessary for an already merged main installation.**
-This is an explicit test-data cleanup procedure, not part of a normal upgrade.
-
-`tools/prepare_vibe_merge.py` is a separate, one-time cleanup tool. It is never
-called at startup, from a migration, or by the Dev panel. **It has not been run
-on the project database as part of this update.** Test the Dev controls first.
-
-Close the app. Run commands from the repository root, using the actual **test**
-database path if you set `SONG_RANKER_DB`. The normal path is shown below.
-
-Preview only (no database, SQL or backup writes):
-
-```console
-python tools/prepare_vibe_merge.py --database data/song_ranker_v3.db
-```
-
-After checking the counts, apply and export the Git snapshot:
-
-```console
-python tools/prepare_vibe_merge.py --database data/song_ranker_v3.db --export database_backup.sql --apply --confirmation "RESET TEST COMPETITION"
-```
-
-The script:
-
-- Validates the current schema and references, refuses unknown extension tables, and
-  detects changes between preview/backup and the write transaction.
-- Writes a verified `database_backups/pre_merge_vibe_v11_*.db` restore point.
-- Clears all votes, corrections, offers, tournament entries/results, trivia,
-  challenges, guesses, shelves and Vibe selections/rounds.
-  Ratings and records return to neutral defaults; no test-mode samples survive.
-- Preserves exact song/album/artist/tag IDs, metadata, relationships, every Apple
-  source observation, preview notes, catalogue sequences and fixed map definitions.
-- Verifies the catalogue values, marks the cleanup complete, and publishes a
-  verified SQL round trip to the explicit `--export` path.
-
-A rerun does not reset again or create another backup. It can retry the export
-if the first export failed. If any new results exist after cleanup it refuses
-to erase them. Keep the app closed until the clean snapshot is reviewed and
-pushed, so startup sync or new test play cannot replace it.
-
-Review `git diff -- database_backup.sql`, then commit/push that snapshot on the
-test branch using your normal Git workflow. The script runs no Git commands
-and never merges branches. Keep backup `.db` files local.
-
-For the eventual code merge, keep your desktop/main live database separate.
-If main's existing results should survive, keep main's `database_backup.sql`
-when resolving that file; the cleaned test snapshot is a catalogue-only seed,
-not a replacement or merge of your production results. No database file is
-included in the v1.1 implementation PR.
+One-time pre-merge cleanup commands were removed in V5.3. Current data is
+preserved by normal upgrades. Use explicit reviewed Dev result resets only when
+intentionally clearing results; old release tooling remains in Git history.
 
 ## API
 

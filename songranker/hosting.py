@@ -1,9 +1,9 @@
 """Single-process, acknowledged shutdown; never kill a WSGI host or other process."""
+
 from threading import Condition, Event, Thread
 import secrets
 import time
 from pathlib import Path
-
 from songranker.storage.database_access import gate
 from songranker.storage.database_io import create_rolling_backup
 from songranker.developer.git_sync import GitSync

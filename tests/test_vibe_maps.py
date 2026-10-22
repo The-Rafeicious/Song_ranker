@@ -12,7 +12,7 @@ from songranker.storage.database_io import (capture, readonly, reconcile, rebuil
 from songranker.storage.vibe_state import MAPS, upgrade_state
 from songranker.vibe_maps import song_profiles, with_vibe_maps
 from songranker.services import fetch_songs, get_song_full
-from songranker.modes.selection_data import with_catalogue_age
+from songranker.modes.selection import with_catalogue_age
 from songranker import services, catalog
 
 

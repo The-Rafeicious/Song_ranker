@@ -1,4 +1,5 @@
 """Song tag policy and the explicit schema-16 membership cleanup."""
+
 from copy import deepcopy
 import unicodedata
 

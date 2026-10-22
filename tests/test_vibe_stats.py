@@ -1,7 +1,10 @@
 """Descriptive dashboard facts, evidence boundaries and read-only HTTP contract."""
 import unittest
 from unittest.mock import patch
-from songranker.reports.vibe_stats_data import build_vibe_stats, consistency, density, common_patterns
+from songranker.modes.vibe_map import build_vibe_stats
+from songranker.modes.vibe_map import consistency
+from songranker.modes.vibe_map import density
+from songranker.modes.vibe_map import common_patterns
 from songranker.modes import vibe_map  # Register mode routes before exercising Flask.
 from songranker.modes.vibe_similarity import compare_positions
 from songranker.storage.vibe_state import MAPS

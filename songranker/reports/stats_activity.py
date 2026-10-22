@@ -1,4 +1,5 @@
 """Dated, completed result trends. Counts and pooled rates share one read snapshot."""
+
 from collections import defaultdict
 from datetime import datetime, timezone, timedelta
 from math import isfinite
@@ -46,7 +47,7 @@ def build_activity(conn, mode, now=None):
         item=days[date.date().isoformat()];item['count']+=1;item['parts'][kind]+=1
         item['right']+=right;item['denominator']+=denominator
     if mode in ('global','voting','history') and 'history' in known:
-        from songranker.elo_history import source_sql
+        from songranker.catalog import source_sql
         for row in conn.execute('SELECT * FROM '+source_sql(conn)):
             r=dict(row)
             if r.get('mode') not in ('standard','blind') or r.get('winner_id')==r.get('loser_id'):continue
@@ -74,8 +75,8 @@ def build_activity(conn, mode, now=None):
             valid=slot in (1,2) and all(isinstance(x,(float,int)) and isfinite(x) for x in (a,b)) and a!=b
             add(row['completed_at'],'guesser',int((slot==1)==(a>b)) if valid else 0,int(valid))
     if mode in ('global','shelves'):
-        from songranker.reports.shelves_stats_data import can_grade
-        from songranker.modes.special_modes import grade_shelf
+        from songranker.modes.shelves import can_grade
+        from songranker.modes.shelves import grade_shelf
         groups=defaultdict(list)
         for item in rows('album_shelf_items'):groups[item['round_id']].append(item)
         for row in rows('album_shelf_rounds'):
@@ -112,7 +113,7 @@ def build_activity(conn, mode, now=None):
 def attach_reports(conn, data, mode, now=None):
     data['pulse_data']=build_activity(conn, mode, now=now)
     if mode=='tournament':
-        from songranker.elo_history import source_sql
+        from songranker.catalog import source_sql
         rows=[dict(r) for r in conn.execute('SELECT * FROM '+source_sql(conn)+" WHERE origin='tournament'")]
         data['tournament_elo']=dict(standard=sum(r['mode']=='standard' for r in rows),blind=sum(r['mode']=='blind' for r in rows),total=len(rows),full=sum(r['rating_weight']==1 for r in rows),
             half=sum(r['rating_weight']==.5 for r in rows),

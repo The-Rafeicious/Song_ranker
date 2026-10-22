@@ -1,4 +1,6 @@
 """Pure versioned streak rules shared by the server and offline checks."""
+
+
 RULES_VERSION = 2
 TRIVIA_LABELS = {
     'any': 'Any correct answer keeps the streak going.',
@@ -25,4 +27,3 @@ def trivia_passed(row):
 
 def guess_target(streak):
     return .60 / (1 + max(0, streak) / 10)
-

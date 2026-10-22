@@ -109,7 +109,7 @@ class DatabaseFoundationTests(unittest.TestCase):
         io.reconcile(before, state(output))
         self.assertEqual(fingerprint(self.db), before_hash)
         # Exercise the actual grading functions, not a duplicate implementation.
-        from songranker.modes.special_modes import special_records
+        from songranker.catalog import special_records
         from songranker.modes.trivia import round_points
         with io.readonly(self.db) as a, io.readonly(output) as b:
             self.assertEqual(special_records(a), special_records(b))
@@ -302,7 +302,7 @@ class DatabaseFoundationTests(unittest.TestCase):
         from songranker.storage.competition import start_competition
         active=self.root/'song_ranker_v3.db';start_competition(active,self.db)
         client = services.app.test_client()
-        with patch.object(dev, 'DB_NAME', str(active)), patch.object(services, 'DB_NAME', str(active)):
+        with patch.object(services, 'DB_NAME', str(active)):
             self.assertEqual(client.post('/api/dev/restore-backup', json={'filename': backup.name}).status_code, 302)
             with client.session_transaction() as session:
                 session['is_admin'] = True
@@ -350,12 +350,10 @@ class DatabaseFoundationTests(unittest.TestCase):
         import os
         calls = []
         (self.root / '.git').mkdir(exist_ok=True)
-        modules = {name: SimpleNamespace() for name in ('apple_access', 'pages', 'trivia',
-            'special_modes', 'vibe_map', 'overall', 'games', 'metadata_tools', 'dev', 'dev_catalog', 'dev_tags', 'dev_system')}
-        modules['git_sync']=SimpleNamespace(GitSync=lambda *args:SimpleNamespace(startup=lambda:(calls.append('pull') or dict(code='unchanged',message='Test startup check')),
+        from support import route_modules
+        modules = {path: SimpleNamespace() for path in route_modules().values()}
+        modules['songranker.developer.git_sync']=SimpleNamespace(GitSync=lambda *args:SimpleNamespace(startup=lambda:(calls.append('pull') or dict(code='unchanged',message='Test startup check')),
             reconcile_database=lambda:(calls.append('database') or dict(code='database_matches',message='Test database check'))))
-        paths={'database': 'songranker.storage.database', 'database_schema': 'songranker.storage.database_schema', 'database_io': 'songranker.storage.database_io', 'database_access': 'songranker.storage.database_access', 'competition': 'songranker.storage.competition', 'schema_compat': 'songranker.storage.schema_compat', 'preference_state': 'songranker.storage.preference_state', 'catalog_source_state': 'songranker.storage.catalog_source_state', 'challenge_state': 'songranker.storage.challenge_state', 'global_stats_data': 'songranker.reports.global_stats_data', 'voting_stats_data': 'songranker.reports.voting_stats_data', 'recognition_stats_data': 'songranker.reports.recognition_stats_data', 'tournament_stats_data': 'songranker.reports.tournament_stats_data', 'guesser_stats_data': 'songranker.reports.guesser_stats_data', 'shelves_stats_data': 'songranker.reports.shelves_stats_data', 'stats_activity': 'songranker.reports.stats_activity', 'data_health': 'songranker.reports.data_health', 'selection_health': 'songranker.reports.selection_health', 'games': 'songranker.modes.games', 'trivia': 'songranker.modes.trivia', 'special_modes': 'songranker.modes.special_modes', 'vibe_map': 'songranker.modes.vibe_map', 'preferences': 'songranker.modes.preferences', 'challenges': 'songranker.modes.challenges', 'challenge_rules': 'songranker.modes.challenge_rules', 'mode_ratings': 'songranker.modes.mode_ratings', 'selection': 'songranker.modes.selection', 'selection_data': 'songranker.modes.selection_data', 'dev': 'songranker.developer.dev', 'dev_catalog': 'songranker.developer.dev_catalog', 'dev_tags': 'songranker.developer.dev_tags', 'dev_system': 'songranker.developer.dev_system', 'metadata_tools': 'songranker.developer.metadata_tools', 'metadata_fill': 'songranker.developer.metadata_fill', 'catalog_sources': 'songranker.developer.catalog_sources', 'catalog_operations': 'songranker.developer.catalog_operations', 'tag_operations': 'songranker.developer.tag_operations', 'git_sync': 'songranker.developer.git_sync', 'db_tools': 'songranker.developer.db_tools', 'track_numbers': 'songranker.developer.track_numbers'}
-        modules={paths.get(name,'songranker.'+name):value for name,value in modules.items()}
         with patch.dict(sys.modules, modules), patch.object(services, 'ROOT', self.root), \
              patch.object(services, 'init_db', side_effect=lambda: calls.append('bootstrap')), \
              patch('waitress.create_server', return_value=SimpleNamespace(run=lambda:calls.append('serve'))), \
