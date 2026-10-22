@@ -223,7 +223,7 @@ window.DevTags=(()=>{
   if(dirty&&!discard&&target!==id){pendingSkip=false;pendingMode=null;pendingTarget=id;$('#tag-discard').hidden=false;$('#tag-discard').innerHTML=`<p>Unsaved tag choices. Review them, or discard them to open <strong>${esc(song(id).title)}</strong>.</p><button class="btn" type="button" data-tags-discard-open>Discard choices & open song</button>`;return}
   if(target!==id){
    if(!target)bulkDraft=discard?null:{chosen:new Set(chosen),action,newNames};
-   target=id;if(mode==='single'){selection=new Set([id]);queueDone=false;visited.delete(id)}action='replace_tags';chosen=new Set(song(id).tag_ids);if(mode==='single')rememberBaseline();newNames='';dirty=false;pendingTarget=null;invalidate();$('#tag-discard').hidden=true;renderEditor();message('Choose tags, then review. Other songs are unaffected.');
+   target=id;if(mode==='single'){selection=new Set([id]);queueDone=false;visited.delete(id)}action='replace_tags';chosen=new Set(song(id).tag_ids);if(mode==='single')rememberBaseline();newNames='';dirty=false;pendingTarget=null;invalidate();$('#tag-discard').hidden=true;renderEditor();message(mode==='single'?'Choose tags, then Save tags & next.':'Choose tags, then review. Other songs are unaffected.');
   }
   if(hasPreview(song(id)))startPreview(id,true);
   else{stopPreview();if(audio){audio.removeAttribute('src');audio.load()}previewId=id;previewState='missing';drawPlayer();message('No preview URL for this song. You can still tag it or check Source.')}
