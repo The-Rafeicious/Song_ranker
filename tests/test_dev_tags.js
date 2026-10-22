@@ -99,11 +99,6 @@ async function singleAndPreviewChecks(){
  const h=await harness(),{d,w,requests,plays}=h;h.change('#tag-sort','title');h.click('[data-tags-all-select]');
  w.DevTags.focusSong(1);await flush();check(d.querySelector('#tag-edit-title').textContent.includes('Song 01'),'single-song context explicit');
  check(d.querySelector('#tag-action').value==='replace_tags'&&d.querySelector('[data-tags-choice="1"]').checked,'single edit starts with actual tags');
- h.handler(url=>url==='/api/dev/song-quality/1'?{preview_bad:false,preview_note:'Review this clip'}:undefined);
- check(d.querySelector('[data-preview-quality]').dataset.previewQuality==='1','quality review follows the selected preview');
- h.click('[data-preview-quality]');await flush();
- check(d.querySelector('#editor').open&&d.querySelector('#editor-fields').textContent.includes('Review this clip'),'workbench opens the shared preview quality editor');
- d.querySelector('#editor').close();
  check(plays.length===1&&plays[0].url.startsWith('/api/previews/1?'),'Tag & listen uses shared Apple proxy/ownership');
  check(d.querySelector('[data-tags-player-toggle]').textContent==='Pause preview','play state visible');
  Object.defineProperty(d,'hidden',{configurable:true,value:true});d.dispatchEvent(new w.Event('visibilitychange'));check(!d.querySelector('#tag-audio').paused,'tab switching preserves workbench preview');Object.defineProperty(d,'hidden',{configurable:true,value:false});d.dispatchEvent(new w.Event('visibilitychange'));
@@ -217,7 +212,17 @@ async function tagLimitChecks(){
  check(h.errors.length===0,'no script errors with limit controls');h.close();
 }
 
+async function qualityDialogChecks(){
+ const h=await harness(1280,'tag_workbench',()=>{},'single'),{d,w}=h;
+ h.handler(url=>url==='/api/dev/song-quality/1'?{preview_bad:false,preview_note:'Review this clip'}:undefined);
+ w.DevTags.focusSong(1);await flush();
+ check(d.querySelector('[data-preview-quality]').dataset.previewQuality==='1','quality review follows the selected preview');
+ h.click('[data-preview-quality]');await flush();
+ check(d.querySelector('#editor').open&&d.querySelector('#editor-fields').textContent.includes('Review this clip'),'workbench opens the shared preview quality editor');
+ h.close();
+}
+
 module.exports={harness,flush};
-if(require.main===module)(async()=>{await tagLimitChecks();await filterChecks();await bulkChecks();await singleAndPreviewChecks();await draftChecks();await failureChecks();await navigationChecks();await recoveredNewTagChecks();await mediaFailureChecks();await bulkBridgeCheck();for(const w of [320,360,390,430,568,768,1280])await viewportChecks(w);if(process.env.SNAPSHOT_OUTPUT)fs.writeFileSync(process.env.SNAPSHOT_OUTPUT,JSON.stringify(snapshots,null,2));console.log(assertions+' tag workbench assertions passed')})().catch(error=>{console.error(error);process.exitCode=1});
+if(require.main===module)(async()=>{await tagLimitChecks();await filterChecks();await bulkChecks();await singleAndPreviewChecks();await qualityDialogChecks();await draftChecks();await failureChecks();await navigationChecks();await recoveredNewTagChecks();await mediaFailureChecks();await bulkBridgeCheck();for(const w of [320,360,390,430,568,768,1280])await viewportChecks(w);if(process.env.SNAPSHOT_OUTPUT)fs.writeFileSync(process.env.SNAPSHOT_OUTPUT,JSON.stringify(snapshots,null,2));console.log(assertions+' tag workbench assertions passed')})().catch(error=>{console.error(error);process.exitCode=1});
 
 
