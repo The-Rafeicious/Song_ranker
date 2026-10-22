@@ -25,15 +25,15 @@ Backup and upload controls live on their dedicated pages. A restore in progress 
 | --- | --- |
 | Library | Clickable songs, artists, releases (including Singles) and tags open the corresponding tables. |
 | Database health | Application/schema version, SQLite integrity and foreign-key errors. Click the title for the compact integrity report. |
-| Tag Workshop | Direct link to the tag bench, with tagged songs, untagged songs and available tag definitions. |
+| Tag Workshop | Compact card linked directly to the tag bench, with tagged-song and available-tag counts. |
 | Catalogue coverage | Untagged songs, missing preview URLs and missing Apple source links. These are stored-data checks, not network playback tests. |
 | Stored rounds & votes | Stored vote/round/bracket counts, including prepared rounds where those modes store them, plus songs with all four Vibe positions placed. |
 | Git sync | Branch, short commit and cached remote status. Click the title for Git controls; opening Home does not fetch a remote. |
 | Local backups | Backup count, newest timestamp and live database file size. Click the title for Database & backups. File size excludes transient SQLite sidecar files. |
 
 Database health, Git sync and Local backups share one aligned row on desktop.
-The full-width Tag Workshop summary follows that service row; coverage and stored
-activity remain below. Home has no separate action rows.
+Tag Workshop starts the next row as a card beside coverage and stored activity.
+Home has no separate action rows.
 
 ## Page lookup
 
@@ -150,7 +150,9 @@ A failed save does not advance. A confirmed save whose catalogue refresh fails
 pauses the queue until reloaded. Retrying an unconfirmed apply uses the same signed
 review so a lost reply cannot create duplicate links/tags.
 
-**Bulk edit** retains multi-selection and explicit Add/Remove/Replace operations,
-including paged Before/After review before Save. Its preview controls are separate
-from the selected editing scope. Changing modes with unsaved choices asks before
-discarding them. Returning to single mode clears bulk-only hidden filters.
+**Bulk edit** uses the same compact filters, bounded song queue and adjacent tag
+editor. Select several songs with row checkboxes, Select this page or Select all
+matches; the selected cards get amber outlines. The editor retains explicit
+Add/Remove/Replace operations and paged Before/After review before Save. Its
+preview controls are separate from the selected editing scope. Changing modes
+with unsaved choices asks before discarding them. Returning to single mode clears bulk-only hidden filters.

@@ -59,11 +59,14 @@ Move Home outside the System dropdown into its own navigation link.
   server membership, failed saves/refreshes and lost-response retries.
 - Update the Dev/technical/style guides; no schema or game-score changes.
 
-## V5.2.2.1 — tag bench layout polish
+## V5.2.2.1 — tag bench and Dev Home polish
 
-- Rebalance the single-song bench so the tag editor has more room than the song
-  queue, and keep long song titles and album names inside their queue cards.
-- Add a full-width Tag Workshop row below the main Dev health services with a
-  direct link plus tagged, untagged and available-tag totals.
-- Keep the established Dev panels, semantic colours and responsive stacking.
-  No schema, membership or game-score changes.
+- Keep cover art inside the selected gold queue card and give title, artist,
+  album and supporting facts separate bounded lines with full-text titles.
+- Give Bulk edit the same filter/queue/editor composition as Single song.
+  Checkboxes and select-all still target multiple songs; preview and reviewed
+  Add/Remove/Replace changes retain their existing safety behavior.
+- Put Tag Workshop in its own compact Home card below the health row, linked
+  directly to the bench with light tagged-song/tag-definition counts.
+- Preserve semantic colours and mobile stacking. No schema, membership or
+  game-score changes.

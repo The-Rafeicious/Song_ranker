@@ -11,6 +11,18 @@ const {JSDOM,CookieJar,VirtualConsole}=require('jsdom'),fs=require('fs');
   await new Promise(resolve=>dom.window.addEventListener('load',resolve));await new Promise(r=>setTimeout(r,120));const d=dom.window.document;
   for(let i=0;i<250&&!d.querySelector('#dev-main h1,#dev-main h2,#dev-main h3');i++)await new Promise(r=>setTimeout(r,20));
   const title=d.querySelector('#dev-main h1')?.textContent||d.querySelector('#dev-main h2')?.textContent||d.querySelector('#dev-main h3')?.textContent;results.push({width,view,title,errors:pageErrors});if(!title||pageErrors.length)errors.push({width,view,title,errors:pageErrors});
+  if(view==='overview'&&width===1280){
+   const card=d.querySelector('.dev-home-tag-workshop');
+   if(!card||card.querySelector('[data-dev="tag_workbench"]')?.textContent!=='Tag Workshop ↗'||card.querySelectorAll('.dev-service-metrics > div').length!==2)errors.push({issue:'Tag Workshop Home card/link'});
+  }
+  if(view==='tag_workbench'&&width===1280){
+   const single=d.querySelector('.tag-single .tag-song-row');
+   if(!single?.querySelector('.tag-art')||!single.querySelector('.tag-copy .album'))errors.push({issue:'single-song card missing artwork or album'});
+   d.querySelector('[data-tags-mode="bulk"]').click();
+   const bulk=d.querySelector('.tag-bulk'),row=bulk?.querySelector('.tag-song-row');
+   if(!bulk?.querySelector('.tag-queue #tag-song-rows')||!bulk.querySelector('.tag-editor #tag-now-playing')||!bulk.querySelector('.tag-editor #tag-review')||!row?.querySelector('[data-tags-select]')||!row.querySelector('.tag-art')||bulk.querySelector('#tag-action')?.options.length!==3)errors.push({issue:'bulk bench structure or selection controls'});
+   else{const box=row.querySelector('[data-tags-select]');box.checked=true;box.dispatchEvent(new dom.window.Event('change',{bubbles:true}));if(!bulk.querySelector(`[data-tag-song="${box.dataset.tagsSelect}"]`)?.classList.contains('tag-selected'))errors.push({issue:'bulk selection highlight'});}
+  }
   if(view==='import'&&width===1280){if(!d.querySelector('#apple-query'))throw Error(JSON.stringify({view,title,pageErrors,body:d.querySelector('#main').textContent}));d.querySelector('#apple-query').value='https://music.apple.com/us/album/test/8001';await dom.window.DevCatalog.search();if(d.querySelectorAll('#editor-error').length!==1)errors.push({issue:'duplicate error nodes'});d.querySelector('[data-album-import-none]').click();const input=d.querySelector('[data-album-import-id="1"]');input.checked=true;d.querySelector('[data-album-import-save]').click();for(let i=0;i<250&&!d.querySelector('#toast').textContent;i++)await new Promise(r=>setTimeout(r,20));if(d.querySelector('#editor').open||!d.querySelector('#toast').textContent.includes('1 of 1'))errors.push({issue:'real album save failed',toast:d.querySelector('#toast').textContent});else results.push({albumImport:true,receipt:d.querySelector('#toast').textContent});}
   if(view==='vibe_records'&&width===1280){
    const wait=async predicate=>{for(let i=0;i<100;i++){if(predicate())return;await new Promise(r=>setTimeout(r,20))}throw Error('Vibe Dev UI timed out')};

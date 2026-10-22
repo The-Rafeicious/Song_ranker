@@ -15,7 +15,7 @@ body[data-page=dev] #main.page { width:100%; max-width:1800px; padding:24px clam
 .dev-menu-group button { display:flex; align-items:center; gap:8px; width:100%; min-height:44px; padding:10px; border:0; border-radius:10px; background:transparent; color:var(--text); text-align:left; font:inherit; font-size:15px; cursor:pointer; }
 .dev-menu-group button:hover,.dev-menu-group button.active { background:#50cf9218; color:var(--song); }
 body[data-page=dev] #main .dev-home-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; align-items:start; }
-body[data-page=dev] #main :is(.dev-home-library,.dev-home-tag-workshop) { grid-column:1/-1; }
+body[data-page=dev] #main .dev-home-library { grid-column:1/-1; }
 body[data-page=dev] #main .dev-home-grid .panel { padding:24px; }
 body[data-page=dev] #main .dev-home-grid .section-head { justify-content:flex-start; margin-bottom:14px; }
 body[data-page=dev] #main .dev-home-grid .section-head h2 { font-size:23px; margin:0; }

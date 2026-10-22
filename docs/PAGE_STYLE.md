@@ -1725,8 +1725,15 @@ Keep the save row visible while scrolling choices. Stack the editor before the
 queue on phones. Dirty navigation requires explicit discard; no auto-advance on
 save failure or unresolved stale data. Bulk keeps its explicit review surface.
 
-V5.2.2.1 gives the editor more width than the song queue. Queue titles may use
-up to two bounded lines; album, artist and source facts stay on single ellipsised
-lines so no identity field escapes its card. On Dev Home, the Tag Workshop is a
-full-width service row immediately below the health/Git/backup row, using the
-existing joined metrics and tag/entity colours rather than a new card style.
+V5.2.2.1 gives the editor more width than the song queue. Place art at the top
+of the selected amber-glow card, inside its border. Queue titles occupy up to
+two bounded lines; artist, album, tag and source facts each occupy a separate
+ellipsised line with the full value in a title attribute. Bulk uses the same
+filter/queue/editor grid: checkboxes and select-all in the queue, preview and
+reviewed tag choices in the editor. Preserve Add/Remove/Replace semantics and
+independent preview scope. Stack editor before queue on narrow screens.
+
+On Dev Home, Tag Workshop is a compact service card in the row below the
+health/Git/backup row, alongside coverage and activity. Its title links to the
+bench (not the Tags table); show only tagged-song and tag-definition counts,
+with the established joined-card sizing and entity colours.

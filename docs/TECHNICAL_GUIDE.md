@@ -457,8 +457,9 @@ include; metadata polling and archive paging have separate script owners.
 
 `templates/dev_nav.html` replaces the main navigation only on authenticated Dev
 pages. `dev_shell.css` widens the working canvas and controls the responsive menu
-and service grid, including the full-width Tag Workshop summary. `dev_tags.css`
-keeps the single-song queue narrower than its editor and bounds identity text.
+and service grid, including a compact Tag Workshop card linked to the bench.
+`dev_tags.css` shares the queue/editor geometry across single and bulk modes,
+with bounded identity text and selected-card artwork.
 `app_stop.js` owns the shared stop dialog; `dev_system.js` owns service/backup/Git
 tasks. Stop endpoints accept a fresh PIN without a Dev session,
 but retain localhost-only access, signed browser-owned target review, rate limits
