@@ -97,7 +97,6 @@ class MergePreparationTests(unittest.TestCase):
         self.conn.execute("INSERT INTO tournaments(id,size,scope_type,status) VALUES(1,8,'global','in_progress')")
         self.conn.execute("INSERT INTO tournament_entries VALUES(1,1,1)")
         self.conn.execute("INSERT INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id) VALUES(1,1,1,1,2)")
-        self.conn.execute("INSERT INTO listening_observations(mode,reference,song_key,song_id,seconds,decision_ms,recorded_at) VALUES('standard','1',1,1,2,2000,1)")
 
         self.conn.commit();kept=catalogue(self.conn);before=capture(self.conn)
         export=Path(self.temp.name)/'database_backup.sql'

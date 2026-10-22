@@ -226,8 +226,7 @@ def guess_answer():
             challenges.close_on_miss(conn,row['run_id'],correct,now)
         else:
             conn.execute('UPDATE elo_guess_rounds SET chosen_slot=?,completed_at=? WHERE id=?',(slot,now,row['id']))
-        from songranker.listening import record as record_listening
-        record_listening(conn,'guesser',row['id'],(row['song1_id'],row['song2_id']),data['song_id'],data.get('listening'))
+
         conn.commit()
         return jsonify(guess_result(conn,conn.execute('SELECT * FROM elo_guess_rounds WHERE id=?',(row['id'],)).fetchone()))
     finally:conn.close()
@@ -328,8 +327,7 @@ def shelf_answer():
                 conn.execute('UPDATE album_shelf_items SET answer_slot=?,answer_position=? WHERE round_id=? AND item_slot=?',
                     (int(slot),position,row['id'],id))
         conn.execute('UPDATE album_shelf_rounds SET completed_at=? WHERE id=?',(time.time(),row['id']))
-        from songranker.listening import record as record_listening
-        record_listening(conn,'shelves',row['id'],[i['song_id'] for i in items],None,data.get('listening'))
+
         conn.commit();graded=grade_shelf(items)
         answers=[dict(slot=i['item_slot'],album_slot=i['album_slot'],track_number=i['track_number']) for i in items]
         return jsonify(**graded,answers=answers)

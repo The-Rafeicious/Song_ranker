@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'stats_visuals.html' import pulse, listening_panel %}
+{% from 'stats_visuals.html' import pulse %}
 {% from 'components.html' import art %}
 {% from 'mode_stats_components.html' import figure, rate, progress, metadata %}
 {% block title %}Recognisability · Song Ranker{% endblock %}
@@ -90,7 +90,6 @@
     </div>
   </section>
   {{pulse(pulse_data)}}
-  {{listening_panel(listening_data)}}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-rounds">
     <div class="section-head"><h2 id="recognition-rounds" class="recognition">Round results</h2></div>

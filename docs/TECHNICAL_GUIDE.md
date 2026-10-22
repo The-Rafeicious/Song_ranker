@@ -1,6 +1,6 @@
 # Song Ranker technical guide
 
-**Documentation v5.1.1 · integrated modes v5.1.0 · competition generation 3 · schema 19**
+**Application v5.1.2 · integrated modes v5.1.0 · competition generation 3 · schema 20**
 
 Current implementation reference. `APP_VERSION` remains `5.0.5.1` and the mode
 version remains `Vibe-Map-v1.1`; this documentation release changes neither.
@@ -17,7 +17,7 @@ and historical changes in [release notes](../update_logs/README.md).
 - [Stage-aware selection](#stage-aware-selection)
 - [Impact and Overall](#impact-and-overall)
 - [Reporting and presentation](#reporting-and-presentation)
-- [Listening and private preview analysis](#listening-and-private-preview-analysis)
+- [Private preview analysis](#private-preview-analysis)
 - [Health reporting](#health-reporting)
 - [Catalogue editing and imports](#catalogue-editing-and-imports)
 - [Reviewed source groups](#reviewed-source-groups)
@@ -65,7 +65,6 @@ Waitress is the normal local/private-LAN host.
 | `songranker/modes/` | Offered questions, accepted answers, progressive challenge rules, Elo streams and pure selectors. |
 | `songranker/reports/` | Read-only dashboard builders, activity series, selector diagnostics and stage-relative health labels. |
 | `songranker/developer/` | Authenticated catalogue/source/tag tasks, metadata fill, corrections, exports, backups, recovery and Git. |
-| `songranker/listening.py`, `static/js/listening.js` | One server measurement owner and one shared browser playback tracker. |
 | `songranker/apple_access.py`, `lan_security.py` | Bounded preview access/cache/diagnostics and the private-network/request/session gate. |
 | `data/schema.sql` | Only canonical runtime DDL registry. Historical test fixtures are not alternate runtime schemas. |
 | `templates/`, `static/` | Shared HTML/macros and feature-owned scripts/styles; details in [PAGE_STYLE.md](PAGE_STYLE.md). |
@@ -322,42 +321,15 @@ entity-coloured names, green success and danger red failures. Phone breakpoints,
 native disclosures, 44 px controls, complete accessible names and reduced-motion
 behavior remain part of the baseline.
 
-## Listening and private preview analysis
+## Private preview analysis
 
-`static/js/listening.js` is loaded once on the five game pages. A question begins
-one measurement session keyed by mode and offered token/match. The tracker uses
-media identity plus actual playback progress, capped by elapsed wall time.
-Playing/time-update/pause/waiting/end/seek events distinguish audible progress
-from preloads, pauses, buffering, muted audio and jumps through a clip. Shelf's
-reused player updates its song identity. Reveals are not part of the submitted
-sample. An abandoned round has no accepted measurement.
-
-The accepted answer carries optional `{version, decision_ms, songs}` data. Server
-callers supply the authoritative mode, reference and offered IDs; clients cannot
-attach measurements to arbitrary tracks. Only a complete, finite, bounded sample
-is inserted. Invalid telemetry is ignored without losing the valid game answer.
-`UNIQUE(mode,reference,song_key)` makes samples idempotent. An unplayed track can
-be a measured zero; a request without telemetry remains unmeasured. Measurements
-are self-reported browser observations, not proof that the user heard the clip.
-
-References identify `preference_events.id` for Standard/Blind,
-`tournament_matches.id`, `trivia_rounds.id`, `elo_guess_rounds.id` or
-`album_shelf_rounds.id` for other modes. `selected` records the original chosen
-track for pair decisions, and is null for Trivia/Shelves. Corrections do not
-rewrite observed listening or the original measured choice. Mode/full resets and
-explicit round removals clear the corresponding measurements. Removed songs
-leave their original `song_key` while their live foreign key becomes null.
-
-Shared dashboards show measured decisions, track samples, total seconds and
-sample-weighted mean seconds, with mode details in a disclosure. Profiles pool
-linked songs once. New measurements have no influence on game grades, ranking
-formulas or selectors.
+Listening-time capture, payloads, storage and public summaries were retired in
+v5.1.2. Preview audio and Trivia answer timing remain independent.
 
 `song_details.preview_bad`, `preview_note` and `flagged_at` are private Dev data.
 Only authenticated quality/analysis/full-export endpoints return the annotations;
 normal collection/library/profile/game responses omit them. Flagging does not
-rewrite audio, tags, album placement or evidence. Dev analysis exports raw
-observations and per-song summaries alongside flagged preview notes.
+rewrite audio, tags, album placement or evidence. Dev analysis exports source observations and flagged preview notes.
 
 ## Health reporting
 
@@ -407,7 +379,7 @@ used pages can move once to 4,096-byte pages with a pre-compaction backup. This
 avoids repeatedly compacting every launch and reduces larger-history overhead.
 Compaction handles WAL mode and is optional: a busy disk/database defers it with
 a log notice while preserving the successfully upgraded data. It never deletes
-game facts, listening samples, correction records, pending offers or backups.
+game facts, correction records, pending offers or backups.
 
 Unknown extension tables/values retain the existing rebuild verification. An
 extension referencing an obsolete source row blocks removal rather than leaving
@@ -485,7 +457,7 @@ include; metadata polling and archive paging have separate script owners.
 
 | Area | Endpoints |
 | --- | --- |
-| Library | `/api/collection`, `/api/library` and page/profile/ranking routes. Public collection contains active combined history and nonprivate listening summaries. |
+| Library | `/api/collection`, `/api/library` and page/profile/ranking routes. Public collection contains active combined history. |
 | Preferences | `/api/matchup`, `/api/vote`; offers are browser-owned and answers are validated/idempotent. |
 | Trivia | `/api/trivia/round`, `/api/trivia/<token>/start`, `/pause`, `/field`, `/finish`. |
 | Tournament | `/api/generate_bracket`, `/api/tournament_vote`, `/api/tournaments`, `/api/tournaments/<id>`, completion/stats routes. |
@@ -496,7 +468,7 @@ include; metadata polling and archive paging have separate script owners.
 | Preview | `/api/previews/<song_id>`, `/status`, `/api/previews/cache`; bounded in-memory audio cache/diagnostics, not a listening history. |
 | Private analysis | `/api/dev/song-quality/<id>` GET/POST, `/api/dev/analysis`, `/api/dev/selection-health`. |
 | Backups | `/api/dev/system`, `/api/dev/backups/review`, `/restore`, backup download, `/api/dev/database/export`, `/api/dev/database/guide`. |
-| Git | `/api/dev/git/status`, `/check`, `/upload`; writes/checks are explicit tasks. |
+| Git | `/api/dev/git/status`, `/check`, `/upload`, `/keep-local/review`, `/keep-local`; writes/checks are explicit tasks. |
 
 Existing authenticated catalogue, metadata, tag, correction/reset and source
 routes remain available in their developer modules. New telemetry rides the
@@ -617,3 +589,13 @@ Automated checks use disposable databases. Current platform/audio behaviour
 still needs the intended installation/device. New work follows
 [AGENTS.md](../AGENTS.md) and [PAGE_STYLE.md](PAGE_STYLE.md), with one owner per
 shared concern and updated current references.
+
+### Reviewed local database choice
+
+Dev Git can compare live and committed upstream counts and issue a browser-bound
+review token. Applying it requires `KEEP LOCAL`; changed data or Git targets
+invalidate the review. Both copies are archived before acknowledging that exact
+remote snapshot as the baseline. No live rows are changed. Normal upload then
+publishes local data with the usual Git guards. Pending source updates require
+a restart; the accepted choice survives that restart and prevents adopting the
+rejected database. Later remote changes require another review.

@@ -47,3 +47,7 @@ passages expired. They are provenance, not an alternative current manual.
 No application source, stylesheet, schema, SQL backup, runtime version or live
 database is removed by this documentation change. This index is not a filesystem
 cleanup command for an installed copy of the app.
+
+- **Expired in v5.1.2:** `songranker/listening.py`, `static/js/listening.js`,
+  listening panels and the `listening_observations` table. Backed-up schema-20
+  migration replaces their storage lifecycle; no replacement tracker is needed.

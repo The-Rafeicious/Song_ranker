@@ -4,13 +4,13 @@ window.DevSystem=(()=>{
  const {$,$$,esc}=window.SongRankerUI,managed=new Set(['overview','database','export']);
  let U,view=null,data=null,gitState=null,loadId=0,reviewId=0,loadError='',loading=false;
  let stopDialog=false,stopState=null,stopTimer=null,stopBusy=false,stopAcknowledged=false;
- let gitBusy=false,backupBusy=false,restoreBusy=false,restoreReview=null,backupQuery='',backupLimit=10,inventoryQuery='',inventoryKind='all',note='';
+ let gitBusy=false,backupBusy=false,restoreBusy=false,restoreReview=null,localReview=null,backupQuery='',backupLimit=10,inventoryQuery='',inventoryKind='all',note='';
  const bytes=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':n>=1024?(n/1024).toFixed(1)+' KB':n+' B';
  const date=s=>{const d=new Date(s);return Number.isFinite(d.getTime())?d.toLocaleString():s||'Not recorded'};
  const button=(label,attr,kind='')=>`<button class="btn ${kind}" type="button" ${attr}>${label}</button>`;
  const tile=(label,detail,attr,kind='song')=>`<button class="system-task" type="button" ${attr}><strong class="${kind}">${label}</strong><span>${detail}</span></button>`;
  const header=()=>`<header class="dev-taskbar"><div><h1>Developer dashboard</h1><p>Library tasks, backups and sync</p></div><div class="system-actions">${button('Upload to Git','data-system-git-open','primary')}${button('Create backup','data-system-backup')}<a class="btn" href="/api/dev/database/export">Download full export</a>${button('Lock','data-tool="Lock database"')}${button('Stop app','data-system-stop','danger')}</div></header>`;
- function viewChanged(next){if(next!==view){view=managed.has(next)?next:null;++loadId;++reviewId;restoreReview=null;loadError=''}}
+ function viewChanged(next){if(next!==view){view=managed.has(next)?next:null;++loadId;++reviewId;restoreReview=null;localReview=null;loadError=''}}
  function render(next){view=next;draw();load()}
  function controls(){
   $$('[data-system-git-open]').forEach(b=>{b.disabled=restoreBusy;b.textContent=gitBusy?'Git task running…':'Upload to Git'});
@@ -23,6 +23,7 @@ window.DevSystem=(()=>{
   const title={overview:'Tasks & health',database:'Database & backups',export:'Git upload & updates'}[view];
   U.root().innerHTML=U.title(title)+`<div class="dev-system">${status()}<div id="system-content">${data?content():'<section class="panel"><p role="status">Loading local status…</p></section>'}</div></div>`;
   if(view==='database'&&data){drawBackups();drawInventory();drawRestore()}
+  if(view==='export')drawLocalChoice();
   controls();
  }
  function content(){return view==='overview'?overview():view==='database'?database():sync()}
@@ -45,8 +46,8 @@ window.DevSystem=(()=>{
  }
  function sync(){
   const g=gitState||data.git,canUpload=g?.available&&g.review_token&&g.tracking_head&&!g.in_progress&&!g.pending_code&&!g.behind;
-  return `<section class="panel dashboard-surface"><div class="section-head"><h2>Upload database backup</h2></div>${gitSummary()}<p>The upload creates a consistent <code>database_backup.sql</code>, commits that file only, then pushes the configured branch. Your live database continues to save locally.</p><div class="system-actions">${button(gitBusy?'Git task running…':'Check remote','data-system-check'+(!g?.available||gitBusy?' disabled':''))}${button('Upload database backup','data-system-upload'+(!canUpload||gitBusy?' disabled':''),'primary')}</div>${g?.pending_code?'<p class="error">Unpublished code commits need review/publishing through Git first. The backup button will not publish them.</p>':''}${g?.behind?'<p class="muted">Incoming commits need a restart update, or manual resolution if history diverged. No database rows will be merged.</p>':''}${!g?.tracking_head&&g?.available?'<p class="muted">Check remote first to identify the target branch.</p>':''}${g?.snapshot?.exists?`<p class="muted">Local SQL snapshot: ${esc(g.snapshot.name)} · ${bytes(g.snapshot.bytes)}</p>`:''}</section>
-   <section class="panel dashboard-surface"><div class="section-head"><h2>How updates keep your data</h2></div><div class="system-explanations"><p><b>Check remote</b> fetches Git information. It changes neither running code nor the live database.</p><p><b>Restart</b> stops the current app first; run <code>python main.py</code> again. A safe fast-forward installs before the app loads. Local edits, conflicts, diverged history and incoming protected files block automatic updates.</p><p><b>Database sync</b> runs before the normal launcher serves pages, even after a manual Git pull. A newer committed snapshot loads only after validation, a local archive and a shared-baseline comparison covering edits and deletions. A split keeps local data and saves an incoming backup for review; uploads are blocked until the split is resolved.</p><p><b>Push failed or reply lost</b> keeps the local snapshot/commit. Check remote and retry. An unchanged snapshot creates no duplicate commit. Upload also rechecks the database baseline so an older laptop cannot overwrite newer remote data. There is no automatic row merge, rebase or force-push.</p></div><a class="btn" href="/api/dev/database/guide">Download Git & recovery guide</a></section>
+  return `<section class="panel dashboard-surface"><div class="section-head"><h2>Upload database backup</h2></div>${gitSummary()}<p>The upload creates a consistent <code>database_backup.sql</code>, commits that file only, then pushes the configured branch. Your live database continues to save locally.</p><div class="system-actions">${button(gitBusy?'Git task running…':'Check remote','data-system-check'+(!g?.available||gitBusy?' disabled':''))}${button('Upload database backup','data-system-upload'+(!canUpload||gitBusy?' disabled':''),'primary')}${button('Keep local database…','data-system-local-review'+(!g?.available||!g.review_token||!g.tracking_head||g.in_progress||gitBusy?' disabled':''))}</div><div id="system-local-choice"></div>${g?.pending_code?'<p class="error">Unpublished code commits need review/publishing through Git first. The backup button will not publish them.</p>':''}${g?.behind?'<p class="muted">Incoming commits need a restart update, or manual resolution if history diverged. No database rows will be merged.</p>':''}${!g?.tracking_head&&g?.available?'<p class="muted">Check remote first to identify the target branch.</p>':''}${g?.snapshot?.exists?`<p class="muted">Local SQL snapshot: ${esc(g.snapshot.name)} · ${bytes(g.snapshot.bytes)}</p>`:''}</section>
+   <section class="panel dashboard-surface"><div class="section-head"><h2>How updates keep your data</h2></div><div class="system-explanations"><p><b>Check remote</b> fetches Git information. It changes neither running code nor the live database.</p><p><b>Restart</b> stops the current app first; run <code>python main.py</code> again. A safe fast-forward installs before the app loads. Local edits, conflicts, diverged history and incoming protected files block automatic updates.</p><p><b>Database sync</b> runs before the normal launcher serves pages, even after a manual Git pull. A newer committed snapshot loads only after validation, a local archive and a shared-baseline comparison covering edits and deletions. A split keeps local data and saves an incoming backup for review; review the incoming backup to restore it, or use Keep local database to retain and publish your local copy. Both copies are backed up before a local choice is accepted.</p><p><b>Push failed or reply lost</b> keeps the local snapshot/commit. Check remote and retry. An unchanged snapshot creates no duplicate commit. Upload also rechecks the database baseline so an older laptop cannot overwrite newer remote data. There is no automatic row merge, rebase or force-push.</p></div><a class="btn" href="/api/dev/database/guide">Download Git & recovery guide</a></section>
    <section class="panel dashboard-surface"><div class="section-head"><h2>Recent Git outcomes</h2></div>${g?.history?.length?g.history.map(row=>`<article class="system-outcome"><strong class="${row.ok?'song':'error'}">${esc(row.action)} · ${esc(row.code)}</strong><p>${esc(row.message)}</p><small>${esc(date(row.at))}${row.commit?' · '+esc(row.commit.slice(0,10)):''}</small></article>`).join(''):'<p class="empty">No app Git outcome recorded yet. Opening this page does not contact the remote.</p>'}</section>`;
  }
  function drawBackups(){
@@ -76,12 +77,32 @@ window.DevSystem=(()=>{
  }
  async function gitTask(kind){
   if(gitBusy||restoreBusy)return;const g=gitState||data?.git;if(!g?.available)return;
-  gitBusy=true;note=kind==='check'?'Checking remote…':'Checking remote, saving snapshot and uploading…';draw();
+  localReview=null;gitBusy=true;note=kind==='check'?'Checking remote…':'Checking remote, saving snapshot and uploading…';draw();
   try{
    const r=await U.api('/api/dev/git/'+kind,kind==='check'?{}:{review_token:g.review_token});
    ++loadId;gitState=r.git;if(data)data.git=r.git;note=r.message;
   }catch(e){if(e.details?.git){++loadId;gitState=e.details.git;if(data)data.git=e.details.git}note=e.message}
   finally{gitBusy=false;if(view)draw();else U.toast(note);controls()}
+ }
+
+ function drawLocalChoice(){
+  const node=$('#system-local-choice');if(!node||!localReview)return;
+  const r=localReview;
+  node.innerHTML=`<section class="system-restore-review"><h3>Keep this computer’s database</h3><p>The local catalogue and results stay active. A verified copy of each database is kept before recording this choice. Upload will publish the local copy using normal Git checks.</p><div class="data-scroll"><table class="data-table"><thead><tr><th>Records</th><th>Local · keep</th><th>Git snapshot</th></tr></thead><tbody>${Object.keys(r.local).map(k=>`<tr><td>${esc(k)}</td><td>${r.local[k]}</td><td>${r.remote[k]??'—'}</td></tr>`).join('')}</tbody></table></div><label>Type KEEP LOCAL<input id="system-local-confirmation" autocomplete="off" ${gitBusy?'disabled':''}></label><div class="system-actions">${button(gitBusy?'Keeping local…':'Keep local database','data-system-local-apply disabled','danger')}${button('Cancel','data-system-local-cancel'+(gitBusy?' disabled':''))}</div></section>`;
+ }
+ async function reviewLocalChoice(){
+  if(gitBusy||restoreBusy)return;const g=gitState||data?.git;if(!g?.review_token)return;
+  gitBusy=true;localReview=null;note='Comparing local and Git databases…';draw();
+  try{const r=await U.api('/api/dev/git/keep-local/review',{review_token:g.review_token});++loadId;gitState=r.git;if(data)data.git=r.git;localReview=r;note=r.message}
+  catch(e){if(e.details?.git){gitState=e.details.git;if(data)data.git=e.details.git}note=e.message}
+  finally{gitBusy=false;if(view)draw();controls()}
+ }
+ async function keepLocalChoice(){
+  if(gitBusy||restoreBusy||!localReview||$('#system-local-confirmation')?.value!=='KEEP LOCAL')return;
+  const reviewed=localReview;gitBusy=true;note='Backing up both copies and keeping local…';draw();
+  try{const r=await U.api('/api/dev/git/keep-local',{choice_token:reviewed.choice_token,confirmation:'KEEP LOCAL'});++loadId;gitState=r.git;if(data)data.git=r.git;localReview=null;note=r.message;U.toast(note)}
+  catch(e){localReview=null;if(e.details?.git){gitState=e.details.git;if(data)data.git=e.details.git}note=e.message}
+  finally{gitBusy=false;if(view)draw();controls()}
  }
  async function inspectBackup(name){
   if(restoreBusy)return;const id=++reviewId;restoreReview=null;note='Validating '+name+'…';draw();
@@ -162,6 +183,9 @@ window.DevSystem=(()=>{
   if(b.hasAttribute('data-system-retry'))load();
   if(b.hasAttribute('data-system-check'))gitTask('check');
   if(b.hasAttribute('data-system-upload'))gitTask('upload');
+  if(b.hasAttribute('data-system-local-review'))reviewLocalChoice();
+  if(b.hasAttribute('data-system-local-apply'))keepLocalChoice();
+  if(b.hasAttribute('data-system-local-cancel')){localReview=null;note='Database choice cancelled.';draw()}
   if(b.dataset.systemReview)inspectBackup(b.dataset.systemReview);
   if(b.hasAttribute('data-system-restore'))restore();
   if(b.hasAttribute('data-system-cancel-restore')){++reviewId;restoreReview=null;note='Restore cancelled.';draw()}
@@ -169,7 +193,7 @@ window.DevSystem=(()=>{
   if(b.dataset.systemFilter)window.DevTags.openFilter(b.dataset.systemFilter);
   if(b.hasAttribute('data-system-sources'))U.showMissingSources();
  });
- document.addEventListener('input',e=>{if(e.target.id==='system-backup-query'){backupQuery=e.target.value;backupLimit=10;drawBackups()}if(e.target.id==='system-inventory-query'){inventoryQuery=e.target.value;drawInventory()}});
+ document.addEventListener('input',e=>{if(e.target.id==='system-local-confirmation'){$('[data-system-local-apply]').disabled=gitBusy||e.target.value!=='KEEP LOCAL';}if(e.target.id==='system-backup-query'){backupQuery=e.target.value;backupLimit=10;drawBackups()}if(e.target.id==='system-inventory-query'){inventoryQuery=e.target.value;drawInventory()}});
  document.addEventListener('change',e=>{if(e.target.id==='system-inventory-kind'){inventoryKind=e.target.value;drawInventory()}});
  return {bindUI:ui=>U=ui,header,viewChanged,render,handleTool,canNavigate:()=>!restoreBusy};
 })();

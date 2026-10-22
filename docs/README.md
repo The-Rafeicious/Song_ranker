@@ -18,6 +18,5 @@ patch's old install steps do not compete with today's instructions.
 | Overall release summaries followed by patch detail | [Release notes](../update_logs/README.md) |
 | Expired documents and replacement locations | [Retired references](RETIRED.md) |
 
-Documentation v5.1.1 records Vibe integration under app v5.1.0. Runtime version
-strings are unchanged by this documentation-only release. Historical figures
-and migration instructions are marked as such; the current dictionary is schema 19.
+Documentation v5.1.1 records Vibe integration under app v5.1.0. v5.1.2 retires listening capture and adds reviewed local-save Git resolution. Historical figures
+and migration instructions are marked as such; the current dictionary is schema 20.

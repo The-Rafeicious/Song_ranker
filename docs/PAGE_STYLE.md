@@ -1333,8 +1333,7 @@ compact eight-spoke radar and two closest matches, labelled by shared evidence.
 Keep the desktop panel below 450 px tall and stack chart/matches on phones.
 Use the shared `vibe_song_stats_panel.html` / `vibe_song_stats.css` layout for
 future song-page integration. Missing maps stay gaps. Show short loading/retry
-states and protect the latest selection from stale responses. Do not show Vibe
-listening metrics until the mode actually records supported observations.
+states and protect the latest selection from stale responses. Listening-duration metrics are retired in v5.1.2.
 
 ## Developer tools
 
@@ -1511,14 +1510,12 @@ placement. This supersedes earlier Unknown-as-display-default wording.
 
 *Origin: V5 competition and analysis*
 
-> Vibe Map is now a sixth mode. Listening measurements described here remain limited to the five scored modes; Vibe remains descriptive.
+> **Expired in v5.1.2:** listening measurements and their panels are removed. Vibe Map remains the sixth, descriptive mode.
 
 The fresh V3 competition database carries catalogue data only. Current dashboards
 lead with V5 results and do not show Classic/V3 record captions or legacy-anchor
 explanations. Empty rates stay unavailable and all history controls remain usable.
-A shared Listening before decisions group shows measured decisions, track samples
-and mean seconds, with mode breakdown in a native disclosure. Profiles use a
-compact disclosure. Never turn unmeasured listening into zero samples.
+Do not render listening-duration panels or placeholders.
 
 Selection health leads with categorical status (New competition, Building evidence,
 Poor balance, Uneven, Fair, Good, Excellent), actual mean exposure and dispersion.
@@ -1657,3 +1654,9 @@ map fieldsets are red, song/album links keep their identity colours. Show four
 map editors in two columns on desktop and one on phones. Use explicit save,
 clear-map, song-delete and mode-reset labels. Never expose an automatic merge
 cleanup action in the app: the standalone tool is run deliberately after testing.
+
+### Reviewed Git local choice (v5.1.2)
+
+Use the shared review container and local/remote comparison table. Keep the
+explicit `KEEP LOCAL` confirmation next to the apply button, with clear busy and
+stale-review states. Keep ordinary upload guards visible after the choice.

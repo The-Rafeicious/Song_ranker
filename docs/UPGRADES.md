@@ -1,9 +1,9 @@
 # Upgrades and recovery
 
-Current operating guidance for the generation-3 competition, schema 19.
+Current operating guidance for the generation-3 competition, schema 20.
 Patch-by-patch installation notes are **expired / no longer necessary**; their
 feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
-[V5.1](../update_logs/V5_1_UPDATE.md). This documentation update performs no migration.
+[V5.1](../update_logs/V5_1_UPDATE.md). v5.1.2 includes a backed-up schema migration.
 
 - [Routine updates](#routine-updates)
 - [First competition transfer](#first-competition-transfer)
@@ -26,7 +26,7 @@ feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 4. Use the new code with upgraded databases. Older code may refuse a newer schema;
    source rollback alone does not roll back database structure.
 
-`APP_VERSION` currently remains `5.0.5.1`; Vibe reports `Vibe-Map-v1.1`.
+`APP_VERSION` is `5.1.2`; Vibe reports `Vibe-Map-v1.1`.
 The documentation release labels v5.1.0/v5.1.1 do not change the runtime footer.
 Install dependencies from `requirements.txt`; configuration is in the
 [technical guide](TECHNICAL_GUIDE.md#configuration).
@@ -44,7 +44,7 @@ Generation-3 SQL restores results as well as catalogue data; pre-V5 sources
 transfer catalogue only. First transfer takes a complete V2 safety snapshot and
 verifies exact IDs, song metadata, albums/artists/tags, links, current source
 observations and ID high-water marks before publishing a fresh V3 competition.
-Elo/peaks begin at 1200; results, attempts, streaks and listening start fresh.
+Elo/peaks begin at 1200; results, attempts and streaks start fresh.
 The old source is left intact. Ordinary restarts and later code upgrades do not
 repeat this transfer/reset.
 
@@ -270,3 +270,16 @@ Repeated JSON keys/URL prefixes compress well; main metadata URLs remain
 readable. A 2 KiB page candidate beat the 1 KiB candidate for that sample, while
 larger histories favour 4 KiB pages; used space can trigger the existing 4 MiB
 page-policy threshold. Live results and source contents determine actual size.
+
+## v5.1.2: keep local and remove listening storage
+
+Schema 20 removes only legacy listening observations and their index. Startup
+keeps a pre-migration backup. Existing scores, Vibe placements and catalogue links
+remain intact; restoring an older backup runs the same migration.
+
+For an intentional local reset or restored save, open Dev → System → Git and
+choose **Keep local database…**. Review local/remote counts, type `KEEP LOCAL`,
+and apply. Both databases are backed up; the live database stays unchanged.
+Use normal upload afterwards. If source is behind, restart to update code first;
+the reviewed database choice survives that restart. This does not force-push or
+resolve diverged source commits. Any newer remote data needs a new review.

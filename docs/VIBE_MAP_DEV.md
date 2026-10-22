@@ -51,11 +51,11 @@ python tools/prepare_vibe_merge.py --database data/song_ranker_v3.db --export da
 
 The script:
 
-- Validates schema 19 and references, refuses unknown extension tables, and
+- Validates the current schema and references, refuses unknown extension tables, and
   detects changes between preview/backup and the write transaction.
 - Writes a verified `database_backups/pre_merge_vibe_v11_*.db` restore point.
 - Clears all votes, corrections, offers, tournament entries/results, trivia,
-  challenges, guesses, shelves, listening observations and Vibe selections/rounds.
+  challenges, guesses, shelves and Vibe selections/rounds.
   Ratings and records return to neutral defaults; no test-mode samples survive.
 - Preserves exact song/album/artist/tag IDs, metadata, relationships, every Apple
   source observation, preview notes, catalogue sequences and fixed map definitions.

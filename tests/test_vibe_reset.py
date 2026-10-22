@@ -4,6 +4,7 @@ from unittest.mock import patch
 import sqlite3
 import tempfile
 import unittest
+from songranker.storage.database_schema import SCHEMA_VERSION
 
 from songranker.storage.database import initialize_database
 from songranker.storage.database_io import capture, readonly, validate, rebuild
@@ -34,14 +35,14 @@ class VibeResetTests(unittest.TestCase):
         self.assertTrue(result['reset']);self.assertEqual(len(result['backups']),1)
         with readonly(self.path) as c:
             validate(c);after=capture(c)
-            self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],19)
+            self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],SCHEMA_VERSION)
             self.assertEqual({r[0] for r in c.execute('SELECT id FROM vibe_maps')},{m[0] for m in MAPS})
             self.assertTrue({m[0] for m in LEGACY_MAPS}.isdisjoint({m[0] for m in MAPS}))
             self.assertEqual(c.execute('SELECT COUNT(*) FROM song_vibe_positions').fetchone()[0],8)
             self.assertEqual(c.execute("SELECT COUNT(*) FROM song_vibe_positions WHERE status!='unmapped' OR sample_count!=0 OR not_applicable_count!=0").fetchone()[0],0)
             self.assertEqual(c.execute('SELECT SUM(completed_passes) FROM song_vibe_progress').fetchone()[0],0)
             self.assertEqual(c.execute('SELECT COUNT(*) FROM vibe_rounds').fetchone()[0],0)
-        changed={'vibe_maps','song_vibe_positions','song_vibe_progress','vibe_rounds'}
+        changed={'listening_observations','vibe_maps','song_vibe_positions','song_vibe_progress','vibe_rounds'}
         for name,data in self.before['tables'].items():
             if name not in changed:self.assertEqual(after['tables'][name],data,name)
         with readonly(result['backups'][0]) as c:self.assertEqual(capture(c),self.before)

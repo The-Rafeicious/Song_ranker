@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'stats_visuals.html' import pulse, listening_panel %}
+{% from 'stats_visuals.html' import pulse %}
 {% from 'components.html' import art %}
 {% from 'mode_stats_components.html' import figure, rate, number, progress, metadata, saved_date %}
 {% block title %}Voting Stats · Song Ranker{% endblock %}
@@ -63,7 +63,6 @@
     <div class="section-head"><h2 class="standard" id="vote-modes">Non-blind &amp; Blind</h2></div>
     <div class="mode-stats-comparisons">{% for mode in modes %}<div class="mode-stats-inset voting-mode-{{mode.mode}}"><div class="section-head"><h3>{{mode.title}}</h3><a class="{{mode.mode}}" href="/game?mode={{mode.mode}}">Play ↗</a></div><dl class="joined-metrics mode-stats-small-metrics">{{figure('Votes',mode.matches)}}{{figure('Tracks voted',mode.tracks)}}{{figure('Active days',mode.active_days)}}</dl><div class="voting-mini-pair"><div><strong>{{rate(mode.upset_rate)}}</strong><span>Lower-rated picks</span><small>{{mode.upsets}} / {{mode.unequal}} unequal-Elo vote weight</small></div><div><strong>{{number(mode.avg_gain)}}</strong><span>Average winner gain</span><small>{{mode.snapshots}} saved rating changes</small></div></div></div>{% endfor %}</div>
   </section>
-  {{listening_panel(listening_data)}}
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-independent-elo">
     <div class="section-head"><h2 class="standard" id="vote-independent-elo">Independent Elo across modes</h2></div>
     <p class="mode-stats-caption">Each mode starts at 1200. Public Elo combines eligible results. Differences also reflect opponents and sample size.</p>

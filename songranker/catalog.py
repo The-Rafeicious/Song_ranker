@@ -158,11 +158,9 @@ def collection(include_overall_sources=False):
         from songranker.modes.mode_ratings import (song_mode_ratings, coverage)
         modes = song_mode_ratings(conn)
         data['rating_coverage'] = coverage(conn)
-        from songranker.listening import song_summaries
-        listening=song_summaries(conn)
         added={r['song_id']:r['added_at'] for r in conn.execute('SELECT song_id,added_at FROM song_details')}
         for song in data['songs']:
-            song.update(added_at=added.get(song['id'],0),listening=listening.get(song['id'],dict(samples=0,seconds=0,mean=None)),**performance[song['id']], voting=voting[song['id']], elo_matches_played=voting[song['id']]['raw']['matches'], mode_ratings=modes[song['id']], **special[song['id']])
+            song.update(added_at=added.get(song['id'],0),**performance[song['id']], voting=voting[song['id']], elo_matches_played=voting[song['id']]['raw']['matches'], mode_ratings=modes[song['id']], **special[song['id']])
         if include_overall_sources:
             data['overall_sources']={
                 'trivia_stats':[dict(r) for r in conn.execute('SELECT * FROM trivia_stats')],

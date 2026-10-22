@@ -511,22 +511,6 @@ CREATE TABLE IF NOT EXISTS competition_state (
     migration_report TEXT NOT NULL DEFAULT '{}'
 );
 
--- Measured playback up to an accepted decision; not downloads or reveal audio.
-CREATE TABLE IF NOT EXISTS listening_observations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    mode TEXT NOT NULL CHECK(mode IN ('standard','blind','tournament','trivia','guesser','shelves')),
-    reference TEXT NOT NULL,
-    song_key INTEGER NOT NULL,
-    song_id INTEGER REFERENCES songs(id) ON DELETE SET NULL,
-    seconds REAL NOT NULL CHECK(seconds>=0 AND seconds<=7200),
-    decision_ms REAL NOT NULL CHECK(decision_ms>=0 AND decision_ms<=7200000),
-    selected INTEGER CHECK(selected IN (0,1)),
-    recorded_at REAL NOT NULL,
-    UNIQUE(mode,reference,song_key)
-);
-CREATE INDEX IF NOT EXISTS listening_song_mode ON listening_observations(song_id,mode);
-
-
 -- Enforce the eight-tag policy for every membership writer, including bulk tools.
 CREATE TRIGGER IF NOT EXISTS song_tags_limit_insert
 BEFORE INSERT ON song_genres

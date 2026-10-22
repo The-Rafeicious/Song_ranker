@@ -79,7 +79,7 @@ window.SpecialModes=(()=>{
    const release=U.holdHeight(),oldPair=$$('audio[data-preview-pair]');window.PreviewPlayback?.forgetPair(oldPair)?.catch(()=>{});U.main.setAttribute('aria-busy','true');
    if(!guess)U.main.innerHTML=gameTabs()+'<div class="empty" role="status">Loading pair…</div>';
    $$('[data-guess-pick],[data-guess-next]').forEach(b=>b.disabled=true);if($('[data-guess-next]'))$('[data-guess-next]').textContent='Loading next pair…';$('#guess-load-error')?.remove();
-   try{const load=signal=>U.api('/api/elo-guesser/round',{},undefined,{signal});const result=await(flow?flow.take('guesser',load):load());if(requestId!==guessRequest||reveal.closed||document.body.dataset.tone!=='guesser')return;guess={...result,answered:false};window.Listening?.start('guesser',guess.token,guess.songs.map(s=>s.id));renderGuess();}
+   try{const load=signal=>U.api('/api/elo-guesser/round',{},undefined,{signal});const result=await(flow?flow.take('guesser',load):load());if(requestId!==guessRequest||reveal.closed||document.body.dataset.tone!=='guesser')return;guess={...result,answered:false};renderGuess();}
    catch(error){if(requestId===guessRequest&&!reveal.closed&&document.body.dataset.tone==='guesser'){
     U.main.insertAdjacentHTML('beforeend',`<p id="guess-load-error" class="error" role="alert">${esc(error.message)}</p>`);
     if(!$('[data-guess-next]'))U.main.insertAdjacentHTML('beforeend','<div class="next-area"><button class="btn" data-guess-next>Retry pair</button></div>');else $('[data-guess-next]').textContent='Retry pair';
@@ -100,7 +100,7 @@ window.SpecialModes=(()=>{
    if(guessBusy||!guess||guess.answered)return;guessBusy=true;$$('[data-guess-pick]').forEach(b=>b.disabled=true);
    let saved=false;const current=guess,requestGeneration=reveal.generation;
    try{
-     const result=await U.api('/api/elo-guesser/answer',{token:current.token,song_id:id,listening:window.Listening?.sample()});saved=true;if(guess!==current||reveal.closed||requestGeneration!==reveal.generation)return;window.PreviewPlayback?.hold();cancelReveal();
+     const result=await U.api('/api/elo-guesser/answer',{token:current.token,song_id:id});saved=true;if(guess!==current||reveal.closed||requestGeneration!==reveal.generation)return;window.PreviewPlayback?.hold();cancelReveal();
      guess.answered=true;guess.chosen=id;guess.result=result;guess.records=result.records;renderGuess();
      const generation=reveal.generation,correct=guess.songs[result.ratings[0]>result.ratings[1]?0:1];snippet(correct,wait('guessClip',2800),generation);
      flow?.prepare('guesser',signal=>U.api('/api/elo-guesser/round',{},undefined,{signal}));
@@ -148,7 +148,7 @@ window.SpecialModes=(()=>{
    $$('[data-shelf-next],[data-shelf-play],[data-shelf-retry]').forEach(b=>b.disabled=true);U.main.setAttribute('aria-busy','true');$('#shelf-load-error')?.remove();
    try{const load=signal=>U.api('/api/album-shelves/round',{album_count:0,fresh:false},undefined,{signal});const result=await(flow?flow.take('shelves',load):load());if(generation!==reveal.generation||reveal.closed)return;
      shelf={...result,placements:Object.fromEntries(result.albums.map(a=>[String(a.slot),[]])),pool:result.songs.map(s=>s.slot),answered:false,revealed:new Set()};
-     window.Listening?.start('shelves',shelf.token,shelf.songs.map(s=>s.id));
+
      $('#shelf-content').innerHTML=`<div class="shelf-actions"><button class="btn primary" data-shelf-check>Check shelves</button><button class="btn primary shelf-next" data-shelf-next hidden>Next round →</button><div id="shelf-order-score" class="shelf-order-score" hidden role="status"></div><span id="shelf-reveal-progress" class="shelf-reveal-progress" role="status"></span><small id="reveal-audio-note"></small></div><div class="shelf-audio-bar panel dashboard-surface"><span class="shelf-preview-duration">10-second samples</span><button class="btn primary" data-shelf-play aria-pressed="false" ${shelf.songs.some(s=>s.audio_url)?'':'disabled'}>▶ Play previews</button><span id="shelf-preview-info" role="status">${shelf.songs.filter(s=>s.audio_url).length} / 10 previews</span><audio id="shelf-preview-audio" preload="none"></audio></div><div id="shelf-board"></div>`;renderShelfBoard();bindShelfAudio();
    }catch(error){if(generation===reveal.generation&&!reveal.closed){$('#shelf-content').insertAdjacentHTML('beforeend',`<div id="shelf-load-error"><p class="error" role="alert">${esc(error.message)}</p><button class="btn" data-shelf-retry>Retry loading</button></div>`);}}
    finally{if(generation===reveal.generation){shelfBusy=false;U.main.removeAttribute('aria-busy')}release();}
@@ -239,7 +239,7 @@ window.SpecialModes=(()=>{
 
  async function checkShelf(){
    if(shelfBusy||!shelf||shelf.answered||shelf.pool.length)return;const current=shelf,generation=reveal.generation;shelfBusy=true;$('[data-shelf-check]').disabled=true;let saved=false;
-   try{const result=await U.api('/api/album-shelves/answer',{token:current.token,placements:current.placements,listening:window.Listening?.sample()});saved=true;current.answered=true;current.result=result;if(shelf!==current||generation!==reveal.generation||reveal.closed)return;stopShelf(true);window.PreviewPlayback?.hold();cancelReveal();renderShelfBoard();$('[data-shelf-play]').disabled=true;
+   try{const result=await U.api('/api/album-shelves/answer',{token:current.token,placements:current.placements});saved=true;current.answered=true;current.result=result;if(shelf!==current||generation!==reveal.generation||reveal.closed)return;stopShelf(true);window.PreviewPlayback?.hold();cancelReveal();renderShelfBoard();$('[data-shelf-play]').disabled=true;
      flow?.prepare('shelves',signal=>U.api('/api/album-shelves/round',{album_count:0,fresh:false},undefined,{signal}));await revealShelfRound();
    }catch(error){U.toast(error.message);if(!saved&&$('[data-shelf-check]'))$('[data-shelf-check]').disabled=false;}
    finally{if(!saved)shelfBusy=false;}

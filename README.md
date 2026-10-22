@@ -1,6 +1,6 @@
 # Song Ranker
 
-**Documentation v5.1.1 · Vibe Map integration v5.1.0 · competition generation 3 · SQLite schema 19**
+**Application v5.1.2 · Vibe Map integration v5.1.0 · competition generation 3 · SQLite schema 20**
 
 Rank your music, recognise previews, play brackets and quizzes, arrange albums,
 and describe songs on continuous Vibe Maps. Your songs, albums, artists and tags
@@ -28,9 +28,7 @@ restore a generation-3 SQL snapshot, use an optional catalogue seed, or start
 empty. A **first V2-to-V3 transfer** resets results; a routine code update does
 not repeat that reset. See [upgrades and recovery](docs/UPGRADES.md).
 
-This PR changes documentation only. The code still reports application
-`5.0.5.1` and Vibe Map `1.1`; these runtime/cache versions are separate from the
-v5.1.0 integration and v5.1.1 documentation release headings.
+The app reports `5.1.2`; Vibe Map retains its internal mode version `1.1`.
 
 ## Modes
 
@@ -79,7 +77,7 @@ eligible pairing. The Vibe selector strongly favours unmapped songs. Full
 | Song profiles | Artwork/player, catalogue links, compact mode records, a Vibe radar above Overall once four maps are placed, and similar tracks. |
 | Album/artist/tag profiles | Linked tracks/releases, pooled mode evidence and four compact Vibe heatmaps once two members are fully mapped. Tags initially show six albums; collection song lists show thirty, with Show more. |
 | Rankings | Song and collection Elo/Impact, Overall, and detailed mode boards. Vibe boards have albums/artists/tags only, top/bottom twenty, with absolute ranks. |
-| Global Stats | Catalogue/mode totals, recent activity, listening diagnostics, Overall, Vibe summary, detailed records and recent mode results. Vibe activity counts each song’s latest retained save. |
+| Global Stats | Catalogue/mode totals, recent activity, Overall, Vibe summary, detailed records and recent mode results. Vibe activity counts each song’s latest retained save. |
 | Detailed mode stats | Coverage, distributions, trends, records and histories relevant to that mode. Vibe adds all-track heatmaps, patterns, pairs, contrasts and most/least consistent groups. |
 | Match history | Ordinary votes and eligible tournament first rounds, visibility/source filters, saved Elo changes and bracket links. |
 
@@ -89,11 +87,8 @@ pooled once; missing evidence is unavailable rather than a fabricated zero rate.
 Vibe consistency requires at least two fully mapped songs; Singles/unknown
 releases stay outside proper-album records.
 
-**Listening before decisions** reports measured audible preview time from the
-five scored play modes (both voting visibilities), excluding pauses, buffering,
-preloading and muted playback. Zero is a measured unlistened offer; missing is
-unknown. Vibe Map does not add listening observations to that system. Listening
-and private preview flags are diagnostic, not score adjustments.
+Listening-time tracking and its stored observations were removed in v5.1.2.
+Preview playback and Trivia’s answer timer remain available.
 
 ## Dev tools
 
@@ -106,7 +101,7 @@ catalogue maintenance without editing stored game facts unintentionally.
 | Library | Explorer plus Songs, Artists, Albums and Tags tables; edit/delete, track placement, source details, preview quality and Vibe shortcuts. |
 | Editing | Apple song/album import, reviewed source changes, Singles moves, bulk album/source work, tag/preview workbench and missing-information scan → review → apply. |
 | Records | Saved-vote review/correction and Elo overrides; Trivia totals; tournament view/delete/podium edits; Guesser/Shelves records; Vibe map/count edits, map clear, song delete and mode reset. |
-| System | Tasks & health, Overall diagnostics, selection health and analysis downloads, inventory, backups, reviewed restore, lossless export/rebuild, Git check/upload and controlled Stop app. |
+| System | Tasks & health, Overall diagnostics, selection health and analysis downloads, inventory, backups, reviewed restore, lossless export/rebuild, Git check/upload, reviewed keep-local choice and controlled Stop app. |
 
 Each song has at most **eight tags**, including imported genres. Add/Replace
 checks the final membership of every selected song; Remove stays available.
@@ -135,8 +130,10 @@ also cover the optional one-time test cleanup script. It is never automatic.
   including after a manual pull. It adopts a newer snapshot only when the
   baseline proves it contains all local changes, including deletions.
 - A split keeps the local database, saves an incoming review copy and blocks
-  an unsafe upload. Compare backups and use reviewed restore deliberately;
-  there is no automatic row union or force-push.
+  an unsafe upload. Choose reviewed restore or **Keep local database…** in Dev →
+  System → Git. Review counts, type `KEEP LOCAL`, then upload normally;
+  both copies are backed up. Restart first if code updates are pending. There is
+  no automatic row union or force-push.
 
 Preserve `instance/session_secret`. Default backups are beside the live file in
 `data/database_backups/`; custom database paths use a sibling folder. Keep test

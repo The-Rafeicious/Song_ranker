@@ -1,5 +1,5 @@
 {% extends 'base.html' %}
-{% from 'stats_visuals.html' import pulse, listening_panel %}
+{% from 'stats_visuals.html' import pulse %}
 {% from 'components.html' import art %}
 {% from 'mode_stats_components.html' import figure, rate, number, progress, metadata, saved_date %}
 {% block title %}Elo Guesser Stats · Song Ranker{% endblock %}
@@ -55,7 +55,6 @@
     {% if summary.undated %}<p class="mode-stats-caption">{{ summary.undated }} {{ 'result has' if summary.undated==1 else 'results have' }} no usable date; streaks cover dated results.</p>{% endif %}
   </section>
   {{pulse(pulse_data)}}
-  {{listening_panel(listening_data)}}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-form">
     <div class="section-head"><h2 class="guesser" id="guesser-form">Recent form</h2></div>

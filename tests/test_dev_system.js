@@ -197,7 +197,25 @@ async function stopFlows(){
  const external=await harness();external.handler(url=>url==='/api/dev/stop'?{state:'idle',supported:false,target:{available:false,message:'No Git'},review_token:'stop-review'}:undefined);
  external.click('[data-system-stop]');await flush();check(external.d.querySelector('[data-stop-prepare]').disabled,'external WSGI shutdown is disabled');external.close();
 }
+async function localDatabaseChoice(){
+ const h=await harness('export');h.state.git=git({state:'behind',behind:1,database_sync:{code:'database_remote_ahead',message:'Incoming has test results'}});h.w.testDev.setView('export');await flush();
+ const pending=deferred();h.handler((url,options)=>{
+  if(url==='/api/dev/git/keep-local/review')return {ok:true,local:{Songs:4,'Vibe positions':0},remote:{Songs:7,'Vibe positions':20},choice_token:'reviewed-databases',message:'Compare both copies',git:h.state.git};
+  if(url==='/api/dev/git/keep-local')return pending.promise;
+ });
+ check(h.d.querySelector('[data-system-upload]').disabled,'incoming code keeps normal upload blocked');
+ check(!h.d.querySelector('[data-system-local-review]').disabled,'local choice is available before a restart');
+ h.click('[data-system-local-review]');await flush();
+ check(h.d.querySelector('#system-local-choice').textContent.includes('Vibe positions'),'comparison includes wiped vs unwiped Vibe evidence');
+ check(h.d.querySelector('[data-system-local-apply]').disabled,'choice needs explicit confirmation');
+ h.input('#system-local-confirmation','KEEP LOCAL');h.click('[data-system-local-apply]');await flush();
+ check(h.requests.filter(r=>r.url==='/api/dev/git/keep-local').length===1,'one keep-local mutation while pending');
+ const sent=JSON.parse(h.requests.find(r=>r.url==='/api/dev/git/keep-local').options.body);check(sent.choice_token==='reviewed-databases'&&sent.confirmation==='KEEP LOCAL','choice submits reviewed token and confirmation');
+ pending.resolve({ok:true,message:'Local database kept. Restart then upload.',git:h.state.git});await flush();
+ check(!h.d.querySelector('#system-local-confirmation'),'accepted review removed');check(h.d.querySelector('#system-note').textContent.includes('Local database kept'),'success explains next step');
+ check(h.d.querySelector('[data-system-upload]').disabled,'local choice does not bypass code update guard');h.close();
+}
 module.exports={harness,flush};
-if(require.main===module)(async()=>{await entryAndShortcuts();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
+if(require.main===module)(async()=>{await entryAndShortcuts();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
 
 

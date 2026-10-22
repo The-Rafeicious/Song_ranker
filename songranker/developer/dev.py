@@ -514,7 +514,6 @@ def delete_special_round(mode,round_id):
             return jsonify(message='This answer belongs to a challenge run. Reset Elo Guesser history to remove challenge runs.'),409
         deleted=conn.execute(f'DELETE FROM {table} WHERE id=?',(round_id,)).rowcount
         if not deleted:return jsonify(message='Round not found.'),404
-        conn.execute('DELETE FROM listening_observations WHERE mode=? AND reference=?',(mode,str(round_id)))
         conn.commit()
         return jsonify(message='Round deleted. Other modes and music kept.',backup=None)
     finally:conn.close()
@@ -595,7 +594,6 @@ def api_dev_edit_trivia(song_id):
         if conn.execute('SELECT 1 FROM trivia_rounds WHERE song_id=? AND run_id IS NOT NULL',(song_id,)).fetchone():
             conn.close()
             return jsonify(message='This track belongs to a challenge run. Edit field totals to adjust recognisability, or reset Trivia history to remove runs.'),409
-        conn.execute("DELETE FROM listening_observations WHERE mode='trivia' AND song_key=?",(song_id,))
         conn.execute('DELETE FROM trivia_rounds WHERE song_id=?', (song_id,))
         conn.execute('DELETE FROM trivia_adjustments WHERE song_id=?',(song_id,))
 
@@ -648,7 +646,6 @@ def api_dev_delete_tournament(tournament_id):
             return jsonify({'message':'Tournament not found.'}),404
         from songranker.modes.preferences import void_tournament_preferences
         void_tournament_preferences(conn, tournament_id)
-        conn.execute("DELETE FROM listening_observations WHERE mode='tournament' AND reference IN (SELECT CAST(id AS TEXT) FROM tournament_matches WHERE tournament_id=?)",(tournament_id,))
         conn.execute('DELETE FROM tournament_matches WHERE tournament_id=?',(tournament_id,))
         conn.execute('DELETE FROM tournament_entries WHERE tournament_id=?',(tournament_id,))
         conn.execute('DELETE FROM tournaments WHERE id=?',(tournament_id,))
