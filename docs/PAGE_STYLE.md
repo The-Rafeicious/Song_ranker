@@ -179,7 +179,8 @@ Database inspection, backups/restore, Git, resets and exports have separate focu
 pages with compact status summaries and bounded workspaces. Separate
 code status from live-database status and identify cached/fresh checks. Git comparisons
 show full wrapping hashes, numbered devices/time and native whole-copy selection;
-switching copies clears typed confirmation. Storage compaction sits with Git actions. Tables,
+switching copies clears typed confirmation. Opening a choice collapses the duplicate
+status detail above it. Storage compaction sits with Git actions. Tables,
 long values and backup restore reviews stay inside their own scroll areas.
 Vibe maintenance uses a bounded song queue beside the editor (above the queue on
 phones). Four direct map selectors expose one coordinate group at a time, retaining

@@ -884,21 +884,21 @@ Logical database hashes, numbered-device registry, baseline receipts and reviewe
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [model](../songranker/storage/git_database.py#L28) | `conn` | Compare stored facts by primary key; only install metadata is device-local. |
-| [delta](../songranker/storage/git_database.py#L74) | `base, changed` | Count added, removed and edited rows for each table between two indexed snapshots. |
-| [placeholder](../songranker/storage/git_database.py#L89) | `sql` | Detect an empty or comments-only Git SQL snapshot. |
-| [prepare_sql](../songranker/storage/git_database.py#L96) | `sql, folder, name, historical=False` | Materialise and validate bounded SQL in disposable storage, preserving full competition facts. |
-| [DatabaseSync.__init__](../songranker/storage/git_database.py#L130) | `self, git, state` | Initialise this object’s state and dependencies. |
-| [DatabaseSync.blob](../songranker/storage/git_database.py#L146) | `self, commit` | Resolve the tracked SQL snapshot's blob at a commit, returning no value when absent. |
-| [DatabaseSync.sql](../songranker/storage/git_database.py#L155) | `self, blob` | Read the SQL text stored in an already resolved Git blob. |
-| [DatabaseSync.device_key](../songranker/storage/git_database.py#L159) | `self` | Persist a random installation identity bound to the configured live database. |
-| [DatabaseSync.remote_identity](../songranker/storage/git_database.py#L188) | `self` | Read the latest snapshot commit's numbered-device registry and timestamp. |
-| [DatabaseSync.remember](../songranker/storage/git_database.py#L256) | `self, commit, blob, model_hash=None` | Persist the accepted remote hash and Git witness, bound to this database. |
-| [DatabaseSync.receipt](../songranker/storage/git_database.py#L286) | `self` | Read old or hash-based receipts without accepting another database's baseline. |
-| [DatabaseSync.review](../songranker/storage/git_database.py#L311) | `self` | Compare logical hashes before every pull/push, independently of code ancestry. |
-| [DatabaseSync.incoming_backup](../songranker/storage/git_database.py#L476) | `self, review` | Preserve the incoming candidate as a verified backup without replacing different saved data. |
-| [DatabaseSync.adopt](../songranker/storage/git_database.py#L495) | `self, review` | Archive, check again under a write lock, replace and validate atomically. |
-| [DatabaseSync.public](../songranker/storage/git_database.py#L526) | `review` | Remove temporary paths and private comparison witnesses from a reconciliation review. |
+| [model](../songranker/storage/git_database.py#L29) | `conn` | Compare stored facts by primary key; only install metadata is device-local. |
+| [delta](../songranker/storage/git_database.py#L75) | `base, changed` | Count added, removed and edited rows for each table between two indexed snapshots. |
+| [placeholder](../songranker/storage/git_database.py#L90) | `sql` | Detect an empty or comments-only Git SQL snapshot. |
+| [prepare_sql](../songranker/storage/git_database.py#L97) | `sql, folder, name, historical=False` | Materialise and validate bounded SQL in disposable storage, preserving full competition facts. |
+| [DatabaseSync.__init__](../songranker/storage/git_database.py#L131) | `self, git, state` | Initialise this object’s state and dependencies. |
+| [DatabaseSync.blob](../songranker/storage/git_database.py#L147) | `self, commit` | Resolve the tracked SQL snapshot's blob at a commit, returning no value when absent. |
+| [DatabaseSync.sql](../songranker/storage/git_database.py#L156) | `self, blob` | Read the SQL text stored in an already resolved Git blob. |
+| [DatabaseSync.device_key](../songranker/storage/git_database.py#L160) | `self` | Keep random device keys local, distinguishing copied Git folders on another host. |
+| [DatabaseSync.remote_identity](../songranker/storage/git_database.py#L212) | `self` | Read the latest snapshot commit's numbered-device registry and timestamp. |
+| [DatabaseSync.remember](../songranker/storage/git_database.py#L280) | `self, commit, blob, model_hash=None` | Persist the accepted remote hash and Git witness, bound to this database. |
+| [DatabaseSync.receipt](../songranker/storage/git_database.py#L310) | `self` | Read old or hash-based receipts without accepting another database's baseline. |
+| [DatabaseSync.review](../songranker/storage/git_database.py#L335) | `self` | Compare logical hashes before every pull/push, independently of code ancestry. |
+| [DatabaseSync.incoming_backup](../songranker/storage/git_database.py#L500) | `self, review` | Preserve the incoming candidate as a verified backup without replacing different saved data. |
+| [DatabaseSync.adopt](../songranker/storage/git_database.py#L519) | `self, review` | Archive, check again under a write lock, replace and validate atomically. |
+| [DatabaseSync.public](../songranker/storage/git_database.py#L550) | `review` | Remove temporary paths and private comparison witnesses from a reconciliation review. |
 
 ## songranker/storage/preference_state.py
 
@@ -1256,15 +1256,17 @@ Two local computers and a bare remote; never touches the user's databases/Git.
 | [GitDatabaseTests.test_fresh_check_separates_current_code_from_newer_remote_database](../tests/test_git_database.py#L658) | `self` | Verify fresh check separates current code from newer remote database. |
 | [GitDatabaseTests.test_fresh_check_allows_live_local_additions_with_stale_sql_file](../tests/test_git_database.py#L675) | `self` | Verify fresh check allows live local additions with stale sql file. |
 | [GitDatabaseTests.test_numbered_devices_are_stable_across_three_installations](../tests/test_git_database.py#L684) | `self` | Verify numbered devices are stable across three installations. |
-| [GitDatabaseTests.test_same_device_remote_ahead_trusts_local_edits_and_deletions](../tests/test_git_database.py#L716) | `self` | Verify same device remote ahead trusts local edits and deletions. |
-| [GitDatabaseTests.test_remote_baseline_hash_allows_local_changes_despite_incoming_code](../tests/test_git_database.py#L736) | `self` | Verify remote baseline hash allows local changes despite incoming code. |
-| [GitDatabaseTests.test_different_device_requires_review_even_when_remote_covers_local](../tests/test_git_database.py#L752) | `self` | Verify different device requires review even when remote covers local. |
-| [GitDatabaseTests.test_explicit_remote_choice_rejects_stale_local_and_remote](../tests/test_git_database.py#L773) | `self` | Verify explicit remote choice rejects stale local and remote. |
-| [GitDatabaseTests.test_local_write_while_building_upload_is_rechecked_before_push](../tests/test_git_database.py#L792) | `self` | Verify local write while building upload is rechecked before push. |
-| [GitDatabaseTests.test_local_write_while_building_upload_is_rechecked_before_push.racing](../tests/test_git_database.py#L797) | `*args, **kwargs` | Racing; writes songs. |
-| [GitDatabaseTests.test_remote_move_during_push_is_rejected_then_recompared](../tests/test_git_database.py#L814) | `self` | Verify remote move during push is rejected then recompared. |
-| [GitDatabaseTests.test_remote_move_during_push_is_rejected_then_recompared.racing](../tests/test_git_database.py#L820) | `*args, **kwargs` | Racing. |
-| [GitDatabaseTests.test_removed_remote_snapshot_is_a_reviewable_conflict](../tests/test_git_database.py#L835) | `self` | Verify removed remote snapshot is a reviewable conflict. |
+| [GitDatabaseTests.test_copied_git_identity_on_another_host_gets_a_new_device_number](../tests/test_git_database.py#L716) | `self` | Verify copied git identity on another host gets a new device number. |
+| [GitDatabaseTests.test_manual_sql_commit_preserves_existing_device_number_allocations](../tests/test_git_database.py#L739) | `self` | Verify manual sql commit preserves existing device number allocations. |
+| [GitDatabaseTests.test_same_device_remote_ahead_trusts_local_edits_and_deletions](../tests/test_git_database.py#L758) | `self` | Verify same device remote ahead trusts local edits and deletions. |
+| [GitDatabaseTests.test_remote_baseline_hash_allows_local_changes_despite_incoming_code](../tests/test_git_database.py#L778) | `self` | Verify remote baseline hash allows local changes despite incoming code. |
+| [GitDatabaseTests.test_different_device_requires_review_even_when_remote_covers_local](../tests/test_git_database.py#L794) | `self` | Verify different device requires review even when remote covers local. |
+| [GitDatabaseTests.test_explicit_remote_choice_rejects_stale_local_and_remote](../tests/test_git_database.py#L815) | `self` | Verify explicit remote choice rejects stale local and remote. |
+| [GitDatabaseTests.test_local_write_while_building_upload_is_rechecked_before_push](../tests/test_git_database.py#L834) | `self` | Verify local write while building upload is rechecked before push. |
+| [GitDatabaseTests.test_local_write_while_building_upload_is_rechecked_before_push.racing](../tests/test_git_database.py#L839) | `*args, **kwargs` | Racing; writes songs. |
+| [GitDatabaseTests.test_remote_move_during_push_is_rejected_then_recompared](../tests/test_git_database.py#L856) | `self` | Verify remote move during push is rejected then recompared. |
+| [GitDatabaseTests.test_remote_move_during_push_is_rejected_then_recompared.racing](../tests/test_git_database.py#L862) | `*args, **kwargs` | Racing. |
+| [GitDatabaseTests.test_removed_remote_snapshot_is_a_reviewable_conflict](../tests/test_git_database.py#L877) | `self` | Verify removed remote snapshot is a reviewable conflict. |
 
 ## tests/test_git_keep_local.py
 
@@ -1732,4 +1734,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1182 Python definitions**.
+Total: **1184 Python definitions**.

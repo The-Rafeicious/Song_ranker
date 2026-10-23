@@ -259,12 +259,11 @@ Schema 20 removes only legacy listening observations and their index. Startup
 keeps a pre-migration backup. Existing scores, Vibe placements and catalogue links
 remain intact; restoring an older backup runs the same migration.
 
-For an intentional local reset or restored save, open Dev → System → Git and
-choose **Keep local database…**. Review local/remote counts, type `KEEP LOCAL`,
-and apply. Both databases are backed up; the live database stays unchanged.
-Use normal upload afterwards. If source is behind, restart to update code first;
-the reviewed database choice survives that restart. This does not force-push or
-resolve diverged source commits. Any newer remote data needs a new review.
+For an intentional local reset or restored save, open Dev → Tools & systems →
+Git sync → **Compare databases…**. Review the copies and type `KEEP LOCAL`. Both
+databases are backed up; the live database stays unchanged and can upload
+immediately even with incoming code. The current hash/device policy above
+supersedes the earlier ahead/behind upload restriction.
 
 ## v5.2.0 Dev navigation
 

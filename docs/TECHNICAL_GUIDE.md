@@ -584,7 +584,7 @@ A before-request lease covers complete write requests, including direct-SQL
 metadata fills and Git requests. Once a stop starts, new APIs are refused with
 503. Existing requests finish; the maintenance gate then drains DB connections
 and remains held through backup, Git upload and UI acknowledgement. Git uses the
-reviewed target fingerprint and its existing no-force-push/database-only policy.
+reviewed target fingerprint and its history-preserving/database-only policy.
 No background metadata scan writes data; applying a scan is a tracked request.
 
 The browser displays backup/Git receipts before a four-second acknowledgement.
@@ -620,7 +620,9 @@ device's current local data; another/unidentified writer requires an explicit
 whole-copy choice. Baseline and direct per-table deltas explain additions,
 removals, edits, schema and sequence differences; row counts do not decide policy.
 
-A random 128-bit installation key is private local state bound to the live DB path.
+A random 128-bit installation key is private local state bound to the live DB path
+and a private hashed host fingerprint. Copying Git metadata to another host does
+not reuse that host's key; the fingerprint itself never leaves local state.
 Each successful new-device upload carries the complete key→number registry in its
 commit message (`Song-Ranker-Devices`), its writer number (`Song-Ranker-Device`)
 and logical hash (`Song-Ranker-Hash`). Numbers allocate monotonically from 1 on the

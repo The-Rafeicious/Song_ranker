@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from pathlib import Path
 import json
 import os
+import platform
 import sqlite3
 import tempfile
 import uuid
@@ -157,26 +158,49 @@ class DatabaseSync:
         return self.git.run("show", blob).stdout
 
     def device_key(self):
-        """Persist a random installation identity bound to the configured live database."""
+        """Keep random device keys local, distinguishing copied Git folders on another host.
+
+        The private host fingerprint is never written to SQL or commit metadata.
+        Each configured DB path has its own identity map; returning to an already
+        seen host reuses its key rather than allocating another device number.
+        """
         path = self.git.state_dir / (
             "device_" + digest(str(self.git.database)) + ".json"
         )
+        host = digest(dict(node=uuid.getnode(), name=platform.node()))
+        identities = {}
         if path.exists():
             value = json.loads(path.read_text(encoding="utf-8"))
-            key = value.get("key", "")
-            if len(key) != 32 or any(c not in "0123456789abcdef" for c in key):
+            identities = value.get("identities", {})
+            if value.get("key") and not identities:
+                identities = {
+                    host: value["key"]
+                }  # Read an earlier installation-key format.
+            if (
+                not isinstance(identities, dict)
+                or len(identities) > 256
+                or any(
+                    not isinstance(h, str)
+                    or len(h) != 64
+                    or not isinstance(key, str)
+                    or len(key) != 32
+                    or any(c not in "0123456789abcdef" for c in h + key)
+                    for h, key in identities.items()
+                )
+            ):
                 raise DatabaseValidationError(
                     "Local device identity is invalid; review the saved database copies."
                 )
-            return key
+            if host in identities:
+                return identities[host]
         key = uuid.uuid4().hex
+        identities[host] = key
         self.git.state_dir.mkdir(exist_ok=True)
-        # The operation lock serializes creation; atomic replacement survives interruption.
         with tempfile.NamedTemporaryFile(
-            dir=self.git.state_dir, mode="w", delete=False
+            dir=self.git.state_dir, mode="w", encoding="utf-8", delete=False
         ) as stream:
             name = stream.name
-            json.dump(dict(key=key), stream)
+            json.dump(dict(version=1, identities=identities), stream)
             stream.flush()
             os.fsync(stream.fileno())
         try:

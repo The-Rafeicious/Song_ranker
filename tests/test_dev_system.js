@@ -227,7 +227,7 @@ async function remoteChoiceAndCompaction(){
  const h=await harness('export'),{d,w}=h;const details={local_hash:'a'.repeat(64),remote_hash:'b'.repeat(64),baseline_hash:'c'.repeat(64),local_device:1,remote_device:2,remote_time:'2026-10-23T10:00:00Z',different_rows:{songs:{added:1,removed:2,edited:3}}};let pending=deferred();
  h.handler(url=>url==='/api/dev/git/keep-local/review'?{ok:true,local:{Songs:4},remote:{Songs:6},details,choice_token:'choice',message:'Compared',git:git()}:url==='/api/dev/git/use-remote'?pending.promise:undefined);
  h.click('[data-system-local-review]');await flush();
- check(d.querySelector('#system-local-choice').textContent.includes(details.remote_hash),'review shows full remote hash');
+ check(d.querySelector('#system-local-choice').textContent.includes(details.remote_hash),'review shows full remote hash');check(!d.querySelector('.git-comparison-summary').open,'opening a choice collapses duplicate status details');
  check(d.querySelector('#system-local-choice').textContent.includes('Device 2')&&d.querySelector('.git-row-differences'),'review identifies writer and table differences');
  h.input('#system-local-confirmation','KEEP LOCAL');const choice=d.querySelector('#system-database-choice');choice.value='remote';choice.dispatchEvent(new w.Event('change',{bubbles:true}));
  check(d.querySelector('[data-system-local-apply]').disabled&&d.querySelector('#system-local-confirmation').value==='','switching copies clears prior authorization');

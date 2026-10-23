@@ -109,8 +109,9 @@ Code ahead/behind and database safety are independent.
 | Invalid/missing previously accepted snapshot | Keep local data and review the remote problem. |
 
 Device numbers start at **1**, then **2**, **3**, and so on when each new
-installation first uploads. A random local identity keeps the number stable;
-computer/user names and credentials are not added to backups. Moving the live
+installation first uploads. A random local identity and private host fingerprint keep the number stable;
+copying `.git` onto another host creates a different identity. Computer/user names
+and credentials are not added to backups. Moving the live
 DB to a different configured path counts as a separate installation identity.
 The SQL header contains its backup commit time (UTC) and device number.
 

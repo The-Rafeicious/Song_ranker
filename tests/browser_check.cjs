@@ -241,7 +241,7 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.goto(base+'/dev/dashboard?view=export');await page.locator('[data-system-local-review]:enabled').waitFor();await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Fresh comparison'));for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-git',folder);await page.screenshot({path:folder+'/dev-git-'+width+'.png',fullPage:true});}
   assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('[data-system-local-review]').click();await page.locator('#system-local-confirmation').waitFor();
-  assert.ok(await page.locator('[data-system-local-apply]').isDisabled());
+  assert.ok(await page.locator('[data-system-local-apply]').isDisabled());assert.equal(await page.locator('.git-comparison-summary').getAttribute('open'),null);
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-keep-local',folder);await page.locator('#system-local-choice').screenshot({path:folder+'/dev-keep-local-'+width+'.png'});}
   await page.locator('#system-local-confirmation').fill('KEEP LOCAL');await page.locator('[data-system-local-apply]').click();
   await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Local database kept'));

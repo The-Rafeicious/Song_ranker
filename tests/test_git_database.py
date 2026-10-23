@@ -713,6 +713,48 @@ class GitDatabaseTests(unittest.TestCase):
         self.assertIn("device: 1", self.sync.sql.read_text().splitlines()[0])
         self.assertIn(ident["committed_at"], self.sync.sql.read_text().splitlines()[0])
 
+    def test_copied_git_identity_on_another_host_gets_a_new_device_number(self):
+        self.assertTrue(self.sync.upload()["ok"])
+        policy = DatabaseSync(self.sync, self.sync.inspect())
+        first = policy.device_key()
+        with patch(
+            "songranker.storage.git_database.uuid.getnode", return_value=123456789
+        ):
+            self.assertNotEqual(policy.device_key(), first)
+            self.edit(self.db, "UPDATE songs SET title='Another physical host'")
+            self.assertTrue(self.sync.upload()["ok"])
+            identity, registry = DatabaseSync(
+                self.sync, self.sync.inspect()
+            ).remote_identity()
+            self.assertEqual(identity["device"], 2)
+            self.assertEqual(len(registry), 2)
+        self.assertEqual(policy.device_key(), first)
+        self.edit(self.db, "UPDATE songs SET title='Original host again'")
+        self.assertTrue(self.sync.upload()["ok"])
+        self.assertEqual(
+            DatabaseSync(self.sync, self.sync.inspect()).remote_identity()[0]["device"],
+            1,
+        )
+
+    def test_manual_sql_commit_preserves_existing_device_number_allocations(self):
+        self.pair()
+        self.edit(self.desktop_db, "UPDATE songs SET title='Second device'")
+        self.publish()
+        # A manual SQL edit has an unknown author device but must not reset numbering.
+        sql = command(self.remote, "show", "main:database_backup.sql").replace(
+            "Second device", "Manual change"
+        )
+        self.remote_change({"database_backup.sql": sql})
+        reviewed = self.sync.local_choice_review()
+        self.assertIsNone(reviewed["details"]["remote_device"])
+        self.assertTrue(self.sync.keep_local(reviewed["choice"])["ok"])
+        self.assertTrue(self.sync.upload()["ok"])
+        identity, registry = DatabaseSync(
+            self.sync, self.sync.inspect()
+        ).remote_identity()
+        self.assertEqual(identity["device"], 1)
+        self.assertEqual(sorted(registry.values()), [1, 2])
+
     def test_same_device_remote_ahead_trusts_local_edits_and_deletions(self):
         self.assertTrue(self.sync.upload()["ok"])
         self.edit(

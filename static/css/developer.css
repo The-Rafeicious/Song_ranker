@@ -1262,3 +1262,13 @@ body[data-page="dev"] .git-hashes code {
   white-space: normal;
   font-size: 14px;
 }
+
+body[data-page="dev"] .git-comparison-summary > summary {
+  min-height: 44px;
+  padding: 12px 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+body[data-page="dev"] .git-comparison-summary[open] > summary {
+  margin-bottom: 12px;
+}
