@@ -198,33 +198,35 @@ Git/backups/recovery, inventory, database inspection and analysis routes.
 | [git_upload](../songranker/developer/dev_system.py#L136) | `` | Git upload; POST /api/dev/git/upload. |
 | [review_local_database](../songranker/developer/dev_system.py#L142) | `` | Review local database; POST /api/dev/git/keep-local/review. |
 | [keep_local_database](../songranker/developer/dev_system.py#L159) | `` | Keep local database; POST /api/dev/git/keep-local. |
-| [backup_folder](../songranker/developer/dev_system.py#L170) | `` | Resolve the backup directory beside the configured live database. |
-| [backup_path](../songranker/developer/dev_system.py#L175) | `name` | Resolve a regular local .db backup while rejecting traversal, symlinks and missing files. |
-| [purpose](../songranker/developer/dev_system.py#L193) | `name` | Translate known backup filename prefixes into short recovery-purpose labels. |
-| [backups](../songranker/developer/dev_system.py#L220) | `` | List regular local database backups with names, purposes, sizes and modification times. |
-| [area](../songranker/developer/dev_system.py#L247) | `name, kind` | Assign an inspected SQLite table or view to its feature group for the database inventory. |
-| [inventory](../songranker/developer/dev_system.py#L288) | `` | Inventory; reads song_genres, song_sources, song_vibe_positions, songs, sqlite_master. |
-| [system_status](../songranker/developer/dev_system.py#L368) | `` | System status; GET /api/dev/system. |
-| [counts](../songranker/developer/dev_system.py#L372) | `db` | Read available catalogue and result counts from an inspected database without assuming every table exists. |
-| [backup_review](../songranker/developer/dev_system.py#L403) | `` | Backup review; POST /api/dev/backups/review. |
-| [restore_database](../songranker/developer/dev_system.py#L435) | `*, require_review=False` | Validate a stored backup and review witnesses before an exclusive, backed-up database restore. |
-| [backup_restore](../songranker/developer/dev_system.py#L491) | `` | Backup restore; POST /api/dev/backups/restore. |
-| [backup_download](../songranker/developer/dev_system.py#L497) | `name` | Backup download; GET /api/dev/backups/<name>/download. |
-| [full_export](../songranker/developer/dev_system.py#L513) | `` | Full export; GET /api/dev/database/export. |
-| [database_guide](../songranker/developer/dev_system.py#L530) | `` | Database guide; GET /api/dev/database/guide. |
-| [selection_health](../songranker/developer/dev_system.py#L541) | `` | Selection health; GET /api/dev/selection-health. |
-| [song_quality](../songranker/developer/dev_system.py#L570) | `song_id` | Song quality; GET, POST /api/dev/song-quality/<int:song_id>. |
-| [analysis_data](../songranker/developer/dev_system.py#L614) | `` | Analysis data; GET /api/dev/analysis. |
-| [require_v3_backup](../songranker/developer/dev_system.py#L636) | `path` | Require v3 backup; reads competition_state, sqlite_master. |
-| [developer_guide](../songranker/developer/dev_system.py#L657) | `guide` | Developer guide; GET /api/dev/help/<guide>. |
-| [developer_guide.guide_link](../songranker/developer/dev_system.py#L669) | `match` | Resolve local Markdown references into readable guides or repository documents. |
-| [integer](../songranker/developer/dev_system.py#L689) | `name, default, maximum` | Validate/normalise the feature’s integer input before using it. |
-| [object_info](../songranker/developer/dev_system.py#L696) | `conn, name` | Resolve an existing table/view, its extended columns and stable primary-key row ordering. |
-| [row_hash](../songranker/developer/dev_system.py#L713) | `row` | Hash typed row values, including lossless BLOBs, to detect stale database inspection receipts. |
-| [cell](../songranker/developer/dev_system.py#L732) | `value, start=0, limit=256` | Project a bounded typed cell slice with length and truncation metadata for read-only inspection. |
-| [deadline](../songranker/developer/dev_system.py#L762) | `conn` | Start a read-only inspection snapshot with bounded lock waits and a three-second query deadline. |
-| [inspect_object](../songranker/developer/dev_system.py#L775) | `` | Inspect object; GET /api/dev/database/inspect. |
-| [inspect_cell](../songranker/developer/dev_system.py#L834) | `` | Inspect cell; GET /api/dev/database/cell. |
+| [use_remote_database](../songranker/developer/dev_system.py#L172) | `` | Apply the exact compared remote only after a typed, signed review. |
+| [compact_git_storage](../songranker/developer/dev_system.py#L193) | `` | Repack local Git and relocate verified archives without expiring history. |
+| [backup_folder](../songranker/developer/dev_system.py#L205) | `` | Resolve the backup directory beside the configured live database. |
+| [backup_path](../songranker/developer/dev_system.py#L210) | `name` | Resolve a regular local .db backup while rejecting traversal, symlinks and missing files. |
+| [purpose](../songranker/developer/dev_system.py#L228) | `name` | Translate known backup filename prefixes into short recovery-purpose labels. |
+| [backups](../songranker/developer/dev_system.py#L255) | `` | List regular local database backups with names, purposes, sizes and modification times. |
+| [area](../songranker/developer/dev_system.py#L282) | `name, kind` | Assign an inspected SQLite table or view to its feature group for the database inventory. |
+| [inventory](../songranker/developer/dev_system.py#L323) | `` | Inventory; reads song_genres, song_sources, song_vibe_positions, songs, sqlite_master. |
+| [system_status](../songranker/developer/dev_system.py#L403) | `` | System status; GET /api/dev/system. |
+| [counts](../songranker/developer/dev_system.py#L407) | `db` | Read available catalogue and result counts from an inspected database without assuming every table exists. |
+| [backup_review](../songranker/developer/dev_system.py#L438) | `` | Backup review; POST /api/dev/backups/review. |
+| [restore_database](../songranker/developer/dev_system.py#L470) | `*, require_review=False` | Validate a stored backup and review witnesses before an exclusive, backed-up database restore. |
+| [backup_restore](../songranker/developer/dev_system.py#L526) | `` | Backup restore; POST /api/dev/backups/restore. |
+| [backup_download](../songranker/developer/dev_system.py#L532) | `name` | Backup download; GET /api/dev/backups/<name>/download. |
+| [full_export](../songranker/developer/dev_system.py#L548) | `` | Full export; GET /api/dev/database/export. |
+| [database_guide](../songranker/developer/dev_system.py#L565) | `` | Database guide; GET /api/dev/database/guide. |
+| [selection_health](../songranker/developer/dev_system.py#L576) | `` | Selection health; GET /api/dev/selection-health. |
+| [song_quality](../songranker/developer/dev_system.py#L605) | `song_id` | Song quality; GET, POST /api/dev/song-quality/<int:song_id>. |
+| [analysis_data](../songranker/developer/dev_system.py#L649) | `` | Analysis data; GET /api/dev/analysis. |
+| [require_v3_backup](../songranker/developer/dev_system.py#L671) | `path` | Require v3 backup; reads competition_state, sqlite_master. |
+| [developer_guide](../songranker/developer/dev_system.py#L692) | `guide` | Developer guide; GET /api/dev/help/<guide>. |
+| [developer_guide.guide_link](../songranker/developer/dev_system.py#L706) | `match` | Resolve local Markdown references into readable guides or repository documents. |
+| [integer](../songranker/developer/dev_system.py#L738) | `name, default, maximum` | Validate/normalise the feature’s integer input before using it. |
+| [object_info](../songranker/developer/dev_system.py#L745) | `conn, name` | Resolve an existing table/view, its extended columns and stable primary-key row ordering. |
+| [row_hash](../songranker/developer/dev_system.py#L762) | `row` | Hash typed row values, including lossless BLOBs, to detect stale database inspection receipts. |
+| [cell](../songranker/developer/dev_system.py#L781) | `value, start=0, limit=256` | Project a bounded typed cell slice with length and truncation metadata for read-only inspection. |
+| [deadline](../songranker/developer/dev_system.py#L811) | `conn` | Start a read-only inspection snapshot with bounded lock waits and a three-second query deadline. |
+| [inspect_object](../songranker/developer/dev_system.py#L824) | `` | Inspect object; GET /api/dev/database/inspect. |
+| [inspect_cell](../songranker/developer/dev_system.py#L883) | `` | Inspect cell; GET /api/dev/database/cell. |
 
 ## songranker/developer/dev_tags.py
 
@@ -262,39 +264,46 @@ Authenticated stale-safe Vibe coordinate/count maintenance.
 
 ## songranker/developer/git_sync.py
 
-Guarded startup fast-forwards and explicit database-only Git uploads.
+Hash-reviewed SQL-only uploads, safe startup fast-forwards and Git storage compaction.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
 | [SyncError.__init__](../songranker/developer/git_sync.py#L21) | `self, code, message` | Initialise this object’s state and dependencies. |
-| [stamp](../songranker/developer/git_sync.py#L24) | `` | Return a UTC timestamp at whole-second precision for local Git operation history. |
-| [digest](../songranker/developer/git_sync.py#L31) | `value` | Hash deterministic JSON to bind Git reviews to their observed repository state. |
-| [display_remote](../songranker/developer/git_sync.py#L38) | `value` | Show the destination, excluding URL credentials, query strings and fragments. |
-| [GitSync.__init__](../songranker/developer/git_sync.py#L50) | `self, root, database` | Initialise this object’s state and dependencies. |
-| [GitSync.run](../songranker/developer/git_sync.py#L54) | `self, *args, check=True, network=False` | Run noninteractive Git with bounded timeouts and translate execution or authentication failures. |
-| [GitSync.discover](../songranker/developer/git_sync.py#L73) | `self` | Locate the repository, application-relative SQL snapshot and private Git state directory. |
-| [GitSync.state_dir](../songranker/developer/git_sync.py#L88) | `self` | Resolve the installation's private sync-state directory inside its Git metadata. |
-| [GitSync.lock](../songranker/developer/git_sync.py#L95) | `self` | Hold a nonblocking cross-process lock for one Git/database sync operation. |
-| [GitSync.history](../songranker/developer/git_sync.py#L114) | `self` | Read up to ten recent local Git operation results, tolerating absent or invalid history. |
-| [GitSync.record](../songranker/developer/git_sync.py#L121) | `self, result` | Atomically prepend a timestamped operation result to the bounded local Git history. |
-| [GitSync.protected](../songranker/developer/git_sync.py#L131) | `self, path` | Identify live data, backups, secrets and generated files excluded from code-change handling. |
-| [GitSync.changes](../songranker/developer/git_sync.py#L144) | `self` | Read staged and unstaged Git changes, retaining rename origins and protected-file flags. |
-| [GitSync.inspect](../songranker/developer/git_sync.py#L158) | `self` | Inspect branch, upstream, code changes and database status and produce a review fingerprint. |
-| [GitSync.database_status](../songranker/developer/git_sync.py#L198) | `self` | Read the latest saved database reconciliation result without contacting the remote. |
-| [GitSync.database_report](../songranker/developer/git_sync.py#L207) | `self, result` | Atomically persist a timestamped database reconciliation result. |
-| [GitSync.review_database](../songranker/developer/git_sync.py#L216) | `self, state, adopt=False` | Compare local/remote database snapshots and optionally adopt a verified newer remote with safety archives. |
-| [GitSync.reconcile_database](../songranker/developer/git_sync.py#L239) | `self` | Normal-launcher only, after code re-exec and schema bootstrap, before serving. |
-| [GitSync.status](../songranker/developer/git_sync.py#L263) | `self` | Return cached repository inspection or a structured unavailable reason for the Dev panel. |
-| [GitSync.fetch](../songranker/developer/git_sync.py#L271) | `self, state` | Refresh only the configured upstream branch without changing the working tree. |
-| [GitSync.check](../songranker/developer/git_sync.py#L278) | `self` | Assert the local validation condition and record its outcome. |
-| [GitSync.failure](../songranker/developer/git_sync.py#L292) | `self, action, error, **extra` | Build a structured Git failure and record it locally when history storage is available. |
-| [GitSync.archive_sql](../songranker/developer/git_sync.py#L302) | `self, label` | Preserve the existing regular SQL snapshot before replacement and rotate old safety copies. |
-| [GitSync.write_snapshot](../songranker/developer/git_sync.py#L314) | `self` | Atomically export a validated live database to SQL, archiving the previous changed snapshot. |
-| [GitSync.local_choice_review](../songranker/developer/git_sync.py#L336) | `self, expected=None` | Review both snapshots without adopting either, even before a source update. |
-| [GitSync.local_choice_review.counts](../songranker/developer/git_sync.py#L350) | `conn` | Count catalogue, result and placed-Vibe rows for the local-versus-remote choice review. |
-| [GitSync.keep_local](../songranker/developer/git_sync.py#L370) | `self, choice` | Acknowledge the exact remote as baseline; keep local bytes and normal Git guards. |
-| [GitSync.upload](../songranker/developer/git_sync.py#L411) | `self, expected=None` | Review repository/database state and publish only the current database snapshot through guarded Git steps. |
-| [GitSync.startup](../songranker/developer/git_sync.py#L465) | `self` | Called only before application imports, while the server is stopped. |
+| [stamp](../songranker/developer/git_sync.py#L26) | `` | Return a UTC timestamp at whole-second precision for local Git operation history. |
+| [digest](../songranker/developer/git_sync.py#L33) | `value` | Hash deterministic JSON to bind Git reviews to their observed repository state. |
+| [display_remote](../songranker/developer/git_sync.py#L42) | `value` | Show the destination, excluding URL credentials, query strings and fragments. |
+| [GitSync.__init__](../songranker/developer/git_sync.py#L60) | `self, root, database` | Initialise this object’s state and dependencies. |
+| [GitSync.run](../songranker/developer/git_sync.py#L68) | `self, *args, check=True, network=False, extra_env=None, maintenance=False` | Run noninteractive Git with bounded timeouts and translate execution or authentication failures. |
+| [GitSync.discover](../songranker/developer/git_sync.py#L128) | `self` | Locate the repository, application-relative SQL snapshot and private Git state directory. |
+| [GitSync.state_dir](../songranker/developer/git_sync.py#L154) | `self` | Resolve the installation's private sync-state directory inside its Git metadata. |
+| [GitSync.lock](../songranker/developer/git_sync.py#L161) | `self` | Hold a nonblocking cross-process lock for one Git/database sync operation. |
+| [GitSync.history](../songranker/developer/git_sync.py#L189) | `self` | Read up to ten recent local Git operation results, tolerating absent or invalid history. |
+| [GitSync.record](../songranker/developer/git_sync.py#L198) | `self, result` | Atomically prepend a timestamped operation result to the bounded local Git history. |
+| [GitSync.protected](../songranker/developer/git_sync.py#L215) | `self, path` | Identify live data, backups, secrets and generated files excluded from code-change handling. |
+| [GitSync.changes](../songranker/developer/git_sync.py#L256) | `self` | Read staged and unstaged Git changes, retaining rename origins and protected-file flags. |
+| [GitSync.inspect](../songranker/developer/git_sync.py#L288) | `self` | Inspect branch, upstream, code changes and database status and produce a review fingerprint. |
+| [GitSync.database_status](../songranker/developer/git_sync.py#L458) | `self` | Read the latest saved database reconciliation result without contacting the remote. |
+| [GitSync.database_report](../songranker/developer/git_sync.py#L470) | `self, result` | Atomically persist a timestamped database reconciliation result. |
+| [GitSync.review_database](../songranker/developer/git_sync.py#L486) | `self, state` | Compare hashes/devices without replacing live data; preserve review copies. |
+| [GitSync.reconcile_database](../songranker/developer/git_sync.py#L508) | `self` | Normal-launcher only, after code re-exec and schema bootstrap, before serving. |
+| [GitSync.status](../songranker/developer/git_sync.py#L551) | `self` | Return cached repository inspection or a structured unavailable reason for the Dev panel. |
+| [GitSync.fetch](../songranker/developer/git_sync.py#L567) | `self, state` | Refresh only the configured upstream branch without changing the working tree. |
+| [GitSync.check](../songranker/developer/git_sync.py#L588) | `self` | Assert the local validation condition and record its outcome. |
+| [GitSync.failure](../songranker/developer/git_sync.py#L643) | `self, action, error, **extra` | Build a structured Git failure and record it locally when history storage is available. |
+| [GitSync.archive_dir](../songranker/developer/git_sync.py#L658) | `self` | Store compressed SQL safety copies beside backups, outside Git metadata. |
+| [GitSync.compress_archive](../songranker/developer/git_sync.py#L662) | `self, source, label` | Verify a durable compressed safety copy before allowing source removal. |
+| [GitSync.migrate_archives](../songranker/developer/git_sync.py#L699) | `self` | Move old plain SQL safety copies out of .git without expiring any backup. |
+| [GitSync.storage](../songranker/developer/git_sync.py#L709) | `self` | Report packed/loose object sizes without traversing large repositories. |
+| [GitSync.compact](../songranker/developer/git_sync.py#L722) | `self, expected=None` | Repack Git without pruning objects, reflogs, worktrees or backup history. |
+| [GitSync.archive_sql](../songranker/developer/git_sync.py#L762) | `self, label` | Preserve a changed SQL file in verified compressed storage outside .git. |
+| [GitSync.write_snapshot](../songranker/developer/git_sync.py#L769) | `self, device=None, committed_at=None, expected_hash=None` | Export one validated read snapshot, binding it to the reviewed logical hash. |
+| [GitSync.local_choice_review](../songranker/developer/git_sync.py#L829) | `self, expected=None` | Review both snapshots without adopting either, even before a source update. |
+| [GitSync.local_choice_review.counts](../songranker/developer/git_sync.py#L863) | `conn` | Count catalogue, result and placed-Vibe rows for the local-versus-remote choice review. |
+| [GitSync.keep_local](../songranker/developer/git_sync.py#L925) | `self, choice` | Acknowledge the exact remote as baseline; keep local bytes and normal Git guards. |
+| [GitSync.use_remote](../songranker/developer/git_sync.py#L1048) | `self, choice` | Apply an explicitly reviewed remote copy with stale checks and rollback. |
+| [GitSync.snapshot_commit](../songranker/developer/git_sync.py#L1135) | `self, state, policy, review` | Create only a SQL commit atop the fetched remote using a disposable index. |
+| [GitSync.upload](../songranker/developer/git_sync.py#L1317) | `self, expected=None` | Publish a hash-reviewed SQL-only fast-forward even when local code is behind. |
+| [GitSync.startup](../songranker/developer/git_sync.py#L1510) | `self` | Called only before application imports, while the server is stopped. |
 
 ## songranker/developer/metadata.py
 
@@ -871,24 +880,25 @@ Canonical schema.sql registry and transaction-safe DDL execution.
 
 ## songranker/storage/git_database.py
 
-Whole-snapshot reconciliation, deletion-aware baselines and adoption.
+Logical database hashes, numbered-device registry, baseline receipts and reviewed adoption.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [model](../songranker/storage/git_database.py#L17) | `conn` | Compare stored facts by primary key; only install metadata is device-local. |
-| [delta](../songranker/storage/git_database.py#L49) | `base, changed` | Count added, removed and edited rows for each table between two indexed snapshots. |
-| [covers](../songranker/storage/git_database.py#L64) | `base, changed, other` | Every local change, including removal, must already be present remotely. |
-| [placeholder](../songranker/storage/git_database.py#L78) | `sql` | Detect an empty or comments-only Git SQL snapshot. |
-| [prepare_sql](../songranker/storage/git_database.py#L83) | `sql, folder, name, historical=False` | Materialise and validate bounded SQL in disposable storage, preserving full competition facts. |
-| [DatabaseSync.__init__](../songranker/storage/git_database.py#L110) | `self, git, state` | Initialise this object’s state and dependencies. |
-| [DatabaseSync.blob](../songranker/storage/git_database.py#L117) | `self, commit` | Resolve the tracked SQL snapshot's blob at a commit, returning no value when absent. |
-| [DatabaseSync.sql](../songranker/storage/git_database.py#L124) | `self, blob` | Read the SQL text stored in an already resolved Git blob. |
-| [DatabaseSync.remember](../songranker/storage/git_database.py#L128) | `self, commit, blob` | Atomically persist the accepted Git commit/blob receipt bound to this installation. |
-| [DatabaseSync.receipt](../songranker/storage/git_database.py#L140) | `self` | Read and validate the installation-bound database reconciliation receipt. |
-| [DatabaseSync.review](../songranker/storage/git_database.py#L153) | `self` | Use the fetched, committed Git snapshot even after a manual pull. |
-| [DatabaseSync.incoming_backup](../songranker/storage/git_database.py#L225) | `self, review` | Preserve the incoming candidate as a verified backup without replacing different saved data. |
-| [DatabaseSync.adopt](../songranker/storage/git_database.py#L240) | `self, review` | Archive, check again under a write lock, replace and validate atomically. |
-| [DatabaseSync.public](../songranker/storage/git_database.py#L265) | `review` | Remove temporary paths and private comparison witnesses from a reconciliation review. |
+| [model](../songranker/storage/git_database.py#L29) | `conn` | Compare stored facts by primary key; only install metadata is device-local. |
+| [delta](../songranker/storage/git_database.py#L75) | `base, changed` | Count added, removed and edited rows for each table between two indexed snapshots. |
+| [placeholder](../songranker/storage/git_database.py#L90) | `sql` | Detect an empty or comments-only Git SQL snapshot. |
+| [prepare_sql](../songranker/storage/git_database.py#L97) | `sql, folder, name, historical=False` | Materialise and validate bounded SQL in disposable storage, preserving full competition facts. |
+| [DatabaseSync.__init__](../songranker/storage/git_database.py#L131) | `self, git, state` | Initialise this object’s state and dependencies. |
+| [DatabaseSync.blob](../songranker/storage/git_database.py#L147) | `self, commit` | Resolve the tracked SQL snapshot's blob at a commit, returning no value when absent. |
+| [DatabaseSync.sql](../songranker/storage/git_database.py#L156) | `self, blob` | Read the SQL text stored in an already resolved Git blob. |
+| [DatabaseSync.device_key](../songranker/storage/git_database.py#L160) | `self` | Keep random device keys local, distinguishing copied Git folders on another host. |
+| [DatabaseSync.remote_identity](../songranker/storage/git_database.py#L212) | `self` | Read the latest snapshot commit's numbered-device registry and timestamp. |
+| [DatabaseSync.remember](../songranker/storage/git_database.py#L280) | `self, commit, blob, model_hash=None` | Persist the accepted remote hash and Git witness, bound to this database. |
+| [DatabaseSync.receipt](../songranker/storage/git_database.py#L310) | `self` | Read old or hash-based receipts without accepting another database's baseline. |
+| [DatabaseSync.review](../songranker/storage/git_database.py#L335) | `self` | Compare logical hashes before every pull/push, independently of code ancestry. |
+| [DatabaseSync.incoming_backup](../songranker/storage/git_database.py#L500) | `self, review` | Preserve the incoming candidate as a verified backup without replacing different saved data. |
+| [DatabaseSync.adopt](../songranker/storage/git_database.py#L519) | `self, review` | Archive, check again under a write lock, replace and validate atomically. |
+| [DatabaseSync.public](../songranker/storage/git_database.py#L550) | `review` | Remove temporary paths and private comparison witnesses from a reconciliation review. |
 
 ## songranker/storage/preference_state.py
 
@@ -1008,8 +1018,8 @@ Preserve public routes, asset order and profile reads across module consolidatio
 | [Assets.handle_starttag](../tests/test_architecture.py#L28) | `self, tag, attrs` | Handle starttag. |
 | [ArchitectureTests.register](../tests/test_architecture.py#L40) | `self` | Register the launcher's actual feature owners without running startup sync. |
 | [ArchitectureTests.test_all_previous_urls_methods_and_endpoint_names_are_preserved](../tests/test_architecture.py#L45) | `self` | Verify all previous urls methods and endpoint names are preserved. |
-| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L65) | `self` | Verify pages use one asset registry and last shared baseline. |
-| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L116) | `self` | Verify collection profiles share identity payloads and are read only. |
+| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L70) | `self` | Verify pages use one asset registry and last shared baseline. |
+| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L121) | `self` | Verify collection profiles share identity payloads and are read only. |
 
 ## tests/test_bulk_source_review.py
 
@@ -1140,34 +1150,36 @@ Dashboard/recovery contracts against isolated fixture databases only.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [DeveloperSystemTests.setUp](../tests/test_dev_system.py#L20) | `self` | Create isolated disposable state and register cleanup for this test. |
-| [DeveloperSystemTests.backup](../tests/test_dev_system.py#L28) | `self, prefix='manual'` | Backup. |
-| [DeveloperSystemTests.review](../tests/test_dev_system.py#L30) | `self, backup` | Review. |
-| [DeveloperSystemTests.restore](../tests/test_dev_system.py#L34) | `self, review` | Restore. |
-| [DeveloperSystemTests.current](../tests/test_dev_system.py#L36) | `self` | Current. |
-| [DeveloperSystemTests.test_focused_dev_destinations_require_auth_and_match_the_navigation_registry](../tests/test_dev_system.py#L39) | `self` | Every listed task has a reloadable protected URL; unknown tasks are refused. |
-| [DeveloperSystemTests.test_guides_render_headings_tables_and_escaped_code_in_the_authenticated_reader](../tests/test_dev_system.py#L58) | `self` | The readable guide API preserves code as text and supplies usable contents links. |
-| [DeveloperSystemTests.test_routes_require_local_authenticated_requests](../tests/test_dev_system.py#L70) | `self` | Verify routes require local authenticated requests. |
-| [DeveloperSystemTests.test_inventory_is_read_only_and_labels_all_objects](../tests/test_dev_system.py#L81) | `self` | Verify inventory is read only and labels all objects. |
-| [DeveloperSystemTests.test_backup_listing_includes_all_regular_databases_excludes_links_and_other_files](../tests/test_dev_system.py#L97) | `self` | Verify backup listing includes all regular databases excludes links and other files. |
-| [DeveloperSystemTests.test_full_export_preserves_extension_fields_and_pending_game_facts](../tests/test_dev_system.py#L105) | `self` | Verify full export preserves extension fields and pending game facts. |
-| [DeveloperSystemTests.test_guide_is_downloaded_without_disclosing_other_files](../tests/test_dev_system.py#L113) | `self` | Verify guide is downloaded without disclosing other files. |
-| [DeveloperSystemTests.test_binary_backup_download_is_exact](../tests/test_dev_system.py#L118) | `self` | Verify binary backup download is exact. |
-| [DeveloperSystemTests.test_backup_paths_reject_traversal_links_missing_or_invalid_contents](../tests/test_dev_system.py#L122) | `self` | Verify backup paths reject traversal links missing or invalid contents. |
-| [DeveloperSystemTests.test_restore_review_is_read_only_and_binds_backup_and_live_state](../tests/test_dev_system.py#L128) | `self` | Verify restore review is read only and binds backup and live state. |
-| [DeveloperSystemTests.test_whole_restore_retains_pre_restore_backup_and_saved_offer](../tests/test_dev_system.py#L135) | `self` | Verify whole restore retains pre restore backup and saved offer. |
-| [DeveloperSystemTests.test_saved_activity_after_review_is_rejected_without_writing](../tests/test_dev_system.py#L143) | `self` | Verify saved activity after review is rejected without writing. |
-| [DeveloperSystemTests.test_changed_backup_after_review_is_rejected](../tests/test_dev_system.py#L148) | `self` | Verify changed backup after review is rejected. |
-| [DeveloperSystemTests.test_review_tokens_cannot_be_reused_in_another_browser_or_task](../tests/test_dev_system.py#L153) | `self` | Verify review tokens cannot be reused in another browser or task. |
-| [DeveloperSystemTests.test_expired_and_missing_reviews_require_a_new_review](../tests/test_dev_system.py#L160) | `self` | Verify expired and missing reviews require a new review. |
-| [DeveloperSystemTests.test_legacy_restore_endpoint_stays_compatible](../tests/test_dev_system.py#L168) | `self` | Verify legacy restore endpoint stays compatible. |
-| [DeveloperSystemTests.test_multi_worker_restore_is_blocked](../tests/test_dev_system.py#L172) | `self` | Verify multi worker restore is blocked. |
-| [DeveloperSystemTests.test_git_status_is_local_and_replaces_internal_fingerprint_with_signed_review](../tests/test_dev_system.py#L176) | `self` | Verify git status is local and replaces internal fingerprint with signed review. |
-| [DeveloperSystemTests.test_git_upload_binds_review_to_target_and_refreshes_state](../tests/test_dev_system.py#L182) | `self` | Verify git upload binds review to target and refreshes state. |
-| [DeveloperSystemTests.test_git_failures_return_actionable_status_and_current_review](../tests/test_dev_system.py#L189) | `self` | Verify git failures return actionable status and current review. |
-| [DeveloperSystemTests.test_check_remote_requires_json_and_legacy_upload_requires_review](../tests/test_dev_system.py#L196) | `self` | Verify check remote requires json and legacy upload requires review. |
-| [DeveloperSystemTests.test_keep_local_requires_a_browser_bound_review_and_confirmation](../tests/test_dev_system.py#L202) | `self` | Verify keep local requires a browser bound review and confirmation. |
-| [DeveloperSystemTests.test_lock_returns_main_home_and_clears_dev_session](../tests/test_dev_system.py#L222) | `self` | Verify lock returns main home and clears dev session. |
+| [DeveloperSystemTests.setUp](../tests/test_dev_system.py#L21) | `self` | Create isolated disposable state and register cleanup for this test. |
+| [DeveloperSystemTests.backup](../tests/test_dev_system.py#L36) | `self, prefix='manual'` | Backup. |
+| [DeveloperSystemTests.review](../tests/test_dev_system.py#L39) | `self, backup` | Review. |
+| [DeveloperSystemTests.restore](../tests/test_dev_system.py#L46) | `self, review` | Restore. |
+| [DeveloperSystemTests.current](../tests/test_dev_system.py#L51) | `self` | Current. |
+| [DeveloperSystemTests.test_focused_dev_destinations_require_auth_and_match_the_navigation_registry](../tests/test_dev_system.py#L55) | `self` | Every listed task has a reloadable protected URL; unknown tasks are refused. |
+| [DeveloperSystemTests.test_guides_render_headings_tables_and_escaped_code_in_the_authenticated_reader](../tests/test_dev_system.py#L77) | `self` | The readable guide API preserves code as text and supplies usable contents links. |
+| [DeveloperSystemTests.test_routes_require_local_authenticated_requests](../tests/test_dev_system.py#L96) | `self` | Verify routes require local authenticated requests. |
+| [DeveloperSystemTests.test_inventory_is_read_only_and_labels_all_objects](../tests/test_dev_system.py#L131) | `self` | Verify inventory is read only and labels all objects. |
+| [DeveloperSystemTests.test_backup_listing_includes_all_regular_databases_excludes_links_and_other_files](../tests/test_dev_system.py#L159) | `self` | Verify backup listing includes all regular databases excludes links and other files. |
+| [DeveloperSystemTests.test_full_export_preserves_extension_fields_and_pending_game_facts](../tests/test_dev_system.py#L171) | `self` | Verify full export preserves extension fields and pending game facts. |
+| [DeveloperSystemTests.test_guide_is_downloaded_without_disclosing_other_files](../tests/test_dev_system.py#L185) | `self` | Verify guide is downloaded without disclosing other files. |
+| [DeveloperSystemTests.test_binary_backup_download_is_exact](../tests/test_dev_system.py#L194) | `self` | Verify binary backup download is exact. |
+| [DeveloperSystemTests.test_backup_paths_reject_traversal_links_missing_or_invalid_contents](../tests/test_dev_system.py#L201) | `self` | Verify backup paths reject traversal links missing or invalid contents. |
+| [DeveloperSystemTests.test_restore_review_is_read_only_and_binds_backup_and_live_state](../tests/test_dev_system.py#L227) | `self` | Verify restore review is read only and binds backup and live state. |
+| [DeveloperSystemTests.test_whole_restore_retains_pre_restore_backup_and_saved_offer](../tests/test_dev_system.py#L240) | `self` | Verify whole restore retains pre restore backup and saved offer. |
+| [DeveloperSystemTests.test_saved_activity_after_review_is_rejected_without_writing](../tests/test_dev_system.py#L259) | `self` | Verify saved activity after review is rejected without writing. |
+| [DeveloperSystemTests.test_changed_backup_after_review_is_rejected](../tests/test_dev_system.py#L269) | `self` | Verify changed backup after review is rejected. |
+| [DeveloperSystemTests.test_review_tokens_cannot_be_reused_in_another_browser_or_task](../tests/test_dev_system.py#L279) | `self` | Verify review tokens cannot be reused in another browser or task. |
+| [DeveloperSystemTests.test_expired_and_missing_reviews_require_a_new_review](../tests/test_dev_system.py#L300) | `self` | Verify expired and missing reviews require a new review. |
+| [DeveloperSystemTests.test_legacy_restore_endpoint_stays_compatible](../tests/test_dev_system.py#L317) | `self` | Verify legacy restore endpoint stays compatible. |
+| [DeveloperSystemTests.test_multi_worker_restore_is_blocked](../tests/test_dev_system.py#L324) | `self` | Verify multi worker restore is blocked. |
+| [DeveloperSystemTests.test_git_status_is_local_and_replaces_internal_fingerprint_with_signed_review](../tests/test_dev_system.py#L334) | `self` | Verify git status is local and replaces internal fingerprint with signed review. |
+| [DeveloperSystemTests.test_git_upload_binds_review_to_target_and_refreshes_state](../tests/test_dev_system.py#L348) | `self` | Verify git upload binds review to target and refreshes state. |
+| [DeveloperSystemTests.test_git_failures_return_actionable_status_and_current_review](../tests/test_dev_system.py#L367) | `self` | Verify git failures return actionable status and current review. |
+| [DeveloperSystemTests.test_check_remote_requires_json_and_legacy_upload_requires_review](../tests/test_dev_system.py#L396) | `self` | Verify check remote requires json and legacy upload requires review. |
+| [DeveloperSystemTests.test_keep_local_requires_a_browser_bound_review_and_confirmation](../tests/test_dev_system.py#L414) | `self` | Verify keep local requires a browser bound review and confirmation. |
+| [DeveloperSystemTests.test_remote_choice_requires_typed_browser_bound_review](../tests/test_dev_system.py#L481) | `self` | Verify remote choice requires typed browser bound review. |
+| [DeveloperSystemTests.test_compaction_requires_a_git_target_review](../tests/test_dev_system.py#L548) | `self` | Verify compaction requires a git target review. |
+| [DeveloperSystemTests.test_lock_returns_main_home_and_clears_dev_session](../tests/test_dev_system.py#L568) | `self` | Verify lock returns main home and clears dev session. |
 
 ## tests/test_dev_validation.py
 
@@ -1201,47 +1213,60 @@ Two local computers and a bare remote; never touches the user's databases/Git.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [GitDatabaseTests.pair](../tests/test_git_database.py#L28) | `self` | Pair. |
-| [GitDatabaseTests.edit](../tests/test_git_database.py#L37) | `self, path, sql, args=()` | Edit. |
-| [GitDatabaseTests.count](../tests/test_git_database.py#L42) | `self, path=None` | Count; reads songs. |
-| [GitDatabaseTests.publish](../tests/test_git_database.py#L45) | `self` | Publish. |
-| [GitDatabaseTests.pull](../tests/test_git_database.py#L48) | `self` | Pull. |
-| [GitDatabaseTests.test_manual_pull_then_startup_loads_five_hundred_new_songs](../tests/test_git_database.py#L50) | `self` | Verify manual pull then startup loads five hundred new songs. |
-| [GitDatabaseTests.test_normal_launcher_reconciles_before_the_server_starts](../tests/test_git_database.py#L65) | `self` | Verify normal launcher reconciles before the server starts. |
-| [GitDatabaseTests.test_initial_upgrade_recovers_baseline_from_history_after_pull](../tests/test_git_database.py#L80) | `self` | Verify initial upgrade recovers baseline from history after pull. |
-| [GitDatabaseTests.test_code_fast_forward_is_followed_by_database_reconciliation](../tests/test_git_database.py#L87) | `self` | Verify code fast forward is followed by database reconciliation. |
-| [GitDatabaseTests.test_same_row_count_remote_edit_and_deletion_are_not_missed](../tests/test_git_database.py#L92) | `self` | Verify same row count remote edit and deletion are not missed. |
-| [GitDatabaseTests.test_remote_metadata_edit_without_added_rows_is_applied](../tests/test_git_database.py#L99) | `self` | Verify remote metadata edit without added rows is applied. |
-| [GitDatabaseTests.test_stale_laptop_cannot_upload_over_new_remote_after_manual_pull](../tests/test_git_database.py#L104) | `self` | Verify stale laptop cannot upload over new remote after manual pull. |
-| [GitDatabaseTests.test_local_deletion_and_remote_addition_conflict_without_resurrection](../tests/test_git_database.py#L111) | `self` | Verify local deletion and remote addition conflict without resurrection. |
-| [GitDatabaseTests.test_same_id_different_new_songs_remain_separate_conflicting_copies](../tests/test_git_database.py#L121) | `self` | Verify same id different new songs remain separate conflicting copies. |
-| [GitDatabaseTests.test_both_devices_editing_one_record_blocks_upload](../tests/test_git_database.py#L127) | `self` | Verify both devices editing one record blocks upload. |
-| [GitDatabaseTests.test_remote_covering_local_changes_and_additions_is_safe](../tests/test_git_database.py#L133) | `self` | Verify remote covering local changes and additions is safe. |
-| [GitDatabaseTests.test_matching_deletions_on_both_devices_can_advance_to_remote](../tests/test_git_database.py#L139) | `self` | Verify matching deletions on both devices can advance to remote. |
-| [GitDatabaseTests.test_local_only_changes_stay_local_then_upload_normally](../tests/test_git_database.py#L145) | `self` | Verify local only changes stay local then upload normally. |
-| [GitDatabaseTests.test_check_remote_compares_database_without_restoring_or_mutating_sql](../tests/test_git_database.py#L151) | `self` | Verify check remote compares database without restoring or mutating sql. |
-| [GitDatabaseTests.test_unknown_baseline_preserves_both_even_if_remote_has_more_rows](../tests/test_git_database.py#L158) | `self` | Verify unknown baseline preserves both even if remote has more rows. |
-| [GitDatabaseTests.test_deleted_link_is_detected_from_device_history_if_receipt_is_missing](../tests/test_git_database.py#L166) | `self` | Verify deleted link is detected from device history if receipt is missing. |
-| [GitDatabaseTests.cast_vote](../tests/test_git_database.py#L176) | `self, path, winner` | Cast vote. |
-| [GitDatabaseTests.test_remote_game_results_and_ratings_are_loaded_without_reset](../tests/test_git_database.py#L185) | `self` | Verify remote game results and ratings are loaded without reset. |
-| [GitDatabaseTests.test_local_game_result_is_not_overwritten_by_remote_result](../tests/test_git_database.py#L194) | `self` | Verify local game result is not overwritten by remote result. |
-| [GitDatabaseTests.test_corrupt_remote_snapshot_does_not_change_live_or_upload_file](../tests/test_git_database.py#L200) | `self` | Verify corrupt remote snapshot does not change live or upload file. |
-| [GitDatabaseTests.test_future_schema_is_not_loaded_over_existing_data](../tests/test_git_database.py#L205) | `self` | Verify future schema is not loaded over existing data. |
-| [GitDatabaseTests.test_row_replacement_failure_rolls_back_and_keeps_archive](../tests/test_git_database.py#L210) | `self` | Verify row replacement failure rolls back and keeps archive. |
-| [GitDatabaseTests.test_row_replacement_failure_rolls_back_and_keeps_archive.fail](../tests/test_git_database.py#L213) | `conn, state` | Fail. |
-| [GitDatabaseTests.test_local_write_during_preparation_prevents_replacement](../tests/test_git_database.py#L219) | `self` | Verify local write during preparation prevents replacement. |
-| [GitDatabaseTests.test_local_write_during_preparation_prevents_replacement.racing](../tests/test_git_database.py#L222) | `*args, **kwargs` | Racing; writes songs. |
-| [GitDatabaseTests.test_new_extension_data_is_preserved_when_adopting_remote](../tests/test_git_database.py#L228) | `self` | Verify new extension data is preserved when adopting remote. |
-| [GitDatabaseTests.test_local_extension_changes_are_not_lost](../tests/test_git_database.py#L234) | `self` | Verify local extension changes are not lost. |
-| [GitDatabaseTests.test_committed_wal_data_is_compared_and_preserved](../tests/test_git_database.py#L240) | `self` | Verify committed wal data is compared and preserved. |
-| [GitDatabaseTests.test_completed_adoption_stays_successful_if_receipt_or_status_writes_fail](../tests/test_git_database.py#L247) | `self` | Verify completed adoption stays successful if receipt or status writes fail. |
-| [GitDatabaseTests.test_acknowledged_upload_stays_successful_if_local_history_write_fails](../tests/test_git_database.py#L257) | `self` | Verify acknowledged upload stays successful if local history write fails. |
-| [GitDatabaseTests.test_another_configured_database_cannot_reuse_the_original_receipt](../tests/test_git_database.py#L264) | `self` | Verify another configured database cannot reuse the original receipt. |
-| [GitDatabaseTests.test_ambiguous_extension_identities_do_not_hide_local_work](../tests/test_git_database.py#L274) | `self` | Verify ambiguous extension identities do not hide local work. |
-| [GitDatabaseTests.test_pre_v5_sql_history_can_identify_an_unchanged_transferred_catalogue](../tests/test_git_database.py#L281) | `self` | Verify pre v5 sql history can identify an unchanged transferred catalogue. |
-| [GitDatabaseTests.test_receipt_corruption_fails_closed_when_data_differs](../tests/test_git_database.py#L294) | `self` | Verify receipt corruption fails closed when data differs. |
-| [GitDatabaseTests.test_fresh_check_separates_current_code_from_newer_remote_database](../tests/test_git_database.py#L300) | `self` | Verify fresh check separates current code from newer remote database. |
-| [GitDatabaseTests.test_fresh_check_allows_live_local_additions_with_stale_sql_file](../tests/test_git_database.py#L309) | `self` | Verify fresh check allows live local additions with stale sql file. |
+| [GitDatabaseTests.pair](../tests/test_git_database.py#L29) | `self` | Pair. |
+| [GitDatabaseTests.edit](../tests/test_git_database.py#L39) | `self, path, sql, args=()` | Edit. |
+| [GitDatabaseTests.count](../tests/test_git_database.py#L48) | `self, path=None` | Count; reads songs. |
+| [GitDatabaseTests.publish](../tests/test_git_database.py#L52) | `self` | Publish. |
+| [GitDatabaseTests.pull](../tests/test_git_database.py#L56) | `self` | Pull. |
+| [GitDatabaseTests.accept_remote](../tests/test_git_database.py#L59) | `self` | Explicitly review and apply a remote copy; automatic adoption is retired. |
+| [GitDatabaseTests.test_manual_pull_then_startup_loads_five_hundred_new_songs](../tests/test_git_database.py#L65) | `self` | Verify manual pull then startup loads five hundred new songs. |
+| [GitDatabaseTests.test_normal_launcher_reconciles_before_the_server_starts](../tests/test_git_database.py#L98) | `self` | Verify normal launcher reconciles before the server starts. |
+| [GitDatabaseTests.test_initial_upgrade_recovers_baseline_from_history_after_pull](../tests/test_git_database.py#L146) | `self` | Verify initial upgrade recovers baseline from history after pull. |
+| [GitDatabaseTests.test_code_fast_forward_is_followed_by_database_reconciliation](../tests/test_git_database.py#L160) | `self` | Verify code fast forward is followed by database reconciliation. |
+| [GitDatabaseTests.test_same_row_count_remote_edit_and_deletion_are_not_missed](../tests/test_git_database.py#L171) | `self` | Verify same row count remote edit and deletion are not missed. |
+| [GitDatabaseTests.test_remote_metadata_edit_without_added_rows_is_applied](../tests/test_git_database.py#L188) | `self` | Verify remote metadata edit without added rows is applied. |
+| [GitDatabaseTests.test_stale_laptop_cannot_upload_over_new_remote_after_manual_pull](../tests/test_git_database.py#L202) | `self` | Verify stale laptop cannot upload over new remote after manual pull. |
+| [GitDatabaseTests.test_local_deletion_and_remote_addition_conflict_without_resurrection](../tests/test_git_database.py#L220) | `self` | Verify local deletion and remote addition conflict without resurrection. |
+| [GitDatabaseTests.test_same_id_different_new_songs_remain_separate_conflicting_copies](../tests/test_git_database.py#L241) | `self` | Verify same id different new songs remain separate conflicting copies. |
+| [GitDatabaseTests.test_both_devices_editing_one_record_blocks_upload](../tests/test_git_database.py#L261) | `self` | Verify both devices editing one record blocks upload. |
+| [GitDatabaseTests.test_remote_covering_local_changes_and_additions_is_safe](../tests/test_git_database.py#L270) | `self` | Verify remote covering local changes and additions is safe. |
+| [GitDatabaseTests.test_matching_deletions_on_both_devices_can_advance_to_remote](../tests/test_git_database.py#L283) | `self` | Verify matching deletions on both devices can advance to remote. |
+| [GitDatabaseTests.test_local_only_changes_stay_local_then_upload_normally](../tests/test_git_database.py#L294) | `self` | Verify local only changes stay local then upload normally. |
+| [GitDatabaseTests.test_check_remote_compares_database_without_restoring_or_mutating_sql](../tests/test_git_database.py#L306) | `self` | Verify check remote compares database without restoring or mutating sql. |
+| [GitDatabaseTests.test_unknown_baseline_preserves_both_even_if_remote_has_more_rows](../tests/test_git_database.py#L320) | `self` | Verify unknown baseline preserves both even if remote has more rows. |
+| [GitDatabaseTests.test_deleted_link_is_detected_from_device_history_if_receipt_is_missing](../tests/test_git_database.py#L336) | `self` | Verify deleted link is detected from device history if receipt is missing. |
+| [GitDatabaseTests.cast_vote](../tests/test_git_database.py#L357) | `self, path, winner` | Cast vote. |
+| [GitDatabaseTests.test_remote_game_results_and_ratings_are_loaded_without_reset](../tests/test_git_database.py#L389) | `self` | Verify remote game results and ratings are loaded without reset. |
+| [GitDatabaseTests.test_local_game_result_is_not_overwritten_by_remote_result](../tests/test_git_database.py#L407) | `self` | Verify local game result is not overwritten by remote result. |
+| [GitDatabaseTests.test_corrupt_remote_snapshot_does_not_change_live_or_upload_file](../tests/test_git_database.py#L420) | `self` | Verify corrupt remote snapshot does not change live or upload file. |
+| [GitDatabaseTests.test_future_schema_is_not_loaded_over_existing_data](../tests/test_git_database.py#L433) | `self` | Verify future schema is not loaded over existing data. |
+| [GitDatabaseTests.test_row_replacement_failure_rolls_back_and_keeps_archive](../tests/test_git_database.py#L446) | `self` | Verify row replacement failure rolls back and keeps archive. |
+| [GitDatabaseTests.test_row_replacement_failure_rolls_back_and_keeps_archive.fail](../tests/test_git_database.py#L454) | `conn, state` | Fail. |
+| [GitDatabaseTests.test_local_write_during_preparation_prevents_replacement](../tests/test_git_database.py#L471) | `self` | Verify local write during preparation prevents replacement. |
+| [GitDatabaseTests.test_local_write_during_preparation_prevents_replacement.racing](../tests/test_git_database.py#L478) | `*args, **kwargs` | Racing; writes songs. |
+| [GitDatabaseTests.test_new_extension_data_is_preserved_when_adopting_remote](../tests/test_git_database.py#L493) | `self` | Verify new extension data is preserved when adopting remote. |
+| [GitDatabaseTests.test_local_extension_changes_are_not_lost](../tests/test_git_database.py#L509) | `self` | Verify local extension changes are not lost. |
+| [GitDatabaseTests.test_committed_wal_data_is_compared_and_preserved](../tests/test_git_database.py#L520) | `self` | Verify committed wal data is compared and preserved. |
+| [GitDatabaseTests.test_completed_adoption_stays_successful_if_receipt_or_status_writes_fail](../tests/test_git_database.py#L534) | `self` | Verify completed adoption stays successful if receipt or status writes fail. |
+| [GitDatabaseTests.test_acknowledged_upload_stays_successful_if_local_history_write_fails](../tests/test_git_database.py#L565) | `self` | Verify acknowledged upload stays successful if local history write fails. |
+| [GitDatabaseTests.test_another_configured_database_cannot_reuse_the_original_receipt](../tests/test_git_database.py#L579) | `self` | Verify another configured database cannot reuse the original receipt. |
+| [GitDatabaseTests.test_ambiguous_extension_identities_do_not_hide_local_work](../tests/test_git_database.py#L602) | `self` | Verify ambiguous extension identities do not hide local work. |
+| [GitDatabaseTests.test_pre_v5_sql_history_can_identify_an_unchanged_transferred_catalogue](../tests/test_git_database.py#L617) | `self` | Verify pre v5 sql history can identify an unchanged transferred catalogue. |
+| [GitDatabaseTests.test_receipt_corruption_fails_closed_when_data_differs](../tests/test_git_database.py#L641) | `self` | Verify receipt corruption fails closed when data differs. |
+| [GitDatabaseTests.test_fresh_check_separates_current_code_from_newer_remote_database](../tests/test_git_database.py#L658) | `self` | Verify fresh check separates current code from newer remote database. |
+| [GitDatabaseTests.test_fresh_check_allows_live_local_additions_with_stale_sql_file](../tests/test_git_database.py#L675) | `self` | Verify fresh check allows live local additions with stale sql file. |
+| [GitDatabaseTests.test_numbered_devices_are_stable_across_three_installations](../tests/test_git_database.py#L684) | `self` | Verify numbered devices are stable across three installations. |
+| [GitDatabaseTests.test_copied_git_identity_on_another_host_gets_a_new_device_number](../tests/test_git_database.py#L716) | `self` | Verify copied git identity on another host gets a new device number. |
+| [GitDatabaseTests.test_manual_sql_commit_preserves_existing_device_number_allocations](../tests/test_git_database.py#L739) | `self` | Verify manual sql commit preserves existing device number allocations. |
+| [GitDatabaseTests.test_same_device_remote_ahead_trusts_local_edits_and_deletions](../tests/test_git_database.py#L758) | `self` | Verify same device remote ahead trusts local edits and deletions. |
+| [GitDatabaseTests.test_remote_baseline_hash_allows_local_changes_despite_incoming_code](../tests/test_git_database.py#L778) | `self` | Verify remote baseline hash allows local changes despite incoming code. |
+| [GitDatabaseTests.test_different_device_requires_review_even_when_remote_covers_local](../tests/test_git_database.py#L794) | `self` | Verify different device requires review even when remote covers local. |
+| [GitDatabaseTests.test_explicit_remote_choice_rejects_stale_local_and_remote](../tests/test_git_database.py#L815) | `self` | Verify explicit remote choice rejects stale local and remote. |
+| [GitDatabaseTests.test_local_write_while_building_upload_is_rechecked_before_push](../tests/test_git_database.py#L834) | `self` | Verify local write while building upload is rechecked before push. |
+| [GitDatabaseTests.test_local_write_while_building_upload_is_rechecked_before_push.racing](../tests/test_git_database.py#L839) | `*args, **kwargs` | Racing; writes songs. |
+| [GitDatabaseTests.test_remote_move_during_push_is_rejected_then_recompared](../tests/test_git_database.py#L856) | `self` | Verify remote move during push is rejected then recompared. |
+| [GitDatabaseTests.test_remote_move_during_push_is_rejected_then_recompared.racing](../tests/test_git_database.py#L862) | `*args, **kwargs` | Racing. |
+| [GitDatabaseTests.test_removed_remote_snapshot_is_a_reviewable_conflict](../tests/test_git_database.py#L877) | `self` | Verify removed remote snapshot is a reviewable conflict. |
 
 ## tests/test_git_keep_local.py
 
@@ -1249,11 +1274,11 @@ Explicit database choice, backed up and bound to exact local/remote revisions.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [KeepLocalTests.changed_remote](../tests/test_git_keep_local.py#L21) | `self` | Changed remote; writes song_vibe_positions, songs. |
-| [KeepLocalTests.test_keep_wiped_local_before_restart_then_upload_without_importing_vibes](../tests/test_git_keep_local.py#L27) | `self` | Verify keep wiped local before restart then upload without importing vibes. |
-| [KeepLocalTests.test_local_or_remote_change_invalidates_choice](../tests/test_git_keep_local.py#L47) | `self` | Verify local or remote change invalidates choice. |
-| [KeepLocalTests.test_missing_choice_receipt_recovers_acknowledgement_from_bound_history](../tests/test_git_keep_local.py#L58) | `self` | Verify missing choice receipt recovers acknowledgement from bound history. |
-| [KeepLocalTests.test_failed_backup_cannot_accept_choice](../tests/test_git_keep_local.py#L64) | `self` | Verify failed backup cannot accept choice. |
+| [KeepLocalTests.changed_remote](../tests/test_git_keep_local.py#L23) | `self` | Changed remote; writes song_vibe_positions, songs. |
+| [KeepLocalTests.test_keep_wiped_local_before_restart_then_upload_without_importing_vibes](../tests/test_git_keep_local.py#L34) | `self` | Verify keep wiped local before restart then upload without importing vibes. |
+| [KeepLocalTests.test_local_or_remote_change_invalidates_choice](../tests/test_git_keep_local.py#L68) | `self` | Verify local or remote change invalidates choice. |
+| [KeepLocalTests.test_missing_choice_receipt_recovers_acknowledgement_from_bound_history](../tests/test_git_keep_local.py#L86) | `self` | Verify missing choice receipt recovers acknowledgement from bound history. |
+| [KeepLocalTests.test_failed_backup_cannot_accept_choice](../tests/test_git_keep_local.py#L95) | `self` | Verify failed backup cannot accept choice. |
 
 ## tests/test_git_sync.py
 
@@ -1261,43 +1286,46 @@ Real local repositories/remotes only. Never contacts the user's remote.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [command](../tests/test_git_sync.py#L22) | `root, *args` | Command. |
-| [GitSyncTests.setUp](../tests/test_git_sync.py#L29) | `self` | Create isolated disposable state and register cleanup for this test. |
-| [GitSyncTests.identity](../tests/test_git_sync.py#L45) | `self, root` | Identity. |
-| [GitSyncTests.state](../tests/test_git_sync.py#L49) | `self` | State. |
-| [GitSyncTests.remote_change](../tests/test_git_sync.py#L52) | `self, files` | Remote change. |
-| [GitSyncTests.head](../tests/test_git_sync.py#L62) | `self, where=None` | Head. |
-| [GitSyncTests.test_local_status_and_check_do_not_change_worktree_or_database](../tests/test_git_sync.py#L64) | `self` | Verify local status and check do not change worktree or database. |
-| [GitSyncTests.test_check_reports_incoming_code_without_installing_it](../tests/test_git_sync.py#L70) | `self` | Verify check reports incoming code without installing it. |
-| [GitSyncTests.test_upload_commits_only_snapshot_preserving_unrelated_staging](../tests/test_git_sync.py#L75) | `self` | Verify upload commits only snapshot preserving unrelated staging. |
-| [GitSyncTests.test_sql_is_complete_and_unchanged_upload_creates_no_extra_commit](../tests/test_git_sync.py#L84) | `self` | Verify sql is complete and unchanged upload creates no extra commit. |
-| [GitSyncTests.test_failed_push_keeps_commit_and_retry_does_not_duplicate_it](../tests/test_git_sync.py#L90) | `self` | Verify failed push keeps commit and retry does not duplicate it. |
-| [GitSyncTests.test_sql_round_trip_preserves_sparse_hidden_rowids_and_composite_keys](../tests/test_git_sync.py#L96) | `self` | Verify sql round trip preserves sparse hidden rowids and composite keys. |
-| [GitSyncTests.test_sql_round_trip_preserves_float_precision_nul_text_blobs_and_quoted_names](../tests/test_git_sync.py#L104) | `self` | Verify sql round trip preserves float precision nul text blobs and quoted names. |
-| [GitSyncTests.test_sql_round_trip_preserves_deleted_id_high_water_and_does_not_replay_triggers](../tests/test_git_sync.py#L111) | `self` | Verify sql round trip preserves deleted id high water and does not replay triggers. |
-| [GitSyncTests.test_lost_push_reply_reconciles_remote_without_another_commit](../tests/test_git_sync.py#L120) | `self` | Verify lost push reply reconciles remote without another commit. |
-| [GitSyncTests.test_lost_push_reply_reconciles_remote_without_another_commit.lost](../tests/test_git_sync.py#L122) | `*args, **kwargs` | Lost. |
-| [GitSyncTests.test_commit_hook_failure_keeps_snapshot_without_pushing](../tests/test_git_sync.py#L130) | `self` | Verify commit hook failure keeps snapshot without pushing. |
-| [GitSyncTests.test_unpublished_code_commits_are_not_published_by_backup_button](../tests/test_git_sync.py#L135) | `self` | Verify unpublished code commits are not published by backup button. |
-| [GitSyncTests.test_behind_and_diverged_histories_do_not_merge_or_force_push](../tests/test_git_sync.py#L140) | `self` | Verify behind and diverged histories do not merge or force push. |
-| [GitSyncTests.test_changed_target_fingerprint_prevents_upload](../tests/test_git_sync.py#L146) | `self` | Verify changed target fingerprint prevents upload. |
-| [GitSyncTests.test_detached_or_unconfigured_repository_reports_actionable_status](../tests/test_git_sync.py#L150) | `self` | Verify detached or unconfigured repository reports actionable status. |
-| [GitSyncTests.test_remote_credentials_and_error_output_are_not_exposed](../tests/test_git_sync.py#L155) | `self` | Verify remote credentials and error output are not exposed. |
-| [GitSyncTests.test_multiple_or_different_push_targets_are_refused](../tests/test_git_sync.py#L165) | `self` | Verify multiple or different push targets are refused. |
-| [GitSyncTests.test_timeout_and_missing_git_have_structured_outcomes](../tests/test_git_sync.py#L170) | `self` | Verify timeout and missing git have structured outcomes. |
-| [GitSyncTests.test_app_git_lock_serializes_tasks_and_busy_startup_does_not_boot](../tests/test_git_sync.py#L175) | `self` | Verify app git lock serializes tasks and busy startup does not boot. |
-| [GitSyncTests.test_startup_fast_forward_keeps_live_database_and_archives_local_sql](../tests/test_git_sync.py#L182) | `self` | Verify startup fast forward keeps live database and archives local sql. |
-| [GitSyncTests.test_startup_refuses_local_code_edits_and_staged_changes](../tests/test_git_sync.py#L190) | `self` | Verify startup refuses local code edits and staged changes. |
-| [GitSyncTests.test_incoming_database_and_private_files_are_never_installed](../tests/test_git_sync.py#L195) | `self` | Verify incoming database and private files are never installed. |
-| [GitSyncTests.test_merge_state_blocks_checkouts_and_uploads](../tests/test_git_sync.py#L200) | `self` | Verify merge state blocks checkouts and uploads. |
-| [GitSyncTests.test_failed_fast_forward_restores_previous_sql_and_stops_startup](../tests/test_git_sync.py#L204) | `self` | Verify failed fast forward restores previous sql and stops startup. |
-| [GitSyncTests.test_failed_fast_forward_restores_previous_sql_and_stops_startup.fail](../tests/test_git_sync.py#L207) | `*args, **kwargs` | Fail. |
-| [GitSyncTests.test_backup_failure_prevents_source_update](../tests/test_git_sync.py#L213) | `self` | Verify backup failure prevents source update. |
-| [GitSyncTests.test_unchanged_startup_and_missing_database_upload_are_explicit](../tests/test_git_sync.py#L218) | `self` | Verify unchanged startup and missing database upload are explicit. |
-| [GitSyncTests.test_new_snapshot_never_follows_a_symlink](../tests/test_git_sync.py#L222) | `self` | Verify new snapshot never follows a symlink. |
-| [GitSyncTests.test_sql_snapshot_includes_committed_wal_data](../tests/test_git_sync.py#L226) | `self` | Verify sql snapshot includes committed wal data. |
-| [GitSyncTests.test_new_code_clears_only_its_python_cache](../tests/test_git_sync.py#L231) | `self` | Verify new code clears only its python cache. |
-| [GitSyncTests.test_cli_update_reexecutes_before_importing_new_application_modules](../tests/test_git_sync.py#L237) | `self` | Verify cli update reexecutes before importing new application modules. |
+| [command](../tests/test_git_sync.py#L24) | `root, *args` | Command. |
+| [GitSyncTests.setUp](../tests/test_git_sync.py#L34) | `self` | Create isolated disposable state and register cleanup for this test. |
+| [GitSyncTests.identity](../tests/test_git_sync.py#L72) | `self, root` | Identity. |
+| [GitSyncTests.state](../tests/test_git_sync.py#L77) | `self` | State. |
+| [GitSyncTests.remote_change](../tests/test_git_sync.py#L81) | `self, files` | Remote change. |
+| [GitSyncTests.head](../tests/test_git_sync.py#L95) | `self, where=None` | Head. |
+| [GitSyncTests.test_local_status_and_check_do_not_change_worktree_or_database](../tests/test_git_sync.py#L98) | `self` | Verify local status and check do not change worktree or database. |
+| [GitSyncTests.test_check_reports_incoming_code_without_installing_it](../tests/test_git_sync.py#L112) | `self` | Verify check reports incoming code without installing it. |
+| [GitSyncTests.test_upload_commits_only_snapshot_preserving_unrelated_staging](../tests/test_git_sync.py#L121) | `self` | Verify upload commits only snapshot preserving unrelated staging. |
+| [GitSyncTests.test_sql_is_complete_and_unchanged_upload_creates_no_extra_commit](../tests/test_git_sync.py#L142) | `self` | Verify sql is complete and unchanged upload creates no extra commit. |
+| [GitSyncTests.test_failed_push_keeps_commit_and_retry_does_not_duplicate_it](../tests/test_git_sync.py#L162) | `self` | Verify failed push keeps commit and retry does not duplicate it. |
+| [GitSyncTests.test_sql_round_trip_preserves_sparse_hidden_rowids_and_composite_keys](../tests/test_git_sync.py#L188) | `self` | Verify sql round trip preserves sparse hidden rowids and composite keys. |
+| [GitSyncTests.test_sql_round_trip_preserves_float_precision_nul_text_blobs_and_quoted_names](../tests/test_git_sync.py#L203) | `self` | Verify sql round trip preserves float precision nul text blobs and quoted names. |
+| [GitSyncTests.test_sql_round_trip_preserves_deleted_id_high_water_and_does_not_replay_triggers](../tests/test_git_sync.py#L225) | `self` | Verify sql round trip preserves deleted id high water and does not replay triggers. |
+| [GitSyncTests.test_lost_push_reply_reconciles_remote_without_another_commit](../tests/test_git_sync.py#L246) | `self` | Verify lost push reply reconciles remote without another commit. |
+| [GitSyncTests.test_lost_push_reply_reconciles_remote_without_another_commit.lost](../tests/test_git_sync.py#L249) | `*args, **kwargs` | Lost. |
+| [GitSyncTests.test_commit_hook_failure_keeps_snapshot_without_pushing](../tests/test_git_sync.py#L263) | `self` | Verify commit hook failure keeps snapshot without pushing. |
+| [GitSyncTests.test_unpublished_code_commits_stay_local_while_backup_uploads](../tests/test_git_sync.py#L275) | `self` | Verify unpublished code commits stay local while backup uploads. |
+| [GitSyncTests.test_behind_and_diverged_code_do_not_block_safe_database_uploads](../tests/test_git_sync.py#L291) | `self` | Verify behind and diverged code do not block safe database uploads. |
+| [GitSyncTests.test_compaction_preserves_objects_reflogs_index_and_sql_archives](../tests/test_git_sync.py#L315) | `self` | Verify compaction preserves objects reflogs index and sql archives. |
+| [GitSyncTests.test_failed_archive_verification_keeps_original_and_blocks_replacement](../tests/test_git_sync.py#L348) | `self` | Verify failed archive verification keeps original and blocks replacement. |
+| [GitSyncTests.test_commit_message_hooks_cannot_change_backup_registry](../tests/test_git_sync.py#L361) | `self` | Verify commit message hooks cannot change backup registry. |
+| [GitSyncTests.test_changed_target_fingerprint_prevents_upload](../tests/test_git_sync.py#L371) | `self` | Verify changed target fingerprint prevents upload. |
+| [GitSyncTests.test_detached_or_unconfigured_repository_reports_actionable_status](../tests/test_git_sync.py#L376) | `self` | Verify detached or unconfigured repository reports actionable status. |
+| [GitSyncTests.test_remote_credentials_and_error_output_are_not_exposed](../tests/test_git_sync.py#L386) | `self` | Verify remote credentials and error output are not exposed. |
+| [GitSyncTests.test_multiple_or_different_push_targets_are_refused](../tests/test_git_sync.py#L401) | `self` | Verify multiple or different push targets are refused. |
+| [GitSyncTests.test_timeout_and_missing_git_have_structured_outcomes](../tests/test_git_sync.py#L422) | `self` | Verify timeout and missing git have structured outcomes. |
+| [GitSyncTests.test_app_git_lock_serializes_tasks_and_busy_startup_does_not_boot](../tests/test_git_sync.py#L436) | `self` | Verify app git lock serializes tasks and busy startup does not boot. |
+| [GitSyncTests.test_startup_fast_forward_keeps_live_database_and_archives_local_sql](../tests/test_git_sync.py#L446) | `self` | Verify startup fast forward keeps live database and archives local sql. |
+| [GitSyncTests.test_startup_refuses_local_code_edits_and_staged_changes](../tests/test_git_sync.py#L466) | `self` | Verify startup refuses local code edits and staged changes. |
+| [GitSyncTests.test_incoming_database_and_private_files_are_never_installed](../tests/test_git_sync.py#L475) | `self` | Verify incoming database and private files are never installed. |
+| [GitSyncTests.test_merge_state_blocks_checkouts_and_uploads](../tests/test_git_sync.py#L488) | `self` | Verify merge state blocks checkouts and uploads. |
+| [GitSyncTests.test_failed_fast_forward_restores_previous_sql_and_stops_startup](../tests/test_git_sync.py#L493) | `self` | Verify failed fast forward restores previous sql and stops startup. |
+| [GitSyncTests.test_failed_fast_forward_restores_previous_sql_and_stops_startup.fail](../tests/test_git_sync.py#L498) | `*args, **kwargs` | Fail. |
+| [GitSyncTests.test_backup_failure_prevents_source_update](../tests/test_git_sync.py#L509) | `self` | Verify backup failure prevents source update. |
+| [GitSyncTests.test_unchanged_startup_and_missing_database_upload_are_explicit](../tests/test_git_sync.py#L521) | `self` | Verify unchanged startup and missing database upload are explicit. |
+| [GitSyncTests.test_new_snapshot_never_follows_a_symlink](../tests/test_git_sync.py#L530) | `self` | Verify new snapshot never follows a symlink. |
+| [GitSyncTests.test_sql_snapshot_includes_committed_wal_data](../tests/test_git_sync.py#L537) | `self` | Verify sql snapshot includes committed wal data. |
+| [GitSyncTests.test_new_code_clears_only_its_python_cache](../tests/test_git_sync.py#L548) | `self` | Verify new code clears only its python cache. |
+| [GitSyncTests.test_cli_update_reexecutes_before_importing_new_application_modules](../tests/test_git_sync.py#L558) | `self` | Verify cli update reexecutes before importing new application modules. |
 
 ## tests/test_metadata_fill.py
 
@@ -1706,4 +1734,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1156 Python definitions**.
+Total: **1184 Python definitions**.

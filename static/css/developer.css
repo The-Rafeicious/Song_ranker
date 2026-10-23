@@ -1242,3 +1242,33 @@ body[data-page="dev"] #main .backup-workspace #system-restore {
   max-height: 520px;
   overflow: auto;
 }
+
+/* Git comparisons keep full hashes readable within the existing system panels. */
+body[data-page="dev"] .git-hashes {
+  margin: 16px 0;
+}
+body[data-page="dev"] .git-hashes > div {
+  margin: 12px 0;
+}
+body[data-page="dev"] .git-hashes dt {
+  color: var(--muted);
+  margin-bottom: 4px;
+}
+body[data-page="dev"] .git-hashes dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+body[data-page="dev"] .git-hashes code {
+  white-space: normal;
+  font-size: 14px;
+}
+
+body[data-page="dev"] .git-comparison-summary > summary {
+  min-height: 44px;
+  padding: 12px 0;
+  font-weight: 700;
+  cursor: pointer;
+}
+body[data-page="dev"] .git-comparison-summary[open] > summary {
+  margin-bottom: 12px;
+}

@@ -58,8 +58,13 @@ class ArchitectureTests(unittest.TestCase):
             ],
             key=lambda r: r["path"],
         )
-        added = [r for r in actual if r['endpoint'] in ('dev_area', 'dev_task')]
-        self.assertEqual(2, len(added))
+        added = [
+            r
+            for r in actual
+            if r["endpoint"]
+            in ("dev_area", "dev_task", "use_remote_database", "compact_git_storage")
+        ]
+        self.assertEqual(4, len(added))
         self.assertEqual(expected, [r for r in actual if r not in added])
 
     def test_pages_use_one_asset_registry_and_last_shared_baseline(self):

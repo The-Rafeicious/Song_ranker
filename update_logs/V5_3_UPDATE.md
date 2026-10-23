@@ -47,3 +47,22 @@ See [consolidation review](../docs/CONSOLIDATION.md),
   targets and the baseline remain the main site's styling contract.
 - Application/asset version is 5.3.1. Schema 20, active data, backups, saved mode
   rules and API mutation contracts are retained. New focused routes are additive.
+
+## V5.3.2 — hash and device based Git sync
+
+- Database hashes are checked before app-managed pulls/pushes. Remote baseline
+  equality permits local work; the same registered writer trusts the current local
+  copy. Another/unidentified writer's changed database requires an explicit review.
+- Backup commits allocate stable device numbers from 1; SQL headers show commit
+  time and device number. The device registry travels in commit metadata.
+- SQL-only uploads extend the latest remote commit using a temporary index;
+  ahead/behind code, local commits and unrelated staging no longer block safe
+  backups or leak into uploads. Expected-head leases reject races; pending refs
+  retain/reuse failed uploads. Remote history is never rewritten.
+- Comparison now shows device/time/commit, full local/remote/baseline hashes,
+  catalogue/mode counts and per-table differences. Keep local and Use remote use
+  typed, browser-bound, stale-checked reviews and safety archives.
+- Compact Git storage repacks while retaining history/recovery objects; old plain
+  SQL copies move out of .git into verified, deduplicated gzip backup archives.
+  Matching hashes avoid timestamp-only commits. No existing database/SQL snapshot
+  contents are part of this code update; schema remains 20.

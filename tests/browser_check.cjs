@@ -231,18 +231,30 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   // Isolate only the Git transport: real served Dev markup/scripts and confirmation UI.
   const gitChoice={available:true,state:'behind',branch:'main',remote:'origin',target:'main',destination:'example.org/owner/app',tracking_head:'abc',ahead:0,behind:1,pending_code:false,code_changes:0,in_progress:false,review_token:'browser-git-review',history:[],snapshot:{exists:true,name:'database_backup.sql',bytes:20}};
   await page.route('**/api/dev/system',async route=>{const response=await route.fetch();const body=await response.json();body.git=gitChoice;await route.fulfill({json:body});});
-  await page.route('**/api/dev/git/check',route=>route.fulfill({json:{ok:true,message:'Fresh comparison complete',git:{...gitChoice,status_source:'checked',checked_at:'2026-10-22T12:00:00Z',upload_ready:false,database_sync:{code:'database_remote_ahead',message:'Remote snapshot is newer; local data kept.'}}}}));
-  await page.route('**/api/dev/git/keep-local/review',route=>route.fulfill({json:{ok:true,local:{Songs:7,'Vibe positions':0},remote:{Songs:7,'Vibe positions':24},choice_token:'browser-choice',git:gitChoice,message:'Compare both copies.'}}));
-  let kept=0;
+  const gitDetails={code:'database_conflict',reason:'different_device',message:'Device 2 changed the remote database; compare copies.',local_hash:'a'.repeat(64),remote_hash:'b'.repeat(64),baseline_hash:'c'.repeat(64),local_device:1,remote_device:2,remote_time:'2026-10-23T10:00:00Z',snapshot_commit:'d'.repeat(40),local_songs:7,remote_songs:7,different_rows:{song_vibe_positions:{added:0,removed:24,edited:4}},local_changes:{songs:{added:0,removed:0,edited:1}},remote_changes:{song_vibe_positions:{added:24,removed:0,edited:0}}};
+  await page.route('**/api/dev/git/check',route=>route.fulfill({json:{ok:true,message:'Fresh comparison complete',git:{...gitChoice,status_source:'checked',checked_at:'2026-10-22T12:00:00Z',upload_ready:false,database_sync:gitDetails}}}));
+  await page.route('**/api/dev/git/keep-local/review',route=>route.fulfill({json:{ok:true,local:{Songs:7,'Vibe positions':0},remote:{Songs:7,'Vibe positions':24},choice_token:'browser-choice',details:gitDetails,git:gitChoice,message:'Compare both copies.'}}));
+  let kept=0,remoteApplied=0,compacted=0;
+  await page.route('**/api/dev/git/use-remote',async route=>{assert.deepEqual(route.request().postDataJSON(),{choice_token:'browser-choice',confirmation:'USE REMOTE'});remoteApplied++;await route.fulfill({json:{ok:true,git:gitChoice,message:'Reviewed remote database loaded.'}});});
+  await page.route('**/api/dev/git/compact',async route=>{assert.deepEqual(route.request().postDataJSON(),{review_token:'browser-git-review'});compacted++;await route.fulfill({json:{ok:true,git:{...gitChoice,storage:{object_bytes:1024,loose_objects:0,packs:1}},before:{object_bytes:4096},after:{object_bytes:1024},message:'Git storage compacted.'}});});
   await page.route('**/api/dev/git/keep-local',async route=>{assert.deepEqual(route.request().postDataJSON(),{choice_token:'browser-choice',confirmation:'KEEP LOCAL'});kept++;await route.fulfill({json:{ok:true,git:gitChoice,message:'Local database kept. Restart then upload.'}});});
   await page.goto(base+'/dev/dashboard?view=export');await page.locator('[data-system-local-review]:enabled').waitFor();await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Fresh comparison'));for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-git',folder);await page.screenshot({path:folder+'/dev-git-'+width+'.png',fullPage:true});}
   assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('[data-system-local-review]').click();await page.locator('#system-local-confirmation').waitFor();
-  assert.ok(await page.locator('[data-system-local-apply]').isDisabled());
+  assert.ok(await page.locator('[data-system-local-apply]').isDisabled());assert.equal(await page.locator('.git-comparison-summary').getAttribute('open'),null);
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-keep-local',folder);await page.locator('#system-local-choice').screenshot({path:folder+'/dev-keep-local-'+width+'.png'});}
   await page.locator('#system-local-confirmation').fill('KEEP LOCAL');await page.locator('[data-system-local-apply]').click();
   await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Local database kept'));
-  assert.equal(kept,1);assert.ok(await page.locator('[data-system-upload]').isDisabled());
+  assert.equal(kept,1);
+  await page.locator('[data-system-local-review]').click();await page.locator('#system-local-confirmation').waitFor();
+  assert.ok((await page.locator('.git-hashes').allTextContents()).some(text=>text.includes(gitDetails.remote_hash)));
+  await page.locator('#system-local-confirmation').fill('KEEP LOCAL');await page.locator('#system-database-choice').selectOption('remote');
+  assert.equal(await page.locator('#system-local-confirmation').inputValue(),'');assert.ok(await page.locator('[data-system-local-apply]').isDisabled());
+  await page.locator('.git-row-differences summary').last().click();
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-remote-choice',folder);await page.locator('#system-local-choice').screenshot({path:folder+'/dev-remote-choice-'+width+'.png'});}
+  await page.locator('#system-local-confirmation').fill('USE REMOTE');await page.locator('[data-system-local-apply]').click();await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Reviewed remote database loaded'));assert.equal(remoteApplied,1);
+  await page.locator('[data-system-compact]').click();await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Git storage compacted'));assert.equal(compacted,1);
+assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.goto(base+'/dev/dashboard');await page.locator('.dev-home-areas').waitFor();
   assert.equal(await page.locator('.dev-navbar').count(),1);assert.equal(await page.locator('.nav-matches,.dev-sidebar,.dev-taskbar,.dev-category').count(),0);
   assert.equal(await page.locator('#dev-page-menu > a').count(),4);assert.equal(await page.locator('.dev-home-status > section').count(),3);assert.equal(await page.locator('.dev-home-areas [data-dev]').count(),27);

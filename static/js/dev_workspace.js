@@ -148,7 +148,7 @@ window.DevWorkspace = (() => {
     if (view === current) return;
     guarded(() => {
       if (window.DevSystem && !window.DevSystem.canNavigate()) {
-        U.toast("Wait for the restore to finish.");
+        U.toast("Wait for the current Git task or restore to finish.");
         return;
       }
       closeEditor();

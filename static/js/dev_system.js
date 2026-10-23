@@ -16,6 +16,7 @@ window.DevSystem = (() => {
     restoreBusy = false,
     restoreReview = null,
     localReview = null,
+    databaseChoice = "local",
     backupQuery = "",
     backupLimit = 10,
     note = "";
@@ -162,9 +163,15 @@ window.DevSystem = (() => {
       g.review_token &&
       g.tracking_head &&
       !g.in_progress &&
-      !g.pending_code &&
-      !g.behind &&
-      g.upload_ready !== false;
+      g.upload_ready !== false &&
+      (!d ||
+        [
+          "database_matches",
+          "database_local_ahead",
+          "no_remote_snapshot",
+          "database_uploaded",
+          "database_local_kept",
+        ].includes(d.code));
     const pair = (label, value, tone = "") =>
       `<div class="health-row"><span>${label}</span><strong class="${tone}">${esc(value ?? "—")}</strong></div>`;
     const databaseLabels = {
@@ -177,7 +184,7 @@ window.DevSystem = (() => {
       database_updated: "Remote snapshot loaded",
       database_check_failed: "Comparison failed",
     };
-    return `<section class="panel dashboard-surface"><div class="section-head"><h2>Git & database sync</h2><a href="/dev/tools/guides">Dev guide</a></div><div class="system-actions">${button(gitBusy ? "Checking…" : "Refresh status", "data-system-check" + (!g?.available || gitBusy ? " disabled" : ""))}${button("Upload backup", 'data-system-upload aria-label="Upload database backup"' + (!canUpload || gitBusy ? " disabled" : ""), "primary")}${button("Keep local…", 'data-system-local-review aria-label="Keep local database"' + (!g?.available || !g.review_token || !g.tracking_head || g.in_progress || gitBusy ? " disabled" : ""))}</div><p class="muted" role="status">${checked ? "Checked " + esc(date(g.checked_at)) : "Not freshly checked · cached results below"}</p><div class="git-status-grid"><section><h3>Code commits</h3>${g?.available ? pair("Branch", g.branch) + pair("Target", g.remote + "/" + g.target) + pair("Local commit", g.head?.slice(0, 10)) + pair("Remote commit", g.tracking_head?.slice(0, 10)) + pair(checked ? "Code status" : "Cached code status", labels[g.state] || g.state, g.behind || g.pending_code ? "error" : "") + pair("Local / incoming", String(g.ahead ?? "—") + " / " + String(g.behind ?? "—")) : `<p class="error">${esc(g?.message || "Git unavailable")}</p>`}</section><section><h3>Live database</h3>${pair(checked ? "Comparison" : "Last comparison", databaseLabels[d?.code] || "Not checked", !checked || ["database_conflict", "database_remote_ahead", "database_check_failed"].includes(d?.code) ? "error" : "song")}<p class="${d && ["database_conflict", "database_remote_ahead", "database_check_failed"].includes(d.code) ? "error" : "muted"}" role="status">${esc(d?.message || "Refresh to compare the live database with the committed snapshot.")}</p>${d?.local_songs != null ? pair("Local / remote songs", d.local_songs + " / " + d.remote_songs) : ""}${g?.behind ? '<p class="error">Incoming code commits: restart to update code before uploading.</p>' : ""}${g?.pending_code ? '<p class="error">Publish or resolve local code commits first.</p>' : ""}${g?.in_progress ? '<p class="error">Finish the active Git operation first.</p>' : ""}${
+    return `<section class="panel dashboard-surface"><div class="section-head"><h2>Git & database sync</h2><a href="/dev/tools/guides">Dev guide</a></div><div class="system-actions">${button(gitBusy ? "Checking…" : "Refresh status", "data-system-check" + (!g?.available || gitBusy ? " disabled" : ""))}${button("Upload backup", 'data-system-upload aria-label="Upload database backup"' + (!canUpload || gitBusy ? " disabled" : ""), "primary")}${button("Compact Git storage", "data-system-compact" + (!g?.available || !g.review_token || g.in_progress || gitBusy ? " disabled" : ""))}${button("Compare databases…", 'data-system-local-review aria-label="Compare local and remote databases"' + (!g?.available || !g.review_token || !g.tracking_head || g.in_progress || gitBusy ? " disabled" : ""))}</div><p class="muted" role="status">${checked ? "Checked " + esc(date(g.checked_at)) : "Not freshly checked · cached results below"}</p><details class="git-comparison-summary" ${localReview ? "" : "open"}><summary>Code and database status</summary><div class="git-status-grid"><section><h3>Code commits</h3>${g?.available ? pair("Branch", g.branch) + pair("Target", g.remote + "/" + g.target) + pair("Local commit", g.head?.slice(0, 10)) + pair("Remote commit", g.tracking_head?.slice(0, 10)) + pair(checked ? "Code status" : "Cached code status", labels[g.state] || g.state, g.in_progress ? "error" : "") + pair("Local / incoming", String(g.ahead ?? "—") + " / " + String(g.behind ?? "—")) : `<p class="error">${esc(g?.message || "Git unavailable")}</p>`}${g?.storage ? pair("Git objects", bytes(g.storage.object_bytes)) + pair("Loose objects / packs", g.storage.loose_objects + " / " + g.storage.packs) : ""}</section><section><h3>Live database</h3>${pair(checked ? "Comparison" : "Last comparison", databaseLabels[d?.code] || "Not checked", !checked || ["database_conflict", "database_remote_ahead", "database_check_failed"].includes(d?.code) ? "error" : "song")}<p class="${d && ["database_conflict", "database_remote_ahead", "database_check_failed"].includes(d.code) ? "error" : "muted"}" role="status">${esc(d?.message || "Refresh to compare the live database with the committed snapshot.")}</p>${d?.local_songs != null ? pair("Local / remote songs", d.local_songs + " / " + d.remote_songs) : ""}${comparisonDetails(d)}${g?.behind ? '<p class="muted">Incoming code commits stay separate; a safe database backup can still upload.</p>' : ""}${g?.pending_code ? '<p class="muted">Local code commits stay local; backup uploads do not publish them.</p>' : ""}${g?.in_progress ? '<p class="error">Finish the active Git operation first.</p>' : ""}${
       d?.local_changes || d?.remote_changes
         ? `<div class="db-scroll"><table class="data-table"><thead><tr><th>Table</th><th>Local + / − / edited</th><th>Remote + / − / edited</th></tr></thead><tbody>${[
             ...new Set([
@@ -192,7 +199,7 @@ window.DevSystem = (() => {
             })
             .join("")}</tbody></table></div>`
         : ""
-    }</section></div><div id="system-local-choice"></div></section>
+    }</section></div></details><div id="system-local-choice"></div></section>
  <section class="panel dashboard-surface"><div class="section-head"><h2>Recent outcomes</h2><a href="/dev/tools/guides?guide=technical">Technical guide</a></div><div class="system-bounded">${
    g?.history?.length
      ? g.history
@@ -288,9 +295,11 @@ window.DevSystem = (() => {
     localReview = null;
     gitBusy = true;
     note =
-      kind === "check"
-        ? "Checking remote…"
-        : "Checking remote, saving snapshot and uploading…";
+      kind === "compact"
+        ? "Compacting Git storage…"
+        : kind === "check"
+          ? "Checking remote…"
+          : "Checking remote, saving snapshot and uploading…";
     draw();
     try {
       const r = await U.api(
@@ -301,6 +310,13 @@ window.DevSystem = (() => {
       gitState = r.git;
       if (data) data.git = r.git;
       note = r.message;
+      if (kind === "compact" && r.before && r.after)
+        note +=
+          " Git objects: " +
+          bytes(r.before.object_bytes) +
+          " → " +
+          bytes(r.after.object_bytes) +
+          ".";
     } catch (e) {
       if (e.details?.git) {
         ++loadId;
@@ -316,11 +332,27 @@ window.DevSystem = (() => {
     }
   }
 
+  function rowDifferences(d) {
+    const rows = Object.entries(d?.different_rows || {});
+    if (!rows.length) return "";
+    return `<details class="git-row-differences"><summary>Different records by table (${rows.length})</summary><div class="db-scroll"><table class="data-table"><thead><tr><th>Table</th><th>Only local</th><th>Only remote</th><th>Different values</th></tr></thead><tbody>${rows.map(([name, n]) => `<tr><td>${esc(name)}</td><td>${n.added}</td><td>${n.removed}</td><td>${n.edited}</td></tr>`).join("")}</tbody></table></div></details>`;
+  }
+  function comparisonDetails(d) {
+    if (!d) return "";
+    const value = (label, text) =>
+      `<div class="health-row"><span>${esc(label)}</span><strong>${esc(text ?? "Unknown")}</strong></div>`;
+    const hashes = [
+      ["Local hash", d.local_hash],
+      ["Remote hash", d.remote_hash],
+      ["Accepted baseline", d.baseline_hash],
+    ];
+    return `<div class="git-comparison">${value("This device", d.local_device ? "Device " + d.local_device : "Assigned on first upload")}${value("Last remote writer", d.remote_device ? "Device " + d.remote_device : "Unidentified / legacy")}${value("Remote backup committed", d.remote_time ? date(d.remote_time) : null)}${value("Snapshot commit", d.snapshot_commit?.slice(0, 12))}<dl class="git-hashes">${hashes.map(([label, hash]) => `<div><dt>${label}</dt><dd><code>${esc(hash || "Not established")}</code></dd></div>`).join("")}</dl>${rowDifferences(d)}${d.incoming_backup ? `<p>Incoming copy saved: <strong>${esc(d.incoming_backup)}</strong></p>` : ""}</div>`;
+  }
   function drawLocalChoice() {
     const node = $("#system-local-choice");
     if (!node || !localReview) return;
     const r = localReview;
-    node.innerHTML = `<section class="system-restore-review"><h3>Keep this computer’s database</h3><p>The local catalogue and results stay active. A verified copy of each database is kept before recording this choice. Upload will publish the local copy using normal Git checks.</p><div class="data-scroll"><table class="data-table"><thead><tr><th>Records</th><th>Local · keep</th><th>Git snapshot</th></tr></thead><tbody>${Object.keys(
+    node.innerHTML = `<section class="system-restore-review"><h3>Compare database copies</h3><p>Choose a whole database. Keep local leaves its catalogue and results active for upload; Use remote replaces it after a safety backup. Rows are never merged.</p>${comparisonDetails(r.details)}<div class="data-scroll"><table class="data-table"><thead><tr><th>Records</th><th>Local copy</th><th>Remote copy</th></tr></thead><tbody>${Object.keys(
       r.local,
     )
       .map(
@@ -329,7 +361,7 @@ window.DevSystem = (() => {
       )
       .join(
         "",
-      )}</tbody></table></div><label>Type KEEP LOCAL<input id="system-local-confirmation" autocomplete="off" ${gitBusy ? "disabled" : ""}></label><div class="system-actions">${button(gitBusy ? "Keeping local…" : "Keep local database", "data-system-local-apply disabled", "danger")}${button("Cancel", "data-system-local-cancel" + (gitBusy ? " disabled" : ""))}</div></section>`;
+      )}</tbody></table></div><label>Database to keep<select id="system-database-choice" ${gitBusy ? "disabled" : ""}><option value="local" ${databaseChoice === "local" ? "selected" : ""}>Keep this device’s local database</option><option value="remote" ${databaseChoice === "remote" ? "selected" : ""}>Use the reviewed remote database</option></select></label><label><span id="system-choice-prompt">Type ${databaseChoice === "remote" ? "USE REMOTE" : "KEEP LOCAL"}</span><input id="system-local-confirmation" autocomplete="off" ${gitBusy ? "disabled" : ""}></label><div class="system-actions">${button(gitBusy ? "Applying choice…" : databaseChoice === "remote" ? "Use remote database" : "Keep local database", "data-system-local-apply disabled", "danger")}${button("Cancel", "data-system-local-cancel" + (gitBusy ? " disabled" : ""))}</div></section>`;
   }
   async function reviewLocalChoice() {
     if (gitBusy || restoreBusy) return;
@@ -337,6 +369,7 @@ window.DevSystem = (() => {
     if (!g?.review_token) return;
     gitBusy = true;
     localReview = null;
+    databaseChoice = "local";
     note = "Comparing local and Git databases…";
     draw();
     try {
@@ -365,23 +398,40 @@ window.DevSystem = (() => {
       gitBusy ||
       restoreBusy ||
       !localReview ||
-      $("#system-local-confirmation")?.value !== "KEEP LOCAL"
+      $("#system-local-confirmation")?.value !==
+        ($("#system-database-choice")?.value === "remote"
+          ? "USE REMOTE"
+          : "KEEP LOCAL")
     )
       return;
-    const reviewed = localReview;
+    const reviewed = localReview,
+      useRemote = $("#system-database-choice")?.value === "remote",
+      confirmation = useRemote ? "USE REMOTE" : "KEEP LOCAL";
     gitBusy = true;
-    note = "Backing up both copies and keeping local…";
+    note = useRemote
+      ? "Backing up local data and loading the reviewed remote…"
+      : "Backing up both copies and keeping local…";
     draw();
     try {
-      const r = await U.api("/api/dev/git/keep-local", {
-        choice_token: reviewed.choice_token,
-        confirmation: "KEEP LOCAL",
-      });
+      const r = await U.api(
+        "/api/dev/git/" + (useRemote ? "use-remote" : "keep-local"),
+        {
+          choice_token: reviewed.choice_token,
+          confirmation,
+        },
+      );
       ++loadId;
       gitState = r.git;
       if (data) data.git = r.git;
       localReview = null;
       note = r.message;
+      if (useRemote) {
+        try {
+          await U.afterRestore();
+        } catch {
+          note += " Remote database loaded; reload to refresh the catalogue.";
+        }
+      }
       U.toast(note);
     } catch (e) {
       localReview = null;
@@ -471,6 +521,7 @@ window.DevSystem = (() => {
     if (b.hasAttribute("data-system-git-open")) U.navigate("export");
     if (b.hasAttribute("data-system-backup")) makeBackup();
     if (b.hasAttribute("data-system-retry")) load();
+    if (b.hasAttribute("data-system-compact")) gitTask("compact");
     if (b.hasAttribute("data-system-check")) gitTask("check");
     if (b.hasAttribute("data-system-upload")) gitTask("upload");
     if (b.hasAttribute("data-system-local-review")) reviewLocalChoice();
@@ -496,10 +547,26 @@ window.DevSystem = (() => {
       window.DevTags.openFilter(b.dataset.systemFilter);
     if (b.hasAttribute("data-system-sources")) U.showMissingSources();
   });
+  document.addEventListener("change", (event) => {
+    if (event.target.id !== "system-database-choice") return;
+    databaseChoice = event.target.value;
+    $("#system-local-confirmation").value = "";
+    $("#system-choice-prompt").textContent =
+      event.target.value === "remote" ? "Type USE REMOTE" : "Type KEEP LOCAL";
+    $("[data-system-local-apply]").textContent =
+      event.target.value === "remote"
+        ? "Use remote database"
+        : "Keep local database";
+    $("[data-system-local-apply]").disabled = true;
+  });
   document.addEventListener("input", (e) => {
     if (e.target.id === "system-local-confirmation") {
       $("[data-system-local-apply]").disabled =
-        gitBusy || e.target.value !== "KEEP LOCAL";
+        gitBusy ||
+        e.target.value !==
+          ($("#system-database-choice")?.value === "remote"
+            ? "USE REMOTE"
+            : "KEEP LOCAL");
     }
     if (e.target.id === "system-backup-query") {
       backupQuery = e.target.value;
@@ -513,7 +580,7 @@ window.DevSystem = (() => {
     viewChanged,
     render,
     handleTool,
-    canNavigate: () => !restoreBusy,
+    canNavigate: () => !restoreBusy && !gitBusy,
   };
 })();
 
