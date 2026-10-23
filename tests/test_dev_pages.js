@@ -27,6 +27,7 @@ const {JSDOM,CookieJar,VirtualConsole}=require('jsdom'),fs=require('fs');
   if(view==='vibe_records'&&width===1280){
    const wait=async predicate=>{for(let i=0;i<100;i++){if(predicate())return;await new Promise(r=>setTimeout(r,20))}throw Error('Vibe Dev UI timed out')};
    await wait(()=>d.querySelector('[data-vibe-edit]'));d.querySelector('[data-vibe-edit]').click();await wait(()=>d.querySelector('#dev-vibe-save'));
+   if(d.querySelectorAll('[data-vibe-map-tab]').length!==4||d.querySelectorAll('[data-vibe-map]:not([hidden])').length!==1)errors.push({issue:'Vibe map selectors must keep every map reachable with one group visible'});
    const form=d.querySelector('#dev-vibe-save');for(const select of form.querySelectorAll('select')){select.value='placed';select.dispatchEvent(new dom.window.Event('change',{bubbles:true}))}
    form.elements.namedItem('pace_mood:x').value='2.5';form.elements.namedItem('completed_passes').value='1';form.dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true}));
    await wait(()=>d.querySelector('#toast').textContent.includes('Vibe data saved'));await wait(()=>!d.querySelector('#dev-vibe-search button').disabled);

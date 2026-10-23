@@ -118,7 +118,13 @@ window.DevWorkspace = (() => {
         pages.find((row) => href(row[0]) === location.pathname)?.[0] ||
         areas.find((row) => href(row[0]) === location.pathname)?.[0] ||
         "overview";
-      if (dirty || modeDirty()) {
+      if (
+        dirty ||
+        modeDirty() ||
+        (window.DevSystem && !window.DevSystem.canNavigate()) ||
+        window.DevTags?.isBusy?.() ||
+        window.DevVibe?.isBusy?.()
+      ) {
         history.pushState({}, "", currentAddress);
         guarded(() => U.navigate(key, true));
       } else U.navigate(key, false);
@@ -131,10 +137,7 @@ window.DevWorkspace = (() => {
     });
   }
   function navigate(view, action, push) {
-    if (view === current) {
-      action();
-      return;
-    }
+    if (view === current) return;
     guarded(() => {
       if (window.DevSystem && !window.DevSystem.canNavigate()) {
         U.toast("Wait for the restore to finish.");

@@ -10,7 +10,8 @@ window.DevVibe = (() => {
     offset = 0,
     query = "",
     busy = false,
-    baseline = null;
+    baseline = null,
+    selectedMap = "";
   const root = () => U.root(),
     error = (e) => {
       const node = root()?.querySelector("[data-vibe-dev-error]");
@@ -74,10 +75,12 @@ window.DevVibe = (() => {
     const node = root().querySelector("#dev-vibe-editor");
     node.hidden = false;
     root().querySelector("#dev-vibe-placeholder").hidden = true;
-    node.innerHTML = `<h3 class="song">${esc(data.song.title)}</h3><p>${data.active_rounds} active rounds will be cleared when saved.</p><form id="dev-vibe-save"><div class="dev-vibe-maps">${data.maps
+    if (!data.maps.some((m) => m.id === selectedMap))
+      selectedMap = data.maps[0]?.id || "";
+    node.innerHTML = `<h3 class="song">${esc(data.song.title)}</h3><p>${data.active_rounds} active rounds will be cleared when saved.</p><form id="dev-vibe-save"><nav class="dev-vibe-map-nav" aria-label="Vibe map to edit">${data.maps.map((m) => `<button class="btn ${m.id === selectedMap ? "active" : ""}" type="button" data-vibe-map-tab="${m.id}" aria-pressed="${m.id === selectedMap}" aria-controls="dev-vibe-map-${m.id}">${esc(m.title)}</button>`).join("")}</nav><div class="dev-vibe-maps">${data.maps
       .map(
         (m) =>
-          `<fieldset data-vibe-map="${m.id}"><legend class="vibe">${esc(m.title)}</legend><label>Selection<select name="${m.id}:status">${[
+          `<fieldset id="dev-vibe-map-${m.id}" data-vibe-map="${m.id}" ${m.id === selectedMap ? "" : "hidden"}><legend class="vibe">${esc(m.title)}</legend><label>Selection<select name="${m.id}:status">${[
             ["placed", "Placed"],
             ["unmapped", "Unplaced"],
             ["not_applicable", "Skipped"],
@@ -201,6 +204,21 @@ window.DevVibe = (() => {
   document.addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!b || !active || busy) return;
+    if (b.dataset.vibeMapTab) {
+      selectedMap = b.dataset.vibeMapTab;
+      root()
+        .querySelectorAll("[data-vibe-map]")
+        .forEach(
+          (node) => (node.hidden = node.dataset.vibeMap !== selectedMap),
+        );
+      root()
+        .querySelectorAll("[data-vibe-map-tab]")
+        .forEach((node) => {
+          const chosen = node.dataset.vibeMapTab === selectedMap;
+          node.setAttribute("aria-pressed", String(chosen));
+          node.classList.toggle("active", chosen);
+        });
+    }
     if (b.dataset.vibeEdit) void edit(Number(b.dataset.vibeEdit));
     if (b.dataset.vibePage) {
       offset = Math.max(0, offset + 30 * Number(b.dataset.vibePage));

@@ -61,8 +61,9 @@ choice. Album import keeps existing matches unchecked and reports partial succes
 Voting exposes saved effective results and corrections. Trivia & Elo provides song
 recognition maintenance, reviewed manual Elo correction and saved-vote review.
 Tournaments retain bracket/match/placement review. Guesser and Shelves retain saved
-record editing. Vibe Map edits averaged coordinates, sample counts and completed
-passes; clearing one map resets its compatible pass state. Saved rules and frozen
+record editing. Vibe Map places its bounded song queue beside the editor. Four map selectors
+show one coordinate group at a time while retaining changes to every map. Save
+submits all map values together with sample counts and completed passes; clearing one map resets its compatible pass state. Saved rules and frozen
 answers retain their existing server checks. Whole-mode resets are also available
 from **Tools & systems → Reviewed resets**, with the original typed confirmations.
 

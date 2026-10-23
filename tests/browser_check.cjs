@@ -197,6 +197,7 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.goto(base+'/dev/dashboard?view=vibe_records');await page.locator('[data-vibe-edit="1"]').waitFor();
   await page.locator('[data-vibe-edit="1"]').click();await page.locator('#dev-vibe-save').waitFor();
   await page.locator('[name="pace_mood:x"]').fill('4.25');
+  assert.equal(await page.locator('[data-vibe-map-tab]').count(),4);await page.locator('[data-vibe-map-tab]').nth(1).click();await page.locator('[data-vibe-map-tab="pace_mood"]').click();assert.equal(await page.locator('[name="pace_mood:x"]').inputValue(),'4.25');
   await page.locator('#dev-vibe-save button[type="submit"]').click();
   await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data saved'));await page.locator('#dev-vibe-search button:enabled').waitFor();
   const maintained=await (await page.request.get(base+'/api/dev/vibe/1')).json();
@@ -204,6 +205,7 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-vibe',folder);await page.locator('#dev-vibe-editor').screenshot({path:folder+'/dev-vibe-'+width+'.png'});}
   await page.locator('[data-vibe-clear-map="pace_mood"]').click();await page.locator('#dev-vibe-save button[type="submit"]').click();
   await page.locator('#dev-vibe-search button:enabled').waitFor();
+  await page.locator('.dev-vibe-delete > summary').click();
   await page.locator('#dev-vibe-delete [name="confirmation"]').fill('DELETE VIBE');await page.locator('#dev-vibe-delete button[type="submit"]').click();
   await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data deleted'));
   const removed=await (await page.request.get(base+'/api/dev/vibe/1')).json();assert.ok(removed.maps.every(m=>m.status==='unmapped'));assert.equal(removed.completed_passes,0);

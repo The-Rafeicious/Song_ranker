@@ -179,7 +179,9 @@ Database inspection, backups/restore, Git, resets and exports have separate focu
 pages with compact status summaries and bounded workspaces. Separate
 code status from live-database status and identify cached/fresh checks. Tables,
 long values and backup restore reviews stay inside their own scroll areas.
-Vibe maintenance uses two map columns on desktop and one on phone. Destructive
+Vibe maintenance uses a bounded song queue beside the editor (above the queue on
+phones). Four direct map selectors expose one coordinate group at a time, retaining
+all unsaved map fields; Save remains visible below the bounded fields. Destructive
 resets/restore/keep-local retain their existing typed reviews and stale checks.
 Stop keeps one fresh masked PIN, explicit backup/Git outcomes and an acknowledgement
 before server exit. Do not add automatic reset/cleanup behavior.
