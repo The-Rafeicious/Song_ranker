@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.3.1 · competition generation 3 · schema 20**
+**Application V5.3.2 · competition generation 3 · schema 20**
 
-Current implementation reference. `APP_VERSION` is `5.3.1`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.3.2`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -510,7 +510,7 @@ admin requirements. See [Dev guide](DEV_GUIDE.md).
 | Preview | `/api/previews/<song_id>`, `/status`, `/api/previews/cache`; bounded in-memory audio cache/diagnostics, not a listening history. |
 | Private analysis | `/api/dev/song-quality/<id>` GET/POST, `/api/dev/analysis`, `/api/dev/selection-health`. |
 | Backups | `/api/dev/system`, `/api/dev/backups/review`, `/restore`, backup download, `/api/dev/database/export`, `/api/dev/database/guide`. |
-| Git | `/api/dev/git/status`, `/check`, `/upload`, `/keep-local/review`, `/keep-local`; writes/checks are explicit tasks. |
+| Git | `/api/dev/git/status`, `/check`, `/upload`, `/keep-local/review`, `/keep-local`, `/use-remote`, `/compact`; writes/checks are explicit tasks. |
 
 Existing authenticated catalogue, metadata, tag, correction/reset and source
 routes remain available in their developer modules. New telemetry rides the
@@ -598,29 +598,66 @@ tab. Three slots do not limit Git commit history or old/update recovery archives
 
 ## Git database reconciliation
 
-`developer/git_sync.py` still owns Git transport, locking, code fast-forward and
-snapshot-only uploads. `storage/git_database.py` owns committed SQL validation,
-logical row models, device baseline receipts, three-way change coverage and
-transactional adoption. `main.py` calls reconciliation after schema bootstrap
-and code re-exec but before the normal server starts, even after a manual pull.
+`developer/git_sync.py` owns transport/locking, safe code fast-forwards, SQL-only
+commits, pending upload refs and local object compaction. `storage/git_database.py`
+owns snapshot validation, the logical row model, SHA-256 baselines, numbered
+installation identities and transactional adoption. No storage owner imports
+Flask. App-managed source pulls compare databases before updating code, preserve
+the live DB, then recheck after bootstrap/re-exec before serving. A future snapshot
+can require newer code for validation; it never authorizes automatic data adoption.
 
-A shared baseline tracks removals as well as additions/edits; sequence high-water
-marks and extension objects participate. Device-local competition start/provenance
-are omitted from logical equality. Confirmed-upload history or an exact older
-Git snapshot can recover the initial baseline; absent/ambiguous history requires
-review. No row count or modification-time heuristic decides which database wins.
+Logical hashes include primary-keyed rows, sequence high-water marks and schema
+objects, including extension data. Hidden rowids identify unkeyed extension rows;
+junction rowids do not change relationship identity. Only competition install
+start/provenance are device-local. The existing database validation/materialisation
+rules still reject invalid, corrupt or future-schema SQL.
 
-Safe remote adoption uses an archival `pre_git_database` SQLite backup, a live
-digest recheck inside `BEGIN IMMEDIATE`, and the existing verified transactional
-rebuild. Conflicts retain local data and publish a validated `incoming_git` copy
-for the existing reviewed-restore workflow. Upload preflight rejects stale or
-split live databases even if source Git commits are already up to date.
+Version-2 private receipts bind the accepted remote model hash plus Git witnesses
+to the repository, database path and destination; V1 receipts and confirmed history
+remain readable. An unchanged remote hash authorizes local work regardless of Git
+ancestry. Otherwise the latest snapshot's registered writer may authorize this
+device's current local data; another/unidentified writer requires an explicit
+whole-copy choice. Baseline and direct per-table deltas explain additions,
+removals, edits, schema and sequence differences; row counts do not decide policy.
 
-Status is cached locally in Git’s private state folder and returned as
-`git.database_sync`; Dev labels it separately from code status. Check remote
-compares read-only. WSGI import bootstrap does not fetch or auto-adopt snapshots.
-Details, first-upgrade limits and recovery are in
-[UPGRADES.md](UPGRADES.md).
+A random 128-bit installation key is private local state bound to the live DB path.
+Each successful new-device upload carries the complete key→number registry in its
+commit message (`Song-Ranker-Devices`), its writer number (`Song-Ranker-Device`)
+and logical hash (`Song-Ranker-Hash`). Numbers allocate monotonically from 1 on the
+latest remote registry. Manual SQL commits retain an unknown writer; prior registry
+trailers preserve allocations. SQL itself adds only commit time and device number
+as a comment header. No hostname/user identity is exported as device metadata.
+
+Uploads use a disposable `GIT_INDEX_FILE`, read the latest remote tree, replace
+only the SQL entry and create a single-parent commit. They preserve the real index,
+local code commits and code checkout. Hooks/signing failures block publication;
+hook-added paths or modified snapshot entries fail scope validation. A private
+`refs/song-ranker/pending/<binding>` retains retryable commits, and successful
+uploads retain `last-upload/<binding>`. A matching local code checkout advances
+with a compare-and-swap; behind/diverged code stays unchanged for normal update.
+Both DB and remote are rechecked before push. An explicit expected-remote-head
+lease provides atomic race rejection; the verified sole parent is that exact head,
+so this mechanism never rewrites remote history.
+
+`keep-local/review` issues a browser-bound token for both choices. `KEEP LOCAL`
+archives both copies and acknowledges the exact remote hash. `USE REMOTE` on
+`/api/dev/git/use-remote` uses a `pre_git_database` safety backup, maintenance gate,
+`BEGIN IMMEDIATE`, raw live-digest/remote rechecks and transactional rebuild/rollback.
+Multi-worker WSGI replacement is refused. A completed mutation remains successful
+if writing its receipt/status subsequently fails. UI replacement refreshes the
+catalogue and clears stale tag/source drafts.
+
+Git fetches only the configured branch without tags/submodules or automatic GC.
+`/api/dev/git/compact` runs `repack -a -d --keep-unreachable` under the operation
+lock: no reflog expiry, prune, history rewrite or worktree cleanup. Old plain SQL
+safety copies migrate out of Git metadata only after a durable gzip write and exact
+decompression verification; new compressed archives deduplicate by SHA-256 under
+`database_backups/git_snapshots`. No database backup is rotated/deleted by this task.
+Git object-byte counts are approximate loose+pack storage, not total directory size.
+
+Fresh checks expose `status_source`, `checked_at`, `upload_ready` and independent
+`database_sync` details. Cached status never proves current equality. WSGI imports
+remain Git-free. [UPGRADES.md](UPGRADES.md) explains choices and first-upgrade limits.
 
 ## Validation and maintenance
 
@@ -632,19 +669,9 @@ still needs the intended installation/device. New work follows
 [AGENTS.md](../AGENTS.md) and [PAGE_STYLE.md](PAGE_STYLE.md), with one owner per
 shared concern and updated current references.
 
-### Reviewed local database choice
-
-Dev Git can compare live and committed upstream counts and issue a browser-bound
-review token. Applying it requires `KEEP LOCAL`; changed data or Git targets
-invalidate the review. Both copies are archived before acknowledging that exact
-remote snapshot as the baseline. No live rows are changed. Normal upload then
-publishes local data with the usual Git guards. Pending source updates require
-a restart; the accepted choice survives that restart and prevents adopting the
-rejected database. Later remote changes require another review.
-
 ## v5.2.1 maintenance inspection
 
-`developer/database_inspector.py` owns authenticated GET `/api/dev/database/inspect`
+The database-inspector companion in `developer/dev_system.py` owns authenticated GET `/api/dev/database/inspect`
 (`name`, `offset`, `limit`) and `/api/dev/database/cell` (signed `review_token`,
 `column`, `start`). Names must exist as tables/views in sqlite_master; identifiers
 are quoted, values/limits bound, and user SQL is never accepted. Column metadata
@@ -653,7 +680,7 @@ cap cell sizes and total cells per response. Long-value tokens bind the browser,
 object, row offset and a type-sensitive row digest; changed rows return 409.
 Read-only URI mode and query_only apply, with a three-second progress budget and
 one-second busy timeout. BLOBs use base64 and integer values remain exact strings.
-`static/js/dev_database.js` owns object/tab/page/value state and stale-response
+The `DevDatabase` companion in `static/js/dev_system.js` owns object/tab/page/value state and stale-response
 protection; `dev_system.js` owns backups and Git status. GET `/api/dev/help/dev`
 and `/api/dev/help/technical` serve the two allowlisted guides to authenticated Dev.
 
@@ -661,7 +688,7 @@ Git status reads are marked cached. Explicit checks return checked_at,
 status_source=checked, upload_ready and an independent database_sync comparison,
 including per-table local/remote deltas. Opening Git performs that check. Code
 up_to_date alone cannot enable upload or represent database equality. The existing
-shared-baseline algorithm and server-side upload/stop guards remain authoritative.
+hash/device policy and server-side upload/stop guards remain authoritative.
 
 ## v5.2.2.1 tag queue
 

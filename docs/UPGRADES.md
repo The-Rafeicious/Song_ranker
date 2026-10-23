@@ -26,7 +26,7 @@ feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 4. Use the new code with upgraded databases. Older code may refuse a newer schema;
    source rollback alone does not roll back database structure.
 
-`APP_VERSION` is `5.2.2`; Vibe reports `Vibe-Map-v1.1`.
+`APP_VERSION` is `5.3.2`; Vibe reports `Vibe-Map-v1.1`.
 The documentation release labels v5.1.0/v5.1.1 do not change the runtime footer.
 Install dependencies from `requirements.txt`; configuration is in the
 [technical guide](TECHNICAL_GUIDE.md#configuration).
@@ -153,87 +153,71 @@ Access restrictions and same-origin request protection continue to apply.
 
 ## Database sync and split recovery
 
-The normal launcher checks an existing database after code/bootstrap, including
-a manual Git pull. Do not decide freshness from file dates or song counts.
+V5.3.2 compares the live database and fetched remote SQL using canonical SHA-256
+hashes before every app-managed pull/push and again after startup bootstrap.
+Code ahead/behind is independent of database safety. Code may fast-forward while
+an incoming database is flagged; the live DB is retained until an explicit choice.
 
+| Database condition | Policy |
+| --- | --- |
+| Equal logical hashes | Record the shared baseline; no duplicate backup commit. |
+| Remote hash equals accepted baseline | Upload local changes without intervention. |
+| Last snapshot writer is this registered device | Trust the current local copy, including deliberate edits/deletions/resets. |
+| Another/unidentified writer changed remote data | Keep local active, save a validated incoming review copy, require a choice. |
+| Accepted remote snapshot removed, corrupt or unsupported | Keep local data; resolve/review the remote before upload. |
 
+Hashes cover all stored facts, extension/schema objects and ID high-water marks;
+installation start/provenance are excluded. Counts/timestamps alone never decide
+which database wins. Existing V1 receipts upgrade on acceptance. Confirmed history
+or an exact match among 32 older SQL snapshots may recover an initial baseline;
+unknown work remains a review, including on a shallow clone with insufficient history.
 
-The comparison uses the fetched, committed upstream SQL blob, not the worktree
-file’s timestamp, file size or song count. The snapshot is restored privately,
-validated and upgraded using the current schema before comparison. It must be
-a V3 competition. Future/invalid schemas, foreign-key errors and corrupt SQL
-do not replace local data.
+Open **Dev → Tools & systems → Git sync → Compare databases…**. Inspect numbered
+devices, backup commit time, full local/remote/baseline hashes, mode/catalogue counts
+and per-table differences. Choose **Keep local** (`KEEP LOCAL`) or **Use remote**
+(`USE REMOTE`). The exact compared hashes/target are bound to the current browser;
+any intervening change requires a fresh review. Keeping local archives both copies
+and permits Upload immediately. Using remote makes a non-rotating
+`pre_git_database_…db` safety copy and replaces the whole database transactionally.
+The incoming copy also appears in Backups & restore as `incoming_git_<blob>.db`.
+There is no row union or automatic cross-device adoption. Keep/export both copies
+if each contains unique work that needs deliberate reconciliation.
 
-A per-device sync receipt binds a known SQL blob/commit to this database path,
-repository, branch and remote target. Confirmed device-bound upload/startup records can
-recover a missing receipt. For installations upgrading from older releases,
-the app also searches up to 32 SQL-changing ancestor commits for an exact
-logical match with the old local database, including deleted-ID high-water
-marks. A shallow/older history or an unmatched local edit can prevent this
-initial recovery; the app then retains both copies for review. A pre-V5 SQL
-ancestor may supply a catalogue-only V5-transfer witness if it exactly matches
-the local fresh competition; the current remote must still be a full V3 backup.
+Device numbers start at 1 and allocate on each new installation's first successful
+upload. Keep `.git/song_ranker_sync` to retain its random identity and receipts.
+A changed DB path/new clone receives its own identity; no hostname is exposed.
+A registry in each backup commit preserves assignments even when an older device
+uploads again. The SQL comment header shows only commit time and device number.
 
-Stored rows are compared by primary key, plus sequence high-water marks and
-schema/extension objects. Hidden rowids remain identities for unkeyed extension
-tables; junction-table rowids do not make a re-saved relationship into new data.
-Only competition install time/provenance are treated as device-local metadata.
-Ratings, results, offers, sources, notes, tag links and other game/catalogue
-facts participate in the comparison.
+Uploads add only a SQL commit atop the latest remote code; they do not publish
+local code/staging or install incoming code. Both hashes and the expected remote
+head are rechecked before publication. Changed remotes reject a push, preserving
+the pending commit and snapshot for a fresh comparison/retry. Matching retries
+reuse their pending commit; lost replies reconcile by database hash. A failed
+upload never requires deleting/recreating `.git` or the live database.
 
-The common baseline identifies additions, edits **and removals**. A remote
-snapshot can supersede local data only if it already includes every local
-change; local-only deletion must also be present remotely. Equal counts do not
-prove equality. Different songs independently assigned the same ID conflict.
+### Git storage
 
-| Outcome | Startup | Upload |
-| --- | --- | --- |
-| Same logical database | Record/refresh shared baseline. | No duplicate commit for an unchanged SQL file. |
-| Remote includes all local changes plus newer changes | Archive local DB, recheck under a write lock, install remote transactionally. | Block; restart first. |
-| Only local changes remain | Keep local data. | Publish the verified local snapshot. |
-| Both have changes the other lacks | Keep local; save an incoming candidate backup for review. | Block. |
-| Baseline cannot be recovered / snapshot cannot be validated | Keep local; provide a review copy when the incoming snapshot is valid. | Block until resolved. |
-
-Initial historical matching can identify a stale older snapshot, but no new
-version can reconstruct edits/deletions that were never checkpointed anywhere.
-If either computer has unuploaded independent work, compare both backups before
-choosing a replacement. Ongoing receipts and confirmed upload history supply
-the deletion baseline for subsequent computer switches.
-
-### If the databases have split
-
-The startup log and Dev Git panel identify a database conflict separately from
-code commit state. The local database is left active; a validated remote copy
-is listed under Dev → **Database & backups** as
-`incoming_git_<blob>.db`, with purpose “Incoming Git database — compare before
-restore”. This file is never silently used as the live database.
-
-Create a local backup/export and inspect both copies. If the remote copy is the
-intended complete library, use the existing **Review → Back up & restore**
-workflow for that incoming file, then restart / Check remote to confirm it
-matches. A restore replaces the entire database; its review and safety backup
-remain in place. If both copies contain unique work, retain/export both while
-reconciling that work deliberately. There is no guessed row union, force-push,
-automatic rebase or silent choice between colliding song/result IDs.
+**Compact Git storage** repacks objects while keeping unreachable recovery objects
+and all history/reflogs. It verifies and moves old plain SQL safety copies from
+`.git/song_ranker_sync` to compressed, content-deduplicated `.sql.gz` archives under
+`database_backups/git_snapshots` beside the live DB. New SQL archives use that
+location. No live DB, database backup or source history is deleted; existing remote
+history is not rewritten. Matching hashes avoid timestamp-only backup commits.
 
 ### Safety and hosting scope
 
-Automatic replacements create non-rotating `pre_git_database_…db` archives;
-requested/shutdown backups retain their existing three-slot rotation. A new
-local write detected during preparation cancels replacement. The final write
-uses `BEGIN IMMEDIATE`; validation/rebuild failure rolls the transaction back.
-A completed upload or restore is still reported as successful if saving its
-local receipt/outcome log fails afterwards.
+Code fast-forward still refuses staged/local code edits, merge/rebase work and
+incoming private/database files. A live write during replacement preparation
+cancels it; final replacement uses a maintenance gate and `BEGIN IMMEDIATE` with
+rollback. Completed uploads/replacements stay successful if subsequent local
+receipt/history writes fail. Ordinary edits do not create extra backups; requested
+and shutdown backups retain their three-slot policy.
 
-Database receipt/status files live in Git’s private `song_ranker_sync` directory
-and are not uploaded as catalogue data. Normal app edits do not create extra
-backups. Opening Dev status is local-only; **Check remote** fetches and compares
-without replacing live data. **Upload** fetches and rechecks before publishing.
-
-Automatic adoption runs only in the stopped, normal launcher after code re-exec
-and database bootstrap, before Waitress starts. WSGI imports retain their
-Git-free startup contract; externally managed/multi-worker servers need stopped
-maintenance for database replacement. Shutdown upload guards also apply there.
+Status reads are cached/local-only. Opening Git performs a fresh remote comparison.
+WSGI imports remain Git-free, and multi-worker replacement requires stopped offline
+maintenance. Stop app still uses a fresh PIN, a local backup, independently checked
+Git outcome and explicit acknowledgement before shutdown.
 
 See [validation](VALIDATION.md) for test scope and limits.
 

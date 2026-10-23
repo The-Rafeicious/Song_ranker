@@ -1,6 +1,6 @@
 # Developer guide
 
-**V5.3.1 · Dev workspace**
+**V5.3.2 · Dev workspace**
 
 Open **System Access** on the hosting computer and enter the Dev PIN. Use **Home**,
 **Library**, **Mode edits**, and **Tools & systems** to move between tasks. Each
@@ -96,31 +96,61 @@ See [split recovery](UPGRADES.md#database-sync-and-split-recovery) before replac
 
 ## Git & database sync
 
-Opening Git refreshes the remote and compares its committed SQL snapshot with the
-**live database**, not the older local SQL export. Refresh status repeats that
-check. The page shows the check time and two independent results:
+Opening Git refreshes the remote and compares its committed SQL backup with the
+**live database**. Refresh status repeats the check; Upload always checks again.
+Code ahead/behind and database safety are independent.
 
-| Result | Meaning / next step |
+| Comparison | Action |
 | --- | --- |
-| Code commits | Branch, target, local/remote commits and incoming/local counts. Incoming code requires a restart/update even when the local database is newer. |
-| Database matches | Both logical snapshots match. |
-| Local data ready to upload | The live database contains the remote changes plus local changes. Use Upload database backup. |
-| Remote data is newer | The remote snapshot contains the local changes plus newer facts. Review before deciding which copy to keep. |
-| Copies need review | Both have unmatched edits/deletions, or no shared baseline is proved. Compare the per-table added/removed/edited counts and backups. |
-| Not freshly checked | A cached result is displayed. It is not proof of the current remote or live data. Refresh before uploading. |
+| Local and remote hashes match | No duplicate backup commit. |
+| Remote hash matches the accepted baseline | Local edits/deletions upload without another choice. |
+| Last remote backup was uploaded by this device | Trust the current local database, including intentional resets or restores. |
+| Another/unidentified device changed the remote backup | Compare the copies before keeping either one. No automatic database replacement. |
+| Invalid/missing previously accepted snapshot | Keep local data and review the remote problem. |
 
-An **Up to date** code status never means that the databases match. Home explicitly
-labels its code summary as cached. Shutdown fetches/rechecks independently; it may
-find changes made after the page's last check. Upload rechecks again and still
-blocks unsafe overwrites, source conflicts and unpublished code commits. The page
-shows per-table deltas when a shared baseline is available. No automatic row merge
-or force-push is introduced. **Keep local database…** retains its reviewed, typed
-confirmation and two-copy backup flow. For a deliberate local reset/restoration,
-review both copies and choose that option before normal upload.
+Device numbers start at **1**, then **2**, **3**, and so on when each new
+installation first uploads. A random local identity keeps the number stable;
+computer/user names and credentials are not added to backups. Moving the live
+DB to a different configured path counts as a separate installation identity.
+The SQL header contains its backup commit time (UTC) and device number.
 
-Recent outcomes retain the latest operations in a bounded panel. Detailed sync
-ancestry/backup rules are in [Upgrades](UPGRADES.md#database-sync-and-split-recovery)
-and the [technical guide](TECHNICAL_GUIDE.md). Both pages link to these guides.
+**Compare databases…** shows the last remote device/time/commit, full local,
+remote and accepted-baseline SHA-256 hashes, catalogue/mode counts and changed
+records per table. “Only local”, “Only remote” and “Different values” compare
+whole rows by identity; schema and ID high-water differences are also included.
+Expand the per-table details when counts alone do not explain a difference.
+
+Choose **Keep this device’s local database** and type `KEEP LOCAL`, or **Use the
+reviewed remote database** and type `USE REMOTE`. Switching choices clears the
+confirmation. Keep local archives both copies and accepts that exact remote as
+the baseline, allowing Upload immediately. Use remote takes a safety backup and
+transactionally replaces the live database; open game tabs should be reloaded.
+Any local/remote change invalidates the choice. Unique work in both copies is
+never combined automatically; retain both copies while reconciling deliberately.
+
+Upload builds a SQL-only commit on the freshly fetched remote, so incoming code
+and unpublished local code commits do not block a safe database backup. It does
+not publish local code/staged files or install incoming code. A concurrent remote
+change rejects the upload; Refresh/retry performs a fresh comparison. A failed
+push keeps a private pending commit and reuses it when the compared state is
+unchanged. Startup code updates still require a safe fast-forward/clean code.
+Every app-managed pull compares databases first and rechecks after bootstrap;
+it leaves the live database active when another device's data needs review.
+Manual terminal Git commands are outside these app checks.
+
+**Compact Git storage** shows Git object sizes and repacks without expiring Git
+history, reflogs or recoverable objects. Existing plain SQL safety copies inside
+`.git/song_ranker_sync` move to verified `.sql.gz` files under
+`database_backups/git_snapshots` beside the configured live DB. New SQL safety
+copies use the same compressed location; identical contents are reused. Neither
+live databases nor existing database backups are deleted. SQL backups remain
+plain text in Git so Git can delta-compress their history. Matching logical hashes
+avoid timestamp-only backup commits. New clones can use `git clone --single-branch
+--no-tags <repository>` to avoid fetching unrelated branches/tags.
+
+Recent outcomes show the latest operations. Details are in the
+[technical guide](TECHNICAL_GUIDE.md#git-database-reconciliation) and
+[recovery guide](UPGRADES.md#database-sync-and-split-recovery).
 
 ## Backups & restore
 

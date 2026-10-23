@@ -17,7 +17,7 @@ V5.3 has one current owner per responsibility. Use the [function index](FUNCTION
 | [songranker/developer/dev_system.py](../songranker/developer/dev_system.py) | Git/backups/recovery, inventory, database inspection and analysis routes. |
 | [songranker/developer/dev_tags.py](../songranker/developer/dev_tags.py) | Canonical tag proposals, reviews and atomic membership apply routes. |
 | [songranker/developer/dev_vibe.py](../songranker/developer/dev_vibe.py) | Authenticated stale-safe Vibe coordinate/count maintenance. |
-| [songranker/developer/git_sync.py](../songranker/developer/git_sync.py) | Guarded startup fast-forwards and explicit database-only Git uploads. |
+| [songranker/developer/git_sync.py](../songranker/developer/git_sync.py) | Hash-reviewed SQL-only uploads, safe startup fast-forwards and Git storage compaction. |
 | [songranker/developer/metadata.py](../songranker/developer/metadata.py) | Fill-only metadata planning/apply, scan lifecycle and HTTP reports. |
 | [songranker/hosting.py](../songranker/hosting.py) | Drained single-process shutdown and the Waitress stop callback. |
 | [songranker/impact.py](../songranker/impact.py) | Pure catalogue-relative Impact calculations; JavaScript parity lives in ui.js. |
@@ -46,7 +46,7 @@ V5.3 has one current owner per responsibility. Use the [function index](FUNCTION
 | [songranker/storage/database_access.py](../songranker/storage/database_access.py) | Connection gate and exclusive, drained maintenance context. |
 | [songranker/storage/database_io.py](../songranker/storage/database_io.py) | Lossless capture/export/rebuild, validation, restore and backup rotation. |
 | [songranker/storage/database_schema.py](../songranker/storage/database_schema.py) | Canonical schema.sql registry and transaction-safe DDL execution. |
-| [songranker/storage/git_database.py](../songranker/storage/git_database.py) | Whole-snapshot reconciliation, deletion-aware baselines and adoption. |
+| [songranker/storage/git_database.py](../songranker/storage/git_database.py) | Logical database hashes, numbered-device registry, baseline receipts and reviewed adoption. |
 | [songranker/storage/preference_state.py](../songranker/storage/preference_state.py) | Pure preference replay and lossless historical state transport. |
 | [songranker/storage/schema_compat.py](../songranker/storage/schema_compat.py) | Offline historical quiz/source/retirement adapters; no Flask imports. |
 | [songranker/storage/source_storage.py](../songranker/storage/source_storage.py) | Lossless current-source codec, schema-15 adapter and SQLite page policy. |

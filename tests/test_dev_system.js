@@ -92,7 +92,7 @@ async function gitFlows(){
  check(h.requests.filter(r=>r.url==='/api/dev/git/check').length===2,'one additional Git task in flight');
  check(h.d.querySelector('[data-system-upload]').disabled,'upload disabled during check');
  pending.resolve({message:'Incoming updates found.',git:git({state:'behind',behind:2})});await flush();
- check(h.d.querySelector('[data-system-upload]').disabled,'incoming code blocks upload');
+ check(!h.d.querySelector('[data-system-upload]').disabled,'incoming code does not block a safe database upload');
  check(h.d.querySelector('#system-note').textContent.includes('Incoming updates'),'remote result visible');
  h.handler(url=>url==='/api/dev/git/check'?{message:'Checked.',git:git({review_token:'fresh-target'})}:undefined);
  h.click('[data-system-check]');await flush();check(!h.d.querySelector('[data-system-upload]').disabled,'check resolves blocked state');
@@ -105,7 +105,7 @@ async function gitFlows(){
  h.click('[data-system-upload]');await flush();
  check(JSON.parse(h.requests.filter(r=>r.url==='/api/dev/git/upload').at(-1).options.body).review_token==='retry-target','retry binds refreshed target');
  check(h.d.querySelector('#system-note').textContent==='Retry uploaded.','retry success visible');
- for(const extra of [{pending_code:true,ahead:1},{in_progress:true},{tracking_head:null}]){
+ for(const extra of [{in_progress:true},{tracking_head:null}]){
   h.state.git=git(extra);h.w.testDev.setView('export');await flush();check(h.d.querySelector('[data-system-upload]').disabled,'unsafe Git state disables upload');
  }
  for(const code of ['database_remote_ahead','database_conflict','database_check_failed']){
@@ -223,6 +223,26 @@ async function freshDatabaseReadiness(){
  check(h.d.querySelectorAll('.git-status-grid > section').length===2,'separate status sections');h.close();
 }
 module.exports={harness,flush};
-if(require.main===module)(async()=>{await entryAndShortcuts();await deferredCatalogue();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();await freshDatabaseReadiness();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
+async function remoteChoiceAndCompaction(){
+ const h=await harness('export'),{d,w}=h;const details={local_hash:'a'.repeat(64),remote_hash:'b'.repeat(64),baseline_hash:'c'.repeat(64),local_device:1,remote_device:2,remote_time:'2026-10-23T10:00:00Z',different_rows:{songs:{added:1,removed:2,edited:3}}};let pending=deferred();
+ h.handler(url=>url==='/api/dev/git/keep-local/review'?{ok:true,local:{Songs:4},remote:{Songs:6},details,choice_token:'choice',message:'Compared',git:git()}:url==='/api/dev/git/use-remote'?pending.promise:undefined);
+ h.click('[data-system-local-review]');await flush();
+ check(d.querySelector('#system-local-choice').textContent.includes(details.remote_hash),'review shows full remote hash');
+ check(d.querySelector('#system-local-choice').textContent.includes('Device 2')&&d.querySelector('.git-row-differences'),'review identifies writer and table differences');
+ h.input('#system-local-confirmation','KEEP LOCAL');const choice=d.querySelector('#system-database-choice');choice.value='remote';choice.dispatchEvent(new w.Event('change',{bubbles:true}));
+ check(d.querySelector('[data-system-local-apply]').disabled&&d.querySelector('#system-local-confirmation').value==='','switching copies clears prior authorization');
+ h.input('#system-local-confirmation','KEEP LOCAL');check(d.querySelector('[data-system-local-apply]').disabled,'local confirmation cannot authorize remote replacement');
+ h.input('#system-local-confirmation','USE REMOTE');h.click('[data-system-local-apply]');await flush();
+ const sent=JSON.parse(h.requests.find(r=>r.url==='/api/dev/git/use-remote').options.body);check(sent.choice_token==='choice'&&sent.confirmation==='USE REMOTE','remote action sends its exact review and confirmation');
+ check(!w.DevSystem.canNavigate(),'remote replacement blocks task navigation');pending.resolve({ok:true,message:'Remote loaded',git:git()});await flush();
+ check(w.DevSystem.canNavigate()&&!d.querySelector('#system-local-confirmation'),'completed replacement releases navigation and clears review');
+ pending=deferred();h.handler(url=>url==='/api/dev/git/compact'?pending.promise:undefined);h.click('[data-system-compact]');await flush();
+ check(!w.DevSystem.canNavigate()&&d.querySelector('[data-system-upload]').disabled,'storage operation is serialized with other Git tasks');
+ const compact=JSON.parse(h.requests.find(r=>r.url==='/api/dev/git/compact').options.body);check(compact.review_token,'compaction binds the reviewed Git target');
+ pending.resolve({ok:true,message:'Git compacted',git:git({storage:{object_bytes:1024,loose_objects:0,packs:1}})});await flush();
+ check(d.querySelector('#system-note').textContent.includes('compacted')&&d.querySelector('.git-status-grid').textContent.includes('1.0 KB'),'compaction result and storage sizes are visible');h.close();
+}
+
+if(require.main===module)(async()=>{await entryAndShortcuts();await deferredCatalogue();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();await freshDatabaseReadiness();await remoteChoiceAndCompaction();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
 
 

@@ -1,6 +1,6 @@
 # Song Ranker
 
-**Application V5.3.1 · competition generation 3 · SQLite schema 20**
+**Application V5.3.2 · competition generation 3 · SQLite schema 20**
 
 Rank your music, recognise previews, play brackets and quizzes, arrange albums,
 and describe songs on continuous Vibe Maps. Your songs, albums, artists and tags
@@ -28,7 +28,7 @@ restore a generation-3 SQL snapshot, use an optional catalogue seed, or start
 empty. A **first V2-to-V3 transfer** resets results; a routine code update does
 not repeat that reset. See [upgrades and recovery](docs/UPGRADES.md).
 
-The app reports `5.3.1`; Vibe Map retains its internal mode version `1.1`.
+The app reports `5.3.2`; Vibe Map retains its internal mode version `1.1`.
 
 ## Modes
 
@@ -137,14 +137,20 @@ cover reviewed maintenance controls. Retired one-time release-cleanup scripts ar
 - Use **Stop app** with Git upload selected, enter the fresh PIN and wait for the
   local/Git success receipt before changing computers. Closing a tab does not
   upload or stop the server.
-- Normal startup compares the live database with the committed upstream SQL,
-  including after a manual pull. It adopts a newer snapshot only when the
-  baseline proves it contains all local changes, including deletions.
-- A split keeps the local database, saves an incoming review copy and blocks
-  an unsafe upload. Choose reviewed restore or **Keep local database…** in Dev →
-  System → Git. Review counts, type `KEEP LOCAL`, then upload normally;
-  both copies are backed up. Restart first if code updates are pending. There is
-  no automatic row union or force-push.
+- Every app-managed source pull and database push compares the live and remote
+  database hashes. An unchanged remote baseline permits local edits; a backup
+  last uploaded by this registered device trusts the current local database.
+- A changed backup from another/unidentified device requires **Compare databases…**
+  in Dev → Tools & systems → Git sync. Review devices, timestamps, hashes and row
+  differences, then type `KEEP LOCAL` or `USE REMOTE`. Replacements make a safety
+  backup; changed reviews must be repeated. Whole databases are chosen, not merged.
+- Database uploads extend the latest remote commit with only the SQL backup.
+  Incoming code and unpublished local code no longer block a safe backup upload;
+  local code commits and staging stay local. Code updates still use guarded
+  startup fast-forwards.
+- **Compact Git storage** repacks objects without expiring history/recovery
+  objects. Old plain SQL safety files migrate from `.git` to verified compressed
+  copies beside the database backups. No actual database/backup is removed.
 
 Preserve `instance/session_secret`. Default backups are beside the live file in
 `data/database_backups/`; custom database paths use a sibling folder. Keep test
@@ -198,7 +204,7 @@ current setup and operating rules live in the references above.
 
 ## V5.3 development
 
-V5.3.1 adds focused Dev sections and an inline editing workspace. The current
+V5.3.1 introduced the focused Dev workspace; V5.3.2 replaces Git/database sync with hash and numbered-device checks. The current
 [Dev guide](docs/DEV_GUIDE.md) describes navigation, recovery and tools.
 
 Related mode operations/statistics now share one owner. Catalogue queries, Dev

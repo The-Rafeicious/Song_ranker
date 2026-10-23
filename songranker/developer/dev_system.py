@@ -167,6 +167,41 @@ def keep_local_database():
     return git_reply(git().keep_local(choice))
 
 
+@app.post("/api/dev/git/use-remote")
+@admin_required
+def use_remote_database():
+    """Apply the exact compared remote only after a typed, signed review."""
+    if request.environ.get("wsgi.multiprocess"):
+        return (
+            jsonify(
+                message="Stop all WSGI workers and use the offline recovery guide."
+            ),
+            409,
+        )
+    data = request.get_json(silent=True)
+    try:
+        if not isinstance(data, dict) or data.get("confirmation") != "USE REMOTE":
+            raise ValueError("Type USE REMOTE to confirm this database choice.")
+        choice = unpack(data.get("choice_token"), "git_keep_local")
+    except ValueError as error:
+        return jsonify(message=str(error)), 400
+    return git_reply(git().use_remote(choice))
+
+
+@app.post("/api/dev/git/compact")
+@admin_required
+def compact_git_storage():
+    """Repack local Git and relocate verified archives without expiring history."""
+    data = request.get_json(silent=True)
+    try:
+        if not isinstance(data, dict):
+            raise ValueError("Open Git status before compacting.")
+        review = unpack(data.get("review_token"), "git")
+    except ValueError as error:
+        return jsonify(message=str(error)), 400
+    return git_reply(git().compact(review["fingerprint"]))
+
+
 def backup_folder():
     """Resolve the backup directory beside the configured live database."""
     return Path(services.DB_NAME).resolve().parent / "database_backups"
@@ -665,18 +700,32 @@ def developer_guide(guide):
         import markdown
         import posixpath
         from urllib.parse import urlsplit
+
         source = path.read_text(encoding="utf-8")
+
         def guide_link(match):
             """Resolve local Markdown references into readable guides or repository documents."""
             target = match.group(1)
             parts = urlsplit(target)
             if parts.scheme or parts.netloc:
                 return match.group(0)
-            guide_name = {"DEV_GUIDE.md": "dev", "TECHNICAL_GUIDE.md": "technical"}.get(posixpath.basename(parts.path))
-            destination = ("/dev/tools/guides?guide=" + guide_name if guide_name else
-                           "https://github.com/The-Rafeicious/Song_ranker/blob/main/" + posixpath.normpath("docs/" + parts.path))
-            return "](" + destination + ("#" + parts.fragment if parts.fragment else "") + ")"
-        source = re.sub(r'\]\(([^)\s]+\.md(?:#[^)\s]*)?)\)', guide_link, source)
+            guide_name = {"DEV_GUIDE.md": "dev", "TECHNICAL_GUIDE.md": "technical"}.get(
+                posixpath.basename(parts.path)
+            )
+            destination = (
+                "/dev/tools/guides?guide=" + guide_name
+                if guide_name
+                else "https://github.com/The-Rafeicious/Song_ranker/blob/main/"
+                + posixpath.normpath("docs/" + parts.path)
+            )
+            return (
+                "]("
+                + destination
+                + ("#" + parts.fragment if parts.fragment else "")
+                + ")"
+            )
+
+        source = re.sub(r"\]\(([^)\s]+\.md(?:#[^)\s]*)?)\)", guide_link, source)
         document = markdown.Markdown(extensions=["tables", "fenced_code", "toc"])
         html = document.convert(source)
         return jsonify(html=html, toc=document.toc)
