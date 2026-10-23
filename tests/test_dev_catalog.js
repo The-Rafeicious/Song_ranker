@@ -50,7 +50,8 @@ async function harness(view='import',width=1280){
   }
   throw Error('Unexpected request '+url);
  };
- w.Overall={bindUI(){}};w.eval(source('ui.js'));w.eval(source('special_modes.js'));w.eval(source('dev_catalog.js'));w.eval(source('dev_metadata.js'));w.eval(source('dev_records.js'));
+ require('./dev_fixture.cjs')(w,view);
+ w.Overall={bindUI(){}};w.eval(source('ui.js'));w.eval(source('dev_workspace.js'));w.eval(source('special_modes.js'));w.eval(source('dev_catalog.js'));w.eval(source('dev_metadata.js'));w.eval(source('dev_records.js'));
  await w.eval(source('site.js').replace('window.DevCatalog?.bindUI(',"window.testDev={refreshData,setView:v=>{devView=v;renderDevView()},editRecord};window.DevCatalog?.bindUI("));await flush();
  const click=s=>{const n=d.querySelector(s);assert.ok(n,'missing '+s);n.click();return n};
  const change=(selector,value)=>{const n=d.querySelector(selector);n.checked=value;n.dispatchEvent(new w.Event('change',{bubbles:true}))};

@@ -1,4 +1,6 @@
-from flask import render_template, request, redirect, url_for, session, jsonify
+from flask import render_template, request, redirect, url_for, session, jsonify, abort
+import json
+from pathlib import Path
 import requests
 import re
 import sqlite3
@@ -11,6 +13,19 @@ from songranker.developer.catalog_sources import track_position_conflicts
 from songranker.developer.catalog_sources import TrackNumberConflict
 from songranker.services import app, DEV_PIN, admin_required, get_db_connection, get_song_full, export_rankings, create_database_backup, get_or_create_album, link_artists_to_song, link_genres_to_song
 from songranker.developer import dev_vibe
+
+DEV_NAVIGATION = json.loads(Path(__file__).with_name('navigation.json').read_text())
+
+
+def developer_page(view):
+    """Render a focused Dev task using the shared navigation registry and shell."""
+    pages = {row[0]: row for row in DEV_NAVIGATION['pages']}
+    areas = {row[0]: row for row in DEV_NAVIGATION['areas']}
+    if view not in pages and view not in areas:
+        abort(404)
+    title = pages[view][3] if view in pages else areas[view][1]
+    return render_template('dev.html', page='dev', dev_title=title,
+                           dev_context=dict(DEV_NAVIGATION, view=view))
 
 
 def json_fields():
@@ -39,7 +54,29 @@ def dev_logout():
 @app.route('/dev/dashboard')
 @admin_required
 def dev_dashboard():
-    return render_template('app_page.html', page='dev')
+    """Keep existing dashboard bookmarks while serving the focused Dev workspace."""
+    view = request.args.get('view', 'overview')
+    known = {row[0] for row in DEV_NAVIGATION['pages']}
+    return developer_page(view if view in known else 'overview')
+
+
+@app.get('/dev/<area>')
+@admin_required
+def dev_area(area):
+    """Open the Library, Mode edits or Tools landing page."""
+    if area not in {row[0] for row in DEV_NAVIGATION['areas']}:
+        abort(404)
+    return developer_page(area)
+
+
+@app.get('/dev/<area>/<task>')
+@admin_required
+def dev_task(area, task):
+    """Resolve a registered task URL without accepting unlisted Dev destinations."""
+    row = next((r for r in DEV_NAVIGATION['pages'] if r[1:3] == [area, task]), None)
+    if row is None:
+        abort(404)
+    return developer_page(row[0])
 
 
 def apple_lookup_url(link):

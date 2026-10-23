@@ -9,7 +9,8 @@ window.DevVibe = (() => {
     current = null,
     offset = 0,
     query = "",
-    busy = false;
+    busy = false,
+    baseline = null;
   const root = () => U.root(),
     error = (e) => {
       const node = root()?.querySelector("[data-vibe-dev-error]");
@@ -24,6 +25,7 @@ window.DevVibe = (() => {
       ++ticket;
       ++editTicket;
       current = null;
+      baseline = null;
     }
   }
   function render() {
@@ -32,9 +34,10 @@ window.DevVibe = (() => {
     offset = 0;
     query = "";
     current = null;
+    baseline = null;
     root().innerHTML =
       U.title("Vibe Map") +
-      `<p class="error" role="alert" data-vibe-dev-error hidden></p><section class="panel dev-vibe"><form id="dev-vibe-search" class="search-form"><label>Find a song<input name="q" type="search" placeholder="Song, artist, album or ID…"></label><button class="btn" type="submit">Search</button></form><div id="dev-vibe-list" aria-live="polite"></div><div class="dev-pagination"><button class="btn" data-vibe-page="-1">Previous</button><span id="dev-vibe-count"></span><button class="btn" data-vibe-page="1">Next</button></div></section><section id="dev-vibe-editor" class="panel dev-vibe" hidden></section><section class="panel dev-vibe"><h3 class="vibe">Reset Vibe Map</h3><form id="dev-vibe-reset"><label>Type RESET VIBE<input name="confirmation" required autocomplete="off"></label><button class="btn danger" type="submit">Clear all Vibe data</button></form></section>`;
+      `<p class="error" role="alert" data-vibe-dev-error hidden></p><div class="dev-vibe-workspace"><section class="panel dev-vibe dev-vibe-queue"><form id="dev-vibe-search" class="search-form"><label>Find a song<input name="q" type="search" placeholder="Song, artist, album or ID…"></label><button class="btn" type="submit">Search</button></form><div id="dev-vibe-list" aria-live="polite"></div><div class="dev-pagination"><button class="btn" data-vibe-page="-1">Previous</button><span id="dev-vibe-count"></span><button class="btn" data-vibe-page="1">Next</button></div></section><section id="dev-vibe-editor" class="panel dev-vibe" hidden></section><section id="dev-vibe-placeholder" class="panel"><h2 class="vibe">Edit a song’s Vibe data</h2><p>Select a song to review its averaged positions and counts.</p></section></div><div class="system-actions"><button class="btn" type="button" data-dev="maintenance">Reviewed mode resets</button><a href="/dev/tools/guides">Dev guide</a></div>`;
     void list();
   }
   async function list() {
@@ -70,6 +73,7 @@ window.DevVibe = (() => {
     current = data;
     const node = root().querySelector("#dev-vibe-editor");
     node.hidden = false;
+    root().querySelector("#dev-vibe-placeholder").hidden = true;
     node.innerHTML = `<h3 class="song">${esc(data.song.title)}</h3><p>${data.active_rounds} active rounds will be cleared when saved.</p><form id="dev-vibe-save"><div class="dev-vibe-maps">${data.maps
       .map(
         (m) =>
@@ -88,7 +92,14 @@ window.DevVibe = (() => {
       )
       .join(
         "",
-      )}</div>${input("completed_passes", "Completed passes", data.completed_passes, 0, 1000000)}<button class="btn vibe" type="submit">Save Vibe data</button></form><form id="dev-vibe-delete"><label>Type DELETE VIBE<input name="confirmation" required autocomplete="off"></label><button class="btn danger" type="submit">Delete this song’s Vibe data</button></form>`;
+      )}</div><div class="dev-vibe-save-actions">${input("completed_passes", "Completed passes", data.completed_passes, 0, 1000000)}<button class="btn vibe" type="submit">Save Vibe data</button></div></form><details class="dev-vibe-delete"><summary>Delete this song’s Vibe data</summary><form id="dev-vibe-delete"><label>Type DELETE VIBE<input name="confirmation" required autocomplete="off"></label><button class="btn danger" type="submit">Delete this song’s Vibe data</button></form></details>`;
+    baseline = formState();
+    if (window.innerWidth < 1100)
+      node.scrollIntoView?.({ block: "start", behavior: "smooth" });
+  }
+  function formState() {
+    const form = root()?.querySelector("#dev-vibe-save");
+    return form ? JSON.stringify([...new FormData(form).entries()]) : null;
   }
   async function edit(id) {
     const own = ++editTicket;
@@ -108,10 +119,7 @@ window.DevVibe = (() => {
     let url,
       body,
       method = "POST";
-    if (form.id === "dev-vibe-reset") {
-      url = "/api/dev/reset-history/vibe";
-      body = { confirmation: data.get("confirmation") };
-    } else if (!current) {
+    if (!current) {
       busy = false;
       return;
     } else {
@@ -145,11 +153,7 @@ window.DevVibe = (() => {
       const result = await U.api(url, body, method);
       if (!active || own !== editTicket) return;
       U.toast(result.message);
-      if (form.id === "dev-vibe-reset") {
-        current = null;
-        root().querySelector("#dev-vibe-editor").hidden = true;
-        form.reset();
-      } else editor(result);
+      editor(result);
       await list();
     } catch (e) {
       if (active && own === editTicket) error(e);
@@ -217,5 +221,16 @@ window.DevVibe = (() => {
     }
   });
   window.addEventListener("pagehide", () => viewChanged(""));
-  return { bindUI: (ui) => (U = ui), render, edit, viewChanged };
+  return {
+    bindUI: (ui) => (U = ui),
+    render,
+    edit,
+    viewChanged,
+    hasUnsavedChanges: () =>
+      active && baseline !== null && baseline !== formState(),
+    discardChanges: () => {
+      baseline = formState();
+    },
+    isBusy: () => active && busy,
+  };
 })();

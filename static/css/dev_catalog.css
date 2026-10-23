@@ -338,11 +338,11 @@ body[data-page="dev"] #main .dev-table-tools {
   display: flex;
   margin: 0;
 }
-body[data-page="dev"] #main .dev-table-popover {
+body[data-page="dev"] #main .dev-table-settings {
   position: relative;
   min-width: 0;
 }
-body[data-page="dev"] #main .dev-table-popover > summary {
+body[data-page="dev"] #main .dev-table-settings > summary {
   display: flex;
   align-items: center;
   gap: 7px;
@@ -354,11 +354,11 @@ body[data-page="dev"] #main .dev-table-popover > summary {
 }
 body[data-page="dev"]
   #main
-  .dev-table-popover
+  .dev-table-settings
   > summary::-webkit-details-marker {
   display: none;
 }
-body[data-page="dev"] #main .dev-table-popover[open] > summary {
+body[data-page="dev"] #main .dev-table-settings[open] > summary {
   border-color: var(--song);
   color: var(--song);
 }
@@ -373,21 +373,19 @@ body[data-page="dev"] #main .table-tool-count {
   font-size: 12px;
 }
 body[data-page="dev"] #main .table-popover-content {
-  position: absolute;
-  z-index: 10;
-  top: calc(100% + 6px);
-  left: 0;
-  width: min(480px, calc(100vw - 44px));
-  max-height: min(60vh, 520px);
+  position: static;
+  width: 100%;
+  max-height: 350px;
   overflow: auto;
+  margin-top: 12px;
   padding: 16px;
   border: 1px solid var(--line);
-  border-radius: 16px;
-  background: var(--panel, #242424);
-  box-shadow: 0 16px 35px #0009;
+  border-radius: 18px;
+  background: var(--panel);
 }
-body[data-page="dev"] #main .column-picker .table-popover-content {
-  width: min(310px, calc(100vw - 44px));
+body[data-page="dev"] #main .dev-table-tools > .dev-table-settings[open] {
+  flex: 1 0 100%;
+  order: 2;
 }
 body[data-page="dev"] #main .table-popover-head {
   display: flex;
@@ -639,12 +637,6 @@ body[data-page="dev"] #editor .catalog-edit-section .tag-info-field {
   body[data-page="dev"] #main .table-filter-grid {
     grid-template-columns: 1fr;
   }
-  body[data-page="dev"] #main .table-filter-panel .table-popover-content {
-    left: -12px;
-  }
-  body[data-page="dev"] #main .column-picker .table-popover-content {
-    left: -90px;
-  }
   body[data-page="dev"] #main .table-order-label {
     width: 100%;
   }
@@ -675,11 +667,11 @@ body[data-page="dev"] #main .dev-table-tools {
 body[data-page="dev"]
   #main
   .dev-table-tools
-  > :is(.btn, .dev-table-popover, .table-order-label) {
+  > :is(.btn, .dev-table-settings, .table-order-label) {
   flex: 0 0 auto;
 }
 body[data-page="dev"] #main .dev-table-tools > .btn,
-body[data-page="dev"] #main .dev-table-tools > .dev-table-popover > summary,
+body[data-page="dev"] #main .dev-table-tools > .dev-table-settings > summary,
 body[data-page="dev"] #main .table-order-label select {
   min-height: 44px;
 }

@@ -18,6 +18,7 @@ instance/*
 .venv/
 venv/
 node_modules/
+/node_modules
 .pytest_cache/
 /tmp*/
 /.git_snapshot_*

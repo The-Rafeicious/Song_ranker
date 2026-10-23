@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.3 contract. Change the owning shared rule before adding a
+This is the current V5.3.1 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -73,13 +73,15 @@ version-named sheet or second developer asset list. All asset URLs use the singl
 | `reports.css` | Shared report/dashboard geometry, visualisations and scoped mode report compositions |
 | `profiles.css` | Song/collection heroes, album queues and paged track/release lists |
 | `vibe.css` | Shared descriptive radar, profile and library summary presentation |
-| `developer.css` | Dev shell, common forms/dialogs, system/database/record tools and Vibe maintenance |
+| `developer.css` | Common Dev forms, system/database/record tools and Vibe maintenance |
+| `dev_workspace.css` | Dev navigation, Home/section/guide layouts and inline editor placement |
 | `dev_catalog.css` / `dev_tags.css` | Catalogue/source-review and tag-workbench compositions |
 | Remaining feature styles | Home, search, rankings, history, gameplay and the Vibe play workspace |
 | `components.html` | Shared artwork, rows and catalogue presentation macros |
 | `mode_stats_components.html` / `stats_visuals.html` | Shared report figures, formatting, activity and charts |
 | `profile.html` | One named-collection profile shell for artists, albums and tags |
-| `app_page.html` | One dynamic shell for Home, rankings, song profile, search, Dev and tournament setup |
+| `dev.html` | Shared focused Dev shell, navigation context and inline editor slot |
+| `app_page.html` | One dynamic shell for Home, rankings, song profile, search and tournament setup |
 
 Use `joined-metrics` for one framed row, declaring `data-columns="2"` or `"4"`
 where needed. Home retains three columns on phones; four-field groups become two
@@ -117,26 +119,38 @@ from one read snapshot. Retired listening measurements have no placeholder UI.
 
 ## Developer controls
 
-Dev replaces the public navigation. Four category dropdowns and Home sit left;
-Lock Dev is central; Stop is beside the rightmost library search. At narrower
-widths actions wrap before crowding the centre. Use 44 px targets and 16 px search
-text. Escape/outside clicks dismiss menus; the active destination is visible.
+Dev uses four visible primary links: Home, Library, Mode edits, Tools & systems.
+Task pages show visible links within their section; no category dropdowns. Lock,
+Guides, Stop and library search remain reachable in the shared header. Native
+small selects remain native; searchable controls are reserved for long entity
+lists. Use 44 px targets and 16 px input text. Phone section links scroll inside
+their own row without document overflow.
 
-Dev Home uses full-width library counts, then health/Git/backups, then Tag
-Workshop/coverage/activity. Use three/two/one columns as space permits. The
-linked Tag Workshop title opens the bench. Its card shows only tagged-song and
-tag-definition counts. Git owns branch/commit/status; backups owns copy count,
-latest time and size. Keep operational explanations in the guide.
+Home has linked library totals, three aligned summaries (health, Git/backups,
+attention), and three groups linking to every task. Status/data and navigation are
+distinct. Home uses cached/local Git information; Git sync owns fresh comparison.
+Keep explanations in the readable Guides page, linked from every Dev header.
+
+Routine editors are in-page: a sticky adjacent column on wide screens, above the
+task below 1100 px. The field body scrolls and the action footer stays visible.
+Unsaved record/tag drafts require explicit discard on task changes. Existing review
+receipts, typed confirmations, restore locks and stale-response guards still apply.
+`dev_workspace.css` owns navigation, section/guide layouts and editor placement;
+`developer.css` owns shared controls, record/system/Vibe compositions. Catalogue and
+tag-specific layouts stay in their existing owners. Remove superseded layout rules
+when changing a contract; do not append another version layer.
 
 Songs/artists/albums/tags use one compact table engine. IDs/artwork have narrow
 fixed columns; names/relationships receive flexible width. Centre search and
 secondary controls in two aligned, wrapping rows. Provide visible count/paging,
-field filters, a bounded displayed-column checklist and order controls. Keep
+in-flow field-filter and column disclosures, a bounded displayed-column checklist
+and order controls. Keep
 Clear filters separate from Reset order. Enter applies a field filter and closes
 its menu. More actions is a compact anchored button list that stays in the viewport.
 Edit remains visible; other frequent actions keep short, useful labels.
 
-All editors share the same dialog/form/heading/error/action skeleton. Group related
+All editors share the same form/heading/error/action skeleton. Dev mounts that
+skeleton in the inline workspace; public Stop retains its modal presentation. Group related
 fields, use 16 px inputs, keep the footer visible with bounded body scrolling and
 show one error region. Read-only inspections omit Save. Preserve pending user
 fields when a source summary refreshes; late replies must not replace another
@@ -161,7 +175,8 @@ checked, existing matches unchecked. Save only selected songs and retain partial
 success receipts. Source-only changes preserve local metadata/relationships;
 metadata replacement is explicit. Fill-only scan → review → apply remains guarded.
 
-Database/Git pages use compact status summaries and bounded workspaces. Separate
+Database inspection, backups/restore, Git, resets and exports have separate focused
+pages with compact status summaries and bounded workspaces. Separate
 code status from live-database status and identify cached/fresh checks. Tables,
 long values and backup restore reviews stay inside their own scroll areas.
 Vibe maintenance uses two map columns on desktop and one on phone. Destructive

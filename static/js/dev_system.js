@@ -2,7 +2,7 @@
 window.DevSystem = (() => {
   "use strict";
   const { $, $$, esc } = window.SongRankerUI,
-    managed = new Set(["overview", "database", "export"]);
+    managed = new Set(["overview", "database", "backups", "export"]);
   let U,
     view = null,
     data = null,
@@ -78,17 +78,18 @@ window.DevSystem = (() => {
     if (!view || !U.root()) return;
     const title = {
       overview: "Developer home",
-      database: "Database & backups",
+      database: "Database inspector",
+      backups: "Backups & restore",
       export: "Git upload & updates",
     }[view];
     U.root().innerHTML =
       U.title(title) +
       `<div class="dev-system">${status()}<div id="system-content">${data ? content() : '<section class="panel"><p role="status">Loading local status…</p></section>'}</div></div>`;
-    if (view === "database" && data) {
+    if (view === "backups" && data) {
       drawBackups();
-      drawInventory();
       drawRestore();
     }
+    if (view === "database" && data) drawInventory();
     if (view === "export") drawLocalChoice();
     controls();
   }
@@ -97,29 +98,36 @@ window.DevSystem = (() => {
       ? overview()
       : view === "database"
         ? database()
-        : sync();
+        : view === "backups"
+          ? backups()
+          : sync();
   }
   function overview() {
-    const t = data.totals,
-      inventory = data.inventory || [];
-    const count = (name) => inventory.find((r) => r.name === name)?.rows || 0;
-    const metric = (n, label, c = "song") =>
-      `<div><b class="${c}">${n}</b><span>${label}</span></div>`;
+    const t = data.totals;
     const row = (label, value, tone = "") =>
       `<div class="health-row"><span>${label}</span><strong class="${tone}">${esc(value)}</strong></div>`;
-    return `<div class="dev-home-grid"><section class="panel dashboard-surface dev-home-library"><div class="section-head"><h2>Library</h2></div><div class="joined-metrics" data-columns="4">${[
-      [t.songs, "Songs", "song"],
-      [t.artists, "Artists", "artist"],
-      [t.releases, "Releases", "album"],
-      [t.tags, "Tags", "tag"],
+    const groups = window.DevWorkspace
+      ? ["library", "modes", "tools"]
+          .map(
+            (area) =>
+              `<section class="panel dev-home-destinations"><div class="section-head"><h2><a href="${window.DevWorkspace.href(area)}" data-dev="${area}">${{ library: "Library", modes: "Mode edits", tools: "Tools & systems" }[area]} ↗</a></h2></div>${window.DevWorkspace.cards(area)}</section>`,
+          )
+          .join("")
+      : "";
+    return `<section class="panel dev-home-library"><div class="joined-metrics" data-columns="4">${[
+      [t.songs, "Songs", "songs", "song"],
+      [t.artists, "Artists", "artists", "artist"],
+      [t.releases, "Releases", "albums", "album"],
+      [t.tags, "Tags", "tags", "tag"],
     ]
       .map(
-        ([n, label, c]) =>
-          `<button type="button" class="dev-library-link" data-dev="${{ song: "songs", artist: "artists", album: "albums", tag: "tags" }[c]}"><b class="${c}">${n}</b><span>${label}</span></button>`,
+        ([n, label, key, tone]) =>
+          `<button class="dev-library-link" data-dev="${key}"><b class="${tone}">${n}</b><span>${label}</span></button>`,
       )
-      .join(
-        "",
-      )}</div></section><section class="panel dashboard-surface dev-home-summary"><div class="section-head"><h2><button type="button" class="dev-title-link" data-tool="Database integrity">Database health ↗</button></h2></div>${row("App / schema", "V" + data.version + " / " + data.schema)}${row("SQLite integrity", data.integrity, data.integrity === "ok" ? "song" : "error")}${row("Foreign-key errors", data.foreign_key_errors, data.foreign_key_errors ? "error" : "song")}</section><section class="panel dashboard-surface dev-home-summary"><div class="section-head"><h2><button type="button" class="dev-title-link" data-dev="export">Git sync ↗</button></h2></div>${gitOverview(row)}</section><section class="panel dashboard-surface dev-home-summary"><div class="section-head"><h2><button type="button" class="dev-title-link" data-dev="database">Local backups ↗</button></h2></div>${row("Saved copies", data.backups.length)}${row("Latest backup", data.backups[0] ? date(data.backups[0].modified) : "None yet")}${row("Database size", bytes(data.database_bytes || 0))}</section><section class="panel dashboard-surface dev-home-summary dev-home-tag-workshop"><div class="section-head"><h2><button type="button" class="dev-title-link" data-dev="tag_workbench">Tag Workshop ↗</button></h2></div><div class="dev-service-metrics">${metric(t.songs - t.untagged, "Tagged songs", "song")}${metric(t.tags, "Available tags", "tag")}</div></section><section class="panel dashboard-surface"><div class="section-head"><h2>Catalogue coverage</h2></div>${row("Untagged songs", t.untagged, "tag")}${row("Missing previews", t.missing_previews, "artist")}${row("Missing Apple links", t.missing_sources, "album")}</section><section class="panel dashboard-surface"><div class="section-head"><h2>Stored rounds & votes</h2></div><div class="dev-service-metrics">${metric(count("history"), "Votes", "standard")}${metric(count("trivia_rounds"), "Trivia rounds", "recognition")}${metric(count("tournaments"), "Tournaments", "tournament")}${metric(count("elo_guess_rounds"), "Elo guesses", "guesser")}${metric(count("album_shelf_rounds"), "Shelves rounds", "shelves")}${metric(t.vibe_mapped ?? "—", "Fully mapped songs", "vibe")}</div></section></div>`;
+      .join("")}</div></section>
+      <div class="dev-home-status"><section class="panel"><div class="section-head"><h2>Site health</h2></div>${row("App / schema", "V" + data.version + " / " + data.schema)}${row("Integrity", data.integrity, data.integrity === "ok" ? "song" : "error")}${row("Foreign-key errors", data.foreign_key_errors, data.foreign_key_errors ? "error" : "song")}<button class="btn" data-tool="Database integrity">Review health</button></section>
+      <section class="panel"><div class="section-head"><h2>Git & backups</h2></div>${gitOverview(row)}${row("Latest backup", data.backups[0] ? date(data.backups[0].modified) : "None yet")}<div class="system-actions"><button class="btn" data-dev="export">Git sync</button><button class="btn" data-dev="backups">Backups</button></div></section>
+      <section class="panel"><div class="section-head"><h2>Needs attention</h2></div>${row("Untagged songs", t.untagged, "tag")}${row("Missing previews", t.missing_previews, "artist")}${row("Missing Apple links", t.missing_sources, "album")}<div class="system-actions"><button class="btn" data-dev="tag_workbench">Tag Workshop</button><button class="btn" data-system-sources>Source links</button></div></section></div><div class="dev-home-areas">${groups}</div>`;
   }
   function gitOverview(row) {
     const g = gitState || data?.git;
@@ -139,9 +147,10 @@ window.DevSystem = (() => {
     return `<div class="health-row"><span>App / schema</span><strong>V${esc(data.version)} / ${data.schema}</strong></div><div class="health-row"><span>SQLite integrity</span><strong class="${data.integrity === "ok" ? "song" : "error"}">${esc(data.integrity)}</strong></div><div class="health-row"><span>Foreign-key errors</span><strong>${data.foreign_key_errors}</strong></div><div class="health-row"><span>Local database backups</span><strong>${data.backups.length}</strong></div>`;
   }
   function database() {
-    return `<div class="dev-maintenance-grid"><section class="panel dashboard-surface"><div class="section-head"><h2>Local backups</h2><a href="/api/dev/help/dev">Dev guide</a></div><div class="system-actions">${button("Create backup", "data-system-backup")}<a class="btn" href="/api/dev/database/export">Full export</a></div><label class="system-search">Find a backup<input id="system-backup-query" type="search" value="${esc(backupQuery)}" placeholder="Date, name or purpose…"></label><div class="backup-workspace"><div id="system-backups" class="system-bounded"></div><div id="system-restore"></div></div></section><section class="panel dashboard-surface"><div class="section-head"><h2>Database</h2></div><div class="health-row"><span>Version / schema</span><strong>V${esc(data.version)} / ${data.schema}</strong></div><div class="health-row"><span>Size</span><strong>${bytes(data.database_bytes || 0)}</strong></div><div class="health-row"><span>Integrity</span><strong class="${data.integrity === "ok" ? "song" : "error"}">${esc(data.integrity)}</strong></div><div class="system-actions">${button("Integrity details", 'data-tool="Database integrity"')}<a class="btn" href="/api/dev/help/technical">Technical guide</a></div></section></div>
- <section class="panel dashboard-surface" id="system-inventory-panel"><div class="section-head"><h2>What is stored</h2><span class="muted">Read-only SQLite inspector</span></div><div id="system-inventory"></div></section>
- <section class="panel dashboard-surface"><details><summary>Resets & advanced tools</summary><div class="system-actions">${["Reset match history", "Reset trivia history", "Reset tournament history", "Reset Elo Guesser history", "Reset Album Shelves history", "Reset Vibe Map", "Reset competition"].map((label) => button(label, `data-tool="${label}"`, "danger")).join("")}</div><div class="system-actions">${button("Duplicate finder", 'data-tool="Duplicate finder"')}${button("Readable text report", 'data-tool="Export snapshot"')}</div></details></section>`;
+    return `<section class="panel"><div class="dev-status-strip"><span>V${esc(data.version)} / schema ${data.schema}</span><span>${bytes(data.database_bytes || 0)}</span><strong class="${data.integrity === "ok" ? "song" : "error"}">Integrity: ${esc(data.integrity)}</strong><button class="btn" data-tool="Database integrity">Health details</button><a href="/dev/tools/guides?guide=technical" data-dev-guide-link>Technical guide</a></div></section><section class="panel" id="system-inventory-panel"><div id="system-inventory"></div></section>`;
+  }
+  function backups() {
+    return `<section class="panel"><div class="section-head"><h2>Local backups</h2><a href="/dev/tools/guides">Dev guide</a></div><div class="system-actions">${button("Create backup", "data-system-backup")}<a class="btn" href="/api/dev/database/export">Download full database</a></div><label class="system-search">Find a backup<input id="system-backup-query" type="search" value="${esc(backupQuery)}" placeholder="Date, name or purpose…"></label><div class="backup-workspace"><div id="system-backups" class="system-bounded"></div><div id="system-restore"></div></div></section>`;
   }
   const labels = {
     up_to_date: "Up to date",
@@ -182,7 +191,7 @@ window.DevSystem = (() => {
       database_updated: "Remote snapshot loaded",
       database_check_failed: "Comparison failed",
     };
-    return `<section class="panel dashboard-surface"><div class="section-head"><h2>Git & database sync</h2><a href="/api/dev/help/dev">Dev guide</a></div><div class="system-actions">${button(gitBusy ? "Checking…" : "Refresh status", "data-system-check" + (!g?.available || gitBusy ? " disabled" : ""))}${button("Upload backup", 'data-system-upload aria-label="Upload database backup"' + (!canUpload || gitBusy ? " disabled" : ""), "primary")}${button("Keep local…", 'data-system-local-review aria-label="Keep local database"' + (!g?.available || !g.review_token || !g.tracking_head || g.in_progress || gitBusy ? " disabled" : ""))}</div><p class="muted" role="status">${checked ? "Checked " + esc(date(g.checked_at)) : "Not freshly checked · cached results below"}</p><div class="git-status-grid"><section><h3>Code commits</h3>${g?.available ? pair("Branch", g.branch) + pair("Target", g.remote + "/" + g.target) + pair("Local commit", g.head?.slice(0, 10)) + pair("Remote commit", g.tracking_head?.slice(0, 10)) + pair(checked ? "Code status" : "Cached code status", labels[g.state] || g.state, g.behind || g.pending_code ? "error" : "") + pair("Local / incoming", String(g.ahead ?? "—") + " / " + String(g.behind ?? "—")) : `<p class="error">${esc(g?.message || "Git unavailable")}</p>`}</section><section><h3>Live database</h3>${pair(checked ? "Comparison" : "Last comparison", databaseLabels[d?.code] || "Not checked", !checked || ["database_conflict", "database_remote_ahead", "database_check_failed"].includes(d?.code) ? "error" : "song")}<p class="${d && ["database_conflict", "database_remote_ahead", "database_check_failed"].includes(d.code) ? "error" : "muted"}" role="status">${esc(d?.message || "Refresh to compare the live database with the committed snapshot.")}</p>${d?.local_songs != null ? pair("Local / remote songs", d.local_songs + " / " + d.remote_songs) : ""}${g?.behind ? '<p class="error">Incoming code commits: restart to update code before uploading.</p>' : ""}${g?.pending_code ? '<p class="error">Publish or resolve local code commits first.</p>' : ""}${g?.in_progress ? '<p class="error">Finish the active Git operation first.</p>' : ""}${
+    return `<section class="panel dashboard-surface"><div class="section-head"><h2>Git & database sync</h2><a href="/dev/tools/guides">Dev guide</a></div><div class="system-actions">${button(gitBusy ? "Checking…" : "Refresh status", "data-system-check" + (!g?.available || gitBusy ? " disabled" : ""))}${button("Upload backup", 'data-system-upload aria-label="Upload database backup"' + (!canUpload || gitBusy ? " disabled" : ""), "primary")}${button("Keep local…", 'data-system-local-review aria-label="Keep local database"' + (!g?.available || !g.review_token || !g.tracking_head || g.in_progress || gitBusy ? " disabled" : ""))}</div><p class="muted" role="status">${checked ? "Checked " + esc(date(g.checked_at)) : "Not freshly checked · cached results below"}</p><div class="git-status-grid"><section><h3>Code commits</h3>${g?.available ? pair("Branch", g.branch) + pair("Target", g.remote + "/" + g.target) + pair("Local commit", g.head?.slice(0, 10)) + pair("Remote commit", g.tracking_head?.slice(0, 10)) + pair(checked ? "Code status" : "Cached code status", labels[g.state] || g.state, g.behind || g.pending_code ? "error" : "") + pair("Local / incoming", String(g.ahead ?? "—") + " / " + String(g.behind ?? "—")) : `<p class="error">${esc(g?.message || "Git unavailable")}</p>`}</section><section><h3>Live database</h3>${pair(checked ? "Comparison" : "Last comparison", databaseLabels[d?.code] || "Not checked", !checked || ["database_conflict", "database_remote_ahead", "database_check_failed"].includes(d?.code) ? "error" : "song")}<p class="${d && ["database_conflict", "database_remote_ahead", "database_check_failed"].includes(d.code) ? "error" : "muted"}" role="status">${esc(d?.message || "Refresh to compare the live database with the committed snapshot.")}</p>${d?.local_songs != null ? pair("Local / remote songs", d.local_songs + " / " + d.remote_songs) : ""}${g?.behind ? '<p class="error">Incoming code commits: restart to update code before uploading.</p>' : ""}${g?.pending_code ? '<p class="error">Publish or resolve local code commits first.</p>' : ""}${g?.in_progress ? '<p class="error">Finish the active Git operation first.</p>' : ""}${
       d?.local_changes || d?.remote_changes
         ? `<div class="db-scroll"><table class="data-table"><thead><tr><th>Table</th><th>Local + / − / edited</th><th>Remote + / − / edited</th></tr></thead><tbody>${[
             ...new Set([
@@ -198,7 +207,7 @@ window.DevSystem = (() => {
             .join("")}</tbody></table></div>`
         : ""
     }</section></div><div id="system-local-choice"></div></section>
- <section class="panel dashboard-surface"><div class="section-head"><h2>Recent outcomes</h2><a href="/api/dev/help/technical">Technical guide</a></div><div class="system-bounded">${
+ <section class="panel dashboard-surface"><div class="section-head"><h2>Recent outcomes</h2><a href="/dev/tools/guides?guide=technical">Technical guide</a></div><div class="system-bounded">${
    g?.history?.length
      ? g.history
          .slice(0, 8)
@@ -409,7 +418,7 @@ window.DevSystem = (() => {
     draw();
     try {
       const r = await U.api("/api/dev/backups/review", { filename: name });
-      if (id !== reviewId || view !== "database") return;
+      if (id !== reviewId || view !== "backups") return;
       restoreReview = r;
       note =
         "Compare the saved backup with the live database before restoring.";
@@ -465,7 +474,7 @@ window.DevSystem = (() => {
       return true;
     }
     if (name === "Restore backup" || name === "Database overview") {
-      U.navigate("database");
+      U.navigate("backups");
       return true;
     }
     return false;

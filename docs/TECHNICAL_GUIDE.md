@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application v5.2.2.1 · integrated modes v5.1.0 · competition generation 3 · schema 20**
+**Application V5.3.1 · competition generation 3 · schema 20**
 
-Current implementation reference. `APP_VERSION` is `5.2.2.1`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.3.1`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -40,14 +40,40 @@ and historical changes in [release notes](../update_logs/README.md).
 | Vibe Map | Continuous placement, averages, radar, similar tracks | `modes/vibe_map.py`, `vibe_similarity.py`, `vibe_maps.py`, `static/js/vibe_map.js` |
 | Vibe reporting | Stats, profiles, Home/Global and collection rankings | `modes/vibe_map.py`, `vibe_charts.js`, `vibe_library.js` |
 | Search and profiles | Tag counts, proper-album counts, achievements, Show more | `pages.py`, `catalog.py`, `site.js`, `search.js`, `profiles.js` |
-| Ratings and health | Collection Impact, Overall, selection/data diagnostics | `impact.py`, `overall.py`, `reports/selection_health.py`, `data_health.py` |
+| Ratings and health | Collection Impact, Overall, selection/data diagnostics | `impact.py`, `overall.py`, `reports/health.py` |
 | Catalogue and Apple | Import, source-only repair, reviewed bulk edits and fill | `developer/dev_catalog.py`, `catalog_sources.py`, `metadata.py` |
-| Tags and previews | Eight-tag capacity, Add/Replace/Remove, private quality flags | `storage/tag_limits.py`, `developer/dev_tags.py`, `tag_operations.py`, `apple_access.py` |
+| Tags and previews | Eight-tag capacity, Add/Replace/Remove, private quality flags | `storage/tag_limits.py`, `developer/dev_tags.py`, `apple_access.py` |
 | Vibe maintenance | Average/count edit, map clear, song delete, mode reset | `developer/dev_vibe.py`, `storage/competition_reset.py`, `static/js/dev_vibe.js` |
 | Recovery and Git | Backup, export/rebuild, restore, guarded upload/adoption, Stop app | `storage/database_io.py`, `git_database.py`, `developer/dev_system.py`, `git_sync.py`, `dev_shutdown.py`, `hosting.py` |
 
 Public routes and detailed mode contracts are indexed below. The complete
 operator tool list is in the [main README](../README.md#dev-tools).
+
+## Dev workspace
+
+`developer/navigation.json` is the single area/task registry. The authenticated
+`/dev/<area>` and `/dev/<area>/<task>` routes validate against it and render
+`templates/dev.html`. The original `/dev/dashboard?view=...` handler remains a
+bookmark-compatible entry. API routes, review tokens, ownership and mutations are
+unchanged. Section navigation uses canonical URLs and browser history; reloads
+serve the same task. Unlisted area/task combinations return 404.
+
+`dev_workspace.js` owns visible primary/section links, shared landing pages, the
+inline editor/discard flow and guide rendering. `dev_workspace.css` owns their
+geometry. Catalogue composition stays in `site.js`, Apple/source operations in
+`dev_catalog.js`, tags in `dev_tags.js`, metadata in `dev_metadata.js`, record review
+in `dev_records.js`, Vibe maintenance in `dev_vibe.js`, and system/database/selection
+controllers in `dev_system.js`. `developer.css` retains common controls and tool
+compositions; old Home/category-menu rules were removed.
+
+Database inspection, backup recovery and reviewed resets no longer share one long
+page. Backend review/apply contracts remain distinct. Navigation closes the inline
+editor and invalidates stale work only after explicit draft discard; an active
+restore blocks navigation. Plain-text guide URLs are retained. The authenticated
+`/api/dev/help/<guide>?format=html` response supplies HTML and a table of contents,
+rendered from the repository's Dev/technical Markdown via Python-Markdown. It does
+not accept arbitrary filenames. Other repository documentation links resolve to
+the corresponding GitHub reference.
 
 ## Architecture and ownership
 

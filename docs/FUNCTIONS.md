@@ -112,46 +112,49 @@ Developer authentication, catalogue edits, records and controlled resets.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [json_fields](../songranker/developer/dev.py#L16) | `` | Legacy maintenance forms treat a missing/non-object payload as empty. |
-| [dev_login](../songranker/developer/dev.py#L23) | `` | Serve developer login; GET, POST /dev/login. |
-| [dev_logout](../songranker/developer/dev.py#L34) | `` | Serve developer logout; GET /dev/logout. |
-| [dev_dashboard](../songranker/developer/dev.py#L41) | `` | Serve developer dashboard; GET /dev/dashboard. |
-| [apple_lookup_url](../songranker/developer/dev.py#L45) | `link` | Derive a bounded song lookup URL from a supported Apple Music track or album link. |
-| [api_search_apple](../songranker/developer/dev.py#L68) | `` | Serve search apple; GET /api/dev/search_apple. |
-| [verified_song_source](../songranker/developer/dev.py#L97) | `data` | Resolve signed offers or older Apple fields; never discard source intent. |
-| [song_metadata](../songranker/developer/dev.py#L145) | `data` | Validate manual song fields and merge verified Apple metadata while retaining explicit edit intent. |
-| [write_song](../songranker/developer/dev.py#L179) | `data, song_id=None` | Resolve metadata and check the final album slot in one transaction. |
-| [api_add_song](../songranker/developer/dev.py#L265) | `` | Serve add song; POST /api/dev/add_song. |
-| [api_edit_song](../songranker/developer/dev.py#L279) | `song_id` | Serve edit song; POST /api/dev/edit_song/<int:song_id>. |
-| [api_delete_song](../songranker/developer/dev.py#L293) | `song_id` | Keep vote facts, void their influence, remove links, then replay surviving ratings. |
-| [edit_catalogue_record](../songranker/developer/dev.py#L328) | `table, record_id, fields` | Validate editable entity fields and always release the database connection. |
-| [api_edit_artist](../songranker/developer/dev.py#L377) | `artist_id` | Serve edit artist; POST /api/dev/edit_artist/<int:artist_id>. |
-| [delete_catalogue_record](../songranker/developer/dev.py#L381) | `table, record_id` | Remove an entity and its catalogue links, preserving referenced game facts. |
-| [api_delete_artist](../songranker/developer/dev.py#L405) | `artist_id` | Serve delete artist; DELETE /api/dev/delete_artist/<int:artist_id>. |
-| [api_edit_album](../songranker/developer/dev.py#L411) | `album_id` | Serve edit album; POST /api/dev/edit_album/<int:album_id>. |
-| [api_delete_album](../songranker/developer/dev.py#L417) | `album_id` | Serve delete album; DELETE /api/dev/delete_album/<int:album_id>. |
-| [api_edit_genre](../songranker/developer/dev.py#L423) | `genre_id` | Serve edit genre; POST /api/dev/edit_genre/<int:genre_id>. |
-| [api_delete_genre](../songranker/developer/dev.py#L429) | `genre_id` | Serve delete genre; DELETE /api/dev/delete_genre/<int:genre_id>. |
-| [api_dev_overview](../songranker/developer/dev.py#L435) | `` | Serve dev overview; GET /api/dev/overview. |
-| [api_dev_backup](../songranker/developer/dev.py#L447) | `` | Serve dev backup; POST /api/dev/backup. |
-| [api_dev_restore_backup](../songranker/developer/dev.py#L458) | `` | Serve dev restore backup; POST /api/dev/restore-backup. |
-| [api_dev_reset_preview](../songranker/developer/dev.py#L465) | `` | Serve dev reset preview; GET /api/dev/reset-preview. |
-| [reset_competition_data](../songranker/developer/dev.py#L476) | `scope` | Keep the library and reset only the requested competition records. |
-| [api_dev_reset_history](../songranker/developer/dev.py#L502) | `scope` | Serve dev reset history; POST /api/dev/reset-history/<scope>. |
-| [delete_special_round](../songranker/developer/dev.py#L513) | `mode, round_id` | Delete special round; POST /api/dev/special-round/<mode>/<int:round_id>. |
-| [api_dev_reset_database](../songranker/developer/dev.py#L530) | `` | Serve dev reset database; POST /api/dev/reset-database. |
-| [api_dev_elo_correction](../songranker/developer/dev.py#L538) | `` | Serve dev elo correction; POST /api/dev/elo-correction. |
-| [api_dev_preferences](../songranker/developer/dev.py#L554) | `` | Serve dev preferences; GET /api/dev/preferences. |
-| [api_dev_preference](../songranker/developer/dev.py#L577) | `event_id` | Serve dev preference; GET, POST /api/dev/preferences/<int:event_id>. |
-| [api_dev_edit_trivia](../songranker/developer/dev.py#L595) | `song_id` | Serve dev edit trivia; POST, DELETE /api/dev/trivia/<int:song_id>. |
-| [api_dev_integrity](../songranker/developer/dev.py#L622) | `` | Serve dev integrity; GET /api/dev/integrity. |
-| [api_dev_activity](../songranker/developer/dev.py#L635) | `` | Serve dev activity; GET /api/dev/activity. |
-| [api_dev_delete_tournament](../songranker/developer/dev.py#L647) | `tournament_id` | Serve dev delete tournament; DELETE /api/dev/tournaments/<int:tournament_id>. |
-| [api_sync](../songranker/developer/dev.py#L671) | `` | Serve sync; POST /api/dev/sync. |
-| [api_export](../songranker/developer/dev.py#L678) | `` | Endpoint to manually trigger a database text export. |
-| [api_dev_bulk_songs](../songranker/developer/dev.py#L689) | `` | Serve dev bulk songs; POST /api/dev/bulk_songs. |
-| [api_dev_trivia_records](../songranker/developer/dev.py#L735) | `` | Serve dev trivia records; POST /api/dev/trivia-records. |
-| [api_dev_tournament_placements](../songranker/developer/dev.py#L752) | `tournament_id` | Serve dev tournament placements; POST /api/dev/tournaments/<int:tournament_id>/placements. |
+| [developer_page](../songranker/developer/dev.py#L20) | `view` | Render a focused Dev task using the shared navigation registry and shell. |
+| [json_fields](../songranker/developer/dev.py#L31) | `` | Legacy maintenance forms treat a missing/non-object payload as empty. |
+| [dev_login](../songranker/developer/dev.py#L38) | `` | Serve developer login; GET, POST /dev/login. |
+| [dev_logout](../songranker/developer/dev.py#L49) | `` | Serve developer logout; GET /dev/logout. |
+| [dev_dashboard](../songranker/developer/dev.py#L56) | `` | Keep existing dashboard bookmarks while serving the focused Dev workspace. |
+| [dev_area](../songranker/developer/dev.py#L65) | `area` | Open the Library, Mode edits or Tools landing page. |
+| [dev_task](../songranker/developer/dev.py#L74) | `area, task` | Resolve a registered task URL without accepting unlisted Dev destinations. |
+| [apple_lookup_url](../songranker/developer/dev.py#L82) | `link` | Derive a bounded song lookup URL from a supported Apple Music track or album link. |
+| [api_search_apple](../songranker/developer/dev.py#L105) | `` | Serve search apple; GET /api/dev/search_apple. |
+| [verified_song_source](../songranker/developer/dev.py#L134) | `data` | Resolve signed offers or older Apple fields; never discard source intent. |
+| [song_metadata](../songranker/developer/dev.py#L182) | `data` | Validate manual song fields and merge verified Apple metadata while retaining explicit edit intent. |
+| [write_song](../songranker/developer/dev.py#L216) | `data, song_id=None` | Resolve metadata and check the final album slot in one transaction. |
+| [api_add_song](../songranker/developer/dev.py#L302) | `` | Serve add song; POST /api/dev/add_song. |
+| [api_edit_song](../songranker/developer/dev.py#L316) | `song_id` | Serve edit song; POST /api/dev/edit_song/<int:song_id>. |
+| [api_delete_song](../songranker/developer/dev.py#L330) | `song_id` | Keep vote facts, void their influence, remove links, then replay surviving ratings. |
+| [edit_catalogue_record](../songranker/developer/dev.py#L365) | `table, record_id, fields` | Validate editable entity fields and always release the database connection. |
+| [api_edit_artist](../songranker/developer/dev.py#L414) | `artist_id` | Serve edit artist; POST /api/dev/edit_artist/<int:artist_id>. |
+| [delete_catalogue_record](../songranker/developer/dev.py#L418) | `table, record_id` | Remove an entity and its catalogue links, preserving referenced game facts. |
+| [api_delete_artist](../songranker/developer/dev.py#L442) | `artist_id` | Serve delete artist; DELETE /api/dev/delete_artist/<int:artist_id>. |
+| [api_edit_album](../songranker/developer/dev.py#L448) | `album_id` | Serve edit album; POST /api/dev/edit_album/<int:album_id>. |
+| [api_delete_album](../songranker/developer/dev.py#L454) | `album_id` | Serve delete album; DELETE /api/dev/delete_album/<int:album_id>. |
+| [api_edit_genre](../songranker/developer/dev.py#L460) | `genre_id` | Serve edit genre; POST /api/dev/edit_genre/<int:genre_id>. |
+| [api_delete_genre](../songranker/developer/dev.py#L466) | `genre_id` | Serve delete genre; DELETE /api/dev/delete_genre/<int:genre_id>. |
+| [api_dev_overview](../songranker/developer/dev.py#L472) | `` | Serve dev overview; GET /api/dev/overview. |
+| [api_dev_backup](../songranker/developer/dev.py#L484) | `` | Serve dev backup; POST /api/dev/backup. |
+| [api_dev_restore_backup](../songranker/developer/dev.py#L495) | `` | Serve dev restore backup; POST /api/dev/restore-backup. |
+| [api_dev_reset_preview](../songranker/developer/dev.py#L502) | `` | Serve dev reset preview; GET /api/dev/reset-preview. |
+| [reset_competition_data](../songranker/developer/dev.py#L513) | `scope` | Keep the library and reset only the requested competition records. |
+| [api_dev_reset_history](../songranker/developer/dev.py#L539) | `scope` | Serve dev reset history; POST /api/dev/reset-history/<scope>. |
+| [delete_special_round](../songranker/developer/dev.py#L550) | `mode, round_id` | Delete special round; POST /api/dev/special-round/<mode>/<int:round_id>. |
+| [api_dev_reset_database](../songranker/developer/dev.py#L567) | `` | Serve dev reset database; POST /api/dev/reset-database. |
+| [api_dev_elo_correction](../songranker/developer/dev.py#L575) | `` | Serve dev elo correction; POST /api/dev/elo-correction. |
+| [api_dev_preferences](../songranker/developer/dev.py#L591) | `` | Serve dev preferences; GET /api/dev/preferences. |
+| [api_dev_preference](../songranker/developer/dev.py#L614) | `event_id` | Serve dev preference; GET, POST /api/dev/preferences/<int:event_id>. |
+| [api_dev_edit_trivia](../songranker/developer/dev.py#L632) | `song_id` | Serve dev edit trivia; POST, DELETE /api/dev/trivia/<int:song_id>. |
+| [api_dev_integrity](../songranker/developer/dev.py#L659) | `` | Serve dev integrity; GET /api/dev/integrity. |
+| [api_dev_activity](../songranker/developer/dev.py#L672) | `` | Serve dev activity; GET /api/dev/activity. |
+| [api_dev_delete_tournament](../songranker/developer/dev.py#L684) | `tournament_id` | Serve dev delete tournament; DELETE /api/dev/tournaments/<int:tournament_id>. |
+| [api_sync](../songranker/developer/dev.py#L708) | `` | Serve sync; POST /api/dev/sync. |
+| [api_export](../songranker/developer/dev.py#L715) | `` | Endpoint to manually trigger a database text export. |
+| [api_dev_bulk_songs](../songranker/developer/dev.py#L726) | `` | Serve dev bulk songs; POST /api/dev/bulk_songs. |
+| [api_dev_trivia_records](../songranker/developer/dev.py#L772) | `` | Serve dev trivia records; POST /api/dev/trivia-records. |
+| [api_dev_tournament_placements](../songranker/developer/dev.py#L789) | `tournament_id` | Serve dev tournament placements; POST /api/dev/tournaments/<int:tournament_id>/placements. |
 
 ## songranker/developer/dev_catalog.py
 
@@ -183,44 +186,45 @@ Git/backups/recovery, inventory, database inspection and analysis routes.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [signer](../songranker/developer/dev_system.py#L34) | `` | Create the feature-specific serializer used for signed review receipts. |
-| [signed](../songranker/developer/dev_system.py#L38) | `kind, **data` | Sign a browser-owned, purpose-specific review receipt. |
-| [unpack](../songranker/developer/dev_system.py#L42) | `token, kind` | Validate and decode the signed feature review/offer. |
-| [git](../songranker/developer/dev_system.py#L56) | `` | Bind Git operations to the currently configured application root and live database. |
-| [git_payload](../songranker/developer/dev_system.py#L63) | `state=None` | Expose Git state with a signed review token instead of its raw target fingerprint. |
-| [git_reply](../songranker/developer/dev_system.py#L74) | `result` | Wrap a Git operation result with current reviewable state and the appropriate HTTP status. |
-| [git_status](../songranker/developer/dev_system.py#L107) | `` | Git status; GET /api/dev/git/status. |
-| [git_check](../songranker/developer/dev_system.py#L113) | `` | Git check; POST /api/dev/git/check. |
-| [upload_database](../songranker/developer/dev_system.py#L119) | `` | Validate the browser's Git review token before requesting a database-only upload. |
-| [git_upload](../songranker/developer/dev_system.py#L135) | `` | Git upload; POST /api/dev/git/upload. |
-| [review_local_database](../songranker/developer/dev_system.py#L141) | `` | Review local database; POST /api/dev/git/keep-local/review. |
-| [keep_local_database](../songranker/developer/dev_system.py#L158) | `` | Keep local database; POST /api/dev/git/keep-local. |
-| [backup_folder](../songranker/developer/dev_system.py#L169) | `` | Resolve the backup directory beside the configured live database. |
-| [backup_path](../songranker/developer/dev_system.py#L174) | `name` | Resolve a regular local .db backup while rejecting traversal, symlinks and missing files. |
-| [purpose](../songranker/developer/dev_system.py#L192) | `name` | Translate known backup filename prefixes into short recovery-purpose labels. |
-| [backups](../songranker/developer/dev_system.py#L219) | `` | List regular local database backups with names, purposes, sizes and modification times. |
-| [area](../songranker/developer/dev_system.py#L246) | `name, kind` | Assign an inspected SQLite table or view to its feature group for the database inventory. |
-| [inventory](../songranker/developer/dev_system.py#L287) | `` | Inventory; reads song_genres, song_sources, song_vibe_positions, songs, sqlite_master. |
-| [system_status](../songranker/developer/dev_system.py#L367) | `` | System status; GET /api/dev/system. |
-| [counts](../songranker/developer/dev_system.py#L371) | `db` | Read available catalogue and result counts from an inspected database without assuming every table exists. |
-| [backup_review](../songranker/developer/dev_system.py#L402) | `` | Backup review; POST /api/dev/backups/review. |
-| [restore_database](../songranker/developer/dev_system.py#L434) | `*, require_review=False` | Validate a stored backup and review witnesses before an exclusive, backed-up database restore. |
-| [backup_restore](../songranker/developer/dev_system.py#L490) | `` | Backup restore; POST /api/dev/backups/restore. |
-| [backup_download](../songranker/developer/dev_system.py#L496) | `name` | Backup download; GET /api/dev/backups/<name>/download. |
-| [full_export](../songranker/developer/dev_system.py#L512) | `` | Full export; GET /api/dev/database/export. |
-| [database_guide](../songranker/developer/dev_system.py#L529) | `` | Database guide; GET /api/dev/database/guide. |
-| [selection_health](../songranker/developer/dev_system.py#L540) | `` | Selection health; GET /api/dev/selection-health. |
-| [song_quality](../songranker/developer/dev_system.py#L569) | `song_id` | Song quality; GET, POST /api/dev/song-quality/<int:song_id>. |
-| [analysis_data](../songranker/developer/dev_system.py#L613) | `` | Analysis data; GET /api/dev/analysis. |
-| [require_v3_backup](../songranker/developer/dev_system.py#L635) | `path` | Require v3 backup; reads competition_state, sqlite_master. |
-| [developer_guide](../songranker/developer/dev_system.py#L656) | `guide` | Developer guide; GET /api/dev/help/<guide>. |
-| [integer](../songranker/developer/dev_system.py#L668) | `name, default, maximum` | Validate/normalise the feature’s integer input before using it. |
-| [object_info](../songranker/developer/dev_system.py#L675) | `conn, name` | Resolve an existing table/view, its extended columns and stable primary-key row ordering. |
-| [row_hash](../songranker/developer/dev_system.py#L692) | `row` | Hash typed row values, including lossless BLOBs, to detect stale database inspection receipts. |
-| [cell](../songranker/developer/dev_system.py#L711) | `value, start=0, limit=256` | Project a bounded typed cell slice with length and truncation metadata for read-only inspection. |
-| [deadline](../songranker/developer/dev_system.py#L741) | `conn` | Start a read-only inspection snapshot with bounded lock waits and a three-second query deadline. |
-| [inspect_object](../songranker/developer/dev_system.py#L754) | `` | Inspect object; GET /api/dev/database/inspect. |
-| [inspect_cell](../songranker/developer/dev_system.py#L813) | `` | Inspect cell; GET /api/dev/database/cell. |
+| [signer](../songranker/developer/dev_system.py#L35) | `` | Create the feature-specific serializer used for signed review receipts. |
+| [signed](../songranker/developer/dev_system.py#L39) | `kind, **data` | Sign a browser-owned, purpose-specific review receipt. |
+| [unpack](../songranker/developer/dev_system.py#L43) | `token, kind` | Validate and decode the signed feature review/offer. |
+| [git](../songranker/developer/dev_system.py#L57) | `` | Bind Git operations to the currently configured application root and live database. |
+| [git_payload](../songranker/developer/dev_system.py#L64) | `state=None` | Expose Git state with a signed review token instead of its raw target fingerprint. |
+| [git_reply](../songranker/developer/dev_system.py#L75) | `result` | Wrap a Git operation result with current reviewable state and the appropriate HTTP status. |
+| [git_status](../songranker/developer/dev_system.py#L108) | `` | Git status; GET /api/dev/git/status. |
+| [git_check](../songranker/developer/dev_system.py#L114) | `` | Git check; POST /api/dev/git/check. |
+| [upload_database](../songranker/developer/dev_system.py#L120) | `` | Validate the browser's Git review token before requesting a database-only upload. |
+| [git_upload](../songranker/developer/dev_system.py#L136) | `` | Git upload; POST /api/dev/git/upload. |
+| [review_local_database](../songranker/developer/dev_system.py#L142) | `` | Review local database; POST /api/dev/git/keep-local/review. |
+| [keep_local_database](../songranker/developer/dev_system.py#L159) | `` | Keep local database; POST /api/dev/git/keep-local. |
+| [backup_folder](../songranker/developer/dev_system.py#L170) | `` | Resolve the backup directory beside the configured live database. |
+| [backup_path](../songranker/developer/dev_system.py#L175) | `name` | Resolve a regular local .db backup while rejecting traversal, symlinks and missing files. |
+| [purpose](../songranker/developer/dev_system.py#L193) | `name` | Translate known backup filename prefixes into short recovery-purpose labels. |
+| [backups](../songranker/developer/dev_system.py#L220) | `` | List regular local database backups with names, purposes, sizes and modification times. |
+| [area](../songranker/developer/dev_system.py#L247) | `name, kind` | Assign an inspected SQLite table or view to its feature group for the database inventory. |
+| [inventory](../songranker/developer/dev_system.py#L288) | `` | Inventory; reads song_genres, song_sources, song_vibe_positions, songs, sqlite_master. |
+| [system_status](../songranker/developer/dev_system.py#L368) | `` | System status; GET /api/dev/system. |
+| [counts](../songranker/developer/dev_system.py#L372) | `db` | Read available catalogue and result counts from an inspected database without assuming every table exists. |
+| [backup_review](../songranker/developer/dev_system.py#L403) | `` | Backup review; POST /api/dev/backups/review. |
+| [restore_database](../songranker/developer/dev_system.py#L435) | `*, require_review=False` | Validate a stored backup and review witnesses before an exclusive, backed-up database restore. |
+| [backup_restore](../songranker/developer/dev_system.py#L491) | `` | Backup restore; POST /api/dev/backups/restore. |
+| [backup_download](../songranker/developer/dev_system.py#L497) | `name` | Backup download; GET /api/dev/backups/<name>/download. |
+| [full_export](../songranker/developer/dev_system.py#L513) | `` | Full export; GET /api/dev/database/export. |
+| [database_guide](../songranker/developer/dev_system.py#L530) | `` | Database guide; GET /api/dev/database/guide. |
+| [selection_health](../songranker/developer/dev_system.py#L541) | `` | Selection health; GET /api/dev/selection-health. |
+| [song_quality](../songranker/developer/dev_system.py#L570) | `song_id` | Song quality; GET, POST /api/dev/song-quality/<int:song_id>. |
+| [analysis_data](../songranker/developer/dev_system.py#L614) | `` | Analysis data; GET /api/dev/analysis. |
+| [require_v3_backup](../songranker/developer/dev_system.py#L636) | `path` | Require v3 backup; reads competition_state, sqlite_master. |
+| [developer_guide](../songranker/developer/dev_system.py#L657) | `guide` | Developer guide; GET /api/dev/help/<guide>. |
+| [developer_guide.guide_link](../songranker/developer/dev_system.py#L669) | `match` | Resolve local Markdown references into readable guides or repository documents. |
+| [integer](../songranker/developer/dev_system.py#L689) | `name, default, maximum` | Validate/normalise the feature’s integer input before using it. |
+| [object_info](../songranker/developer/dev_system.py#L696) | `conn, name` | Resolve an existing table/view, its extended columns and stable primary-key row ordering. |
+| [row_hash](../songranker/developer/dev_system.py#L713) | `row` | Hash typed row values, including lossless BLOBs, to detect stale database inspection receipts. |
+| [cell](../songranker/developer/dev_system.py#L732) | `value, start=0, limit=256` | Project a bounded typed cell slice with length and truncation metadata for read-only inspection. |
+| [deadline](../songranker/developer/dev_system.py#L762) | `conn` | Start a read-only inspection snapshot with bounded lock waits and a three-second query deadline. |
+| [inspect_object](../songranker/developer/dev_system.py#L775) | `` | Inspect object; GET /api/dev/database/inspect. |
+| [inspect_cell](../songranker/developer/dev_system.py#L834) | `` | Inspect cell; GET /api/dev/database/cell. |
 
 ## songranker/developer/dev_tags.py
 
@@ -1004,8 +1008,8 @@ Preserve public routes, asset order and profile reads across module consolidatio
 | [Assets.handle_starttag](../tests/test_architecture.py#L28) | `self, tag, attrs` | Handle starttag. |
 | [ArchitectureTests.register](../tests/test_architecture.py#L40) | `self` | Register the launcher's actual feature owners without running startup sync. |
 | [ArchitectureTests.test_all_previous_urls_methods_and_endpoint_names_are_preserved](../tests/test_architecture.py#L45) | `self` | Verify all previous urls methods and endpoint names are preserved. |
-| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L63) | `self` | Verify pages use one asset registry and last shared baseline. |
-| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L114) | `self` | Verify collection profiles share identity payloads and are read only. |
+| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L65) | `self` | Verify pages use one asset registry and last shared baseline. |
+| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L116) | `self` | Verify collection profiles share identity payloads and are read only. |
 
 ## tests/test_bulk_source_review.py
 
@@ -1136,32 +1140,34 @@ Dashboard/recovery contracts against isolated fixture databases only.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [DeveloperSystemTests.setUp](../tests/test_dev_system.py#L19) | `self` | Create isolated disposable state and register cleanup for this test. |
-| [DeveloperSystemTests.backup](../tests/test_dev_system.py#L27) | `self, prefix='manual'` | Backup. |
-| [DeveloperSystemTests.review](../tests/test_dev_system.py#L29) | `self, backup` | Review. |
-| [DeveloperSystemTests.restore](../tests/test_dev_system.py#L33) | `self, review` | Restore. |
-| [DeveloperSystemTests.current](../tests/test_dev_system.py#L35) | `self` | Current. |
-| [DeveloperSystemTests.test_routes_require_local_authenticated_requests](../tests/test_dev_system.py#L38) | `self` | Verify routes require local authenticated requests. |
-| [DeveloperSystemTests.test_inventory_is_read_only_and_labels_all_objects](../tests/test_dev_system.py#L49) | `self` | Verify inventory is read only and labels all objects. |
-| [DeveloperSystemTests.test_backup_listing_includes_all_regular_databases_excludes_links_and_other_files](../tests/test_dev_system.py#L65) | `self` | Verify backup listing includes all regular databases excludes links and other files. |
-| [DeveloperSystemTests.test_full_export_preserves_extension_fields_and_pending_game_facts](../tests/test_dev_system.py#L73) | `self` | Verify full export preserves extension fields and pending game facts. |
-| [DeveloperSystemTests.test_guide_is_downloaded_without_disclosing_other_files](../tests/test_dev_system.py#L81) | `self` | Verify guide is downloaded without disclosing other files. |
-| [DeveloperSystemTests.test_binary_backup_download_is_exact](../tests/test_dev_system.py#L86) | `self` | Verify binary backup download is exact. |
-| [DeveloperSystemTests.test_backup_paths_reject_traversal_links_missing_or_invalid_contents](../tests/test_dev_system.py#L90) | `self` | Verify backup paths reject traversal links missing or invalid contents. |
-| [DeveloperSystemTests.test_restore_review_is_read_only_and_binds_backup_and_live_state](../tests/test_dev_system.py#L96) | `self` | Verify restore review is read only and binds backup and live state. |
-| [DeveloperSystemTests.test_whole_restore_retains_pre_restore_backup_and_saved_offer](../tests/test_dev_system.py#L103) | `self` | Verify whole restore retains pre restore backup and saved offer. |
-| [DeveloperSystemTests.test_saved_activity_after_review_is_rejected_without_writing](../tests/test_dev_system.py#L111) | `self` | Verify saved activity after review is rejected without writing. |
-| [DeveloperSystemTests.test_changed_backup_after_review_is_rejected](../tests/test_dev_system.py#L116) | `self` | Verify changed backup after review is rejected. |
-| [DeveloperSystemTests.test_review_tokens_cannot_be_reused_in_another_browser_or_task](../tests/test_dev_system.py#L121) | `self` | Verify review tokens cannot be reused in another browser or task. |
-| [DeveloperSystemTests.test_expired_and_missing_reviews_require_a_new_review](../tests/test_dev_system.py#L128) | `self` | Verify expired and missing reviews require a new review. |
-| [DeveloperSystemTests.test_legacy_restore_endpoint_stays_compatible](../tests/test_dev_system.py#L136) | `self` | Verify legacy restore endpoint stays compatible. |
-| [DeveloperSystemTests.test_multi_worker_restore_is_blocked](../tests/test_dev_system.py#L140) | `self` | Verify multi worker restore is blocked. |
-| [DeveloperSystemTests.test_git_status_is_local_and_replaces_internal_fingerprint_with_signed_review](../tests/test_dev_system.py#L144) | `self` | Verify git status is local and replaces internal fingerprint with signed review. |
-| [DeveloperSystemTests.test_git_upload_binds_review_to_target_and_refreshes_state](../tests/test_dev_system.py#L150) | `self` | Verify git upload binds review to target and refreshes state. |
-| [DeveloperSystemTests.test_git_failures_return_actionable_status_and_current_review](../tests/test_dev_system.py#L157) | `self` | Verify git failures return actionable status and current review. |
-| [DeveloperSystemTests.test_check_remote_requires_json_and_legacy_upload_requires_review](../tests/test_dev_system.py#L164) | `self` | Verify check remote requires json and legacy upload requires review. |
-| [DeveloperSystemTests.test_keep_local_requires_a_browser_bound_review_and_confirmation](../tests/test_dev_system.py#L170) | `self` | Verify keep local requires a browser bound review and confirmation. |
-| [DeveloperSystemTests.test_lock_returns_main_home_and_clears_dev_session](../tests/test_dev_system.py#L190) | `self` | Verify lock returns main home and clears dev session. |
+| [DeveloperSystemTests.setUp](../tests/test_dev_system.py#L20) | `self` | Create isolated disposable state and register cleanup for this test. |
+| [DeveloperSystemTests.backup](../tests/test_dev_system.py#L28) | `self, prefix='manual'` | Backup. |
+| [DeveloperSystemTests.review](../tests/test_dev_system.py#L30) | `self, backup` | Review. |
+| [DeveloperSystemTests.restore](../tests/test_dev_system.py#L34) | `self, review` | Restore. |
+| [DeveloperSystemTests.current](../tests/test_dev_system.py#L36) | `self` | Current. |
+| [DeveloperSystemTests.test_focused_dev_destinations_require_auth_and_match_the_navigation_registry](../tests/test_dev_system.py#L39) | `self` | Every listed task has a reloadable protected URL; unknown tasks are refused. |
+| [DeveloperSystemTests.test_guides_render_headings_tables_and_escaped_code_in_the_authenticated_reader](../tests/test_dev_system.py#L58) | `self` | The readable guide API preserves code as text and supplies usable contents links. |
+| [DeveloperSystemTests.test_routes_require_local_authenticated_requests](../tests/test_dev_system.py#L70) | `self` | Verify routes require local authenticated requests. |
+| [DeveloperSystemTests.test_inventory_is_read_only_and_labels_all_objects](../tests/test_dev_system.py#L81) | `self` | Verify inventory is read only and labels all objects. |
+| [DeveloperSystemTests.test_backup_listing_includes_all_regular_databases_excludes_links_and_other_files](../tests/test_dev_system.py#L97) | `self` | Verify backup listing includes all regular databases excludes links and other files. |
+| [DeveloperSystemTests.test_full_export_preserves_extension_fields_and_pending_game_facts](../tests/test_dev_system.py#L105) | `self` | Verify full export preserves extension fields and pending game facts. |
+| [DeveloperSystemTests.test_guide_is_downloaded_without_disclosing_other_files](../tests/test_dev_system.py#L113) | `self` | Verify guide is downloaded without disclosing other files. |
+| [DeveloperSystemTests.test_binary_backup_download_is_exact](../tests/test_dev_system.py#L118) | `self` | Verify binary backup download is exact. |
+| [DeveloperSystemTests.test_backup_paths_reject_traversal_links_missing_or_invalid_contents](../tests/test_dev_system.py#L122) | `self` | Verify backup paths reject traversal links missing or invalid contents. |
+| [DeveloperSystemTests.test_restore_review_is_read_only_and_binds_backup_and_live_state](../tests/test_dev_system.py#L128) | `self` | Verify restore review is read only and binds backup and live state. |
+| [DeveloperSystemTests.test_whole_restore_retains_pre_restore_backup_and_saved_offer](../tests/test_dev_system.py#L135) | `self` | Verify whole restore retains pre restore backup and saved offer. |
+| [DeveloperSystemTests.test_saved_activity_after_review_is_rejected_without_writing](../tests/test_dev_system.py#L143) | `self` | Verify saved activity after review is rejected without writing. |
+| [DeveloperSystemTests.test_changed_backup_after_review_is_rejected](../tests/test_dev_system.py#L148) | `self` | Verify changed backup after review is rejected. |
+| [DeveloperSystemTests.test_review_tokens_cannot_be_reused_in_another_browser_or_task](../tests/test_dev_system.py#L153) | `self` | Verify review tokens cannot be reused in another browser or task. |
+| [DeveloperSystemTests.test_expired_and_missing_reviews_require_a_new_review](../tests/test_dev_system.py#L160) | `self` | Verify expired and missing reviews require a new review. |
+| [DeveloperSystemTests.test_legacy_restore_endpoint_stays_compatible](../tests/test_dev_system.py#L168) | `self` | Verify legacy restore endpoint stays compatible. |
+| [DeveloperSystemTests.test_multi_worker_restore_is_blocked](../tests/test_dev_system.py#L172) | `self` | Verify multi worker restore is blocked. |
+| [DeveloperSystemTests.test_git_status_is_local_and_replaces_internal_fingerprint_with_signed_review](../tests/test_dev_system.py#L176) | `self` | Verify git status is local and replaces internal fingerprint with signed review. |
+| [DeveloperSystemTests.test_git_upload_binds_review_to_target_and_refreshes_state](../tests/test_dev_system.py#L182) | `self` | Verify git upload binds review to target and refreshes state. |
+| [DeveloperSystemTests.test_git_failures_return_actionable_status_and_current_review](../tests/test_dev_system.py#L189) | `self` | Verify git failures return actionable status and current review. |
+| [DeveloperSystemTests.test_check_remote_requires_json_and_legacy_upload_requires_review](../tests/test_dev_system.py#L196) | `self` | Verify check remote requires json and legacy upload requires review. |
+| [DeveloperSystemTests.test_keep_local_requires_a_browser_bound_review_and_confirmation](../tests/test_dev_system.py#L202) | `self` | Verify keep local requires a browser bound review and confirmation. |
+| [DeveloperSystemTests.test_lock_returns_main_home_and_clears_dev_session](../tests/test_dev_system.py#L222) | `self` | Verify lock returns main home and clears dev session. |
 
 ## tests/test_dev_validation.py
 
@@ -1700,4 +1706,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1150 Python definitions**.
+Total: **1156 Python definitions**.

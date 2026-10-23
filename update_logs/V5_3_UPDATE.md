@@ -26,3 +26,22 @@ SQLite schema remains 20; this update does not reset catalogue or game results.
 See [consolidation review](../docs/CONSOLIDATION.md),
 [file ownership](../docs/FILES.md), [function index](../docs/FUNCTIONS.md),
 [styling contract](../docs/PAGE_STYLE.md) and [validation](../docs/VALIDATION.md).
+
+## V5.3.1 — focused Dev workspace
+
+- Dev has Home, Library, Mode edits and Tools & systems with visible section links,
+  direct task URLs and a single navigation registry. Old dashboard bookmarks remain
+  supported. Home links to every task and shows essential local status/coverage.
+- Routine editors sit beside the task on wide screens and above it on phones.
+  Fields have bounded scrolling and persistent actions. Record, tag and Vibe drafts
+  are protected when navigating; active saves/reviews and restores block navigation.
+- Backups/restore, read-only database inspection, Git, reviewed resets, duplicate
+  review and exports each have focused pages. Vibe uses a bounded song queue next
+  to its editor. Small native selects remain native; field/column options expand
+  within the page. Existing reviewed mutations and typed confirmations remain.
+- Guides are readable inside Dev, with contents links, formatted tables/code and
+  plain-text access. The Dev/style/technical/ownership guides reflect the new areas.
+- Superseded Dev menu/Home rules were removed. Shared palette, typography, touch
+  targets and the baseline remain the main site's styling contract.
+- Application/asset version is 5.3.1. Schema 20, active data, backups, saved mode
+  rules and API mutation contracts are retained. New focused routes are additive.

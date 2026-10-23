@@ -168,7 +168,7 @@ window.DevControls = (() => {
     if (
       s.multiple ||
       s.hidden ||
-      (!entityIds.has(s.id) && s.options.length < 12)
+      (!entityIds.has(s.id) && !s.hasAttribute("data-searchable"))
     )
       return;
     const labelNode = s.labels?.[0]?.cloneNode(true);

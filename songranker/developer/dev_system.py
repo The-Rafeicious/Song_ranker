@@ -5,6 +5,7 @@ from io import BytesIO
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import os
+import re
 import sqlite3
 from flask import jsonify, request, send_file
 from itsdangerous import URLSafeTimedSerializer, BadData
@@ -657,9 +658,29 @@ def developer_guide(guide):
     filename = {"dev": "DEV_GUIDE.md", "technical": "TECHNICAL_GUIDE.md"}.get(guide)
     if not filename:
         return jsonify(message="Choose a listed guide."), 404
-    return send_file(
-        services.ROOT / "docs" / filename, mimetype="text/plain; charset=utf-8"
-    )
+    path = services.ROOT / "docs" / filename
+    if not path.is_file():
+        path = Path(__file__).resolve().parents[2] / "docs" / filename
+    if request.args.get("format") == "html":
+        import markdown
+        import posixpath
+        from urllib.parse import urlsplit
+        source = path.read_text(encoding="utf-8")
+        def guide_link(match):
+            """Resolve local Markdown references into readable guides or repository documents."""
+            target = match.group(1)
+            parts = urlsplit(target)
+            if parts.scheme or parts.netloc:
+                return match.group(0)
+            guide_name = {"DEV_GUIDE.md": "dev", "TECHNICAL_GUIDE.md": "technical"}.get(posixpath.basename(parts.path))
+            destination = ("/dev/tools/guides?guide=" + guide_name if guide_name else
+                           "https://github.com/The-Rafeicious/Song_ranker/blob/main/" + posixpath.normpath("docs/" + parts.path))
+            return "](" + destination + ("#" + parts.fragment if parts.fragment else "") + ")"
+        source = re.sub(r'\]\(([^)\s]+\.md(?:#[^)\s]*)?)\)', guide_link, source)
+        document = markdown.Markdown(extensions=["tables", "fenced_code", "toc"])
+        html = document.convert(source)
+        return jsonify(html=html, toc=document.toc)
+    return send_file(path, mimetype="text/plain; charset=utf-8")
 
 
 # Bounded, authenticated raw SQLite inspection. Never accepts executable SQL.
