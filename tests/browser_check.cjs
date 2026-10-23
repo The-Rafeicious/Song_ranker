@@ -265,7 +265,7 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.locator('#dev-section-nav [data-dev="backups"]').click();await page.locator('#system-backups').waitFor();assert.equal(await page.locator('#system-inventory').count(),0);
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-backups',folder);await page.screenshot({path:folder+'/dev-backups-'+width+'.png',fullPage:true});}
   await page.locator('#dev-section-nav [data-dev="guides"]').click();await page.locator('.dev-guide-article h1').waitFor();await page.locator('[data-dev-guide="technical"]').click();await page.waitForFunction(()=>document.querySelector('.dev-guide-article h1')?.textContent.includes('technical'));assert.ok((await page.locator('.dev-guide-contents a').count())>10);
-  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-guide',folder);await page.screenshot({path:folder+'/dev-guide-'+width+'.png',fullPage:true});}
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await page.evaluate(()=>window.scrollTo(0,0));await bounded(page,width,'dev-guide',folder);await page.screenshot({path:folder+'/dev-guide-'+width+'.png'});}
   await page.locator('.dev-nav-actions input[name=q]').fill('long title');await page.locator('.dev-nav-actions form button').click();await page.locator('#dev-query').waitFor();assert.equal(await page.locator('#dev-query').inputValue(),'long title');
   await page.locator('.dev-lock').click();await page.waitForURL(base+'/');
   // Main-header shutdown needs a PIN once and does not unlock Dev.

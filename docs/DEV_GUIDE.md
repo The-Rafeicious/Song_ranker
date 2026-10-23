@@ -25,7 +25,8 @@ Routine editors open beside the task on a wide screen and above it on a phone.
 Fields scroll within that editor; Save and Close remain visible. Read-only value
 inspection has no Save button. Unsaved catalogue edits and tag choices require an
 explicit **Discard & continue** before changing tasks. **Keep editing** preserves
-the draft. A restore in progress blocks task navigation.
+the draft. Active record/catalogue saves, tag/Vibe operations and restores block
+task navigation until they finish.
 
 ## Developer home
 

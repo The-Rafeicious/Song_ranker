@@ -3500,6 +3500,7 @@
         gen = editorGeneration;
       if (submit.disabled) return;
       submit.disabled = true;
+      form.dataset.saving = "true";
       $("#editor-error").hidden = true;
       try {
         const values = Object.fromEntries(new FormData(form));
@@ -3508,6 +3509,7 @@
       } catch (error) {
         editorError(error.message);
       } finally {
+        delete form.dataset.saving;
         if (gen === editorGeneration) submit.disabled = false;
       }
     }

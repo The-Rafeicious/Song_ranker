@@ -288,7 +288,26 @@ async function polishChecks(){
  check(h.errors.length===0,'polished bulk/editor flows have no browser errors');h.dom.window.close();
 }
 
-(async()=>{await polishChecks();await albumImportChecks();await importChecks();await sourceChecks();await navigationChecks();await addNavigationCheck();await sourcePersistenceChecks();await sourceRefreshChecks();await bulkSourceChecks();for(const width of [320,360,390,430,568,768,1280])await moveAndTableChecks(width);
+async function activeSaveNavigationChecks(){
+ const h=await harness('songs'),{w,d}=h;let finish;
+ w.testDev.editRecord('songs',1);
+ h.handler(url=>url==='/api/dev/edit_song/1'?new Promise(resolve=>finish=resolve):undefined);
+ d.querySelector('#editor-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));await flush();
+ check(d.querySelector('#editor-form').dataset.saving==='true','record save is locked until its request and refresh finish');
+ h.click('#dev-page-menu [data-dev="library"]');h.click('#editor-close');
+ check(w.location.pathname==='/dev/library/songs'&&d.querySelector('#editor').open,'pending record save cannot navigate or close');
+ check(d.querySelector('#dev-unsaved').hidden,'in-flight save cannot be discarded');
+ finish({status:'success',message:'Saved'});await flush();
+ check(!d.querySelector('#editor-form').dataset.saving&&!d.querySelector('#editor').open,'confirmed record save releases the navigation lock');
+ h.handler(()=>undefined);await w.DevCatalog.openSingle(1);let complete;
+ h.handler(url=>url==='/api/dev/single/1'?new Promise(resolve=>complete=resolve):undefined);h.click('[data-catalog-save-single]');await flush();
+ check(w.DevCatalog.isBusy(),'catalogue write exposes its active lock');h.click('#dev-page-menu [data-dev="library"]');h.click('#editor-close');
+ check(w.location.pathname==='/dev/library/songs'&&d.querySelector('#editor').open,'pending catalogue write cannot navigate or close');
+ complete({message:'Moved',album_cleanup:{reason:'Previous album retained'}});await flush();
+ check(!w.DevCatalog.isBusy(),'completed catalogue write releases its lock');h.click('#dev-page-menu [data-dev="library"]');check(w.location.pathname==='/dev/library','navigation resumes after save');h.dom.window.close();
+}
+
+(async()=>{await activeSaveNavigationChecks();await polishChecks();await albumImportChecks();await importChecks();await sourceChecks();await navigationChecks();await addNavigationCheck();await sourcePersistenceChecks();await sourceRefreshChecks();await bulkSourceChecks();for(const width of [320,360,390,430,568,768,1280])await moveAndTableChecks(width);
  if(process.env.DEV_CATALOG_SNAPSHOTS)fs.writeFileSync(process.env.DEV_CATALOG_SNAPSHOTS,JSON.stringify(snapshots));console.log(assertions+' developer catalogue assertions passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
 

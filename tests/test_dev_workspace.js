@@ -1,7 +1,7 @@
 /* Actual navigation/editor controller: dirty drafts, history, restoration locks and guide races. */
 const {JSDOM}=require('jsdom'),assert=require('node:assert/strict'),fs=require('node:fs');
 (async()=>{
- const dom=new JSDOM('<body data-page="dev"><main id="main"></main><dialog id="editor"><form><h2 id="editor-title">Edit song</h2><div id="editor-fields"><input name="title" value="Original"></div><button type="button" id="editor-close">Close</button></form></dialog></body>',{url:'http://localhost/dev/library/songs',runScripts:'outside-only',pretendToBeVisual:true});
+ const dom=new JSDOM('<body data-page="dev"><main id="main"></main><dialog id="editor"><form id="editor-form"><h2 id="editor-title">Edit song</h2><div id="editor-fields"><input name="title" value="Original"></div><button type="button" id="editor-close">Close</button></form></dialog></body>',{url:'http://localhost/dev/library/songs',runScripts:'outside-only',pretendToBeVisual:true});
  const w=dom.window,d=w.document;
  require('./dev_fixture.cjs')(w,'songs');
  for(const file of ['ui','dev_workspace'])w.eval(fs.readFileSync('static/js/'+file+'.js','utf8'));
@@ -14,6 +14,10 @@ const {JSDOM}=require('jsdom'),assert=require('node:assert/strict'),fs=require('
  assert.equal(d.querySelector('#dev-section-nav [data-dev="songs"]').getAttribute('aria-current'),'page');
  const editor=d.querySelector('#editor');D.openEditor(editor);assert.equal(editor.parentNode.id,'dev-editor-slot');assert.ok(editor.open);
  navigate('songs');assert.ok(editor.open,'active task link leaves its editor open');
+ const form=d.querySelector('#editor-form');form.dataset.saving='true';navigate('backups');assert.equal(w.location.pathname,'/dev/library/songs');assert.ok(moved.pop().includes('finish'));assert.equal(d.querySelector('#dev-unsaved').hidden,true);
+ let closed=false;d.querySelector('#editor-close').addEventListener('click',()=>closed=true);d.querySelector('#editor-close').click();assert.equal(closed,false,'active save prevents closing the editor');assert.ok(moved.pop().includes('finish'));
+ w.history.pushState({},'',D.href('tools'));w.dispatchEvent(new w.PopStateEvent('popstate'));assert.equal(w.location.pathname,'/dev/library/songs');assert.ok(moved.pop().includes('finish'));delete form.dataset.saving;
+ w.DevCatalog={isBusy:()=>true};navigate('backups');assert.equal(w.location.pathname,'/dev/library/songs');assert.ok(moved.pop().includes('finish'));w.DevCatalog.isBusy=()=>false;
  d.querySelector('[name=title]').value='Unsaved';d.querySelector('[name=title]').dispatchEvent(new w.Event('input',{bubbles:true}));
  navigate('backups');assert.deepEqual(moved,[]);assert.equal(w.location.pathname,'/dev/library/songs');assert.equal(d.querySelector('#dev-unsaved').hidden,false);assert.equal(d.querySelector('[name=title]').value,'Unsaved');
  d.querySelector('[data-workspace-stay]').click();assert.equal(d.querySelector('#dev-unsaved').hidden,true);

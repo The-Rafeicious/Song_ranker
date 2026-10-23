@@ -26,8 +26,15 @@ window.DevWorkspace = (() => {
   const modeDirty = () =>
     window.DevTags?.hasUnsavedChanges?.() ||
     window.DevVibe?.hasUnsavedChanges?.();
+  const editorBusy = () =>
+    $("#editor-form")?.dataset.saving === "true" ||
+    window.DevCatalog?.isBusy?.();
   function guarded(action) {
-    if (window.DevTags?.isBusy?.() || window.DevVibe?.isBusy?.()) {
+    if (
+      editorBusy() ||
+      window.DevTags?.isBusy?.() ||
+      window.DevVibe?.isBusy?.()
+    ) {
       U.toast("Wait for the current save or review to finish.");
       return;
     }
@@ -120,6 +127,7 @@ window.DevWorkspace = (() => {
         "overview";
       if (
         dirty ||
+        editorBusy() ||
         modeDirty() ||
         (window.DevSystem && !window.DevSystem.canNavigate()) ||
         window.DevTags?.isBusy?.() ||
@@ -130,7 +138,7 @@ window.DevWorkspace = (() => {
       } else U.navigate(key, false);
     });
     window.addEventListener("beforeunload", (event) => {
-      if (dirty || modeDirty()) {
+      if (dirty || modeDirty() || editorBusy()) {
         event.preventDefault();
         event.returnValue = "";
       }
@@ -198,6 +206,14 @@ window.DevWorkspace = (() => {
         return;
       }
       if (node.hasAttribute("data-workspace-discard")) {
+        if (
+          editorBusy() ||
+          window.DevTags?.isBusy?.() ||
+          window.DevVibe?.isBusy?.()
+        ) {
+          U.toast("Wait for the current save or review to finish.");
+          return;
+        }
         const action = pending;
         pending = null;
         dirty = false;
@@ -223,7 +239,7 @@ window.DevWorkspace = (() => {
         return;
       }
       if (
-        dirty &&
+        (dirty || editorBusy()) &&
         !replay &&
         (node.id === "editor-close" ||
           node.matches(

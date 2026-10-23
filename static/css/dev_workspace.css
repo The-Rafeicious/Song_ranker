@@ -332,6 +332,11 @@ body[data-page="dev"]
 .dev-vibe-map-nav .btn {
   flex: 1 1 140px;
 }
+body[data-page="dev"] #main .dev-vibe-map-nav .btn.active {
+  color: var(--vibe);
+  border-color: var(--vibe);
+  background: #ed657316;
+}
 .dev-vibe-workspace .dev-vibe-maps fieldset {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -376,6 +381,11 @@ body[data-page="dev"]
 }
 .dev-guide-tabs {
   margin-bottom: 20px;
+}
+body[data-page="dev"] #main .dev-guide-tabs .btn.active {
+  color: var(--song);
+  border-color: var(--song);
+  background: #1db95416;
 }
 .dev-guide-layout {
   display: grid;
