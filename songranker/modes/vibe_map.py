@@ -36,18 +36,23 @@ class VibeError(ValueError):
 
 
 def identifier(value):
+    """Validate a bounded nonblank Vibe request ID for idempotent round mutations."""
     if not isinstance(value, str) or not value.strip() or len(value) > 96:
         raise VibeError("A nonempty request_id of at most 96 characters is required.")
     return value
 
 
 def revision(value):
+    """Validate an unsigned SQLite-sized round revision for stale-write checks."""
     if type(value) is not int or not 0 <= value < 2**63:
         raise VibeError("A valid round revision is required.")
     return value
 
 
 def placement(data):
+    """Validate placed/not-applicable input and convert public coordinates to the
+    stored normalised scale.
+    """
     status = data.get("status", "placed")
     if status == "not_applicable":
         if data.get("x") is not None or data.get("y") is not None:
@@ -70,6 +75,9 @@ def placement(data):
 
 
 def public_point(point):
+    """Convert a saved coordinate to the public display scale while preserving
+    not-applicable values.
+    """
     return dict(
         status=point["status"],
         x=point["x"] * SCALE if point["x"] is not None else None,
@@ -113,6 +121,9 @@ def radar(points):
 
 
 def profile(conn, song_id):
+    """Build one existing song's aggregate Vibe maps, sample counts, completed passes
+    and radar.
+    """
     if type(song_id) is not int or not 0 < song_id < 2**63:
         raise VibeError("A positive song ID is required.")
     if not conn.execute("SELECT 1 FROM songs WHERE id=?", (song_id,)).fetchone():
@@ -135,12 +146,16 @@ def profile(conn, song_id):
 
 
 def current(conn, owner):
+    """Read the single persisted Vibe round bound to a hashed browser owner."""
     return conn.execute(
         "SELECT * FROM vibe_rounds WHERE owner_hash=?", (owner_hash(owner),)
     ).fetchone()
 
 
 def payload(conn, row, now=None):
+    """Project the current Vibe round into browser state with definitions, draft and
+    completion summary.
+    """
     if row is None:
         return dict(round=None, version=VIBE_MAP_VERSION)
     now = time.time() if now is None else now
@@ -191,6 +206,9 @@ def payload(conn, row, now=None):
 
 
 def require_round(conn, owner, data):
+    """Reject Vibe writes whose token no longer matches the owning browser's current
+    round.
+    """
     row = current(conn, owner)
     if (
         not row
@@ -206,6 +224,9 @@ def require_round(conn, owner, data):
 
 
 def require_stage(row, data):
+    """Require a valid current map, live round and matching revision before accepting
+    placement changes.
+    """
     if row["status"] == "cancelled":
         raise VibeError("This round has ended.", "ended", 409)
     map_id = data.get("map_id")
@@ -248,6 +269,9 @@ def start(conn, owner, data):
 
 
 def draft(conn, owner, data):
+    """Save an idempotent Vibe placement draft and advance its revision without
+    completing the map.
+    """
     with transaction(conn):
         row = require_round(conn, owner, data)
         key = identifier(data.get("request_id"))
@@ -401,6 +425,9 @@ def advance(conn, owner, data):
 
 
 def cancel(conn, owner, data):
+    """Cancel the owning browser's active Vibe round and clear its draft with
+    stale-revision protection.
+    """
     with transaction(conn):
         row = require_round(conn, owner, data)
         expected = revision(data.get("revision"))
@@ -420,6 +447,9 @@ def cancel(conn, owner, data):
 
 
 def heatmap(conn, kind, entity_id=None):
+    """Build mapped-song coordinate data for the whole library or a validated
+    artist/album/tag scope.
+    """
     scopes = {
         "all": None,
         "artist": ("song_artists", "artist_id"),
@@ -472,12 +502,16 @@ def heatmap(conn, kind, entity_id=None):
 
 
 def browser_owner(create=False):
+    """Read or explicitly create the session identity that owns Vibe round state."""
     if create and "vibe_owner" not in session:
         session["vibe_owner"] = secrets.token_urlsafe(32)
     return session.get("vibe_owner")
 
 
 def respond(action, *, write=False):
+    """Run a Vibe action with managed SQLite access, consistent read snapshots and
+    structured noncached errors.
+    """
     data = request.get_json(silent=True) if write else None
     if write and not isinstance(data, dict):
         return jsonify(message="A JSON object is required.", code="invalid"), 400
@@ -538,6 +572,9 @@ def api_vibe_map_profile(song_id):
 @app.get("/api/vibe-map/heatmap")
 def api_vibe_map_heatmap():
     def read(conn, data):
+        """Validate the optional numeric scope ID and read the requested Vibe
+        heatmap.
+        """
         value = request.args.get("id")
         try:
             entity_id = int(value) if value is not None else None
@@ -586,6 +623,9 @@ def similar_songs(conn, song_id, limit=2):
 @app.get("/api/vibe-map/similar/<int:song_id>")
 def api_vibe_map_similar(song_id):
     def read(conn, data):
+        """Validate the requested match limit before comparing a song's saved Vibe
+        profile.
+        """
         try:
             limit = int(request.args.get("limit", "2"))
         except ValueError:
@@ -649,6 +689,7 @@ def density(points):
 
 
 def colour_points(points, maximum):
+    """Add chart coordinates, density colours and opacity to normalised Vibe points."""
     for p in points:
         strength = math.sqrt(p["nearby"] / maximum)
         p.update(
@@ -665,10 +706,14 @@ def colour_points(points, maximum):
 
 
 def paired_highlights(complete, songs, vectors):
+    """Find the two closest and two most contrasting fully mapped song pairs with
+    bounded heaps.
+    """
     nearest = []
     furthest = []
 
     def retain(heap, rank, pair):
+        """Keep only the best two ranked pair candidates in a highlight heap."""
         item = (rank, pair)
         if len(heap) < 2:
             heappush(heap, item)
@@ -693,6 +738,9 @@ def paired_highlights(complete, songs, vectors):
 
 
 def common_patterns(vectors):
+    """Count shared directional Vibe axis patterns and rank the strongest library
+    patterns.
+    """
     axes = [
         dict(id=key + "_" + axis, map_id=key, axis=index, low=low, high=high)
         for key, _, xl, xh, yl, yh in DISPLAY_MAPS
@@ -894,6 +942,9 @@ def build_vibe_stats(conn):
 
 
 def build_song_vibe(conn, song_id, *, show_identity=True):
+    """Build a read-only song Vibe panel with aggregate placement, nearest matches
+    and profile links.
+    """
     saved = profile(
         conn, song_id
     )  # Validate first; missing songs return the mode's 404.
@@ -1009,6 +1060,9 @@ CATEGORIES = {
 
 
 def library_data(conn):
+    """Aggregate library Vibe coverage, consistency, validated vectors and collection
+    rankings.
+    """
     songs = {
         r["id"]: dict(r)
         for r in conn.execute("SELECT id,title,album_id FROM songs ORDER BY id")
@@ -1086,6 +1140,9 @@ def library_data(conn):
 
 
 def build_library_vibe(conn):
+    """Build shared-scale library maps, summary/banner rankings and consistency
+    counts.
+    """
     summary, songs, vectors, rankings = library_data(conn)
     maps = map_definitions(conn)
     for m in maps:
@@ -1118,6 +1175,9 @@ def build_library_vibe(conn):
 
 
 def build_vibe_rankings(conn, category, view):
+    """Validate collection category/direction and return up to twenty ranked Vibe
+    collection results.
+    """
     pass
     if category not in CATEGORIES:
         raise VibeError("Choose albums, artists or tags.")

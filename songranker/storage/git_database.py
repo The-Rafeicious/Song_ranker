@@ -47,6 +47,9 @@ def model(conn):
 
 
 def delta(base, changed):
+    """Count added, removed and edited rows for each table between two indexed
+    snapshots.
+    """
     result = {}
     for table in base.keys() | changed.keys():
         before, after = base.get(table, {}), changed.get(table, {})
@@ -73,10 +76,14 @@ def covers(base, changed, other):
 
 
 def placeholder(sql):
+    """Detect an empty or comments-only Git SQL snapshot."""
     return not any(line.strip() and not line.lstrip().startswith('--') for line in sql.splitlines())
 
 
 def prepare_sql(sql, folder, name, historical=False):
+    """Materialise and validate bounded SQL in disposable storage, preserving full
+    competition facts.
+    """
     if len(sql.encode('utf-8')) > MAX_SQL_BYTES:
         raise DatabaseValidationError('Git SQL snapshot exceeds the supported 64 MiB limit.')
     path = Path(folder) / (name+'.sql')
@@ -108,13 +115,20 @@ class DatabaseSync:
         self.receipt_path = git.state_dir / ('database_'+self.binding+'.json')
 
     def blob(self, commit):
+        """Resolve the tracked SQL snapshot's blob at a commit, returning no value
+        when absent.
+        """
         result = self.git.run('rev-parse', '--verify', commit+':'+self.git.sql_rel, check=False)
         return result.stdout.strip() if result.returncode == 0 else None
 
     def sql(self, blob):
+        """Read the SQL text stored in an already resolved Git blob."""
         return self.git.run('show', blob).stdout
 
     def remember(self, commit, blob):
+        """Atomically persist the accepted Git commit/blob receipt bound to this
+        installation.
+        """
         self.git.state_dir.mkdir(exist_ok=True)
         with tempfile.NamedTemporaryFile(dir=self.git.state_dir, mode='w', encoding='utf-8', delete=False) as stream:
             name = stream.name
@@ -124,6 +138,7 @@ class DatabaseSync:
         finally: Path(name).unlink(missing_ok=True)
 
     def receipt(self):
+        """Read and validate the installation-bound database reconciliation receipt."""
         if not self.receipt_path.exists():
             return None
         value = json.loads(self.receipt_path.read_text(encoding='utf-8'))
@@ -208,6 +223,9 @@ class DatabaseSync:
                 yield dict(common, **changes, code='database_conflict', message='Local and remote databases both have changes not present in the other copy, including possible deletions. Both copies were kept; upload is blocked.')
 
     def incoming_backup(self, review):
+        """Preserve the incoming candidate as a verified backup without replacing
+        different saved data.
+        """
         directory = self.git.database.parent / 'database_backups'
         directory.mkdir(exist_ok=True)
         destination = directory / ('incoming_git_'+review['blob']+'.db')
@@ -245,4 +263,7 @@ class DatabaseSync:
 
     @staticmethod
     def public(review):
+        """Remove temporary paths and private comparison witnesses from a
+        reconciliation review.
+        """
         return {key: value for key, value in review.items() if key not in ('candidate', 'live_hash', 'blob')}

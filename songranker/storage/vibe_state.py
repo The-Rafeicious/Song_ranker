@@ -37,6 +37,9 @@ TABLES = BASE_TABLES | {'song_vibe_progress', 'vibe_rounds'}
 
 
 def definition_rows(*, legacy=False):
+    """Build canonical ordered map rows for the current or supported legacy Vibe
+    definitions.
+    """
     maps=LEGACY_MAPS if legacy else MAPS
     return [list(values) + [1 if legacy else 2, VIBE_MAP_COLOUR, order]
             for order, values in enumerate(maps, 1)]
@@ -66,6 +69,9 @@ def validate_schema(conn):
 
 
 def _upgrade_to_17(original):
+    """Introduce legacy Vibe definitions and unmapped positions into a captured
+    pre-17 state.
+    """
     if original['user_version'] >= 17:
         return original
     if BASE_TABLES & original['tables'].keys():
@@ -81,6 +87,9 @@ def _upgrade_to_17(original):
 
 
 def _upgrade_to_18(original):
+    """Add Vibe sample counts, progress and round storage while preserving earlier
+    placements.
+    """
     state = _upgrade_to_17(original)
     if state['user_version'] >= 18:
         return state

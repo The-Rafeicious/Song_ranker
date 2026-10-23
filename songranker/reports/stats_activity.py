@@ -9,6 +9,9 @@ COLORS = {'standard':'Non-blind', 'blind':'Blind', 'recognition':'Trivia',
 
 
 def timestamp(value):
+    """Parse supported saved times as finite UTC datetimes, preserving unavailable
+    dates as null.
+    """
     try:
         if isinstance(value, (int, float)):
             value = float(value)
@@ -31,6 +34,9 @@ def latest_vibe_saves(conn):
 
 
 def build_activity(conn, mode, now=None):
+    """Build fourteen days of mode activity, previous/current-week totals and graded
+    success rates.
+    """
     current = timestamp(now) if now is not None else datetime.now(timezone.utc)
     start = current.replace(hour=0,minute=0,second=0,microsecond=0)-timedelta(days=13)
     days = {str((start+timedelta(days=n)).date()):dict(date=str((start+timedelta(days=n)).date()),
@@ -38,8 +44,14 @@ def build_activity(conn, mode, now=None):
     known = {r[0] for r in conn.execute("SELECT name FROM sqlite_master WHERE type IN ('table','view')")}
     undated = 0
     def rows(table):
+        """Read a known activity source table while tolerating its absence in
+        historical fixtures.
+        """
         return [dict(r) for r in conn.execute('SELECT * FROM '+table)] if table in known else []
     def add(when, kind, right=0, denominator=0):
+        """Add an in-window dated result and its success denominator, counting
+        undated records separately.
+        """
         nonlocal undated
         date = timestamp(when)
         if date is None: undated += 1; return
@@ -111,6 +123,9 @@ def build_activity(conn, mode, now=None):
 
 
 def attach_reports(conn, data, mode, now=None):
+    """Attach shared activity charts and effective tournament Elo history to a mode
+    report.
+    """
     data['pulse_data']=build_activity(conn, mode, now=now)
     if mode=='tournament':
         from songranker.catalog import source_sql

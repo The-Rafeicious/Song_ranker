@@ -126,6 +126,9 @@ def guess_round():
 
 
 def guess_game_records(conn, row):
+    """Build Guesser records and resolve persisted challenge streak/score for the
+    round's rules version.
+    """
     result = special_records(conn)[1]["guesser"]
     if row["rules_version"] == challenges.RULES_VERSION:
         state = (
@@ -143,6 +146,9 @@ def guess_game_records(conn, row):
 
 
 def guess_result(conn, row):
+    """Grade the saved slot against frozen ratings and return points, ratings and
+    game records.
+    """
     correct = int((row["chosen_slot"] == 1) == (row["elo1"] > row["elo2"]))
     return dict(
         correct=bool(correct),
@@ -270,6 +276,7 @@ def saved_date(value):
 
 
 def totals(rows):
+    """Summarise graded, unknown, correct and wrong Guesser rounds with accuracy."""
     rows = list(rows)
     graded = [r for r in rows if r["correct"] is not None]
     right = sum(r["correct"] for r in graded)
@@ -314,6 +321,9 @@ def build_guesser_stats(conn, now=None, history_page=1):
         songs[song["id"]] = song
 
     def identity(sid):
+        """Resolve a report song identity with a safe placeholder when the track has
+        been removed.
+        """
         return songs.get(sid) or dict(
             id=None,
             title="Removed track" if sid is None else "Track unavailable",
@@ -461,6 +471,9 @@ def build_guesser_stats(conn, now=None, history_page=1):
     )
 
     def category(kind, title, identities, links):
+        """Aggregate Guesser attempts and accuracy into artist, album or tag report
+        leaders.
+        """
         groups = defaultdict(lambda: dict(attempts=0, correct=0, tested=0))
         for song in tested:
             for identity_id in links(song):

@@ -24,6 +24,9 @@ CATALOGUE = {
 
 
 def configured_paths(root):
+    """Resolve distinct current V3 and legacy V2 database paths from environment
+    overrides and defaults.
+    """
     root=Path(root)
     configured=os.environ.get('SONG_RANKER_DB')
     legacy=Path(os.environ.get('SONG_RANKER_LEGACY_DB',root/'song_ranker_v2.db'))

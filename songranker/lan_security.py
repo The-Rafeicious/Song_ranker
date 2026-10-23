@@ -16,6 +16,9 @@ WRITE_GET_ENDPOINTS = frozenset(('api_generate_bracket', 'api_trivia_round'))
 
 
 def address(value):
+    """Parse an IP address and normalise IPv4-mapped IPv6 values to their IPv4
+    identity.
+    """
     try:
         ip = ipaddress.ip_address(str(value))
         return ip.ipv4_mapped if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped else ip
@@ -24,6 +27,9 @@ def address(value):
 
 
 def allowed_addresses(value):
+    """Parse the configured exact-device IP allowlist and reject invalid or
+    nonspecific addresses.
+    """
     result = set()
     for item in value.split(','):
         if not item.strip():
@@ -68,6 +74,9 @@ def load_secret(root, environment=None):
 
 
 def host_name(value):
+    """Parse a Host value without credentials, paths or malformed ports and normalise
+    its hostname.
+    """
     try:
         parsed = urlsplit('http://' + value)
         if parsed.username or parsed.password or parsed.path or parsed.query or parsed.fragment:
@@ -79,6 +88,7 @@ def host_name(value):
 
 
 def valid_host(value, extra_names):
+    """Accept configured names, localhost and concrete private/loopback IP hosts."""
     name = host_name(value)
     if not name:
         return False
@@ -89,6 +99,7 @@ def valid_host(value, extra_names):
 
 
 def origin(value):
+    """Normalise a valid HTTP(S) origin to its scheme, hostname and effective port."""
     try:
         parsed = urlsplit(value)
         if parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.username or parsed.password:
@@ -99,6 +110,9 @@ def origin(value):
 
 
 def configure_security(app, root, environment=None):
+    """Install LAN host/origin/write guards, session settings and response
+    protections on the app.
+    """
     environment = os.environ if environment is None else environment
     allowed = allowed_addresses(environment.get('SONG_RANKER_ALLOWED_IPS', DEFAULT_ALLOWED_IPS))
     names = frozenset(name.strip().lower().rstrip('.') for name in environment.get('SONG_RANKER_HOSTNAMES', '').split(',') if name.strip())
@@ -110,6 +124,9 @@ def configure_security(app, root, environment=None):
     app.extensions['song_ranker_security'] = dict(allowed=allowed, hostnames=names)
 
     def deny(message, status=403):
+        """Return a JSON denial for API callers or the matching HTTP error for page
+        requests.
+        """
         if request.path.startswith('/api/'):
             return jsonify(message=message), status
         abort(status, description=message)
@@ -149,7 +166,9 @@ def configure_security(app, root, environment=None):
 
     @app.context_processor
     def login_csrf_context():
+        """Expose the session-backed login CSRF token helper to templates."""
         def csrf_token():
+            """Create or reuse the current browser's login CSRF token."""
             if '_login_csrf' not in session:
                 session['_login_csrf'] = secrets.token_urlsafe(32)
             return session['_login_csrf']
@@ -157,6 +176,9 @@ def configure_security(app, root, environment=None):
 
     @app.after_request
     def lan_response_headers(response):
+        """Add browser isolation headers and prevent caching of Dev pages and
+        responses.
+        """
         response.headers.setdefault('X-Content-Type-Options', 'nosniff')
         response.headers.setdefault('X-Frame-Options', 'DENY')
         response.headers.setdefault('Referrer-Policy', 'same-origin')

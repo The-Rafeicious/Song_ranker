@@ -41,16 +41,23 @@ _models=OrderedDict()
 _lock=threading.RLock()
 
 def number(value,default=0):
+    """Coerce a finite numeric value, returning the requested default for invalid
+    input.
+    """
     try:
         value=float(value)
         return value if math.isfinite(value) else default
     except (TypeError,ValueError):return default
 
 def feature(value,n,applicable=True):
+    """Represent one Overall metric with its measured value, evidence count and
+    eligibility flag.
+    """
     n=max(0,number(n))
     return dict(value=number(value,None) if value is not None and n else None,n=n,applicable=applicable)
 
 def ratio(right,total,evidence=None,applicable=True):
+    """Build a bounded success-rate feature with explicit evidence and eligibility."""
     total=max(0,number(total))
     return feature(max(0,min(1,number(right)/total)) if total else None,
                    total if evidence is None else evidence,applicable)
@@ -71,6 +78,9 @@ def shelf_eligible_ids(data):
 
 
 def features(data):
+    """Derive per-song Overall metric values and mode appearances from saved
+    catalogue/result facts.
+    """
     albums={a['id']:a for a in data.get('albums',[])}
     shelf_ids=shelf_eligible_ids(data)
     trivia={s['song_id']:s for s in data.get('overall_sources',{}).get('trivia_stats',[])}
@@ -129,6 +139,7 @@ def features(data):
     return result
 
 def quantile(values,fraction):
+    """Interpolate a population quantile, returning zero for an empty distribution."""
     if not values:return 0.0
     rows=sorted(values);position=(len(rows)-1)*fraction;lower=int(position)
     upper=min(len(rows)-1,lower+1)
@@ -145,6 +156,9 @@ def exposure_reference(values):
 
 
 def relative_evidence(n,reference):
+    """Scale a song's appearances against the population average and high-exposure
+    reference.
+    """
     average=reference['average_appearances'];high=reference['high_appearances']
     if n<=0 or average<=0:return 0.0
     if n<=average:return .5*n/average
@@ -152,6 +166,9 @@ def relative_evidence(n,reference):
 
 
 def population(facts):
+    """Build metric calibration statistics from eligible songs with measured
+    evidence.
+    """
     result={}
     for key,mode,label,weight,kind in METRICS:
         applicable=[f[key] for f in facts.values() if f[key]['applicable']]
@@ -167,6 +184,9 @@ def population(facts):
 
 
 def topology(data):
+    """Hash catalogue eligibility and membership so Overall calibration detects
+    structural changes.
+    """
     rows=[(s['id'],s.get('album_id'),s.get('track_number'),bool(str(s.get('audio_url') or '').strip()),sorted(set(s.get('artist_ids',[]))),sorted(set(s.get('tag_ids',[])))) for s in data.get('songs',[])]
     structure=[sorted(rows),[(kind,sorted((r['id'],proper_album(r) if kind=='albums' else True) for r in data.get(kind,[]))) for kind in ('artists','albums','tags')]]
     return hashlib.sha256(json.dumps(structure).encode()).hexdigest()
@@ -186,6 +206,9 @@ def capped_shares(strengths,cap):
 
 
 def calibrate(facts,data,force=False):
+    """Build and cache current Overall metric/mode calibration from result evidence
+    and catalogue eligibility.
+    """
     observed=population(facts);shape=topology(data);key=str(services.DB_NAME);modes=[]
     for mode,label,weight in MODE_SPECS:
         keys=[m['key'] for m in observed.values() if m['mode']==mode]
@@ -236,6 +259,9 @@ def calibrate(facts,data,force=False):
 
 
 def metric_score(value,calibration):
+    """Normalise an observed metric against its population and shrink it toward
+    neutral by evidence.
+    """
     if value['value'] is None or not value['n']:return .5,0
     raw=value['value'];confidence=relative_evidence(value['n'],calibration)
     if calibration['kind']=='elo':
@@ -248,6 +274,9 @@ def metric_score(value,calibration):
     return .5+(normalized-.5)*confidence,confidence
 
 def song_score(fact,model,details=False):
+    """Combine eligible mode contributions into a song's Overall score and evidence
+    diagnostics.
+    """
     weighted=0;evidence=0;contributions=[];mode_count=0
     # Structurally unavailable modes are omitted; merely unplayed modes stay neutral.
     eligible_modes=[mode for mode in model['modes'] if mode['active'] and any(
@@ -276,6 +305,9 @@ def song_score(fact,model,details=False):
 
 
 def entity_score(ids,scores,details=False):
+    """Aggregate member-song scores into an evidence-adjusted collection score with a
+    neutral prior.
+    """
     tracks=[scores[id] for id in sorted(set(ids)) if id in scores]
     tested=sum(s['composite_score'] is not None for s in tracks)
     evidence=sum(t['evidence']/100 for t in tracks);n=len(tracks)
@@ -327,6 +359,9 @@ def apply_display_scores(rows):
 
 
 def evaluate(data,force=False,details=False):
+    """Compute and rank Overall songs, artists, albums and tags with calibration and
+    summary diagnostics.
+    """
     facts=features(data)
     model=calibrate(facts,data,force)
     if has_request_context():

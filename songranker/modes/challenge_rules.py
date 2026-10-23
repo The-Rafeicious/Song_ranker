@@ -11,6 +11,9 @@ TRIVIA_LABELS = {
 
 
 def trivia_rule(streak, album_available):
+    """Choose the Trivia pass requirement from the current streak and album
+    availability.
+    """
     if streak < 10:
         return 'any'
     if not album_available:
@@ -19,6 +22,7 @@ def trivia_rule(streak, album_available):
 
 
 def trivia_passed(row):
+    """Evaluate a saved Trivia result against its frozen streak-pass rule."""
     title, artist, album = (row[f+'_correct'] == 1 for f in ('title','artist','album'))
     return {'any': title or artist or bool(row['album_available']) and album,
             'title_or_album': title or album, 'title_and_album': title and album,
@@ -26,4 +30,5 @@ def trivia_passed(row):
 
 
 def guess_target(streak):
+    """Lower the target rating-gap quantile as a Guesser challenge streak grows."""
     return .60 / (1 + max(0, streak) / 10)

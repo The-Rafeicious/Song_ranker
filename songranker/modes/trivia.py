@@ -22,6 +22,7 @@ WEIGHTS = {"title": 0.5, "artist": 0.2, "album": 0.3}
 
 
 def elapsed(row, now=None):
+    """Compute bounded active answer time while excluding paused seconds."""
     if row["started_at"] is None:
         return 0
     end = row["paused_at"] or (time.time() if now is None else now)
@@ -29,6 +30,9 @@ def elapsed(row, now=None):
 
 
 def round_points(row):
+    """Calculate weighted recognition points with time bonuses and album-availability
+    normalisation.
+    """
     denominator = 1 if row["album_available"] else 0.7
     return round(
         sum(
@@ -43,6 +47,7 @@ def round_points(row):
 
 
 def score_state(conn):
+    """Read current legacy-session Trivia score/streak and stored all-time records."""
     keys = dict(
         conn.execute(
             "SELECT key,value FROM global_stats WHERE key IN ('trivia_high_score','trivia_high_streak')"
@@ -59,6 +64,9 @@ def score_state(conn):
 
 
 def current(conn, token):
+    """Resolve a Trivia token only when its persisted challenge or legacy session
+    belongs to this browser.
+    """
     row = conn.execute("SELECT * FROM trivia_rounds WHERE token=?", (token,)).fetchone()
     if row and row["run_id"] is not None:
         return row if challenges.owns_round(conn, row, "trivia") else None
@@ -66,6 +74,9 @@ def current(conn, token):
 
 
 def round_song(conn, row):
+    """Read the frozen Trivia answer snapshot, falling back to current song metadata
+    for older rounds.
+    """
     return (
         json.loads(row["answer_snapshot"])
         if row["answer_snapshot"]
@@ -123,6 +134,9 @@ def trivia_match(guess, actual, field):
 
     def base(value):
         # Innermost groups first so nested credits/edition notes are safe.
+        """Strip nested bracketed credits and edition notes before comparing a Trivia
+        answer.
+        """
         value = str(value or "")
         for _ in range(8):
             stripped = re.sub(r"\([^()]*\)|\[[^\[\]]*\]|\{[^{}]*\}", " ", value)
@@ -140,6 +154,9 @@ def trivia_match(guess, actual, field):
 
 
 def grade(conn, row, field, guess, song, seconds):
+    """Save a single unanswered available Trivia field's correctness and bounded
+    response time.
+    """
     if (
         row[field + "_correct"] is not None
         or field == "album"
@@ -537,6 +554,9 @@ def percentage(correct, attempts):
 
 
 def nonnegative(value):
+    """Coerce saved recognition counters to nonnegative integers with zero for
+    invalid values.
+    """
     try:
         return max(0, int(value or 0))
     except (TypeError, ValueError, OverflowError):
@@ -590,6 +610,9 @@ def build_recognition_stats(conn, now=None):
     tested = []
 
     def add_group(target, identity, attempts, correct, sid):
+        """Accumulate recognition attempts, correct answers and distinct tested songs
+        for a collection.
+        """
         if not attempts:
             return
         group = target.setdefault(identity, dict(attempts=0, correct=0, songs=set()))
@@ -724,6 +747,9 @@ def build_recognition_stats(conn, now=None):
         )
 
     def category(kind, title, note, source, identities):
+        """Build stable recognition accuracy/struggle leaders for one collection
+        category.
+        """
         rows = []
         for identity, totals in source.items():
             row = identities[identity]

@@ -115,6 +115,9 @@ def normalized(value):
 
 
 def identifiers(value, label, allow_empty=False, maximum=10000):
+    """Validate, deduplicate and sort bounded positive song/tag ID lists for a tag
+    proposal.
+    """
     if (
         not isinstance(value, list)
         or len(value) > maximum
@@ -128,6 +131,9 @@ def identifiers(value, label, allow_empty=False, maximum=10000):
 
 
 def proposal(data):
+    """Validate a tag add/remove/replace request and canonicalise existing IDs and
+    new tag names.
+    """
     if not isinstance(data, dict):
         raise ValueError("Send a tag change as an object.")
     action = data.get("action")
@@ -167,6 +173,7 @@ def proposal(data):
 
 
 def definitions(conn):
+    """Read canonical tag IDs, names and descriptions in stable ID order."""
     return {
         r["id"]: dict(r)
         for r in conn.execute("SELECT id,name,description FROM genres ORDER BY id")
@@ -198,11 +205,13 @@ def canonical_proposal(conn, data):
 
 
 def chunks(values, size=400):
+    """Yield bounded ID batches so tag queries stay within SQLite parameter limits."""
     for i in range(0, len(values), size):
         yield values[i : i + size]
 
 
 def digest(value):
+    """Hash deterministic tag-review state so apply can reject changes since review."""
     return hashlib.sha256(
         json.dumps(
             value,
@@ -223,6 +232,9 @@ def plan(conn, change):
     aliases = {normalized(name): name for name in change["new_tags"]}
 
     def public(tag):
+        """Assign a stable review key to an existing or proposed tag, including
+        canonical aliases.
+        """
         key = (
             "new:" + normalized(tag["name"])
             if normalized(tag["name"]) in aliases
@@ -290,6 +302,9 @@ def plan(conn, change):
     after = []
 
     def image(row, values):
+        """Build a song's review image with its linked artists and sorted public tag
+        definitions.
+        """
         return dict(
             song=row,
             artists=artists[row["id"]],

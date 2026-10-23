@@ -4,12 +4,16 @@ from songranker.storage.vibe_state import MAPS, CENTER_LABELS, LABEL_OVERRIDES
 
 
 def empty_profile():
+    """Create unmapped, zero-sample entries for every fixed Vibe map."""
     return {values[0]: dict(x=None, y=None, status='unmapped', updated_at=None,
                            sample_count=0, not_applicable_count=0)
             for values in MAPS}
 
 
 def map_definitions(conn):
+    """Read ordered map definitions with the shared centre and display-label
+    overrides.
+    """
     return [dict(dict(row),**CENTER_LABELS.get(row['id'],{}),**LABEL_OVERRIDES.get(row['id'],{})) for row in conn.execute('SELECT * FROM vibe_maps ORDER BY display_order')]
 
 
@@ -47,6 +51,7 @@ def pass_counts(conn, song_ids):
 
 
 def with_vibe_maps(conn, rows):
+    """Attach saved Vibe profiles and completed-pass counts to hydrated song rows."""
     rows = [dict(row) for row in rows]
     profiles = song_profiles(conn, (row['id'] for row in rows))
     passes = pass_counts(conn, (row['id'] for row in rows))

@@ -8,6 +8,7 @@ from math import ceil
 
 
 def proper_album(album):
+    """Distinguish named full releases from unknown-album and Single placeholders."""
     title = str(album.get("title") or "").strip().casefold()
     return bool(title) and title != "unknown album" and not title.endswith(" - single")
 
@@ -162,10 +163,16 @@ def voting_records(conn):
 
 
 def summarize_votes(records):
+    """Summarise combined preference records by standard/blind mode and
+    ordinary/tournament origin.
+    """
     records = list(records)
     keys = ("standard_wins", "standard_losses", "blind_wins", "blind_losses")
 
     def project(rows):
+        """Aggregate wins, losses, match counts and win rates for one subset of
+        preference records.
+        """
         rows = list(rows)
         totals = {key: sum(record.get(key, 0) for record in rows) for key in keys}
         totals.update(
@@ -302,6 +309,9 @@ def collection(include_overall_sources=False):
 
 
 def ranked(data, kind):
+    """Build song or grouped collection ranking rows from the shared hydrated
+    catalogue.
+    """
     artists = {r["id"]: r for r in data["artists"]}
     albums = {r["id"]: r for r in data["albums"]}
     tags = {r["id"]: r for r in data["tags"]}
@@ -578,12 +588,14 @@ def source_sql(conn):
 
 
 def filters(mode="all", origin="all"):
+    """Normalise history mode and origin filters to supported values or all."""
     mode = mode if mode in ("standard", "blind") else "all"
     origin = origin if origin in ("ordinary", "tournament") else "all"
     return mode, origin
 
 
 def summary(conn):
+    """Count effective preference matches by mode and origin for the history summary."""
     row = conn.execute(f"""SELECT COUNT(*) total,
         COALESCE(SUM(h.origin='tournament'),0) tournament,
         COALESCE(SUM(h.mode='blind'),0) blind,
@@ -601,6 +613,9 @@ def summary(conn):
 
 
 def page(conn, mode="all", origin="all", number=1, size=50, reader=None):
+    """Return a bounded, filtered page of effective preference history with
+    pagination metadata.
+    """
     from songranker.services import fetch_match_history
 
     reader = reader or fetch_match_history

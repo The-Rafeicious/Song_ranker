@@ -46,6 +46,9 @@ def release_key(value):
 
 
 def missing_source(source):
+    """Identify saved Apple sources with missing required identity or metadata
+    fields.
+    """
     if not source:
         return True
     keys = (
@@ -90,6 +93,9 @@ def merge_source(previous, fresh):
 
 
 def propose_song(plan, song, remote):
+    """Add fill-only metadata/source proposals while rejecting changed or duplicate
+    Apple track identities.
+    """
     if "release_date" not in song:
         return  # Legacy helper databases have only the old fields.
     fresh = observation(remote, plan["country"])
@@ -153,11 +159,13 @@ def artwork_key(url):
 
 
 def same_art(local, remote):
+    """Compare normalised artwork identities independently of image size variants."""
     key = artwork_key(local)
     return bool(key and key == artwork_key(remote))
 
 
 def release_date(value):
+    """Validate an Apple release date and return its plausible ISO calendar day."""
     if not isinstance(value, str) or not re.fullmatch(
         r"\d{4}-\d{2}-\d{2}(?:T.*)?", value
     ):
@@ -169,6 +177,9 @@ def release_date(value):
 
 
 def blank(value):
+    """Treat null and whitespace-only strings as missing metadata without treating
+    zero as empty.
+    """
     return value is None or (isinstance(value, str) and not value.strip())
 
 
@@ -209,6 +220,9 @@ def snapshot(conn):
 
 
 def connection(filename, readonly=False):
+    """Open an existing compatible relational database with row objects and foreign
+    keys enabled.
+    """
     path = Path(filename).resolve()
     if not path.is_file():
         raise ValueError("Database does not exist; no new database was created.")
@@ -231,6 +245,9 @@ def connection(filename, readonly=False):
 
 
 def paced_lookup(url, cancelled=lambda: False):
+    """Wait through local Apple throttling while honouring cancellation and stopping
+    on upstream failures.
+    """
     while True:
         if cancelled():
             raise ScanStopped("Scan cancelled.")
@@ -255,6 +272,9 @@ def plan_metadata(
     progress=lambda *a: None,
     cancelled=lambda: False,
 ):
+    """Build a cancellable dry-run plan for missing catalogue metadata against a
+    consistent snapshot.
+    """
     if not re.fullmatch("[a-zA-Z]{2}", country):
         raise ValueError("Country must be a two-letter store code.")
     conn = connection(filename, True)
@@ -421,6 +441,9 @@ def plan_metadata(
                 ]
 
                 def matches(song):
+                    """Find remote tracks matching the local song's title, artist,
+                    release, artwork and saved identity.
+                    """
                     return [
                         r
                         for r in remote_tracks
@@ -623,6 +646,9 @@ def apply_plan(filename, plan):
 
 
 def text_report(plan):
+    """Format metadata proposals, failures, backup and apply status as a downloadable
+    report.
+    """
     lines = [
         "SONG RANKER — METADATA FILL",
         "Applied" if plan["applied"] else "Dry run — no metadata written",
@@ -681,6 +707,9 @@ _job = None
 
 
 def public(job):
+    """Expose scan progress and reviewable changes without publishing internal job
+    state.
+    """
     plan = job.get("plan")
     return {
         "token": job["token"],
@@ -723,7 +752,13 @@ def public(job):
 
 
 def run_scan(job, country):
+    """Run a metadata plan in the background and publish its ready or error state
+    under the job lock.
+    """
     def progress(done, total, album):
+        """Update completed-count and album progress safely for the background
+        metadata job.
+        """
         with _lock:
             job.update(done=done, total=total, album=album)
 

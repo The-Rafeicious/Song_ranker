@@ -43,6 +43,9 @@ def dev_dashboard():
 
 
 def apple_lookup_url(link):
+    """Derive a bounded song lookup URL from a supported Apple Music track or album
+    link.
+    """
     from urllib.parse import urlsplit, parse_qs, urlencode
     if not isinstance(link,str):raise ValueError('Invalid Apple Music link.')
     parsed = urlsplit(link)
@@ -140,6 +143,9 @@ def verified_song_source(data):
 
 
 def song_metadata(data):
+    """Validate manual song fields and merge verified Apple metadata while retaining
+    explicit edit intent.
+    """
     if not isinstance(data,dict):raise ValueError('Send song fields as an object.')
     data={key:value for key,value in data.items() if not key.startswith('_')}
     supplied_date='release_date' in data;verified=verified_song_source(data)

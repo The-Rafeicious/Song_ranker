@@ -54,10 +54,16 @@ def unpack(token, kind):
 
 
 def git():
+    """Bind Git operations to the currently configured application root and live
+    database.
+    """
     return GitSync(services.ROOT, services.DB_NAME)
 
 
 def git_payload(state=None):
+    """Expose Git state with a signed review token instead of its raw target
+    fingerprint.
+    """
     state = dict(state or git().status())
     fingerprint = state.pop("fingerprint", None)
     if fingerprint:
@@ -66,6 +72,9 @@ def git_payload(state=None):
 
 
 def git_reply(result):
+    """Wrap a Git operation result with current reviewable state and the appropriate
+    HTTP status.
+    """
     result = dict(result)
     result["git"] = git_payload(result.pop("git", None))
     result["status"] = "success" if result["ok"] else "error"
@@ -108,6 +117,9 @@ def git_check():
 
 
 def upload_database():
+    """Validate the browser's Git review token before requesting a database-only
+    upload.
+    """
     data = request.get_json(silent=True)
     try:
         if not isinstance(data, dict):
@@ -155,10 +167,14 @@ def keep_local_database():
 
 
 def backup_folder():
+    """Resolve the backup directory beside the configured live database."""
     return Path(services.DB_NAME).resolve().parent / "database_backups"
 
 
 def backup_path(name):
+    """Resolve a regular local .db backup while rejecting traversal, symlinks and
+    missing files.
+    """
     if (
         not isinstance(name, str)
         or name != os.path.basename(name)
@@ -174,6 +190,7 @@ def backup_path(name):
 
 
 def purpose(name):
+    """Translate known backup filename prefixes into short recovery-purpose labels."""
     if name in ("rolling_1.db", "rolling_2.db", "rolling_3.db"):
         return "Rotating requested / shutdown backup"
     for prefix, label in [
@@ -200,6 +217,9 @@ def purpose(name):
 
 
 def backups():
+    """List regular local database backups with names, purposes, sizes and
+    modification times.
+    """
     folder = backup_folder()
     rows = []
     if folder.is_dir():
@@ -224,6 +244,9 @@ def backups():
 
 
 def area(name, kind):
+    """Assign an inspected SQLite table or view to its feature group for the database
+    inventory.
+    """
     if kind == "view":
         return "Derived views"
     if name.startswith("preference_"):
@@ -346,6 +369,9 @@ def system_status():
 
 
 def counts(db):
+    """Read available catalogue and result counts from an inspected database without
+    assuming every table exists.
+    """
     tables = {
         r[0]
         for r in db.execute(
@@ -406,6 +432,9 @@ def backup_review():
 
 
 def restore_database(*, require_review=False):
+    """Validate a stored backup and review witnesses before an exclusive, backed-up
+    database restore.
+    """
     if request.environ.get("wsgi.multiprocess"):
         return (
             jsonify(
@@ -644,6 +673,9 @@ def integer(name, default, maximum):
 
 
 def object_info(conn, name):
+    """Resolve an existing table/view, its extended columns and stable primary-key
+    row ordering.
+    """
     obj = conn.execute(
         "SELECT name,type,sql FROM sqlite_master WHERE name=? AND type IN ('table','view')",
         (name,),
@@ -658,6 +690,9 @@ def object_info(conn, name):
 
 
 def row_hash(row):
+    """Hash typed row values, including lossless BLOBs, to detect stale database
+    inspection receipts.
+    """
     return hashlib.sha256(
         json.dumps(
             [
@@ -674,6 +709,9 @@ def row_hash(row):
 
 
 def cell(value, start=0, limit=256):
+    """Project a bounded typed cell slice with length and truncation metadata for
+    read-only inspection.
+    """
     if value is None:
         return dict(type="null", value=None, total=0, truncated=False)
     if isinstance(value, bytes):
@@ -701,6 +739,9 @@ def cell(value, start=0, limit=256):
 
 
 def deadline(conn):
+    """Start a read-only inspection snapshot with bounded lock waits and a
+    three-second query deadline.
+    """
     end = time.monotonic() + 3
     conn.execute("PRAGMA busy_timeout=1000")
     conn.execute("PRAGMA query_only=ON")

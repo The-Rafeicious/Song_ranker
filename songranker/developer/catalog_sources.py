@@ -25,6 +25,9 @@ def normalized(value):
 
 
 def identifier(value):
+    """Canonicalise a positive bounded Apple identifier, returning no value for
+    invalid input.
+    """
     text = str(value or "")
     return (
         str(int(text)) if re.fullmatch(r"[0-9]{1,20}", text) and int(text) > 0 else None
@@ -32,12 +35,16 @@ def identifier(value):
 
 
 def store_code(value):
+    """Validate and lowercase a two-letter Apple storefront code."""
     if not isinstance(value, str) or not re.fullmatch("[a-zA-Z]{2}", value):
         raise ValueError("Choose a two-letter Apple store, such as gb or us.")
     return value.lower()
 
 
 def store_link(value):
+    """Normalise supported Apple store links to HTTPS while rejecting unsafe URL
+    components.
+    """
     if not isinstance(value, str):
         return ""
     try:
@@ -62,10 +69,14 @@ def store_link(value):
 
 
 def text(value):
+    """Keep bounded Apple string metadata and treat nonstring values as missing."""
     return value[:2000] if isinstance(value, str) else ""
 
 
 def release_day(value):
+    """Extract a valid ISO calendar day from Apple metadata, returning blank for
+    invalid input.
+    """
     if not isinstance(value, str):
         return ""
     try:
@@ -102,6 +113,9 @@ def apple_metadata(track):
 
 
 def observation(track, country):
+    """Validate an Apple track response and capture its source identity and
+    normalised metadata.
+    """
     track_id = identifier(track.get("trackId"))
     if not track_id:
         raise ValueError(
@@ -138,11 +152,15 @@ def observation(track, country):
 
 
 def source_label(source):
+    """Choose the display content label from saved Apple explicitness metadata."""
     return CONTENT_LABELS.get(source.get("explicitness"), "Not explicit")
 
 
 def public_source(source):
     # Fill-only observations omit blank optional values; reads must accept them.
+    """Project saved source metadata into display fields with safe missing-value
+    defaults.
+    """
     return dict(
         track_id=source.get("track_id"),
         collection_id=source.get("collection_id"),
@@ -164,6 +182,7 @@ def public_source(source):
 
 
 def owner():
+    """Create or reuse the browser-session identity that owns source review offers."""
     from flask import session
 
     if not session.get("catalog_owner"):
@@ -172,6 +191,7 @@ def owner():
 
 
 def serializer():
+    """Create the timed serializer with the Apple source-offer signing scope."""
     from itsdangerous import URLSafeTimedSerializer
     from songranker.services import app
 
@@ -179,6 +199,9 @@ def serializer():
 
 
 def offer(track, country):
+    """Return reviewable Apple metadata with a timed source token bound to the
+    current browser.
+    """
     source = observation(track, country)
     token = serializer().dumps(
         dict(owner=owner(), source=source, observed_at=time.time())
@@ -203,6 +226,7 @@ def unpack(token):
 
 
 def current_sources(conn):
+    """Read each song's latest source record and decode its lossless source snapshot."""
     return {
         r["song_id"]: dict(r, source=unpack_source(r["snapshot"]))
         for r in conn.execute(
@@ -213,6 +237,7 @@ def current_sources(conn):
 
 
 def current_source(conn, song_id):
+    """Read and decode the most recent saved source for one song."""
     row = conn.execute(
         "SELECT * FROM song_sources WHERE song_id=? ORDER BY id DESC LIMIT 1",
         (song_id,),
@@ -240,6 +265,9 @@ def artist_names(conn, value, known=None):
 
     @lru_cache(maxsize=None)
     def split(start):
+        """Find at most two valid decompositions into known artist names to detect
+        ambiguous splitting.
+        """
         answers = []
         for name in candidates:
             if not full.startswith(name, start):
@@ -263,6 +291,9 @@ def artist_names(conn, value, known=None):
 
 
 def source_conflict(conn, song_id, source, replacing=()):
+    """Find another song already linked to the offered Apple track, respecting
+    planned replacements.
+    """
     excluded = tuple(replacing)
     exclusion = (
         (" AND s.song_id NOT IN (" + ",".join("?" for _ in excluded) + ")")
@@ -278,6 +309,9 @@ def source_conflict(conn, song_id, source, replacing=()):
 
 
 def save_source(conn, song_id, verified, *, replacing=()):
+    """Append a changed verified source observation after enforcing unique current
+    track ownership.
+    """
     source = verified["source"]
     conflict = source_conflict(conn, song_id, source, replacing)
     if conflict:
@@ -372,6 +406,9 @@ def catalogue_matches(conn, results):
 
 
 def source_summaries(conn):
+    """Build per-song source-link status, content labels and preview agreement for
+    catalogue display.
+    """
     sources = current_sources(conn)
     result = {}
     for song in conn.execute("SELECT id,audio_url FROM songs"):
@@ -457,6 +494,9 @@ def single_title(conn, title, artist, song_id=None):
 
 
 def album_references(conn, album_id, exclude_song=None):
+    """Find stored references and custom rules that prevent safely deleting an empty
+    release.
+    """
     references = []
     for (table,) in conn.execute(
         "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%'"
@@ -591,6 +631,9 @@ class TrackNumberConflict(ValueError):
 
 
 def parse_track_number(value):
+    """Parse a blank or positive SQLite-sized track position, rejecting booleans and
+    invalid text.
+    """
     if value is None or (isinstance(value, str) and not value.strip()):
         return None
     if isinstance(value, bool) or not re.fullmatch(r"[1-9][0-9]*", str(value).strip()):

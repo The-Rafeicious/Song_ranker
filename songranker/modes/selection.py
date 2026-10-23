@@ -20,6 +20,9 @@ VIBE_PREVIOUS = 0.25
 
 
 def nonnegative(value):
+    """Coerce exposure/evidence input to a finite nonnegative float, defaulting
+    invalid values to zero.
+    """
     try:
         value = float(value or 0)
         return max(0.0, value) if math.isfinite(value) else 0.0
@@ -75,12 +78,16 @@ def exposure_probabilities(counts, added_at=None, now=None):
 
 
 def pool_probabilities(songs, counts, fallback):
+    """Compute exposure-aware draw probabilities using mode counts and catalogue age."""
     return exposure_probabilities(
         counts_for(songs, counts, fallback), [s.get("added_at", 0) for s in songs]
     )
 
 
 def weighted_index(weights, rng=random):
+    """Draw an index from a validated nonnegative weight distribution using the
+    supplied random source.
+    """
     if not weights or any(not math.isfinite(w) or w < 0 for w in weights):
         raise ValueError("A finite, nonnegative eligible distribution is required.")
     total = math.fsum(weights)
@@ -99,6 +106,7 @@ def weighted_index(weights, rng=random):
 
 
 def quantile(values, fraction):
+    """Linearly interpolate a quantile from the sorted eligible rating distribution."""
     ordered = sorted(values)
     position = (len(ordered) - 1) * fraction
     lower = int(position)
@@ -126,6 +134,9 @@ def rating_spread(ratings):
 
 
 def rated_pool(songs):
+    """Keep unique songs with finite numeric Elo ratings for preference and
+    tournament draws.
+    """
     result = []
     seen = set()
     for song in songs:
@@ -143,6 +154,9 @@ def rated_pool(songs):
 
 
 def counts_for(songs, counts, fallback):
+    """Resolve per-song mode exposure counts, using the requested row field only when
+    no count map exists.
+    """
     return [
         counts.get(s["id"], 0) if counts is not None else s.get(fallback, 0)
         for s in songs
@@ -167,6 +181,9 @@ def choose_match(songs, rng=random, *, counts=None, previous=()):
     scale = rating_spread(s["elo_score"] for s in songs) * stage["bandwidth"]
 
     def closeness(i):
+        """Weight a candidate by its rating distance from the first song relative to
+        the pool scale.
+        """
         gap = abs(songs[i]["elo_score"] - songs[first]["elo_score"])
         distance = gap / scale if scale else 0
         return 1 / (1 + distance * distance)
@@ -188,6 +205,9 @@ def choose_match(songs, rng=random, *, counts=None, previous=()):
 
 
 def choose_single(songs, rng=random, *, counts=None, previous=None):
+    """Draw one exposure-weighted song while avoiding the previous song when
+    alternatives exist.
+    """
     songs = [dict(s) for s in songs]
     if not songs:
         return None
@@ -239,6 +259,7 @@ def choose_vibe_song(songs, rng=random, *, counts=None, previous=None):
 
 
 def gap_positions(values, tolerance=0.0):
+    """Assign normalised midpoint ranks, treating values within tolerance as tied."""
     order = sorted(range(len(values)), key=values.__getitem__)
     result = [0.0] * len(values)
     position = 0
@@ -299,6 +320,9 @@ def choose_guess_pair(songs, rng=random, *, counts=None, previous=(), target=0.6
 
 
 def draw_entries(pool, size, rng=random, *, counts=None):
+    """Select unique exposure-weighted tournament entries with a bounded Vibe
+    affinity after the first draw.
+    """
     pool = rated_pool([dict(s) for s in pool])
     if type(size) is not int or size < 1 or len(pool) < size:
         return None
@@ -338,6 +362,9 @@ def tournament_tracks(pool, size, rng=random, *, counts=None):
 
 
 def shelves_feasible(groups, available, count):
+    """Check whether a remaining album choice can supply the required album count and
+    ten tracks.
+    """
     return (
         len(available) >= count
         and sum(sorted((len(groups[i]) for i in available), reverse=True)[:count]) >= 10
@@ -440,6 +467,9 @@ def draw_shelves(
 
 
 def mode_counts(conn, mode):
+    """Read mode exposures and add effective weighted tournament participation to
+    voting modes.
+    """
     counts = {
         r["song_id"]: r["appearances"]
         for r in conn.execute(
@@ -455,6 +485,9 @@ def mode_counts(conn, mode):
 
 
 def preference_pair(conn, mode, owner=None, rng=random):
+    """Draw a standard/blind pair from eligible songs, then hydrate only the two
+    selected records.
+    """
     from songranker.services import get_song_full
 
     if mode not in ("standard", "blind"):
@@ -519,6 +552,9 @@ def album_vibe_groups(conn, album_ids):
 
 
 def previous_preference(conn, mode, owner=None):
+    """Read the owning browser's last answered pair, falling back to the latest
+    effective mode result.
+    """
     from songranker.modes.preferences import owner_hash
 
     previous = None
@@ -540,6 +576,9 @@ def previous_preference(conn, mode, owner=None):
 
 
 def previous_guess(conn, token=None):
+    """Read a completed Guesser pair from the supplied round or latest result to
+    avoid an immediate repeat.
+    """
     row = conn.execute(
         """SELECT song1_id,song2_id FROM elo_guess_rounds
         WHERE token=? AND completed_at IS NOT NULL""",

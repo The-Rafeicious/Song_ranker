@@ -17,6 +17,7 @@ sys.path.insert(0, str(ROOT))
 
 
 def run_dev():
+    """Run served Dev DOM checks against a disposable local fixture server."""
     with tempfile.TemporaryDirectory(prefix=".dev_check_", dir=ROOT) as folder:
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
@@ -115,6 +116,7 @@ def serve_dev(database, port):
 
     # Only the Apple lookup transport is mocked; imports still use the real DB route.
     def lookup(url):
+        """Return deterministic Apple track offers for served import/review checks."""
         return {
             "results": [
                 {
@@ -218,6 +220,7 @@ def run_vibe():
 
         @application.app.get("/vibe-test-art.svg")
         def cover():
+            """Serve local artwork so browser screenshots do not depend on external images."""
             return Response(
                 '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"><rect width="400" height="400" fill="#8b465c"/><circle cx="200" cy="180" r="100" fill="#352f47"/></svg>',
                 mimetype="image/svg+xml",
@@ -234,6 +237,7 @@ def run_vibe():
 
         @application.app.get("/tag-test-audio.wav")
         def tag_audio():
+            """Serve a silent WAV fixture for playback controls without Apple transport."""
             import io, wave
 
             buf = io.BytesIO()

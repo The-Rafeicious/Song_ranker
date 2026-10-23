@@ -15,6 +15,9 @@ def rated(songs):
 
 
 def calibrate(songs, peers):
+    """Derive the catalogue Elo baseline and median tested peer-group size for Impact
+    shrinkage.
+    """
     library=rated(songs)
     sizes=[len(set(rated(group)) & library.keys()) for group in peers]
     return dict(baseline=fmean(library.values()) if library else 1200.0,
@@ -23,6 +26,9 @@ def calibrate(songs, peers):
 
 
 def measure(songs, context):
+    """Compute a collection's supported Elo average and shrink its Impact toward the
+    catalogue baseline.
+    """
     ids=set(rated(songs)) & context['ratings'].keys()
     n=len(ids);prior=context['prior_tracks'];base=context['baseline']
     average=fmean(context['ratings'][sid] for sid in ids) if n else None

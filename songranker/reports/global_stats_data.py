@@ -9,6 +9,9 @@ from songranker.catalog import special_records
 
 
 def timestamp(value):
+    """Convert saved numeric or ISO times to UTC epoch seconds, returning zero when
+    unavailable.
+    """
     if value is None:return 0
     try:
         if isinstance(value,(int,float)):return float(value)
@@ -67,6 +70,9 @@ def build_global_stats(conn):
     expandable=sum(m['encounters']>=2 for m in matchups)>3
     if not expandable:matchups=matchups[:3]
     def record(label,row,kind,key,unit=''):
+        """Build a labelled Global Stats record with formatted value, identity and
+        optional song link.
+        """
         if row is None:return None
         name=row.get('title',row.get('name',''))
         href=f"/song/{row['id']}" if kind=='song' else None
@@ -96,6 +102,9 @@ def build_global_stats(conn):
         if aid in proper:
             missed_albums[aid]+=max(0,r['album_attempts']-r['album_correct']);album_attempts[aid]+=max(0,r['album_attempts'])
     def misses(counter,attempts,rows):
+        """Choose the three largest nonzero recognition miss totals with their
+        attempt counts.
+        """
         return [dict(rows[key],misses=n,attempts=attempts[key]) for key,n in sorted(counter.items(),key=lambda r:(-r[1],r[0])) if n][:3]
     recognized=[dict(songs[sid],accuracy=percent(r['correct'],r['available_points'])) for sid,r in trivia.items() if sid in songs and r['available_points']>0]
     recognition=dict(fields=fields,correct=sum(f['correct'] for f in fields),available=sum(f['attempts'] for f in fields),
@@ -112,7 +121,11 @@ def build_global_stats(conn):
     brackets=[dict(r) for r in conn.execute('SELECT * FROM tournaments')]
     finished=sorted((t for t in brackets if t['status']=='completed'),key=lambda t:(timestamp(t['completed_at'] or t['created_at']),t['id']),reverse=True)
     bracket_matches=[dict(r) for r in conn.execute("SELECT * FROM tournament_matches WHERE status='completed'")]
-    def saved_song(sid):return songs.get(sid,dict(id=None,title='Removed track',cover_url='',artist=''))
+    def saved_song(sid):
+        """Resolve an activity song identity with a safe placeholder for removed
+        tracks.
+        """
+        return songs.get(sid,dict(id=None,title='Removed track',cover_url='',artist=''))
     latest=finished[0] if finished else None
     podium=[dict(saved_song(latest[column]),place=place) for place,column in [(1,'champion_id'),(2,'runner_up_id'),(3,'third_place_id')]
         if latest and latest.get(column) is not None]
@@ -123,6 +136,7 @@ def build_global_stats(conn):
     special,summary,_,recent_shelves=special_records(conn);guess=summary['guesser'];shelf=summary['shelves']
     guess.update(wrong=guess['rounds']-guess['correct'],tested=sum(r['guess_attempts']>0 for r in special.values()))
     def special_leader(key):
+        """Choose the positive special-mode metric leader, using Elo to break ties."""
         eligible=[dict(songs[sid],value=r[key]) for sid,r in special.items() if r[key]>0]
         return max(eligible,key=lambda s:(s['value'],s['elo_score']),default=None)
     guess['most_tested']=special_leader('guess_attempts')
@@ -141,6 +155,9 @@ def build_global_stats(conn):
     elo=[dict(start=b,band=f'{b}–{b+49}',count=bands[b]) for b in bounds]
     activity=[]
     def event(kind,id,when,title,details,href,related,metrics=None,artwork=None,scope=None):
+        """Append a uniform dated activity entry with identities, metrics, scope and
+        artwork.
+        """
         moment=timestamp(when)
         date=datetime.fromtimestamp(moment,timezone.utc) if moment else None
         activity.append(dict(kind=kind,id=id,timestamp=moment,date=date.strftime('%d %b · %H:%M') if date else 'Date unavailable',
@@ -148,8 +165,12 @@ def build_global_stats(conn):
             related=[dict(row,entity_kind=row.get('entity_kind','song')) for row in related],
             metrics=metrics or [],cover_url=artwork if artwork is not None else (related[0].get('cover_url','') if related else ''),scope=scope))
     def metric(value,label,state=''):
+        """Represent one activity metric with its display label and semantic state."""
         return dict(value=value,label=label,state=state)
     def vote_participant(h,role):
+        """Build a saved vote participant with winner/loser role and known Elo
+        change.
+        """
         before=h.get(role+'_before');after=h.get(role+'_after')
         delta=round(after-before,1) if before is not None and after is not None else None
         return dict(saved_song(h[role+'_id']),role='Winner' if role=='winner' else 'Loser',

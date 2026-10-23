@@ -11,6 +11,9 @@ SCHEMA_PATH = ROOT/'data/schema.sql'
 
 @lru_cache(maxsize=1)
 def definitions():
+    """Parse the canonical schema into complete named CREATE definitions, rejecting
+    other or incomplete SQL.
+    """
     result = []
     pending = ''
     for line in SCHEMA_PATH.read_text(encoding='utf-8').splitlines(True):
@@ -28,6 +31,7 @@ def definitions():
 
 
 def create_objects(conn, *, names=None, kinds=None):
+    """Execute selected canonical schema definitions inside the caller's transaction."""
     for kind, name, sql in definitions():
         if (names is None or name in names) and (kinds is None or kind in kinds):
             conn.execute(sql)
@@ -35,6 +39,7 @@ def create_objects(conn, *, names=None, kinds=None):
 
 @lru_cache(maxsize=1)
 def table_columns():
+    """Read canonical table-column order from a disposable in-memory schema."""
     conn = sqlite3.connect(':memory:')
     try:
         create_objects(conn)

@@ -32,6 +32,9 @@ class PreferenceError(ValueError):
 
 @contextmanager
 def transaction(conn):
+    """Run atomic preference writes in an immediate transaction or nested savepoint
+    with rollback on failure.
+    """
     nested = conn.in_transaction
     savepoint = "preference_" + secrets.token_hex(8)
     conn.execute("SAVEPOINT " + savepoint if nested else "BEGIN IMMEDIATE")
@@ -48,6 +51,7 @@ def transaction(conn):
 
 
 def owner_hash(owner):
+    """Hash a browser-owner identity before persisting preference ownership."""
     return hashlib.sha256(str(owner).encode("utf-8")).hexdigest()
 
 
@@ -188,6 +192,7 @@ def integer(value, label):
 
 
 def token(value):
+    """Validate the shape and length of a preference offer token before lookup."""
     if not isinstance(value, str) or not 16 <= len(value) <= 200:
         raise PreferenceError(
             "Reload this round before saving. Its round token is missing or invalid."
@@ -196,7 +201,13 @@ def token(value):
 
 
 def receipt(event):
+    """Build a saved vote receipt from frozen song snapshots and before/after
+    ratings.
+    """
     def side(prefix):
+        """Project one receipt participant with its saved identity and exact Elo
+        change.
+        """
         song = json.loads(event[prefix + "_snapshot"])
         return {
             **song,
@@ -447,6 +458,7 @@ def rebuild_ratings(conn):
 
 
 def fingerprint(event):
+    """Hash a preference event's compact representation for stale correction checks."""
     return hashlib.sha256(compact(dict(event)).encode("utf-8")).hexdigest()
 
 
@@ -489,6 +501,9 @@ def event_detail(conn, event_id):
 
 
 def correction_response(row):
+    """Return the corrected event ID, revision and active state after successful
+    replay.
+    """
     return {
         "status": "success",
         "message": "Vote correction saved. Ratings and statistics were rebuilt.",
@@ -763,6 +778,9 @@ def coverage(conn):
 
 
 def comparison_report(conn, songs):
+    """Compare standard and blind rating projections, tested coverage and song-level
+    differences.
+    """
     modes = song_mode_ratings(conn)
     from songranker.catalog import voting_records
 

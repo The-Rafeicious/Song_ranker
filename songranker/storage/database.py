@@ -196,6 +196,9 @@ def initialize_database(filename, sql_backup=None):
                 # Dump files are local backups, not scripts allowed to attach or
                 # write other databases. Invalid restores never publish a file.
                 def authorize(action, arg1, arg2, db, trigger):
+                    """Deny ATTACH/DETACH statements while importing a supplied SQL
+                    snapshot.
+                    """
                     if action in (sqlite3.SQLITE_ATTACH, sqlite3.SQLITE_DETACH):
                         return sqlite3.SQLITE_DENY
                     return sqlite3.SQLITE_OK

@@ -19,6 +19,9 @@ _attempts={};_attempt_lock=Lock()
 
 @app.before_request
 def stop_request_guard():
+    """Reject new API work during shutdown and lease mutating requests so the stop
+    worker can drain them.
+    """
     if request.path.startswith('/api/dev/stop'):return None
     # Track entire requests, including direct-SQL metadata fills and Git tasks.
     # Reject new API reads too: they must not queue behind the final DB gate.
@@ -31,6 +34,9 @@ def stop_request_guard():
 
 @app.teardown_request
 def release_stop_request(error):
+    """Release a request's shutdown lease during Flask teardown when one was
+    acquired.
+    """
     if g.pop('stop_lease',False):coordinator.leave()
 
 
