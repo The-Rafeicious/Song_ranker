@@ -227,7 +227,7 @@ window.DevWorkspace = (() => {
         !replay &&
         (node.id === "editor-close" ||
           node.matches(
-            "[data-edit],[data-tool],[data-delete],[data-catalog-source],[data-catalog-single],[data-catalog-album],[data-preview-quality],[data-system-stop],[data-vibe-edit]",
+            "[data-edit],[data-tool],[data-delete],[data-catalog-source],[data-catalog-single],[data-catalog-album],[data-preview-quality],[data-system-stop],[data-vibe-edit],[data-vibe-maintain]",
           ))
       ) {
         event.preventDefault();
@@ -248,6 +248,7 @@ window.DevWorkspace = (() => {
       ...areas.map((row) => [row[0], "", row[1]]),
     ],
     initial: current,
+    needsCollection: (view) => (context.catalogue || []).includes(view),
     href,
     sync,
     cards,

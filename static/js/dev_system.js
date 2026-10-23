@@ -18,8 +18,6 @@ window.DevSystem = (() => {
     localReview = null,
     backupQuery = "",
     backupLimit = 10,
-    inventoryQuery = "",
-    inventoryKind = "all",
     note = "";
   const bytes = (n) =>
     n >= 1048576
@@ -35,9 +33,6 @@ window.DevSystem = (() => {
   };
   const button = (label, attr, kind = "") =>
     `<button class="btn ${kind}" type="button" ${attr}>${label}</button>`;
-  const tile = (label, detail, attr, kind = "song") =>
-    `<button class="system-task" type="button" ${attr}><strong class="${kind}">${label}</strong><span>${detail}</span></button>`;
-  const header = () => "";
   function viewChanged(next) {
     if (next !== view) {
       view = managed.has(next) ? next : null;
@@ -143,9 +138,6 @@ window.DevSystem = (() => {
       )
     );
   }
-  function health() {
-    return `<div class="health-row"><span>App / schema</span><strong>V${esc(data.version)} / ${data.schema}</strong></div><div class="health-row"><span>SQLite integrity</span><strong class="${data.integrity === "ok" ? "song" : "error"}">${esc(data.integrity)}</strong></div><div class="health-row"><span>Foreign-key errors</span><strong>${data.foreign_key_errors}</strong></div><div class="health-row"><span>Local database backups</span><strong>${data.backups.length}</strong></div>`;
-  }
   function database() {
     return `<section class="panel"><div class="dev-status-strip"><span>V${esc(data.version)} / schema ${data.schema}</span><span>${bytes(data.database_bytes || 0)}</span><strong class="${data.integrity === "ok" ? "song" : "error"}">Integrity: ${esc(data.integrity)}</strong><button class="btn" data-tool="Database integrity">Health details</button><a href="/dev/tools/guides?guide=technical" data-dev-guide-link>Technical guide</a></div></section><section class="panel" id="system-inventory-panel"><div id="system-inventory"></div></section>`;
   }
@@ -160,12 +152,6 @@ window.DevSystem = (() => {
     not_checked: "Remote not checked",
     operation_in_progress: "Git operation in progress",
   };
-  function gitSummary() {
-    const g = gitState || data?.git;
-    if (!g?.available)
-      return `<p>${esc(g?.message || "Git status unavailable.")}</p><p class="muted">Local backups and full exports remain available. Git setup is explained in the technical guide.</p>`;
-    return `<div class="health-row"><span>Current branch → upload target</span><strong>${esc(g.branch)} → ${esc(g.remote)}/${esc(g.target)}</strong></div><div class="health-row"><span>Destination</span><strong>${esc(g.destination)}</strong></div><div class="health-row"><span>Saved remote view</span><strong>${esc(labels[g.state] || g.state)}</strong></div><div class="health-row"><span>Local / incoming commits</span><strong>${g.ahead ?? "—"} / ${g.behind ?? "—"}</strong></div>${g.database_sync ? `<p class="${["database_conflict", "database_check_failed", "database_remote_ahead"].includes(g.database_sync.code) ? "error" : "muted"}" role="status"><b>Last database check:</b> ${esc(g.database_sync.message)}</p>` : ""}${g.code_changes ? `<p class="muted">${g.code_changes} local code edits remain on this computer. A backup upload does not publish them.</p>` : ""}`;
-  }
   function sync() {
     const g = gitState || data.git,
       d = g?.database_sync,
@@ -520,21 +506,10 @@ window.DevSystem = (() => {
       backupLimit = 10;
       drawBackups();
     }
-    if (e.target.id === "system-inventory-query") {
-      inventoryQuery = e.target.value;
-      drawInventory();
-    }
-  });
-  document.addEventListener("change", (e) => {
-    if (e.target.id === "system-inventory-kind") {
-      inventoryKind = e.target.value;
-      drawInventory();
-    }
   });
   return {
     busy: () => restoreBusy || gitBusy || backupBusy,
     bindUI: (ui) => (U = ui),
-    header,
     viewChanged,
     render,
     handleTool,

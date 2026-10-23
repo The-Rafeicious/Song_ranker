@@ -5,7 +5,6 @@
     [
       "home",
       "search",
-      "dev",
       "song",
       "artist",
       "album",
@@ -25,6 +24,8 @@
     if (!response.ok) throw new Error("Unable to load collection");
     COLLECTION = await response.json();
   }
+  let devCollectionReady = page !== "dev" || !!collectionPage,
+    devCollectionRequest = null;
   const { $, $$, esc } = window.SongRankerUI;
   const DB = COLLECTION,
     byId = (rows, id) => rows.find((r) => Number(r.id) === Number(id));
@@ -1141,13 +1142,14 @@
   }
 
   let shownDevView = null;
-  function navigateDev(next, push = true) {
+  function navigateDev(next, push = true, after = null) {
     window.DevWorkspace.navigate(
       next,
       () => {
         rememberTable();
         devView = next;
         renderDevView();
+        after?.();
       },
       push,
     );
@@ -1168,7 +1170,7 @@
     if (q) address.searchParams.set("q", q);
     history.replaceState({}, "", address);
     renderDevView();
-    window.DevCatalog?.ensureSources().catch(() => {});
+    if (devCollectionReady) window.DevCatalog?.ensureSources().catch(() => {});
   }
   function devTitle(title, actions = "") {
     const kind =
@@ -1516,15 +1518,31 @@
     window.DevMetadata?.viewChanged(devView);
     window.DevWorkspace?.sync(devView);
     const selected = devSections.find(([key]) => key === devView);
-    if ($("#dev-current-page"))
-      $("#dev-current-page").textContent = selected?.[2] || "Developer home";
     const node = $("#dev-main");
-    $$("[data-dev]").forEach((b) => {
-      b.classList.toggle("active", b.dataset.dev === devView);
-      b.setAttribute("aria-pressed", String(b.dataset.dev === devView));
-      if (b.dataset.dev === devView && b.closest(".dev-nav-group"))
-        b.closest(".dev-nav-group").open = true;
-    });
+    if (!devCollectionReady && window.DevWorkspace.needsCollection(devView)) {
+      node.innerHTML =
+        devTitle(selected?.[2] || "Library") +
+        '<section class="panel" role="status">Loading catalogue…</section>';
+      if (!devCollectionRequest) {
+        devCollectionRequest = refreshData()
+          .then(() => {
+            devCollectionRequest = null;
+            if (window.DevWorkspace.needsCollection(devView)) renderDevView();
+            window.DevCatalog?.ensureSources().catch(() => {});
+          })
+          .catch((error) => {
+            devCollectionRequest = null;
+            if (window.DevWorkspace.needsCollection(devView))
+              node.innerHTML =
+                devTitle(
+                  devSections.find((row) => row[0] === devView)?.[2] ||
+                    "Library",
+                ) +
+                `<section class="panel"><p class="error" role="alert">${esc(error.message)}</p><button class="btn" data-retry-dev-data>Retry catalogue</button></section>`;
+          });
+      }
+      return;
+    }
     if (["overview", "database", "backups", "export"].includes(devView)) {
       if (window.DevSystem) window.DevSystem.render(devView);
       else
@@ -1641,14 +1659,15 @@
         ]);
       return;
     }
-    if (["guesser_records", "shelves_records", "knowledge"].includes(devView)) {
+    if (["guesser_records", "shelves_records"].includes(devView)) {
       window.SpecialModes.renderDevRecords(
         devView === "shelves_records" ? "shelves" : "guesser",
       );
       return;
     }
-    devView = "explorer";
-    renderExplorer();
+    node.innerHTML =
+      devTitle("Tool unavailable") +
+      '<section class="panel"><p class="error" role="alert">This task has no registered controller. Open Guides or choose another task.</p></section>';
   }
   let editTarget = null,
     toolTarget = null,
@@ -1812,8 +1831,7 @@
       return;
     }
     if (name === "Apple Music") {
-      devView = "import";
-      renderDevView();
+      navigateDev("import");
       return;
     }
     if (["Manual Elo correction", "Trivia maintenance"].includes(name)) {
@@ -1979,6 +1997,7 @@
     if (id !== catalogueLoad) return;
     Object.assign(DB, fresh);
     rebuild();
+    devCollectionReady = true;
   }
   async function importSong(id) {
     return window.DevCatalog.add(id);
@@ -2995,11 +3014,12 @@
       b.setAttribute("aria-expanded", String(!panel.hidden));
       if (!panel.hidden) $("#volume-range").focus();
     } else if (!e.target.closest(".volume")) volumeClose();
-    $$(".nav-left details[open],.dev-category[open]").forEach((d) => {
+    $$(".nav-left details[open]").forEach((d) => {
       if (!d.contains(e.target)) d.open = false;
     });
     if (!b) return;
     try {
+      if (b.hasAttribute("data-retry-dev-data")) renderDevView();
       if (b.hasAttribute("data-podium-toggle")) {
         if (podiumPlayback?.requested) pausePodium();
         else if (podiumPlayback) await playPodium(podiumPlayback.index);
@@ -3124,17 +3144,6 @@
       }
       if (b.dataset.vote !== undefined) await vote(Number(b.dataset.vote));
       if (b.hasAttribute("data-next")) await nextMatch();
-      if (b.dataset.dev) {
-        const nav = b.closest(".dev-category");
-        if (nav) nav.open = false;
-        if (window.DevSystem && !window.DevSystem.canNavigate()) {
-          toast("Wait for the restore to finish.");
-          return;
-        }
-        rememberTable();
-        devView = b.dataset.dev;
-        renderDevView();
-      }
       if (b.dataset.devMore) {
         devLimits[b.dataset.devMore] += 20;
         renderDevResults();
@@ -3195,9 +3204,9 @@
       }
       if (b.dataset.vibeMaintain) {
         if (window.DevSystem && !window.DevSystem.canNavigate()) return;
-        devView = "vibe_records";
-        renderDevView();
-        void window.DevVibe?.edit(Number(b.dataset.vibeMaintain));
+        navigateDev("vibe_records", true, () =>
+          window.DevVibe?.edit(Number(b.dataset.vibeMaintain)),
+        );
         return;
       }
       if (b.dataset.songStats) {
@@ -3516,7 +3525,7 @@
     }
     if (e.key === "Escape") {
       volumeClose();
-      $$(".nav-left details,.dev-category").forEach((d) => (d.open = false));
+      $$(".nav-left details").forEach((d) => (d.open = false));
       if (page === "standard") {
         stopAudio();
         $$("[data-mode]")[0]?.focus();
@@ -3880,8 +3889,7 @@
       tablePage = 0;
       missingAppleOnly = true;
       rememberTable();
-      devView = "songs";
-      renderDevView();
+      navigateDev("songs");
     },
     afterRestore: async () => {
       await refreshData();
@@ -3900,8 +3908,8 @@
     toast,
     refresh: refreshData,
     navigate: () => {
-      devView = "tag_workbench";
-      renderDevView();
+      if (devView === "tag_workbench") renderDevView();
+      else navigateDev("tag_workbench");
     },
   });
   window.DevCatalog?.bindUI({

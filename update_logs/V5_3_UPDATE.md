@@ -41,6 +41,8 @@ See [consolidation review](../docs/CONSOLIDATION.md),
   within the page. Existing reviewed mutations and typed confirmations remain.
 - Guides are readable inside Dev, with contents links, formatted tables/code and
   plain-text access. The Dev/style/technical/ownership guides reflect the new areas.
+- Home, guides and independent system tools no longer wait for a catalogue/source
+  download; catalogue-backed tasks load their data on demand with retry.
 - Superseded Dev menu/Home rules were removed. Shared palette, typography, touch
   targets and the baseline remain the main site's styling contract.
 - Application/asset version is 5.3.1. Schema 20, active data, backups, saved mode

@@ -205,6 +205,13 @@ window.DevVibe = (() => {
     const b = e.target.closest("button");
     if (!b || !active || busy) return;
     if (b.dataset.vibeMapTab) {
+      const invalid = root().querySelector(
+        "[data-vibe-map]:not([hidden]) :invalid",
+      );
+      if (invalid) {
+        invalid.reportValidity();
+        return;
+      }
       selectedMap = b.dataset.vibeMapTab;
       root()
         .querySelectorAll("[data-vibe-map]")

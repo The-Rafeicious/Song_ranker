@@ -42,6 +42,7 @@ async function harness(view='',width=1280,session={}){
 async function entryAndShortcuts(){
  const h=await harness();
  check(h.d.querySelectorAll('#dev-page-menu > a').length===4,'four visible Dev destinations');
+ check(!h.requests.some(r=>r.url==='/api/collection'||r.url==='/api/dev/song-sources'),'Home does not download catalogue or source history');
  check(!h.d.querySelector('.dev-category'),'no category dropdown menus');
  check(h.d.querySelectorAll('.dev-home-status > section').length===3,'three aligned status summaries');
  check(h.d.querySelectorAll('.dev-home-areas [data-dev]').length===27,'Home reaches every task and section');
@@ -51,6 +52,17 @@ async function entryAndShortcuts(){
  h.w.testDev.setView('overview');await flush();h.click('[data-dev="export"]');await flush();check(!!h.d.querySelector('[data-system-upload]'),'Git shortcut opens Git');
  check(h.requests.some(r=>r.url==='/api/dev/git/check'),'Git navigation refreshes comparison');h.w.testDev.setView('overview');await flush();h.handler(url=>url==='/api/dev/integrity'?{integrity:['ok'],foreign_key_errors:[],track_number_conflicts:[{id:1,title:'<unsafe>',album:'Album',track_number:1,issue:'Duplicate position'}]}:undefined);h.click('[data-tool="Database integrity"]');await flush();check(h.d.querySelectorAll('.integrity-metrics > div').length===3,'integrity uses three metrics');check(h.d.querySelector('#editor-submit').hidden,'integrity is read-only');check(!h.d.querySelector('.integrity-review unsafe'),'integrity issue labels escaped');
  check(h.errors.length===0,'shell has no script errors');h.close();
+}
+async function deferredCatalogue(){
+ const h=await harness('overview');
+ check(!h.requests.some(r=>r.url==='/api/collection'),'Home renders without catalogue request');
+ const pending=deferred();h.handler(url=>url==='/api/collection'?pending.promise:undefined);
+ h.click('.dev-library-link[data-dev="songs"]');await flush();check(h.d.querySelector('#dev-main').textContent.includes('Loading catalogue'),'catalogue-dependent task shows loading');
+ h.click('#dev-page-menu [data-dev="tools"]');pending.resolve(h.data);await flush();check(h.d.querySelector('.dev-destinations')&&!h.d.querySelector('#manage-rows'),'late catalogue data does not replace current tool section');
+ h.click('#dev-page-menu [data-dev="library"]');h.click('.dev-destinations [data-dev="songs"]');await flush();check(h.d.querySelector('#manage-rows'),'loaded catalogue reused by later task');check(h.requests.filter(r=>r.url==='/api/collection').length===1,'catalogue is fetched once on demand');
+ check(h.d.querySelector('#dev-page-menu [data-dev="library"]').getAttribute('aria-current')==='page','primary section remains active for its task');
+ h.close();
+ const bad=await harness('overview');bad.handler(url=>url==='/api/collection'?{status:503,body:{message:'Catalogue unavailable'}}:undefined);bad.click('.dev-library-link[data-dev="songs"]');await flush();check(bad.d.querySelector('[data-retry-dev-data]'),'failed catalogue load offers a task-local retry');bad.handler(()=>undefined);bad.click('[data-retry-dev-data]');await flush();check(bad.d.querySelector('#manage-rows'),'catalogue retry recovers');bad.close();
 }
 async function inventoryAndBackups(){
  const h=await harness('backups');
@@ -125,8 +137,8 @@ async function restoreFlows(){
  const sent=JSON.parse(h.requests.filter(r=>r.url==='/api/dev/backups/restore').at(-1).options.body);
  check(sent.review_token==='restore-review'&&!sent.filename,'restore sends signed review only');
  check(h.d.querySelector('#system-note').textContent.includes('pre_restore_fixture.db'),'safety backup identified');
- check(h.requests.filter(r=>r.url==='/api/collection').length===2,'catalogue refreshed after restore');
- check(h.requests.filter(r=>r.url==='/api/dev/song-sources').length===2,'source cache refreshed after restore');
+ check(h.requests.filter(r=>r.url==='/api/collection').length===1,'catalogue loaded after restore');
+ check(h.requests.filter(r=>r.url==='/api/dev/song-sources').length===1,'source cache refreshed after restore');
  check(!h.d.querySelector('[data-system-restore]'),'completed review cleared');
  check(!h.d.querySelector('[data-system-backup]').disabled,'dashboard usable after restore');
  check(h.errors.length===0,'restore flows have no script errors');h.close();
@@ -211,6 +223,6 @@ async function freshDatabaseReadiness(){
  check(h.d.querySelectorAll('.git-status-grid > section').length===2,'separate status sections');h.close();
 }
 module.exports={harness,flush};
-if(require.main===module)(async()=>{await entryAndShortcuts();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();await freshDatabaseReadiness();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
+if(require.main===module)(async()=>{await entryAndShortcuts();await deferredCatalogue();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();await freshDatabaseReadiness();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
 
 

@@ -59,7 +59,10 @@ unchanged. Section navigation uses canonical URLs and browser history; reloads
 serve the same task. Unlisted area/task combinations return 404.
 
 `dev_workspace.js` owns visible primary/section links, shared landing pages, the
-inline editor/discard flow and guide rendering. `dev_workspace.css` owns their
+inline editor/discard flow and guide rendering. Registry catalogue requirements
+let Home, guides and independent system tools render without downloading the
+whole catalogue. Entering a task that needs catalogue data loads it once with
+retry and stale-response handling. `dev_workspace.css` owns their
 geometry. Catalogue composition stays in `site.js`, Apple/source operations in
 `dev_catalog.js`, tags in `dev_tags.js`, metadata in `dev_metadata.js`, record review
 in `dev_records.js`, Vibe maintenance in `dev_vibe.js`, and system/database/selection

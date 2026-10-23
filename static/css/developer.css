@@ -35,37 +35,9 @@
   .preference-admin .form-grid {
     grid-template-columns: minmax(0, 1fr);
   }
-} /* Developer composition; the shared typography/surface baseline remains last. */
-body[data-page="dev"] #main .dev-taskbar {
-  display: grid;
-  gap: 18px;
-  margin-bottom: 26px;
-  text-align: center;
-}
-body[data-page="dev"] #main .dev-taskbar h1 {
-  margin: 0;
-}
-body[data-page="dev"] #main .dev-taskbar p {
-  color: var(--muted);
-  margin: 10px 0 0;
-}
-body[data-page="dev"] #main .dev-taskbar .system-actions {
-  justify-content: center;
-}
-body[data-page="dev"] #main .dev-grid {
-  grid-template-columns: 230px minmax(0, 1fr);
-  gap: 24px;
-  align-items: start;
 }
 body[data-page="dev"] #main .dev-main {
   min-width: 0;
-}
-body[data-page="dev"] #main .dev-sidebar {
-  padding: 18px;
-}
-body[data-page="dev"] #main .dev-sidebar h2 {
-  font-size: 22px;
-  text-align: center;
 }
 body[data-page="dev"] #main .side-btn {
   min-height: 46px;
@@ -242,10 +214,6 @@ body[data-page="dev"] #main .system-explanations {
   gap: 0 24px;
 }
 @media (max-width: 1100px) {
-  body[data-page="dev"] #main .dev-grid {
-    grid-template-columns: 200px minmax(0, 1fr);
-    gap: 20px;
-  }
   body[data-page="dev"] #main .system-task-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -255,32 +223,13 @@ body[data-page="dev"] #main .system-explanations {
   }
 }
 @media (max-width: 800px) {
-  body[data-page="dev"] #main .dev-grid {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  body[data-page="dev"] #main .dev-sidebar {
-    position: static;
-    max-height: none;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-  body[data-page="dev"] #main .dev-sidebar h2 {
-    grid-column: 1/-1;
-  }
   body[data-page="dev"] #main .system-explanations {
     grid-template-columns: minmax(0, 1fr);
   }
 }
 @media (max-width: 520px) {
-  body[data-page="dev"] #main .dev-taskbar h1 {
-    font-size: 32px;
-  }
   body[data-page="dev"] #main .dev-system .joined-metrics b {
     font-size: 28px;
-  }
-  body[data-page="dev"] #main .dev-sidebar,
-  body[data-page="dev"] #main .system-task-grid,
-  body[data-page="dev"] #main .system-filters {
-    grid-template-columns: minmax(0, 1fr);
   }
   body[data-page="dev"] #main .dev-system .health-row {
     align-items: start;
