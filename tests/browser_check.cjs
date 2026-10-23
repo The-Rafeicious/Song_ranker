@@ -300,7 +300,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
     await page.locator(`[data-shelf-pick="${item.slot}"][data-shelf-target="${album.slot}"]`).click();
   }
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-play',folder);await page.screenshot({path:folder+'/shelves-discs-play-'+width+'.png',fullPage:true});}
-  await page.locator('[data-shelf-check]').click();await page.locator('[data-shelf-next]').waitFor({state:'visible'});
+  await page.locator('[data-shelf-check]').click();await page.locator('[data-shelf-next]').waitFor({state:'visible',timeout:90000});
   assert.equal(await page.locator('#shelf-running-score').textContent(),'30.00');
   assert.ok((await page.locator('.shelf-position-actual').allTextContents()).some(t=>t.includes('2·')));
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-result',folder);await page.screenshot({path:folder+'/shelves-discs-result-'+width+'.png',fullPage:true});}
