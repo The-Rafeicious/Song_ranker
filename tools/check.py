@@ -293,6 +293,7 @@ def structure():
     )
 
     def scopes(node, path):
+        """Report repeated definitions within each lexical Python scope."""
         names = (
             [
                 n.name

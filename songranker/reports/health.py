@@ -12,10 +12,14 @@ from songranker.modes.challenge_rules import guess_target
 
 
 def label(text, level):
+    """Represent a short health label with its semantic display level."""
     return dict(label=text, level=level)
 
 
 def exposure_health(values, spread=None):
+    """Describe exposure balance, evidence stage and population-relative reference
+    bands.
+    """
     values = list(values)
     n = len(values)
     mean = fmean(values) if n else 0
@@ -62,6 +66,7 @@ def exposure_health(values, spread=None):
 
 
 def coverage_health(right, total):
+    """Classify a covered-versus-eligible ratio into a shared health label."""
     if not total:
         return label("Unavailable", "new")
     part = right / total
@@ -84,6 +89,9 @@ def coverage_health(right, total):
 
 
 def normalize(weights):
+    """Normalise diagnostic weights to probabilities, returning zeros for an
+    empty-weight distribution.
+    """
     total = math.fsum(weights)
     return [w / total if total else 0.0 for w in weights]
 
@@ -158,6 +166,9 @@ def build_selection_health(conn, context=None):
         kind="song",
         ready=True
     ):
+        """Project an eligible draw pool into production-rule probabilities and
+        exposure diagnostics.
+        """
         rows = list(rows)
         n = len(rows)
         values = [S.nonnegative(counts.get(s["id"], 0)) for s in rows]
@@ -299,6 +310,9 @@ def build_selection_health(conn, context=None):
         pools[-1].update(available=0, min_share=None, max_share=None, effective=None)
 
     def coverage(label, count):
+        """Describe one eligibility count relative to the full catalogue with
+        coverage health.
+        """
         return dict(
             label=label,
             count=count,

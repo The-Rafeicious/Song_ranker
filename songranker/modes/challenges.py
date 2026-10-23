@@ -10,6 +10,7 @@ from songranker.modes.challenge_rules import RULES_VERSION as RULES_VERSION, TRI
 TABLES = {'trivia': 'trivia_rounds', 'guesser': 'elo_guess_rounds'}
 
 def browser_owner():
+    """Create or reuse the session identity that owns persisted challenge runs."""
     owner = session.get('challenge_owner')
     if not owner:
         owner = secrets.token_urlsafe(32)
@@ -30,6 +31,9 @@ def active_run(conn, mode):
 
 
 def owns_round(conn, row, mode):
+    """Check that a saved round belongs to this browser's run for the requested
+    challenge mode.
+    """
     if row is None or row['run_id'] is None:
         return False
     return conn.execute('SELECT 1 FROM challenge_runs WHERE id=? AND owner=? AND mode=?',
@@ -37,11 +41,15 @@ def owns_round(conn, row, mode):
 
 
 def pending_round(conn, run, mode):
+    """Read the unfinished round for the current persisted challenge run."""
     return conn.execute('SELECT * FROM '+TABLES[mode]+' WHERE run_id=? AND completed_at IS NULL',
                         (run['id'],)).fetchone()
 
 
 def progress(conn, run_id, mode):
+    """Resolve streak and score from the last completed round, starting new runs at
+    zero.
+    """
     row = conn.execute('SELECT streak_after,user_score_after FROM '+TABLES[mode]+
                        ' WHERE run_id=? AND completed_at IS NOT NULL ORDER BY id DESC LIMIT 1',
                        (run_id,)).fetchone()

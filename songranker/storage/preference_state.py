@@ -13,21 +13,33 @@ EVENT_COLUMNS = LEGACY_COLUMNS + ('offer_token', 'origin', 'rules_version',
 
 
 def calculate_new_elo(winner, loser, k_factor=32):
+    """Calculate winner/loser Elo updates with the supplied K factor and standard
+    expected-score formula.
+    """
     expected_winner = 1 / (1 + 10 ** ((loser - winner) / 400))
     expected_loser = 1 / (1 + 10 ** ((winner - loser) / 400))
     return winner + k_factor * (1 - expected_winner), loser - k_factor * expected_loser
 
 
 def compact(value):
+    """Serialise deterministic compact JSON for preference snapshots and replay
+    hashes.
+    """
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'), allow_nan=False)
 
 
 def records(state, name):
+    """Decode one captured table into column-keyed records, tolerating absent
+    historical tables.
+    """
     table = state['tables'].get(name, {'columns': [], 'rows': []})
     return [dict(zip(table['columns'], row)) for row in table['rows']]
 
 
 def table(columns, rows, key=None):
+    """Build a deterministically ordered captured table, optionally retaining
+    explicit row IDs.
+    """
     rows = sorted(rows, key=lambda row: compact(row).encode('utf-8'))
     result = {'columns': list(columns), 'rows': rows}
     if key is not None:
@@ -36,6 +48,9 @@ def table(columns, rows, key=None):
 
 
 def catalogue_snapshots(state):
+    """Freeze each song's catalogue identity and linked artists into deterministic
+    JSON snapshots.
+    """
     songs = {row['id']: row for row in records(state, 'songs')}
     albums = {row['id']: row for row in records(state, 'albums')}
     artists = {row['id']: row for row in records(state, 'artists')}
@@ -55,6 +70,9 @@ def catalogue_snapshots(state):
 
 
 def verified_legacy(songs, events):
+    """Replay legacy votes and verify every saved before/after rating and final song
+    count before migration.
+    """
     ratings = {s['id']: 1200.0 for s in songs}
     counts = {s['id']: 0 for s in songs}
     for event in sorted(events, key=lambda row: row['id']):
@@ -118,6 +136,9 @@ def _upgrade_history(original):
 
 
 def effective_events(state):
+    """Apply the latest correction revision to each event without discarding its
+    historical identity.
+    """
     latest = {}
     for row in sorted(records(state, 'preference_corrections'), key=lambda r: r['id']):
         latest[row['event_id']] = row
@@ -182,6 +203,9 @@ def _upgrade_to_11(original):
                 'winner_id','loser_id','mode','active','revision')
         rows = [[row[key] for key in keys] for row in effective_events(state)]
         def view_hash(values):
+            """Hash deterministically sorted view rows to verify the migrated
+            preference projection.
+            """
             return hashlib.sha256(compact(sorted(values, key=lambda row: compact(row).encode('utf-8'))).encode('utf-8')).hexdigest()
         if view_hash(rows) != state['view_hashes']['preference_effective']:
             raise ValueError('Unsupported preference_effective view; no stored data was changed.')
@@ -248,6 +272,9 @@ def replay(songs, seeds, events, overrides, cutoff, boundary):
     adjustments = sorted(overrides, key=lambda row: (row['after_event_id'], row['id']))
     index = 0
     def set_rating(sid, value):
+        """Update one replayed song's Elo while keeping the sorted rating index
+        consistent.
+        """
         if sid not in result:
             return
         old = (result[sid]['elo'], sid)
@@ -256,6 +283,9 @@ def replay(songs, seeds, events, overrides, cutoff, boundary):
             raise ValueError('Rating projection is inconsistent.')
         ordered.pop(pos); insort(ordered, (value, sid)); result[sid]['elo'] = value
     def apply_before(event_id):
+        """Apply saved manual rating adjustments that precede the next replayed
+        preference event.
+        """
         nonlocal index
         while index < len(adjustments) and adjustments[index]['after_event_id'] < event_id:
             row = adjustments[index]; set_rating(row['song_id'], row['new_elo']); index += 1

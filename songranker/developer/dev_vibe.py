@@ -25,11 +25,17 @@ def record(conn,song_id):
 
 
 def count(value,label):
+    """Validate a bounded whole-number sample or pass count for reviewed Vibe
+    maintenance.
+    """
     if type(value) is not int or not 0<=value<=1000000:raise ValueError(label+' must be a whole number from 0 to 1000000.')
     return value
 
 
 def coordinate(value):
+    """Validate and round a public Vibe coordinate before converting it to the stored
+    normalised scale.
+    """
     if type(value) not in (float,int) or not math.isfinite(value) or not -5<=value<=5:
         raise ValueError('Coordinates must be finite numbers from -5 to 5.')
     return round(value,2)/5

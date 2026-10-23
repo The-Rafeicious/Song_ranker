@@ -13,6 +13,9 @@ from songranker.storage.database_io import DatabaseValidationError, audit, captu
 
 
 def parser():
+    """Define the offline audit, export, rebuild, restore and compare commands with
+    explicit input/output paths.
+    """
     result = argparse.ArgumentParser(description=__doc__)
     commands = result.add_subparsers(dest='command', required=True)
     from songranker.storage.competition import configured_paths
@@ -39,6 +42,7 @@ def parser():
 
 
 def run(args):
+    """Dispatch one offline recovery command and return its validated JSON report."""
     if args.command == 'audit':
         return audit(args.db)
     if args.command == 'export':
@@ -71,6 +75,9 @@ def run(args):
 
 
 def main(argv=None):
+    """Run the recovery CLI, optionally save a new report file and return a
+    structured success/error exit code.
+    """
     args = parser().parse_args(argv)
     try:
         if args.report and Path(args.report).exists():

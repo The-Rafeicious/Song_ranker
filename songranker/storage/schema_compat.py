@@ -119,6 +119,9 @@ CHALLENGE_ADDITIONS = {
 
 
 def upgrade_challenges(original):
+    """Adapt captured pre-12 rounds to challenge fields while refusing conflicting
+    extension tables.
+    """
     if original["user_version"] >= 12:
         return original
     state = deepcopy(original)
@@ -147,6 +150,9 @@ SOURCE_ADDITIONS = (("release_date", None), ("release_date_origin", None))
 
 
 def upgrade_sources(original):
+    """Adapt pre-13 song/source metadata without replacing extensions or existing
+    stored values.
+    """
     if original["user_version"] >= 13:
         return original
     state = deepcopy(original)
@@ -185,6 +191,9 @@ LISTENING_OBJECTS = {"listening_observations", "listening_song_mode"}
 
 
 def retire_listening(original):
+    """Remove supported retired listening storage at schema 20 while refusing
+    dependent custom extensions.
+    """
     if original["user_version"] >= 20:
         return original
     # Unknown views/triggers/FKs must not quietly become invalid extensions.

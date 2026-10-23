@@ -138,6 +138,7 @@ def _tournament_seed_order(size):
 
 
 def _tournament_matches(conn, tournament_id):
+    """Read one bracket's saved matches in round and match order."""
     rows = conn.execute(
         """SELECT id, tournament_id, round_number, match_number,
         song1_id, song2_id, winner_id, loser_id, status, points_awarded, played_at, match_type
@@ -150,6 +151,9 @@ def _tournament_matches(conn, tournament_id):
 
 def _round_points(size, round_number):
     # Normalize the maximum points for a champion to 7 across bracket sizes.
+    """Scale round points so a champion's maximum totals seven across supported
+    bracket sizes.
+    """
     return round(7 * (2 ** (round_number - 1)) / (size - 1), 4)
 
 
@@ -519,6 +523,9 @@ ARCHIVE_SIZE = 10
 
 
 def number(value):
+    """Read a finite nonnegative saved tournament number, returning unknown for
+    invalid values.
+    """
     try:
         value = float(value)
         return value if isfinite(value) and value >= 0 else None
@@ -551,6 +558,9 @@ def saved_time(value):
 
 
 def stage_name(size, round_number, match_type="bracket"):
+    """Label a saved bracket stage, third-place playoff or unsupported historical
+    round.
+    """
     if match_type == "third_place":
         return "Third-place playoff"
     if match_type != "bracket":
@@ -575,6 +585,9 @@ def stage_name(size, round_number, match_type="bracket"):
 
 
 def recorded_result(match):
+    """Accept only completed matches with distinct winner/loser identities consistent
+    with saved participants.
+    """
     winner, loser = match.get("winner_id"), match.get("loser_id")
     if (
         match["status"] != "completed"
@@ -588,6 +601,9 @@ def recorded_result(match):
 
 
 def podium_points(sid, matches):
+    """Sum a participant's recorded win points, preserving unknown points or absent
+    participation.
+    """
     played = [
         m
         for m in matches
@@ -712,6 +728,9 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
         song["win_rate"] = percent(song["tournament_wins"], song["played"])
 
     def identity(sid, absent="Not recorded"):
+        """Resolve a saved participant with a safe unavailable/not-recorded report
+        identity.
+        """
         return songs.get(sid) or dict(
             id=None,
             title="Track unavailable" if sid is not None else absent,
@@ -721,6 +740,9 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
         )
 
     def scope(t):
+        """Resolve a bracket's saved scope to its current collection identity or a
+        historical fallback.
+        """
         kind = t.get("scope_type")
         row = (
             {"artist": artists, "album": albums, "tag": tags}
@@ -876,6 +898,9 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
             match_week += now - 7 * 86400 <= date["seconds"] <= now
 
     def breakdown(counter, keys):
+        """Convert bracket counters into labelled counts and shares for the current
+        report set.
+        """
         return [
             dict(
                 key=k,
@@ -947,6 +972,7 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
         )
 
     def category(kind, identities, links):
+        """Aggregate entered-song tournament evidence into collection leaders."""
         grouped = defaultdict(list)
         for song in entered_songs:
             for key in links(song):

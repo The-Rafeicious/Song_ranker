@@ -28,11 +28,15 @@ class DatabaseValidationError(ValueError):
 
 
 def quote(name):
+    """Escape an SQLite identifier with doubled internal quotes."""
     return '"' + name.replace('"', '""') + '"'
 
 
 @contextmanager
 def readonly(filename):
+    """Yield a read-only connection to an existing regular database and always close
+    it.
+    """
     path = Path(filename).resolve(strict=True)
     if not path.is_file():
         raise DatabaseValidationError('Choose a regular database file.')
@@ -45,19 +49,29 @@ def readonly(filename):
 
 
 def json_bytes(value):
+    """Serialise deterministic UTF-8 JSON bytes while rejecting nonfinite numeric
+    values.
+    """
     return json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(',', ':'),
                       allow_nan=False).encode('utf-8')
 
 
 def digest(value):
+    """Hash a deterministic JSON representation for state comparison and export
+    verification.
+    """
     return hashlib.sha256(json_bytes(value)).hexdigest()
 
 
 def encode(value):
+    """Represent SQLite BLOB bytes losslessly in the JSON export format."""
     return {'blob_base64': base64.b64encode(value).decode('ascii')} if isinstance(value, bytes) else value
 
 
 def decode(value):
+    """Restore exported BLOBs and scalar SQLite values while rejecting unsupported
+    wrappers.
+    """
     if isinstance(value, dict):
         if set(value) != {'blob_base64'}:
             raise DatabaseValidationError('Unsupported value in export.')
@@ -120,6 +134,9 @@ def sql_dump(conn):
     """
     state=capture(conn)
     def literal(value):
+        """Render an exported value as a lossless SQLite literal, including BLOBs and
+        text containing nulls.
+        """
         value=decode(value)
         if value is None:return 'NULL'
         if isinstance(value,bytes):return "X'"+value.hex()+"'"
@@ -153,6 +170,9 @@ def sql_dump(conn):
 
 
 def validate(conn):
+    """Check SQLite integrity, foreign keys and supported Song Ranker schema
+    invariants before recovery.
+    """
     integrity = [row[0] for row in conn.execute('PRAGMA integrity_check')]
     if integrity != ['ok']:
         raise DatabaseValidationError('SQLite integrity check failed: ' + '; '.join(integrity))
@@ -271,6 +291,9 @@ def replace_contents(conn, state):
 
 
 def create_backup(filename, prefix='manual'):
+    """Create an integrity-checked SQLite safety backup with a unique timestamped
+    filename.
+    """
     if not re.fullmatch(r'[a-z_]+', prefix):
         raise ValueError('Invalid backup prefix.')
     path = Path(filename).resolve(strict=True)
@@ -335,6 +358,9 @@ def snapshot(filename):
 
 
 def audit(filename):
+    """Report validated schema, row counts, data hashes, extensions and
+    track-position conflicts.
+    """
     with snapshot(filename) as conn:
         validate(conn)
         state = capture(conn)
@@ -359,6 +385,7 @@ def publish(candidate, output):
 
 
 def write_export(filename, output):
+    """Publish an atomic, checksummed JSON export of a validated database snapshot."""
     with snapshot(filename) as conn:
         validate(conn)
         state = capture(conn)
@@ -376,6 +403,7 @@ def write_export(filename, output):
 
 
 def read_export(filename):
+    """Read an export's captured state only after validating its format and checksum."""
     payload = json.loads(Path(filename).read_text(encoding='utf-8'))
     if payload.get('format') != EXPORT_FORMAT or payload.get('state_sha256') != digest(payload.get('state')):
         raise DatabaseValidationError('Export format or checksum is invalid.')

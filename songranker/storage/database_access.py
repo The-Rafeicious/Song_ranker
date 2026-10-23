@@ -12,6 +12,9 @@ class MaintenanceGate:
         self.owner = None
 
     def enter_connection(self, timeout=30):
+        """Acquire a counted database lease after waiting for another thread's
+        exclusive maintenance.
+        """
         deadline = time.monotonic() + timeout
         with self.condition:
             while self.owner is not None and self.owner != get_ident():
@@ -22,12 +25,16 @@ class MaintenanceGate:
             self.connections += 1
 
     def leave_connection(self):
+        """Release a counted database lease and wake maintenance waiters."""
         with self.condition:
             self.connections -= 1
             self.condition.notify_all()
 
     @contextmanager
     def maintenance(self, timeout=30):
+        """Hold exclusive maintenance after draining other connections, rejecting
+        nested use and bounded timeouts.
+        """
         deadline = time.monotonic() + timeout
         with self.condition:
             if self.owner == get_ident():

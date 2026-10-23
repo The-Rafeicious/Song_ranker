@@ -17,6 +17,7 @@ configure_security(app, ROOT)
 
 @app.context_processor
 def project_version():
+    """Expose application and Vibe data versions to the shared template context."""
     from songranker.storage.vibe_state import VIBE_MAP_VERSION
     return dict(app_version=APP_VERSION, vibe_version=VIBE_MAP_VERSION)
 
@@ -25,8 +26,14 @@ DB_NAME = str(DB_PATH)
 DEV_PIN = os.environ.get('SONG_RANKER_PIN', '9042')
 
 def admin_required(f):
+    """Wrap a Dev handler so unauthenticated browsers are redirected to the PIN
+    login.
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
+        """Require the current browser's admin session before invoking the wrapped
+        Dev handler.
+        """
         if not session.get('is_admin'):
             return redirect(url_for('dev_login'))
         return f(*args, **kwargs)
@@ -35,6 +42,9 @@ def admin_required(f):
 
 class _AppConnection(sqlite3.Connection):
     def close(self):
+        """Close SQLite and release its maintenance-gate lease even when closing
+        raises.
+        """
         try:
             super().close()
         finally:
@@ -44,6 +54,9 @@ class _AppConnection(sqlite3.Connection):
 
 
 def get_db_connection():
+    """Open the configured app database with foreign keys, row objects and a
+    maintenance-gate lease.
+    """
     gate.enter_connection()
     try:
         conn = sqlite3.connect(DB_NAME, timeout=30, factory=_AppConnection)
@@ -141,6 +154,9 @@ def export_rankings():
 
 
 def is_close_match(guess, actual, threshold=0.75):
+    """Compare trimmed case-insensitive answer text using the configured
+    sequence-similarity threshold.
+    """
     if not guess or not actual:
         return False
     g = guess.lower().strip()
@@ -164,6 +180,9 @@ def fetch_songs(conn, *, song_id=None, audio_only=False):
 
 
 def get_song_full(song_id, conn):
+    """Hydrate one catalogue song through the shared song query, returning no result
+    when absent.
+    """
     songs=fetch_songs(conn,song_id=song_id)
     return songs[0] if songs else None
 
@@ -231,6 +250,7 @@ def fetch_match_history(conn, song_id=None, limit=50, *, offset=0, mode='all', o
 
 
 def create_database_backup(prefix='song_ranker'):
+    """Save the configured live database through the shared rotating-backup policy."""
     from songranker.storage.database_io import create_rolling_backup
     return str(create_rolling_backup(DB_NAME))
 

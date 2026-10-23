@@ -54,6 +54,8 @@ python tools/benchmark_selection.py --output NEW_REPORT.json
 The benchmark uses the production standard-library selector. Old V4 shadow
 scripts, frozen prototype comparisons and one-time Vibe release-cleanup commands
 were retired in V5.3. Current migrations and reviewed Dev resets remain tested.
+Reports include the application version; importing a saved legacy selector is no
+longer supported. Output files are created exclusively to preserve earlier runs.
 
 V5.3 validation results and review limits are recorded in
 [the consolidation report](CONSOLIDATION.md) and its pull request.

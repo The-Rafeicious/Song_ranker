@@ -14,6 +14,9 @@ MAX_SOURCE_BYTES=1024*1024
 DICTIONARY=b'album artist title metadata release_date source_track_number track_number disc_count disc_number genres audio_url cover_url collection_id artist_id censored_title collection_explicitness duration_ms explicitness storefront track_id track_url album_url https://music.apple.com/gb/album/ https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview https://is1-ssl.mzstatic.com/image/thumb/Music /300x300bb.jpg /100x100bb.jpg notExplicit explicit cleaned unknown'
 
 def unpack_source(value):
+    """Decode bounded plain or dictionary-compressed source JSON, rejecting malformed
+    or excessive payloads.
+    """
     if not isinstance(value,str):raise ValueError('Source snapshot must be text.')
     try:
         if value.startswith(PREFIX):
@@ -31,6 +34,9 @@ def unpack_source(value):
     return result
 
 def pack_source(value):
+    """Encode source metadata losslessly, compressing only when smaller and retaining
+    existing valid compressed bytes.
+    """
     if isinstance(value,str) and value.startswith(PREFIX):
         unpack_source(value)  # Validate, but retain exact bytes across zlib versions.
         return value

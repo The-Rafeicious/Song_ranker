@@ -20,6 +20,9 @@ The [ownership map](FILES.md) identifies every runtime owner. The generated
 [Python function index](FUNCTIONS.md) includes functions, methods, nested helpers,
 tools and tests with signatures, purposes and current source links. Regenerate it
 with `python tools/check.py docs --write`; CI rejects a stale index.
+Ambiguous runtime helpers now describe their contracts in source docstrings,
+including ownership, stale-write checks, missing evidence and recovery behavior,
+so the index explains their work rather than merely repeating their names.
 
 | Feature | Current Python owner |
 | --- | --- |
@@ -74,6 +77,8 @@ root modules), frozen prototype selector lab, generation-1 Vibe reset helper and
 one-time pre-merge competition cleanup tool. Tests dedicated solely to those
 retired tools were removed; current migrations and reviewed result resets remain
 covered. Other version-suffixed tests were renamed by behavior rather than lost.
+The retained benchmark imports only the current production selector. Its report
+records APP_VERSION and emits each checkpoint once, including a 1,700-round run.
 
 Tracked Python bytecode, machine-specific IDE metadata and the generated ranking
 text export were removed from source control. Existing ignore rules now also

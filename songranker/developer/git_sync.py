@@ -21,10 +21,18 @@ class SyncError(RuntimeError):
     def __init__(self,code,message):super().__init__(message);self.code=code
 
 
-def stamp():return datetime.now(timezone.utc).isoformat(timespec='seconds')
+def stamp():
+    """Return a UTC timestamp at whole-second precision for local Git operation
+    history.
+    """
+    return datetime.now(timezone.utc).isoformat(timespec='seconds')
 
 
-def digest(value):return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
+def digest(value):
+    """Hash deterministic JSON to bind Git reviews to their observed repository
+    state.
+    """
+    return hashlib.sha256(json.dumps(value,sort_keys=True,separators=(',',':')).encode()).hexdigest()
 
 
 def display_remote(value):
@@ -44,6 +52,9 @@ class GitSync:
         self.repo=None;self.gitdir=None;self.prefix='';self.sql=self.root/'database_backup.sql'
 
     def run(self,*args,check=True,network=False):
+        """Run noninteractive Git with bounded timeouts and translate execution or
+        authentication failures.
+        """
         env=os.environ.copy();env.update(GIT_TERMINAL_PROMPT='0',GCM_INTERACTIVE='Never',GIT_OPTIONAL_LOCKS='0')
         try:
             result=subprocess.run(['git',*args],cwd=self.repo or self.root,env=env,stdin=subprocess.DEVNULL,
@@ -60,6 +71,9 @@ class GitSync:
         return result
 
     def discover(self):
+        """Locate the repository, application-relative SQL snapshot and private Git
+        state directory.
+        """
         result=self.run('rev-parse','--show-toplevel',check=False)
         if result.returncode:raise SyncError('not_repo','This app folder is not in a Git repository. Local backups and downloads still work.')
         self.repo=Path(result.stdout.strip()).resolve()
@@ -71,10 +85,15 @@ class GitSync:
         return self
 
     @property
-    def state_dir(self):return self.gitdir/'song_ranker_sync'
+    def state_dir(self):
+        """Resolve the installation's private sync-state directory inside its Git
+        metadata.
+        """
+        return self.gitdir/'song_ranker_sync'
 
     @contextmanager
     def lock(self):
+        """Hold a nonblocking cross-process lock for one Git/database sync operation."""
         self.state_dir.mkdir(exist_ok=True);path=self.state_dir/'operation.lock'
         f=path.open('a+b')
         if path.stat().st_size==0:f.write(b'0');f.flush()
@@ -93,10 +112,16 @@ class GitSync:
             f.close() # OS locks are released even if a process exits unexpectedly.
 
     def history(self):
+        """Read up to ten recent local Git operation results, tolerating absent or
+        invalid history.
+        """
         try:return json.loads((self.state_dir/'history.json').read_text())[:10]
         except (OSError,ValueError,TypeError):return []
 
     def record(self,result):
+        """Atomically prepend a timestamped operation result to the bounded local Git
+        history.
+        """
         result=dict(result,at=stamp());events=[result,*self.history()][:10]
         self.state_dir.mkdir(exist_ok=True)
         with tempfile.NamedTemporaryFile(dir=self.state_dir,mode='w',encoding='utf-8',delete=False) as f:
@@ -104,6 +129,9 @@ class GitSync:
         os.replace(temp,self.state_dir/'history.json');return result
 
     def protected(self,path):
+        """Identify live data, backups, secrets and generated files excluded from
+        code-change handling.
+        """
         p=PurePosixPath(path);parts={s.casefold() for s in p.parts};name=p.name.casefold()
         try:db_rel=self.database.relative_to(self.repo).as_posix().casefold()
         except ValueError:db_rel=None
@@ -114,6 +142,9 @@ class GitSync:
             or any(s.startswith(('.restore_','.export_','.git_database_')) for s in p.parts))
 
     def changes(self):
+        """Read staged and unstaged Git changes, retaining rename origins and
+        protected-file flags.
+        """
         fields=self.run('status','--porcelain=v1','-z','--untracked-files=all').stdout.split('\0');result=[];i=0
         while i<len(fields):
             item=fields[i];i+=1
@@ -125,6 +156,9 @@ class GitSync:
         return result
 
     def inspect(self):
+        """Inspect branch, upstream, code changes and database status and produce a
+        review fingerprint.
+        """
         if self.repo is None:self.discover()
         branch=self.run('symbolic-ref','--quiet','--short','HEAD',check=False).stdout.strip()
         head=self.run('rev-parse','--verify','HEAD',check=False).stdout.strip()
@@ -162,12 +196,16 @@ class GitSync:
             history=self.history(),database_sync=self.database_status(),snapshot=dict(name='database_backup.sql',exists=self.sql.is_file(),bytes=self.sql.stat().st_size if self.sql.is_file() else 0))
 
     def database_status(self):
+        """Read the latest saved database reconciliation result without contacting
+        the remote.
+        """
         try:
             value=json.loads((self.state_dir/'database_status.json').read_text(encoding='utf-8'))
             return value if isinstance(value,dict) else None
         except (OSError,ValueError):return None
 
     def database_report(self,result):
+        """Atomically persist a timestamped database reconciliation result."""
         self.state_dir.mkdir(exist_ok=True)
         with tempfile.NamedTemporaryFile(dir=self.state_dir,mode='w',encoding='utf-8',delete=False) as stream:
             path=stream.name;json.dump(dict(result,at=stamp()),stream);stream.flush();os.fsync(stream.fileno())
@@ -176,6 +214,9 @@ class GitSync:
         return result
 
     def review_database(self,state,adopt=False):
+        """Compare local/remote database snapshots and optionally adopt a verified
+        newer remote with safety archives.
+        """
         from songranker.storage.git_database import DatabaseSync
         policy=DatabaseSync(self,state)
         with policy.review() as reviewed:
@@ -220,11 +261,17 @@ class GitSync:
             return result
 
     def status(self):
+        """Return cached repository inspection or a structured unavailable reason for
+        the Dev panel.
+        """
         try:
             state=self.inspect();state['status_source']='cached';return state
         except SyncError as error:return dict(available=False,state=error.code,message=str(error),history=self.history() if self.gitdir else [])
 
     def fetch(self,state):
+        """Refresh only the configured upstream branch without changing the working
+        tree.
+        """
         self.run('fetch','--no-tags','--no-write-fetch-head',state['remote'],
             '+refs/heads/'+state['target']+':refs/remotes/'+state['remote']+'/'+state['target'],network=True)
 
@@ -243,6 +290,9 @@ class GitSync:
         except (OSError,sqlite3.Error,ValueError):return self.failure('check',SyncError('database_check_failed','The remote database snapshot could not be validated. Local data was kept.'))
 
     def failure(self,action,error,**extra):
+        """Build a structured Git failure and record it locally when history storage
+        is available.
+        """
         result=dict(ok=False,action=action,code=error.code,message=str(error),**extra)
         if self.gitdir:
             try:self.record(result)
@@ -250,6 +300,9 @@ class GitSync:
         return result
 
     def archive_sql(self,label):
+        """Preserve the existing regular SQL snapshot before replacement and rotate
+        old safety copies.
+        """
         if not self.sql.exists():return None
         if self.sql.is_symlink():raise SyncError('linked_snapshot','The SQL snapshot is a symbolic link. Use a normal file before syncing.')
         self.state_dir.mkdir(exist_ok=True)
@@ -259,6 +312,9 @@ class GitSync:
         return dest
 
     def write_snapshot(self):
+        """Atomically export a validated live database to SQL, archiving the previous
+        changed snapshot.
+        """
         if not self.database.is_file():raise SyncError('database_missing','The live database does not exist. Start/restore the app before uploading a backup.')
         if self.sql.is_symlink():raise SyncError('linked_snapshot','The SQL snapshot is a symbolic link. Use a normal file before syncing.')
         from songranker.storage.database_io import (snapshot, validate, sql_dump)
@@ -292,6 +348,9 @@ class GitSync:
                     if 'candidate' not in review:raise SyncError('database_check_failed','There is no validated remote database to review. Use the normal upload when no remote snapshot exists.')
                     from songranker.storage.database_io import snapshot,readonly,capture,digest as data_digest
                     def counts(conn):
+                        """Count catalogue, result and placed-Vibe rows for the
+                        local-versus-remote choice review.
+                        """
                         result={label:conn.execute('SELECT COUNT(*) FROM '+table).fetchone()[0] for label,table in
                             [('Songs','songs'),('Albums','albums'),('Artists','artists'),('Tags','genres'),('Votes','history'),('Trivia rounds','trivia_rounds'),('Tournaments','tournaments'),('Elo guesses','elo_guess_rounds'),('Shelves rounds','album_shelf_rounds')]}
                         result['Vibe positions']=conn.execute("SELECT COUNT(*) FROM song_vibe_positions WHERE status='placed'").fetchone()[0]
@@ -350,6 +409,9 @@ class GitSync:
             return self.failure('keep_local',error)
 
     def upload(self,expected=None):
+        """Review repository/database state and publish only the current database
+        snapshot through guarded Git steps.
+        """
         commit=None;published=False
         try:
             self.discover()

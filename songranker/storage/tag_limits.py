@@ -7,6 +7,9 @@ MAX_SONG_TAGS = 8
 
 
 def tag_names(value):
+    """Split and deduplicate comma-separated tag names using Unicode-normalised
+    case-insensitive identities.
+    """
     names = {}
     for name in str(value or '').split(','):
         name = name.strip()
@@ -17,6 +20,7 @@ def tag_names(value):
 
 
 def check_count(count):
+    """Reject a proposed song membership count above the shared eight-tag limit."""
     if count > MAX_SONG_TAGS:
         raise ValueError(f'A song can have at most {MAX_SONG_TAGS} tags. Remove a tag before adding another.')
 

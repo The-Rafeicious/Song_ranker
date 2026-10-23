@@ -16,20 +16,30 @@ class StopCoordinator:
         self.ack_timeout=ack_timeout;self.ack_delay=ack_delay
 
     def enter(self):
+        """Acquire an in-flight request lease unless shutdown has begun draining
+        requests.
+        """
         with self.condition:
             if self.busy:return False
             self.inflight+=1;return True
 
     def leave(self):
+        """Release an in-flight request lease and wake the shutdown drain waiter."""
         with self.condition:
             self.inflight-=1;self.condition.notify_all()
 
     def status(self,owner):
+        """Return stop progress only to the owning browser, hiding internal events
+        and actions.
+        """
         with self.condition:
             if not self.job or self.job['owner']!=owner:return dict(state='idle',supported=self.shutdown is not None)
             return dict(supported=self.shutdown is not None,**{k:v for k,v in self.job.items() if k not in ('owner','event','action')})
 
     def begin(self,owner,sync_git,expected=None):
+        """Start one browser-owned drain, backup and optional Git task on a supported
+        host.
+        """
         with self.condition:
             if self.shutdown is None:raise ValueError('Start the app with python main.py to use website shutdown. This host is managed externally.')
             if self.busy:
@@ -41,6 +51,9 @@ class StopCoordinator:
             return self.status(owner)
 
     def signal(self,owner,job_id,action):
+        """Accept an owning browser's valid stop or cancel acknowledgement for the
+        current job.
+        """
         with self.condition:
             job=self.job
             if not job or job['owner']!=owner or job['id']!=job_id:raise ValueError('This stop task is not available in this browser.')
@@ -49,9 +62,13 @@ class StopCoordinator:
             job['action']=action;job['event'].set()
 
     def update(self,job,**values):
+        """Publish stop-job progress while holding the coordinator's condition lock."""
         with self.condition:job.update(values)
 
     def run(self,job,sync_git,expected):
+        """Drain requests, save a backup, optionally upload Git data and await the
+        final stop acknowledgement.
+        """
         try:
             with self.condition:
                 deadline=time.monotonic()+30
@@ -87,6 +104,9 @@ class StopCoordinator:
 def register_waitress_shutdown(server,coordinator):
     """Close sockets on Waitress's event-loop thread, after acknowledged backup."""
     def shutdown():
+        """Drain Waitress workers and close sockets on its event thread through the
+        wakeup trigger.
+        """
         from waitress import trigger, wasyncore
         socket_map = getattr(server, 'map', None)
         if socket_map is None:

@@ -18,6 +18,9 @@ def index():
 
 
 def _preference_error(error):
+    """Return a preference failure with its HTTP status and any already-saved
+    idempotent result.
+    """
     payload = {"message": str(error)}
     if getattr(error, "saved_result", None) is not None:
         payload["saved_result"] = error.saved_result
@@ -121,6 +124,9 @@ def percent(n, total):
 
 
 def average(values):
+    """Return a rounded mean for report values, preserving unavailable for an empty
+    sample.
+    """
     values = list(values)
     return round(mean(values), 2) if values else None
 
@@ -182,6 +188,7 @@ def build_voting_stats(
         songs[s["id"]] = s
 
     def identity(sid):
+        """Resolve a report participant or retain a safe removed-track identity."""
         return songs.get(sid) or dict(
             id=None,
             title="Removed track",
@@ -269,6 +276,9 @@ def build_voting_stats(
             s["best_run"] = None
 
     def result_totals(rows):
+        """Aggregate effective voting evidence, rating gaps, saved changes and dated
+        participation.
+        """
         rated = [r for r in rows if r["gap"] is not None]
         unequal = [r for r in rated if not r["level"]]
         changes = [r for r in rows if r["snapshot"]]
@@ -486,6 +496,9 @@ def build_voting_stats(
         )
 
     def top(rows, metric, reverse=True):
+        """Select five report leaders with deterministic metric, exposure, title and
+        ID ordering.
+        """
         return sorted(
             rows,
             key=lambda s: (
@@ -497,6 +510,9 @@ def build_voting_stats(
         )[:5]
 
     def category(kind, title, entities, links):
+        """Aggregate tested song preference records into artist, full-album or tag
+        leaders.
+        """
         rows = []
         for eid, entity in entities.items():
             if kind == "album" and not proper_album(entity):

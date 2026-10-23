@@ -108,6 +108,9 @@ def shelf_pool(conn):
 
 
 def shelf_candidates(conn, count):
+    """Draw eligible albums and tracks using production exposure, recency and
+    Vibe-aware selection.
+    """
     from songranker.modes.selection import draw_shelves
     from songranker.modes.selection import mode_counts
     from songranker.modes.selection import shelf_history
@@ -320,6 +323,9 @@ def integer(value, low=1, high=None):
 
 
 def can_grade(items, rules):
+    """Validate saved Shelves rules, slots, track positions and unique identities
+    before reconstructing a grade.
+    """
     if rules != 1 or not 1 <= len(items) <= 10:
         return False
     slots = {i["album_slot"] for i in items}
@@ -335,6 +341,7 @@ def can_grade(items, rules):
         return False
 
     def unique(keys):
+        """Check that a chosen tuple of saved item fields is unique within the round."""
         return len({tuple(i[k] for k in keys) for i in items}) == len(items)
 
     living_ids = [i["song_id"] for i in items if i["song_id"] is not None]
@@ -347,6 +354,9 @@ def can_grade(items, rules):
 
 
 def empty_counts():
+    """Create the zeroed track/order/point counters shared by Shelves report
+    aggregates.
+    """
     return dict(
         graded_tracks=0,
         album_correct=0,
@@ -361,11 +371,15 @@ def empty_counts():
 
 
 def add_counts(target, source):
+    """Accumulate one Shelves result's known counters into an existing aggregate."""
     for key in empty_counts():
         target[key] += source[key]
 
 
 def item_counts(item):
+    """Project a graded track into album/order/point and error-category report
+    counters.
+    """
     full = isclose(item["points"], item["available"], rel_tol=0, abs_tol=1e-8)
     return dict(
         graded_tracks=1,
@@ -381,6 +395,9 @@ def item_counts(item):
 
 
 def finish_counts(row):
+    """Derive album/order accuracy and wrong-order counts from aggregated Shelves
+    counters.
+    """
     row.update(
         order_accuracy=percentage(row["order_right"], row["order_pairs"]),
         album_accuracy=percentage(row["album_correct"], row["graded_tracks"]),
@@ -390,6 +407,9 @@ def finish_counts(row):
 
 
 def window_totals(rows):
+    """Summarise Shelves rounds in a report window, distinguishing graded results
+    from unknown history.
+    """
     rows = list(rows)
     result = empty_counts()
     known = [r for r in rows if r["graded"]]
@@ -407,6 +427,9 @@ def window_totals(rows):
 
 
 def page_number(value, pages):
+    """Clamp a report page number to the available range, defaulting invalid input to
+    page one.
+    """
     try:
         return max(1, min(int(value), pages))
     except (TypeError, ValueError, OverflowError):
@@ -445,6 +468,9 @@ def build_shelves_stats(conn, now=None, history_page=1, album_page=1, selected=N
         album_artists[song.get("album_id")].update(artist_links[song["id"]])
 
     def album_identity(aid, slot=None):
+        """Build a report release identity with linked artists and a fallback for
+        unavailable albums.
+        """
         album = albums.get(aid)
         return dict(
             id=aid if album else None,
@@ -710,6 +736,9 @@ def build_shelves_stats(conn, now=None, history_page=1, album_page=1, selected=N
     tested = [finish_counts(s) for s in songs.values() if s["order_pairs"]]
 
     def records(rows):
+        """Choose stable best/worst Shelves order-accuracy records from tested report
+        rows.
+        """
         rows = list(rows)
         return dict(
             best=sorted(

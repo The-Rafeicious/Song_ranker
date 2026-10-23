@@ -26,6 +26,7 @@ class AppleRequestError(Exception):
         self.upstream_status = upstream_status
 
     def response(self):
+        """Build a noncached JSON error response with Apple state and retry headers."""
         response = jsonify(message=str(self), error=str(self), state=self.state,
                            retry_after=self.retry_after, upstream_status=self.upstream_status)
         response.status_code = self.status
@@ -36,6 +37,9 @@ class AppleRequestError(Exception):
 
 
 def retry_seconds(value, fallback=60):
+    """Convert an HTTP Retry-After delay or date to positive seconds, with a
+    fallback.
+    """
     try:
         return max(1, math.ceil(float(value)))
     except (ValueError, TypeError, OverflowError):
@@ -58,15 +62,22 @@ class RequestGate:
         self.reason = 'rate_limited'
 
     def wait(self):
+        """Return the remaining upstream cooldown in whole seconds without admitting
+        a request.
+        """
         with self.lock:
             return max(0, math.ceil(self.cooldown-self.clock()))
 
     def block(self, seconds, reason='rate_limited'):
+        """Extend the shared upstream cooldown and remember why access is paused."""
         with self.lock:
             self.cooldown = max(self.cooldown, self.clock()+seconds)
             self.reason = reason
 
     def admit(self, key=None):
+        """Reserve a request within spacing and rolling-minute limits, reusing active
+        clip sessions.
+        """
         with self.lock:
             now = self.clock()
             if self.cooldown > now:
@@ -100,6 +111,9 @@ status_lock = Lock()
 
 
 def upstream_error(response, gate, label):
+    """Translate Apple HTTP failures into browser diagnostics and update the relevant
+    cooldown.
+    """
     status = response.status_code
     if status == 429:
         wait = retry_seconds(response.headers.get('Retry-After'))
@@ -174,6 +188,9 @@ class PreviewMemoryCache:
         self.lock=Lock()
 
     def _expire(self):
+        """Remove expired preview bytes, download reservations and closed-page
+        markers.
+        """
         now=self.clock()
         for key,entry in list(self.entries.items()):
             if entry[0]<=now:del self.entries[key]
@@ -183,6 +200,9 @@ class PreviewMemoryCache:
             if expires<=now:del self.closed_pages[page]
 
     def reserve(self, key):
+        """Return a bounded download reservation used to reject invalidated late
+        responses.
+        """
         with self.lock:
             self._expire()
             if key not in self.reservations:self.reservations[key]=(object(),self.clock()+self.ttl)
@@ -191,6 +211,9 @@ class PreviewMemoryCache:
             return self.reservations[key][0]
 
     def discard(self, page, song_ids=None, close=False):
+        """Invalidate a page's previews and reservations, optionally closing it
+        against late downloads.
+        """
         with self.lock:
             self._expire();removed=0
             for mapping in (self.entries,self.reservations):
@@ -205,6 +228,9 @@ class PreviewMemoryCache:
             return removed
 
     def get(self, key):
+        """Read unexpired preview bytes and media type, refreshing their
+        least-recently-used position.
+        """
         with self.lock:
             self._expire()
             entry=self.entries.get(key)
@@ -213,6 +239,9 @@ class PreviewMemoryCache:
             return entry[1],entry[2]
 
     def put(self, key, body, content_type, reservation=None):
+        """Cache a size-bounded complete preview only while its page and reservation
+        remain valid.
+        """
         if not body or len(body)>self.max_bytes:return False
         with self.lock:
             self._expire()
@@ -246,6 +275,9 @@ def api_preview_cache():
 
 
 def complete_preview(status, headers, length):
+    """Check whether a completed HTTP response contains the entire clip rather than a
+    partial range.
+    """
     expected=headers.get('Content-Length')
     if expected is not None:
         try:
@@ -258,6 +290,9 @@ def complete_preview(status, headers, length):
 
 
 def cached_preview_response(body, content_type, byte_range):
+    """Serve cached audio with full or single-range HTTP headers, rejecting
+    unsatisfiable ranges.
+    """
     length=len(body);status=200;start=0;end=length-1
     if byte_range:
         first,last=byte_range[6:].split('-',1)
@@ -281,6 +316,9 @@ def cached_preview_response(body, content_type, byte_range):
 
 
 def apple_preview_url(url):
+    """Accept only supported Apple media hosts, schemes and ports without embedded
+    credentials.
+    """
     try:
         parsed=urlsplit(url)
         host=(parsed.hostname or '').lower()
@@ -290,6 +328,7 @@ def apple_preview_url(url):
 
 
 def remember(song_id, state, message='', retry_after=0, upstream_status=None):
+    """Store bounded short-lived preview diagnostics and retry timing for one song."""
     with status_lock:
         preview_status[song_id]=dict(state=state,message=message,retry_after=retry_after,
                                      upstream_status=upstream_status,retry_until=time.monotonic()+retry_after,expires=time.monotonic()+300)
@@ -371,6 +410,9 @@ def api_preview(song_id):
         remember(song_id,'streaming',upstream_status=upstream.status_code)
         stream=upstream
         def chunks():
+            """Stream upstream audio, record interruptions and cache only complete
+            bounded downloads.
+            """
             parts=[];length=0;cacheable=True;finished=False
             try:
                 for chunk in stream.iter_content(chunk_size=16384):

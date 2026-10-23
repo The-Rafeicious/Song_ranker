@@ -13,8 +13,9 @@ All frontend assets are declared once in templates/assets.html. Shared helpers
 belong in ui.js, playback/volume in preview.js, and shared layouts in the CSS
 owners listed in docs/PAGE_STYLE.md. site_baseline.css loads last.
 
-Use docs/FILES.md and docs/FUNCTIONS.md to locate code. After moving/adding Python
-definitions run python tools/check.py docs --write. Before a PR run
+Use docs/FILES.md and docs/FUNCTIONS.md to locate code. Describe non-obvious function
+contracts in source docstrings. After moving/adding Python definitions run
+python tools/check.py docs --write. Before a PR run
 python tools/check.py all. Documentation lives in docs/; release notes live in
 update_logs/. Preserve current routes unless a requested behavior change requires
 an explicitly documented API change.

@@ -11,6 +11,7 @@ KERNEL = tuple(tuple(math.exp(-((x-a)**2+(y-b)**2)/(2*WIDTH**2))
 
 
 def positions(song):
+    """Extract only placed, finite, in-range coordinates for the fixed Vibe maps."""
     result = {}
     profiles = song.get('vibe_maps') or {}
     for key, *_ in MAPS:
@@ -24,6 +25,9 @@ def positions(song):
 
 
 def point_similarity(a,b):
+    """Measure Gaussian proximity between two coordinates using the fixed similarity
+    width.
+    """
     return math.exp(-sum((x-y)**2 for x,y in zip(a,b))/(2*WIDTH**2))
 
 
@@ -35,6 +39,9 @@ class SongVibeBias:
         self.strength = MAX_BIAS*self.coverage
 
     def multiplier(self, anchor, candidate):
+        """Compute a bounded song-draw multiplier from shared Vibe coordinates,
+        leaving missing maps neutral.
+        """
         a,b = self.profiles.get(anchor,{}),self.profiles.get(candidate,{})
         common = a.keys() & b.keys()
         # Missing/not-applicable maps contribute no evidence, never a fake centre.
@@ -75,6 +82,9 @@ class AlbumVibeBias:
         self.strength = MAX_BIAS*self.coverage
 
     def multiplier(self, anchor, candidate):
+        """Compute a coverage-aware album-draw multiplier from overlapping Vibe
+        distributions.
+        """
         a,b = self.profiles.get(anchor,{}),self.profiles.get(candidate,{})
         score = 0
         for key in a.keys() & b.keys():
