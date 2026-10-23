@@ -197,6 +197,7 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.goto(base+'/dev/dashboard?view=vibe_records');await page.locator('[data-vibe-edit="1"]').waitFor();
   await page.locator('[data-vibe-edit="1"]').click();await page.locator('#dev-vibe-save').waitFor();
   await page.locator('[name="pace_mood:x"]').fill('4.25');
+  assert.equal(await page.locator('[data-vibe-map-tab]').count(),4);await page.locator('[name="pace_mood:x"]').fill('');await page.locator('[data-vibe-map-tab]').nth(1).click();assert.equal(await page.locator('[data-vibe-map-tab="pace_mood"]').getAttribute('aria-pressed'),'true');await page.locator('[name="pace_mood:x"]').fill('4.25');await page.locator('[data-vibe-map-tab]').nth(1).click();await page.locator('[data-vibe-map-tab="pace_mood"]').click();assert.equal(await page.locator('[name="pace_mood:x"]').inputValue(),'4.25');
   await page.locator('#dev-vibe-save button[type="submit"]').click();
   await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data saved'));await page.locator('#dev-vibe-search button:enabled').waitFor();
   const maintained=await (await page.request.get(base+'/api/dev/vibe/1')).json();
@@ -204,6 +205,7 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-vibe',folder);await page.locator('#dev-vibe-editor').screenshot({path:folder+'/dev-vibe-'+width+'.png'});}
   await page.locator('[data-vibe-clear-map="pace_mood"]').click();await page.locator('#dev-vibe-save button[type="submit"]').click();
   await page.locator('#dev-vibe-search button:enabled').waitFor();
+  await page.locator('.dev-vibe-delete > summary').click();
   await page.locator('#dev-vibe-delete [name="confirmation"]').fill('DELETE VIBE');await page.locator('#dev-vibe-delete button[type="submit"]').click();
   await page.waitForFunction(()=>document.querySelector('#toast').textContent.includes('Vibe data deleted'));
   const removed=await (await page.request.get(base+'/api/dev/vibe/1')).json();assert.ok(removed.maps.every(m=>m.status==='unmapped'));assert.equal(removed.completed_passes,0);
@@ -241,16 +243,29 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.locator('#system-local-confirmation').fill('KEEP LOCAL');await page.locator('[data-system-local-apply]').click();
   await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Local database kept'));
   assert.equal(kept,1);assert.ok(await page.locator('[data-system-upload]').isDisabled());
-  await page.goto(base+'/dev/dashboard');await page.locator('.dev-home-grid').waitFor();
-  assert.equal(await page.locator('.dev-navbar').count(),1);assert.equal(await page.locator('.nav-matches,.dev-sidebar,.dev-taskbar').count(),0);
-  assert.equal(await page.locator('.dev-home-grid > section').count(),7);assert.equal(await page.locator('.dev-home-tag-workshop [data-dev="tag_workbench"]').textContent(),'Tag Workshop ↗');assert.equal(await page.locator('.dev-home-tag-workshop .dev-service-metrics > div').count(),2);assert.equal(await page.locator('.dev-category').count(),4);assert.equal(await page.locator('.dev-nav-actions .btn').count(),0);assert.equal(await page.locator('.dev-home-grid .system-actions').count(),0);
-  for(const width of [390,768,1365,1800]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-home',folder);if(width>900){const sizes=await page.locator('.dev-home-summary:not(.dev-home-tag-workshop)').evaluateAll(nodes=>nodes.map(e=>({y:e.getBoundingClientRect().y,h:e.getBoundingClientRect().height})));assert.ok(sizes.every(s=>Math.abs(s.y-sizes[0].y)<2&&Math.abs(s.h-sizes[0].h)<2),'Aligned equal service cards');}await page.screenshot({path:folder+'/dev-home-'+width+'.png',fullPage:true});}
-  await page.locator('.dev-category summary').first().click();assert.equal(await page.locator('#dev-page-menu [data-dev]').count(),20);
-  await page.locator('.dev-category summary').last().click();await page.locator('#dev-page-menu [data-dev="database"]').click();await page.locator('#system-backups').waitFor();await page.locator('[data-db-object="songs"]').click();await page.locator('.db-rows').waitFor();
+  await page.goto(base+'/dev/dashboard');await page.locator('.dev-home-areas').waitFor();
+  assert.equal(await page.locator('.dev-navbar').count(),1);assert.equal(await page.locator('.nav-matches,.dev-sidebar,.dev-taskbar,.dev-category').count(),0);
+  assert.equal(await page.locator('#dev-page-menu > a').count(),4);assert.equal(await page.locator('.dev-home-status > section').count(),3);assert.equal(await page.locator('.dev-home-areas [data-dev]').count(),27);
+  for(const width of [390,768,1365,1800]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-home',folder);if(width>1100){const sizes=await page.locator('.dev-home-status > section').evaluateAll(nodes=>nodes.map(e=>({y:e.getBoundingClientRect().y,h:e.getBoundingClientRect().height})));assert.ok(sizes.every(s=>Math.abs(s.y-sizes[0].y)<2&&Math.abs(s.h-sizes[0].h)<2),'Aligned equal service cards');const bottoms=await page.locator('.dev-home-status > section').evaluateAll(nodes=>nodes.map(node=>(node.querySelector('.system-actions')||node.querySelector(':scope > .btn')).getBoundingClientRect().bottom));assert.ok(bottoms.every(y=>Math.abs(y-bottoms[0])<2),'Home status actions align');assert.ok(await page.locator('.dev-home-areas h2 a').evaluateAll(nodes=>nodes.every(node=>parseFloat(getComputedStyle(node).fontSize)>=26)),'Home section headings follow shared typography');}await page.screenshot({path:folder+'/dev-home-'+width+'.png',fullPage:true});}
+  for(const area of ['library','modes','tools']) {
+    await page.locator('#dev-page-menu [data-dev="'+area+'"]').click();await page.locator('.dev-destinations').waitFor();
+    for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-'+area,folder);await page.screenshot({path:folder+'/dev-'+area+'-'+width+'.png',fullPage:true});}
+  }
+  await page.goto(base+'/dev/library/songs');await page.locator('#manage-rows [data-edit]').first().waitFor();
+  await page.locator('.table-filter-panel > summary').click();assert.equal(await page.locator('.table-filter-panel .table-popover-content').evaluate(e=>getComputedStyle(e).position),'static');await page.locator('.table-filter-panel > summary').click();
+  await page.locator('[data-edit="songs"][data-id="1"]').first().click();await page.locator('#dev-editor-slot #field-title').waitFor();assert.ok(!(await page.locator('#editor').evaluate(e=>e.matches(':modal'))));
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-editor',folder);await page.screenshot({path:folder+'/dev-editor-'+width+'.png',fullPage:true});}
+  await page.locator('#field-title').fill('Unsaved draft');await page.locator('#dev-page-menu [data-dev="tools"]').click();await page.locator('#dev-unsaved:not([hidden])').waitFor();assert.equal(await page.locator('#field-title').inputValue(),'Unsaved draft');assert.ok(page.url().endsWith('/dev/library/songs'));
+  await page.locator('[data-workspace-stay]').click();assert.equal(await page.locator('#field-title').inputValue(),'Unsaved draft');await page.locator('#dev-page-menu [data-dev="tools"]').click();await page.locator('[data-workspace-discard]').click();await page.locator('.dev-destinations').waitFor();assert.ok(page.url().endsWith('/dev/tools'));
+  await page.locator('.dev-destinations [data-dev="database"]').click();await page.locator('[data-db-object="songs"]').click();await page.locator('.db-rows').waitFor();assert.equal(await page.locator('#system-backups').count(),0);
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-database',folder);await page.screenshot({path:folder+'/dev-database-'+width+'.png',fullPage:true});}
   await page.locator('[data-db-tab="columns"]').click();assert.ok((await page.locator('#db-content').textContent()).includes('Primary key'));
   await page.locator('[data-db-tab="definition"]').click();assert.ok((await page.locator('.db-definition').textContent()).includes('CREATE TABLE'));
-  await page.locator('[data-db-tab="rows"]').click();await page.locator('[data-db-cell="0"][data-db-column="1"]').click();await page.locator('.db-cell-detail').waitFor();assert.ok(await page.locator('#editor-submit').isHidden());await page.locator('#editor-close').click();assert.ok(await page.locator('.dev-category').evaluateAll(nodes=>nodes.every(e=>!e.open)));
+  await page.locator('[data-db-tab="rows"]').click();await page.locator('[data-db-cell="0"][data-db-column="1"]').click();await page.locator('.db-cell-detail').waitFor();assert.ok(await page.locator('#editor-submit').isHidden());await page.locator('#editor-close').click();
+  await page.locator('#dev-section-nav [data-dev="backups"]').click();await page.locator('#system-backups').waitFor();assert.equal(await page.locator('#system-inventory').count(),0);
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-backups',folder);await page.screenshot({path:folder+'/dev-backups-'+width+'.png',fullPage:true});}
+  await page.locator('#dev-section-nav [data-dev="guides"]').click();await page.locator('.dev-guide-article h1').waitFor();await page.locator('[data-dev-guide="technical"]').click();await page.waitForFunction(()=>document.querySelector('.dev-guide-article h1')?.textContent.includes('technical'));assert.ok((await page.locator('.dev-guide-contents a').count())>10);
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await page.evaluate(()=>window.scrollTo(0,0));await bounded(page,width,'dev-guide',folder);await page.screenshot({path:folder+'/dev-guide-'+width+'.png'});}
   await page.locator('.dev-nav-actions input[name=q]').fill('long title');await page.locator('.dev-nav-actions form button').click();await page.locator('#dev-query').waitFor();assert.equal(await page.locator('#dev-query').inputValue(),'long title');
   await page.locator('.dev-lock').click();await page.waitForURL(base+'/');
   // Main-header shutdown needs a PIN once and does not unlock Dev.

@@ -4,17 +4,17 @@ const {JSDOM,CookieJar,VirtualConsole}=require('jsdom'),fs=require('fs');
  const base=process.env.SONG_RANKER_QA_URL;if(!base)throw Error('Run through python tools/browser_check.py --suite dev');const first=await fetch(base+'/dev/login'),html=await first.text(),csrf=html.match(/name="csrf_token" value="([^"]+)"/)[1];
  const login=await fetch(base+'/dev/login',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded',Cookie:first.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ')},body:new URLSearchParams({pin:'qa-test-pin',csrf_token:csrf}),redirect:'manual'});
  const cookie=login.headers.getSetCookie().map(c=>c.split(';')[0]).join('; ');if(login.status!==302)throw Error('Login failed');
- const views=['overview','explorer','songs','artists','albums','tags','import','tag_workbench','bulk','metadata','history','trivia','tournaments','guesser_records','shelves_records','vibe_records','overall','selection_health','database','export'],results=[],errors=[];
+ const nav=JSON.parse(fs.readFileSync('songranker/developer/navigation.json','utf8')),views=[...nav.areas.map(r=>r[0]),...nav.pages.map(r=>r[0])],results=[],errors=[];
  for(const width of [390,1280])for(const view of views){
   let pendingFetches=0;const jar=new CookieJar();await jar.setCookie(cookie,base);const vc=new VirtualConsole(),pageErrors=[];vc.on('jsdomError',e=>{if(!e.message.includes('HTMLMediaElement'))pageErrors.push(e.message)});
   const dom=await JSDOM.fromURL(base+'/dev/dashboard?view='+view,{cookieJar:jar,runScripts:'dangerously',resources:'usable',pretendToBeVisual:true,virtualConsole:vc,beforeParse(w){w.innerWidth=width;w.scrollTo=()=>{};w.matchMedia=()=>({matches:true});w.HTMLMediaElement.prototype.pause=function(){};w.HTMLMediaElement.prototype.load=function(){};w.HTMLMediaElement.prototype.play=function(){return Promise.resolve()};w.HTMLDialogElement.prototype.showModal=function(){this.open=true};w.HTMLDialogElement.prototype.close=function(){this.open=false;this.dispatchEvent(new w.Event('close'))};w.fetch=async(url,o={})=>{pendingFetches++;try{const response=await fetch(new URL(url,base),{...o,headers:{...o.headers,Cookie:await jar.getCookieString(base)}});for(const c of response.headers.getSetCookie())await jar.setCookie(c,base);return response}finally{pendingFetches--}}}});
   await new Promise(resolve=>dom.window.addEventListener('load',resolve));await new Promise(r=>setTimeout(r,120));const d=dom.window.document;
   for(let i=0;i<250&&!d.querySelector('#dev-main h1,#dev-main h2,#dev-main h3');i++)await new Promise(r=>setTimeout(r,20));
-  const title=d.querySelector('#dev-main h1')?.textContent||d.querySelector('#dev-main h2')?.textContent||d.querySelector('#dev-main h3')?.textContent;results.push({width,view,title,errors:pageErrors});if(!title||pageErrors.length)errors.push({width,view,title,errors:pageErrors});
+  for(let i=0;i<250;i++){await new Promise(r=>setTimeout(r,20));if(!pendingFetches)break}
+  const title=d.querySelector('#dev-main h1')?.textContent||d.querySelector('#dev-main h2')?.textContent||d.querySelector('#dev-main h3')?.textContent;if(d.querySelector('[data-retry-dev-data]')||d.querySelector('#dev-main').textContent.includes('no registered controller'))errors.push({width,view,issue:'task did not load its controller/data'});results.push({width,view,title,errors:pageErrors});if(!title||pageErrors.length)errors.push({width,view,title,errors:pageErrors});
   if(view==='overview'&&width===1280){
-   for(let i=0;i<250&&!d.querySelector('.dev-home-tag-workshop');i++)await new Promise(r=>setTimeout(r,20));
-   const card=d.querySelector('.dev-home-tag-workshop');
-   if(!card||card.querySelector('[data-dev="tag_workbench"]')?.textContent!=='Tag Workshop ↗'||card.querySelectorAll('.dev-service-metrics > div').length!==2)errors.push({issue:'Tag Workshop Home card/link'});
+   for(let i=0;i<250&&!d.querySelector('.dev-home-areas');i++)await new Promise(r=>setTimeout(r,20));
+   if(d.querySelectorAll('#dev-page-menu > a').length!==4||d.querySelector('.dev-category')||d.querySelectorAll('.dev-home-areas [data-dev]').length<24)errors.push({issue:'Home does not expose all focused Dev destinations'});
   }
   if(view==='tag_workbench'&&width===1280){
    const single=d.querySelector('.tag-single .tag-song-row');
@@ -28,6 +28,7 @@ const {JSDOM,CookieJar,VirtualConsole}=require('jsdom'),fs=require('fs');
   if(view==='vibe_records'&&width===1280){
    const wait=async predicate=>{for(let i=0;i<100;i++){if(predicate())return;await new Promise(r=>setTimeout(r,20))}throw Error('Vibe Dev UI timed out')};
    await wait(()=>d.querySelector('[data-vibe-edit]'));d.querySelector('[data-vibe-edit]').click();await wait(()=>d.querySelector('#dev-vibe-save'));
+   if(d.querySelectorAll('[data-vibe-map-tab]').length!==4||d.querySelectorAll('[data-vibe-map]:not([hidden])').length!==1)errors.push({issue:'Vibe map selectors must keep every map reachable with one group visible'});
    const form=d.querySelector('#dev-vibe-save');for(const select of form.querySelectorAll('select')){select.value='placed';select.dispatchEvent(new dom.window.Event('change',{bubbles:true}))}
    form.elements.namedItem('pace_mood:x').value='2.5';form.elements.namedItem('completed_passes').value='1';form.dispatchEvent(new dom.window.Event('submit',{bubbles:true,cancelable:true}));
    await wait(()=>d.querySelector('#toast').textContent.includes('Vibe data saved'));await wait(()=>!d.querySelector('#dev-vibe-search button').disabled);

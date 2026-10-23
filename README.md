@@ -1,6 +1,6 @@
 # Song Ranker
 
-**Application v5.3 · Vibe Map integration v5.1.0 · competition generation 3 · SQLite schema 20**
+**Application V5.3.1 · competition generation 3 · SQLite schema 20**
 
 Rank your music, recognise previews, play brackets and quizzes, arrange albums,
 and describe songs on continuous Vibe Maps. Your songs, albums, artists and tags
@@ -28,7 +28,7 @@ restore a generation-3 SQL snapshot, use an optional catalogue seed, or start
 empty. A **first V2-to-V3 transfer** resets results; a routine code update does
 not repeat that reset. See [upgrades and recovery](docs/UPGRADES.md).
 
-The app reports `5.3`; Vibe Map retains its internal mode version `1.1`.
+The app reports `5.3.1`; Vibe Map retains its internal mode version `1.1`.
 
 ## Modes
 
@@ -92,10 +92,12 @@ Preview playback and Trivia’s answer timer remain available.
 
 ## Dev tools
 
-Dev has its own header with a Home link, four category menus, central Lock Dev, Stop and
-rightmost library search. Home uses linked counts and service titles.
-Git shows separate freshly checked code/database states. Database & backups
-includes a read-only table, column and row inspector.
+Dev has visible Home, Library, Mode edits and Tools & systems links, plus Lock Dev,
+Guides, Stop and library search. Home shows key status and direct links to every task.
+Focused task URLs support bookmarks/reloads; routine editors sit beside the task
+on wide screens and above it on phones, with explicit draft-discard protection.
+Git shows separate freshly checked code/database states. Database inspection and backups/restore are separate pages; reviewed resets and
+exports also have their own destinations.
 Use the ⏻ button in either header for a single-PIN backup and stop.
 The Tag workbench defaults to single-song tagging with looping/seeking previews,
 tag-count filters and Save & next; reviewed bulk changes remain available.
@@ -195,6 +197,9 @@ consolidation**. Earlier patch instructions are historical and marked accordingl
 current setup and operating rules live in the references above.
 
 ## V5.3 development
+
+V5.3.1 adds focused Dev sections and an inline editing workspace. The current
+[Dev guide](docs/DEV_GUIDE.md) describes navigation, recovery and tools.
 
 Related mode operations/statistics now share one owner. Catalogue queries, Dev
 operations and common CSS/JavaScript have been consolidated; all assets load from

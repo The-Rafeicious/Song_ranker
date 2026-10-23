@@ -2,6 +2,7 @@
 from pathlib import Path
 from unittest.mock import patch
 import json
+from html import unescape
 import sqlite3
 import unittest
 
@@ -34,6 +35,37 @@ class DeveloperSystemTests(unittest.TestCase):
 
     def current(self):
         with readonly(self.path) as db:return capture(db)
+
+    def test_focused_dev_destinations_require_auth_and_match_the_navigation_registry(self):
+        """Every listed task has a reloadable protected URL; unknown tasks are refused."""
+        from songranker.developer.dev import DEV_NAVIGATION
+        for area, _, _ in DEV_NAVIGATION['areas']:
+            path = '/dev/' + area
+            self.assertEqual(services.app.test_client().get(path).status_code, 302)
+            self.assertEqual(self.client.get(path).status_code, 200)
+        for key, area, slug, title, _ in DEV_NAVIGATION['pages']:
+            path = '/dev/dashboard' if key == 'overview' else f'/dev/{area}/{slug}'
+            with self.subTest(path=path):
+                self.assertEqual(services.app.test_client().get(path).status_code, 302)
+                response = self.client.get(path)
+                self.assertEqual(response.status_code, 200)
+                self.assertIn(b'id="dev-context"', response.data)
+                self.assertIn(b'id="dev-editor-slot"', response.data)
+                self.assertIn(title, unescape(response.get_data(as_text=True)))
+        for path in ['/dev/not-a-section', '/dev/tools/not-a-tool', '/dev/library/git']:
+            self.assertEqual(self.client.get(path).status_code, 404)
+
+    def test_guides_render_headings_tables_and_escaped_code_in_the_authenticated_reader(self):
+        """The readable guide API preserves code as text and supplies usable contents links."""
+        docs=Path(self.temp.name)/'docs';docs.mkdir()
+        (docs/'DEV_GUIDE.md').write_text('# Dev guide\n\n## Backups\n\n| Name | Value |\n|---|---|\n| Safety | Kept |\n\n```html\n<script>unsafe()</script>\n```\n')
+        response=self.client.get('/api/dev/help/dev?format=html')
+        self.assertEqual(response.status_code,200)
+        self.assertIn('href="#backups"',response.json['toc'])
+        self.assertIn('<table>',response.json['html'])
+        self.assertIn('&lt;script&gt;',response.json['html'])
+        self.assertNotIn('<script>',response.json['html'])
+        self.assertEqual(self.client.get('/api/dev/help/unknown?format=html').status_code,404)
 
     def test_routes_require_local_authenticated_requests(self):
         urls=['/api/dev/system','/api/dev/git/status','/api/dev/database/export','/api/dev/database/guide']

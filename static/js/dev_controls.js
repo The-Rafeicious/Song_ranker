@@ -4,7 +4,6 @@ window.DevControls = (() => {
   if (document.body.dataset.page !== "dev") return {};
   const { esc } = window.SongRankerUI,
     widgets = new WeakMap();
-  const navOpen = new WeakMap();
   const entityIds = new Set([
     "tag-artist",
     "tag-album",
@@ -168,7 +167,7 @@ window.DevControls = (() => {
     if (
       s.multiple ||
       s.hidden ||
-      (!entityIds.has(s.id) && s.options.length < 12)
+      (!entityIds.has(s.id) && !s.hasAttribute("data-searchable"))
     )
       return;
     const labelNode = s.labels?.[0]?.cloneNode(true);
@@ -247,22 +246,6 @@ window.DevControls = (() => {
     subtree: true,
     attributes: true,
     attributeFilter: ["disabled", "selected", "label"],
-  });
-  document.addEventListener("input", (e) => {
-    if (e.target.id !== "dev-tool-query") return;
-    const q = norm(e.target.value);
-    for (const group of document.querySelectorAll(".dev-nav-group")) {
-      if (q && !navOpen.has(group)) navOpen.set(group, group.open);
-      const buttons = [...group.querySelectorAll("[data-dev]")];
-      for (const b of buttons)
-        b.hidden = !!q && !norm(b.textContent).includes(q);
-      group.hidden = buttons.every((b) => b.hidden);
-      if (q && !group.hidden) group.open = true;
-      else if (!q && navOpen.has(group)) {
-        group.open = navOpen.get(group);
-        navOpen.delete(group);
-      }
-    }
   });
   document.addEventListener("reset", () =>
     queueMicrotask(() => {

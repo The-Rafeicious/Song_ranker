@@ -1,52 +1,85 @@
 # Developer guide
 
-**v5.2.2.1 · Dev tools**
+**V5.3.1 · Dev workspace**
 
-Open **System Access** on the hosting computer and enter the Dev PIN. Dev replaces
-the app header and gives the active tool the full content width. Existing editing
-and record tools remain available while their later revamp steps are pending.
+Open **System Access** on the hosting computer and enter the Dev PIN. Use **Home**,
+**Library**, **Mode edits**, and **Tools & systems** to move between tasks. Each
+section has a landing page and direct links; task pages show the other destinations
+in that section. Every task has its own URL, so refresh and bookmarks return to it.
+Old `/dev/dashboard?view=...` bookmarks still work.
 
-## Header
+## Navigation and workspace
 
-| Control | Action |
+| Control | Purpose |
 | --- | --- |
-| Home | Standalone link back to the service overview. |
-| Category menus | Four dropdowns: Library, Editing, Records and System. All twenty existing destinations remain available. |
-| Lock Dev, centre | Ends the Dev session and returns to the app home page. |
-| Search library | Opens Library Explorer with your query. The current explorer is retained for the next revamp steps. |
-| ⏻ Stop app | Opens the same backup-and-stop dialog from either app header. Enter the PIN once; a separate Dev login is unnecessary. |
+| Home | Site health, library counts, cached Git state, latest backup and attention counts; direct links to all tools. |
+| Library | Catalogue tables, Tag Workshop, Apple imports, bulk edits and missing metadata. |
+| Mode edits | Voting, Trivia/Elo, tournaments, Guesser, Shelves and Vibe data. |
+| Tools & systems | Overall, selection, database inspection, backups/restore, Git, resets, duplicates, exports and guides. |
+| Guides | This operator guide or the technical reference, with a table of contents and plain-text download. |
+| Lock Dev | End the Dev session and return to the main site. |
+| Search library | Search every catalogue entity directly. |
+| Stop app | Prepare a backup and optionally upload it before acknowledging shutdown. |
 
-The page menu supports keyboard navigation, Escape and clicking outside to close.
-Backup and upload controls live on their dedicated pages. A restore in progress must finish before changing tools.
+Routine editors open beside the task on a wide screen and above it on a phone.
+Fields scroll within that editor; Save and Close remain visible. Read-only value
+inspection has no Save button. Unsaved catalogue edits and tag choices require an
+explicit **Discard & continue** before changing tasks. **Keep editing** preserves
+the draft. Active record/catalogue saves, tag/Vibe operations and restores block
+task navigation until they finish.
 
 ## Developer home
 
-| Container | Shows |
+Library totals open the corresponding catalogue tables. Three aligned summaries
+show site health, Git/backups and missing catalogue data. Home reads local/cached
+Git status; opening Git sync performs a fresh check. Missing preview URLs indicate
+stored coverage, not a network/audio playback test. All Library, Mode edits and
+Tools destinations are visible below the summaries.
+
+## Library tasks
+
+| Page | Work |
 | --- | --- |
-| Library | Clickable songs, artists, releases (including Singles) and tags open the corresponding tables. |
-| Database health | Application/schema version, SQLite integrity and foreign-key errors. Click the title for the compact integrity report. |
-| Tag Workshop | Compact card linked directly to the tag bench, with tagged-song and available-tag counts. |
-| Catalogue coverage | Untagged songs, missing preview URLs and missing Apple source links. These are stored-data checks, not network playback tests. |
-| Stored rounds & votes | Stored vote/round/bracket counts, including prepared rounds where those modes store them, plus songs with all four Vibe positions placed. |
-| Git sync | Branch, short commit and cached remote status. Click the title for Git controls; opening Home does not fetch a remote. |
-| Local backups | Backup count, newest timestamp and live database file size. Click the title for Database & backups. File size excludes transient SQLite sidecar files. |
+| [Search library](/dev/library/search) | Search songs, artists, releases and tags together. |
+| [Songs](/dev/library/songs) | Identity, artists, album/track placement, tags, dates, media, source review, preview quality and deletion. |
+| [Artists](/dev/library/artists) | Names, artwork and linked records. |
+| [Releases](/dev/library/albums) | Album/Single metadata, track inspection and selected imports. |
+| [Tags](/dev/library/tags) | Canonical names, descriptions and memberships. |
+| [Tag Workshop](/dev/library/tag-workshop) | Single-song queue and reviewed Add/Remove/Replace bulk tagging. |
+| [Apple Music](/dev/library/apple-music) | Search, verify and import selected song/album offers. |
+| [Bulk edits](/dev/library/bulk-edits) | Review source links or move selected songs to an album. |
+| [Missing metadata](/dev/library/metadata) | Scan, review, then apply fill-only proposals. |
 
-Database health, Git sync and Local backups share one aligned row on desktop.
-Tag Workshop starts the next row as a card beside coverage and stored activity.
-Home has no separate action rows.
+Catalogue tables share search, field filters, displayed columns, order and paging.
+Filters and Columns expand in the page. Clear filters and Reset order are separate.
+Each table remembers its search/order/filter state for the session, and displayed
+columns persist locally. Edit opens the inline workspace; More retains record
+maintenance actions. No new metadata replaces existing values without a reviewed
+choice. Album import keeps existing matches unchecked and reports partial success.
 
-## Page lookup
+## Mode edits
 
-| Group | Pages / purpose |
-| --- | --- |
-| Library | Library Explorer searches all entity types. Songs, artists, albums and tags provide existing record tables and editing actions. |
-| Editing | Apple Music adds/reviews source versions; Tag workbench handles single-song queues and reviewed bulk edits; Bulk edits reviews sources/album placement; Fill missing metadata runs bounded reviewed requests. |
-| Records | Match history and corrections; Trivia / Elo maintenance; tournament brackets/podiums; Elo Guesser, Album Shelves and Vibe Map maintenance. |
-| System | Overall calculator; Selection health; Database backups/inventory/restore and typed resets; Git & exports. |
+Voting exposes saved effective results and corrections. Trivia & Elo provides song
+recognition maintenance, reviewed manual Elo correction and saved-vote review.
+Tournaments retain bracket/match/placement review. Guesser and Shelves retain saved
+record editing. Vibe Map places its bounded song queue beside the editor. Four map selectors
+show one coordinate group at a time while retaining changes to every map. Save
+submits all map values together with sample counts and completed passes; clearing one map resets its compatible pass state. Saved rules and frozen
+answers retain their existing server checks. Whole-mode resets are also available
+from **Tools & systems → Reviewed resets**, with the original typed confirmations.
 
-Detailed source-request rules: [Apple Music](APPLE_MUSIC.md). Vibe edit/delete/reset:
-[Vibe Dev maintenance](VIBE_MAP_DEV.md). Storage and recovery:
-[Upgrades](UPGRADES.md). API and configuration: [Technical guide](TECHNICAL_GUIDE.md).
+## Tools and guides
+
+Database inspector and Backups & restore are separate pages. Use the inspector for
+read-only tables/columns/values, and Backups for recovery. Git sync keeps code and
+live-database comparisons distinct. Reviewed resets lists the exact available reset
+scopes. Duplicate finder shows exact title/artist matches without automatically
+merging or deleting songs. Exports offers the lossless full transport and readable
+catalogue report. Overall and Selection health keep their existing diagnostics.
+
+The [technical guide](TECHNICAL_GUIDE.md) explains ownership, APIs, storage, recovery
+and configuration. Detailed [Apple Music](APPLE_MUSIC.md), [Vibe maintenance](VIBE_MAP_DEV.md)
+and [upgrade/recovery](UPGRADES.md) references remain available there.
 
 ## Stop and recovery
 
@@ -57,7 +90,7 @@ a rotating local backup and, when selected, uploads the Git snapshot. The visibl
 receipt waits four seconds before acknowledging shutdown. Cancel keeps the app running.
 
 Backup or Git errors keep the server running. Use **Review in Dev** to inspect them.
-For a deliberately restored/wiped local save, use **Git & exports → Keep local
+For a deliberately restored/wiped local save, use **Git sync → Keep local
 database…**, compare both copies and type `KEEP LOCAL`, then upload normally.
 See [split recovery](UPGRADES.md#database-sync-and-split-recovery) before replacing data.
 
@@ -89,12 +122,13 @@ Recent outcomes retain the latest operations in a bounded panel. Detailed sync
 ancestry/backup rules are in [Upgrades](UPGRADES.md#database-sync-and-split-recovery)
 and the [technical guide](TECHNICAL_GUIDE.md). Both pages link to these guides.
 
-## Database & backups
+## Backups & restore
 
 Create backup makes a verified rotating local copy. Full export downloads the
 lossless JSON transport. Find a backup by date/name/purpose; Review restore shows
-its counts beside the backup list, with a safety copy before replacement. Advanced
-resets retain their existing confirmations.
+its counts beside the backup list, with a safety copy before replacement. Reviewed resets has its own Tools page and retains the existing confirmations.
+
+## Database inspector
 
 **What is stored** is a read-only SQLite browser, including extension tables, views
 and SQLite's internal sequence table. Select an object or filter the object list:
@@ -157,6 +191,6 @@ Add/Remove/Replace operations and paged Before/After review before Save. Its
 preview controls are separate from the selected editing scope. Changing modes
 with unsaved choices asks before discarding them. Returning to single mode clears bulk-only hidden filters.
 
-### Catalogue tables (V5.2.3)
+### Catalogue table details
 
 Songs, Artists, Albums and Tags use the same controls. Search matches words across record fields. Filters opens per-field text filters (and the missing Apple source switch for Songs); Clear filters restores all rows. Order selects a field, the arrow reverses direction, and Reset order returns to ascending ID. Column headings also sort; clicking the active heading reverses it. Columns toggles displayed fields and Default restores the compact set. Search, filters and order remain separate for each table during the browser session; displayed columns persist locally. Open a record by its name, use Edit for its metadata, or More for catalogue-specific maintenance and deletion. The pager shows 30 matches at a time.

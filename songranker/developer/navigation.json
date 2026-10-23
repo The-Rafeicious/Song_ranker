@@ -1,0 +1,205 @@
+{
+  "areas": [
+    ["library", "Library", "Manage songs, artists, releases and tags."],
+    ["modes", "Mode edits", "Review saved results and correct mode data."],
+    [
+      "tools",
+      "Tools & systems",
+      "Check health, manage backups and use focused maintenance tools."
+    ]
+  ],
+  "pages": [
+    [
+      "overview",
+      "home",
+      "",
+      "Developer home",
+      "Site status and shortcuts to every Dev task."
+    ],
+    [
+      "explorer",
+      "library",
+      "search",
+      "Search library",
+      "Find a song, artist, release or tag."
+    ],
+    [
+      "songs",
+      "library",
+      "songs",
+      "Songs",
+      "Edit song identity, media, source links and placement."
+    ],
+    [
+      "artists",
+      "library",
+      "artists",
+      "Artists",
+      "Manage names, artwork and linked songs."
+    ],
+    [
+      "albums",
+      "library",
+      "albums",
+      "Releases",
+      "Edit albums and Singles, artwork and track lists."
+    ],
+    [
+      "tags",
+      "library",
+      "tags",
+      "Tags",
+      "Manage tag names, descriptions and memberships."
+    ],
+    [
+      "tag_workbench",
+      "library",
+      "tag-workshop",
+      "Tag Workshop",
+      "Tag one song at a time or review a bulk change."
+    ],
+    [
+      "import",
+      "library",
+      "apple-music",
+      "Apple Music",
+      "Search and review selected song or album imports."
+    ],
+    [
+      "bulk",
+      "library",
+      "bulk-edits",
+      "Bulk edits",
+      "Review source links or move selected songs between releases."
+    ],
+    [
+      "metadata",
+      "library",
+      "metadata",
+      "Missing metadata",
+      "Scan, review and fill missing fields without replacing existing values."
+    ],
+    [
+      "history",
+      "modes",
+      "voting",
+      "Voting",
+      "Review saved votes, correct outcomes and inspect rating changes."
+    ],
+    [
+      "trivia",
+      "modes",
+      "trivia",
+      "Trivia & Elo",
+      "Correct recognition data or make a reviewed manual Elo adjustment."
+    ],
+    [
+      "tournaments",
+      "modes",
+      "tournaments",
+      "Tournaments",
+      "Review brackets, matches and saved placements."
+    ],
+    [
+      "guesser_records",
+      "modes",
+      "elo-guesser",
+      "Elo Guesser",
+      "Review and edit saved Guesser records."
+    ],
+    [
+      "shelves_records",
+      "modes",
+      "album-shelves",
+      "Album Shelves",
+      "Review saved album and track-order results."
+    ],
+    [
+      "vibe_records",
+      "modes",
+      "vibe-map",
+      "Vibe Map",
+      "Edit averaged coordinates, sample counts and completed passes."
+    ],
+    [
+      "overall",
+      "tools",
+      "overall",
+      "Overall calculator",
+      "Inspect the current calibration and score contributions."
+    ],
+    [
+      "selection_health",
+      "tools",
+      "selection",
+      "Selection health",
+      "Check eligible pools, exposure balance and draw probabilities."
+    ],
+    [
+      "database",
+      "tools",
+      "database",
+      "Database inspector",
+      "Browse tables, columns and values without changing stored data."
+    ],
+    [
+      "backups",
+      "tools",
+      "backups",
+      "Backups & restore",
+      "Create, download, compare and restore local database backups."
+    ],
+    [
+      "export",
+      "tools",
+      "git",
+      "Git sync",
+      "Compare code and database copies before an explicit backup upload."
+    ],
+    [
+      "maintenance",
+      "tools",
+      "resets",
+      "Reviewed resets",
+      "Reset selected mode results only after reviewing and confirming the scope."
+    ],
+    [
+      "duplicates",
+      "tools",
+      "duplicates",
+      "Duplicate finder",
+      "Find matching song titles and artists for manual review."
+    ],
+    [
+      "reports",
+      "tools",
+      "exports",
+      "Exports",
+      "Download the database or generate a readable catalogue report."
+    ],
+    [
+      "guides",
+      "tools",
+      "guides",
+      "Guides",
+      "Read the Dev and technical guides with a table of contents."
+    ]
+  ],
+  "catalogue": [
+    "explorer",
+    "songs",
+    "artists",
+    "albums",
+    "tags",
+    "tag_workbench",
+    "import",
+    "bulk",
+    "history",
+    "trivia",
+    "tournaments",
+    "guesser_records",
+    "shelves_records",
+    "overall",
+    "duplicates"
+  ]
+}

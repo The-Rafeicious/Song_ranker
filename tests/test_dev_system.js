@@ -30,8 +30,9 @@ async function harness(view='',width=1280,session={}){
   if(url==='/api/dev/backups/restore')return respond({message:'Backup restored. Reload open game tabs before continuing.',safety_backup:'pre_restore_test.db'});
   throw Error('Unexpected request '+url);
  };
+ require('./dev_fixture.cjs')(w,view);
  w.Overall={bindUI(){}};
- for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js','dev_system.js','app_stop.js'])w.eval(source(file));
+ for(const file of ['ui.js','dev_workspace.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js','dev_system.js','app_stop.js'])w.eval(source(file));
  const expose="window.testDev={refreshData,records,setView:v=>{devView=v;renderDevView()}};window.DevSystem?.bindUI(";
  await w.eval(source('site.js').replace('window.DevSystem?.bindUI(',expose));await flush();
  const click=sel=>{const n=d.querySelector(sel);assert.ok(n,'missing '+sel);n.click();return n};
@@ -40,33 +41,35 @@ async function harness(view='',width=1280,session={}){
 }
 async function entryAndShortcuts(){
  const h=await harness();
- check(h.d.querySelectorAll('.dev-category').length===4,'four category menus');
- check(!h.d.querySelector('.dev-navbar [data-system-backup],.dev-navbar [data-dev-quick-push]'),'no backup header actions');
- const panels=[...h.d.querySelectorAll('.dev-home-grid > section')];
- check(panels.map(n=>n.querySelector('h2').textContent).join('|')==='Library|Database health ↗|Git sync ↗|Local backups ↗|Tag Workshop ↗|Catalogue coverage|Stored rounds & votes','requested panel order');
- check(h.d.querySelectorAll('.dev-home-grid .system-actions').length===0,'no home action rows');
- check(h.d.querySelectorAll('.dev-home-summary').length===4,'three health summaries and compact Tag Workshop');
- check(panels[4].querySelector('.dev-service-metrics')?.children.length===2,'Tag Workshop shows two light metrics');
- check(!panels[1].textContent.includes('backup'),'health does not repeat backup count');
- check(!panels[2].textContent.includes('Destination'),'Git overview stays compact');
- for(const kind of ['songs','artists','albums','tags']){h.w.testDev.setView('overview');await flush();h.click('.dev-library-link[data-dev="'+kind+'"]');await flush();check(h.w.location.search.includes('view='+kind),'library count opens '+kind)}
- h.w.testDev.setView('overview');await flush();h.click('.dev-home-tag-workshop [data-dev="tag_workbench"]');await flush();check(h.w.location.search.includes('view=tag_workbench')&&!!h.d.querySelector('.tag-single'),'Home title opens the Tag workbench, not Tags table');
- h.w.testDev.setView('overview');await flush();h.click('.dev-title-link[data-dev="database"]');await flush();check(!!h.d.querySelector('#system-backups'),'backup heading opens recovery');
- h.w.testDev.setView('overview');await flush();h.click('.dev-title-link[data-dev="export"]');await flush();check(!!h.d.querySelector('[data-system-upload]'),'Git heading opens Git');
+ check(h.d.querySelectorAll('#dev-page-menu > a').length===4,'four visible Dev destinations');
+ check(!h.requests.some(r=>r.url==='/api/collection'||r.url==='/api/dev/song-sources'),'Home does not download catalogue or source history');
+ check(!h.d.querySelector('.dev-category'),'no category dropdown menus');
+ check(h.d.querySelectorAll('.dev-home-status > section').length===3,'three aligned status summaries');
+ check(h.d.querySelectorAll('.dev-home-areas [data-dev]').length===27,'Home reaches every task and section');
+ for(const kind of ['songs','artists','albums','tags']){h.w.testDev.setView('overview');await flush();h.click('.dev-library-link[data-dev="'+kind+'"]');await flush();check(h.w.location.pathname===h.w.DevWorkspace.href(kind),'library count opens canonical '+kind)}
+ h.w.testDev.setView('overview');await flush();h.click('.dev-home-areas [data-dev="tag_workbench"]');await flush();check(h.w.location.pathname==='/dev/library/tag-workshop'&&!!h.d.querySelector('.tag-single'),'Home opens Tag Workshop');
+ h.w.testDev.setView('overview');await flush();h.click('[data-dev="backups"]');await flush();check(!!h.d.querySelector('#system-backups'),'backup shortcut opens recovery');
+ h.w.testDev.setView('overview');await flush();h.click('[data-dev="export"]');await flush();check(!!h.d.querySelector('[data-system-upload]'),'Git shortcut opens Git');
  check(h.requests.some(r=>r.url==='/api/dev/git/check'),'Git navigation refreshes comparison');h.w.testDev.setView('overview');await flush();h.handler(url=>url==='/api/dev/integrity'?{integrity:['ok'],foreign_key_errors:[],track_number_conflicts:[{id:1,title:'<unsafe>',album:'Album',track_number:1,issue:'Duplicate position'}]}:undefined);h.click('[data-tool="Database integrity"]');await flush();check(h.d.querySelectorAll('.integrity-metrics > div').length===3,'integrity uses three metrics');check(h.d.querySelector('#editor-submit').hidden,'integrity is read-only');check(!h.d.querySelector('.integrity-review unsafe'),'integrity issue labels escaped');
  check(h.errors.length===0,'shell has no script errors');h.close();
 }
+async function deferredCatalogue(){
+ const h=await harness('overview');
+ check(!h.requests.some(r=>r.url==='/api/collection'),'Home renders without catalogue request');
+ const pending=deferred();h.handler(url=>url==='/api/collection'?pending.promise:undefined);
+ h.click('.dev-library-link[data-dev="songs"]');await flush();check(h.d.querySelector('#dev-main').textContent.includes('Loading catalogue'),'catalogue-dependent task shows loading');
+ h.click('#dev-page-menu [data-dev="tools"]');pending.resolve(h.data);await flush();check(h.d.querySelector('.dev-destinations')&&!h.d.querySelector('#manage-rows'),'late catalogue data does not replace current tool section');
+ h.click('#dev-page-menu [data-dev="library"]');h.click('.dev-destinations [data-dev="songs"]');await flush();check(h.d.querySelector('#manage-rows'),'loaded catalogue reused by later task');check(h.requests.filter(r=>r.url==='/api/collection').length===1,'catalogue is fetched once on demand');
+ check(h.d.querySelector('#dev-page-menu [data-dev="library"]').getAttribute('aria-current')==='page','primary section remains active for its task');
+ h.close();
+ const bad=await harness('overview');bad.handler(url=>url==='/api/collection'?{status:503,body:{message:'Catalogue unavailable'}}:undefined);bad.click('.dev-library-link[data-dev="songs"]');await flush();check(bad.d.querySelector('[data-retry-dev-data]'),'failed catalogue load offers a task-local retry');bad.handler(()=>undefined);bad.click('[data-retry-dev-data]');await flush();check(bad.d.querySelector('#manage-rows'),'catalogue retry recovers');bad.close();
+}
 async function inventoryAndBackups(){
- const h=await harness('database');
+ const h=await harness('backups');
  check(h.d.querySelectorAll('.system-backup').length===10,'backups initially limited to ten');h.click('[data-system-more-backups]');
  check(h.d.querySelectorAll('.system-backup').length===12,'more backups accessible');h.input('#system-backup-query','manual_11');
  check(h.d.querySelectorAll('.system-backup').length===1,'backup search exact');
  check(h.d.querySelector('.system-backup a').getAttribute('href').includes('manual_11.db/download'),'binary backup direct download');
- check(h.d.querySelectorAll('.db-object').length===4,'all stored/view/extension objects selectable');h.input('#db-object-query','extra');check([...h.d.querySelectorAll('.db-object')].filter(b=>!b.hidden).length===1,'object search works');
- check(!h.d.querySelector('.db-object notes'),'extension names escaped');
- h.click('[data-db-tab="columns"]');check(h.d.querySelector('#db-content').textContent.includes('Primary key'),'column attributes available');
- check(h.d.querySelector('.dev-system details summary').textContent.includes('Resets & advanced'),'destructive tools collapsed');
- check(!h.d.querySelector('details:has([data-tool="Reset competition"])').open,'reset tools not initially open');
  const pending=deferred();h.handler(async url=>url==='/api/dev/backup'?pending.promise:undefined);
  h.click('[data-system-backup]');h.click('[data-system-backup]');await flush();
  check(h.requests.filter(r=>r.url==='/api/dev/backup').length===1,'double click makes one backup');
@@ -74,6 +77,10 @@ async function inventoryAndBackups(){
  pending.resolve({backup:'manual_created.db'});await flush();
  check(h.d.querySelector('#system-note').textContent.includes('manual_created.db'),'backup result visible');
  check(!h.d.querySelector('[data-system-backup]').disabled,'backup action recovers');
+ h.w.testDev.setView('database');await flush();
+ check(h.d.querySelectorAll('.db-object').length===4,'all stored/view/extension objects selectable');h.input('#db-object-query','extra');check([...h.d.querySelectorAll('.db-object')].filter(b=>!b.hidden).length===1,'object search works');
+ check(!h.d.querySelector('.db-object notes'),'extension names escaped');
+ h.click('[data-db-tab="columns"]');check(h.d.querySelector('#db-content').textContent.includes('Primary key'),'column attributes available');
  check(h.errors.length===0,'backup and inventory flows have no script errors');h.close();
 }
 async function gitFlows(){
@@ -108,11 +115,11 @@ async function gitFlows(){
  }
  h.state.git={available:false,message:'Git unavailable',history:[]};h.w.testDev.setView('export');await flush();
  check(h.d.querySelector('[data-system-check]').disabled,'missing Git disables remote controls');
- h.w.testDev.setView('database');await flush();check(!h.d.querySelector('[data-system-backup]').disabled,'local backups available without Git');
+ h.w.testDev.setView('backups');await flush();check(!h.d.querySelector('[data-system-backup]').disabled,'local backups available without Git');
  check(h.errors.length===0,'Git flows have no script errors');h.close();
 }
 async function restoreFlows(){
- const h=await harness('database');h.click('[data-system-review]');await flush();
+ const h=await harness('backups');h.click('[data-system-review]');await flush();
  check(h.d.querySelector('#system-restore').textContent.includes('Backup schema 8'),'schema change explained');
  check(h.d.querySelectorAll('#system-restore tbody tr').length===2,'restore compares exact record counts');
  check(!h.requests.some(r=>r.url==='/api/dev/backups/restore'),'review alone makes no restore');
@@ -122,7 +129,7 @@ async function restoreFlows(){
  h.click('[data-system-restore]');await flush();
  check(!h.d.querySelector('[data-system-restore]'),'stale review invalidated');check(h.d.querySelector('#system-note').textContent.includes('Review again'),'stale result actionable');
  h.handler(()=>undefined);h.click('[data-system-review]');await flush();const pending=deferred();h.handler(url=>url==='/api/dev/backups/restore'?pending.promise:undefined);
- h.click('[data-system-restore]');h.click('[data-dev="songs"]');await flush();
+ h.click('[data-system-restore]');h.w.DevWorkspace.navigate('songs',()=>{h.w.testDev.setView('songs')},true);await flush();
  check(h.d.querySelector('#system-restore'),'navigation waits for restore');
  check(h.d.querySelector('[data-system-backup]').disabled,'backup waits for restore');
  check(h.d.querySelector('[data-system-restore]').disabled,'restore cannot be double applied');
@@ -130,15 +137,15 @@ async function restoreFlows(){
  const sent=JSON.parse(h.requests.filter(r=>r.url==='/api/dev/backups/restore').at(-1).options.body);
  check(sent.review_token==='restore-review'&&!sent.filename,'restore sends signed review only');
  check(h.d.querySelector('#system-note').textContent.includes('pre_restore_fixture.db'),'safety backup identified');
- check(h.requests.filter(r=>r.url==='/api/collection').length===2,'catalogue refreshed after restore');
- check(h.requests.filter(r=>r.url==='/api/dev/song-sources').length===2,'source cache refreshed after restore');
+ check(h.requests.filter(r=>r.url==='/api/collection').length===1,'catalogue loaded after restore');
+ check(h.requests.filter(r=>r.url==='/api/dev/song-sources').length===1,'source cache refreshed after restore');
  check(!h.d.querySelector('[data-system-restore]'),'completed review cleared');
  check(!h.d.querySelector('[data-system-backup]').disabled,'dashboard usable after restore');
  check(h.errors.length===0,'restore flows have no script errors');h.close();
 }
 async function staleResponses(){
- const h=await harness('database'),review=deferred();h.handler(url=>url==='/api/dev/backups/review'?review.promise:undefined);
- h.click('[data-system-review]');h.click('[data-dev="explorer"]');await flush();review.resolve({filename:'late.db',purpose:'Manual',source_schema:13,target_schema:13,live:{},backup:{},review_token:'late'});await flush();
+ const h=await harness('backups'),review=deferred();h.handler(url=>url==='/api/dev/backups/review'?review.promise:undefined);
+ h.click('[data-system-review]');h.w.testDev.setView('explorer');await flush();review.resolve({filename:'late.db',purpose:'Manual',source_schema:13,target_schema:13,live:{},backup:{},review_token:'late'});await flush();
  check(h.d.querySelector('#dev-query')&&!h.d.querySelector('#system-restore'),'late backup review cannot replace another view');
  const old=deferred();let seen=0;
  h.handler(url=>url==='/api/collection'?(++seen===1?old.promise:{...h.data,songs:h.data.songs.map(s=>({...s,title:'New '+s.id}))}):undefined);
@@ -153,8 +160,8 @@ async function responsiveContracts(){
  check(css.includes('@media(max-width:800px)')&&css.includes('@media(max-width:520px)'),'phone/tablet breakpoints defined');
  check(css.includes('minmax(0,1fr)')&&css.includes('overflow-wrap:anywhere'),'long names/paths can wrap within grid');
  for(const width of [1440,768,390]){const h=await harness('database',width);
-  check(h.d.querySelector('a[href="/api/dev/help/technical"]'),'guide available at '+width);
-  check(h.d.querySelector('#dev-page-menu [data-dev="export"]'),'Git shortcut available at '+width);
+  check(h.d.querySelector('a[href="/dev/tools/guides?guide=technical"]'),'guide available at '+width);
+  check(h.d.querySelector('#dev-section-nav [data-dev="export"]'),'Git shortcut available at '+width);
   check(h.d.querySelectorAll('.db-object').length===4,'inventory accessible at '+width);
   check(h.plays.length===0&&h.errors.length===0,'no playback/errors at '+width);h.close();
  }
@@ -216,6 +223,6 @@ async function freshDatabaseReadiness(){
  check(h.d.querySelectorAll('.git-status-grid > section').length===2,'separate status sections');h.close();
 }
 module.exports={harness,flush};
-if(require.main===module)(async()=>{await entryAndShortcuts();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();await freshDatabaseReadiness();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
+if(require.main===module)(async()=>{await entryAndShortcuts();await deferredCatalogue();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();await freshDatabaseReadiness();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
 
 

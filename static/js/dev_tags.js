@@ -1387,5 +1387,15 @@ window.DevTags = (() => {
     reviewSelection,
     openFilter,
     resetAfterRestore,
+    hasUnsavedChanges: () => active && dirty,
+    isBusy: () => active && (busy || pending),
+    discardChanges: () => {
+      dirty = false;
+      chosen = new Set(target ? song(target)?.tag_ids || [] : []);
+      newNames = "";
+      bulkDraft = null;
+      pendingTarget = null;
+      invalidate();
+    },
   };
 })();

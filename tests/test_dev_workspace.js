@@ -1,0 +1,34 @@
+/* Actual navigation/editor controller: dirty drafts, history, restoration locks and guide races. */
+const {JSDOM}=require('jsdom'),assert=require('node:assert/strict'),fs=require('node:fs');
+(async()=>{
+ const dom=new JSDOM('<body data-page="dev"><main id="main"></main><dialog id="editor"><form id="editor-form"><h2 id="editor-title">Edit song</h2><div id="editor-fields"><input name="title" value="Original"></div><button type="button" id="editor-close">Close</button></form></dialog></body>',{url:'http://localhost/dev/library/songs',runScripts:'outside-only',pretendToBeVisual:true});
+ const w=dom.window,d=w.document;
+ require('./dev_fixture.cjs')(w,'songs');
+ for(const file of ['ui','dev_workspace'])w.eval(fs.readFileSync('static/js/'+file+'.js','utf8'));
+ let moved=[],locked=false,tagDirty=false,responses=[];
+ w.DevSystem={canNavigate:()=>!locked};w.DevTags={hasUnsavedChanges:()=>tagDirty,discardChanges:()=>tagDirty=false};
+ const D=w.DevWorkspace;
+ const navigate=(view,push=true)=>D.navigate(view,()=>{moved.push(view);D.sync(view)},push);
+ D.bind({title:title=>'<h1>'+title+'</h1>',root:()=>d.querySelector('#dev-main'),navigate,toast:message=>moved.push(message),api:()=>new Promise(resolve=>responses.push(resolve))});
+ D.sync('songs');assert.equal(d.querySelectorAll('#dev-page-menu>a').length,4);assert.equal(d.querySelectorAll('.dev-category').length,0);
+ assert.equal(d.querySelector('#dev-section-nav [data-dev="songs"]').getAttribute('aria-current'),'page');
+ const editor=d.querySelector('#editor');D.openEditor(editor);assert.equal(editor.parentNode.id,'dev-editor-slot');assert.ok(editor.open);
+ navigate('songs');assert.ok(editor.open,'active task link leaves its editor open');
+ const form=d.querySelector('#editor-form');form.dataset.saving='true';navigate('backups');assert.equal(w.location.pathname,'/dev/library/songs');assert.ok(moved.pop().includes('finish'));assert.equal(d.querySelector('#dev-unsaved').hidden,true);
+ let closed=false;d.querySelector('#editor-close').addEventListener('click',()=>closed=true);d.querySelector('#editor-close').click();assert.equal(closed,false,'active save prevents closing the editor');assert.ok(moved.pop().includes('finish'));
+ w.history.pushState({},'',D.href('tools'));w.dispatchEvent(new w.PopStateEvent('popstate'));assert.equal(w.location.pathname,'/dev/library/songs');assert.ok(moved.pop().includes('finish'));delete form.dataset.saving;
+ w.DevCatalog={isBusy:()=>true};navigate('backups');assert.equal(w.location.pathname,'/dev/library/songs');assert.ok(moved.pop().includes('finish'));w.DevCatalog.isBusy=()=>false;
+ d.querySelector('[name=title]').value='Unsaved';d.querySelector('[name=title]').dispatchEvent(new w.Event('input',{bubbles:true}));
+ navigate('backups');assert.deepEqual(moved,[]);assert.equal(w.location.pathname,'/dev/library/songs');assert.equal(d.querySelector('#dev-unsaved').hidden,false);assert.equal(d.querySelector('[name=title]').value,'Unsaved');
+ d.querySelector('[data-workspace-stay]').click();assert.equal(d.querySelector('#dev-unsaved').hidden,true);
+ navigate('backups');d.querySelector('[data-workspace-discard]').click();assert.deepEqual(moved,['backups']);assert.equal(w.location.pathname,'/dev/tools/backups');assert.equal(editor.open,false);
+ locked=true;navigate('songs');assert.equal(w.location.pathname,'/dev/tools/backups');assert.ok(moved.at(-1).includes('restore'));locked=false;
+ tagDirty=true;navigate('songs');assert.equal(w.location.pathname,'/dev/tools/backups');d.querySelector('[data-workspace-discard]').click();assert.equal(tagDirty,false);assert.equal(w.location.pathname,'/dev/library/songs');
+ tagDirty=true;w.history.pushState({},'',D.href('tools'));w.dispatchEvent(new w.PopStateEvent('popstate'));assert.equal(w.location.pathname,'/dev/library/songs','cancelled Back restores the current task URL');d.querySelector('[data-workspace-stay]').click();tagDirty=false;
+ navigate('guides');const old=D.guide('dev');const fresh=D.guide('technical');responses[1]({html:'<h2>New guide</h2>',toc:'New contents'});await fresh;responses[0]({html:'Old guide',toc:'Old'});await old;assert.ok(d.querySelector('#dev-guide-content').textContent.includes('New guide'));assert.ok(!d.querySelector('#dev-guide-content').textContent.includes('Old guide'));assert.equal(new URL(w.location.href).searchParams.get('guide'),'technical');
+ dom.window.close();
+ const h=await require('./test_dev_tags.js').harness(1280,'tag_workbench',()=>{},'single');
+ const choice=h.d.querySelector('[data-tags-choice]'),original=choice.checked;h.change('[data-tags-choice]',!original);
+ h.click('#dev-page-menu [data-dev="library"]');assert.equal(h.d.querySelector('#dev-unsaved').hidden,false);assert.equal(h.d.querySelector('[data-tags-choice]').checked,!original);h.click('[data-workspace-discard]');assert.ok(h.d.querySelector('.dev-destinations'));h.click('.dev-destinations [data-dev="tag_workbench"]');assert.equal(h.d.querySelector('[data-tags-choice]').checked,original,'discard does not retain unsaved tag choices');h.close();
+ console.log('Dev workspace passed: direct navigation, inline edits, explicit discard, restore lock and stale guide responses.');
+})().catch(error=>{console.error(error);process.exitCode=1});

@@ -860,6 +860,7 @@ window.DevCatalog = (() => {
     true,
   );
   return {
+    isBusy: () => mutating || !!dialogState?.busy || !!sourceBatch?.busy,
     bindUI: (ui) => (U = ui),
     renderImport,
     search,

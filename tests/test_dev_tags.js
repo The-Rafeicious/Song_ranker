@@ -50,7 +50,8 @@ async function harness(width=1280,view='tag_workbench',configure=()=>{},editing=
   if(url.startsWith('/api/dev/song-source/')){const id=Number(url.split('/').pop()),s=data.songs.find(s=>s.id===id);return respond({song:{...s,artist:'Artist, One',album:'Album',genres:'Bright'},fingerprint:'source-'+id,current:null,history:[]})}
   throw Error('Unexpected request '+url);
  };
- w.Overall={bindUI(){}};for(const file of ['ui.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js'])w.eval(source(file));
+ require('./dev_fixture.cjs')(w,view);
+ w.Overall={bindUI(){}};for(const file of ['ui.js','dev_workspace.js','preview.js','special_modes.js','dev_catalog.js','dev_metadata.js','dev_records.js','dev_tags.js'])w.eval(source(file));
  const expose="window.testDev={setView:v=>{devView=v;renderDevView()},applyBulk,setBulk:ids=>{bulkSelection=new Set(ids);devView='bulk';renderDevView()}};window.DevTags?.bindUI(";
  await w.eval(source('site.js').replace('window.DevTags?.bindUI(',expose));await flush();if(view==='tag_workbench'&&editing==='bulk'){d.querySelector('[data-tags-mode="bulk"]')?.click();await flush()}
  const click=selector=>{const n=d.querySelector(selector);assert.ok(n,'missing '+selector);n.click();return n};

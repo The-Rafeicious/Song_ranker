@@ -27,7 +27,7 @@
 {% if report or profile or vibe or dev %}{{ css('reports') }}{% endif %}
 {% if vibe %}{{ css('vibe') }}{% endif %}
 {% if dev %}
-  {{ css('dev_catalog') }}{{ css('dev_tags') }}{{ css('developer') }}
+  {{ css('dev_catalog') }}{{ css('dev_tags') }}{{ css('developer') }}{{ css('dev_workspace') }}
 {% endif %}
 {{ css('components') }}
 {{ css('site_baseline') }}
@@ -48,6 +48,7 @@
 {% if path == '/vibe-map' %}{{ js('vibe_map') }}{% endif %}
 {% if path == '/trivia' %}{{ js('trivia') }}{% endif %}
 {% if dev %}
+  {{ js('dev_workspace') }}
   {{ js('dev_controls') }}{{ js('dev_catalog') }}{{ js('dev_metadata') }}
   {{ js('dev_records') }}{{ js('dev_vibe') }}{{ js('dev_tags') }}
   {{ js('dev_system') }}

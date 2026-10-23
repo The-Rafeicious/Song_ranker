@@ -64,10 +64,12 @@ V5.3 has one current owner per responsibility. Use the [function index](FUNCTION
 | `templates/components.html`, `mode_stats_components.html`, `stats_visuals.html` | Shared artwork/record/report macros |
 | `static/css/style.css`, `components.css`, `site_baseline.css` | Core tokens/layouts, common components and approved final baseline |
 | `static/css/reports.css`, `vibe.css`, `profiles.css` | Report geometry and shared descriptive/profile presentation |
-| `static/css/developer.css`, `dev_catalog.css`, `dev_tags.css` | Shared Dev shell/controls plus catalogue/tag compositions |
+| `static/css/dev_workspace.css` | Dev navigation, Home/section/guide layouts and inline editor geometry |
+| `static/css/developer.css`, `dev_catalog.css`, `dev_tags.css` | Shared Dev controls and system/record/Vibe, catalogue and tag compositions |
 | Remaining feature CSS | Home, search, rankings, history, gameplay and Vibe play layouts |
 | `static/js/ui.js` | Shared presentation and text policies |
 | `static/js/preview.js`, `gameplay.js` | Audio/volume and shared game geometry/round lifecycle |
+| `songranker/developer/navigation.json`, `templates/dev.html`, `static/js/dev_workspace.js` | Single Dev destination registry, focused shell, navigation/discard lifecycle and guide reader |
 | `static/js/site.js` | Catalogue page assembly and shared navigation/editor orchestration |
 | `static/js/dev_catalog.js`, `dev_controls.js`, `dev_tags.js`, `dev_metadata.js` | Catalogue/source, searchable controls, tag editing and metadata task lifecycles |
 | `static/js/dev_system.js`, `dev_records.js`, `dev_vibe.js` | System/database/selection, preference/record and Vibe maintenance controllers |

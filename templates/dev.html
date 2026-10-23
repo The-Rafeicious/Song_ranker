@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block page_kind %}dev{% endblock %}
+{% block title %}{{ dev_title }} · Dev · Song Ranker{% endblock %}
+{% block content %}
+<script id="dev-context" type="application/json">{{ dev_context|tojson }}</script>
+<div class="dev-shell">
+  <nav id="dev-section-nav" class="dev-section-nav" aria-label="Current Dev section"></nav>
+  <div id="dev-unsaved" class="dev-unsaved panel" role="alert" hidden></div>
+  <div class="dev-workspace" id="dev-workspace">
+    <section class="dev-main" id="dev-main"><p id="loading" role="status">Loading {{ dev_title }}…</p></section>
+    <aside id="dev-editor-slot" aria-label="Current editing task"></aside>
+  </div>
+</div>
+<noscript>Enable JavaScript to use Dev tools.</noscript>
+{% endblock %}

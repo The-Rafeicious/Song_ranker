@@ -5,7 +5,6 @@
     [
       "home",
       "search",
-      "dev",
       "song",
       "artist",
       "album",
@@ -25,6 +24,8 @@
     if (!response.ok) throw new Error("Unable to load collection");
     COLLECTION = await response.json();
   }
+  let devCollectionReady = page !== "dev" || !!collectionPage,
+    devCollectionRequest = null;
   const { $, $$, esc } = window.SongRankerUI;
   const DB = COLLECTION,
     byId = (rows, id) => rows.find((r) => Number(r.id) === Number(id));
@@ -1084,30 +1085,12 @@
     }</div>`;
   }
 
-  const devSections = [
-    ["overview", "🔍", "Developer home"],
-    ["explorer", "🗂️", "Library explorer"],
-    ["tag_workbench", "🏷️", "Tag workbench"],
-    ["bulk", "☑", "Bulk edits"],
-    ["import", "➕", "Apple Music"],
-    ["metadata", "↧", "Fill missing metadata"],
-    ["songs", "🎵", "Songs"],
-    ["artists", "👤", "Artists"],
-    ["albums", "💿", "Albums"],
-    ["tags", "🏷️", "Tags"],
-    ["history", "📜", "Match history"],
-    ["trivia", "🎯", "Trivia / Elo"],
-    ["tournaments", "🏆", "Tournaments"],
-    ["guesser_records", "🎯", "Elo Guesser"],
-    ["shelves_records", "🗂️", "Album Shelves"],
-    ["vibe_records", "📍", "Vibe Map"],
-    ["overall", "🌈", "Overall calculator"],
-    ["selection_health", "⚖", "Selection health"],
-    ["database", "⚙️", "Database"],
-    ["export", "📤", "Git & exports"],
-  ];
+  const devSections = window.DevWorkspace?.sections || [];
   let missingAppleOnly = false;
-  let devView = new URLSearchParams(location.search).get("view") || "overview",
+  let devView =
+      window.DevWorkspace?.initial ||
+      new URLSearchParams(location.search).get("view") ||
+      "overview",
     devQuery = new URLSearchParams(location.search).get("q") || "",
     devTypes = new Set(["songs", "artists", "albums", "tags"]),
     devLimits = { songs: 10, artists: 10, albums: 10, tags: 10 },
@@ -1159,42 +1142,35 @@
   }
 
   let shownDevView = null;
-  const devGroups = [
-    ["Library", ["explorer", "songs", "artists", "albums", "tags"]],
-    ["Editing", ["import", "tag_workbench", "bulk", "metadata"]],
-    [
-      "Records",
-      [
-        "history",
-        "trivia",
-        "tournaments",
-        "guesser_records",
-        "shelves_records",
-        "vibe_records",
-      ],
-    ],
-    ["System", ["overall", "selection_health", "database", "export"]],
-  ];
+  function navigateDev(next, push = true, after = null) {
+    window.DevWorkspace.navigate(
+      next,
+      () => {
+        rememberTable();
+        devView = next;
+        renderDevView();
+        after?.();
+      },
+      push,
+    );
+  }
   function renderDev() {
-    const menu = $("#dev-page-menu");
-    if (menu)
-      menu.innerHTML =
-        '<button type="button" class="dev-home-nav" data-dev="overview">Home</button>' +
-        devGroups
-          .map(
-            ([name, keys]) =>
-              `<details class="dev-category"><summary>${name} ▾</summary><div class="dev-menu-group">${devSections
-                .filter(([key]) => keys.includes(key))
-                .map(
-                  ([key, icon, title]) =>
-                    `<button type="button" data-dev="${key}"><span>${icon}</span>${title}</button>`,
-                )
-                .join("")}</div></details>`,
-          )
-          .join("");
-    main.innerHTML = '<section class="dev-main" id="dev-main"></section>';
+    window.DevWorkspace.bind({
+      api,
+      title: devTitle,
+      root: () => $("#dev-main"),
+      navigate: navigateDev,
+      toast,
+    });
+    const address = new URL(window.DevWorkspace.href(devView), location.origin);
+    address.hash = location.hash;
+    const guide = new URLSearchParams(location.search).get("guide");
+    if (guide) address.searchParams.set("guide", guide);
+    const q = new URLSearchParams(location.search).get("q");
+    if (q) address.searchParams.set("q", q);
+    history.replaceState({}, "", address);
     renderDevView();
-    window.DevCatalog?.ensureSources().catch(() => {});
+    if (devCollectionReady) window.DevCatalog?.ensureSources().catch(() => {});
   }
   function devTitle(title, actions = "") {
     const kind =
@@ -1341,7 +1317,7 @@
   }
   function columnChooser(type) {
     const chosen = new Set(columns(type).map(([key]) => key));
-    return `<details class="column-picker dev-table-popover"><summary class="btn">Columns <span class="table-tool-count">${chosen.size}</span></summary><div class="table-popover-content"><div class="table-popover-head"><strong>Shown columns</strong><button type="button" class="btn small" data-columns-default>Default</button></div><div class="table-column-choices">${tableColumns[type].map(([key, name]) => `<label><input type="checkbox" data-visible="${key}" ${chosen.has(key) ? "checked" : ""} ${key === "name" ? "disabled" : ""}><span>${name}</span></label>`).join("")}</div></div></details>`;
+    return `<details class="column-picker dev-table-settings"><summary class="btn">Columns <span class="table-tool-count">${chosen.size}</span></summary><div class="table-popover-content"><div class="table-popover-head"><strong>Shown columns</strong><button type="button" class="btn small" data-columns-default>Default</button></div><div class="table-column-choices">${tableColumns[type].map(([key, name]) => `<label><input type="checkbox" data-visible="${key}" ${chosen.has(key) ? "checked" : ""} ${key === "name" ? "disabled" : ""}><span>${name}</span></label>`).join("")}</div></div></details>`;
   }
   function clipped(value) {
     const text = String(value ?? "—");
@@ -1404,7 +1380,7 @@
   function tableFiltersMarkup(type) {
     const active =
       Object.values(tableFilters).some((v) => v.trim()) || missingAppleOnly;
-    return `<details class="table-filter-panel dev-table-popover" ${active ? "open" : ""}><summary class="btn">Filters <span class="table-tool-count" id="table-filter-count"></span></summary><div class="table-popover-content"><div class="table-popover-head"><strong>Filter by field</strong><button class="btn small" type="button" data-table-clear>Clear filters</button></div><div class="table-filter-grid">${tableColumns[
+    return `<details class="table-filter-panel dev-table-settings" ${active ? "open" : ""}><summary class="btn">Filters <span class="table-tool-count" id="table-filter-count"></span></summary><div class="table-popover-content"><div class="table-popover-head"><strong>Filter by field</strong><button class="btn small" type="button" data-table-clear>Clear filters</button></div><div class="table-filter-grid">${tableColumns[
       type
     ]
       .filter(([key]) => key !== "cover_url" && key !== "apple_track_url")
@@ -1540,26 +1516,94 @@
     window.DevSystem?.viewChanged(devView);
     window.DevSelection?.viewChanged(devView);
     window.DevMetadata?.viewChanged(devView);
-    if (page === "dev") {
-      const address = new URL(location.href);
-      address.searchParams.set("view", devView);
-      history.replaceState({}, "", address);
-    }
+    window.DevWorkspace?.sync(devView);
     const selected = devSections.find(([key]) => key === devView);
-    if ($("#dev-current-page"))
-      $("#dev-current-page").textContent = selected?.[2] || "Developer home";
     const node = $("#dev-main");
-    $$("[data-dev]").forEach((b) => {
-      b.classList.toggle("active", b.dataset.dev === devView);
-      b.setAttribute("aria-pressed", String(b.dataset.dev === devView));
-      if (b.dataset.dev === devView && b.closest(".dev-nav-group"))
-        b.closest(".dev-nav-group").open = true;
-    });
-    if (["overview", "database", "export"].includes(devView)) {
+    if (!devCollectionReady && window.DevWorkspace.needsCollection(devView)) {
+      node.innerHTML =
+        devTitle(selected?.[2] || "Library") +
+        '<section class="panel" role="status">Loading catalogue…</section>';
+      if (!devCollectionRequest) {
+        devCollectionRequest = refreshData()
+          .then(() => {
+            devCollectionRequest = null;
+            if (window.DevWorkspace.needsCollection(devView)) renderDevView();
+            window.DevCatalog?.ensureSources().catch(() => {});
+          })
+          .catch((error) => {
+            devCollectionRequest = null;
+            if (window.DevWorkspace.needsCollection(devView))
+              node.innerHTML =
+                devTitle(
+                  devSections.find((row) => row[0] === devView)?.[2] ||
+                    "Library",
+                ) +
+                `<section class="panel"><p class="error" role="alert">${esc(error.message)}</p><button class="btn" data-retry-dev-data>Retry catalogue</button></section>`;
+          });
+      }
+      return;
+    }
+    if (["overview", "database", "backups", "export"].includes(devView)) {
       if (window.DevSystem) window.DevSystem.render(devView);
       else
         node.innerHTML =
           '<p class="error" role="alert">Developer system tools could not load. Refresh this page.</p>';
+      return;
+    }
+    if (["library", "modes", "tools"].includes(devView)) {
+      node.innerHTML = window.DevWorkspace.landing(devView, selected[2]);
+      return;
+    }
+    if (devView === "guides") {
+      window.DevWorkspace.guide(
+        new URLSearchParams(location.search).get("guide") === "technical"
+          ? "technical"
+          : "dev",
+      );
+      return;
+    }
+    if (devView === "maintenance") {
+      node.innerHTML =
+        devTitle("Reviewed resets") +
+        '<section class="panel"><p>Choose the results to reset. Every action shows its scope and requires confirmation before changing data.</p><div class="dev-destinations">' +
+        [...Object.keys(historyResets), "Reset competition"]
+          .map(
+            (name) =>
+              `<button type="button" class="dev-destination" data-tool="${esc(name)}"><strong class="danger">${esc(name)}</strong><span>Review scope and confirm</span></button>`,
+          )
+          .join("") +
+        "</div></section>";
+      return;
+    }
+    if (devView === "reports") {
+      node.innerHTML =
+        devTitle("Exports") +
+        '<section class="panel"><div class="system-actions"><a class="btn" href="/api/dev/database/export">Download full database</a><button class="btn" data-tool="Export snapshot">Generate readable report</button></div><p class="muted">The full export preserves stored values. The text report is a readable catalogue summary.</p></section>';
+      return;
+    }
+    if (devView === "duplicates") {
+      const groups = new Map();
+      songs.forEach((song) => {
+        const key = normal(song.title + " " + song.artist);
+        groups.set(key, [...(groups.get(key) || []), song]);
+      });
+      const duplicates = [...groups.values()].filter((rows) => rows.length > 1);
+      node.innerHTML =
+        devTitle("Duplicate finder") +
+        '<section class="panel"><p>Exact title and artist matches. Review each song before making changes.</p><div class="dev-duplicate-list">' +
+        (duplicates.length
+          ? duplicates
+              .map(
+                (rows) =>
+                  "<section><h2>" +
+                  esc(rows[0].title) +
+                  "</h2>" +
+                  rows.map((row) => devResult("songs", row)).join("") +
+                  "</section>",
+              )
+              .join("")
+          : '<p class="empty">No exact title / artist duplicates</p>') +
+        "</div></section>";
       return;
     }
     if (devView === "metadata") {
@@ -1615,14 +1659,15 @@
         ]);
       return;
     }
-    if (["guesser_records", "shelves_records", "knowledge"].includes(devView)) {
+    if (["guesser_records", "shelves_records"].includes(devView)) {
       window.SpecialModes.renderDevRecords(
         devView === "shelves_records" ? "shelves" : "guesser",
       );
       return;
     }
-    devView = "explorer";
-    renderExplorer();
+    node.innerHTML =
+      devTitle("Tool unavailable") +
+      '<section class="panel"><p class="error" role="alert">This task has no registered controller. Open Guides or choose another task.</p></section>';
   }
   let editTarget = null,
     toolTarget = null,
@@ -1645,7 +1690,8 @@
       );
     $("#editor-submit").textContent = submit;
     $("#editor-submit").disabled = false;
-    if (!dialog.open) dialog.showModal();
+    if (page === "dev") window.DevWorkspace.openEditor(dialog);
+    else if (!dialog.open) dialog.showModal();
   }
   function field(key, title, value, type = "text", attrs = "") {
     return `<div class="field"><label for="field-${key}">${title}</label><input id="field-${key}" name="${key}" type="${type}" value="${esc(value)}" ${attrs}></div>`;
@@ -1785,8 +1831,7 @@
       return;
     }
     if (name === "Apple Music") {
-      devView = "import";
-      renderDevView();
+      navigateDev("import");
       return;
     }
     if (["Manual Elo correction", "Trivia maintenance"].includes(name)) {
@@ -1952,6 +1997,7 @@
     if (id !== catalogueLoad) return;
     Object.assign(DB, fresh);
     rebuild();
+    devCollectionReady = true;
   }
   async function importSong(id) {
     return window.DevCatalog.add(id);
@@ -2968,11 +3014,12 @@
       b.setAttribute("aria-expanded", String(!panel.hidden));
       if (!panel.hidden) $("#volume-range").focus();
     } else if (!e.target.closest(".volume")) volumeClose();
-    $$(".nav-left details[open],.dev-category[open]").forEach((d) => {
+    $$(".nav-left details[open]").forEach((d) => {
       if (!d.contains(e.target)) d.open = false;
     });
     if (!b) return;
     try {
+      if (b.hasAttribute("data-retry-dev-data")) renderDevView();
       if (b.hasAttribute("data-podium-toggle")) {
         if (podiumPlayback?.requested) pausePodium();
         else if (podiumPlayback) await playPodium(podiumPlayback.index);
@@ -3097,17 +3144,6 @@
       }
       if (b.dataset.vote !== undefined) await vote(Number(b.dataset.vote));
       if (b.hasAttribute("data-next")) await nextMatch();
-      if (b.dataset.dev) {
-        const nav = b.closest(".dev-category");
-        if (nav) nav.open = false;
-        if (window.DevSystem && !window.DevSystem.canNavigate()) {
-          toast("Wait for the restore to finish.");
-          return;
-        }
-        rememberTable();
-        devView = b.dataset.dev;
-        renderDevView();
-      }
       if (b.dataset.devMore) {
         devLimits[b.dataset.devMore] += 20;
         renderDevResults();
@@ -3119,7 +3155,7 @@
       }
       if (b.hasAttribute("data-columns-default")) {
         saveColumns(devView, tableDefaults[devView]);
-        $(".column-picker").open = true;
+        if ($(".column-picker")) $(".column-picker").open = true;
       }
       if (b.hasAttribute("data-table-reset-order")) {
         tableSort = "id";
@@ -3168,9 +3204,9 @@
       }
       if (b.dataset.vibeMaintain) {
         if (window.DevSystem && !window.DevSystem.canNavigate()) return;
-        devView = "vibe_records";
-        renderDevView();
-        void window.DevVibe?.edit(Number(b.dataset.vibeMaintain));
+        navigateDev("vibe_records", true, () =>
+          window.DevVibe?.edit(Number(b.dataset.vibeMaintain)),
+        );
         return;
       }
       if (b.dataset.songStats) {
@@ -3390,7 +3426,7 @@
           ? [...chosen, n.dataset.visible]
           : chosen.filter((k) => k !== n.dataset.visible),
       );
-      $(".column-picker").open = true;
+      if ($(".column-picker")) $(".column-picker").open = true;
     }
     if (n.dataset.devType) {
       n.checked
@@ -3464,6 +3500,7 @@
         gen = editorGeneration;
       if (submit.disabled) return;
       submit.disabled = true;
+      form.dataset.saving = "true";
       $("#editor-error").hidden = true;
       try {
         const values = Object.fromEntries(new FormData(form));
@@ -3472,6 +3509,7 @@
       } catch (error) {
         editorError(error.message);
       } finally {
+        delete form.dataset.saving;
         if (gen === editorGeneration) submit.disabled = false;
       }
     }
@@ -3489,7 +3527,7 @@
     }
     if (e.key === "Escape") {
       volumeClose();
-      $$(".nav-left details,.dev-category").forEach((d) => (d.open = false));
+      $$(".nav-left details").forEach((d) => (d.open = false));
       if (page === "standard") {
         stopAudio();
         $$("[data-mode]")[0]?.focus();
@@ -3845,12 +3883,7 @@
     },
     root: () => $("#dev-main"),
     toast,
-    navigate: (view) => {
-      if (!window.DevSystem.canNavigate()) return;
-      rememberTable();
-      devView = view;
-      renderDevView();
-    },
+    navigate: navigateDev,
     showMissingSources: () => {
       activateTable("songs");
       tableQuery = "";
@@ -3858,8 +3891,7 @@
       tablePage = 0;
       missingAppleOnly = true;
       rememberTable();
-      devView = "songs";
-      renderDevView();
+      navigateDev("songs");
     },
     afterRestore: async () => {
       await refreshData();
@@ -3878,8 +3910,8 @@
     toast,
     refresh: refreshData,
     navigate: () => {
-      devView = "tag_workbench";
-      renderDevView();
+      if (devView === "tag_workbench") renderDevView();
+      else navigateDev("tag_workbench");
     },
   });
   window.DevCatalog?.bindUI({
