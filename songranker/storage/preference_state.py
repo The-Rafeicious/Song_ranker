@@ -229,8 +229,9 @@ def upgrade_state(original):
         generation=(19 if 'definition_version' in columns and maps.get('rows') and
                     all(row[columns.index('definition_version')]==2 for row in maps['rows']) else 18)
         from songranker.storage.schema_compat import LISTENING_COLUMNS as listening_columns
-        legacy_current=dict(current,listening_observations=set(listening_columns))
-        layouts=[(20,current),(generation,legacy_current)]
+        pre_discs={name:columns-({'disc_number'} if name in ('songs','album_shelf_items') else set()) for name,columns in current.items()}
+        legacy_current=dict(pre_discs,listening_observations=set(listening_columns))
+        layouts=[(21,current),(20,pre_discs),(generation,legacy_current)]
         current=legacy_current
         seventeen={name:set(columns) for name,columns in current.items() if name not in ('song_vibe_progress','vibe_rounds')}
         seventeen['song_vibe_positions']-={'sample_count','not_applicable_count'}
@@ -261,7 +262,8 @@ def upgrade_state(original):
     from songranker.storage.tag_limits import upgrade_state as upgrade_tags
     from songranker.storage.vibe_state import upgrade_state as upgrade_vibes
     from songranker.storage.schema_compat import retire_listening as retire_listening
-    return retire_listening(upgrade_vibes(upgrade_tags(upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original)))))))
+    from songranker.storage.schema_compat import upgrade_album_discs
+    return upgrade_album_discs(retire_listening(upgrade_vibes(upgrade_tags(upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original))))))))
 
 
 def replay(songs, seeds, events, overrides, cutoff, boundary):

@@ -88,11 +88,7 @@ def release_day(value):
 def apple_metadata(track):
     """Keep advisory flags distinct from censored titles and radio-edit title hints."""
     try:
-        discs = int(track.get("discCount") or 1)
-        disc = int(track.get("discNumber") or 1)
-        position = (
-            parse_track_number(track.get("trackNumber")) if discs == disc == 1 else None
-        )
+        position = parse_track_number(track.get("trackNumber"))
     except (ValueError, TypeError, OverflowError):
         position = None
     return dict(
@@ -429,7 +425,7 @@ def source_summaries(conn):
 
 def review_fingerprint(conn, song_id):
     row = conn.execute(
-        """SELECT s.id,s.title,s.album_id,s.audio_url,s.track_number,s.release_date,s.release_date_origin,
+        """SELECT s.id,s.title,s.album_id,s.audio_url,s.disc_number,s.track_number,s.release_date,s.release_date_origin,
         a.title album,a.cover_url,a.release_date album_release_date FROM songs s LEFT JOIN albums a ON a.id=s.album_id
         WHERE s.id=?""",
         (song_id,),
@@ -590,6 +586,7 @@ def single_plan(conn, song_id):
             "album_id",
             "audio_url",
             "track_number",
+            "disc_number",
             "release_date",
             "release_date_origin",
         )
@@ -644,33 +641,38 @@ def parse_track_number(value):
     return number
 
 
-def check_track_position(conn, album_id, number, song_id=None):
+def check_track_position(conn, album_id, number, song_id=None, disc_number=1):
+    """Reserve one track within its disc; identical numbers on other discs are valid."""
     if album_id is None or number is None:
         return
+    modern = "disc_number" in {r[1] for r in conn.execute("PRAGMA table_info(songs)")}
     other = conn.execute(
         """SELECT s.id,s.title,a.title AS album FROM songs s
         JOIN albums a ON a.id=s.album_id
-        WHERE s.album_id=? AND s.track_number=? AND s.id!=? LIMIT 1""",
-        (album_id, number, song_id if song_id is not None else -1),
+        WHERE s.album_id=? """ + ("AND s.disc_number=? " if modern else "") + "AND s.track_number=? AND s.id!=? LIMIT 1",
+        (album_id, *([disc_number] if modern else []), number, song_id if song_id is not None else -1),
     ).fetchone()
     if other:
         raise TrackNumberConflict(
-            f"Track {number} is already used by '{other['title']}' on '{other['album']}'."
+            f"Disc {disc_number}, track {number} is already used by '{other['title']}' on '{other['album']}'."
         )
 
 
 def track_position_conflicts(conn):
     """Report old duplicates/invalid positions without guessing replacement numbers."""
-    return [dict(row) for row in conn.execute("""
-        SELECT s.id,s.title,s.album_id,a.title AS album,s.track_number,
+    modern = "disc_number" in {r[1] for r in conn.execute("PRAGMA table_info(songs)")}
+    disc = "s.disc_number" if modern else "1"
+    same_disc = "AND other.disc_number=s.disc_number" if modern else ""
+    return [dict(row) for row in conn.execute(f"""
+        SELECT s.id,s.title,s.album_id,a.title AS album,{disc} AS disc_number,s.track_number,
           CASE WHEN typeof(s.track_number)!='integer' OR s.track_number<1
             THEN 'Invalid track number' ELSE 'Duplicate album track number' END AS issue
         FROM songs s LEFT JOIN albums a ON a.id=s.album_id
         WHERE s.track_number IS NOT NULL AND
           (typeof(s.track_number)!='integer' OR s.track_number<1 OR EXISTS
             (SELECT 1 FROM songs other WHERE other.album_id=s.album_id
-             AND other.track_number=s.track_number AND other.id!=s.id))
-        ORDER BY a.title COLLATE NOCASE,s.track_number,s.id""")]
+             {same_disc} AND other.track_number=s.track_number AND other.id!=s.id))
+        ORDER BY a.title COLLATE NOCASE,disc_number,s.track_number,s.id""")]
 
 
 def ensure_track_position_checks(conn):

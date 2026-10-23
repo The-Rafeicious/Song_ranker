@@ -84,7 +84,7 @@ V5.3 has one current owner per responsibility. Use the [function index](FUNCTION
 | `tools/browser_check.py`, `tests/browser_check.cjs` | Disposable HTTP/DOM and Chromium integration fixtures |
 | `tools/benchmark_selection.py` | Current seeded production-selector benchmark |
 | `tests/` | Behavior-owned regressions; shared fixtures in support.py and necessary historical schema inputs |
-| `data/schema.sql` | Canonical DDL; V5.3 retains schema 20 |
+| `data/schema.sql` | Canonical DDL; V5.3.3 uses schema 21 |
 | `docs/`, `update_logs/` | Current guides and historical release notes |
 | `package.json`, `package-lock.json` | Pinned Node test dependencies and convenient check commands |
 

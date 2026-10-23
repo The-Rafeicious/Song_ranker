@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.3.2 · competition generation 3 · schema 20**
+**Application V5.3.3 · competition generation 3 · schema 21**
 
-Current implementation reference. `APP_VERSION` is `5.3.2`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.3.3`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -714,3 +714,22 @@ transactional new-name creation and the eight-tag cap remain unchanged.
 ### Dev catalogue table UI (V5.2.3)
 
 The shared Songs/Artists/Albums/Tags table schema, filtering, sorting, column preferences, row rendering and edit dialog grouping live in `static/js/site.js`. `static/css/dev_catalog.css` owns the scoped compact table and dialog panels. Column preferences use the existing `tableColumns` localStorage key; per-type query, filters, page and sort use the existing session state. Editing still calls the existing `/api/dev/edit_*` endpoints and refreshes the collection. No database migration is involved.
+
+## Album disc positions (V5.3.3 / schema 21)
+
+`songs.disc_number` and `album_shelf_items.disc_number` are positive integer
+fields defaulting to 1. The canonical position guard scopes occupied slots by
+`(album_id, disc_number, track_number)`. Legacy conflicts remain visible; migration
+never guesses replacement positions or rewrites album memberships from titles.
+
+Shelves freezes disc/track facts on offering a round and uses lexicographic
+`(disc_number, track_number)` order for the existing relative-pair grade. Defaulting
+old saved items to disc 1 preserves the original rule-1 results and pending rounds.
+No scoring constants or mode exposures change. Source-only refresh keeps local
+disc placement; explicit source-album refresh uses the verified source position.
+
+The lossless state transport defaults both columns when upgrading pre-21 data;
+recognition also covers SQL dumps without a user-version pragma. Direct upgrades
+make the existing pre-upgrade safety backup. Git baseline hashes are recomputed
+from available baseline SQL under the current schema, so adding default disc
+columns does not falsely look like another device changed the data.

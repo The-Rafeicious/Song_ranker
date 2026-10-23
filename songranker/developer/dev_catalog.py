@@ -43,7 +43,7 @@ def song_source(song_id):
             from songranker.developer.dev import (song_metadata, write_song)
             payload=song_metadata(dict(source_token=data['source_token'],genres=song['genres']))
             if not data.get('use_source_album'):
-                payload.update(album=song['album'] or f"{song['title']} - Single",track_number=song['track_number'])
+                payload.update(album=song['album'] or f"{song['title']} - Single",disc_number=song['disc_number'],track_number=song['track_number'])
             payload.update(_expected_source_fingerprint=fingerprint,_source_refresh=True,
                            _use_source_album=data.get('use_source_album') is True,remove_empty_album=True)
             conn.rollback();conn.close();conn=None
@@ -108,8 +108,8 @@ def album_tracks(album_id):
         conn.execute('BEGIN')
         album=conn.execute('SELECT * FROM albums WHERE id=?',(album_id,)).fetchone()
         if not album:return jsonify(message='Album not found.'),404
-        songs=[dict(r) for r in conn.execute('''SELECT id,title,track_number,audio_url,release_date,release_date_origin
-            FROM songs WHERE album_id=? ORDER BY track_number IS NULL,track_number,title COLLATE NOCASE,id''',(album_id,))]
+        songs=[dict(r) for r in conn.execute('''SELECT id,title,disc_number,track_number,audio_url,release_date,release_date_origin
+            FROM songs WHERE album_id=? ORDER BY disc_number,track_number IS NULL,track_number,title COLLATE NOCASE,id''',(album_id,))]
         summaries=source_summaries(conn)
         for song in songs:song['source_summary']=summaries[song['id']]
         return jsonify(album=dict(album),songs=songs)
@@ -134,7 +134,7 @@ def song_single(song_id):
             return jsonify(message='The song or albums changed. Review the move again.'),409
         album=plan['source_album']
         destination=get_or_create_album(conn,plan['destination_title'],album['cover_url'] if album else None,plan['release_date'])
-        conn.execute('UPDATE songs SET album_id=?,track_number=NULL,release_date=?,release_date_origin=? WHERE id=?',
+        conn.execute('UPDATE songs SET album_id=?,disc_number=1,track_number=NULL,release_date=?,release_date_origin=? WHERE id=?',
             (destination,plan['release_date'] or None,plan['release_date_origin'],song_id))
         cleanup=remove_empty_album(conn,album['id']) if album and data.get('remove_empty_album',True) else dict(removed=False,reason='Previous album kept.')
         conn.commit()

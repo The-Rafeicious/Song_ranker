@@ -239,6 +239,8 @@ def write_song(data, song_id=None):
                         message='This Apple track is already in the library.')
                 return jsonify(message=f"This Apple track is already linked to song #{conflict['song_id']}."),409
         number = parse_track_number(data.get('track_number', old['track_number'] if old else None))
+        disc = parse_track_number(data.get('disc_number', old['disc_number'] if old else 1))
+        if disc is None:raise ValueError('Disc number must be a positive whole number.')
         if song_id is None:
             probe=dict(title=data['title'],artist=data['artist'],source={'track_id':''})
             matches=catalogue_matches(conn,[probe])[0]['library_matches']
@@ -249,10 +251,10 @@ def write_song(data, song_id=None):
         if placement not in ('keep','single'):raise ValueError('Choose the original release or a Single.')
         if placement=='single':
             data={**data,'album':single_title(conn,data['title'],data['artist'],song_id)}
-            number=None
+            number=None;disc=1
         date_for_album=data['release_date'] if old is None or data.get('_use_source_album') else None
         album_id = get_or_create_album(conn, data['album'], data['cover_url'], date_for_album)
-        check_track_position(conn, album_id, number, song_id)
+        check_track_position(conn, album_id, number, song_id, disc)
         day=data['release_date'] if data.get('_date_supplied') else old['release_date'] if old else None
         origin=('apple' if verified else 'manual') if day else None
         if old and day==old['release_date']:origin=old['release_date_origin']
@@ -263,13 +265,13 @@ def write_song(data, song_id=None):
             if normalized(data['artist'])==normalized(previous['artist']):
                 artist_names=[r[0] for r in conn.execute('SELECT a.name FROM song_artists sa JOIN artists a ON a.id=sa.artist_id WHERE sa.song_id=?',(song_id,))]
         if song_id is None:
-            cursor = conn.execute('''INSERT INTO songs (title,album_id,audio_url,track_number,elo_score,matches_played,release_date,release_date_origin)
-                VALUES (?,?,?,?,1200,0,?,?)''', (data['title'],album_id,data['audio_url'],number,day,origin))
+            cursor = conn.execute('''INSERT INTO songs (title,album_id,audio_url,track_number,disc_number,elo_score,matches_played,release_date,release_date_origin)
+                VALUES (?,?,?,?,?,1200,0,?,?)''', (data['title'],album_id,data['audio_url'],number,disc,day,origin))
             song_id = cursor.lastrowid
             message = f"Added '{data['title']}'"
         else:
-            conn.execute('''UPDATE songs SET title=?,album_id=?,audio_url=?,track_number=?,release_date=?,release_date_origin=? WHERE id=?''',
-                (data['title'],album_id,data['audio_url'],number,day,origin,song_id))
+            conn.execute('''UPDATE songs SET title=?,album_id=?,audio_url=?,track_number=?,disc_number=?,release_date=?,release_date_origin=? WHERE id=?''',
+                (data['title'],album_id,data['audio_url'],number,disc,day,origin,song_id))
             conn.execute('DELETE FROM song_artists WHERE song_id=?',(song_id,))
             conn.execute('DELETE FROM song_genres WHERE song_id=?',(song_id,))
             message = 'Song updated successfully.'
@@ -732,7 +734,7 @@ def api_dev_bulk_songs():
         ids=identifiers(data.get('song_ids'),'Songs',maximum=500)
         conn.execute('BEGIN IMMEDIATE')
         placeholders=','.join('?' for _ in ids)
-        rows=conn.execute(f'SELECT id,title,album_id,track_number FROM songs WHERE id IN ({placeholders})',ids).fetchall()
+        rows=conn.execute(f'SELECT id,title,album_id,disc_number,track_number FROM songs WHERE id IN ({placeholders})',ids).fetchall()
         if len(rows)!=len(ids): raise ValueError('One of the selected songs no longer exists.')
         action=data.get('action')
         if action=='move_album':
@@ -741,16 +743,17 @@ def api_dev_bulk_songs():
             if type(data.get('clear_track_numbers',False)) is not bool:raise ValueError('Choose whether to clear track numbers.')
             if not conn.execute('SELECT 1 FROM albums WHERE id=?',(album_id,)).fetchone(): raise ValueError('Choose an existing album.')
             clear=data.get('clear_track_numbers') is True
-            occupied={r['track_number']:r['title'] for r in conn.execute(f'SELECT title,track_number FROM songs WHERE album_id=? AND id NOT IN ({placeholders}) AND track_number IS NOT NULL',[album_id]+ids)}
+            target_disc=parse_track_number(data.get('disc_number'))
+            occupied={(r['disc_number'],r['track_number']):r['title'] for r in conn.execute(f'SELECT title,disc_number,track_number FROM songs WHERE album_id=? AND id NOT IN ({placeholders}) AND track_number IS NOT NULL',[album_id]+ids)}
             if not clear:
                 for row in rows:
-                    n=row['track_number']
-                    if n is not None and n in occupied: raise ValueError(f"Track {n} conflicts: {row['title']} / {occupied[n]}. Clear selected track numbers or edit their positions first.")
-                    if n is not None: occupied[n]=row['title']
+                    n=row['track_number'];position=(target_disc or row['disc_number'],n)
+                    if n is not None and position in occupied: raise ValueError(f"Disc {position[0]}, track {n} conflicts: {row['title']} / {occupied[position]}. Choose another disc, clear track numbers or edit positions first.")
+                    if n is not None: occupied[position]=row['title']
             # Release positions first, then restore them atomically in the destination.
             conn.execute(f'UPDATE songs SET track_number=NULL WHERE id IN ({placeholders})',ids)
             for row in rows:
-                conn.execute('UPDATE songs SET album_id=?,track_number=? WHERE id=?',(album_id,None if clear else row['track_number'],row['id']))
+                conn.execute('UPDATE songs SET album_id=?,disc_number=?,track_number=? WHERE id=?',(album_id,target_disc or row['disc_number'],None if clear else row['track_number'],row['id']))
         elif action in ('add_tags','remove_tags'):
             tags=identifiers(data.get('tag_ids'),'Tags',maximum=500)
             if any(not conn.execute('SELECT 1 FROM genres WHERE id=?',(i,)).fetchone() for i in tags): raise ValueError('A selected tag no longer exists.')

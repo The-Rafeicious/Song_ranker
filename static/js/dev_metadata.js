@@ -30,7 +30,7 @@ window.DevMetadata = (() => {
   }
   function review(title, rows, value) {
     return rows?.length
-      ? `<details class="metadata-review"><summary>${title} · ${rows.length}</summary>${rows.map((r) => `<div class="health-row"><span>${esc(r.title)}</span><strong>${esc(r[value])}</strong></div>`).join("")}</details>`
+      ? `<details class="metadata-review"><summary>${title} · ${rows.length}</summary>${rows.map((r) => `<div class="health-row"><span>${esc(r.title)}</span><strong>${esc(r.disc_number ? `Disc ${r.disc_number} · Track ${r[value]}` : r[value])}</strong></div>`).join("")}</details>`
       : "";
   }
   function draw() {

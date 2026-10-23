@@ -181,7 +181,7 @@ window.DevTags = (() => {
       id = get("track_id"),
       store = get("storefront");
     const parts = [
-      `Track ${s.track_number ?? "—"}`,
+      window.SongRankerUI.trackPosition(s, true),
       `${s.tag_ids.length} / 8 tags`,
       id
         ? `Apple #${id}`

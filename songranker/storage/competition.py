@@ -16,7 +16,7 @@ CATALOGUE = {
     'albums': ('id','title','cover_url','release_date'),
     'artists': ('id','name','cover_url'),
     'genres': ('id','name','description'),
-    'songs': ('id','title','album_id','audio_url','track_number','release_date','release_date_origin'),
+    'songs': ('id','title','album_id','audio_url','disc_number','track_number','release_date','release_date_origin'),
     'song_artists': ('song_id','artist_id'),
     'song_genres': ('song_id','genre_id'),
     'song_sources': ('id','song_id','provider','external_id','storefront','collection_id','snapshot','observed_at'),

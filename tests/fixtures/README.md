@@ -14,3 +14,6 @@ The schema-9 and schema-12 files were restored byte-for-byte from repository com
 `f9aa00e213e0cd7d9cd5c57b34854ed3c7bdb3e9`, after their deletion in the
 `b81e589a64730e0ed44657da28e4b70f6bbf6897` revert. Additional frozen versions
 may be present on feature branches for their own migration tests.
+
+- `schema_v20.sql`: frozen pre-disc DDL from `6289dda`; migration tests seed
+  fixed Vibe definitions and saved Shelves facts before upgrading to schema 21.

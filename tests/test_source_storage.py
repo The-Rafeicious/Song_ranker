@@ -40,6 +40,8 @@ class StorageTests(unittest.TestCase):
     def source(self,n):return sources.observation(apple(trackId=9000+n,trackViewUrl='https://music.apple.com/gb/song/'+str(9000+n)), 'gb')
 
     def old_layout(self):
+        from support import pre_disc_layout
+        pre_disc_layout(self.conn)
         for name in ('song_vibe_added','song_vibe_keep_slot','song_vibe_keep_identity','vibe_progress_added'):
             self.conn.execute('DROP TRIGGER '+name)
         self.conn.execute('DROP TABLE vibe_rounds')
@@ -60,7 +62,8 @@ class StorageTests(unittest.TestCase):
         self.vote();self.old_layout();self.insert_old(1,1);self.insert_old(1,2);self.insert_old(2,3)
         before=capture(self.conn);migrate(self.path);after=capture(self.conn)
         for table in before['tables']:
-            if table!='song_sources':self.assertEqual(before['tables'][table],after['tables'][table],table)
+            if table not in ('song_sources','songs','album_shelf_items'):self.assertEqual(before['tables'][table],after['tables'][table],table)
+        reconcile(before,after)  # Compare every old value across canonical column order.
         self.assertEqual(sources.current_source(self.conn,1)['source'],self.source(2))
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM song_sources').fetchone()[0],2)
         self.assertEqual(self.conn.execute('PRAGMA page_size').fetchone()[0],2048)

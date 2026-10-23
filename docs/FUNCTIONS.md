@@ -71,30 +71,30 @@ Source validation/tokens, placement plans and track-number constraints.
 | [text](../songranker/developer/catalog_sources.py#L71) | `value` | Keep bounded Apple string metadata and treat nonstring values as missing. |
 | [release_day](../songranker/developer/catalog_sources.py#L76) | `value` | Extract a valid ISO calendar day from Apple metadata, returning blank for invalid input. |
 | [apple_metadata](../songranker/developer/catalog_sources.py#L88) | `track` | Keep advisory flags distinct from censored titles and radio-edit title hints. |
-| [observation](../songranker/developer/catalog_sources.py#L115) | `track, country` | Validate an Apple track response and capture its source identity and normalised metadata. |
-| [source_label](../songranker/developer/catalog_sources.py#L154) | `source` | Choose the display content label from saved Apple explicitness metadata. |
-| [public_source](../songranker/developer/catalog_sources.py#L159) | `source` | Project saved source metadata into display fields with safe missing-value defaults. |
-| [owner](../songranker/developer/catalog_sources.py#L184) | `` | Create or reuse the browser-session identity that owns source review offers. |
-| [serializer](../songranker/developer/catalog_sources.py#L193) | `` | Create the timed serializer with the Apple source-offer signing scope. |
-| [offer](../songranker/developer/catalog_sources.py#L201) | `track, country` | Return reviewable Apple metadata with a timed source token bound to the current browser. |
-| [unpack](../songranker/developer/catalog_sources.py#L212) | `token` | Validate and decode the signed feature review/offer. |
-| [current_sources](../songranker/developer/catalog_sources.py#L228) | `conn` | Read each song's latest source record and decode its lossless source snapshot. |
-| [current_source](../songranker/developer/catalog_sources.py#L239) | `conn, song_id` | Read and decode the most recent saved source for one song. |
-| [artist_names](../songranker/developer/catalog_sources.py#L248) | `conn, value, known=None` | Prefer an existing whole name; split only a unique composition of known names. |
-| [artist_names.split](../songranker/developer/catalog_sources.py#L267) | `start` | Find at most two valid decompositions into known artist names to detect ambiguous splitting. |
-| [source_conflict](../songranker/developer/catalog_sources.py#L293) | `conn, song_id, source, replacing=()` | Find another song already linked to the offered Apple track, respecting planned replacements. |
-| [save_source](../songranker/developer/catalog_sources.py#L311) | `conn, song_id, verified, *, replacing=()` | Append a changed verified source observation after enforcing unique current track ownership. |
-| [catalogue_matches](../songranker/developer/catalog_sources.py#L353) | `conn, results` | A matching title/artist is a review candidate, never a verified Apple identity. |
-| [source_summaries](../songranker/developer/catalog_sources.py#L408) | `conn` | Build per-song source-link status, content labels and preview agreement for catalogue display. |
-| [review_fingerprint](../songranker/developer/catalog_sources.py#L430) | `conn, song_id` | Review fingerprint; reads albums, artists, genres, song_artists, song_genres, songs. |
-| [single_title](../songranker/developer/catalog_sources.py#L469) | `conn, title, artist, song_id=None` | Keep hidden release names unique instead of joining unrelated recordings. |
-| [album_references](../songranker/developer/catalog_sources.py#L496) | `conn, album_id, exclude_song=None` | Find stored references and custom rules that prevent safely deleting an empty release. |
-| [remove_empty_album](../songranker/developer/catalog_sources.py#L529) | `conn, album_id` | Remove empty album; reads albums; writes albums. |
-| [single_plan](../songranker/developer/catalog_sources.py#L550) | `conn, song_id` | Single plan; reads albums, artists, song_artists, songs. |
-| [parse_track_number](../songranker/developer/catalog_sources.py#L633) | `value` | Parse a blank or positive SQLite-sized track position, rejecting booleans and invalid text. |
-| [check_track_position](../songranker/developer/catalog_sources.py#L647) | `conn, album_id, number, song_id=None` | Validate track position; reads albums, songs. |
-| [track_position_conflicts](../songranker/developer/catalog_sources.py#L662) | `conn` | Report old duplicates/invalid positions without guessing replacement numbers. |
-| [ensure_track_position_checks](../songranker/developer/catalog_sources.py#L676) | `conn` | Guard every SQLite write, while allowing databases with old conflicts to open. |
+| [observation](../songranker/developer/catalog_sources.py#L111) | `track, country` | Validate an Apple track response and capture its source identity and normalised metadata. |
+| [source_label](../songranker/developer/catalog_sources.py#L150) | `source` | Choose the display content label from saved Apple explicitness metadata. |
+| [public_source](../songranker/developer/catalog_sources.py#L155) | `source` | Project saved source metadata into display fields with safe missing-value defaults. |
+| [owner](../songranker/developer/catalog_sources.py#L180) | `` | Create or reuse the browser-session identity that owns source review offers. |
+| [serializer](../songranker/developer/catalog_sources.py#L189) | `` | Create the timed serializer with the Apple source-offer signing scope. |
+| [offer](../songranker/developer/catalog_sources.py#L197) | `track, country` | Return reviewable Apple metadata with a timed source token bound to the current browser. |
+| [unpack](../songranker/developer/catalog_sources.py#L208) | `token` | Validate and decode the signed feature review/offer. |
+| [current_sources](../songranker/developer/catalog_sources.py#L224) | `conn` | Read each song's latest source record and decode its lossless source snapshot. |
+| [current_source](../songranker/developer/catalog_sources.py#L235) | `conn, song_id` | Read and decode the most recent saved source for one song. |
+| [artist_names](../songranker/developer/catalog_sources.py#L244) | `conn, value, known=None` | Prefer an existing whole name; split only a unique composition of known names. |
+| [artist_names.split](../songranker/developer/catalog_sources.py#L263) | `start` | Find at most two valid decompositions into known artist names to detect ambiguous splitting. |
+| [source_conflict](../songranker/developer/catalog_sources.py#L289) | `conn, song_id, source, replacing=()` | Find another song already linked to the offered Apple track, respecting planned replacements. |
+| [save_source](../songranker/developer/catalog_sources.py#L307) | `conn, song_id, verified, *, replacing=()` | Append a changed verified source observation after enforcing unique current track ownership. |
+| [catalogue_matches](../songranker/developer/catalog_sources.py#L349) | `conn, results` | A matching title/artist is a review candidate, never a verified Apple identity. |
+| [source_summaries](../songranker/developer/catalog_sources.py#L404) | `conn` | Build per-song source-link status, content labels and preview agreement for catalogue display. |
+| [review_fingerprint](../songranker/developer/catalog_sources.py#L426) | `conn, song_id` | Review fingerprint; reads albums, artists, genres, song_artists, song_genres, songs. |
+| [single_title](../songranker/developer/catalog_sources.py#L465) | `conn, title, artist, song_id=None` | Keep hidden release names unique instead of joining unrelated recordings. |
+| [album_references](../songranker/developer/catalog_sources.py#L492) | `conn, album_id, exclude_song=None` | Find stored references and custom rules that prevent safely deleting an empty release. |
+| [remove_empty_album](../songranker/developer/catalog_sources.py#L525) | `conn, album_id` | Remove empty album; reads albums; writes albums. |
+| [single_plan](../songranker/developer/catalog_sources.py#L546) | `conn, song_id` | Single plan; reads albums, artists, song_artists, songs. |
+| [parse_track_number](../songranker/developer/catalog_sources.py#L630) | `value` | Parse a blank or positive SQLite-sized track position, rejecting booleans and invalid text. |
+| [check_track_position](../songranker/developer/catalog_sources.py#L644) | `conn, album_id, number, song_id=None, disc_number=1` | Reserve one track within its disc; identical numbers on other discs are valid. |
+| [track_position_conflicts](../songranker/developer/catalog_sources.py#L661) | `conn` | Report old duplicates/invalid positions without guessing replacement numbers. |
+| [ensure_track_position_checks](../songranker/developer/catalog_sources.py#L678) | `conn` | Guard every SQLite write, while allowing databases with old conflicts to open. |
 
 ## songranker/developer/db_tools.py
 
@@ -124,37 +124,37 @@ Developer authentication, catalogue edits, records and controlled resets.
 | [verified_song_source](../songranker/developer/dev.py#L134) | `data` | Resolve signed offers or older Apple fields; never discard source intent. |
 | [song_metadata](../songranker/developer/dev.py#L182) | `data` | Validate manual song fields and merge verified Apple metadata while retaining explicit edit intent. |
 | [write_song](../songranker/developer/dev.py#L216) | `data, song_id=None` | Resolve metadata and check the final album slot in one transaction. |
-| [api_add_song](../songranker/developer/dev.py#L302) | `` | Serve add song; POST /api/dev/add_song. |
-| [api_edit_song](../songranker/developer/dev.py#L316) | `song_id` | Serve edit song; POST /api/dev/edit_song/<int:song_id>. |
-| [api_delete_song](../songranker/developer/dev.py#L330) | `song_id` | Keep vote facts, void their influence, remove links, then replay surviving ratings. |
-| [edit_catalogue_record](../songranker/developer/dev.py#L365) | `table, record_id, fields` | Validate editable entity fields and always release the database connection. |
-| [api_edit_artist](../songranker/developer/dev.py#L414) | `artist_id` | Serve edit artist; POST /api/dev/edit_artist/<int:artist_id>. |
-| [delete_catalogue_record](../songranker/developer/dev.py#L418) | `table, record_id` | Remove an entity and its catalogue links, preserving referenced game facts. |
-| [api_delete_artist](../songranker/developer/dev.py#L442) | `artist_id` | Serve delete artist; DELETE /api/dev/delete_artist/<int:artist_id>. |
-| [api_edit_album](../songranker/developer/dev.py#L448) | `album_id` | Serve edit album; POST /api/dev/edit_album/<int:album_id>. |
-| [api_delete_album](../songranker/developer/dev.py#L454) | `album_id` | Serve delete album; DELETE /api/dev/delete_album/<int:album_id>. |
-| [api_edit_genre](../songranker/developer/dev.py#L460) | `genre_id` | Serve edit genre; POST /api/dev/edit_genre/<int:genre_id>. |
-| [api_delete_genre](../songranker/developer/dev.py#L466) | `genre_id` | Serve delete genre; DELETE /api/dev/delete_genre/<int:genre_id>. |
-| [api_dev_overview](../songranker/developer/dev.py#L472) | `` | Serve dev overview; GET /api/dev/overview. |
-| [api_dev_backup](../songranker/developer/dev.py#L484) | `` | Serve dev backup; POST /api/dev/backup. |
-| [api_dev_restore_backup](../songranker/developer/dev.py#L495) | `` | Serve dev restore backup; POST /api/dev/restore-backup. |
-| [api_dev_reset_preview](../songranker/developer/dev.py#L502) | `` | Serve dev reset preview; GET /api/dev/reset-preview. |
-| [reset_competition_data](../songranker/developer/dev.py#L513) | `scope` | Keep the library and reset only the requested competition records. |
-| [api_dev_reset_history](../songranker/developer/dev.py#L539) | `scope` | Serve dev reset history; POST /api/dev/reset-history/<scope>. |
-| [delete_special_round](../songranker/developer/dev.py#L550) | `mode, round_id` | Delete special round; POST /api/dev/special-round/<mode>/<int:round_id>. |
-| [api_dev_reset_database](../songranker/developer/dev.py#L567) | `` | Serve dev reset database; POST /api/dev/reset-database. |
-| [api_dev_elo_correction](../songranker/developer/dev.py#L575) | `` | Serve dev elo correction; POST /api/dev/elo-correction. |
-| [api_dev_preferences](../songranker/developer/dev.py#L591) | `` | Serve dev preferences; GET /api/dev/preferences. |
-| [api_dev_preference](../songranker/developer/dev.py#L614) | `event_id` | Serve dev preference; GET, POST /api/dev/preferences/<int:event_id>. |
-| [api_dev_edit_trivia](../songranker/developer/dev.py#L632) | `song_id` | Serve dev edit trivia; POST, DELETE /api/dev/trivia/<int:song_id>. |
-| [api_dev_integrity](../songranker/developer/dev.py#L659) | `` | Serve dev integrity; GET /api/dev/integrity. |
-| [api_dev_activity](../songranker/developer/dev.py#L672) | `` | Serve dev activity; GET /api/dev/activity. |
-| [api_dev_delete_tournament](../songranker/developer/dev.py#L684) | `tournament_id` | Serve dev delete tournament; DELETE /api/dev/tournaments/<int:tournament_id>. |
-| [api_sync](../songranker/developer/dev.py#L708) | `` | Serve sync; POST /api/dev/sync. |
-| [api_export](../songranker/developer/dev.py#L715) | `` | Endpoint to manually trigger a database text export. |
-| [api_dev_bulk_songs](../songranker/developer/dev.py#L726) | `` | Serve dev bulk songs; POST /api/dev/bulk_songs. |
-| [api_dev_trivia_records](../songranker/developer/dev.py#L772) | `` | Serve dev trivia records; POST /api/dev/trivia-records. |
-| [api_dev_tournament_placements](../songranker/developer/dev.py#L789) | `tournament_id` | Serve dev tournament placements; POST /api/dev/tournaments/<int:tournament_id>/placements. |
+| [api_add_song](../songranker/developer/dev.py#L304) | `` | Serve add song; POST /api/dev/add_song. |
+| [api_edit_song](../songranker/developer/dev.py#L318) | `song_id` | Serve edit song; POST /api/dev/edit_song/<int:song_id>. |
+| [api_delete_song](../songranker/developer/dev.py#L332) | `song_id` | Keep vote facts, void their influence, remove links, then replay surviving ratings. |
+| [edit_catalogue_record](../songranker/developer/dev.py#L367) | `table, record_id, fields` | Validate editable entity fields and always release the database connection. |
+| [api_edit_artist](../songranker/developer/dev.py#L416) | `artist_id` | Serve edit artist; POST /api/dev/edit_artist/<int:artist_id>. |
+| [delete_catalogue_record](../songranker/developer/dev.py#L420) | `table, record_id` | Remove an entity and its catalogue links, preserving referenced game facts. |
+| [api_delete_artist](../songranker/developer/dev.py#L444) | `artist_id` | Serve delete artist; DELETE /api/dev/delete_artist/<int:artist_id>. |
+| [api_edit_album](../songranker/developer/dev.py#L450) | `album_id` | Serve edit album; POST /api/dev/edit_album/<int:album_id>. |
+| [api_delete_album](../songranker/developer/dev.py#L456) | `album_id` | Serve delete album; DELETE /api/dev/delete_album/<int:album_id>. |
+| [api_edit_genre](../songranker/developer/dev.py#L462) | `genre_id` | Serve edit genre; POST /api/dev/edit_genre/<int:genre_id>. |
+| [api_delete_genre](../songranker/developer/dev.py#L468) | `genre_id` | Serve delete genre; DELETE /api/dev/delete_genre/<int:genre_id>. |
+| [api_dev_overview](../songranker/developer/dev.py#L474) | `` | Serve dev overview; GET /api/dev/overview. |
+| [api_dev_backup](../songranker/developer/dev.py#L486) | `` | Serve dev backup; POST /api/dev/backup. |
+| [api_dev_restore_backup](../songranker/developer/dev.py#L497) | `` | Serve dev restore backup; POST /api/dev/restore-backup. |
+| [api_dev_reset_preview](../songranker/developer/dev.py#L504) | `` | Serve dev reset preview; GET /api/dev/reset-preview. |
+| [reset_competition_data](../songranker/developer/dev.py#L515) | `scope` | Keep the library and reset only the requested competition records. |
+| [api_dev_reset_history](../songranker/developer/dev.py#L541) | `scope` | Serve dev reset history; POST /api/dev/reset-history/<scope>. |
+| [delete_special_round](../songranker/developer/dev.py#L552) | `mode, round_id` | Delete special round; POST /api/dev/special-round/<mode>/<int:round_id>. |
+| [api_dev_reset_database](../songranker/developer/dev.py#L569) | `` | Serve dev reset database; POST /api/dev/reset-database. |
+| [api_dev_elo_correction](../songranker/developer/dev.py#L577) | `` | Serve dev elo correction; POST /api/dev/elo-correction. |
+| [api_dev_preferences](../songranker/developer/dev.py#L593) | `` | Serve dev preferences; GET /api/dev/preferences. |
+| [api_dev_preference](../songranker/developer/dev.py#L616) | `event_id` | Serve dev preference; GET, POST /api/dev/preferences/<int:event_id>. |
+| [api_dev_edit_trivia](../songranker/developer/dev.py#L634) | `song_id` | Serve dev edit trivia; POST, DELETE /api/dev/trivia/<int:song_id>. |
+| [api_dev_integrity](../songranker/developer/dev.py#L661) | `` | Serve dev integrity; GET /api/dev/integrity. |
+| [api_dev_activity](../songranker/developer/dev.py#L674) | `` | Serve dev activity; GET /api/dev/activity. |
+| [api_dev_delete_tournament](../songranker/developer/dev.py#L686) | `tournament_id` | Serve dev delete tournament; DELETE /api/dev/tournaments/<int:tournament_id>. |
+| [api_sync](../songranker/developer/dev.py#L710) | `` | Serve sync; POST /api/dev/sync. |
+| [api_export](../songranker/developer/dev.py#L717) | `` | Endpoint to manually trigger a database text export. |
+| [api_dev_bulk_songs](../songranker/developer/dev.py#L728) | `` | Serve dev bulk songs; POST /api/dev/bulk_songs. |
+| [api_dev_trivia_records](../songranker/developer/dev.py#L775) | `` | Serve dev trivia records; POST /api/dev/trivia-records. |
+| [api_dev_tournament_placements](../songranker/developer/dev.py#L792) | `tournament_id` | Serve dev tournament placements; POST /api/dev/tournaments/<int:tournament_id>/placements. |
 
 ## songranker/developer/dev_catalog.py
 
@@ -316,24 +316,24 @@ Fill-only metadata planning/apply, scan lifecycle and HTTP reports.
 | [missing_source](../songranker/developer/metadata.py#L48) | `source` | Identify saved Apple sources with missing required identity or metadata fields. |
 | [merge_source](../songranker/developer/metadata.py#L77) | `previous, fresh` | Append enriched observations; never replace an existing known source fact. |
 | [propose_song](../songranker/developer/metadata.py#L95) | `plan, song, remote` | Add fill-only metadata/source proposals while rejecting changed or duplicate Apple track identities. |
-| [artwork_key](../songranker/developer/metadata.py#L145) | `url` | Require a full Apple artwork asset path; ignore CDN host and size only. |
-| [same_art](../songranker/developer/metadata.py#L161) | `local, remote` | Compare normalised artwork identities independently of image size variants. |
-| [release_date](../songranker/developer/metadata.py#L167) | `value` | Validate an Apple release date and return its plausible ISO calendar day. |
-| [blank](../songranker/developer/metadata.py#L179) | `value` | Treat null and whitespace-only strings as missing metadata without treating zero as empty. |
-| [snapshot](../songranker/developer/metadata.py#L186) | `conn` | Only matching identity/targets: voting and trivia can continue during scans. |
-| [connection](../songranker/developer/metadata.py#L222) | `filename, readonly=False` | Open an existing compatible relational database with row objects and foreign keys enabled. |
-| [paced_lookup](../songranker/developer/metadata.py#L247) | `url, cancelled=lambda: False` | Wait through local Apple throttling while honouring cancellation and stopping on upstream failures. |
-| [plan_metadata](../songranker/developer/metadata.py#L268) | `filename, country='gb', lookup=paced_lookup, progress=lambda *a: None, cancelled=lambda: False` | Build a cancellable dry-run plan for missing catalogue metadata against a consistent snapshot. |
+| [artwork_key](../songranker/developer/metadata.py#L143) | `url` | Require a full Apple artwork asset path; ignore CDN host and size only. |
+| [same_art](../songranker/developer/metadata.py#L159) | `local, remote` | Compare normalised artwork identities independently of image size variants. |
+| [release_date](../songranker/developer/metadata.py#L165) | `value` | Validate an Apple release date and return its plausible ISO calendar day. |
+| [blank](../songranker/developer/metadata.py#L177) | `value` | Treat null and whitespace-only strings as missing metadata without treating zero as empty. |
+| [snapshot](../songranker/developer/metadata.py#L184) | `conn` | Only matching identity/targets: voting and trivia can continue during scans. |
+| [connection](../songranker/developer/metadata.py#L221) | `filename, readonly=False` | Open an existing compatible relational database with row objects and foreign keys enabled. |
+| [paced_lookup](../songranker/developer/metadata.py#L246) | `url, cancelled=lambda: False` | Wait through local Apple throttling while honouring cancellation and stopping on upstream failures. |
+| [plan_metadata](../songranker/developer/metadata.py#L267) | `filename, country='gb', lookup=paced_lookup, progress=lambda *a: None, cancelled=lambda: False` | Build a cancellable dry-run plan for missing catalogue metadata against a consistent snapshot. |
 | [plan_metadata.matches](../songranker/developer/metadata.py#L443) | `song` | Find remote tracks matching the local song's title, artist, release, artwork and saved identity. |
-| [apply_plan](../songranker/developer/metadata.py#L590) | `filename, plan` | Recheck identity and blanks under a write lock. All updates are atomic. |
-| [text_report](../songranker/developer/metadata.py#L648) | `plan` | Format metadata proposals, failures, backup and apply status as a downloadable report. |
-| [public](../songranker/developer/metadata.py#L709) | `job` | Expose scan progress and reviewable changes without publishing internal job state. |
-| [run_scan](../songranker/developer/metadata.py#L754) | `job, country` | Run a metadata plan in the background and publish its ready or error state under the job lock. |
-| [run_scan.progress](../songranker/developer/metadata.py#L758) | `done, total, album` | Update completed-count and album progress safely for the background metadata job. |
-| [metadata_scan](../songranker/developer/metadata.py#L783) | `` | Metadata scan; GET, POST /api/dev/metadata. |
-| [cancel_scan](../songranker/developer/metadata.py#L816) | `token` | Cancel scan; POST /api/dev/metadata/<token>/cancel. |
-| [apply_scan](../songranker/developer/metadata.py#L827) | `token` | Apply scan; POST /api/dev/metadata/<token>/apply. |
-| [scan_report](../songranker/developer/metadata.py#L851) | `token` | Scan report; GET /api/dev/metadata/<token>/report. |
+| [apply_plan](../songranker/developer/metadata.py#L594) | `filename, plan` | Recheck identity and blanks under a write lock. All updates are atomic. |
+| [text_report](../songranker/developer/metadata.py#L656) | `plan` | Format metadata proposals, failures, backup and apply status as a downloadable report. |
+| [public](../songranker/developer/metadata.py#L719) | `job` | Expose scan progress and reviewable changes without publishing internal job state. |
+| [run_scan](../songranker/developer/metadata.py#L764) | `job, country` | Run a metadata plan in the background and publish its ready or error state under the job lock. |
+| [run_scan.progress](../songranker/developer/metadata.py#L768) | `done, total, album` | Update completed-count and album progress safely for the background metadata job. |
+| [metadata_scan](../songranker/developer/metadata.py#L793) | `` | Metadata scan; GET, POST /api/dev/metadata. |
+| [cancel_scan](../songranker/developer/metadata.py#L826) | `token` | Cancel scan; POST /api/dev/metadata/<token>/cancel. |
+| [apply_scan](../songranker/developer/metadata.py#L837) | `token` | Apply scan; POST /api/dev/metadata/<token>/apply. |
+| [scan_report](../songranker/developer/metadata.py#L861) | `token` | Scan report; GET /api/dev/metadata/<token>/report. |
 
 ## songranker/hosting.py
 
@@ -499,28 +499,29 @@ Album Shelves eligibility, ordering/grading and detailed Shelves Stats.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [grade_shelf](../songranker/modes/shelves.py#L15) | `items` | 0.5 membership points + up to 2.5 relative-order points per track. |
-| [album_shelves](../songranker/modes/shelves.py#L65) | `` | Album shelves; GET /album_shelves. |
-| [shelf_stats](../songranker/modes/shelves.py#L70) | `` | Shelf stats; GET /album_shelves_stats. |
-| [shelf_pool](../songranker/modes/shelves.py#L88) | `conn` | The existing numbered/proper-album pool, shared by the picker and stats. |
-| [shelf_candidates](../songranker/modes/shelves.py#L110) | `conn, count` | Draw eligible albums and tracks using production exposure, recency and Vibe-aware selection. |
-| [shelf_payload](../songranker/modes/shelves.py#L134) | `conn, row` | Shelf payload; reads album_shelf_items, albums. |
-| [shelf_round](../songranker/modes/shelves.py#L162) | `` | Shelf round; POST /api/album-shelves/round. |
-| [shelf_answer](../songranker/modes/shelves.py#L229) | `` | Shelf answer; POST /api/album-shelves/answer. |
-| [percentage](../songranker/modes/shelves.py#L307) | `right, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [saved_date](../songranker/modes/shelves.py#L311) | `value` | Parse a saved result date for report display and ordering. |
-| [integer](../songranker/modes/shelves.py#L321) | `value, low=1, high=None` | Validate/normalise the feature’s integer input before using it. |
-| [can_grade](../songranker/modes/shelves.py#L325) | `items, rules` | Validate saved Shelves rules, slots, track positions and unique identities before reconstructing a grade. |
-| [can_grade.unique](../songranker/modes/shelves.py#L343) | `keys` | Check that a chosen tuple of saved item fields is unique within the round. |
-| [empty_counts](../songranker/modes/shelves.py#L356) | `` | Create the zeroed track/order/point counters shared by Shelves report aggregates. |
-| [add_counts](../songranker/modes/shelves.py#L373) | `target, source` | Accumulate one Shelves result's known counters into an existing aggregate. |
-| [item_counts](../songranker/modes/shelves.py#L379) | `item` | Project a graded track into album/order/point and error-category report counters. |
-| [finish_counts](../songranker/modes/shelves.py#L397) | `row` | Derive album/order accuracy and wrong-order counts from aggregated Shelves counters. |
-| [window_totals](../songranker/modes/shelves.py#L409) | `rows` | Summarise Shelves rounds in a report window, distinguishing graded results from unknown history. |
-| [page_number](../songranker/modes/shelves.py#L429) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
-| [build_shelves_stats](../songranker/modes/shelves.py#L439) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
-| [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L470) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
-| [build_shelves_stats.records](../songranker/modes/shelves.py#L738) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
+| [shelf_position](../songranker/modes/shelves.py#L15) | `item` | Order a saved position by disc, then track; legacy facts default to disc one. |
+| [grade_shelf](../songranker/modes/shelves.py#L20) | `items` | 0.5 membership points + up to 2.5 relative-order points per track. |
+| [album_shelves](../songranker/modes/shelves.py#L70) | `` | Album shelves; GET /album_shelves. |
+| [shelf_stats](../songranker/modes/shelves.py#L75) | `` | Shelf stats; GET /album_shelves_stats. |
+| [shelf_pool](../songranker/modes/shelves.py#L93) | `conn` | The existing numbered/proper-album pool, shared by the picker and stats. |
+| [shelf_candidates](../songranker/modes/shelves.py#L115) | `conn, count` | Draw eligible albums and tracks using production exposure, recency and Vibe-aware selection. |
+| [shelf_payload](../songranker/modes/shelves.py#L139) | `conn, row` | Shelf payload; reads album_shelf_items, albums, songs. |
+| [shelf_round](../songranker/modes/shelves.py#L167) | `` | Shelf round; POST /api/album-shelves/round. |
+| [shelf_answer](../songranker/modes/shelves.py#L235) | `` | Shelf answer; POST /api/album-shelves/answer. |
+| [percentage](../songranker/modes/shelves.py#L314) | `right, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [saved_date](../songranker/modes/shelves.py#L318) | `value` | Parse a saved result date for report display and ordering. |
+| [integer](../songranker/modes/shelves.py#L328) | `value, low=1, high=None` | Validate/normalise the feature’s integer input before using it. |
+| [can_grade](../songranker/modes/shelves.py#L332) | `items, rules` | Validate saved Shelves rules, slots, track positions and unique identities before reconstructing a grade. |
+| [can_grade.unique](../songranker/modes/shelves.py#L351) | `keys` | Check that a chosen tuple of saved item fields is unique within the round. |
+| [empty_counts](../songranker/modes/shelves.py#L364) | `` | Create the zeroed track/order/point counters shared by Shelves report aggregates. |
+| [add_counts](../songranker/modes/shelves.py#L381) | `target, source` | Accumulate one Shelves result's known counters into an existing aggregate. |
+| [item_counts](../songranker/modes/shelves.py#L387) | `item` | Project a graded track into album/order/point and error-category report counters. |
+| [finish_counts](../songranker/modes/shelves.py#L405) | `row` | Derive album/order accuracy and wrong-order counts from aggregated Shelves counters. |
+| [window_totals](../songranker/modes/shelves.py#L417) | `rows` | Summarise Shelves rounds in a report window, distinguishing graded results from unknown history. |
+| [page_number](../songranker/modes/shelves.py#L437) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
+| [build_shelves_stats](../songranker/modes/shelves.py#L447) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
+| [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L478) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
+| [build_shelves_stats.records](../songranker/modes/shelves.py#L747) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
 
 ## songranker/modes/tournament.py
 
@@ -821,7 +822,7 @@ Backed-up transactional bootstrap and versioned migration.
 | Definition | Signature | Purpose |
 | --- | --- | --- |
 | [_migrate_legacy](../songranker/storage/database.py#L10) | `filename` |  migrate legacy; reads elo_history, history, sqlite_master, sqlite_sequence, tournament_matches, trivia_stats; writes history, legacy_elo_changes, sqlite_sequence, tournament_matches_slim, trivia_stats. |
-| [_canonical_columns_present](../songranker/storage/database.py#L96) | `conn` |  canonical columns present; reads sqlite_master. |
+| [_canonical_columns_present](../songranker/storage/database.py#L96) | `conn, *, legacy_discs=False` |  canonical columns present; reads sqlite_master. |
 | [_complete_old_layout](../songranker/storage/database.py#L103) | `conn` |  complete old layout; reads sqlite_master. |
 | [migrate](../songranker/storage/database.py#L114) | `filename` | Canonicalise to the current schema with rollback and a pre-upgrade SQLite snapshot. |
 | [initialize_database](../songranker/storage/database.py#L179) | `filename, sql_backup=None` | Existing DB wins. Missing DB restores SQL before any empty schema is made. |
@@ -896,9 +897,9 @@ Logical database hashes, numbered-device registry, baseline receipts and reviewe
 | [DatabaseSync.remember](../songranker/storage/git_database.py#L280) | `self, commit, blob, model_hash=None` | Persist the accepted remote hash and Git witness, bound to this database. |
 | [DatabaseSync.receipt](../songranker/storage/git_database.py#L310) | `self` | Read old or hash-based receipts without accepting another database's baseline. |
 | [DatabaseSync.review](../songranker/storage/git_database.py#L335) | `self` | Compare logical hashes before every pull/push, independently of code ancestry. |
-| [DatabaseSync.incoming_backup](../songranker/storage/git_database.py#L500) | `self, review` | Preserve the incoming candidate as a verified backup without replacing different saved data. |
-| [DatabaseSync.adopt](../songranker/storage/git_database.py#L519) | `self, review` | Archive, check again under a write lock, replace and validate atomically. |
-| [DatabaseSync.public](../songranker/storage/git_database.py#L550) | `review` | Remove temporary paths and private comparison witnesses from a reconciliation review. |
+| [DatabaseSync.incoming_backup](../songranker/storage/git_database.py#L498) | `self, review` | Preserve the incoming candidate as a verified backup without replacing different saved data. |
+| [DatabaseSync.adopt](../songranker/storage/git_database.py#L517) | `self, review` | Archive, check again under a write lock, replace and validate atomically. |
+| [DatabaseSync.public](../songranker/storage/git_database.py#L548) | `review` | Remove temporary paths and private comparison witnesses from a reconciliation review. |
 
 ## songranker/storage/preference_state.py
 
@@ -918,9 +919,9 @@ Pure preference replay and lossless historical state transport.
 | [_upgrade_to_11](../songranker/storage/preference_state.py#L172) | `original` | Normalize 8/9/10 transports to 11 without rewriting existing stored facts. |
 | [_upgrade_to_11.view_hash](../songranker/storage/preference_state.py#L205) | `values` | Hash deterministically sorted view rows to verify the migrated preference projection. |
 | [upgrade_state](../songranker/storage/preference_state.py#L218) | `original` | Apply lossless upgrades; recognize complete known SQL-dump layouts. |
-| [replay](../songranker/storage/preference_state.py#L267) | `songs, seeds, events, overrides, cutoff, boundary` | Return current ratings/counts and effective snapshots from immutable inputs. |
-| [replay.set_rating](../songranker/storage/preference_state.py#L274) | `sid, value` | Update one replayed song's Elo while keeping the sorted rating index consistent. |
-| [replay.apply_before](../songranker/storage/preference_state.py#L285) | `event_id` | Apply saved manual rating adjustments that precede the next replayed preference event. |
+| [replay](../songranker/storage/preference_state.py#L269) | `songs, seeds, events, overrides, cutoff, boundary` | Return current ratings/counts and effective snapshots from immutable inputs. |
+| [replay.set_rating](../songranker/storage/preference_state.py#L276) | `sid, value` | Update one replayed song's Elo while keeping the sorted rating index consistent. |
+| [replay.apply_before](../songranker/storage/preference_state.py#L287) | `event_id` | Apply saved manual rating adjustments that precede the next replayed preference event. |
 
 ## songranker/storage/schema_compat.py
 
@@ -933,6 +934,7 @@ Offline historical quiz/source/retirement adapters; no Flask imports.
 | [upgrade_challenges](../songranker/storage/schema_compat.py#L121) | `original` | Adapt captured pre-12 rounds to challenge fields while refusing conflicting extension tables. |
 | [upgrade_sources](../songranker/storage/schema_compat.py#L152) | `original` | Adapt pre-13 song/source metadata without replacing extensions or existing stored values. |
 | [retire_listening](../songranker/storage/schema_compat.py#L193) | `original` | Remove supported retired listening storage at schema 20 while refusing dependent custom extensions. |
+| [upgrade_album_discs](../songranker/storage/schema_compat.py#L220) | `original` | Default pre-21 catalogue and saved Shelves positions to disc one. |
 
 ## songranker/storage/source_storage.py
 
@@ -989,6 +991,7 @@ Reusable assertions and route-module fixtures; never opens an active database.
 | [catalogue](../tests/support.py#L37) | `conn` | Catalogue. |
 | [assert_clean](../tests/support.py#L52) | `conn` | Assert clean; reads global_stats, legacy_elo_changes, song_vibe_positions, song_vibe_progress, songs, sqlite_master. |
 | [route_modules](../tests/support.py#L81) | `` | Read current launcher registration imports for disposable startup stubs. |
+| [pre_disc_layout](../tests/support.py#L97) | `conn` | Remove schema-21 additions when a test constructs an older database layout. |
 
 ## tests/test_apple_source_columns.py
 
@@ -1044,51 +1047,56 @@ Verified imports and Singles moves: real HTTP, isolated DBs, mocked Apple only.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [apple](../tests/test_catalog_sources.py#L24) | `**changes` | Apple. |
-| [SourceFieldTests.test_content_flags_are_distinct_and_never_inferred_from_censored_titles](../tests/test_catalog_sources.py#L34) | `self` | Verify content flags are distinct and never inferred from censored titles. |
-| [SourceFieldTests.test_disc_positions_are_not_flattened_and_dates_are_not_guessed](../tests/test_catalog_sources.py#L41) | `self` | Verify disc positions are not flattened and dates are not guessed. |
-| [SourceFieldTests.test_store_urls_and_identifiers_are_validated](../tests/test_catalog_sources.py#L46) | `self` | Verify store urls and identifiers are validated. |
-| [CatalogSourceTests.client](../tests/test_catalog_sources.py#L65) | `self` | Create the test HTTP client with the requested authentication state. |
-| [CatalogSourceTests.result](../tests/test_catalog_sources.py#L70) | `self, client, track=None, query='New Song', country='gb'` | Result. |
-| [CatalogSourceTests.add](../tests/test_catalog_sources.py#L77) | `self, client, row, **data` | Add. |
-| [CatalogSourceTests.link](../tests/test_catalog_sources.py#L80) | `self, client, sid, row, **data` | Link. |
-| [CatalogSourceTests.solo](../tests/test_catalog_sources.py#L85) | `self, sid=1` | Solo; writes albums, songs. |
-| [CatalogSourceTests.move](../tests/test_catalog_sources.py#L89) | `self, client, sid, **data` | Move. |
-| [CatalogSourceTests.test_all_new_developer_routes_require_authentication](../tests/test_catalog_sources.py#L95) | `self` | Verify all new developer routes require authentication. |
-| [CatalogSourceTests.test_search_requests_a_bounded_explicit_inclusive_store_batch](../tests/test_catalog_sources.py#L101) | `self` | Verify search requests a bounded explicit inclusive store batch. |
-| [CatalogSourceTests.test_link_country_takes_precedence_and_album_results_deduplicate_ids](../tests/test_catalog_sources.py#L108) | `self` | Verify link country takes precedence and album results deduplicate ids. |
-| [CatalogSourceTests.test_invalid_country_and_invalid_source_entries_do_not_write](../tests/test_catalog_sources.py#L116) | `self` | Verify invalid country and invalid source entries do not write. |
-| [CatalogSourceTests.test_title_matches_remain_unverified_then_become_confirmed_after_linking](../tests/test_catalog_sources.py#L124) | `self` | Verify title matches remain unverified then become confirmed after linking. |
-| [CatalogSourceTests.test_signed_offer_owns_metadata_and_preserves_comma_artist_names](../tests/test_catalog_sources.py#L131) | `self` | Verify signed offer owns metadata and preserves comma artist names. |
-| [CatalogSourceTests.test_forged_and_foreign_browser_tokens_do_not_import](../tests/test_catalog_sources.py#L142) | `self` | Verify forged and foreign browser tokens do not import. |
-| [CatalogSourceTests.test_expired_offers_request_a_new_search](../tests/test_catalog_sources.py#L149) | `self` | Verify expired offers request a new search. |
-| [CatalogSourceTests.test_import_retry_is_one_song_and_one_source_observation](../tests/test_catalog_sources.py#L155) | `self` | Verify import retry is one song and one source observation. |
-| [CatalogSourceTests.test_known_collaboration_respects_commas_without_splitting_unknown_acts](../tests/test_catalog_sources.py#L163) | `self` | Verify known collaboration respects commas without splitting unknown acts. |
-| [CatalogSourceTests.test_matching_titles_need_explicit_separate_add_and_do_not_use_artist_prefixes](../tests/test_catalog_sources.py#L174) | `self` | Verify matching titles need explicit separate add and do not use artist prefixes. |
-| [CatalogSourceTests.test_multidisc_source_and_single_import_preserve_original_position](../tests/test_catalog_sources.py#L182) | `self` | Verify multidisc source and single import preserve original position. |
-| [CatalogSourceTests.test_source_only_link_does_not_change_local_metadata_scores_or_dates](../tests/test_catalog_sources.py#L189) | `self` | Verify source only link does not change local metadata scores or dates. |
-| [CatalogSourceTests.test_relink_replaces_current_source_and_same_link_retry_is_noop](../tests/test_catalog_sources.py#L196) | `self` | Verify relink replaces current source and same link retry is noop. |
-| [CatalogSourceTests.test_one_source_cannot_be_linked_to_two_current_songs](../tests/test_catalog_sources.py#L203) | `self` | Verify one source cannot be linked to two current songs. |
-| [CatalogSourceTests.test_stale_source_review_is_rejected_but_unrelated_votes_are_allowed](../tests/test_catalog_sources.py#L208) | `self` | Verify stale source review is rejected but unrelated votes are allowed. |
-| [CatalogSourceTests.test_refresh_keeps_current_single_placement_and_custom_tags](../tests/test_catalog_sources.py#L217) | `self` | Verify refresh keeps current single placement and custom tags. |
-| [CatalogSourceTests.test_refresh_source_album_cleans_only_unreferenced_empty_album_and_keeps_pending_answers](../tests/test_catalog_sources.py#L230) | `self` | Verify refresh source album cleans only unreferenced empty album and keeps pending answers. |
-| [CatalogSourceTests.test_unchanged_manual_edit_preserves_existing_artist_links_and_song_date](../tests/test_catalog_sources.py#L241) | `self` | Verify unchanged manual edit preserves existing artist links and song date. |
-| [CatalogSourceTests.test_manual_dates_are_per_song_and_invalid_input_is_atomic](../tests/test_catalog_sources.py#L248) | `self` | Verify manual dates are per song and invalid input is atomic. |
-| [CatalogSourceTests.test_single_preview_is_read_only_and_move_keeps_game_facts_and_date](../tests/test_catalog_sources.py#L257) | `self` | Verify single preview is read only and move keeps game facts and date. |
-| [CatalogSourceTests.test_song_date_precedes_source_and_album_dates_when_moving](../tests/test_catalog_sources.py#L270) | `self` | Verify song date precedes source and album dates when moving. |
-| [CatalogSourceTests.test_verified_source_date_is_carried_before_album_fallback](../tests/test_catalog_sources.py#L276) | `self` | Verify verified source date is carried before album fallback. |
-| [CatalogSourceTests.test_missing_dates_remain_unknown_and_shared_albums_are_kept](../tests/test_catalog_sources.py#L281) | `self` | Verify missing dates remain unknown and shared albums are kept. |
-| [CatalogSourceTests.test_archive_album_references_survive_a_single_move](../tests/test_catalog_sources.py#L287) | `self` | Verify archive album references survive a single move. |
-| [CatalogSourceTests.test_extension_foreign_keys_prevent_empty_album_cleanup](../tests/test_catalog_sources.py#L298) | `self` | Verify extension foreign keys prevent empty album cleanup. |
-| [CatalogSourceTests.test_single_names_do_not_merge_unrelated_same_title_tracks](../tests/test_catalog_sources.py#L305) | `self` | Verify single names do not merge unrelated same title tracks. |
-| [CatalogSourceTests.test_stale_single_review_never_moves_a_changed_song](../tests/test_catalog_sources.py#L312) | `self` | Verify stale single review never moves a changed song. |
-| [CatalogSourceTests.test_parallel_single_retries_make_one_destination](../tests/test_catalog_sources.py#L318) | `self` | Verify parallel single retries make one destination. |
-| [CatalogSourceTests.test_parallel_single_retries_make_one_destination.run](../tests/test_catalog_sources.py#L321) | `_` | Run. |
-| [CatalogSourceTests.test_album_inspection_orders_tracks_and_reports_source_unknowns_without_writes](../tests/test_catalog_sources.py#L328) | `self` | Verify album inspection orders tracks and reports source unknowns without writes. |
-| [CatalogSourceTests.test_source_history_and_dates_survive_export_rebuild_and_sql_restore](../tests/test_catalog_sources.py#L334) | `self` | Verify source history and dates survive export rebuild and sql restore. |
-| [CatalogSourceTests.test_schema12_upgrade_keeps_legacy_dates_and_source_identity_unknown](../tests/test_catalog_sources.py#L344) | `self` | Verify schema12 upgrade keeps legacy dates and source identity unknown. |
-| [CatalogSourceTests.test_reserved_source_names_fail_closed_without_discarding_extensions](../tests/test_catalog_sources.py#L358) | `self` | Verify reserved source names fail closed without discarding extensions. |
-| [CatalogSourceTests.test_new_assets_load_only_for_developer_page](../tests/test_catalog_sources.py#L365) | `self` | Verify new assets load only for developer page. |
+| [apple](../tests/test_catalog_sources.py#L25) | `**changes` | Apple. |
+| [SourceFieldTests.test_content_flags_are_distinct_and_never_inferred_from_censored_titles](../tests/test_catalog_sources.py#L35) | `self` | Verify content flags are distinct and never inferred from censored titles. |
+| [SourceFieldTests.test_disc_positions_are_not_flattened_and_dates_are_not_guessed](../tests/test_catalog_sources.py#L42) | `self` | Verify disc positions are not flattened and dates are not guessed. |
+| [SourceFieldTests.test_store_urls_and_identifiers_are_validated](../tests/test_catalog_sources.py#L47) | `self` | Verify store urls and identifiers are validated. |
+| [CatalogSourceTests.client](../tests/test_catalog_sources.py#L66) | `self` | Create the test HTTP client with the requested authentication state. |
+| [CatalogSourceTests.result](../tests/test_catalog_sources.py#L71) | `self, client, track=None, query='New Song', country='gb'` | Result. |
+| [CatalogSourceTests.add](../tests/test_catalog_sources.py#L78) | `self, client, row, **data` | Add. |
+| [CatalogSourceTests.link](../tests/test_catalog_sources.py#L81) | `self, client, sid, row, **data` | Link. |
+| [CatalogSourceTests.solo](../tests/test_catalog_sources.py#L86) | `self, sid=1` | Solo; writes albums, songs. |
+| [CatalogSourceTests.move](../tests/test_catalog_sources.py#L90) | `self, client, sid, **data` | Move. |
+| [CatalogSourceTests.test_all_new_developer_routes_require_authentication](../tests/test_catalog_sources.py#L96) | `self` | Verify all new developer routes require authentication. |
+| [CatalogSourceTests.test_search_requests_a_bounded_explicit_inclusive_store_batch](../tests/test_catalog_sources.py#L102) | `self` | Verify search requests a bounded explicit inclusive store batch. |
+| [CatalogSourceTests.test_link_country_takes_precedence_and_album_results_deduplicate_ids](../tests/test_catalog_sources.py#L109) | `self` | Verify link country takes precedence and album results deduplicate ids. |
+| [CatalogSourceTests.test_invalid_country_and_invalid_source_entries_do_not_write](../tests/test_catalog_sources.py#L117) | `self` | Verify invalid country and invalid source entries do not write. |
+| [CatalogSourceTests.test_title_matches_remain_unverified_then_become_confirmed_after_linking](../tests/test_catalog_sources.py#L125) | `self` | Verify title matches remain unverified then become confirmed after linking. |
+| [CatalogSourceTests.test_signed_offer_owns_metadata_and_preserves_comma_artist_names](../tests/test_catalog_sources.py#L132) | `self` | Verify signed offer owns metadata and preserves comma artist names. |
+| [CatalogSourceTests.test_forged_and_foreign_browser_tokens_do_not_import](../tests/test_catalog_sources.py#L143) | `self` | Verify forged and foreign browser tokens do not import. |
+| [CatalogSourceTests.test_expired_offers_request_a_new_search](../tests/test_catalog_sources.py#L150) | `self` | Verify expired offers request a new search. |
+| [CatalogSourceTests.test_import_retry_is_one_song_and_one_source_observation](../tests/test_catalog_sources.py#L156) | `self` | Verify import retry is one song and one source observation. |
+| [CatalogSourceTests.test_known_collaboration_respects_commas_without_splitting_unknown_acts](../tests/test_catalog_sources.py#L164) | `self` | Verify known collaboration respects commas without splitting unknown acts. |
+| [CatalogSourceTests.test_matching_titles_need_explicit_separate_add_and_do_not_use_artist_prefixes](../tests/test_catalog_sources.py#L175) | `self` | Verify matching titles need explicit separate add and do not use artist prefixes. |
+| [CatalogSourceTests.test_multidisc_source_and_single_import_preserve_original_position](../tests/test_catalog_sources.py#L183) | `self` | Verify multidisc source and single import preserve original position. |
+| [CatalogSourceTests.test_source_only_link_does_not_change_local_metadata_scores_or_dates](../tests/test_catalog_sources.py#L190) | `self` | Verify source only link does not change local metadata scores or dates. |
+| [CatalogSourceTests.test_relink_replaces_current_source_and_same_link_retry_is_noop](../tests/test_catalog_sources.py#L197) | `self` | Verify relink replaces current source and same link retry is noop. |
+| [CatalogSourceTests.test_one_source_cannot_be_linked_to_two_current_songs](../tests/test_catalog_sources.py#L204) | `self` | Verify one source cannot be linked to two current songs. |
+| [CatalogSourceTests.test_stale_source_review_is_rejected_but_unrelated_votes_are_allowed](../tests/test_catalog_sources.py#L209) | `self` | Verify stale source review is rejected but unrelated votes are allowed. |
+| [CatalogSourceTests.test_refresh_keeps_current_single_placement_and_custom_tags](../tests/test_catalog_sources.py#L218) | `self` | Verify refresh keeps current single placement and custom tags. |
+| [CatalogSourceTests.test_refresh_source_album_cleans_only_unreferenced_empty_album_and_keeps_pending_answers](../tests/test_catalog_sources.py#L231) | `self` | Verify refresh source album cleans only unreferenced empty album and keeps pending answers. |
+| [CatalogSourceTests.test_unchanged_manual_edit_preserves_existing_artist_links_and_song_date](../tests/test_catalog_sources.py#L242) | `self` | Verify unchanged manual edit preserves existing artist links and song date. |
+| [CatalogSourceTests.test_manual_dates_are_per_song_and_invalid_input_is_atomic](../tests/test_catalog_sources.py#L249) | `self` | Verify manual dates are per song and invalid input is atomic. |
+| [CatalogSourceTests.test_single_preview_is_read_only_and_move_keeps_game_facts_and_date](../tests/test_catalog_sources.py#L258) | `self` | Verify single preview is read only and move keeps game facts and date. |
+| [CatalogSourceTests.test_song_date_precedes_source_and_album_dates_when_moving](../tests/test_catalog_sources.py#L271) | `self` | Verify song date precedes source and album dates when moving. |
+| [CatalogSourceTests.test_verified_source_date_is_carried_before_album_fallback](../tests/test_catalog_sources.py#L277) | `self` | Verify verified source date is carried before album fallback. |
+| [CatalogSourceTests.test_missing_dates_remain_unknown_and_shared_albums_are_kept](../tests/test_catalog_sources.py#L282) | `self` | Verify missing dates remain unknown and shared albums are kept. |
+| [CatalogSourceTests.test_archive_album_references_survive_a_single_move](../tests/test_catalog_sources.py#L288) | `self` | Verify archive album references survive a single move. |
+| [CatalogSourceTests.test_extension_foreign_keys_prevent_empty_album_cleanup](../tests/test_catalog_sources.py#L299) | `self` | Verify extension foreign keys prevent empty album cleanup. |
+| [CatalogSourceTests.test_single_names_do_not_merge_unrelated_same_title_tracks](../tests/test_catalog_sources.py#L306) | `self` | Verify single names do not merge unrelated same title tracks. |
+| [CatalogSourceTests.test_stale_single_review_never_moves_a_changed_song](../tests/test_catalog_sources.py#L313) | `self` | Verify stale single review never moves a changed song. |
+| [CatalogSourceTests.test_parallel_single_retries_make_one_destination](../tests/test_catalog_sources.py#L319) | `self` | Verify parallel single retries make one destination. |
+| [CatalogSourceTests.test_parallel_single_retries_make_one_destination.run](../tests/test_catalog_sources.py#L322) | `_` | Run. |
+| [CatalogSourceTests.test_album_inspection_orders_tracks_and_reports_source_unknowns_without_writes](../tests/test_catalog_sources.py#L329) | `self` | Verify album inspection orders tracks and reports source unknowns without writes. |
+| [CatalogSourceTests.test_source_history_and_dates_survive_export_rebuild_and_sql_restore](../tests/test_catalog_sources.py#L335) | `self` | Verify source history and dates survive export rebuild and sql restore. |
+| [CatalogSourceTests.test_schema12_upgrade_keeps_legacy_dates_and_source_identity_unknown](../tests/test_catalog_sources.py#L345) | `self` | Verify schema12 upgrade keeps legacy dates and source identity unknown. |
+| [CatalogSourceTests.test_reserved_source_names_fail_closed_without_discarding_extensions](../tests/test_catalog_sources.py#L359) | `self` | Verify reserved source names fail closed without discarding extensions. |
+| [CatalogSourceTests.test_new_assets_load_only_for_developer_page](../tests/test_catalog_sources.py#L366) | `self` | Verify new assets load only for developer page. |
+| [AlbumDiscTests.client](../tests/test_catalog_sources.py#L381) | `self` | Create the test HTTP client with the requested authentication state. |
+| [AlbumDiscTests.test_same_track_number_on_different_discs_and_conflicts_are_atomic](../tests/test_catalog_sources.py#L387) | `self` | Verify same track number on different discs and conflicts are atomic. |
+| [AlbumDiscTests.test_bulk_combine_discs_keeps_destination_artwork_and_saved_scores](../tests/test_catalog_sources.py#L402) | `self` | Verify bulk combine discs keeps destination artwork and saved scores. |
+| [AlbumDiscTests.test_round_uses_saved_disc_order_after_catalogue_edit](../tests/test_catalog_sources.py#L419) | `self` | Verify round uses saved disc order after catalogue edit. |
+| [AlbumDiscTests.test_schema20_sql_restore_defaults_discs_and_preserves_rounds](../tests/test_catalog_sources.py#L449) | `self` | Verify schema20 sql restore defaults discs and preserves rounds. |
 
 ## tests/test_database_foundation.py
 
@@ -1219,54 +1227,55 @@ Two local computers and a bare remote; never touches the user's databases/Git.
 | [GitDatabaseTests.publish](../tests/test_git_database.py#L52) | `self` | Publish. |
 | [GitDatabaseTests.pull](../tests/test_git_database.py#L56) | `self` | Pull. |
 | [GitDatabaseTests.accept_remote](../tests/test_git_database.py#L59) | `self` | Explicitly review and apply a remote copy; automatic adoption is retired. |
-| [GitDatabaseTests.test_manual_pull_then_startup_loads_five_hundred_new_songs](../tests/test_git_database.py#L65) | `self` | Verify manual pull then startup loads five hundred new songs. |
-| [GitDatabaseTests.test_normal_launcher_reconciles_before_the_server_starts](../tests/test_git_database.py#L98) | `self` | Verify normal launcher reconciles before the server starts. |
-| [GitDatabaseTests.test_initial_upgrade_recovers_baseline_from_history_after_pull](../tests/test_git_database.py#L146) | `self` | Verify initial upgrade recovers baseline from history after pull. |
-| [GitDatabaseTests.test_code_fast_forward_is_followed_by_database_reconciliation](../tests/test_git_database.py#L160) | `self` | Verify code fast forward is followed by database reconciliation. |
-| [GitDatabaseTests.test_same_row_count_remote_edit_and_deletion_are_not_missed](../tests/test_git_database.py#L171) | `self` | Verify same row count remote edit and deletion are not missed. |
-| [GitDatabaseTests.test_remote_metadata_edit_without_added_rows_is_applied](../tests/test_git_database.py#L188) | `self` | Verify remote metadata edit without added rows is applied. |
-| [GitDatabaseTests.test_stale_laptop_cannot_upload_over_new_remote_after_manual_pull](../tests/test_git_database.py#L202) | `self` | Verify stale laptop cannot upload over new remote after manual pull. |
-| [GitDatabaseTests.test_local_deletion_and_remote_addition_conflict_without_resurrection](../tests/test_git_database.py#L220) | `self` | Verify local deletion and remote addition conflict without resurrection. |
-| [GitDatabaseTests.test_same_id_different_new_songs_remain_separate_conflicting_copies](../tests/test_git_database.py#L241) | `self` | Verify same id different new songs remain separate conflicting copies. |
-| [GitDatabaseTests.test_both_devices_editing_one_record_blocks_upload](../tests/test_git_database.py#L261) | `self` | Verify both devices editing one record blocks upload. |
-| [GitDatabaseTests.test_remote_covering_local_changes_and_additions_is_safe](../tests/test_git_database.py#L270) | `self` | Verify remote covering local changes and additions is safe. |
-| [GitDatabaseTests.test_matching_deletions_on_both_devices_can_advance_to_remote](../tests/test_git_database.py#L283) | `self` | Verify matching deletions on both devices can advance to remote. |
-| [GitDatabaseTests.test_local_only_changes_stay_local_then_upload_normally](../tests/test_git_database.py#L294) | `self` | Verify local only changes stay local then upload normally. |
-| [GitDatabaseTests.test_check_remote_compares_database_without_restoring_or_mutating_sql](../tests/test_git_database.py#L306) | `self` | Verify check remote compares database without restoring or mutating sql. |
-| [GitDatabaseTests.test_unknown_baseline_preserves_both_even_if_remote_has_more_rows](../tests/test_git_database.py#L320) | `self` | Verify unknown baseline preserves both even if remote has more rows. |
-| [GitDatabaseTests.test_deleted_link_is_detected_from_device_history_if_receipt_is_missing](../tests/test_git_database.py#L336) | `self` | Verify deleted link is detected from device history if receipt is missing. |
-| [GitDatabaseTests.cast_vote](../tests/test_git_database.py#L357) | `self, path, winner` | Cast vote. |
-| [GitDatabaseTests.test_remote_game_results_and_ratings_are_loaded_without_reset](../tests/test_git_database.py#L389) | `self` | Verify remote game results and ratings are loaded without reset. |
-| [GitDatabaseTests.test_local_game_result_is_not_overwritten_by_remote_result](../tests/test_git_database.py#L407) | `self` | Verify local game result is not overwritten by remote result. |
-| [GitDatabaseTests.test_corrupt_remote_snapshot_does_not_change_live_or_upload_file](../tests/test_git_database.py#L420) | `self` | Verify corrupt remote snapshot does not change live or upload file. |
-| [GitDatabaseTests.test_future_schema_is_not_loaded_over_existing_data](../tests/test_git_database.py#L433) | `self` | Verify future schema is not loaded over existing data. |
-| [GitDatabaseTests.test_row_replacement_failure_rolls_back_and_keeps_archive](../tests/test_git_database.py#L446) | `self` | Verify row replacement failure rolls back and keeps archive. |
-| [GitDatabaseTests.test_row_replacement_failure_rolls_back_and_keeps_archive.fail](../tests/test_git_database.py#L454) | `conn, state` | Fail. |
-| [GitDatabaseTests.test_local_write_during_preparation_prevents_replacement](../tests/test_git_database.py#L471) | `self` | Verify local write during preparation prevents replacement. |
-| [GitDatabaseTests.test_local_write_during_preparation_prevents_replacement.racing](../tests/test_git_database.py#L478) | `*args, **kwargs` | Racing; writes songs. |
-| [GitDatabaseTests.test_new_extension_data_is_preserved_when_adopting_remote](../tests/test_git_database.py#L493) | `self` | Verify new extension data is preserved when adopting remote. |
-| [GitDatabaseTests.test_local_extension_changes_are_not_lost](../tests/test_git_database.py#L509) | `self` | Verify local extension changes are not lost. |
-| [GitDatabaseTests.test_committed_wal_data_is_compared_and_preserved](../tests/test_git_database.py#L520) | `self` | Verify committed wal data is compared and preserved. |
-| [GitDatabaseTests.test_completed_adoption_stays_successful_if_receipt_or_status_writes_fail](../tests/test_git_database.py#L534) | `self` | Verify completed adoption stays successful if receipt or status writes fail. |
-| [GitDatabaseTests.test_acknowledged_upload_stays_successful_if_local_history_write_fails](../tests/test_git_database.py#L565) | `self` | Verify acknowledged upload stays successful if local history write fails. |
-| [GitDatabaseTests.test_another_configured_database_cannot_reuse_the_original_receipt](../tests/test_git_database.py#L579) | `self` | Verify another configured database cannot reuse the original receipt. |
-| [GitDatabaseTests.test_ambiguous_extension_identities_do_not_hide_local_work](../tests/test_git_database.py#L602) | `self` | Verify ambiguous extension identities do not hide local work. |
-| [GitDatabaseTests.test_pre_v5_sql_history_can_identify_an_unchanged_transferred_catalogue](../tests/test_git_database.py#L617) | `self` | Verify pre v5 sql history can identify an unchanged transferred catalogue. |
-| [GitDatabaseTests.test_receipt_corruption_fails_closed_when_data_differs](../tests/test_git_database.py#L641) | `self` | Verify receipt corruption fails closed when data differs. |
-| [GitDatabaseTests.test_fresh_check_separates_current_code_from_newer_remote_database](../tests/test_git_database.py#L658) | `self` | Verify fresh check separates current code from newer remote database. |
-| [GitDatabaseTests.test_fresh_check_allows_live_local_additions_with_stale_sql_file](../tests/test_git_database.py#L675) | `self` | Verify fresh check allows live local additions with stale sql file. |
-| [GitDatabaseTests.test_numbered_devices_are_stable_across_three_installations](../tests/test_git_database.py#L684) | `self` | Verify numbered devices are stable across three installations. |
-| [GitDatabaseTests.test_copied_git_identity_on_another_host_gets_a_new_device_number](../tests/test_git_database.py#L716) | `self` | Verify copied git identity on another host gets a new device number. |
-| [GitDatabaseTests.test_manual_sql_commit_preserves_existing_device_number_allocations](../tests/test_git_database.py#L739) | `self` | Verify manual sql commit preserves existing device number allocations. |
-| [GitDatabaseTests.test_same_device_remote_ahead_trusts_local_edits_and_deletions](../tests/test_git_database.py#L758) | `self` | Verify same device remote ahead trusts local edits and deletions. |
-| [GitDatabaseTests.test_remote_baseline_hash_allows_local_changes_despite_incoming_code](../tests/test_git_database.py#L778) | `self` | Verify remote baseline hash allows local changes despite incoming code. |
-| [GitDatabaseTests.test_different_device_requires_review_even_when_remote_covers_local](../tests/test_git_database.py#L794) | `self` | Verify different device requires review even when remote covers local. |
-| [GitDatabaseTests.test_explicit_remote_choice_rejects_stale_local_and_remote](../tests/test_git_database.py#L815) | `self` | Verify explicit remote choice rejects stale local and remote. |
-| [GitDatabaseTests.test_local_write_while_building_upload_is_rechecked_before_push](../tests/test_git_database.py#L834) | `self` | Verify local write while building upload is rechecked before push. |
-| [GitDatabaseTests.test_local_write_while_building_upload_is_rechecked_before_push.racing](../tests/test_git_database.py#L839) | `*args, **kwargs` | Racing; writes songs. |
-| [GitDatabaseTests.test_remote_move_during_push_is_rejected_then_recompared](../tests/test_git_database.py#L856) | `self` | Verify remote move during push is rejected then recompared. |
-| [GitDatabaseTests.test_remote_move_during_push_is_rejected_then_recompared.racing](../tests/test_git_database.py#L862) | `*args, **kwargs` | Racing. |
-| [GitDatabaseTests.test_removed_remote_snapshot_is_a_reviewable_conflict](../tests/test_git_database.py#L877) | `self` | Verify removed remote snapshot is a reviewable conflict. |
+| [GitDatabaseTests.test_schema_upgrade_rehashes_available_baseline_sql](../tests/test_git_database.py#L65) | `self` | Verify schema upgrade rehashes available baseline sql. |
+| [GitDatabaseTests.test_manual_pull_then_startup_loads_five_hundred_new_songs](../tests/test_git_database.py#L82) | `self` | Verify manual pull then startup loads five hundred new songs. |
+| [GitDatabaseTests.test_normal_launcher_reconciles_before_the_server_starts](../tests/test_git_database.py#L115) | `self` | Verify normal launcher reconciles before the server starts. |
+| [GitDatabaseTests.test_initial_upgrade_recovers_baseline_from_history_after_pull](../tests/test_git_database.py#L163) | `self` | Verify initial upgrade recovers baseline from history after pull. |
+| [GitDatabaseTests.test_code_fast_forward_is_followed_by_database_reconciliation](../tests/test_git_database.py#L177) | `self` | Verify code fast forward is followed by database reconciliation. |
+| [GitDatabaseTests.test_same_row_count_remote_edit_and_deletion_are_not_missed](../tests/test_git_database.py#L188) | `self` | Verify same row count remote edit and deletion are not missed. |
+| [GitDatabaseTests.test_remote_metadata_edit_without_added_rows_is_applied](../tests/test_git_database.py#L205) | `self` | Verify remote metadata edit without added rows is applied. |
+| [GitDatabaseTests.test_stale_laptop_cannot_upload_over_new_remote_after_manual_pull](../tests/test_git_database.py#L219) | `self` | Verify stale laptop cannot upload over new remote after manual pull. |
+| [GitDatabaseTests.test_local_deletion_and_remote_addition_conflict_without_resurrection](../tests/test_git_database.py#L237) | `self` | Verify local deletion and remote addition conflict without resurrection. |
+| [GitDatabaseTests.test_same_id_different_new_songs_remain_separate_conflicting_copies](../tests/test_git_database.py#L258) | `self` | Verify same id different new songs remain separate conflicting copies. |
+| [GitDatabaseTests.test_both_devices_editing_one_record_blocks_upload](../tests/test_git_database.py#L278) | `self` | Verify both devices editing one record blocks upload. |
+| [GitDatabaseTests.test_remote_covering_local_changes_and_additions_is_safe](../tests/test_git_database.py#L287) | `self` | Verify remote covering local changes and additions is safe. |
+| [GitDatabaseTests.test_matching_deletions_on_both_devices_can_advance_to_remote](../tests/test_git_database.py#L300) | `self` | Verify matching deletions on both devices can advance to remote. |
+| [GitDatabaseTests.test_local_only_changes_stay_local_then_upload_normally](../tests/test_git_database.py#L311) | `self` | Verify local only changes stay local then upload normally. |
+| [GitDatabaseTests.test_check_remote_compares_database_without_restoring_or_mutating_sql](../tests/test_git_database.py#L323) | `self` | Verify check remote compares database without restoring or mutating sql. |
+| [GitDatabaseTests.test_unknown_baseline_preserves_both_even_if_remote_has_more_rows](../tests/test_git_database.py#L337) | `self` | Verify unknown baseline preserves both even if remote has more rows. |
+| [GitDatabaseTests.test_deleted_link_is_detected_from_device_history_if_receipt_is_missing](../tests/test_git_database.py#L353) | `self` | Verify deleted link is detected from device history if receipt is missing. |
+| [GitDatabaseTests.cast_vote](../tests/test_git_database.py#L374) | `self, path, winner` | Cast vote. |
+| [GitDatabaseTests.test_remote_game_results_and_ratings_are_loaded_without_reset](../tests/test_git_database.py#L406) | `self` | Verify remote game results and ratings are loaded without reset. |
+| [GitDatabaseTests.test_local_game_result_is_not_overwritten_by_remote_result](../tests/test_git_database.py#L424) | `self` | Verify local game result is not overwritten by remote result. |
+| [GitDatabaseTests.test_corrupt_remote_snapshot_does_not_change_live_or_upload_file](../tests/test_git_database.py#L437) | `self` | Verify corrupt remote snapshot does not change live or upload file. |
+| [GitDatabaseTests.test_future_schema_is_not_loaded_over_existing_data](../tests/test_git_database.py#L450) | `self` | Verify future schema is not loaded over existing data. |
+| [GitDatabaseTests.test_row_replacement_failure_rolls_back_and_keeps_archive](../tests/test_git_database.py#L463) | `self` | Verify row replacement failure rolls back and keeps archive. |
+| [GitDatabaseTests.test_row_replacement_failure_rolls_back_and_keeps_archive.fail](../tests/test_git_database.py#L471) | `conn, state` | Fail. |
+| [GitDatabaseTests.test_local_write_during_preparation_prevents_replacement](../tests/test_git_database.py#L488) | `self` | Verify local write during preparation prevents replacement. |
+| [GitDatabaseTests.test_local_write_during_preparation_prevents_replacement.racing](../tests/test_git_database.py#L495) | `*args, **kwargs` | Racing; writes songs. |
+| [GitDatabaseTests.test_new_extension_data_is_preserved_when_adopting_remote](../tests/test_git_database.py#L510) | `self` | Verify new extension data is preserved when adopting remote. |
+| [GitDatabaseTests.test_local_extension_changes_are_not_lost](../tests/test_git_database.py#L526) | `self` | Verify local extension changes are not lost. |
+| [GitDatabaseTests.test_committed_wal_data_is_compared_and_preserved](../tests/test_git_database.py#L537) | `self` | Verify committed wal data is compared and preserved. |
+| [GitDatabaseTests.test_completed_adoption_stays_successful_if_receipt_or_status_writes_fail](../tests/test_git_database.py#L551) | `self` | Verify completed adoption stays successful if receipt or status writes fail. |
+| [GitDatabaseTests.test_acknowledged_upload_stays_successful_if_local_history_write_fails](../tests/test_git_database.py#L582) | `self` | Verify acknowledged upload stays successful if local history write fails. |
+| [GitDatabaseTests.test_another_configured_database_cannot_reuse_the_original_receipt](../tests/test_git_database.py#L596) | `self` | Verify another configured database cannot reuse the original receipt. |
+| [GitDatabaseTests.test_ambiguous_extension_identities_do_not_hide_local_work](../tests/test_git_database.py#L619) | `self` | Verify ambiguous extension identities do not hide local work. |
+| [GitDatabaseTests.test_pre_v5_sql_history_can_identify_an_unchanged_transferred_catalogue](../tests/test_git_database.py#L634) | `self` | Verify pre v5 sql history can identify an unchanged transferred catalogue. |
+| [GitDatabaseTests.test_receipt_corruption_fails_closed_when_data_differs](../tests/test_git_database.py#L658) | `self` | Verify receipt corruption fails closed when data differs. |
+| [GitDatabaseTests.test_fresh_check_separates_current_code_from_newer_remote_database](../tests/test_git_database.py#L675) | `self` | Verify fresh check separates current code from newer remote database. |
+| [GitDatabaseTests.test_fresh_check_allows_live_local_additions_with_stale_sql_file](../tests/test_git_database.py#L692) | `self` | Verify fresh check allows live local additions with stale sql file. |
+| [GitDatabaseTests.test_numbered_devices_are_stable_across_three_installations](../tests/test_git_database.py#L701) | `self` | Verify numbered devices are stable across three installations. |
+| [GitDatabaseTests.test_copied_git_identity_on_another_host_gets_a_new_device_number](../tests/test_git_database.py#L733) | `self` | Verify copied git identity on another host gets a new device number. |
+| [GitDatabaseTests.test_manual_sql_commit_preserves_existing_device_number_allocations](../tests/test_git_database.py#L756) | `self` | Verify manual sql commit preserves existing device number allocations. |
+| [GitDatabaseTests.test_same_device_remote_ahead_trusts_local_edits_and_deletions](../tests/test_git_database.py#L775) | `self` | Verify same device remote ahead trusts local edits and deletions. |
+| [GitDatabaseTests.test_remote_baseline_hash_allows_local_changes_despite_incoming_code](../tests/test_git_database.py#L795) | `self` | Verify remote baseline hash allows local changes despite incoming code. |
+| [GitDatabaseTests.test_different_device_requires_review_even_when_remote_covers_local](../tests/test_git_database.py#L811) | `self` | Verify different device requires review even when remote covers local. |
+| [GitDatabaseTests.test_explicit_remote_choice_rejects_stale_local_and_remote](../tests/test_git_database.py#L832) | `self` | Verify explicit remote choice rejects stale local and remote. |
+| [GitDatabaseTests.test_local_write_while_building_upload_is_rechecked_before_push](../tests/test_git_database.py#L851) | `self` | Verify local write while building upload is rechecked before push. |
+| [GitDatabaseTests.test_local_write_while_building_upload_is_rechecked_before_push.racing](../tests/test_git_database.py#L856) | `*args, **kwargs` | Racing; writes songs. |
+| [GitDatabaseTests.test_remote_move_during_push_is_rejected_then_recompared](../tests/test_git_database.py#L873) | `self` | Verify remote move during push is rejected then recompared. |
+| [GitDatabaseTests.test_remote_move_during_push_is_rejected_then_recompared.racing](../tests/test_git_database.py#L879) | `*args, **kwargs` | Racing. |
+| [GitDatabaseTests.test_removed_remote_snapshot_is_a_reviewable_conflict](../tests/test_git_database.py#L894) | `self` | Verify removed remote snapshot is a reviewable conflict. |
 
 ## tests/test_git_keep_local.py
 
@@ -1350,8 +1359,8 @@ Fill-only schema-13 metadata: mocked Apple, real backup and atomic writes.
 | [MetadataFillTests.test_source_write_failure_rolls_back_all_fills_without_automatic_backup](../tests/test_metadata_fill.py#L133) | `self` | Verify source write failure rolls back all fills without automatic backup. |
 | [MetadataFillTests.test_source_write_failure_rolls_back_all_fills_without_automatic_backup.failing](../tests/test_metadata_fill.py#L135) | `*args` | Failing. |
 | [MetadataFillTests.test_explicit_cleaned_and_unmarked_defaults](../tests/test_metadata_fill.py#L145) | `self` | Verify explicit cleaned and unmarked defaults. |
-| [MetadataFillTests.test_multidisc_can_fill_dates_and_source_without_guessing_local_position](../tests/test_metadata_fill.py#L151) | `self` | Verify multidisc can fill dates and source without guessing local position. |
-| [MetadataFillTests.test_completed_scan_endpoint_exposes_new_counts_and_keeps_private_plan_server_side](../tests/test_metadata_fill.py#L157) | `self` | Verify completed scan endpoint exposes new counts and keeps private plan server side. |
+| [MetadataFillTests.test_multidisc_fills_verified_disc_track_pairs_and_source](../tests/test_metadata_fill.py#L151) | `self` | Verify multidisc fills verified disc track pairs and source. |
+| [MetadataFillTests.test_completed_scan_endpoint_exposes_new_counts_and_keeps_private_plan_server_side](../tests/test_metadata_fill.py#L159) | `self` | Verify completed scan endpoint exposes new counts and keeps private plan server side. |
 
 ## tests/test_preferences.py
 
@@ -1402,10 +1411,10 @@ Schema-20 telemetry retirement with a complete old backup and exact game retenti
 | Definition | Signature | Purpose |
 | --- | --- | --- |
 | [RetireListeningTests.legacy](../tests/test_retired_listening.py#L19) | `self` | Legacy; writes listening_observations, song_vibe_positions, songs. |
-| [RetireListeningTests.test_old_data_is_backed_up_then_only_retired_objects_disappear](../tests/test_retired_listening.py#L30) | `self` | Verify old data is backed up then only retired objects disappear. |
-| [RetireListeningTests.test_dependent_extension_blocks_upgrade_without_discarding_it](../tests/test_retired_listening.py#L45) | `self` | Verify dependent extension blocks upgrade without discarding it. |
-| [RetireListeningTests.test_public_pages_and_payloads_have_no_listening_process_or_data](../tests/test_retired_listening.py#L50) | `self` | Verify public pages and payloads have no listening process or data. |
-| [sql_dump_from_legacy](../tests/test_retired_listening.py#L59) | `state, folder` | Sql dump from legacy. |
+| [RetireListeningTests.test_old_data_is_backed_up_then_only_retired_objects_disappear](../tests/test_retired_listening.py#L32) | `self` | Verify old data is backed up then only retired objects disappear. |
+| [RetireListeningTests.test_dependent_extension_blocks_upgrade_without_discarding_it](../tests/test_retired_listening.py#L47) | `self` | Verify dependent extension blocks upgrade without discarding it. |
+| [RetireListeningTests.test_public_pages_and_payloads_have_no_listening_process_or_data](../tests/test_retired_listening.py#L52) | `self` | Verify public pages and payloads have no listening process or data. |
+| [sql_dump_from_legacy](../tests/test_retired_listening.py#L61) | `state, folder` | Sql dump from legacy. |
 
 ## tests/test_shutdown.py
 
@@ -1448,13 +1457,13 @@ Lossless source compression, current-only migration and retained game data.
 | [SourceCodecTests.test_invalid_or_truncated_compression_fails_closed](../tests/test_source_storage.py#L28) | `self` | Verify invalid or truncated compression fails closed. |
 | [StorageTests.source](../tests/test_source_storage.py#L40) | `self, n` | Source. |
 | [StorageTests.old_layout](../tests/test_source_storage.py#L42) | `self` | Old layout. |
-| [StorageTests.insert_old](../tests/test_source_storage.py#L53) | `self, sid, n` | Insert old; writes song_sources. |
-| [StorageTests.test_upgrade_keeps_latest_source_and_all_other_stored_values_with_backup](../tests/test_source_storage.py#L59) | `self` | Verify upgrade keeps latest source and all other stored values with backup. |
-| [StorageTests.test_source_update_replaces_one_row_and_invalidates_review_without_growing_history](../tests/test_source_storage.py#L73) | `self` | Verify source update replaces one row and invalidates review without growing history. |
-| [StorageTests.test_compressed_sources_round_trip_full_export_rebuild](../tests/test_source_storage.py#L82) | `self` | Verify compressed sources round trip full export rebuild. |
-| [StorageTests.test_bad_latest_source_aborts_before_modifying_live_data](../tests/test_source_storage.py#L89) | `self` | Verify bad latest source aborts before modifying live data. |
-| [StorageTests.test_extension_reference_to_obsolete_source_blocks_removal](../tests/test_source_storage.py#L95) | `self` | Verify extension reference to obsolete source blocks removal. |
-| [StorageTests.test_growing_database_moves_to_larger_pages_without_changing_values](../tests/test_source_storage.py#L102) | `self` | Verify growing database moves to larger pages without changing values. |
+| [StorageTests.insert_old](../tests/test_source_storage.py#L55) | `self, sid, n` | Insert old; writes song_sources. |
+| [StorageTests.test_upgrade_keeps_latest_source_and_all_other_stored_values_with_backup](../tests/test_source_storage.py#L61) | `self` | Verify upgrade keeps latest source and all other stored values with backup. |
+| [StorageTests.test_source_update_replaces_one_row_and_invalidates_review_without_growing_history](../tests/test_source_storage.py#L76) | `self` | Verify source update replaces one row and invalidates review without growing history. |
+| [StorageTests.test_compressed_sources_round_trip_full_export_rebuild](../tests/test_source_storage.py#L85) | `self` | Verify compressed sources round trip full export rebuild. |
+| [StorageTests.test_bad_latest_source_aborts_before_modifying_live_data](../tests/test_source_storage.py#L92) | `self` | Verify bad latest source aborts before modifying live data. |
+| [StorageTests.test_extension_reference_to_obsolete_source_blocks_removal](../tests/test_source_storage.py#L98) | `self` | Verify extension reference to obsolete source blocks removal. |
+| [StorageTests.test_growing_database_moves_to_larger_pages_without_changing_values](../tests/test_source_storage.py#L105) | `self` | Verify growing database moves to larger pages without changing values. |
 
 ## tests/test_tag_limits.py
 
@@ -1468,11 +1477,11 @@ Eight-tag policy: backed-up migration, atomic APIs and storage guards.
 | [TagLimitTests.test_metadata_counts_unique_names_and_rejects_nine_without_writes](../tests/test_tag_limits.py#L32) | `self` | Verify metadata counts unique names and rejects nine without writes. |
 | [TagLimitTests.test_song_editor_saves_eight_distinct_tags](../tests/test_tag_limits.py#L41) | `self` | Verify song editor saves eight distinct tags. |
 | [TagLimitTests.old_layout](../tests/test_tag_limits.py#L47) | `self` | Old layout. |
-| [TagLimitTests.test_failed_upgrade_leaves_original_memberships_and_version](../tests/test_tag_limits.py#L56) | `self` | Verify failed upgrade leaves original memberships and version. |
-| [TagLimitTests.test_eight_and_duplicate_tags_save_and_ninth_bulk_add_rolls_back](../tests/test_tag_limits.py#L66) | `self` | Verify eight and duplicate tags save and ninth bulk add rolls back. |
-| [TagLimitTests.test_workbench_checks_result_union_not_chosen_count_and_remove_still_works](../tests/test_tag_limits.py#L77) | `self` | Verify workbench checks result union not chosen count and remove still works. |
-| [TagLimitTests.test_trigger_guards_moves_and_allows_changing_tag_at_capacity](../tests/test_tag_limits.py#L93) | `self` | Verify trigger guards moves and allows changing tag at capacity. |
-| [TagLimitTests.test_upgrade_keeps_earliest_link_order_and_backup_then_is_idempotent](../tests/test_tag_limits.py#L100) | `self` | Verify upgrade keeps earliest link order and backup then is idempotent. |
+| [TagLimitTests.test_failed_upgrade_leaves_original_memberships_and_version](../tests/test_tag_limits.py#L58) | `self` | Verify failed upgrade leaves original memberships and version. |
+| [TagLimitTests.test_eight_and_duplicate_tags_save_and_ninth_bulk_add_rolls_back](../tests/test_tag_limits.py#L68) | `self` | Verify eight and duplicate tags save and ninth bulk add rolls back. |
+| [TagLimitTests.test_workbench_checks_result_union_not_chosen_count_and_remove_still_works](../tests/test_tag_limits.py#L79) | `self` | Verify workbench checks result union not chosen count and remove still works. |
+| [TagLimitTests.test_trigger_guards_moves_and_allows_changing_tag_at_capacity](../tests/test_tag_limits.py#L95) | `self` | Verify trigger guards moves and allows changing tag at capacity. |
+| [TagLimitTests.test_upgrade_keeps_earliest_link_order_and_backup_then_is_idempotent](../tests/test_tag_limits.py#L102) | `self` | Verify upgrade keeps earliest link order and backup then is idempotent. |
 
 ## tests/test_tag_workbench.py
 
@@ -1709,11 +1718,12 @@ Disposable served-page and Chromium integration fixtures.
 | [run_dev](../tools/browser_check.py#L19) | `` | Run served Dev DOM checks against a disposable local fixture server. |
 | [serve_dev](../tools/browser_check.py#L58) | `database, port` | Serve dev; reads songs; writes albums, artists, genres, song_artists, song_genres, songs. |
 | [serve_dev.lookup](../tools/browser_check.py#L118) | `url` | Return deterministic Apple track offers for served import/review checks. |
-| [run_vibe](../tools/browser_check.py#L146) | `` | Run vibe; writes albums, artists, genres, song_artists, song_genres, song_vibe_positions, songs. |
+| [run_vibe](../tools/browser_check.py#L146) | `` | Run vibe; reads songs; writes albums, artists, genres, song_artists, song_genres, song_vibe_positions, songs. |
 | [run_vibe.cover](../tools/browser_check.py#L222) | `` | Serve local artwork so browser screenshots do not depend on external images. |
 | [run_vibe.tag_audio_enable](../tools/browser_check.py#L231) | `` | Tag audio enable; POST /tag-test-enable. |
 | [run_vibe.tag_audio](../tools/browser_check.py#L239) | `` | Serve a silent WAV fixture for playback controls without Apple transport. |
-| [main](../tools/browser_check.py#L269) | `` | Run the requested disposable integration fixture. |
+| [run_vibe.enable_discs](../tools/browser_check.py#L252) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
+| [main](../tools/browser_check.py#L280) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 
@@ -1734,4 +1744,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1184 Python definitions**.
+Total: **1194 Python definitions**.

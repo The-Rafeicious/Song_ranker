@@ -67,11 +67,11 @@ def shelf_eligible_ids(data):
     albums={a['id']:a for a in data.get('albums',[])}
     occupied=defaultdict(list)
     for song in data.get('songs',[]):
-        position=song.get('track_number')
-        if type(position) is int and position>0:
-            occupied[(song.get('album_id'),position)].append(song['id'])
+        position=song.get('track_number');disc=song.get('disc_number',1)
+        if type(position) is int and position>0 and type(disc) is int and disc>0:
+            occupied[(song.get('album_id'),disc,position)].append(song['id'])
     groups=defaultdict(list)
-    for (album_id,_),ids in occupied.items():
+    for (album_id,_,_),ids in occupied.items():
         if len(ids)==1 and proper_album(albums.get(album_id,{})):
             groups[album_id].extend(ids)
     return {sid for ids in groups.values() if len(ids)>=2 for sid in ids}
@@ -187,7 +187,7 @@ def topology(data):
     """Hash catalogue eligibility and membership so Overall calibration detects
     structural changes.
     """
-    rows=[(s['id'],s.get('album_id'),s.get('track_number'),bool(str(s.get('audio_url') or '').strip()),sorted(set(s.get('artist_ids',[]))),sorted(set(s.get('tag_ids',[])))) for s in data.get('songs',[])]
+    rows=[(s['id'],s.get('album_id'),s.get('disc_number',1),s.get('track_number'),bool(str(s.get('audio_url') or '').strip()),sorted(set(s.get('artist_ids',[]))),sorted(set(s.get('tag_ids',[])))) for s in data.get('songs',[])]
     structure=[sorted(rows),[(kind,sorted((r['id'],proper_album(r) if kind=='albums' else True) for r in data.get(kind,[]))) for kind in ('artists','albums','tags')]]
     return hashlib.sha256(json.dumps(structure).encode()).hexdigest()
 

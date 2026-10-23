@@ -45,6 +45,8 @@ class TagLimitTests(unittest.TestCase):
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM song_genres WHERE song_id=1').fetchone()[0],8)
 
     def old_layout(self):
+        from support import pre_disc_layout
+        pre_disc_layout(self.conn)
         # Simulate schema 15 rather than relabelling a schema-17 database.
         for name in ('song_vibe_added','song_vibe_keep_slot','song_vibe_keep_identity','vibe_progress_added'):
             self.conn.execute('DROP TRIGGER '+name)
@@ -109,7 +111,7 @@ class TagLimitTests(unittest.TestCase):
         self.assertEqual(self.conn.execute('PRAGMA user_version').fetchone()[0],SCHEMA_VERSION)
         after=capture(self.conn);reconcile(before,after)
         for name,data in before['tables'].items():
-            if name!='song_genres':self.assertEqual(data,after['tables'][name],name)
+            if name not in ('song_genres','songs','album_shelf_items'):self.assertEqual(data,after['tables'][name],name)
         backups=list((self.path.parent/'database_backups').glob('*.db'));self.assertEqual(len(backups),1)
         old=sqlite3.connect(backups[0]);self.assertEqual(old.execute('SELECT COUNT(*) FROM song_genres WHERE song_id=1').fetchone()[0],11);old.close()
         migrate(self.path);self.assertEqual(after,capture(self.conn));self.assertEqual(backups,list((self.path.parent/'database_backups').glob('*.db')))

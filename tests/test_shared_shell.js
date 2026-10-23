@@ -17,6 +17,9 @@ const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert
  w.PreviewPlayback.setVolume(4);assert.equal(audio.volume,1);
  w.PreviewPlayback.setVolume(-2);assert.equal(audio.volume,0);
  w.PreviewPlayback.setVolume('invalid');assert.equal(audio.volume,0);
+ assert.equal(w.SongRankerUI.trackPosition({disc_number:2,track_number:1}), '2·1');
+ assert.equal(w.SongRankerUI.trackPosition({track_number:3}), '3');
+ assert.equal(w.SongRankerUI.trackPosition({disc_number:2,track_number:1},true), 'Disc 2 · Track 1');
  assert.equal(w.SongRankerUI.searchText(' Beyoncé '),'beyonce');
  assert.equal(w.SongRankerUI.identityText('  A   TAG  '),'a tag');
  w.dispatchEvent(new w.Event('pagehide'));w.close();

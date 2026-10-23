@@ -15,6 +15,10 @@ window.SongRankerUI = (() => {
   };
   const esc = (value) =>
     String(value ?? "").replace(/[&<>"']/g, (character) => escapes[character]);
+  function trackPosition(song, labelled = false) {
+    const disc = song.disc_number || 1, track = song.track_number || "—";
+    return labelled ? `Disc ${disc} · Track ${track}` : disc > 1 ? `${disc}·${track}` : String(track);
+  }
   // Search ignores accents; tag identity preserves them and normalises whitespace.
   const searchText = (value) =>
     String(value ?? "")
@@ -158,6 +162,7 @@ window.SongRankerUI = (() => {
     impactModel,
     impactText,
     sumFields,
+    trackPosition,
     entityTypes,
     entityLabels,
     entityColour,

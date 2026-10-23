@@ -296,7 +296,7 @@ class PreferenceTests(unittest.TestCase):
         for sid in range(1,11):
             album=1 if sid<=5 else 2;pos=(sid-1)%5+1
             for round_id in (1,2):
-                c.execute('INSERT INTO album_shelf_items VALUES(?,?,?,?,?,?,?,?)',(round_id,sid,sid,album,album,pos,album,pos))
+                c.execute('INSERT INTO album_shelf_items(round_id,item_slot,song_id,album_id,album_slot,track_number,answer_slot,answer_position) VALUES(?,?,?,?,?,?,?,?)',(round_id,sid,sid,album,album,pos,album,pos))
         c.commit()
         totals=exposure_totals(c)
         self.assertEqual([totals[1][key] for key in ('trivia','guesser','tournament','shelves')],[1,1,1,1])

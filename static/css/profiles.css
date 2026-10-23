@@ -369,10 +369,14 @@ body.profile-page #main .profile-album-card > a {
 }
 body.profile-page #main .profile-track-row {
   display: grid;
-  grid-template-columns: 28px 72px minmax(0, 1fr) auto 48px;
+  grid-template-columns: minmax(28px, max-content) 72px minmax(0, 1fr) auto 48px;
   align-items: center;
   gap: 16px;
   padding: 18px 0;
+}
+body.profile-page #main .profile-track-row .compact-rank {
+  max-width: 48px;
+  overflow-wrap: anywhere;
 }
 body.profile-page #main .profile-track-row .small-art {
   width: 72px;
@@ -455,7 +459,7 @@ body.profile-page #main #history .pill-nav {
     font-size: 15px;
   }
   body.profile-page #main .profile-track-row {
-    grid-template-columns: 20px 56px minmax(0, 1fr) 48px;
+    grid-template-columns: minmax(20px, max-content) 56px minmax(0, 1fr) 48px;
     gap: 8px 10px;
   }
   body.profile-page #main .profile-track-row :is(.compact-rank, .small-art) {

@@ -66,3 +66,15 @@ See [consolidation review](../docs/CONSOLIDATION.md),
   SQL copies move out of .git into verified, deduplicated gzip backup archives.
   Matching hashes avoid timestamp-only commits. No existing database/SQL snapshot
   contents are part of this code update; schema remains 20.
+
+## V5.3.3 — multi-disc albums and Album Shelves
+
+- One album supports multiple discs with independent track numbers. Imports keep
+  disc/track positions; duplicate checks scope positions to one disc.
+- Shelves groups all discs on one album shelf and grades disc-first relative order.
+  Saved disc positions keep results stable through later catalogue edits.
+- Dev has disc fields, a compact Disc column, disc-aware album inspection and a
+  direct Move / combine tracks workflow with an optional destination disc.
+- Preferred artwork remains independent of source identity. Standard/deluxe
+  records are not inferred or automatically combined. Existing IDs and user data
+  remain intact; schema 21 defaults pre-existing positions to disc 1.

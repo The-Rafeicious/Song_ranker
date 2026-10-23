@@ -1,4 +1,4 @@
--- Song Ranker schema 16. Canonical definitions for fresh and rebuilt databases.
+-- Song Ranker schema 21. Canonical definitions for fresh and rebuilt databases.
 -- Never put migration-only transforms or user data in this file.
 -- Grade facts and all explicit IDs survive rebuilds; sequences keep deleted-ID high water.
 
@@ -35,6 +35,7 @@ CREATE TABLE IF NOT EXISTS songs (
     highest_elo REAL DEFAULT 1200,
     highest_rank INTEGER DEFAULT 9999,
     track_number INTEGER,
+    disc_number INTEGER NOT NULL DEFAULT 1 CHECK(typeof(disc_number)='integer' AND disc_number>0),
     tournament_wins INTEGER DEFAULT 0,
     release_date TEXT,
     release_date_origin TEXT CHECK(release_date_origin IN ('manual','apple','album')),
@@ -272,6 +273,7 @@ CREATE TABLE IF NOT EXISTS album_shelf_items (
     album_id INTEGER REFERENCES albums(id) ON DELETE SET NULL,
     album_slot INTEGER NOT NULL CHECK(album_slot BETWEEN 1 AND 3),
     track_number INTEGER NOT NULL CHECK(track_number>0),
+    disc_number INTEGER NOT NULL DEFAULT 1 CHECK(typeof(disc_number)='integer' AND disc_number>0),
     answer_slot INTEGER CHECK(answer_slot BETWEEN 1 AND 3),
     answer_position INTEGER CHECK(answer_position BETWEEN 1 AND 10),
     PRIMARY KEY(round_id,item_slot),
@@ -322,19 +324,19 @@ CREATE TRIGGER IF NOT EXISTS songs_track_position_insert
             SELECT RAISE(ABORT,'Track number is already used in this album.')
               WHERE NEW.album_id IS NOT NULL AND NEW.track_number IS NOT NULL
               AND EXISTS (SELECT 1 FROM songs s WHERE s.album_id=NEW.album_id
-                  AND s.track_number=NEW.track_number );
+                  AND s.disc_number=NEW.disc_number AND s.track_number=NEW.track_number );
             END;
 
 -- songs_track_position_update (trigger)
 CREATE TRIGGER IF NOT EXISTS songs_track_position_update
-            BEFORE UPDATE OF album_id,track_number ON songs BEGIN
+            BEFORE UPDATE OF album_id,disc_number,track_number ON songs BEGIN
             SELECT RAISE(ABORT,'Track number must be a positive whole number or NULL.')
               WHERE NEW.track_number IS NOT NULL
               AND (typeof(NEW.track_number)!='integer' OR NEW.track_number<1);
             SELECT RAISE(ABORT,'Track number is already used in this album.')
               WHERE NEW.album_id IS NOT NULL AND NEW.track_number IS NOT NULL
               AND EXISTS (SELECT 1 FROM songs s WHERE s.album_id=NEW.album_id
-                  AND s.track_number=NEW.track_number AND s.id!=NEW.id);
+                  AND s.disc_number=NEW.disc_number AND s.track_number=NEW.track_number AND s.id!=NEW.id);
             END;
 
 -- trivia_rounds_song (index)

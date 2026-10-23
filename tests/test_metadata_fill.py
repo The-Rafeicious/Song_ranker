@@ -148,9 +148,11 @@ class MetadataFillTests(unittest.TestCase):
             self.assertTrue(all(public_source(r['source'])['content_label']==label for r in p['sources']))
             self.assertEqual(public_source(p['sources'][0]['source'])['content_assumed'],flag is None)
 
-    def test_multidisc_can_fill_dates_and_source_without_guessing_local_position(self):
+    def test_multidisc_fills_verified_disc_track_pairs_and_source(self):
         self.flags={'discCount':2,'discNumber':2}
-        p=self.plan();self.assertEqual(p['tracks'],[]);self.assertEqual(len(p['track_failures']),2)
+        p=self.plan();self.assertEqual(len(p['tracks']),2);self.assertEqual(p['track_failures'],[])
+        fill.apply_plan(self.path,p)
+        self.assertEqual([tuple(r) for r in self.conn.execute('SELECT disc_number,track_number FROM songs ORDER BY id')],[(2,1),(2,2)])
         self.assertEqual(len(p['song_dates']),2);self.assertEqual(len(p['sources']),2)
         self.assertEqual(p['sources'][0]['source']['metadata']['disc_number'],2)
 

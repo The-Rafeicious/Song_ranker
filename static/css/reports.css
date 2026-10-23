@@ -2596,7 +2596,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
 }
 .shelves-stats-page .shelf-history-track {
   display: grid;
-  grid-template-columns: 24px minmax(0, 1fr);
+  grid-template-columns: minmax(24px, max-content) minmax(0, 1fr);
   gap: 8px 10px;
   border-top: 1px solid var(--mode-stats-divider);
   padding-block: 16px;
@@ -2606,6 +2606,8 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   padding-bottom: 0;
 }
 .shelves-stats-page .shelf-track-number {
+  max-width: 56px;
+  overflow-wrap: anywhere;
   color: var(--shelves);
   font-weight: 900;
   font-size: 18px;

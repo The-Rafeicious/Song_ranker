@@ -1,6 +1,6 @@
 # Upgrades and recovery
 
-Current operating guidance for the generation-3 competition, schema 20.
+Current operating guidance for the generation-3 competition, schema 21.
 Patch-by-patch installation notes are **expired / no longer necessary**; their
 feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 [V5.1](../update_logs/V5_1_UPDATE.md). v5.1.2 includes a backed-up schema migration.
@@ -26,7 +26,7 @@ feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 4. Use the new code with upgraded databases. Older code may refuse a newer schema;
    source rollback alone does not roll back database structure.
 
-`APP_VERSION` is `5.3.2`; Vibe reports `Vibe-Map-v1.1`.
+`APP_VERSION` is `5.3.3`; Vibe reports `Vibe-Map-v1.1`.
 The documentation release labels v5.1.0/v5.1.1 do not change the runtime footer.
 Install dependencies from `requirements.txt`; configuration is in the
 [technical guide](TECHNICAL_GUIDE.md#configuration).
@@ -270,3 +270,15 @@ supersedes the earlier ahead/behind upload restriction.
 No database migration. Hard-refresh tabs after upgrading. Stop is now available
 from either header with one fresh PIN and no separate Dev login; localhost and
 normal-launcher requirements remain. Existing bookmarks and tool URLs still work.
+
+## V5.3.3 multi-disc upgrade
+
+Schema 21 adds disc number 1 to existing songs and saved Shelves items. It keeps
+album IDs, track numbers, answers, results and relationships intact and uses the
+normal pre-upgrade backup/transactional rebuild. SQL restores recognize the old
+schema-20 layout even when the dump omits `PRAGMA user_version`.
+
+No real catalogue album records are merged automatically. Use the album/disc
+workflow in [the Dev guide](DEV_GUIDE.md#albums-discs-and-artwork) after reviewing
+the intended destination and its artwork. Keep older computers updated to V5.3.3
+before sharing new schema-21 snapshots; older apps reject newer schemas.
