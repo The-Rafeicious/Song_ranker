@@ -101,8 +101,6 @@ def propose_song(plan, song, remote):
     fresh = observation(remote, plan["country"])
     for key, remote_key in [("disc_number", "discNumber"), ("disc_count", "discCount")]:
         fresh["metadata"][key] = remote.get(remote_key)
-    if remote.get("discNumber") != 1 or remote.get("discCount") != 1:
-        fresh["metadata"]["track_number"] = None
     previous = song.get("source")
     if previous and previous["track_id"] != fresh["track_id"]:
         raise ValueError(
@@ -194,6 +192,7 @@ def snapshot(conn):
     columns = {r["name"] for r in conn.execute("PRAGMA table_info(songs)")}
     modern = {"release_date", "release_date_origin"} <= columns
     extra = ",release_date,release_date_origin" if modern else ""
+    if "disc_number" in columns:extra += ",disc_number"
     songs = [
         dict(r)
         for r in conn.execute(
@@ -297,7 +296,7 @@ def plan_metadata(
         "metadata_failures": [],
     }
     occupied = {
-        (s["album_id"], s["track_number"])
+        (s["album_id"], s.get("disc_number", 1), s["track_number"])
         for s in original["songs"]
         if s["track_number"] is not None
     }
@@ -325,7 +324,7 @@ def plan_metadata(
         proposals = []
         if single:
             for song in missing_tracks:
-                if len(local) != 1 or (album["id"], 1) in occupied:
+                if len(local) != 1 or (album["id"], 1, 1) in occupied:
                     failures[song["id"]] = (
                         "Single has multiple tracks or track 1 is occupied."
                     )
@@ -336,6 +335,7 @@ def plan_metadata(
                             "title": song["title"],
                             "album_id": album["id"],
                             "value": 1,
+                            "disc_number": 1,
                         }
                     )
         try:
@@ -501,13 +501,16 @@ def plan_metadata(
                             row = matched[0]
                             if (
                                 type(row.get("discCount")) is not int
-                                or row["discCount"] != 1
+                                or row["discCount"] < 1
                                 or type(row.get("discNumber")) is not int
-                                or row["discNumber"] != 1
+                                or not 1 <= row["discNumber"] <= row["discCount"]
+                                or ("disc_number" not in song and row["discCount"] != 1)
                             ):
                                 raise ValueError(
                                     "Multi-disc or missing disc metadata; no position guessed."
                                 )
+                            if song.get("disc_number", 1) > 1 and song["disc_number"] != row["discNumber"]:
+                                raise ValueError("Saved disc differs from Apple; review the position manually.")
                             number = parse_track_number(row.get("trackNumber"))
                             count = parse_track_number(row.get("trackCount"))
                             if number is None or count is None or number > count:
@@ -520,6 +523,7 @@ def plan_metadata(
                                     "title": song["title"],
                                     "album_id": album["id"],
                                     "value": number,
+                                    "disc_number": row["discNumber"],
                                 }
                             )
                         except ValueError as error:
@@ -537,18 +541,18 @@ def plan_metadata(
             if not single:
                 for song in missing_tracks:
                     failures[song["id"]] = str(error)
-        counts = Counter(p["value"] for p in proposals)
+        counts = Counter((p["disc_number"], p["value"]) for p in proposals)
         for proposal in proposals:
             if (
-                counts[proposal["value"]] > 1
-                or (album["id"], proposal["value"]) in occupied
+                counts[(proposal["disc_number"], proposal["value"])] > 1
+                or (album["id"], proposal["disc_number"], proposal["value"]) in occupied
             ):
                 failures[proposal["id"]] = (
                     "Track position is duplicated or already occupied locally."
                 )
             else:
                 plan["tracks"].append(proposal)
-                occupied.add((album["id"], proposal["value"]))
+                occupied.add((album["id"], proposal["disc_number"], proposal["value"]))
         for song in missing_tracks:
             if song["id"] in failures:
                 plan["track_failures"].append(
@@ -602,14 +606,18 @@ def apply_plan(filename, plan):
             number = parse_track_number(track["value"])
             if number is None:
                 raise ValueError("A proposed track position is blank.")
-            check_track_position(conn, track["album_id"], number, track["id"])
+            check_track_position(conn, track["album_id"], number, track["id"], track.get("disc_number", 1))
         for row in plan.get("sources", []):
             conflict = source_conflict(conn, row["id"], row["source"])
             if conflict:
                 raise ValueError(
                     "An Apple identity is already linked to another song. Scan again."
                 )
+        modern_discs = "disc_number" in {r[1] for r in conn.execute("PRAGMA table_info(songs)")}
         for track in plan["tracks"]:
+            if modern_discs:
+                conn.execute("UPDATE songs SET disc_number=?,track_number=? WHERE id=? AND (track_number IS NULL OR TRIM(track_number)='')", (track.get("disc_number", 1), track["value"], track["id"]))
+                continue
             conn.execute(
                 "UPDATE songs SET track_number=? WHERE id=? AND (track_number IS NULL OR TRIM(track_number)='')",
                 (track["value"], track["id"]),
@@ -671,6 +679,8 @@ def text_report(plan):
         lines.append(
             f"[{row['status'].upper()}] Album #{row['id']} {row['title']} | {row['value'] or 'blank'} | {row['reason']}"
         )
+    lines += ["", "DISC / TRACK POSITIONS"]
+    lines += [f"Song #{r['id']} {r['title']} | Disc {r.get('disc_number', 1)} · Track {r['value']}" for r in plan["tracks"]]
     lines += ["", "TRACK NUMBER FAILURES ONLY"]
     lines += [
         f"[FAILED] Song #{r['id']} {r['title']} | {r['album']} | {r['reason']}"

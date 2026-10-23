@@ -215,3 +215,24 @@ def retire_listening(original):
     ]
     state["user_version"] = 20
     return state
+
+
+def upgrade_album_discs(original):
+    """Default pre-21 catalogue and saved Shelves positions to disc one.
+
+    Never infer discs from titles or change historical track/order facts.
+    Explicit unexpected extension columns remain a migration error.
+    """
+    if original["user_version"] >= 21:
+        return original
+    state = deepcopy(original)
+    for name in ("songs", "album_shelf_items"):
+        table = state["tables"].get(name)
+        if table is not None:
+            if "disc_number" in table["columns"]:
+                raise ValueError("A pre-21 extension uses disc_number; review the migration before continuing.")
+            table["columns"].append("disc_number")
+            for row in table["rows"]:
+                row.append(1)
+    state["user_version"] = 21
+    return state

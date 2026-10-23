@@ -1221,6 +1221,7 @@
       ["elo_score", "Elo"],
       ["elo_matches_played", "Elo matches"],
       ["matches_played", "Ordinary votes"],
+      ["disc_number", "Disc"],
       ["track_number", "Track"],
       ["preview", "Preview"],
       ["release_date", "Song released"],
@@ -1264,6 +1265,7 @@
     "cover_url",
     "song_count",
     "track_number",
+    "disc_number",
     "preview",
     "release_date",
     "release_type",
@@ -1711,6 +1713,7 @@
           field("title", "Title", r.title, "text", "required") +
             field("artists", "Artists", r.artist) +
             field("album", "Album / release", r.album) +
+            field("disc_number", "Disc number", r.disc_number || 1, "number", 'min="1" step="1" required') +
             field(
               "track_number",
               "Track number",
@@ -1907,7 +1910,7 @@
           `<div><b class="${tone}">${esc(value)}</b><span>${label}</span></div>`;
         openDialog(
           name,
-          `<section class="integrity-review"><div class="integrity-metrics">${metric(data.integrity.join(", "), "SQLite", data.integrity.every((v) => v === "ok") ? "song" : "error")}${metric(data.foreign_key_errors.length, "Foreign-key errors", data.foreign_key_errors.length ? "error" : "song")}${metric(data.track_number_conflicts.length, "Track conflicts", data.track_number_conflicts.length ? "error" : "song")}</div>${data.foreign_key_errors.length ? `<section><h3>Foreign-key errors</h3><div class="integrity-issues">${data.foreign_key_errors.map((row) => `<article class="health-row"><span>${esc(row[0])} · row ${esc(row[1] ?? "unknown")}</span><strong>Missing ${esc(row[2])} reference</strong></article>`).join("")}</div></section>` : ""}${data.track_number_conflicts.length ? `<section><h3>Track conflicts</h3><div class="integrity-issues">${data.track_number_conflicts.map((s) => `<article class="health-row track-conflict"><div><strong class="song">${esc(s.title)}</strong><small class="album">${esc(s.album || "No album")} · track ${esc(s.track_number)}</small><small>${esc(s.issue)}</small></div><button class="btn" type="button" data-edit="songs" data-id="${s.id}">Edit song</button></article>`).join("")}</div></section>` : ""}</section>`,
+          `<section class="integrity-review"><div class="integrity-metrics">${metric(data.integrity.join(", "), "SQLite", data.integrity.every((v) => v === "ok") ? "song" : "error")}${metric(data.foreign_key_errors.length, "Foreign-key errors", data.foreign_key_errors.length ? "error" : "song")}${metric(data.track_number_conflicts.length, "Track conflicts", data.track_number_conflicts.length ? "error" : "song")}</div>${data.foreign_key_errors.length ? `<section><h3>Foreign-key errors</h3><div class="integrity-issues">${data.foreign_key_errors.map((row) => `<article class="health-row"><span>${esc(row[0])} · row ${esc(row[1] ?? "unknown")}</span><strong>Missing ${esc(row[2])} reference</strong></article>`).join("")}</div></section>` : ""}${data.track_number_conflicts.length ? `<section><h3>Track conflicts</h3><div class="integrity-issues">${data.track_number_conflicts.map((s) => `<article class="health-row track-conflict"><div><strong class="song">${esc(s.title)}</strong><small class="album">${esc(s.album || "No album")} · ${esc(window.SongRankerUI.trackPosition(s, true))}</small><small>${esc(s.issue)}</small></div><button class="btn" type="button" data-edit="songs" data-id="${s.id}">Edit song</button></article>`).join("")}</div></section>` : ""}</section>`,
           "Done",
         );
         $("#editor-submit").hidden = true;
@@ -2078,6 +2081,7 @@
   let profileState = null,
     albumPlayer = null;
   const trackOrder = (a, b) =>
+    (a.disc_number || 1) - (b.disc_number || 1) ||
     (a.track_number || Infinity) - (b.track_number || Infinity) || a.id - b.id;
   function compactArt(s, type = "songs") {
     return `<span class="small-art ${type === "artists" ? "circle" : ""}" aria-hidden="true">♫${s.cover_url ? `<img src="${esc(s.cover_url)}" alt="" loading="lazy" onerror="this.hidden=true">` : ""}</span>`;
@@ -2203,7 +2207,7 @@
       .slice(start, trackLimit)
       .map(
         (s, i) =>
-          `<div class="profile-track-row" data-profile-track="${s.id}"><span class="compact-rank">${sort === "track" ? s.track_number || "—" : start + i + 1}</span>${compactArt(s)}<div class="compact-copy"><a class="song" title="${esc(s.title)}" href="${urlFor("songs", s)}">${esc(s.title)}</a><div class="metadata">${metadata(properAlbum(byId(albums, s.album_id)) ? s : { ...s, album: "" })}</div></div><div class="compact-score standard"><b>${Math.round(s.elo_score)}</b><small>Elo · ${s.elo_matches_played ?? s.voting?.matches ?? s.matches_played} Elo matches</small></div><button class="btn small" data-audio="track-audio-${s.id}" aria-label="Play ${esc(s.title)}" aria-pressed="false" ${s.audio_url ? "" : "disabled"}><span class="play-overlay">▶</span></button><audio id="track-audio-${s.id}" src="${esc(previewSource(s))}" preload="none"></audio></div>`,
+          `<div class="profile-track-row" data-profile-track="${s.id}"><span class="compact-rank" title="${esc(window.SongRankerUI.trackPosition(s, true))}">${sort === "track" ? window.SongRankerUI.trackPosition(s) : start + i + 1}</span>${compactArt(s)}<div class="compact-copy"><a class="song" title="${esc(s.title)}" href="${urlFor("songs", s)}">${esc(s.title)}</a><div class="metadata">${metadata(properAlbum(byId(albums, s.album_id)) ? s : { ...s, album: "" })}</div></div><div class="compact-score standard"><b>${Math.round(s.elo_score)}</b><small>Elo · ${s.elo_matches_played ?? s.voting?.matches ?? s.matches_played} Elo matches</small></div><button class="btn small" data-audio="track-audio-${s.id}" aria-label="Play ${esc(s.title)}" aria-pressed="false" ${s.audio_url ? "" : "disabled"}><span class="play-overlay">▶</span></button><audio id="track-audio-${s.id}" src="${esc(previewSource(s))}" preload="none"></audio></div>`,
       )
       .join("");
     if (append) root.insertAdjacentHTML("beforeend", html);
@@ -3691,7 +3695,7 @@
         .slice(0, bulkLimit)
         .map(
           (s) =>
-            `<label class="bulk-row"><input type="checkbox" data-bulk-song="${s.id}" ${bulkSelection.has(s.id) ? "checked" : ""}>${compactArt(s)}<span class="compact-copy"><strong>${esc(s.title)}</strong><small>${esc(s.artist)} · ${esc(s.album)} · Track ${s.track_number || "—"}</small><small>${esc(window.DevCatalog?.sourceText(s.id) || "Loading…")} · ${esc(window.DevCatalog?.contentText(s.id) || "Not explicit")}</small></span><small>#${s.id}</small></label>`,
+            `<label class="bulk-row"><input type="checkbox" data-bulk-song="${s.id}" ${bulkSelection.has(s.id) ? "checked" : ""}>${compactArt(s)}<span class="compact-copy"><strong>${esc(s.title)}</strong><small>${esc(s.artist)} · ${esc(s.album)} · ${window.SongRankerUI.trackPosition(s, true)}</small><small>${esc(window.DevCatalog?.sourceText(s.id) || "Loading…")} · ${esc(window.DevCatalog?.contentText(s.id) || "Not explicit")}</small></span><small>#${s.id}</small></label>`,
         )
         .join("") || '<div class="empty">No matching songs</div>';
     if (rows.length > bulkLimit)
@@ -3716,7 +3720,7 @@
     if (apply)
       apply.textContent = move ? "Apply album move" : "Review selected sources";
     $("#bulk-actions").innerHTML = move
-      ? `<div class="search-form"><input id="bulk-album-query" type="search" placeholder="Find destination album…" aria-label="Destination album search"></div><strong id="bulk-album-selected" class="album">${esc(byId(albums, bulkAlbum)?.title || "")}</strong><div class="scope-results" id="bulk-albums"></div><label><input type="checkbox" id="bulk-clear-tracks">Clear selected track numbers</label>`
+      ? `<div class="search-form"><input id="bulk-album-query" type="search" placeholder="Find destination album…" aria-label="Destination album search"></div><strong id="bulk-album-selected" class="album">${esc(byId(albums, bulkAlbum)?.title || "")}</strong><div class="scope-results" id="bulk-albums"></div><div class="field"><label for="bulk-disc">Destination disc (blank keeps current discs)</label><input id="bulk-disc" type="number" min="1" step="1" placeholder="Keep current discs"></div><p class="catalog-note">To combine split discs, select one disc’s tracks, choose the album to keep and enter its disc number. Track numbers and destination artwork stay intact.</p><label><input type="checkbox" id="bulk-clear-tracks">Clear selected track numbers</label>`
       : `<div class="field"><label for="bulk-source-release">Apple album, EP or Single link (optional)</label><input id="bulk-source-release" type="url" maxlength="2000" placeholder="Use one release for this group…"></div><p class="catalog-note">Choose a recording for each song, skip uncertain ones, then save the reviewed group. Names, previews, tags and album placement stay as they are.</p>`;
     if (move) renderBulkAlbums();
   }
@@ -3733,7 +3737,7 @@
             `<button class="scope-option ${a.id === bulkAlbum ? "selected" : ""}" aria-pressed="${a.id === bulkAlbum}" data-bulk-album="${a.id}" type="button">${compactArt(a)}<strong class="album">${esc(a.title)}</strong><small>${a.song_count} songs · ${esc(a.artist)}<br>Tracks: ${esc(
               linkedSongs("albums", a)
                 .sort(trackOrder)
-                .map((t) => t.track_number || "—")
+                .map((t) => window.SongRankerUI.trackPosition(t, true))
                 .join(", "),
             )}</small></button>`,
         )
@@ -3765,6 +3769,7 @@
         action: "move_album",
         album_id: bulkAlbum,
         clear_track_numbers: !!$("#bulk-clear-tracks")?.checked,
+        disc_number: $("#bulk-disc")?.value || null,
       });
       await refreshData();
       renderBulkRows();
@@ -3915,6 +3920,18 @@
     },
   });
   window.DevCatalog?.bindUI({
+    moveAlbum: (id) => navigateDev("bulk", true, () => {
+      bulkAlbumFilter = String(id);
+      bulkArtistFilter = "";
+      bulkSourceFilter = "";
+      bulkQuery = "";
+      bulkSelectedOnly = false;
+      bulkSelection = new Set(songs.filter((s) => s.album_id === id).slice(0, 500).map((s) => s.id));
+      bulkAlbum = null;
+      renderBulk();
+      $("#bulk-action").value = "move_album";
+      renderBulkActions();
+    }),
     api,
     records,
     artwork,

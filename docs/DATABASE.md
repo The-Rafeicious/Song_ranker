@@ -1,6 +1,6 @@
 # V5 database dictionary
 
-**Generation-3 competition · schema 20 · app v5.1.2**
+**Generation-3 competition · schema 21 · app v5.3.3**
 
 The active default is `data/song_ranker_v3.db`. The schema registry is
 [data/schema.sql](../data/schema.sql); this dictionary is derived from it.
@@ -77,6 +77,7 @@ actions are authoritative in the schema. Empty default means no SQL default.
 | `highest_elo` | REAL | Nullable | 1200 |
 | `highest_rank` | INTEGER | Nullable | 9999 |
 | `track_number` | INTEGER | Nullable |  |
+| `disc_number` | INTEGER | Not null; positive integer | 1 |
 | `tournament_wins` | INTEGER | Nullable | 0 |
 | `release_date` | TEXT | Nullable |  |
 | `release_date_origin` | TEXT | Nullable |  |
@@ -308,6 +309,7 @@ Foreign keys: `run_id` → `challenge_runs.id` (delete NO ACTION); `song2_id` �
 | `album_id` | INTEGER | Nullable |  |
 | `album_slot` | INTEGER | Not null |  |
 | `track_number` | INTEGER | Not null |  |
+| `disc_number` | INTEGER | Not null; positive integer | 1 |
 | `answer_slot` | INTEGER | Nullable |  |
 | `answer_position` | INTEGER | Nullable |  |
 

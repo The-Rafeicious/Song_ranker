@@ -25,6 +25,8 @@ class RetireListeningTests(unittest.TestCase):
         self.conn.execute("INSERT INTO listening_observations(mode,reference,song_key,song_id,seconds,decision_ms,recorded_at) VALUES('standard','1',1,1,12,12000,1)")
         self.conn.execute("UPDATE song_vibe_positions SET x=.25,y=-.5,status='placed',sample_count=3,updated_at=1 WHERE song_id=1")
         self.conn.execute('UPDATE songs SET elo_score=1300 WHERE id=1')
+        from support import pre_disc_layout
+        pre_disc_layout(self.conn)
         self.conn.execute('PRAGMA user_version=19');self.conn.commit()
 
     def test_old_data_is_backed_up_then_only_retired_objects_disappear(self):
@@ -32,7 +34,7 @@ class RetireListeningTests(unittest.TestCase):
         self.assertEqual(after['user_version'],SCHEMA_VERSION)
         self.assertNotIn('listening_observations',after['tables'])
         for name,data in before['tables'].items():
-            if name!='listening_observations':self.assertEqual(after['tables'][name],data,name)
+            if name not in ('listening_observations','songs','album_shelf_items'):self.assertEqual(after['tables'][name],data,name)
         reconcile(before,after)
         backup=next(self.path.parent.joinpath('database_backups').glob('pre_upgrade_*.db'))
         with readonly(backup) as old:self.assertEqual(capture(old),before)

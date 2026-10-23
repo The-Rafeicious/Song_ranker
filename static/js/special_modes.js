@@ -633,7 +633,7 @@ window.SpecialModes = (() => {
       };
 
       $("#shelf-content").innerHTML =
-        `<div class="shelf-actions"><button class="btn primary" data-shelf-check>Check shelves</button><button class="btn primary shelf-next" data-shelf-next hidden>Next round →</button><div id="shelf-order-score" class="shelf-order-score" hidden role="status"></div><span id="shelf-reveal-progress" class="shelf-reveal-progress" role="status"></span><small id="reveal-audio-note"></small></div><div class="shelf-audio-bar panel dashboard-surface"><span class="shelf-preview-duration">10-second samples</span><button class="btn primary" data-shelf-play aria-pressed="false" ${shelf.songs.some((s) => s.audio_url) ? "" : "disabled"}>▶ Play previews</button><span id="shelf-preview-info" role="status">${shelf.songs.filter((s) => s.audio_url).length} / 10 previews</span><audio id="shelf-preview-audio" preload="none"></audio></div><div id="shelf-board"></div>`;
+        `<div class="shelf-actions"><button class="btn primary" data-shelf-check>Check shelves</button><button class="btn primary shelf-next" data-shelf-next hidden>Next round →</button><div id="shelf-order-score" class="shelf-order-score" hidden role="status"></div><span id="shelf-reveal-progress" class="shelf-reveal-progress" role="status"></span><small id="reveal-audio-note"></small></div><div class="shelf-audio-bar panel dashboard-surface"><span class="shelf-preview-duration">10-second samples</span><button class="btn primary" data-shelf-play aria-pressed="false" ${shelf.songs.some((s) => s.audio_url) ? "" : "disabled"}>▶ Play previews</button><span id="shelf-preview-info" role="status">${shelf.songs.filter((s) => s.audio_url).length} / 10 previews</span><audio id="shelf-preview-audio" preload="none"></audio></div><p class="metadata">Order tracks within each album: disc 1 first, then disc 2 and later discs. Gaps between track numbers are fine.</p><div id="shelf-board"></div>`;
       renderShelfBoard();
       bindShelfAudio();
     } catch (error) {
@@ -678,6 +678,7 @@ window.SpecialModes = (() => {
         answer.album_correct &&
         (!answer.order_pairs || answer.order_right === answer.order_pairs),
       truth = shelf.result?.answers.find((a) => a.slot === slot);
+    const truthPosition = truth ? window.SongRankerUI.trackPosition(truth, true) : "";
     const status = full
       ? "✓ Correct"
       : !answer?.album_correct
@@ -687,12 +688,12 @@ window.SpecialModes = (() => {
         answer && shelf.albums.find((a) => a.slot === answer.answer_slot),
       corrected = revealed && !full;
     const positionLabel = corrected
-      ? `Your shelf position ${answer.answer_position} on ${submittedAlbum?.title || "another album"}; correct album track ${truth.track_number}`
+      ? `Your shelf position ${answer.answer_position} on ${submittedAlbum?.title || "another album"}; correct ${truthPosition}`
       : revealed
-        ? `Album track ${truth.track_number}`
+        ? truthPosition
         : "Shelf position";
     const actualPosition = revealed
-      ? `<span class="shelf-position-actual" title="Correct album track">${truth.track_number}</span>`
+      ? `<span class="shelf-position-actual" title="${esc(truthPosition)}">${esc(window.SongRankerUI.trackPosition(truth))}</span>`
       : "";
     const position = corrected
       ? `<del title="Your submitted shelf position">${answer.answer_position}</del>${actualPosition}`
@@ -724,7 +725,7 @@ window.SpecialModes = (() => {
   function renderShelfBoard() {
     if (!shelf) return;
     $("#shelf-board").innerHTML =
-      `<div class="shelf-columns ${shelf.albums.length === 2 ? "two" : ""}">${shelf.albums.map((a) => `<section class="panel shelf-column dashboard-surface" data-shelf-album="${a.slot}" data-score-added="${!!shelf.scoredAlbums?.has(a.slot)}"><div class="shelf-column-head"><div class="shelf-album-art">${U.artwork({ name: a.title, cover_url: a.cover_url }, "albums")}${shelf.answered ? shelfAlbumScore(a) : ""}</div><h2 class="album" title="${esc(a.title)}">${esc(a.title)}</h2></div><div class="shelf-drop" data-shelf-drop="${a.slot}">${shelf.placements[a.slot].length ? shelf.placements[a.slot].map((slot, i, list) => shelfTrack(slot, String(a.slot), i, list.length)).join("") : '<div class="shelf-empty">Drop tracks here</div>'}</div></section>`).join("")}</div>${shelf.answered ? "" : `<section class="panel shelf-pool dashboard-surface"><div class="section-head"><h2>Unsorted</h2><b class="shelves">${shelf.pool.length} / 10</b></div><div class="shelf-pool-grid" data-shelf-drop="pool">${shelf.pool.map((slot, i, list) => shelfTrack(slot, "pool", i, list.length)).join("") || "<p>All ten tracks placed</p>"}</div></section>`}`;
+      `<div class="shelf-columns ${shelf.albums.length === 2 ? "two" : ""}">${shelf.albums.map((a) => `<section class="panel shelf-column dashboard-surface" data-shelf-album="${a.slot}" data-score-added="${!!shelf.scoredAlbums?.has(a.slot)}"><div class="shelf-column-head"><div class="shelf-album-art">${U.artwork({ name: a.title, cover_url: a.cover_url }, "albums")}${shelf.answered ? shelfAlbumScore(a) : ""}</div><h2 class="album" title="${esc(a.title)}">${esc(a.title)}</h2>${a.disc_count > 1 ? `<small class="metadata">${a.disc_count} discs · one album shelf</small>` : ""}</div><div class="shelf-drop" data-shelf-drop="${a.slot}">${shelf.placements[a.slot].length ? shelf.placements[a.slot].map((slot, i, list) => shelfTrack(slot, String(a.slot), i, list.length)).join("") : '<div class="shelf-empty">Drop tracks here</div>'}</div></section>`).join("")}</div>${shelf.answered ? "" : `<section class="panel shelf-pool dashboard-surface"><div class="section-head"><h2>Unsorted</h2><b class="shelves">${shelf.pool.length} / 10</b></div><div class="shelf-pool-grid" data-shelf-drop="pool">${shelf.pool.map((slot, i, list) => shelfTrack(slot, "pool", i, list.length)).join("") || "<p>All ten tracks placed</p>"}</div></section>`}`;
     $("[data-shelf-check]").disabled = !!shelf.pool.length || shelf.answered;
     markPlayback();
   }
@@ -770,7 +771,7 @@ window.SpecialModes = (() => {
       album,
       answers: current.result.answers
         .filter((a) => a.album_slot === album.slot)
-        .sort((a, b) => a.track_number - b.track_number),
+        .sort((a, b) => (a.disc_number || 1) - (b.disc_number || 1) || a.track_number - b.track_number),
     }));
     const answers = groups.flatMap((group) => group.answers);
     let points = 0,

@@ -428,9 +428,7 @@ class DatabaseSync:
                     )
                 if old_blob:
                     _, base = prepare_sql(self.sql(old_blob), folder, "baseline")
-                common["baseline_hash"] = receipt.get("model_hash") or (
-                    digest(base) if base is not None else None
-                )
+                common["baseline_hash"] = digest(base) if base is not None else receipt.get("model_hash")
             else:
                 # Compatibility recovery proves the exact local starting point;
                 # finding history alone does not authorize adopting another writer.

@@ -1,6 +1,6 @@
 # Developer guide
 
-**V5.3.2 · Dev workspace**
+**V5.3.3 · Dev workspace**
 
 Open **System Access** on the hosting computer and enter the Dev PIN. Use **Home**,
 **Library**, **Mode edits**, and **Tools & systems** to move between tasks. Each
@@ -93,6 +93,34 @@ Backup or Git errors keep the server running. Use **Review in Dev** to inspect t
 For a deliberately restored/wiped local save, use **Git sync → Keep local
 database…**, compare both copies and type `KEEP LOCAL`, then upload normally.
 See [split recovery](UPGRADES.md#database-sync-and-split-recovery) before replacing data.
+
+## Albums, discs and artwork
+
+One album can contain multiple discs. Song **Disc number** defaults to 1;
+**Track number** is its position within that disc. Disc 1 track 1 and disc 2
+track 1 are different slots. Blanks and gaps in track numbers remain allowed.
+
+To combine existing split discs:
+
+1. In Releases, open the disc-2 record's tracks and choose **Move / combine tracks**.
+   This opens Bulk edits with its songs selected and the album-move action ready.
+2. Choose the album record/artwork to keep, enter **Destination disc = 2** and
+   leave **Clear selected track numbers** unchecked. Apply the move. Conflicting
+   disc/track pairs reject the entire change; scores, tags and source links stay.
+3. Rename the destination (for example, *Quarter Life Crisis (Deluxe)*) in Releases.
+   An empty old album can remain if saved results refer to it; do not delete it
+   merely to tidy a historical reference. Saved Shelves results keep their old facts.
+
+For *locket*, tracks 12–14 are bonus tracks on the same disc: move them to the
+chosen record with disc 1 if you want one album shelf. Standard and deluxe
+editions may also remain separate. Album artwork can be edited independently of
+Apple source metadata; choosing another cover does not require another album.
+There is no automatic edition/title matching or disc-title parsing.
+
+Album Shelves uses one shelf per album, ordered by disc then track. Disc/track
+answers appear only during reveal; their saved values also appear in history.
+Imports retain Apple's disc and within-disc track numbers. Missing metadata
+reviews show verified disc/track proposals; ambiguous matches still need manual editing.
 
 ## Git & database sync
 

@@ -92,3 +92,11 @@ def route_modules():
         and node.module != "songranker.services"
         for alias in node.names
     }
+
+
+def pre_disc_layout(conn):
+    """Remove schema-21 additions when a test constructs an older database layout."""
+    for name in ('songs_track_position_insert', 'songs_track_position_update'):
+        conn.execute('DROP TRIGGER IF EXISTS '+name)
+    for name in ('songs', 'album_shelf_items'):
+        conn.execute('ALTER TABLE '+name+' DROP COLUMN disc_number')

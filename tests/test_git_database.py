@@ -62,6 +62,23 @@ class GitDatabaseTests(unittest.TestCase):
         self.assertTrue(reviewed["ok"], reviewed)
         return self.sync.use_remote(reviewed["choice"])
 
+    def test_schema_upgrade_rehashes_available_baseline_sql(self):
+        self.pair()
+        # The other installation accepted this backup before its model gained disc fields.
+        import json
+        self.other.discover()
+        policy = DatabaseSync(self.other, self.other.inspect())
+        receipt = json.loads(policy.receipt_path.read_text())
+        receipt['model_hash'] = '0' * 64
+        policy.receipt_path.write_text(json.dumps(receipt))
+        self.edit(self.desktop_db, "UPDATE songs SET title='New local edit' WHERE id=1")
+        checked = self.other.check()
+        self.assertTrue(checked['ok'], checked)
+        comparison = checked['git']['database_sync']
+        self.assertEqual(comparison['reason'], 'remote_unchanged')
+        self.assertEqual(comparison['baseline_hash'], comparison['remote_hash'])
+        self.assertTrue(checked['git']['upload_ready'])
+
     def test_manual_pull_then_startup_loads_five_hundred_new_songs(self):
         self.pair()
         before = self.state()

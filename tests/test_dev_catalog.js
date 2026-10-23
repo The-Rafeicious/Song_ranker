@@ -232,6 +232,9 @@ async function moveAndTableChecks(width){
  check(h.data.songs[0].id===1&&h.data.songs[0].album_id===101&&h.data.songs[0].release_date==='1998-02-03','same song ID/date after move at '+width);
  w.testDev.setView('albums');check(d.querySelector('[data-catalog-album="1"]'),'quick album inspection action at '+width);
  await w.DevCatalog.openAlbum(1);check(d.querySelectorAll('[data-catalog-preview]').length===2,'all album tracks shown at '+width);
+ check(d.querySelector('#field-disc_number')===null,'album inspection stays read-only at '+width);
+ check(d.querySelector('[data-catalog-move-album="1"]'),'direct combine-disc workflow at '+width);
+ check(d.querySelector('[data-edit="songs"][data-id="2"]'),'disc editor reachable from album at '+width);
  check(d.querySelector('[data-catalog-preview="2"]').disabled,'missing preview disabled at '+width);
  h.click('[data-catalog-preview="1"]');await flush();check(h.plays.length===1,'preview starts only on explicit click at '+width);
  snapshots['developer-album-'+width]=d.documentElement.outerHTML;

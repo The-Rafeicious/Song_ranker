@@ -12,6 +12,11 @@ from math import ceil, isclose
 from songranker.catalog import proper_album
 
 
+def shelf_position(item):
+    """Order a saved position by disc, then track; legacy facts default to disc one."""
+    return (item.get("disc_number", 1), item["track_number"])
+
+
 def grade_shelf(items):
     """0.5 membership points + up to 2.5 relative-order points per track."""
     result = []
@@ -28,7 +33,7 @@ def grade_shelf(items):
             membership
             and other["answer_slot"] == other["album_slot"]
             and (
-                (item["track_number"] < other["track_number"])
+                (shelf_position(item) < shelf_position(other))
                 == (item["answer_position"] < other["answer_position"])
             )
             for other in siblings
@@ -90,11 +95,11 @@ def shelf_pool(conn):
     pool = [
         dict(r)
         for r in conn.execute(
-            """SELECT s.id,s.album_id,s.track_number FROM songs s JOIN albums a ON a.id=s.album_id
+            """SELECT s.id,s.album_id,s.disc_number,s.track_number FROM songs s JOIN albums a ON a.id=s.album_id
         WHERE TRIM(a.title)!='' AND LOWER(TRIM(a.title))!='unknown album'
         AND LOWER(TRIM(a.title)) NOT LIKE '% - single' AND typeof(s.track_number)='integer' AND s.track_number>0
         AND NOT EXISTS(SELECT 1 FROM songs other WHERE other.album_id=s.album_id
-          AND other.track_number=s.track_number AND other.id!=s.id) ORDER BY s.id"""
+          AND other.disc_number=s.disc_number AND other.track_number=s.track_number AND other.id!=s.id) ORDER BY s.id"""
         )
     ]
     from songranker.modes.selection import with_catalogue_age
@@ -143,7 +148,7 @@ def shelf_payload(conn, row):
     for slot in sorted({i["album_slot"] for i in items}):
         id = next(i["album_id"] for i in items if i["album_slot"] == slot)
         a = conn.execute(
-            "SELECT id,title,cover_url FROM albums WHERE id=?", (id,)
+            "SELECT a.id,a.title,a.cover_url,(SELECT MAX(s.disc_number) FROM songs s WHERE s.album_id=a.id) AS disc_count FROM albums a WHERE a.id=?", (id,)
         ).fetchone()
         if not a:
             return None
@@ -204,7 +209,7 @@ def shelf_round():
             )
             for slot, song in enumerate(tracks, 1):
                 conn.execute(
-                    "INSERT INTO album_shelf_items(round_id,item_slot,song_id,album_id,album_slot,track_number) VALUES(?,?,?,?,?,?)",
+                    "INSERT INTO album_shelf_items(round_id,item_slot,song_id,album_id,album_slot,track_number,disc_number) VALUES(?,?,?,?,?,?,?)",
                     (
                         cur.lastrowid,
                         slot,
@@ -212,6 +217,7 @@ def shelf_round():
                         song["album_id"],
                         albums.index(song["album_id"]) + 1,
                         song["track_number"],
+                        song["disc_number"],
                     ),
                 )
             session["shelf_token"] = token
@@ -290,6 +296,7 @@ def shelf_answer():
                 slot=i["item_slot"],
                 album_slot=i["album_slot"],
                 track_number=i["track_number"],
+                disc_number=i["disc_number"],
             )
             for i in items
         ]
@@ -333,6 +340,7 @@ def can_grade(items, rules):
         integer(i["item_slot"], high=10)
         and integer(i["album_slot"], high=3)
         and integer(i["track_number"])
+        and integer(i.get("disc_number", 1))
         and i["answer_slot"] in slots
         and integer(i["answer_slot"], high=3)
         and integer(i["answer_position"], high=10)
@@ -347,7 +355,7 @@ def can_grade(items, rules):
     living_ids = [i["song_id"] for i in items if i["song_id"] is not None]
     return (
         unique(("item_slot",))
-        and unique(("album_slot", "track_number"))
+        and len({(i["album_slot"], *shelf_position(i)) for i in items}) == len(items)
         and unique(("answer_slot", "answer_position"))
         and len(set(living_ids)) == len(living_ids)
     )
@@ -584,6 +592,7 @@ def build_shelves_stats(conn, now=None, history_page=1, album_page=1, selected=N
                 items=sorted(
                     saved,
                     key=lambda i: (
+                        i.get("disc_number", 1),
                         (
                             i["track_number"]
                             if integer(i["track_number"])

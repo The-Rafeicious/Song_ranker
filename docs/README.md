@@ -20,7 +20,7 @@ patch's old install steps do not compete with today's instructions.
 | Expired documents and replacement locations | [Retired references](RETIRED.md) |
 
 Documentation v5.1.1 records Vibe integration under app v5.1.0. v5.1.2 retires listening capture and adds reviewed local-save Git resolution. Historical figures
-and migration instructions are marked as such; the current dictionary is schema 20.
+and migration instructions are marked as such; the current dictionary is schema 21.
 
 - [Function index](FUNCTIONS.md): every maintained Python definition and purpose.
 - [V5.3 consolidation](CONSOLIDATION.md): changes, retired files and validation.

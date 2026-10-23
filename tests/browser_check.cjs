@@ -285,6 +285,27 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.ok(await page.locator('[data-stop-prepare]').isDisabled(),'Externally served browser fixture cannot terminate its host');
   await page.locator('#editor-close').click();
   await page.goto(base+'/global_stats');assert.equal(await page.locator('.listening-panel,script[src*="/listening.js"]').count(),0);
-  assert.deepEqual(errors,[]);console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
+  // Disc answers stay hidden while playing; repeated within-disc numbers grade in disc order.
+  const discData=await (await page.request.post(base+'/shelves-test-enable')).json();
+  const offeredRequest=page.waitForResponse(r=>r.url().endsWith('/api/album-shelves/round')&&r.request().method()==='POST');
+  await page.goto(base+'/album_shelves');
+  const offered=await (await offeredRequest).json();await page.locator('.shelf-track').first().waitFor();
+  assert.equal(offered.songs.length,10);assert.ok(offered.albums.some(a=>a.disc_count===2));
+  assert.ok(offered.songs.every(s=>!('disc_number' in s)&&!('track_number' in s)));
+  assert.equal(await page.locator('.shelf-position-actual').count(),0);
+  const order=[...discData.songs].sort((a,b)=>a.album_id-b.album_id||a.disc_number-b.disc_number||a.track_number-b.track_number);
+  for(const song of order){
+    const item=offered.songs.find(s=>s.id===song.id),album=offered.albums.find(a=>a.id===song.album_id);
+    await page.locator(`[data-shelf-slot="${item.slot}"] summary`).click();
+    await page.locator(`[data-shelf-pick="${item.slot}"][data-shelf-target="${album.slot}"]`).click();
+  }
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-play',folder);await page.screenshot({path:folder+'/shelves-discs-play-'+width+'.png',fullPage:true});}
+  await page.locator('[data-shelf-check]').click();await page.locator('[data-shelf-next]').waitFor({state:'visible'});
+  assert.equal(await page.locator('#shelf-running-score').textContent(),'30.00');
+  assert.ok((await page.locator('.shelf-position-actual').allTextContents()).some(t=>t.includes('2·')));
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-result',folder);await page.screenshot({path:folder+'/shelves-discs-result-'+width+'.png',fullPage:true});}
+  await page.goto(base+'/album_shelves_stats');
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-stats',folder);await page.screenshot({path:folder+'/shelves-discs-stats-'+width+'.png',fullPage:true});}
+  assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -248,6 +248,17 @@ def run_vibe():
                 clip.writeframes(bytes(30 * 8000 * 2))
             return Response(buf.getvalue(), mimetype="audio/wav")
 
+        @application.app.post("/shelves-test-enable")
+        def enable_discs():
+            """Seed repeated track numbers across discs only in this disposable fixture."""
+            with sqlite3.connect(os.environ["SONG_RANKER_DB"]) as conn:
+                for sid, album, track in [(8,1,1),(9,1,2),(10,2,1),(11,2,2)]:
+                    conn.execute("INSERT INTO songs(id,title,album_id,disc_number,track_number) VALUES(?,?,?,2,?)", (sid,"Disc two song "+str(sid),album,track))
+                    conn.execute("INSERT INTO song_artists VALUES(?,1)", (sid,))
+                conn.row_factory = sqlite3.Row
+                songs = [dict(row) for row in conn.execute("SELECT id,album_id,disc_number,track_number FROM songs WHERE album_id IN (1,2)")]
+            return {"songs": songs}
+
         server = make_server("127.0.0.1", 0, application.app, threaded=True)
         thread = Thread(target=server.serve_forever, daemon=True)
         thread.start()

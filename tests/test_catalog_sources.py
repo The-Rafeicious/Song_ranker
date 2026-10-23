@@ -12,8 +12,9 @@ import unittest
 import test_preferences as fixture
 from songranker.developer import catalog_sources as sources
 from songranker.developer import dev
-from songranker.developer import dev_catalog
+from songranker.developer import dev_catalog, dev_tags
 from songranker import services
+from songranker.overall import shelf_eligible_ids
 from songranker.modes import trivia
 from songranker.modes import guesser, shelves
 from songranker.storage.database import (migrate, initialize_database)
@@ -40,7 +41,7 @@ class SourceFieldTests(unittest.TestCase):
 
     def test_disc_positions_are_not_flattened_and_dates_are_not_guessed(self):
         data=sources.apple_metadata(apple(discNumber=2,discCount=2,trackNumber=3,releaseDate='not a date'))
-        self.assertIsNone(data['track_number']);self.assertEqual(data['source_track_number'],3)
+        self.assertEqual(data['track_number'],3);self.assertEqual(data['disc_number'],2);self.assertEqual(data['source_track_number'],3)
         self.assertEqual(data['release_date'],'')
 
     def test_store_urls_and_identifiers_are_validated(self):
@@ -367,6 +368,112 @@ class CatalogSourceTests(unittest.TestCase):
         self.assertIn('js/dev_catalog.js',page);self.assertIn('css/dev_catalog.css',page)
         public=client.get('/').get_data(as_text=True)
         self.assertNotIn('songranker.developer.dev_catalog.js',public);self.assertNotIn('songranker.developer.dev_catalog.css',public)
+
+
+
+
+
+class AlbumDiscTests(unittest.TestCase):
+    """Multi-disc editing and frozen game facts against isolated databases."""
+    setUp = fixture.PreferenceTests.setUp
+    connect = fixture.PreferenceTests.connect
+
+    def client(self):
+        client = services.app.test_client()
+        with client.session_transaction() as session:
+            session['is_admin'] = True
+        return client
+
+    def test_same_track_number_on_different_discs_and_conflicts_are_atomic(self):
+        self.conn.execute("INSERT INTO songs(id,title,album_id,disc_number,track_number) VALUES(11,'Second disc opener',1,2,1)")
+        self.conn.commit()
+        with self.assertRaises(sqlite3.IntegrityError):
+            self.conn.execute("UPDATE songs SET disc_number=1 WHERE id=11")
+        self.conn.rollback()
+        for value in (0,-1,True,1.5,[],{}):
+            response = self.client().post('/api/dev/bulk_songs',json=dict(song_ids=[11],action='move_album',album_id=1,disc_number=value))
+            self.assertEqual(response.status_code,400,response.json)
+        self.assertEqual(tuple(self.conn.execute('SELECT disc_number,track_number FROM songs WHERE id=11').fetchone()),(2,1))
+        self.assertEqual(sources.track_position_conflicts(self.conn),[])
+        self.assertEqual(len(shelves.shelf_pool(self.conn)[1]),6)
+        data=dict(albums=[dict(r) for r in self.conn.execute('SELECT * FROM albums')],songs=[dict(r) for r in self.conn.execute('SELECT * FROM songs')])
+        self.assertEqual(shelf_eligible_ids(data),set(range(1,12)))
+
+    def test_bulk_combine_discs_keeps_destination_artwork_and_saved_scores(self):
+        self.conn.execute("UPDATE albums SET cover_url='preferred-art' WHERE id=1")
+        self.conn.execute("UPDATE songs SET elo_score=1337 WHERE id=6")
+        self.conn.commit()
+        client=self.client()
+        response=client.post('/api/dev/bulk_songs',json=dict(song_ids=list(range(6,11)),action='move_album',album_id=1,disc_number=2))
+        self.assertEqual(response.status_code,200,response.json)
+        rows=client.get('/api/dev/album-tracks/1').json['songs']
+        self.assertEqual([(r['disc_number'],r['track_number']) for r in rows],[(d,t) for d in (1,2) for t in range(1,6)])
+        self.assertEqual(self.conn.execute('SELECT cover_url FROM albums WHERE id=1').fetchone()[0],'preferred-art')
+        self.assertEqual(self.conn.execute('SELECT elo_score FROM songs WHERE id=6').fetchone()[0],1337)
+        # Moving into an occupied disc rejects the entire change.
+        before=capture(self.conn)
+        response=client.post('/api/dev/bulk_songs',json=dict(song_ids=list(range(6,11)),action='move_album',album_id=1,disc_number=1))
+        self.assertEqual(response.status_code,400)
+        self.assertEqual(capture(self.conn),before)
+
+    def test_round_uses_saved_disc_order_after_catalogue_edit(self):
+        # Keep ten tracks across two albums while restarting numbers on disc two.
+        for album in (1,2):
+            self.conn.execute('UPDATE songs SET track_number=NULL WHERE album_id=?',(album,))
+            rows=self.conn.execute('SELECT id FROM songs WHERE album_id=? ORDER BY id',(album,)).fetchall()
+            for index,row in enumerate(rows):
+                self.conn.execute('UPDATE songs SET disc_number=?,track_number=? WHERE id=?',(1 if index<3 else 2,index+1 if index<3 else index-2,row['id']))
+        self.conn.commit()
+        client=self.client()
+        result=client.post('/api/album-shelves/round',json={'album_count':2})
+        self.assertEqual(result.status_code,200,result.json)
+        self.assertTrue(all('disc_number' not in s and 'track_number' not in s for s in result.json['songs']))
+        items=[dict(r) for r in self.conn.execute('SELECT * FROM album_shelf_items')]
+        placements={str(slot):[r['item_slot'] for r in sorted(items,key=shelves.shelf_position) if r['album_slot']==slot] for slot in (1,2)}
+        self.conn.execute('UPDATE songs SET track_number=NULL')
+        self.conn.execute('UPDATE songs SET disc_number=3,track_number=id')
+        self.conn.commit()
+        response=client.post('/api/album-shelves/answer',json=dict(token=result.json['token'],placements=placements))
+        self.assertEqual(response.status_code,200,response.json)
+        self.assertEqual(response.json['points'],30)
+        self.assertEqual({a['disc_number'] for a in response.json['answers']},{1,2})
+        saved=[dict(r) for r in self.conn.execute('SELECT * FROM album_shelf_items')]
+        self.assertTrue(shelves.can_grade(saved,1))
+        self.assertEqual(shelves.grade_shelf(saved)['points'],30)
+        # An incorrect order across the disc boundary loses relative-order points.
+        group=[r for r in saved if r['album_slot']==1]
+        group.sort(key=shelves.shelf_position)
+        group[0]['answer_position'],group[-1]['answer_position']=group[-1]['answer_position'],group[0]['answer_position']
+        self.assertLess(shelves.grade_shelf(saved)['points'],30)
+
+    def test_schema20_sql_restore_defaults_discs_and_preserves_rounds(self):
+        old=self.path.parent/'old20.db'
+        c=sqlite3.connect(old)
+        c.executescript((Path(__file__).with_name('fixtures')/'schema_v20.sql').read_text())
+        from songranker.storage.vibe_state import seed_definitions
+        seed_definitions(c)
+        c.execute("INSERT INTO competition_state VALUES(1,3,1,'{}')")
+        c.execute("INSERT INTO preference_replay_state VALUES(1,0,0,'verified_replay',1)")
+        c.execute("INSERT INTO albums(id,title) VALUES(91,'Archive')")
+        c.execute("INSERT INTO songs(id,title,album_id,track_number) VALUES(92,'Archived song',91,7)")
+        c.execute("INSERT INTO album_shelf_rounds(id,token,started_at,completed_at) VALUES(93,'saved',1,2)")
+        c.execute('INSERT INTO album_shelf_items(round_id,item_slot,song_id,album_id,album_slot,track_number,answer_slot,answer_position) VALUES(93,1,92,91,1,7,1,1)')
+        c.execute('PRAGMA user_version=20');c.commit()
+        dump=self.path.parent/'old.sql';dump.write_text('\n'.join(c.iterdump()))
+        c.close()
+        # Both direct upgrades and SQL dumps with no user_version take the lossless path.
+        restored=self.path.parent/'restored.db'
+        initialize_database(restored,dump)
+        migrate(old)
+        for path in (old,restored):
+            with readonly(path) as db:
+                self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],21)
+                self.assertEqual(tuple(db.execute('SELECT id,disc_number,track_number FROM songs').fetchone()),(92,1,7))
+                self.assertEqual(tuple(db.execute('SELECT round_id,disc_number,track_number,answer_position FROM album_shelf_items').fetchone()),(93,1,7,1))
+                before=capture(db)
+            migrate(path)
+            with readonly(path) as db:self.assertEqual(capture(db),before)
+        self.assertTrue(list((old.parent/'database_backups').glob('pre_upgrade_*.db')))
 
 
 if __name__=='__main__':unittest.main()

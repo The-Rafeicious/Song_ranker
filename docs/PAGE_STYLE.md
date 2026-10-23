@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.3.2 contract. Change the owning shared rule before adding a
+This is the current V5.3.3 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -205,3 +205,9 @@ in `vibe_charts.js`. Do not copy helpers into a new patch file.
 
 Before a PR, run `python tools/check.py all`. Update this guide when an accepted
 shared contract changes and regenerate the function index after moving definitions.
+
+Album positions use the shared disc/track formatter. Multi-disc releases remain
+one album card/shelf, with a disc-count caption. Disc and track fields sit together
+in the shared song editor; bulk album moves accept an optional destination disc.
+Never expose the correct positions before the Shelves answer reveal. Preserve
+compact position badges and wrapping full accessible labels on phones.
