@@ -93,6 +93,30 @@ class DeveloperSystemTests(unittest.TestCase):
             self.client.get("/api/dev/help/unknown?format=html").status_code, 404
         )
 
+    def test_missing_markdown_keeps_both_guides_readable_and_escaped(self):
+        docs = Path(self.temp.name) / "docs"
+        docs.mkdir()
+        source = '# Recovery & setup\n\n<script>unsafe()</script>\nC:\\project\\' + 'long_path_' * 40
+        for filename in ("DEV_GUIDE.md", "TECHNICAL_GUIDE.md"):
+            (docs / filename).write_text(source, encoding="utf-8")
+        # Reproduce a dependency missing from the interpreter that hosts Flask.
+        with patch.dict("sys.modules", {"markdown": None}):
+            for name in ("dev", "technical"):
+                with self.subTest(guide=name):
+                    response = self.client.get('/api/dev/help/'+name+'?format=html')
+                    self.assertEqual(response.status_code, 200)
+                    self.assertEqual(response.json["toc"], "")
+                    self.assertIn("&lt;script&gt;", response.json["html"])
+                    self.assertNotIn("<script>", response.json["html"])
+                    self.assertIn("Markdown", response.json["warning"])
+                    self.assertEqual(response.json["install_command"], "python -m pip install -r requirements.txt")
+                    with self.client.get('/api/dev/help/'+name) as plain:
+                        self.assertEqual(plain.status_code, 200)
+                        self.assertEqual(plain.get_data(as_text=True), source)
+            self.assertEqual(self.client.get('/api/dev/help/unknown?format=html').status_code, 404)
+        # Installing the dependency restores the normal reader on the next request.
+        self.assertIn("<h1", self.client.get('/api/dev/help/dev?format=html').json["html"])
+
     def test_routes_require_local_authenticated_requests(self):
         urls = [
             "/api/dev/system",

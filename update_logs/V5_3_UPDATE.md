@@ -78,3 +78,13 @@ See [consolidation review](../docs/CONSOLIDATION.md),
 - Preferred artwork remains independent of source identity. Standard/deluxe
   records are not inferred or automatically combined. Existing IDs and user data
   remain intact; schema 21 defaults pre-existing positions to disc 1.
+
+## V5.3.4 — Dev guide dependency recovery
+
+- Missing/broken Markdown imports no longer crash the guide API. Both guide readers
+  show escaped, wrapping text and the requirements installation command instead.
+- The fallback uses the full reader width without an empty contents column; normal
+  headings, tables and contents return when the dependency is available.
+- Document that Git updates do not install Python dependencies. Add backend and
+  workspace regressions for missing dependencies, safe text and recovery.
+- Application/asset version is 5.3.4. Schema 21 and all existing user data remain.

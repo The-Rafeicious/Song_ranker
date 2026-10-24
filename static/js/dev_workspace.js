@@ -174,8 +174,13 @@ window.DevWorkspace = (() => {
     try {
       const result = await U.api("/api/dev/help/" + kind + "?format=html");
       if (ticket !== guideTicket || current !== "guides") return;
-      $("#dev-guide-content").innerHTML =
-        `<div class="dev-guide-layout"><nav class="dev-guide-contents" aria-label="Guide contents">${result.toc}</nav><article class="panel dev-guide-article">${result.html}</article></div>`;
+      const article = `<article class="panel dev-guide-article">${result.html}</article>`;
+      const notice = result.warning
+        ? `<aside class="panel dev-guide-notice" role="status"><p>${esc(result.warning)}</p><p>To restore formatting, run this from the project folder using the same Python that starts the app, then restart:</p><code>${esc(result.install_command)}</code></aside>`
+        : "";
+      $("#dev-guide-content").innerHTML = notice + (result.toc
+        ? `<div class="dev-guide-layout"><nav class="dev-guide-contents" aria-label="Guide contents">${result.toc}</nav>${article}</div>`
+        : article);
       if (location.hash) {
         try {
           document

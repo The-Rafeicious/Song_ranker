@@ -1,6 +1,6 @@
 # Developer guide
 
-**V5.3.3 · Dev workspace**
+**V5.3.4 · Dev workspace**
 
 Open **System Access** on the hosting computer and enter the Dev PIN. Use **Home**,
 **Library**, **Mode edits**, and **Tools & systems** to move between tasks. Each
@@ -253,3 +253,11 @@ with unsaved choices asks before discarding them. Returning to single mode clear
 ### Catalogue table details
 
 Songs, Artists, Albums and Tags use the same controls. Search matches words across record fields. Filters opens per-field text filters (and the missing Apple source switch for Songs); Clear filters restores all rows. Order selects a field, the arrow reverses direction, and Reset order returns to ascending ID. Column headings also sort; clicking the active heading reverses it. Columns toggles displayed fields and Default restores the compact set. Search, filters and order remain separate for each table during the browser session; displayed columns persist locally. Open a record by its name, use Edit for its metadata, or More for catalogue-specific maintenance and deletion. The pager shows 30 matches at a time.
+
+## Guide formatting and missing dependencies
+
+Git code updates do not install Python packages. If the Markdown renderer is
+unavailable, both in-app guides remain readable as escaped, wrapping plain text
+and show the repair command. From the project folder, using the same Python
+interpreter that runs Song Ranker, run `python -m pip install -r requirements.txt`,
+then restart the app. Plain-text downloads remain available as well.

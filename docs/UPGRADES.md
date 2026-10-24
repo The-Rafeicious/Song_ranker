@@ -26,7 +26,7 @@ feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 4. Use the new code with upgraded databases. Older code may refuse a newer schema;
    source rollback alone does not roll back database structure.
 
-`APP_VERSION` is `5.3.3`; Vibe reports `Vibe-Map-v1.1`.
+`APP_VERSION` is `5.3.4`; Vibe reports `Vibe-Map-v1.1`.
 The documentation release labels v5.1.0/v5.1.1 do not change the runtime footer.
 Install dependencies from `requirements.txt`; configuration is in the
 [technical guide](TECHNICAL_GUIDE.md#configuration).
@@ -282,3 +282,11 @@ No real catalogue album records are merged automatically. Use the album/disc
 workflow in [the Dev guide](DEV_GUIDE.md#albums-discs-and-artwork) after reviewing
 the intended destination and its artwork. Keep older computers updated to V5.3.3
 before sharing new schema-21 snapshots; older apps reject newer schemas.
+
+## V5.3.4 guide dependency recovery
+
+The guide reader no longer returns HTTP 500 when the `Markdown` package is
+missing or cannot be imported. It shows safely escaped text and an installation
+instruction instead. Git updates change source files; they never run pip. After
+updating code, install `requirements.txt` using the app's Python interpreter and
+restart to enable formatted headings, tables and contents links. Schema remains 21.

@@ -419,6 +419,21 @@ body[data-page="dev"] #main .dev-guide-tabs .btn.active {
   line-height: 1.65;
   overflow-wrap: anywhere;
 }
+.dev-guide-notice {
+  margin-bottom: 20px;
+  overflow-wrap: anywhere;
+}
+.dev-guide-notice code {
+  font-size: inherit;
+}
+.dev-guide-notice code,
+.dev-guide-article .dev-guide-source {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.dev-guide-article .dev-guide-source {
+  font: inherit;
+}
 .dev-guide-article code {
   white-space: pre-wrap;
   overflow-wrap: anywhere;

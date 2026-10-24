@@ -278,6 +278,15 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-backups',folder);await page.screenshot({path:folder+'/dev-backups-'+width+'.png',fullPage:true});}
   await page.locator('#dev-section-nav [data-dev="guides"]').click();await page.locator('.dev-guide-article h1').waitFor();await page.locator('[data-dev-guide="technical"]').click();await page.waitForFunction(()=>document.querySelector('.dev-guide-article h1')?.textContent.includes('technical'));assert.ok((await page.locator('.dev-guide-contents a').count())>10);
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await page.evaluate(()=>window.scrollTo(0,0));await bounded(page,width,'dev-guide',folder);await page.screenshot({path:folder+'/dev-guide-'+width+'.png'});}
+  // Guide rendering stays usable when the host's Markdown dependency is absent.
+  const plainGuide='# Developer guide\n\nC:\\Song_ranker\\'+('long_folder_'.repeat(30))+'\n\n<script>shown as text</script>';
+  const safeGuide=plainGuide.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+  await page.route('**/api/dev/help/dev?format=html',route=>route.fulfill({json:{html:'<pre class="dev-guide-source">'+safeGuide+'</pre>',toc:'',warning:'Formatted rendering is unavailable because the Markdown package could not be loaded. The guide is shown as plain text.',install_command:'python -m pip install -r requirements.txt'}}));
+  await page.locator('[data-dev-guide="dev"]').click();await page.locator('.dev-guide-source').waitFor();
+  assert.equal(await page.locator('.dev-guide-contents').count(),0);assert.ok((await page.locator('.dev-guide-notice').textContent()).includes('python -m pip install -r requirements.txt'));
+  assert.equal(await page.locator('.dev-guide-source script').count(),0);assert.equal(await page.locator('.dev-guide-source').textContent(),plainGuide);
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-guide-plain',folder);assert.equal(await page.locator('.dev-guide-source').evaluate(e=>getComputedStyle(e).whiteSpace),'pre-wrap');await page.screenshot({path:folder+'/dev-guide-plain-'+width+'.png',fullPage:true});}
+  await page.unroute('**/api/dev/help/dev?format=html');await page.locator('[data-dev-guide="technical"]').click();await page.locator('.dev-guide-contents').waitFor();assert.equal(await page.locator('.dev-guide-notice').count(),0);
   await page.locator('.dev-nav-actions input[name=q]').fill('long title');await page.locator('.dev-nav-actions form button').click();await page.locator('#dev-query').waitFor();assert.equal(await page.locator('#dev-query').inputValue(),'long title');
   await page.locator('.dev-lock').click();await page.waitForURL(base+'/');
   // Main-header shutdown needs a PIN once and does not unlock Dev.
