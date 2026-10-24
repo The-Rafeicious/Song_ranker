@@ -1,4 +1,4 @@
--- Song Ranker backup · commit time: 2026-10-24T19:44:49Z · device: 1
+-- Song Ranker backup · commit time: 2026-10-24T20:16:29Z · device: 1
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE album_shelf_items (
@@ -4657,7 +4657,7 @@ INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(416,90,35);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1022,900,28);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1023,901,28);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1024,902,28);
-INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1025,903,28);
+INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1235,903,28);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1026,904,28);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1027,905,28);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1028,906,28);
@@ -8671,7 +8671,11 @@ INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(2822,901,57);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(2825,901,73);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(2826,901,8);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(1634,902,1);
-INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(1635,903,1);
+INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(3542,903,26);
+INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(3540,903,2);
+INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(3543,903,45);
+INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(3541,903,49);
+INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(3544,903,74);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(1636,904,1);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(1637,905,1);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(2834,906,26);
@@ -10164,10 +10168,10 @@ INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_a
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(151,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(151,'perspective',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(151,'sound_impact',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(152,'connection',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(152,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(152,'perspective',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(152,'sound_impact',NULL,NULL,'unmapped',NULL,0,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(152,'connection',-0.7356651156623213,0.5000345973304261,'placed',1792872655.417084,1,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(152,'pace_mood',0.2939267788904022,-0.5832852330035898,'placed',1792872612.8125522,1,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(152,'perspective',-0.16419443726539792,-0.26448814586797537,'placed',1792872678.9170651,1,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(152,'sound_impact',-0.8490147580677345,0.6063001992063051,'placed',1792872632.314875,1,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(153,'connection',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(153,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(153,'perspective',NULL,NULL,'unmapped',NULL,0,0);
@@ -13468,10 +13472,10 @@ INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_a
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(902,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(902,'perspective',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(902,'sound_impact',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(903,'connection',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(903,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(903,'perspective',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(903,'sound_impact',NULL,NULL,'unmapped',NULL,0,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(903,'connection',-0.5136890178785133,0.4173835173475913,'placed',1792872894.3100967,1,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(903,'pace_mood',0.1640470628761662,-0.34713922585081003,'placed',1792872846.126417,1,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(903,'perspective',-0.0036158072184445445,0.34653967016048093,'placed',1792872917.613516,1,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(903,'sound_impact',-0.4003393754731002,0.20190030834131792,'placed',1792872871.9257145,1,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(904,'connection',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(904,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(904,'perspective',NULL,NULL,'unmapped',NULL,0,0);
@@ -13496,10 +13500,10 @@ INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_a
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(909,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(909,'perspective',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(909,'sound_impact',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(91,'connection',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(91,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(91,'perspective',NULL,NULL,'unmapped',NULL,0,0);
-INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(91,'sound_impact',NULL,NULL,'unmapped',NULL,0,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(91,'connection',-0.8230388508977452,-0.23496989497387766,'placed',1792872792.8220344,1,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(91,'pace_mood',0.5371561373100517,-0.5183451711191281,'placed',1792872753.1197975,1,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(91,'perspective',-0.14057994344462782,-0.19069251863273157,'placed',1792872817.6230328,1,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(91,'sound_impact',0.2396133710369149,0.38491337380216956,'placed',1792872775.5192773,1,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(910,'connection',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(910,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(910,'perspective',NULL,NULL,'unmapped',NULL,0,0);
@@ -13954,7 +13958,7 @@ INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(14
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(149,149,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(150,150,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(151,151,0);
-INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(152,152,0);
+INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(152,152,1);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(153,153,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(154,154,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(155,155,0);
@@ -14780,14 +14784,14 @@ INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(90
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(900,900,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(901,901,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(902,902,0);
-INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(903,903,0);
+INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(903,903,1);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(904,904,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(905,905,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(906,906,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(907,907,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(908,908,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(909,909,0);
-INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(91,91,0);
+INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(91,91,1);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(910,910,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(911,911,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(912,912,0);
@@ -15890,7 +15894,7 @@ INSERT INTO "vibe_maps"("id","title","x_low","x_high","y_low","y_high","definiti
 INSERT INTO "vibe_maps"("id","title","x_low","x_high","y_low","y_high","definition_version","colour","display_order") VALUES('pace_mood','Pace & mood','Slow','Upbeat','Sad','Happy',2,'#d94b58',1);
 INSERT INTO "vibe_maps"("id","title","x_low","x_high","y_low","y_high","definition_version","colour","display_order") VALUES('perspective','Perspective','Past','Future','Regretful','Hopeful',2,'#d94b58',4);
 INSERT INTO "vibe_maps"("id","title","x_low","x_high","y_low","y_high","definition_version","colour","display_order") VALUES('sound_impact','Sound & impact','Acoustic','Electronic','Soft','Powerful',2,'#d94b58',2);
-INSERT INTO "vibe_rounds"("owner_hash","token","song_id","map_index","status","revision","draft_status","draft_x","draft_y","draft_at","draft_key","answers","started_at","finished_at") VALUES('9973e5beaefbb6eabf985bd9c9e763b1b8a982135f951dfa8e311e8a39403e19','ukWALInLl3FkyBc8evArNg6qJhI7mzx8YdVu8igaDIk',152,0,'active',0,NULL,NULL,NULL,NULL,NULL,'{}',1792636255.576581,NULL);
+INSERT INTO "vibe_rounds"("owner_hash","token","song_id","map_index","status","revision","draft_status","draft_x","draft_y","draft_at","draft_key","answers","started_at","finished_at") VALUES('9973e5beaefbb6eabf985bd9c9e763b1b8a982135f951dfa8e311e8a39403e19','EnjYxkx76WDkzajuSJKQv7m_9VfUiqdLtpLeNlGACqM',416,0,'active',0,NULL,NULL,NULL,NULL,NULL,'{}',1792872922.7931983,NULL);
 DELETE FROM sqlite_sequence;
 INSERT INTO sqlite_sequence(name,seq) VALUES('album_shelf_rounds',2);
 INSERT INTO sqlite_sequence(name,seq) VALUES('albums',271);
