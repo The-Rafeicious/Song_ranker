@@ -242,9 +242,11 @@ async function catalogueInteractionChecks(){
  h.click('[data-table-panel="columns"]');
  const more=d.querySelector('[data-record-more]');more.click();
  check(d.querySelector('#dev-record-menu').parentElement===d.body,'row menu escapes all table clipping');
+ d.dispatchEvent(new w.Event('scroll'));check(!!d.querySelector('#dev-record-menu'),'delayed pre-open scroll event keeps the menu open');
  const items=[...d.querySelectorAll('#dev-record-menu [role=menuitem]')];check(d.activeElement===items[0],'menu opens at first action');
  items[0].dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));check(d.activeElement===items[1],'menu has arrow navigation');
  items[1].dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));check(!d.querySelector('#dev-record-menu')&&d.activeElement===more,'Escape closes the menu and restores focus');
+ more.click();w.scrollY=50;d.dispatchEvent(new w.Event('scroll'));check(!d.querySelector('#dev-record-menu'),'actual page scrolling dismisses stale menu geometry');w.scrollY=0;
  more.click();w.dispatchEvent(new w.Event('resize'));check(!d.querySelector('#dev-record-menu'),'resize dismisses stale popup geometry');
  w.testDev.setView('albums');w.testDev.setView('songs');check(d.querySelector('#table-page-size').value==='15','page size persists per entity');
  check(h.errors.length===0,'table operations have no runtime errors');h.dom.window.close();

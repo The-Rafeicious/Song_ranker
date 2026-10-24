@@ -1431,7 +1431,7 @@
     if (!recordMenu) return;
     const {panel, button} = recordMenu;recordMenu = null;
     panel.remove();button.setAttribute("aria-expanded","false");button.removeAttribute("aria-controls");
-    if (focus && button.isConnected) button.focus();
+    if (focus && button.isConnected) button.focus({preventScroll:true});
   }
   function openRecordMenu(button) {
     if (recordMenu?.button === button) {closeRecordMenu(true);return;}
@@ -1440,13 +1440,14 @@
     if (!row) return;
     const panel = document.createElement("div");panel.id="dev-record-menu";panel.className="dev-row-tools";panel.setAttribute("popover","auto");panel.setAttribute("role","menu");panel.setAttribute("aria-label", "Actions for "+row.name);panel.innerHTML=recordTools(type,row);
     panel.querySelectorAll("button").forEach(b=>b.setAttribute("role","menuitem"));
-    document.body.append(panel);recordMenu={panel,button};button.setAttribute("aria-expanded","true");button.setAttribute("aria-controls",panel.id);
+    const anchor = button.getBoundingClientRect(), table = button.closest(".dev-catalog-scroll");
+    document.body.append(panel);recordMenu={panel,button,anchor,table,x:scrollX,y:scrollY,tableX:table?.scrollLeft,tableY:table?.scrollTop};button.setAttribute("aria-expanded","true");button.setAttribute("aria-controls",panel.id);
     panel.showPopover?.();
     const box=button.getBoundingClientRect(), width=panel.getBoundingClientRect().width || Math.min(230,innerWidth-16), height=panel.getBoundingClientRect().height || panel.querySelectorAll("button").length*48+20;
     panel.style.left=Math.max(8,Math.min(innerWidth-width-8,box.right-width))+"px";
     panel.style.top=Math.max(8,Math.min(innerHeight-height-8,box.bottom+height+8<=innerHeight ? box.bottom+6 : box.top-height-6))+"px";
     panel.addEventListener("toggle",event=>{if(event.newState==="closed" && recordMenu?.panel===panel)closeRecordMenu();});
-    panel.querySelector("button")?.focus();
+    panel.querySelector("button")?.focus({preventScroll:true});
   }
   function renderTableBody(type = devView) {
     closeRecordMenu();
@@ -3013,10 +3014,16 @@
     if(e.key==="Escape"){e.preventDefault();closeRecordMenu(true);return;}
     if(recordMenu.panel.contains(e.target) && ["ArrowDown","ArrowUp","Home","End"].includes(e.key)){
       e.preventDefault();const buttons=[...recordMenu.panel.querySelectorAll("button:not(:disabled)")],at=buttons.indexOf(document.activeElement);
-      buttons[e.key==="Home"?0:e.key==="End"?buttons.length-1:(at+(e.key==="ArrowDown"?1:-1)+buttons.length)%buttons.length]?.focus();
+      buttons[e.key==="Home"?0:e.key==="End"?buttons.length-1:(at+(e.key==="ArrowDown"?1:-1)+buttons.length)%buttons.length]?.focus({preventScroll:true});
     }
   });
-  document.addEventListener("scroll", e=>{if(recordMenu && !recordMenu.panel.contains(e.target))closeRecordMenu();},true);
+  document.addEventListener("scroll", e=>{
+    if (!recordMenu || recordMenu.panel.contains(e.target)) return;
+    // Click/focus may queue a scroll event before the menu opens. Only actual
+    // movement after placement invalidates its anchor geometry.
+    const {button,anchor,table,x,y,tableX,tableY} = recordMenu, box = button.getBoundingClientRect();
+    if (scrollX !== x || scrollY !== y || box.top !== anchor.top || box.left !== anchor.left || table?.scrollLeft !== tableX || table?.scrollTop !== tableY) closeRecordMenu();
+  },true);
   window.addEventListener("resize",()=>closeRecordMenu());
   document.addEventListener("click", async (e) => {
     const b = e.target.closest("button");
