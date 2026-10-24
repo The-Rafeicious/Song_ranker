@@ -437,7 +437,7 @@ Foreign keys: `song_id` → `songs.id` (delete CASCADE).
 `vibe_maps` defines the four generation-2 maps. Columns are `id`, `title`,
 `x_low`, `x_high`, `y_low`, `y_high`, `definition_version`, `colour`, and
 `display_order`. Stable IDs are `pace_mood`, `sound_impact`, `connection`,
-`perspective`. The stored Casual label remains canonical; Distant / hostile is a display
+`perspective`. The stored Casual label remains canonical; Detached is a display
 rename. Definitions are fixed/versioned, not per-song tags or editable results.
 
 `song_vibe_positions` has one required `(song_id,map_id)` slot per song/map.

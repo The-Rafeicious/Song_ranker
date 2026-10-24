@@ -1,6 +1,6 @@
 {
   "name": "song-ranker",
-  "version": "5.3.6",
+  "version": "5.3.6.1",
   "private": true,
   "description": "Test dependencies for the Flask Song Ranker application",
   "engines": {
