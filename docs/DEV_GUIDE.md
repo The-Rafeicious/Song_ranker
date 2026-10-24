@@ -1,6 +1,6 @@
 # Developer guide
 
-**V5.3.4 · Dev workspace**
+**V5.3.5 · Dev workspace**
 
 Open **System Access** on the hosting computer and enter the Dev PIN. Use **Home**,
 **Library**, **Mode edits**, and **Tools & systems** to move between tasks. Each
@@ -50,12 +50,24 @@ Tools destinations are visible below the summaries.
 | [Bulk edits](/dev/library/bulk-edits) | Review source links or move selected songs to an album. |
 | [Missing metadata](/dev/library/metadata) | Scan, review, then apply fill-only proposals. |
 
-Catalogue tables share search, field filters, displayed columns, order and paging.
-Filters and Columns expand in the page. Clear filters and Reset order are separate.
-Each table remembers its search/order/filter state for the session, and displayed
-columns persist locally. Edit opens the inline workspace; More retains record
-maintenance actions. No new metadata replaces existing values without a reviewed
-choice. Album import keeps existing matches unchecked and reports partial success.
+Catalogue tables keep Search, Filters and Columns together. Open Filters, choose
+a field and match (contains, exact, blank, filled or a numeric range), then type
+or choose a saved value and press Enter. Remove individual filter chips or Clear
+filters; Reset order is separate. Columns expands a checklist in the page.
+Choose 15/30/60/100 rows, jump to a page, or use Previous/Next above or below the
+table. Vertical scrolling belongs to the page; wide tables scroll horizontally.
+Each table remembers its session search/order/filter/page-size state; displayed
+columns persist locally. Edit opens the inline workspace. More opens record actions
+within the screen and supports arrow keys and Escape.
+
+Missing metadata starts with a local blank-field audit. Scan first recovers verified
+saved Apple facts, then looks online for remaining dates, disc/track positions,
+preview URLs, names/titles, album artwork and genuine artist artwork. Review shows
+new values and their evidence before Fill matched blanks. Existing values, local
+release placements, song tags and results remain unchanged. Ambiguous identities
+or unavailable artist pictures require manual review. An empty release has no
+tracks to verify its date. Album import keeps existing matches unchecked and
+reports partial success.
 
 ## Mode edits
 

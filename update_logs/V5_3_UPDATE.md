@@ -88,3 +88,11 @@ See [consolidation review](../docs/CONSOLIDATION.md),
 - Document that Git updates do not install Python dependencies. Add backend and
   workspace regressions for missing dependencies, safe text and recovery.
 - Application/asset version is 5.3.4. Schema 21 and all existing user data remain.
+
+
+## V5.3.5 — metadata recovery and Dev tables
+
+- Missing metadata audits local blanks and recovers verified saved Apple facts before online requests. It covers release dates/origins, disc/track positions, preview URLs, missing titles/names, album artwork, genuine artist artwork and missing source details. Existing values, album placements and song tags are preserved. Review includes field values and evidence; ambiguous facts remain unresolved.
+- The latest tracked backup has 228 missing song dates (227 available in saved sources), 12 missing album dates and one missing local Single position. It has no missing names, artwork or previews. Empty/ambiguous releases still require review. No live database or backup is changed by this release.
+- Dev catalogue tables have stable Search/Filters/Columns controls, field/match/value entry with saved-value suggestions, removable filter chips, row-count choices and page jumps. The page owns vertical scrolling, including database inspection; wide tables retain horizontal scrolling. Actions stay reachable; More menus escape table clipping, fit the viewport and support keyboard navigation.
+- Application version 5.3.5; schema remains 21. No migration or tag changes.

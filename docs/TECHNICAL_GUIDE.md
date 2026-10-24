@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.3.4 · competition generation 3 · schema 21**
+**Application V5.3.5 · competition generation 3 · schema 21**
 
-Current implementation reference. `APP_VERSION` is `5.3.4`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.3.5`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -711,9 +711,31 @@ the old element. Source details reuse DevCatalog's cached song-source summaries;
 no per-row Apple requests or new telemetry are introduced. Existing tag APIs,
 transactional new-name creation and the eight-tag cap remain unchanged.
 
-### Dev catalogue table UI (V5.2.3)
+### Dev catalogue table UI (V5.3.5)
 
-The shared Songs/Artists/Albums/Tags table schema, filtering, sorting, column preferences, row rendering and edit dialog grouping live in `static/js/site.js`. `static/css/dev_catalog.css` owns the scoped compact table and dialog panels. Column preferences use the existing `tableColumns` localStorage key; per-type query, filters, page and sort use the existing session state. Editing still calls the existing `/api/dev/edit_*` endpoints and refreshes the collection. No database migration is involved.
+The shared Songs/Artists/Albums/Tags table schema, filtering, sorting, column preferences, row rendering and edit dialog grouping live in `static/js/site.js`. `static/css/dev_catalog.css` owns the scoped compact table and dialog panels. Column preferences use the existing `tableColumns` localStorage key; per-type query, filters, page and sort use the existing session state. Editing still calls the existing `/api/dev/edit_*` endpoints and refreshes the collection. Field filters store `{op,value}` and migrate old string conditions. Suggestions
+come from the loaded catalogue. Rows/page is per entity in session state; column
+preferences remain local. One delegated control owner handles in-flow panels and
+a single body-level popover with viewport clamping and keyboard/focus management.
+Table and inspector height caps are removed: the page owns vertical scrolling.
+No database migration is involved.
+
+### Missing metadata (V5.3.5)
+
+`developer/metadata.py` snapshots writable identity/target fields and artist links,
+counts blanks, and recovers facts from unique saved Apple track identities before
+network requests. Blank album/artist names require unanimous linked saved names
+and IDs; artist names also require sole-artist relationships. Existing source facts
+are enriched only where blank, without adding genre/tag observations. Saved
+collection IDs permit verified lookups when local artwork was deliberately changed.
+Unlinked releases retain exact title/artist/artwork verification. Album artwork
+requires matching release identity; artist artwork requires an exact artist response
+with genuine artwork, never an album-cover substitute. Media URLs require HTTPS.
+Conflicting field evidence removes proposals. The public review exposes values,
+fields and evidence; internal snapshots stay server-side. Apply rechecks the entire
+snapshot under a write lock, validates occupied positions and source uniqueness,
+and writes all proposed blanks in one transaction. Tags, results, relationships and
+nonblank fields stay untouched; no routine backup or schema change is introduced.
 
 ## Album disc positions (V5.3.3 / schema 21)
 

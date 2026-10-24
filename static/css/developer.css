@@ -359,30 +359,6 @@ body[data-page="dev"] #main .table-actions {
 body[data-page="dev"] #main .table-actions .btn {
   padding: 10px 12px;
 }
-body[data-page="dev"] #main .dev-row-menu {
-  min-width: 0;
-  width: 100px;
-  white-space: normal;
-}
-body[data-page="dev"] #main .dev-row-menu > summary {
-  display: flex;
-  cursor: pointer;
-  list-style: none;
-}
-body[data-page="dev"] #main .dev-row-menu > summary::-webkit-details-marker {
-  display: none;
-}
-body[data-page="dev"] #main .dev-row-tools {
-  display: grid;
-  gap: 6px;
-  padding-top: 8px;
-}
-body[data-page="dev"] #main .dev-row-tools .btn {
-  width: 100%;
-}
-body[data-page="dev"] #main .dev-row-menu[open] > summary {
-  border-color: var(--song);
-}
 body[data-page="dev"] #main .dev-result {
   display: grid;
   grid-template-columns: 56px minmax(0, 1fr) auto auto;
@@ -816,13 +792,6 @@ body[data-page="dev"] #main :is(#dev-search, #manage-search) > button {
     grid-template-columns: minmax(0, 1fr);
   }
 }
-body[data-page="dev"] #main .dev-table-tools {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 12px 20px;
-  margin: 16px 0;
-}
 body[data-page="dev"] #main #table-state-label {
   font-size: 14px;
   color: var(--muted);
@@ -1125,8 +1094,8 @@ body[data-page="dev"] #main .db-tabs [aria-pressed="true"] {
   color: var(--song);
 }
 body[data-page="dev"] #main .db-scroll {
-  max-height: 400px;
-  overflow: auto;
+  max-height: none;
+  overflow-x: auto;
   min-width: 0;
   border: 1px solid var(--line);
   border-radius: 14px;
@@ -1210,8 +1179,7 @@ body[data-page="dev"] #main .db-inspection pre,
   }
 }
 body[data-page="dev"] #main #db-content {
-  max-height: 480px;
-  overflow: auto;
+  max-height: none;
   min-width: 0;
 }
 body[data-page="dev"] #main #system-content {
@@ -1272,3 +1240,13 @@ body[data-page="dev"] .git-comparison-summary > summary {
 body[data-page="dev"] .git-comparison-summary[open] > summary {
   margin-bottom: 12px;
 }
+
+/* Metadata review uses the page, including long source/media values. */
+body[data-page="dev"] #main .metadata-audit {display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px;margin-block:16px;}
+body[data-page="dev"] #main .metadata-audit > div {display:grid;gap:6px;}
+body[data-page="dev"] #main .metadata-audit b {font-size:28px;color:var(--song);}
+body[data-page="dev"] #main .metadata-audit span {font-size:15px;color:var(--muted);}
+body[data-page="dev"] #main .metadata-review .health-row {display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px 20px;}
+body[data-page="dev"] #main .metadata-review .health-row :is(strong,small) {min-width:0;white-space:normal;overflow-wrap:anywhere;}
+body[data-page="dev"] #main .metadata-review .health-row small {grid-column:1/-1;color:var(--muted);}
+@media(max-width:520px){body[data-page="dev"] #main .metadata-review .health-row {grid-template-columns:1fr;}}

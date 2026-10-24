@@ -1099,6 +1099,9 @@
     tablePage = 0,
     tableSort = "id",
     tableDir = 1;
+  let tablePanel = null, tablePageSize = 30;
+  const filterOps = {contains:"contains", equals:"is exactly", missing:"is blank", present:"has a value", gte:"at least", lte:"at most"};
+  const numericTableFields = new Set(["id","disc_number","track_number","song_count","elo_score","elo_matches_played","matches_played","score","avg_elo"]);
   if (!devSections.some(([key]) => key === devView)) devView = "overview";
   const devStateKey = "songRanker.devTables.v415";
   let tableStateType = null,
@@ -1117,6 +1120,7 @@
       sort: tableSort,
       dir: tableDir,
       missing: missingAppleOnly,
+      pageSize: tablePageSize,
     };
     try {
       sessionStorage.setItem(devStateKey, JSON.stringify(tableStates));
@@ -1129,11 +1133,9 @@
     const saved = tableStates[type] || {},
       keys = new Set(tableColumns[type].map(([key]) => key));
     tableQuery = typeof saved.query === "string" ? saved.query : "";
-    tableFilters = Object.fromEntries(
-      Object.entries(saved.filters || {}).filter(
-        ([key, value]) => keys.has(key) && typeof value === "string",
-      ),
-    );
+    tablePanel = null;
+    tablePageSize = [15,30,60,100].includes(saved.pageSize) ? saved.pageSize : 30;
+    tableFilters = Object.fromEntries(Object.entries(saved.filters || {}).filter(([key,value]) => keys.has(key) && (typeof value === "string" || (value && filterOps[value.op] && typeof value.value === "string"))).map(([key,value]) => [key, typeof value === "string" ? {op:"contains",value} : value]));
     tablePage =
       Number.isInteger(saved.page) && saved.page >= 0 ? saved.page : 0;
     tableSort = keys.has(saved.sort) ? saved.sort : "id";
@@ -1311,7 +1313,7 @@
     );
   }
   function saveColumns(type, keys) {
-    visibleColumns[type] = [...new Set(keys)];
+    visibleColumns[type] = [...new Set(["name",...keys])].filter(key=>tableColumns[type].some(([k])=>k===key));
     try {
       localStorage.setItem("tableColumns", JSON.stringify(visibleColumns));
     } catch {}
@@ -1319,7 +1321,13 @@
   }
   function columnChooser(type) {
     const chosen = new Set(columns(type).map(([key]) => key));
-    return `<details class="column-picker dev-table-settings"><summary class="btn">Columns <span class="table-tool-count">${chosen.size}</span></summary><div class="table-popover-content"><div class="table-popover-head"><strong>Shown columns</strong><button type="button" class="btn small" data-columns-default>Default</button></div><div class="table-column-choices">${tableColumns[type].map(([key, name]) => `<label><input type="checkbox" data-visible="${key}" ${chosen.has(key) ? "checked" : ""} ${key === "name" ? "disabled" : ""}><span>${name}</span></label>`).join("")}</div></div></details>`;
+    return `<section id="table-columns" class="column-picker table-settings-panel" ${tablePanel === "columns" ? "" : "hidden"}><div class="table-popover-head"><strong>Shown columns</strong><button type="button" class="btn small" data-columns-default>Default columns</button><button type="button" class="btn small" data-table-panel="columns">Done</button></div><div class="table-column-choices">${tableColumns[type].map(([key, name]) => `<label><input type="checkbox" data-visible="${key}" ${chosen.has(key) ? "checked" : ""} ${key === "name" ? "disabled" : ""}><span>${name}</span></label>`).join("")}</div></section>`;
+  }
+  function fieldMatches(value, rule) {
+    if (rule.op === "missing") return value == null || String(value).trim() === "";
+    if (rule.op === "present") return value != null && String(value).trim() !== "";
+    if (rule.op === "gte" || rule.op === "lte") return value != null && String(value).trim() !== "" && Number.isFinite(Number(value)) && (rule.op === "gte" ? Number(value) >= Number(rule.value) : Number(value) <= Number(rule.value));
+    return rule.op === "equals" ? normal(value) === normal(rule.value) : normal(value).includes(normal(rule.value));
   }
   function clipped(value) {
     const text = String(value ?? "—");
@@ -1361,9 +1369,7 @@
               tableColumns[type].map(([k]) => tableValue(r, k)).join(" "),
             ).includes(term),
           ) &&
-          Object.entries(tableFilters).every(([k, v]) =>
-            normal(tableValue(r, k)).includes(normal(v)),
-          ),
+          Object.entries(tableFilters).every(([k, rule]) => fieldMatches(k === "score" ? r.score : k === "preview" && ["missing","present"].includes(rule.op) ? r.audio_url : tableValue(r, k), rule)),
       )
       .sort((a, b) => {
         const av = tableSort === "score" ? a.score : tableValue(a, tableSort),
@@ -1380,69 +1386,77 @@
       });
   }
   function tableFiltersMarkup(type) {
-    const active =
-      Object.values(tableFilters).some((v) => v.trim()) || missingAppleOnly;
-    return `<details class="table-filter-panel dev-table-settings" ${active ? "open" : ""}><summary class="btn">Filters <span class="table-tool-count" id="table-filter-count"></span></summary><div class="table-popover-content"><div class="table-popover-head"><strong>Filter by field</strong><button class="btn small" type="button" data-table-clear>Clear filters</button></div><div class="table-filter-grid">${tableColumns[
-      type
-    ]
-      .filter(([key]) => key !== "cover_url" && key !== "apple_track_url")
-      .map(
-        ([key, name]) =>
-          `<label>${name}<input class="column-filter" data-column="${key}" value="${esc(tableFilters[key] || "")}" placeholder="Any ${name.toLowerCase()}" autocomplete="off"></label>`,
-      )
-      .join(
-        "",
-      )}${type === "songs" ? `<label class="table-filter-check"><input id="missing-apple-only" type="checkbox" ${missingAppleOnly ? "checked" : ""}>Needs Apple source link</label>` : ""}</div></div></details>`;
+    return `<section id="table-filters" class="table-filter-panel table-settings-panel" ${tablePanel === "filters" ? "" : "hidden"}><div class="table-popover-head"><strong>Add or update a filter</strong><button class="btn small" type="button" data-table-panel="filters">Done</button></div><form id="table-filter-form" class="table-filter-form"><label>Field<select id="table-filter-field">${tableColumns[type].filter(([k])=>k !== "apple_track_url").map(([key,name])=>`<option value="${key}" ${key === "name" ? "selected" : ""}>${name}</option>`).join("")}</select></label><label>Match<select id="table-filter-op"></select></label><label>Value<input id="table-filter-value" list="table-filter-values" autocomplete="off" placeholder="Type or choose a value"><datalist id="table-filter-values"></datalist></label><button class="btn primary" type="submit">Apply filter</button><p id="table-filter-error" class="error" role="alert" hidden></p></form>${type === "songs" ? `<label class="table-filter-check"><input id="missing-apple-only" type="checkbox" ${missingAppleOnly ? "checked" : ""}>Needs Apple source link</label>` : ""}</section>`;
+  }
+  function configureTableFilter() {
+    const field = $("#table-filter-field");
+    if (!field) return;
+    const key = field.value, numeric = numericTableFields.has(key);
+    $("#table-filter-op").innerHTML = Object.entries(filterOps).filter(([op])=>numeric || !["gte","lte"].includes(op)).map(([op,label])=>`<option value="${op}">${label}</option>`).join("");
+    $("#table-filter-values").innerHTML = [...new Set(records(devView).map(r=>String(tableValue(r,key))).filter(v=>v.trim()))].sort((a,b)=>a.localeCompare(b,undefined,{numeric:true})).slice(0,150).map(value=>`<option value="${esc(value)}"></option>`).join("");
+    $("#table-filter-value").value = "";
+    $("#table-filter-value").type = key === "release_date" ? "date" : "text";
+    $("#table-filter-value").disabled = false;
+    $("#table-filter-value").inputMode = numeric ? "decimal" : "text";
+  }
+  function applyTableFilter() {
+    const key = $("#table-filter-field").value, op = $("#table-filter-op").value, value = $("#table-filter-value").value.trim(), error = $("#table-filter-error");
+    if (!["missing","present"].includes(op) && (!value || (["gte","lte"].includes(op) && !Number.isFinite(Number(value))))) {
+      error.textContent = ["gte","lte"].includes(op) ? "Enter a valid number." : "Enter or choose a value.";error.hidden = false;return;
+    }
+    tableFilters[key] = {op,value};tablePage = 0;tablePanel = null;
+    renderManage(devView);$("[data-table-panel=filters]")?.focus();
+  }
+  function tablePager() {
+    return `<div class="table-page-buttons"><button class="btn small" type="button" data-table-prev aria-label="Previous page">← Previous</button><button class="btn small" type="button" data-table-next aria-label="Next page">Next →</button></div>`;
   }
   function renderManage(type) {
+    closeRecordMenu();
     activateTable(type);
-    $("#dev-main").innerHTML =
-      devTitle(
-        type === "tags" ? "Tags" : type[0].toUpperCase() + type.slice(1),
-      ) +
-      `<section class="panel dev-table-panel"><div class="dev-table-toolbar"><form class="search-form" id="manage-search"><input id="manage-query" type="search" aria-label="Search ${type}" placeholder="Search ${type}…" value="${esc(tableQuery)}"><button type="submit" aria-label="Search ${type}">Search</button></form><div class="dev-table-tools">${tableFiltersMarkup(type)}${columnChooser(type)}<label class="table-order-label">Order <select id="table-order" aria-label="Order by">${tableColumns[
-        type
-      ]
-        .filter(([key]) => key !== "cover_url" && key !== "apple_track_url")
-        .map(
-          ([key, name]) =>
-            `<option value="${key}" ${tableSort === key ? "selected" : ""}>${name}</option>`,
-        )
-        .join(
-          "",
-        )}</select></label><button class="btn small" type="button" data-table-direction aria-label="Reverse order" title="Reverse order">${tableDir === 1 ? "↑" : "↓"}</button><button class="btn small" type="button" data-table-reset-order>Reset order</button></div></div><div class="table-state-bar"><span id="table-state-label" role="status"></span><button class="btn small" type="button" data-table-clear>Clear filters</button></div><div class="data-scroll dev-catalog-scroll"><table class="data-table dev-catalog-table"><thead><tr>${columns(
-        type,
-      )
-        .map(
-          ([k, name]) =>
-            `<th class="table-col-${k}" scope="col" aria-sort="${tableSort === k ? (tableDir === 1 ? "ascending" : "descending") : "none"}"><button type="button" data-sort="${k}">${name} ${tableSort === k ? (tableDir === 1 ? "↑" : "↓") : "↕"}</button></th>`,
-        )
-        .join(
-          "",
-        )}<th class="dev-actions-cell" scope="col">Actions</th></tr></thead><tbody id="manage-rows"></tbody></table></div><div class="dev-pagination"><span class="table-count" id="table-count" role="status"></span><div><button class="btn small" data-table-prev>Previous</button> <button class="btn small" data-table-next>Next</button></div></div></section>`;
-    renderTableBody(type);
+    $("#dev-main").innerHTML = devTitle(type === "tags" ? "Tags" : type[0].toUpperCase()+type.slice(1)) +
+      `<section class="panel dev-table-panel"><div class="dev-table-toolbar"><form class="search-form" id="manage-search"><input id="manage-query" type="search" aria-label="Search ${type}" placeholder="Search ${type}…" value="${esc(tableQuery)}"><button type="submit">Search</button></form><div class="dev-table-tools"><button class="btn" type="button" data-table-panel="filters" aria-controls="table-filters" aria-expanded="${tablePanel === "filters"}">Filters <span class="table-tool-count" id="table-filter-count"></span></button><button class="btn" type="button" data-table-panel="columns" aria-controls="table-columns" aria-expanded="${tablePanel === "columns"}">Columns <span class="table-tool-count">${columns(type).length}</span></button></div></div>${tableFiltersMarkup(type)}${columnChooser(type)}<div class="table-state-bar"><span id="table-state-label" role="status"></span><button class="btn small" type="button" data-table-clear>Clear filters</button></div><div id="table-filter-chips" class="table-filter-chips"></div><div class="table-view-bar"><label class="table-order-label">Order <select id="table-order" aria-label="Order by">${tableColumns[type].filter(([k])=>!["cover_url","apple_track_url"].includes(k)).map(([key,name])=>`<option value="${key}" ${tableSort === key ? "selected" : ""}>${name}</option>`).join("")}</select></label><button class="btn small" type="button" data-table-direction aria-label="Reverse order">${tableDir === 1 ? "↑" : "↓"}</button><button class="btn small" type="button" data-table-reset-order>Reset order</button><label>Rows <select id="table-page-size">${[15,30,60,100].map(n=>`<option ${tablePageSize === n ? "selected" : ""}>${n}</option>`).join("")}</select></label><label>Page <input id="table-page" type="number" min="1" value="${tablePage+1}" aria-label="Go to page"></label>${tablePager()}</div><div class="table-count" role="status"></div><div class="data-scroll dev-catalog-scroll" tabindex="0" role="region" aria-label="${type} table"><table class="data-table dev-catalog-table"><thead><tr>${columns(type).map(([k,name])=>`<th class="table-col-${k}" scope="col" aria-sort="${tableSort === k ? (tableDir === 1 ? "ascending" : "descending") : "none"}"><button type="button" data-sort="${k}">${name}</button></th>`).join("")}<th class="dev-actions-cell" scope="col">Actions</th></tr></thead><tbody id="manage-rows"></tbody></table></div><div class="dev-pagination"><span class="table-count"></span>${tablePager()}</div></section>`;
+    configureTableFilter();renderTableBody(type);
+  }
+  function recordTools(type, r) {
+    return (type === "songs" ? `<button class="btn small" type="button" data-preview-quality="${r.id}">Preview quality</button><button class="btn small" type="button" data-catalog-source="${r.id}">Apple source</button><button class="btn small" type="button" data-catalog-single="${r.id}">Make Single</button>` : type === "albums" ? `<button class="btn small" type="button" data-catalog-album="${r.id}">Inspect tracks</button>` : "") + `<button class="btn small danger" type="button" data-delete="${type}" data-id="${r.id}">Delete</button>`;
   }
   function recordActions(type, r) {
-    const tools =
-      (type === "songs"
-        ? `<button class="btn small" type="button" data-preview-quality="${r.id}">Preview quality</button><button class="btn small" type="button" data-catalog-source="${r.id}">Apple source</button><button class="btn small" type="button" data-catalog-single="${r.id}">Make Single</button>`
-        : type === "albums"
-          ? `<button class="btn small" type="button" data-catalog-album="${r.id}">Import tracks</button>`
-          : "") +
-      `<button class="btn small danger" type="button" data-delete="${type}" data-id="${r.id}">Delete</button>`;
-    return `<div class="table-actions"><button class="btn small" type="button" data-edit="${type}" data-id="${r.id}" aria-label="Edit ${esc(r.name)}">Edit</button><details class="dev-row-menu"><summary class="btn small" aria-label="More actions for ${esc(r.name)}">More ▾</summary><div class="dev-row-tools">${tools}</div></details></div>`;
+    return `<div class="table-actions"><button class="btn small" type="button" data-edit="${type}" data-id="${r.id}" aria-label="Edit ${esc(r.name)}">Edit</button><button class="btn small" type="button" data-record-more="${type}" data-id="${r.id}" aria-haspopup="menu" aria-expanded="false" aria-label="More actions for ${esc(r.name)}">More ▾</button></div>`;
+  }
+  let recordMenu = null;
+  function closeRecordMenu(focus = false) {
+    if (!recordMenu) return;
+    const {panel, button} = recordMenu;recordMenu = null;
+    panel.remove();button.setAttribute("aria-expanded","false");button.removeAttribute("aria-controls");
+    if (focus && button.isConnected) button.focus();
+  }
+  function openRecordMenu(button) {
+    if (recordMenu?.button === button) {closeRecordMenu(true);return;}
+    closeRecordMenu();
+    const type = button.dataset.recordMore, row = byId(records(type), Number(button.dataset.id));
+    if (!row) return;
+    const panel = document.createElement("div");panel.id="dev-record-menu";panel.className="dev-row-tools";panel.setAttribute("popover","auto");panel.setAttribute("role","menu");panel.setAttribute("aria-label", "Actions for "+row.name);panel.innerHTML=recordTools(type,row);
+    panel.querySelectorAll("button").forEach(b=>b.setAttribute("role","menuitem"));
+    document.body.append(panel);recordMenu={panel,button};button.setAttribute("aria-expanded","true");button.setAttribute("aria-controls",panel.id);
+    panel.showPopover?.();
+    const box=button.getBoundingClientRect(), width=panel.getBoundingClientRect().width || Math.min(230,innerWidth-16), height=panel.getBoundingClientRect().height || panel.querySelectorAll("button").length*48+20;
+    panel.style.left=Math.max(8,Math.min(innerWidth-width-8,box.right-width))+"px";
+    panel.style.top=Math.max(8,Math.min(innerHeight-height-8,box.bottom+height+8<=innerHeight ? box.bottom+6 : box.top-height-6))+"px";
+    panel.addEventListener("toggle",event=>{if(event.newState==="closed" && recordMenu?.panel===panel)closeRecordMenu();});
+    panel.querySelector("button")?.focus();
   }
   function renderTableBody(type = devView) {
+    closeRecordMenu();
     const all = tableRows(type);
     tablePage = Math.min(
       tablePage,
-      Math.max(0, Math.ceil(all.length / 30) - 1),
+      Math.max(0, Math.ceil(all.length / tablePageSize) - 1),
     );
     rememberTable();
-    const offset = tablePage * 30,
-      rows = all.slice(offset, offset + 30),
+    const offset = tablePage * tablePageSize,
+      rows = all.slice(offset, offset + tablePageSize),
       activeFilters =
-        Object.values(tableFilters).filter((v) => v.trim()).length +
+        Object.keys(tableFilters).length +
         (tableQuery.trim() ? 1 : 0) +
         (missingAppleOnly ? 1 : 0);
     const stateLabel = $("#table-state-label");
@@ -1453,7 +1467,7 @@
     const filterCount = $("#table-filter-count");
     if (filterCount)
       filterCount.textContent =
-        Object.values(tableFilters).filter((v) => v.trim()).length +
+        Object.keys(tableFilters).length +
           (missingAppleOnly ? 1 : 0) || "";
     $$("[data-sort]").forEach((b) => {
       const active = b.dataset.sort === tableSort;
@@ -1483,14 +1497,17 @@
         )
         .join("") ||
       `<tr><td colspan="${columns(type).length + 1}" class="table-empty">No matching records. Clear filters to see all.</td></tr>`;
-    $("#table-count").textContent =
+    $$(".table-count").forEach(node=>node.textContent =
       all.length +
       " records · " +
       (all.length ? offset + 1 : 0) +
       "–" +
-      Math.min(offset + 30, all.length);
-    $("[data-table-prev]").disabled = tablePage === 0;
-    $("[data-table-next]").disabled = offset + 30 >= all.length;
+      Math.min(offset + tablePageSize, all.length));
+    $$("[data-table-prev]").forEach(b=>b.disabled=tablePage === 0);
+    $$("[data-table-next]").forEach(b=>b.disabled=offset + tablePageSize >= all.length);
+    $("#table-page").value=tablePage+1;$("#table-page").max=Math.max(1,Math.ceil(all.length/tablePageSize));
+    $("#table-order").value=tableSort;
+    $("#table-filter-chips").innerHTML=Object.entries(tableFilters).map(([key,rule])=>`<button class="btn small" type="button" data-remove-table-filter="${key}" title="Remove this filter">${esc(tableColumns[type].find(([k])=>k===key)?.[1]||key)} ${esc(filterOps[rule.op])} ${esc(["missing","present"].includes(rule.op)?"":rule.value)} ×</button>`).join("");
   }
   function renderImport() {
     if (!window.DevCatalog) {
@@ -1508,6 +1525,7 @@
     return `<div class="workshop">${items.map(([title, icon]) => `<button class="tool-tile" data-tool="${title}"><span class="tool-icon">${icon}</span>${title}</button>`).join("")}</div>`;
   }
   function renderDevView() {
+    closeRecordMenu();
     rememberTable();
     if (shownDevView !== devView) {
       stopAudio();
@@ -2981,34 +2999,22 @@
     return `<article class="game-card dashboard-surface podium-entry podium-place-${place} ${place === 1 ? "champion-card" : "podium-card"}"><div class="podium-medal" aria-label="${labels[place]}">${medals[place]}<span>${labels[place]}</span></div>${mediaButton(s, place === 1 ? "champion-audio" : "podium-audio-" + place, false, false)}<h2><a class="song" title="${esc(s.title)}" href="${urlFor("songs", s)}">${esc(s.title)}</a></h2><div class="game-meta">${gameMetadata(s)}</div><div class="tournament-award"><strong class="tournament">${won.length} wins</strong><span>${won.reduce((n, m) => n + Number(m.points_awarded || 0), 0).toFixed(2)} points</span></div><div class="podium-step" aria-hidden="true">${place}</div></article>`;
   }
 
-  document.addEventListener(
-    "toggle",
-    (e) => {
-      if (e.target.matches?.(".dev-row-menu[open]"))
-        $$(".dev-row-menu[open]").forEach((d) => {
-          if (d !== e.target) d.open = false;
-        });
-    },
-    true,
-  );
-  document.addEventListener(
-    "click",
-    (e) => {
-      const menu = e.target.closest(".dev-row-menu");
-      if (e.target.closest(".dev-row-tools button")) menu.open = false;
-      else if (!menu)
-        $$(".dev-row-menu[open]").forEach((d) => (d.open = false));
-    },
-    true,
-  );
-  document.addEventListener("keydown", (e) => {
-    const menu = e.target.closest(".dev-row-menu[open]");
-    if (e.key === "Escape" && menu) {
-      e.preventDefault();
-      menu.open = false;
-      menu.querySelector("summary").focus();
+  document.addEventListener("click", e=>{
+    const more=e.target.closest("[data-record-more]");
+    if(more){openRecordMenu(more);return;}
+    if(recordMenu && (!recordMenu.panel.contains(e.target) || e.target.closest("button")))closeRecordMenu();
+  });
+  document.addEventListener("keydown", e=>{
+    if(e.key==="ArrowDown" && e.target.matches("[data-record-more]")){e.preventDefault();openRecordMenu(e.target);return;}
+    if(!recordMenu)return;
+    if(e.key==="Escape"){e.preventDefault();closeRecordMenu(true);return;}
+    if(recordMenu.panel.contains(e.target) && ["ArrowDown","ArrowUp","Home","End"].includes(e.key)){
+      e.preventDefault();const buttons=[...recordMenu.panel.querySelectorAll("button:not(:disabled)")],at=buttons.indexOf(document.activeElement);
+      buttons[e.key==="Home"?0:e.key==="End"?buttons.length-1:(at+(e.key==="ArrowDown"?1:-1)+buttons.length)%buttons.length]?.focus();
     }
   });
+  document.addEventListener("scroll", e=>{if(recordMenu && !recordMenu.panel.contains(e.target))closeRecordMenu();},true);
+  window.addEventListener("resize",()=>closeRecordMenu());
   document.addEventListener("click", async (e) => {
     const b = e.target.closest("button");
     if (b?.disabled) return;
@@ -3152,6 +3158,11 @@
         devLimits[b.dataset.devMore] += 20;
         renderDevResults();
       }
+      if (b.dataset.tablePanel) {
+        tablePanel = tablePanel === b.dataset.tablePanel ? null : b.dataset.tablePanel;
+        renderManage(devView);$("[data-table-panel="+b.dataset.tablePanel+"]")?.focus();
+      }
+      if (b.dataset.removeTableFilter) {delete tableFilters[b.dataset.removeTableFilter];tablePage=0;renderTableBody();}
       if (b.dataset.sort) {
         tableDir = tableSort === b.dataset.sort ? -tableDir : 1;
         tableSort = b.dataset.sort;
@@ -3159,7 +3170,7 @@
       }
       if (b.hasAttribute("data-columns-default")) {
         saveColumns(devView, tableDefaults[devView]);
-        if ($(".column-picker")) $(".column-picker").open = true;
+        tablePanel="columns";$("#table-columns").hidden=false;$("[aria-controls=table-columns]").setAttribute("aria-expanded","true");
       }
       if (b.hasAttribute("data-table-reset-order")) {
         tableSort = "id";
@@ -3184,10 +3195,12 @@
       if (b.hasAttribute("data-table-prev")) {
         tablePage = Math.max(0, tablePage - 1);
         renderTableBody();
+        if(b.closest(".dev-pagination"))$(".dev-table-toolbar")?.scrollIntoView?.({block:"start"});
       }
       if (b.hasAttribute("data-table-next")) {
         tablePage++;
         renderTableBody();
+        if(b.closest(".dev-pagination"))$(".dev-table-toolbar")?.scrollIntoView?.({block:"start"});
       }
       if (b.dataset.edit) editRecord(b.dataset.edit, Number(b.dataset.id));
       if (b.dataset.delete)
@@ -3278,16 +3291,6 @@
     }
   });
   document.addEventListener("keydown", (e) => {
-    if (
-      e.key === "Enter" &&
-      e.target.matches(".table-filter-panel .column-filter")
-    ) {
-      e.preventDefault();
-      const panel = e.target.closest(".table-filter-panel");
-      panel.open = false;
-      panel.querySelector("summary")?.focus();
-      return;
-    }
     if (e.key === "Enter" && e.target.dataset.tagQuery) {
       e.preventDefault();
       return;
@@ -3297,51 +3300,6 @@
       $("#scope-results .scope-option:not(:disabled)")?.click();
     }
   });
-  document.addEventListener(
-    "toggle",
-    (e) => {
-      const menu = e.target;
-      if (!menu.matches?.(".dev-catalog-table .dev-row-menu") || !menu.open)
-        return;
-      $(".dev-catalog-table .dev-row-menu").forEach((other) => {
-        if (other !== menu) other.open = false;
-      });
-      const button = menu.querySelector("summary"),
-        box = button.getBoundingClientRect(),
-        width = 180,
-        height = menu.querySelectorAll(".dev-row-tools .btn").length * 47 + 20;
-      menu.style.setProperty(
-        "--menu-left",
-        Math.max(
-          8,
-          Math.min(window.innerWidth - width - 8, box.right - width),
-        ) + "px",
-      );
-      menu.style.setProperty(
-        "--menu-top",
-        Math.max(
-          8,
-          Math.min(
-            window.innerHeight - 80,
-            box.bottom + height + 8 > window.innerHeight && box.top > height
-              ? box.top - height - 6
-              : box.bottom + 6,
-          ),
-        ) + "px",
-      );
-    },
-    true,
-  );
-  document.addEventListener(
-    "scroll",
-    (e) => {
-      if (e.target.closest?.(".dev-catalog-scroll"))
-        $(".dev-catalog-table .dev-row-menu[open]").forEach(
-          (menu) => (menu.open = false),
-        );
-    },
-    true,
-  );
   document.addEventListener("input", (e) => {
     const n = e.target;
     if (n.dataset.tagQuery) renderTagPicker(n.dataset.tagQuery);
@@ -3362,11 +3320,6 @@
     }
     if (n.id === "manage-query") {
       tableQuery = n.value;
-      tablePage = 0;
-      renderTableBody();
-    }
-    if (n.dataset.column) {
-      tableFilters[n.dataset.column] = n.value;
       tablePage = 0;
       renderTableBody();
     }
@@ -3430,7 +3383,7 @@
           ? [...chosen, n.dataset.visible]
           : chosen.filter((k) => k !== n.dataset.visible),
       );
-      if ($(".column-picker")) $(".column-picker").open = true;
+      tablePanel="columns";$("#table-columns").hidden=false;$("[aria-controls=table-columns]").setAttribute("aria-expanded","true");
     }
     if (n.dataset.devType) {
       n.checked
@@ -3446,6 +3399,10 @@
       renderScope();
     }
     if (n.name === "t-visibility" || n.name === "t-size") renderScope();
+    if(n.id === "table-filter-field")configureTableFilter();
+    if(n.id === "table-filter-op")$("#table-filter-value").disabled=["missing","present"].includes(n.value);
+    if(n.id === "table-page-size"){tablePageSize=Number(n.value);tablePage=0;renderTableBody();}
+    if(n.id === "table-page"){tablePage=Math.max(0,(Number(n.value)||1)-1);renderTableBody();}
     if (n.id === "table-order") {
       tableSort = n.value;
       tableDir = 1;
@@ -3467,10 +3424,12 @@
   });
   document.addEventListener("submit", async (e) => {
     const form = e.target;
+    if(form.id === "table-filter-form"){e.preventDefault();applyTableFilter();return;}
     if (
       ![
         "dev-search",
         "manage-search",
+        "table-filter-form",
         "apple-search",
         "editor-form",
         "tournament-setup",

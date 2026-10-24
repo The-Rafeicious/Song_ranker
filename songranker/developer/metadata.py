@@ -1,8 +1,9 @@
 """Conservative, fill-only Apple metadata planning. No library import helpers.
 
-Fill blank positions, album/song dates and schema-13 Apple source facts only.
-Keep local artwork, names, placement, tags and previews. Release matching accepts
-removed trailing Single/EP labels while retaining artist and exact-art checks.
+Fill verified blank catalogue fields and Apple source facts; never edit tags.
+Keep all nonblank values, album/artist relationships and preferred artwork. Release matching accepts
+removed trailing Single/EP labels; saved identities allow preferred local artwork.
+Unlinked releases still require exact artist and artwork checks.
 """
 
 from collections import Counter
@@ -23,6 +24,7 @@ from songranker.developer.catalog_sources import (
     source_conflict,
     save_source,
     source_label,
+    identifier,
 )
 from secrets import token_urlsafe
 from threading import Thread, Lock, Event
@@ -63,13 +65,21 @@ def missing_source(source):
         "album_url",
         "release_date",
         "duration_ms",
+        "censored_title",
+        "collection_explicitness",
     )
     return (
         any(blank(source.get(k)) for k in keys)
         or source.get("explicitness") not in ("explicit", "cleaned", "notExplicit")
         or any(
             blank(source.get("metadata", {}).get(k))
-            for k in ("source_track_number", "disc_number", "disc_count")
+            for k in (
+                "source_track_number",
+                "disc_number",
+                "disc_count",
+                "cover_url",
+                "audio_url",
+            )
         )
     )
 
@@ -99,6 +109,7 @@ def propose_song(plan, song, remote):
     if "release_date" not in song:
         return  # Legacy helper databases have only the old fields.
     fresh = observation(remote, plan["country"])
+    fresh["metadata"].pop("genres", None)  # Song tags are never part of metadata fill.
     for key, remote_key in [("disc_number", "discNumber"), ("disc_count", "discCount")]:
         fresh["metadata"][key] = remote.get(remote_key)
     previous = song.get("source")
@@ -119,7 +130,9 @@ def propose_song(plan, song, remote):
         raise ValueError(
             "More than one local song matches this Apple identity; review needed."
         )
-    if blank(song["release_date"]):
+    if blank(song["release_date"]) and not any(
+        r["id"] == song["id"] for r in plan["song_dates"]
+    ):
         try:
             value = release_date(remote.get("releaseDate"))
         except ValueError as error:
@@ -130,11 +143,16 @@ def propose_song(plan, song, remote):
             plan["song_dates"].append(
                 dict(id=song["id"], title=song["title"], value=value)
             )
+    propose_fields(plan, song, fresh, "Verified Apple track " + fresh["track_id"])
+    previous = next(
+        (r["source"] for r in plan["sources"] if r["id"] == song["id"]), previous
+    )
     merged = merge_source(previous, fresh)
     if merged != previous:
         fields = [
             key for key in merged if not previous or merged[key] != previous.get(key)
         ]
+        plan["sources"] = [r for r in plan["sources"] if r["id"] != song["id"]]
         plan["sources"].append(
             dict(id=song["id"], title=song["title"], source=merged, fields=fields)
         )
@@ -192,7 +210,8 @@ def snapshot(conn):
     columns = {r["name"] for r in conn.execute("PRAGMA table_info(songs)")}
     modern = {"release_date", "release_date_origin"} <= columns
     extra = ",release_date,release_date_origin" if modern else ""
-    if "disc_number" in columns:extra += ",disc_number"
+    if "disc_number" in columns:
+        extra += ",disc_number"
     songs = [
         dict(r)
         for r in conn.execute(
@@ -202,7 +221,16 @@ def snapshot(conn):
         )
     ]
     sources = current_sources(conn) if modern else {}
-    artists = {r["id"]: r["name"] for r in conn.execute("SELECT id,name FROM artists")}
+    artist_columns = {r[1] for r in conn.execute("PRAGMA table_info(artists)")}
+    artist_rows = [
+        dict(r)
+        for r in conn.execute(
+            "SELECT id,name"
+            + (",cover_url" if "cover_url" in artist_columns else "")
+            + " FROM artists ORDER BY id"
+        )
+    ]
+    artists = {r["id"]: r["name"] for r in artist_rows}
     links = [
         tuple(r)
         for r in conn.execute(
@@ -213,9 +241,12 @@ def snapshot(conn):
         song["artists"] = [
             artists[a] for s, a in links if s == song["id"] and a in artists
         ]
+        song["artist_ids"] = [
+            a for sid, a in links if sid == song["id"] and a in artists
+        ]
         if modern:
             song["source"] = sources.get(song["id"], {}).get("source", {})
-    return {"albums": albums, "songs": songs}
+    return {"albums": albums, "songs": songs, "artists": artist_rows}
 
 
 def connection(filename, readonly=False):
@@ -241,6 +272,372 @@ def connection(filename, readonly=False):
             conn.close()
             raise ValueError("Use the current relational Song Ranker database.")
     return conn
+
+
+FIELD_LABELS = {
+    "audio_url": "Preview URL",
+    "cover_url": "Artwork URL",
+    "title": "Title",
+    "name": "Artist name",
+    "release_date_origin": "Release-date source",
+}
+
+
+def media_url(value):
+    """Accept only absolute HTTPS media values, excluding credentials and script URLs."""
+    try:
+        parsed = urlsplit(value or "")
+        return (
+            value
+            if parsed.scheme == "https"
+            and parsed.hostname
+            and not parsed.username
+            and not parsed.password
+            else None
+        )
+    except (TypeError, ValueError):
+        return None
+
+
+def queue_field(plan, entity, row, field, value, evidence):
+    """Queue one blank-only field; contradictory evidence removes the proposal."""
+    if (
+        field not in row
+        or not blank(row[field])
+        or not isinstance(value, str)
+        or blank(value)
+    ):
+        return
+    key = (entity, row["id"], field)
+    if key in plan["field_conflicts"]:
+        return
+    previous = next(
+        (r for r in plan["fills"] if (r["entity"], r["id"], r["field"]) == key), None
+    )
+    if previous:
+        if previous["value"] != value and not (
+            field == "cover_url" and same_art(previous["value"], value)
+        ):
+            plan["fills"].remove(previous)
+            plan["field_conflicts"].add(key)
+            plan["field_failures"].append(
+                dict(
+                    title=row.get("title") or row.get("name") or str(row["id"]),
+                    reason="Conflicting "
+                    + FIELD_LABELS[field].lower()
+                    + " evidence; review manually.",
+                )
+            )
+        return
+    plan["fills"].append(
+        dict(
+            entity=entity,
+            id=row["id"],
+            title=row.get("title") or row.get("name") or str(row["id"]),
+            field=field,
+            label=FIELD_LABELS[field],
+            value=value,
+            evidence=evidence,
+        )
+    )
+
+
+def matching_release(album, source):
+    """Require an actual release-title match before using source album-level facts."""
+    return bool(
+        normalized(album["title"])
+        and release_key(album["title"]) == release_key(source.get("album"))
+    )
+
+
+def propose_fields(plan, song, source, evidence):
+    """Fill missing song media/identity and matching-release artwork without moving links."""
+    metadata = source.get("metadata") or {}
+    queue_field(
+        plan, "songs", song, "audio_url", media_url(metadata.get("audio_url")), evidence
+    )
+    queue_field(plan, "songs", song, "title", source.get("title"), evidence)
+    if not blank(song.get("release_date")) and song.get("release_date") == source.get(
+        "release_date"
+    ):
+        queue_field(plan, "songs", song, "release_date_origin", "apple", evidence)
+    album = next(
+        (a for a in plan["snapshot"]["albums"] if a["id"] == song["album_id"]), None
+    )
+    if album and matching_release(effective_row(plan, "albums", album), source):
+        queue_field(
+            plan,
+            "albums",
+            album,
+            "cover_url",
+            media_url(metadata.get("cover_url")),
+            evidence,
+        )
+
+
+def inventory(state):
+    """Count blank writable catalogue fields and saved-source date recovery opportunities."""
+    missing = {}
+    for entity, fields in (
+        (
+            "songs",
+            (
+                "title",
+                "audio_url",
+                "track_number",
+                "release_date",
+                "release_date_origin",
+            ),
+        ),
+        ("albums", ("title", "cover_url", "release_date")),
+        ("artists", ("name", "cover_url")),
+    ):
+        for field in fields:
+            missing[entity + "." + field] = sum(
+                field in row and blank(row[field]) for row in state[entity]
+            )
+    return dict(
+        totals={key: len(state[key]) for key in ("songs", "albums", "artists")},
+        missing=missing,
+        saved_dates=sum(
+            blank(s.get("release_date"))
+            and bool((s.get("source") or {}).get("release_date"))
+            for s in state["songs"]
+        ),
+    )
+
+
+def saved_facts(plan):
+    """Recover exact linked facts offline before spending requests on unknown metadata."""
+    state = plan["snapshot"]
+    identities = Counter(
+        identifier((s.get("source") or {}).get("track_id")) for s in state["songs"]
+    )
+    occupied = {
+        (s["album_id"], s.get("disc_number", 1), s["track_number"])
+        for s in state["songs"]
+        if not blank(s["track_number"])
+    }
+    for song in state["songs"]:
+        source = song.get("source") or {}
+        key = identifier(source.get("track_id"))
+        if not key or identities[key] != 1:
+            continue
+        evidence = "Saved Apple track " + key
+        propose_fields(plan, song, source, evidence)
+        if "release_date" in song and blank(song["release_date"]):
+            try:
+                value = release_date(
+                    source.get("release_date")
+                    or (source.get("metadata") or {}).get("release_date")
+                )
+            except ValueError:
+                pass
+            else:
+                plan["song_dates"].append(
+                    dict(
+                        id=song["id"],
+                        title=song["title"],
+                        value=value,
+                        evidence=evidence,
+                    )
+                )
+        enriched = deepcopy(source)
+        metadata = enriched.setdefault("metadata", {})
+        for field in ("title", "artist", "album", "release_date"):
+            if (
+                blank(metadata.get(field))
+                and isinstance(source.get(field), str)
+                and not blank(source[field])
+            ):
+                metadata[field] = source[field]
+            if (
+                blank(enriched.get(field))
+                and isinstance(metadata.get(field), str)
+                and not blank(metadata[field])
+            ):
+                enriched[field] = metadata[field]
+        store = source.get("storefront")
+        if isinstance(store, str) and re.fullmatch("[a-z]{2}", store):
+            for field, kind, identity in (
+                ("track_url", "song", key),
+                ("album_url", "album", identifier(source.get("collection_id"))),
+            ):
+                if identity and blank(enriched.get(field)):
+                    enriched[field] = (
+                        f"https://music.apple.com/{store}/{kind}/{identity}"
+                    )
+        if blank(metadata.get("track_number")) and not blank(
+            metadata.get("source_track_number")
+        ):
+            try:
+                number = parse_track_number(metadata["source_track_number"])
+                disc = parse_track_number(metadata.get("disc_number"))
+                count = parse_track_number(metadata.get("disc_count"))
+                if not disc or not count or disc > count:
+                    raise ValueError("Unverified disc")
+            except (ValueError, TypeError):
+                pass
+            else:
+                enriched["metadata"]["track_number"] = number
+        if enriched != source:
+            plan["sources"].append(
+                dict(
+                    id=song["id"],
+                    title=song["title"],
+                    source=enriched,
+                    fields=[k for k in enriched if enriched[k] != source.get(k)],
+                )
+            )
+        if blank(song["track_number"]):
+            album = next(
+                (a for a in state["albums"] if a["id"] == song["album_id"]), None
+            )
+            if not album or not matching_release(album, source):
+                continue
+            try:
+                number = parse_track_number(
+                    metadata.get("source_track_number") or metadata.get("track_number")
+                )
+                disc = parse_track_number(metadata.get("disc_number"))
+                count = parse_track_number(metadata.get("disc_count"))
+                if not number or not disc or not count or disc > count:
+                    continue
+                if song.get("disc_number", 1) > 1 and song["disc_number"] != disc:
+                    continue
+                position = (album["id"], disc, number)
+                if position in occupied:
+                    continue
+            except (ValueError, TypeError):
+                continue
+            occupied.add(position)
+            plan["tracks"].append(
+                dict(
+                    id=song["id"],
+                    title=song["title"],
+                    album_id=album["id"],
+                    value=number,
+                    disc_number=disc,
+                    evidence=evidence,
+                )
+            )
+    # Blank album/artist names require unanimous linked saved identities, never a fuzzy search.
+    for entity, rows, field in (
+        ("albums", state["albums"], "title"),
+        ("artists", state["artists"], "name"),
+    ):
+        for row in rows:
+            linked = (
+                [s for s in state["songs"] if s["album_id"] == row["id"]]
+                if entity == "albums"
+                else [s for s in state["songs"] if row["id"] in s["artist_ids"]]
+            )
+            if entity == "artists" and any(len(s["artist_ids"]) != 1 for s in linked):
+                continue
+            sources = [s.get("source") or {} for s in linked]
+            name_key, id_key = (
+                ("album", "collection_id")
+                if entity == "albums"
+                else ("artist", "artist_id")
+            )
+            if not sources or any(
+                not identifier(s.get(id_key)) or blank(s.get(name_key)) for s in sources
+            ):
+                continue
+            if len({(s[id_key], normalized(s[name_key])) for s in sources}) != 1:
+                continue
+            queue_field(
+                plan,
+                entity,
+                row,
+                field,
+                sources[0][name_key],
+                "Unanimous saved Apple identity " + sources[0][id_key],
+            )
+    for song in state["songs"]:
+        source = next(
+            (r["source"] for r in plan["sources"] if r["id"] == song["id"]),
+            song.get("source") or {},
+        )
+        key = identifier(source.get("track_id"))
+        if key and identities[key] == 1:
+            propose_fields(plan, song, source, "Saved Apple track " + key)
+
+
+def effective_row(plan, entity, row):
+    """Use already reviewed blank-name proposals for matching without mutating the snapshot."""
+    return {
+        **row,
+        **{
+            r["field"]: r["value"]
+            for r in plan["fills"]
+            if r["entity"] == entity and r["id"] == row["id"]
+        },
+    }
+
+
+def artist_artwork(plan, lookup, cancelled):
+    """Fill blank artist pictures only from exact artist responses, never album covers."""
+    for original_artist in plan["snapshot"]["artists"]:
+        artist = effective_row(plan, "artists", original_artist)
+        if (
+            "cover_url" not in artist
+            or not blank(artist["cover_url"])
+            or blank(artist["name"])
+        ):
+            continue
+        linked = [
+            s
+            for s in plan["snapshot"]["songs"]
+            if artist["id"] in s["artist_ids"] and len(s["artist_ids"]) == 1
+        ]
+        candidates = {
+            s.get("source", {}).get("artist_id")
+            for s in linked
+            if normalized(s.get("source", {}).get("artist"))
+            == normalized(artist["name"])
+        }
+        candidates.discard(None)
+        if len(candidates) != 1:
+            continue
+        if cancelled():
+            plan["stopped"] = "Scan cancelled."
+            return
+        key = next(iter(candidates))
+        try:
+            results = lookup(
+                "https://itunes.apple.com/lookup?"
+                + urlencode(dict(id=key, entity="musicArtist", country=plan["country"]))
+            ).get("results", [])
+            matches = [
+                r
+                for r in results
+                if isinstance(r, dict)
+                and r.get("wrapperType") == "artist"
+                and str(r.get("artistId")) == key
+                and normalized(r.get("artistName")) == normalized(artist["name"])
+            ]
+            if len(matches) == 1 and media_url(matches[0].get("artworkUrl100")):
+                queue_field(
+                    plan,
+                    "artists",
+                    original_artist,
+                    "cover_url",
+                    media_url(matches[0]["artworkUrl100"]),
+                    "Verified Apple artist " + key,
+                )
+            else:
+                plan["field_failures"].append(
+                    dict(
+                        title=artist["name"],
+                        reason="Apple returned no uniquely verified artist artwork; no album cover was substituted.",
+                    )
+                )
+        except (ValueError, ScanStopped) as error:
+            plan["field_failures"].append(dict(title=artist["name"], reason=str(error)))
+            if isinstance(error, ScanStopped):
+                plan["stopped"] = str(error)
+                return
 
 
 def paced_lookup(url, cancelled=lambda: False):
@@ -294,22 +691,53 @@ def plan_metadata(
         "song_dates": [],
         "sources": [],
         "metadata_failures": [],
+        "fills": [],
+        "field_failures": [],
+        "field_conflicts": set(),
+        "inventory": inventory(original),
     }
+    saved_facts(plan)
     occupied = {
         (s["album_id"], s.get("disc_number", 1), s["track_number"])
         for s in original["songs"]
         if s["track_number"] is not None
-    }
+    } | {(r["album_id"], r.get("disc_number", 1), r["value"]) for r in plan["tracks"]}
     stopped = ""
-    for index, album in enumerate(original["albums"]):
+    for index, original_album in enumerate(original["albums"]):
+        album = effective_row(plan, "albums", original_album)
         local = [s for s in original["songs"] if s["album_id"] == album["id"]]
-        missing_tracks = [s for s in local if blank(s["track_number"])]
+        missing_tracks = [
+            s
+            for s in local
+            if blank(s["track_number"])
+            and not any(r["id"] == s["id"] for r in plan["tracks"])
+        ]
         need_date = blank(album["release_date"])
         missing_metadata = [
             s
             for s in local
             if "release_date" in s
-            and (blank(s["release_date"]) or missing_source(s.get("source")))
+            and (
+                (
+                    blank(s["release_date"])
+                    and not any(r["id"] == s["id"] for r in plan["song_dates"])
+                )
+                or missing_source(
+                    next(
+                        (r["source"] for r in plan["sources"] if r["id"] == s["id"]),
+                        s.get("source"),
+                    )
+                )
+                or (
+                    blank(s["audio_url"])
+                    and not any(
+                        r["entity"] == "songs"
+                        and r["id"] == s["id"]
+                        and r["field"] == "audio_url"
+                        for r in plan["fills"]
+                    )
+                )
+            )
         ]
         single = normalized(album["title"]).endswith(" - single")
         date_row = {
@@ -346,7 +774,14 @@ def plan_metadata(
                     raise ValueError("Blank local album title; manual review needed.")
                 if not local:
                     raise ValueError("No local tracks to verify this release.")
-                if not artwork_key(album["cover_url"]):
+                known_sources = [s.get("source") or {} for s in local]
+                known_ids = {
+                    q["collection_id"]
+                    for q in known_sources
+                    if identifier(q.get("collection_id")) and matching_release(album, q)
+                }
+                known_id = next(iter(known_ids)) if len(known_ids) == 1 else None
+                if not known_id and not artwork_key(album["cover_url"]):
                     raise ValueError(
                         "Artwork cannot be verified as an Apple asset; manual review needed."
                     )
@@ -356,10 +791,18 @@ def plan_metadata(
                     for n in song["artists"]
                     if normalized(n)
                 }
+                if known_id:
+                    names |= {
+                        normalized(q.get("artist"))
+                        for q in known_sources
+                        if q.get("collection_id") == known_id
+                        and normalized(q.get("artist"))
+                    }
                 if not names:
                     raise ValueError("No local artist available for verification.")
                 search_artist = next(
-                    n for song in local for n in song["artists"] if normalized(n)
+                    (n for song in local for n in song["artists"] if normalized(n)),
+                    next(iter(names)),
                 )
                 term = (
                     (local[0]["title"] if single else release_key(album["title"]))
@@ -376,7 +819,7 @@ def plan_metadata(
                         "limit": 200,
                     }
                 )
-                results = lookup(url).get("results", [])
+                results = [] if known_id else lookup(url).get("results", [])
                 candidates = []
                 for row in results:
                     if not isinstance(row, dict):
@@ -399,6 +842,8 @@ def plan_metadata(
                     ):
                         candidates.append(row)
                 ids = {r["collectionId"] for r in candidates}
+                if known_id:
+                    ids = {int(known_id)}
                 if len(ids) != 1:
                     raise ValueError(
                         "No unique title / artist / artwork match; manual review needed."
@@ -421,7 +866,10 @@ def plan_metadata(
                     for r in data
                     if r.get("wrapperType") == "collection"
                     and r.get("collectionId") == collection_id
-                    and same_art(album["cover_url"], r.get("artworkUrl100"))
+                    and (
+                        bool(known_id)
+                        or same_art(album["cover_url"], r.get("artworkUrl100"))
+                    )
                     and normalized(r.get("artistName")) in names
                     and (
                         single
@@ -447,13 +895,29 @@ def plan_metadata(
                     return [
                         r
                         for r in remote_tracks
-                        if normalized(song["title"])
-                        and normalized(r.get("trackName")) == normalized(song["title"])
-                        and normalized(r.get("artistName"))
-                        in {normalized(n) for n in song["artists"]}
+                        if (
+                            str(r.get("trackId"))
+                            == song.get("source", {}).get("track_id")
+                            if song.get("source", {}).get("track_id")
+                            else normalized(song["title"])
+                            and normalized(r.get("trackName"))
+                            == normalized(song["title"])
+                        )
+                        and (
+                            normalized(r.get("artistName"))
+                            in {normalized(n) for n in song["artists"]}
+                            or (
+                                bool(known_id)
+                                and normalized(r.get("artistName"))
+                                == normalized(song.get("source", {}).get("artist"))
+                            )
+                        )
                         and normalized(r.get("collectionName"))
                         == normalized(source.get("collectionName"))
-                        and same_art(album["cover_url"], r.get("artworkUrl100"))
+                        and (
+                            bool(known_id)
+                            or same_art(album["cover_url"], r.get("artworkUrl100"))
+                        )
                         and (
                             not song.get("source")
                             or str(r.get("trackId")) == song["source"]["track_id"]
@@ -478,6 +942,14 @@ def plan_metadata(
                         )
                     except ValueError as error:
                         date_row.update(value=None, status="failed", reason=str(error))
+                queue_field(
+                    plan,
+                    "albums",
+                    original_album,
+                    "cover_url",
+                    media_url(source.get("artworkUrl100")),
+                    "Verified Apple collection " + str(collection_id),
+                )
                 for song in missing_metadata:
                     try:
                         matched = matches(song)
@@ -509,8 +981,13 @@ def plan_metadata(
                                 raise ValueError(
                                     "Multi-disc or missing disc metadata; no position guessed."
                                 )
-                            if song.get("disc_number", 1) > 1 and song["disc_number"] != row["discNumber"]:
-                                raise ValueError("Saved disc differs from Apple; review the position manually.")
+                            if (
+                                song.get("disc_number", 1) > 1
+                                and song["disc_number"] != row["discNumber"]
+                            ):
+                                raise ValueError(
+                                    "Saved disc differs from Apple; review the position manually."
+                                )
                             number = parse_track_number(row.get("trackNumber"))
                             count = parse_track_number(row.get("trackCount"))
                             if number is None or count is None or number > count:
@@ -588,6 +1065,8 @@ def plan_metadata(
                     "reason": "Missing or unlinked album; track position cannot be verified.",
                 }
             )
+    if not plan["stopped"]:
+        artist_artwork(plan, lookup, cancelled)
     return plan
 
 
@@ -606,17 +1085,28 @@ def apply_plan(filename, plan):
             number = parse_track_number(track["value"])
             if number is None:
                 raise ValueError("A proposed track position is blank.")
-            check_track_position(conn, track["album_id"], number, track["id"], track.get("disc_number", 1))
+            check_track_position(
+                conn,
+                track["album_id"],
+                number,
+                track["id"],
+                track.get("disc_number", 1),
+            )
         for row in plan.get("sources", []):
             conflict = source_conflict(conn, row["id"], row["source"])
             if conflict:
                 raise ValueError(
                     "An Apple identity is already linked to another song. Scan again."
                 )
-        modern_discs = "disc_number" in {r[1] for r in conn.execute("PRAGMA table_info(songs)")}
+        modern_discs = "disc_number" in {
+            r[1] for r in conn.execute("PRAGMA table_info(songs)")
+        }
         for track in plan["tracks"]:
             if modern_discs:
-                conn.execute("UPDATE songs SET disc_number=?,track_number=? WHERE id=? AND (track_number IS NULL OR TRIM(track_number)='')", (track.get("disc_number", 1), track["value"], track["id"]))
+                conn.execute(
+                    "UPDATE songs SET disc_number=?,track_number=? WHERE id=? AND (track_number IS NULL OR TRIM(track_number)='')",
+                    (track.get("disc_number", 1), track["value"], track["id"]),
+                )
                 continue
             conn.execute(
                 "UPDATE songs SET track_number=? WHERE id=? AND (track_number IS NULL OR TRIM(track_number)='')",
@@ -632,15 +1122,30 @@ def apply_plan(filename, plan):
         for row in plan.get("song_dates", []):
             value = release_date(row["value"])
             conn.execute(
-                "UPDATE songs SET release_date=?,release_date_origin='apple' WHERE id=? AND (release_date IS NULL OR TRIM(release_date)='')",
+                "UPDATE songs SET release_date=?,release_date_origin=CASE WHEN release_date_origin IS NULL OR TRIM(release_date_origin)='' THEN 'apple' ELSE release_date_origin END WHERE id=? AND (release_date IS NULL OR TRIM(release_date)='')",
                 (value, row["id"]),
             )
         for row in plan.get("sources", []):
             save_source(
                 conn, row["id"], dict(source=row["source"], observed_at=time.time())
             )
+        allowed = {
+            "songs": {"title", "audio_url", "release_date_origin"},
+            "albums": {"title", "cover_url"},
+            "artists": {"name", "cover_url"},
+        }
+        for row in plan.get("fills", []):
+            entity, field = row["entity"], row["field"]
+            if field not in allowed.get(entity, set()):
+                raise ValueError("Unsupported metadata field.")
+            conn.execute(
+                f"UPDATE {entity} SET {field}=? WHERE id=? AND ({field} IS NULL OR TRIM({field})='')",
+                (row["value"], row["id"]),
+            )
+        counts = inventory(snapshot(conn))
         conn.commit()
         plan["applied"] = True
+        plan["inventory"] = counts
         plan["backup"] = None  # Routine edits do not create backups.
         for row in plan["dates"]:
             if row["status"] == "proposed":
@@ -674,13 +1179,25 @@ def text_report(plan):
         lines.append("Backup: " + plan["backup"])
     if plan["stopped"]:
         lines.append("Search stopped: " + plan["stopped"])
+    lines += ["", "OTHER BLANK FIELDS — no song tags"]
+    lines += [
+        f"{r['entity']} #{r['id']} {r['title']} | {r['label']}: {r['value']} | {r['evidence']}"
+        for r in plan.get("fills", [])
+    ]
+    lines += [
+        f"[UNRESOLVED] {r['title']} | {r['reason']}"
+        for r in plan.get("field_failures", [])
+    ]
     lines += ["", "RELEASE DATES — every album"]
     for row in plan["dates"]:
         lines.append(
             f"[{row['status'].upper()}] Album #{row['id']} {row['title']} | {row['value'] or 'blank'} | {row['reason']}"
         )
     lines += ["", "DISC / TRACK POSITIONS"]
-    lines += [f"Song #{r['id']} {r['title']} | Disc {r.get('disc_number', 1)} · Track {r['value']}" for r in plan["tracks"]]
+    lines += [
+        f"Song #{r['id']} {r['title']} | Disc {r.get('disc_number', 1)} · Track {r['value']}"
+        for r in plan["tracks"]
+    ]
     lines += ["", "TRACK NUMBER FAILURES ONLY"]
     lines += [
         f"[FAILED] Song #{r['id']} {r['title']} | {r['album']} | {r['reason']}"
@@ -732,6 +1249,11 @@ def public(job):
         "dates": sum(d["status"] == "proposed" for d in plan["dates"]) if plan else 0,
         "song_dates": len(plan.get("song_dates", [])) if plan else 0,
         "sources": len(plan.get("sources", [])) if plan else 0,
+        "fields": len(plan.get("fills", [])) if plan else 0,
+        "field_changes": plan.get("fills", []) if plan else [],
+        "field_failures": plan.get("field_failures", []) if plan else [],
+        "track_changes": plan.get("tracks", []) if plan else [],
+        "inventory": plan.get("inventory", {}) if plan else {},
         "metadata_failures": len(plan.get("metadata_failures", [])) if plan else 0,
         "song_date_changes": plan.get("song_dates", []) if plan else [],
         "source_changes": (
@@ -765,6 +1287,7 @@ def run_scan(job, country):
     """Run a metadata plan in the background and publish its ready or error state
     under the job lock.
     """
+
     def progress(done, total, album):
         """Update completed-count and album progress safely for the background
         metadata job.
@@ -818,7 +1341,17 @@ def metadata_scan():
                 "error": "",
             }
             Thread(target=run_scan, args=(_job, country.lower()), daemon=True).start()
-        return jsonify(public(_job) if _job else {"state": "idle"})
+        if _job:
+            return jsonify(public(_job))
+        try:
+            conn = connection(DB_NAME, True)
+            try:
+                counts = inventory(snapshot(conn))
+            finally:
+                conn.close()
+        except (ValueError, OSError, sqlite3.Error):
+            counts = {}
+        return jsonify(state="idle", inventory=counts)
 
 
 @app.route("/api/dev/metadata/<token>/cancel", methods=["POST"])

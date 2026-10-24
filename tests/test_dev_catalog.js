@@ -147,11 +147,13 @@ async function sourcePersistenceChecks(){
  check(t.querySelector('[data-sort="apple_track_id"]')&&t.querySelector('[data-sort="apple_track_url"]'),'saved identity and link columns are available');
  check(t.querySelector('#manage-rows').textContent.includes('9002'),'Apple ID uses saved source facts');
  check(t.querySelector('#manage-rows a[href="https://music.apple.com/gb/song/9002"]')?.rel.includes('noopener'),'Apple link opens the saved recording safely');
- const filter=t.querySelector('[data-column="apple_track_id"]');filter.value='9002';filter.dispatchEvent(new table.w.Event('input',{bubbles:true}));
- check(t.querySelectorAll('#manage-rows tr').length===1,'source ID participates in the existing column filters');
-  const panel=t.querySelector('.table-filter-panel');panel.open=true;const enter=new table.w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true});filter.dispatchEvent(enter);
-  check(!panel.open&&enter.defaultPrevented,'Enter closes the field filter panel without submitting');
-  check(t.querySelector('#table-order')&&t.querySelector('[data-table-reset-order]'),'shared order controls stay available');
+ table.click('[data-table-panel="filters"]');
+ t.querySelector('#table-filter-field').value='apple_track_id';t.querySelector('#table-filter-field').dispatchEvent(new table.w.Event('change',{bubbles:true}));
+ t.querySelector('#table-filter-value').value='9002';t.querySelector('#table-filter-form').dispatchEvent(new table.w.Event('submit',{bubbles:true,cancelable:true}));
+ check(t.querySelectorAll('#manage-rows tr').length===1,'source ID participates in typed field filters');
+ check(t.querySelector('#table-filters').hidden,'applying a field filter closes its panel');
+ check(t.querySelector('[data-remove-table-filter="apple_track_id"]'),'active field filter has a removable chip');
+ check(t.querySelector('#table-order')&&t.querySelector('[data-table-reset-order]'),'shared order controls stay available');
  table.dom.window.close();
 }
 async function sourceRefreshChecks(){
@@ -218,10 +220,37 @@ async function bulkSourceChecks(){
  h.click('[data-source-batch-review]');h.click('[data-source-batch-discard]');await flush();
  check(h.errors.length===0,'bulk source flow has no browser errors');h.dom.window.close();
 }
+async function catalogueInteractionChecks(){
+ const h=await harness('songs',390),{w,d,data}=h;
+ for(let id=3;id<=72;id++)data.songs.push({id,title:'Song '+id,album_id:1,artist_ids:[1],tag_ids:[],audio_url:'',track_number:id,elo_score:1200+id,matches_played:0});
+ await w.testDev.refreshData();w.testDev.setView('songs');
+ check(d.querySelectorAll('#manage-rows tr').length===30,'default page has thirty rows');
+ const change=(id,value)=>{const n=d.querySelector(id);n.value=value;n.dispatchEvent(new w.Event('change',{bubbles:true}))};
+ change('#table-page-size','15');check(d.querySelectorAll('#manage-rows tr').length===15,'row count is adjustable');
+ h.click('[data-table-next]');check(d.querySelector('.table-count').textContent.includes('16–30'),'both pagers use the selected row count');
+ change('#table-page','5');check(d.querySelector('.table-count').textContent.includes('61–72'),'jump directly to a page');
+ h.click('[data-table-panel="filters"]');change('#table-filter-field','id');change('#table-filter-op','gte');d.querySelector('#table-filter-value').value='70';
+ d.querySelector('#table-filter-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+ check(d.querySelectorAll('#manage-rows tr').length===3,'numeric field ranges apply');
+ h.click('[data-remove-table-filter="id"]');check(d.querySelectorAll('#manage-rows tr').length===15,'removing a chip restores the page size');
+ h.click('[data-table-panel="filters"]');change('#table-filter-field','release_date');change('#table-filter-op','missing');
+ check(d.querySelector('#table-filter-value').disabled,'blank filters need no typed value');d.querySelector('#table-filter-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
+ check(!d.querySelector('#manage-rows').textContent.includes('Linked song'),'blank date filter excludes a filled date');
+ h.click('[data-table-clear]');
+ const more=d.querySelector('[data-record-more]');more.click();
+ check(d.querySelector('#dev-record-menu').parentElement===d.body,'row menu escapes all table clipping');
+ const items=[...d.querySelectorAll('#dev-record-menu [role=menuitem]')];check(d.activeElement===items[0],'menu opens at first action');
+ items[0].dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));check(d.activeElement===items[1],'menu has arrow navigation');
+ items[1].dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));check(!d.querySelector('#dev-record-menu')&&d.activeElement===more,'Escape closes the menu and restores focus');
+ more.click();w.dispatchEvent(new w.Event('resize'));check(!d.querySelector('#dev-record-menu'),'resize dismisses stale popup geometry');
+ w.testDev.setView('albums');w.testDev.setView('songs');check(d.querySelector('#table-page-size').value==='15','page size persists per entity');
+ check(h.errors.length===0,'table operations have no runtime errors');h.dom.window.close();
+}
 async function moveAndTableChecks(width){
  const h=await harness('songs',width),{w,d}=h;
- check(d.querySelector('[data-catalog-source="1"]')&&d.querySelector('[data-catalog-single="1"]'),'song actions present at '+width);
- h.change('#missing-apple-only',true);check(d.querySelectorAll('#manage-rows tr').length===1&&d.querySelector('[data-catalog-source="1"]'),'needs-link filter uses source facts at '+width);
+ h.click('[data-record-more="songs"][data-id="1"]');
+ check(d.querySelector('#dev-record-menu [data-catalog-source="1"]')&&d.querySelector('[data-catalog-single="1"]'),'song actions present at '+width);
+ h.change('#missing-apple-only',true);check(d.querySelectorAll('#manage-rows tr').length===1&&d.querySelector('[data-record-more="songs"][data-id="1"]'),'needs-link filter uses source facts at '+width);
  w.testDev.editRecord('songs',1);check(d.querySelector('label[for="field-release_date"]').textContent==='Song release date','per-song date editor at '+width);
  d.querySelector('#editor').close();await w.DevCatalog.openSingle(1);
  check(d.querySelector('#editor-fields').textContent.includes('1998-02-03')&&d.querySelector('#editor-fields').textContent.includes('carried from album'),'date carry explained before moving at '+width);
@@ -230,7 +259,7 @@ async function moveAndTableChecks(width){
  const request=h.requests.find(r=>r.url==='/api/dev/single/1'&&r.options.method==='POST'),body=JSON.parse(request.options.body);
  check(body.fingerprint==='move-1'&&body.remove_empty_album===true,'move binds reviewed plan at '+width);
  check(h.data.songs[0].id===1&&h.data.songs[0].album_id===101&&h.data.songs[0].release_date==='1998-02-03','same song ID/date after move at '+width);
- w.testDev.setView('albums');check(d.querySelector('[data-catalog-album="1"]'),'quick album inspection action at '+width);
+ w.testDev.setView('albums');h.click('[data-record-more="albums"][data-id="1"]');check(d.querySelector('[data-catalog-album="1"]'),'quick album inspection action at '+width);
  await w.DevCatalog.openAlbum(1);check(d.querySelectorAll('[data-catalog-preview]').length===2,'all album tracks shown at '+width);
  check(d.querySelector('#field-disc_number')===null,'album inspection stays read-only at '+width);
  check(d.querySelector('[data-catalog-move-album="1"]'),'direct combine-disc workflow at '+width);
@@ -310,7 +339,7 @@ async function activeSaveNavigationChecks(){
  check(!w.DevCatalog.isBusy(),'completed catalogue write releases its lock');h.click('#dev-page-menu [data-dev="library"]');check(w.location.pathname==='/dev/library','navigation resumes after save');h.dom.window.close();
 }
 
-(async()=>{await activeSaveNavigationChecks();await polishChecks();await albumImportChecks();await importChecks();await sourceChecks();await navigationChecks();await addNavigationCheck();await sourcePersistenceChecks();await sourceRefreshChecks();await bulkSourceChecks();for(const width of [320,360,390,430,568,768,1280])await moveAndTableChecks(width);
+(async()=>{await catalogueInteractionChecks();await activeSaveNavigationChecks();await polishChecks();await albumImportChecks();await importChecks();await sourceChecks();await navigationChecks();await addNavigationCheck();await sourcePersistenceChecks();await sourceRefreshChecks();await bulkSourceChecks();for(const width of [320,360,390,430,568,768,1280])await moveAndTableChecks(width);
  if(process.env.DEV_CATALOG_SNAPSHOTS)fs.writeFileSync(process.env.DEV_CATALOG_SNAPSHOTS,JSON.stringify(snapshots));console.log(assertions+' developer catalogue assertions passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
 
