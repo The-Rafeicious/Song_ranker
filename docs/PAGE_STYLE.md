@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.3.6.1 contract. Change the owning shared rule before adding a
+This is the current V5.3.6.2 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -26,6 +26,14 @@ Below 760 px use 88 px ranking art, 26/16/32 px ranking title/metadata/value and
 32 px page titles and 18 px main padding. Cover/rank span both copy and score
 rows. Layouts must fit 390 px phones through 1800 px desktop without document
 horizontal overflow. Wide data tables scroll inside their own container.
+
+Scrollbars share one owner in `site_baseline.css`: dark tracks, rounded thumbs,
+12 px horizontal/vertical rails and page/entity/mode accent colours. Existing page
+palette rules also expose their colour on the root so the viewport matches inner
+scroll regions, including Vibe's independent pages. Record shelves keep their own
+semantic accent through `--scrollbar-accent`. Use standard scrollbar colours where
+pseudo-elements are unavailable. Forced-colour mode keeps native browser controls;
+CSS does not change scroll behaviour, keyboard access or overlay visibility.
 
 ## Semantic colours
 

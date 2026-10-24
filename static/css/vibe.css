@@ -436,6 +436,7 @@ body.profile-page #main .vibe-profile-panel {
     gap: 10px;
   }
 }
+:root:has(body[data-tone="vibe"]),
 body[data-tone="vibe"] {
   --page-color: var(--vibe);
   --page-rgb: 237, 101, 115;

@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.3.6.1 · competition generation 3 · schema 21**
+**Application V5.3.6.2 · competition generation 3 · schema 21**
 
-Current implementation reference. `APP_VERSION` is `5.3.6.1`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.3.6.2`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).

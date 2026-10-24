@@ -367,6 +367,7 @@ body[data-page="vibe_map"] .vibe-match strong small {
     transition: none;
   }
 }
+:root:has(body[data-page="vibe_map"]),
 body[data-page="vibe_map"] {
   --page-color: var(--vibe);
   --page-rgb: 237, 101, 115;
