@@ -22,7 +22,7 @@ MAPS = (
     ('perspective', 'Perspective', 'Past', 'Future', 'Regretful', 'Hopeful'),
 )
 # Presentation only: retain stored definitions and schema-19 validation unchanged.
-LABEL_OVERRIDES = {'connection': {'y_low': 'Budding'}}
+LABEL_OVERRIDES = {'connection': {'y_low': 'Distant / hostile'}}
 DISPLAY_MAPS = tuple((*values[:4], LABEL_OVERRIDES.get(values[0], {}).get('y_low', values[4]), values[5]) for values in MAPS)
 CENTER_LABELS = {'perspective': {'x_center': 'Present'}}
 RADAR_ORDER = (('pace_mood','y','Happy'),('perspective','y','Hopeful'),

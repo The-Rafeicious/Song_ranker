@@ -33,7 +33,7 @@ record earlier test-only versions; do not use their old setup instructions.
 | --- | --- | --- | --- |
 | Pace & mood | Slow → Upbeat | Sad → Happy | Movement/pace separately from the emotional or lyrical tone. A sad song can be upbeat. |
 | Sound & impact | Acoustic → Electronic | Soft → Powerful | Audible instrumental/electronic texture, separately from the impact of its delivery or main chorus. Slow songs can hit hard. |
-| Connection | Fractured → Secure | Budding → Devoted | How the bond is doing, separately from depth/commitment. Deep love can coexist with conflict or separation. |
+| Connection | Fractured → Secure | Distant / hostile → Devoted | How the bond is doing, separately from affection or distance. Deep love can coexist with conflict or separation. |
 | Perspective | Past → Future | Regretful → Hopeful | The story's time focus, separately from its outlook. The centre of X is labelled **Present**. |
 
 Stable map IDs are `pace_mood`, `sound_impact`, `connection`, `perspective`;
@@ -50,10 +50,12 @@ breakup or romance category. A fully absent theme and genuinely mixed feelings
 are not distinguishable with these eight numbers. That is an accepted limit of
 four simple maps, not a reason to invent confident extreme positions.
 
-Budding captures lighter flirtation/attraction; Devoted captures sustained emotional
-attachment. Sensuality can occur at either depth: a sexy love song need not be
-Budding. Fractured/Secure describes the condition of the bond, not how much the
-narrator wants it.
+Distant / hostile captures emotional distance, indifference or active resentment;
+Devoted captures close, sustained emotional attachment. Budding attraction or young
+love sits toward Devoted, at a lower intensity than deep commitment. A breakup can
+express devotion, detachment or hatred: judge the narrator's feelings rather than
+treating every breakup alike. Fractured/Secure describes the condition of the bond,
+separately from those feelings. Sensuality alone does not imply devotion.
 
 Judge Connection from the narrator's expressed position consistently. An ex
 being hung up does not automatically mean the narrator is devoted. Use a broad
@@ -328,7 +330,7 @@ Readers return one consistent, read-only/no-store snapshot. Ordering uses raw
 consistency before evidence/coverage/ID ties. Album rows retain title and name.
 Inspection/entity cards expose `profile_ready`: all four song maps or at least
 two fully mapped collection members. Missing points stay absent. Connection's
-Budding label is presentation only; canonical stored Casual is unchanged.
+Distant / hostile label is presentation only; canonical stored Casual is unchanged.
 
 ## Coverage and evidence
 
@@ -421,7 +423,7 @@ own card, although proper-album rankings exclude Singles.
 `GET /api/vibe-map/entity/<kind>/<entity_id>` supports album/artist/tag and
 returns kind, entity, summary, maps, readiness and an autoescaped HTML fragment.
 The loader owns local retry/cancellation/history restoration and never replaces
-the hero audio or blocks Overall. Budding is a display-only Connection label;
+the hero audio or blocks Overall. Distant / hostile is a display-only Connection label;
 canonical Casual, saved coordinates and schema-19 validation remain unchanged.
 
 ## Home, Global Stats and rankings
