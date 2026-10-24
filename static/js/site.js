@@ -1313,11 +1313,14 @@
     );
   }
   function saveColumns(type, keys) {
+    const focusedColumn = document.activeElement?.dataset.visible, defaultsFocused = document.activeElement?.hasAttribute("data-columns-default");
     visibleColumns[type] = [...new Set(["name",...keys])].filter(key=>tableColumns[type].some(([k])=>k===key));
     try {
       localStorage.setItem("tableColumns", JSON.stringify(visibleColumns));
     } catch {}
     renderManage(type);
+    if (focusedColumn) $('[data-visible="'+focusedColumn+'"]')?.focus();
+    else if (defaultsFocused) $("[data-columns-default]")?.focus();
   }
   function columnChooser(type) {
     const chosen = new Set(columns(type).map(([key]) => key));

@@ -237,6 +237,9 @@ async function catalogueInteractionChecks(){
  check(d.querySelector('#table-filter-value').disabled,'blank filters need no typed value');d.querySelector('#table-filter-form').dispatchEvent(new w.Event('submit',{bubbles:true,cancelable:true}));
  check(!d.querySelector('#manage-rows').textContent.includes('Linked song'),'blank date filter excludes a filled date');
  h.click('[data-table-clear]');
+ h.click('[data-table-panel="columns"]');const column=d.querySelector('[data-visible="preview"]');column.focus();column.click();
+ check(d.activeElement?.dataset.visible==='preview','changing a column retains keyboard focus for rapid selection');
+ h.click('[data-table-panel="columns"]');
  const more=d.querySelector('[data-record-more]');more.click();
  check(d.querySelector('#dev-record-menu').parentElement===d.body,'row menu escapes all table clipping');
  const items=[...d.querySelectorAll('#dev-record-menu [role=menuitem]')];check(d.activeElement===items[0],'menu opens at first action');
