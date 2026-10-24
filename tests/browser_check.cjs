@@ -264,7 +264,25 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
     for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-'+area,folder);await page.screenshot({path:folder+'/dev-'+area+'-'+width+'.png',fullPage:true});}
   }
   await page.goto(base+'/dev/library/songs');await page.locator('#manage-rows [data-edit]').first().waitFor();
-  await page.locator('.table-filter-panel > summary').click();assert.equal(await page.locator('.table-filter-panel .table-popover-content').evaluate(e=>getComputedStyle(e).position),'static');await page.locator('.table-filter-panel > summary').click();
+  for(const type of ['songs','artists','albums','tags']) {
+    if(type!=='songs'){await page.goto(base+'/dev/library/'+type);await page.locator('#manage-rows [data-edit]').first().waitFor();}
+    for(const width of [390,1365]) {
+      await page.setViewportSize({width,height:850});
+      await page.locator('[data-table-panel="filters"]').first().click();
+      assert.equal(await page.locator('#table-filters').evaluate(e=>getComputedStyle(e).position),'static');
+      await page.locator('#table-filter-field').selectOption('id');await page.locator('#table-filter-op').selectOption('gte');await page.locator('#table-filter-value').fill('1');await page.locator('#table-filter-form [type="submit"]').click();
+      assert.ok(await page.locator('[data-remove-table-filter="id"]').isVisible());
+      await page.locator('[data-remove-table-filter="id"]').click();
+      await page.locator('[data-table-panel="columns"]').first().click();assert.ok(await page.locator('#table-columns').isVisible());await page.locator('[data-table-panel="columns"]').first().click();
+      assert.ok(await page.locator('.dev-catalog-scroll').evaluate(e=>e.scrollHeight<=e.clientHeight+1),'Catalogue has no inner vertical scrolling');
+      const more=page.locator('[data-record-more]').last();await more.click();await page.locator('#dev-record-menu').waitFor();
+      assert.ok(await page.locator('#dev-record-menu').evaluate(e=>e.parentElement===document.body));
+      assert.ok(await page.locator('#dev-record-menu').evaluate(e=>{const r=e.getBoundingClientRect();return r.left>=0&&r.right<=innerWidth+1&&r.top>=0&&r.bottom<=innerHeight+1}),'More stays inside viewport');
+      await bounded(page,width,'dev-table-'+type,folder);await page.screenshot({path:folder+'/dev-table-'+type+'-'+width+'.png'});
+      await page.keyboard.press('Escape');await page.locator('#dev-record-menu').waitFor({state:'detached'});assert.equal(await more.getAttribute('aria-expanded'),'false');
+    }
+  }
+  await page.goto(base+'/dev/library/songs');await page.locator('#manage-rows [data-edit]').first().waitFor();
   await page.locator('[data-edit="songs"][data-id="1"]').first().click();await page.locator('#dev-editor-slot #field-title').waitFor();assert.ok(!(await page.locator('#editor').evaluate(e=>e.matches(':modal'))));
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-editor',folder);await page.screenshot({path:folder+'/dev-editor-'+width+'.png',fullPage:true});}
   await page.locator('#field-title').fill('Unsaved draft');await page.locator('#dev-page-menu [data-dev="tools"]').click();await page.locator('#dev-unsaved:not([hidden])').waitFor();assert.equal(await page.locator('#field-title').inputValue(),'Unsaved draft');assert.ok(page.url().endsWith('/dev/library/songs'));

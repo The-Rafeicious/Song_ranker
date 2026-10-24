@@ -311,29 +311,37 @@ Fill-only metadata planning/apply, scan lifecycle and HTTP reports.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [normalized](../songranker/developer/metadata.py#L37) | `value` | Normalise identity text for deterministic matching within this feature. |
-| [release_key](../songranker/developer/metadata.py#L43) | `value` | Only ignore Apple's format suffix, never Deluxe/Live/remaster editions. |
-| [missing_source](../songranker/developer/metadata.py#L48) | `source` | Identify saved Apple sources with missing required identity or metadata fields. |
-| [merge_source](../songranker/developer/metadata.py#L77) | `previous, fresh` | Append enriched observations; never replace an existing known source fact. |
-| [propose_song](../songranker/developer/metadata.py#L95) | `plan, song, remote` | Add fill-only metadata/source proposals while rejecting changed or duplicate Apple track identities. |
-| [artwork_key](../songranker/developer/metadata.py#L143) | `url` | Require a full Apple artwork asset path; ignore CDN host and size only. |
-| [same_art](../songranker/developer/metadata.py#L159) | `local, remote` | Compare normalised artwork identities independently of image size variants. |
-| [release_date](../songranker/developer/metadata.py#L165) | `value` | Validate an Apple release date and return its plausible ISO calendar day. |
-| [blank](../songranker/developer/metadata.py#L177) | `value` | Treat null and whitespace-only strings as missing metadata without treating zero as empty. |
-| [snapshot](../songranker/developer/metadata.py#L184) | `conn` | Only matching identity/targets: voting and trivia can continue during scans. |
-| [connection](../songranker/developer/metadata.py#L221) | `filename, readonly=False` | Open an existing compatible relational database with row objects and foreign keys enabled. |
-| [paced_lookup](../songranker/developer/metadata.py#L246) | `url, cancelled=lambda: False` | Wait through local Apple throttling while honouring cancellation and stopping on upstream failures. |
-| [plan_metadata](../songranker/developer/metadata.py#L267) | `filename, country='gb', lookup=paced_lookup, progress=lambda *a: None, cancelled=lambda: False` | Build a cancellable dry-run plan for missing catalogue metadata against a consistent snapshot. |
-| [plan_metadata.matches](../songranker/developer/metadata.py#L443) | `song` | Find remote tracks matching the local song's title, artist, release, artwork and saved identity. |
-| [apply_plan](../songranker/developer/metadata.py#L594) | `filename, plan` | Recheck identity and blanks under a write lock. All updates are atomic. |
-| [text_report](../songranker/developer/metadata.py#L656) | `plan` | Format metadata proposals, failures, backup and apply status as a downloadable report. |
-| [public](../songranker/developer/metadata.py#L719) | `job` | Expose scan progress and reviewable changes without publishing internal job state. |
-| [run_scan](../songranker/developer/metadata.py#L764) | `job, country` | Run a metadata plan in the background and publish its ready or error state under the job lock. |
-| [run_scan.progress](../songranker/developer/metadata.py#L768) | `done, total, album` | Update completed-count and album progress safely for the background metadata job. |
-| [metadata_scan](../songranker/developer/metadata.py#L793) | `` | Metadata scan; GET, POST /api/dev/metadata. |
-| [cancel_scan](../songranker/developer/metadata.py#L826) | `token` | Cancel scan; POST /api/dev/metadata/<token>/cancel. |
-| [apply_scan](../songranker/developer/metadata.py#L837) | `token` | Apply scan; POST /api/dev/metadata/<token>/apply. |
-| [scan_report](../songranker/developer/metadata.py#L861) | `token` | Scan report; GET /api/dev/metadata/<token>/report. |
+| [normalized](../songranker/developer/metadata.py#L39) | `value` | Normalise identity text for deterministic matching within this feature. |
+| [release_key](../songranker/developer/metadata.py#L45) | `value` | Only ignore Apple's format suffix, never Deluxe/Live/remaster editions. |
+| [missing_source](../songranker/developer/metadata.py#L50) | `source` | Identify saved Apple sources with missing required identity or metadata fields. |
+| [merge_source](../songranker/developer/metadata.py#L87) | `previous, fresh` | Append enriched observations; never replace an existing known source fact. |
+| [propose_song](../songranker/developer/metadata.py#L105) | `plan, song, remote` | Add fill-only metadata/source proposals while rejecting changed or duplicate Apple track identities. |
+| [artwork_key](../songranker/developer/metadata.py#L161) | `url` | Require a full Apple artwork asset path; ignore CDN host and size only. |
+| [same_art](../songranker/developer/metadata.py#L177) | `local, remote` | Compare normalised artwork identities independently of image size variants. |
+| [release_date](../songranker/developer/metadata.py#L183) | `value` | Validate an Apple release date and return its plausible ISO calendar day. |
+| [blank](../songranker/developer/metadata.py#L195) | `value` | Treat null and whitespace-only strings as missing metadata without treating zero as empty. |
+| [snapshot](../songranker/developer/metadata.py#L202) | `conn` | Only matching identity/targets: voting and trivia can continue during scans. |
+| [connection](../songranker/developer/metadata.py#L252) | `filename, readonly=False` | Open an existing compatible relational database with row objects and foreign keys enabled. |
+| [media_url](../songranker/developer/metadata.py#L286) | `value` | Accept only absolute HTTPS media values, excluding credentials and script URLs. |
+| [queue_field](../songranker/developer/metadata.py#L302) | `plan, entity, row, field, value, evidence` | Queue one blank-only field; contradictory evidence removes the proposal. |
+| [matching_release](../songranker/developer/metadata.py#L345) | `album, source` | Require an actual release-title match before using source album-level facts. |
+| [propose_fields](../songranker/developer/metadata.py#L353) | `plan, song, source, evidence` | Fill missing song media/identity and matching-release artwork without moving links. |
+| [inventory](../songranker/developer/metadata.py#L378) | `state` | Count blank writable catalogue fields and saved-source date recovery opportunities. |
+| [saved_facts](../songranker/developer/metadata.py#L410) | `plan` | Recover exact linked facts offline before spending requests on unknown metadata. |
+| [effective_row](../songranker/developer/metadata.py#L567) | `plan, entity, row` | Use already reviewed blank-name proposals for matching without mutating the snapshot. |
+| [artist_artwork](../songranker/developer/metadata.py#L579) | `plan, lookup, cancelled` | Fill blank artist pictures only from exact artist responses, never album covers. |
+| [paced_lookup](../songranker/developer/metadata.py#L643) | `url, cancelled=lambda: False` | Wait through local Apple throttling while honouring cancellation and stopping on upstream failures. |
+| [plan_metadata](../songranker/developer/metadata.py#L664) | `filename, country='gb', lookup=paced_lookup, progress=lambda *a: None, cancelled=lambda: False` | Build a cancellable dry-run plan for missing catalogue metadata against a consistent snapshot. |
+| [plan_metadata.matches](../songranker/developer/metadata.py#L891) | `song` | Find remote tracks matching the local song's title, artist, release, artwork and saved identity. |
+| [apply_plan](../songranker/developer/metadata.py#L1073) | `filename, plan` | Recheck identity and blanks under a write lock. All updates are atomic. |
+| [text_report](../songranker/developer/metadata.py#L1161) | `plan` | Format metadata proposals, failures, backup and apply status as a downloadable report. |
+| [public](../songranker/developer/metadata.py#L1236) | `job` | Expose scan progress and reviewable changes without publishing internal job state. |
+| [run_scan](../songranker/developer/metadata.py#L1286) | `job, country` | Run a metadata plan in the background and publish its ready or error state under the job lock. |
+| [run_scan.progress](../songranker/developer/metadata.py#L1291) | `done, total, album` | Update completed-count and album progress safely for the background metadata job. |
+| [metadata_scan](../songranker/developer/metadata.py#L1316) | `` | Metadata scan; GET, POST /api/dev/metadata. |
+| [cancel_scan](../songranker/developer/metadata.py#L1359) | `token` | Cancel scan; POST /api/dev/metadata/<token>/cancel. |
+| [apply_scan](../songranker/developer/metadata.py#L1370) | `token` | Apply scan; POST /api/dev/metadata/<token>/apply. |
+| [scan_report](../songranker/developer/metadata.py#L1394) | `token` | Scan report; GET /api/dev/metadata/<token>/report. |
 
 ## songranker/hosting.py
 
@@ -1343,25 +1351,33 @@ Fill-only schema-13 metadata: mocked Apple, real backup and atomic writes.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [MetadataFillTests.setUp](../tests/test_metadata_fill.py#L24) | `self` | Create isolated disposable state and register cleanup for this test. |
-| [MetadataFillTests.tracks](../tests/test_metadata_fill.py#L34) | `self` | Tracks. |
-| [MetadataFillTests.collection](../tests/test_metadata_fill.py#L41) | `self` | Collection. |
-| [MetadataFillTests.lookup](../tests/test_metadata_fill.py#L45) | `self, url` | Lookup. |
-| [MetadataFillTests.plan](../tests/test_metadata_fill.py#L50) | `self` | Plan. |
-| [MetadataFillTests.test_song_dates_are_exact_track_dates_and_dry_run_is_read_only](../tests/test_metadata_fill.py#L52) | `self` | Verify song dates are exact track dates and dry run is read only. |
-| [MetadataFillTests.test_fill_does_not_create_backups_and_only_target_fields_change](../tests/test_metadata_fill.py#L62) | `self` | Verify fill does not create backups and only target fields change. |
-| [MetadataFillTests.test_second_scan_is_noop_and_does_not_create_another_backup](../tests/test_metadata_fill.py#L82) | `self` | Verify second scan is noop and does not create another backup. |
-| [MetadataFillTests.test_known_dates_positions_and_source_facts_are_preserved](../tests/test_metadata_fill.py#L87) | `self` | Verify known dates positions and source facts are preserved. |
-| [MetadataFillTests.test_suffix_matching_both_directions_does_not_strip_editions](../tests/test_metadata_fill.py#L102) | `self` | Verify suffix matching both directions does not strip editions. |
-| [MetadataFillTests.test_artist_artwork_and_ambiguous_releases_still_require_review](../tests/test_metadata_fill.py#L109) | `self` | Verify artist artwork and ambiguous releases still require review. |
-| [MetadataFillTests.test_artist_artwork_and_ambiguous_releases_still_require_review.ambiguous](../tests/test_metadata_fill.py#L114) | `url` | Ambiguous. |
-| [MetadataFillTests.test_wrong_saved_track_identity_is_never_relinked](../tests/test_metadata_fill.py#L118) | `self` | Verify wrong saved track identity is never relinked. |
-| [MetadataFillTests.test_stale_date_or_source_change_rejects_without_backup](../tests/test_metadata_fill.py#L125) | `self` | Verify stale date or source change rejects without backup. |
-| [MetadataFillTests.test_source_write_failure_rolls_back_all_fills_without_automatic_backup](../tests/test_metadata_fill.py#L133) | `self` | Verify source write failure rolls back all fills without automatic backup. |
-| [MetadataFillTests.test_source_write_failure_rolls_back_all_fills_without_automatic_backup.failing](../tests/test_metadata_fill.py#L135) | `*args` | Failing. |
-| [MetadataFillTests.test_explicit_cleaned_and_unmarked_defaults](../tests/test_metadata_fill.py#L145) | `self` | Verify explicit cleaned and unmarked defaults. |
-| [MetadataFillTests.test_multidisc_fills_verified_disc_track_pairs_and_source](../tests/test_metadata_fill.py#L151) | `self` | Verify multidisc fills verified disc track pairs and source. |
-| [MetadataFillTests.test_completed_scan_endpoint_exposes_new_counts_and_keeps_private_plan_server_side](../tests/test_metadata_fill.py#L159) | `self` | Verify completed scan endpoint exposes new counts and keeps private plan server side. |
+| [MetadataFillTests.setUp](../tests/test_metadata_fill.py#L30) | `self` | Create isolated disposable state and register cleanup for this test. |
+| [MetadataFillTests.tracks](../tests/test_metadata_fill.py#L46) | `self` | Tracks. |
+| [MetadataFillTests.collection](../tests/test_metadata_fill.py#L75) | `self` | Collection. |
+| [MetadataFillTests.lookup](../tests/test_metadata_fill.py#L85) | `self, url` | Lookup. |
+| [MetadataFillTests.plan](../tests/test_metadata_fill.py#L98) | `self` | Plan. |
+| [MetadataFillTests.seed_saved_facts](../tests/test_metadata_fill.py#L101) | `self` | Seed complete linked observations so offline fills need no remote search. |
+| [MetadataFillTests.test_saved_dates_positions_and_previews_fill_offline_without_touching_tags](../tests/test_metadata_fill.py#L124) | `self` | Verify saved dates positions and previews fill offline without touching tags. |
+| [MetadataFillTests.test_filling_a_date_preserves_existing_origin](../tests/test_metadata_fill.py#L165) | `self` | Verify filling a date preserves existing origin. |
+| [MetadataFillTests.test_saved_identity_finds_album_date_despite_preferred_artwork](../tests/test_metadata_fill.py#L178) | `self` | Verify saved identity finds album date despite preferred artwork. |
+| [MetadataFillTests.test_blank_names_and_artwork_use_verified_identities_and_artist_images](../tests/test_metadata_fill.py#L193) | `self` | Verify blank names and artwork use verified identities and artist images. |
+| [MetadataFillTests.test_blank_names_and_artwork_use_verified_identities_and_artist_images.lookup](../tests/test_metadata_fill.py#L200) | `url` | Lookup. |
+| [MetadataFillTests.test_new_artwork_target_changes_invalidate_the_whole_plan](../tests/test_metadata_fill.py#L234) | `self` | Verify new artwork target changes invalidate the whole plan. |
+| [MetadataFillTests.test_conflicting_artwork_and_unsafe_media_are_not_proposed](../tests/test_metadata_fill.py#L248) | `self` | Verify conflicting artwork and unsafe media are not proposed. |
+| [MetadataFillTests.test_song_dates_are_exact_track_dates_and_dry_run_is_read_only](../tests/test_metadata_fill.py#L272) | `self` | Verify song dates are exact track dates and dry run is read only. |
+| [MetadataFillTests.test_fill_does_not_create_backups_and_only_target_fields_change](../tests/test_metadata_fill.py#L287) | `self` | Verify fill does not create backups and only target fields change. |
+| [MetadataFillTests.test_second_scan_is_noop_and_does_not_create_another_backup](../tests/test_metadata_fill.py#L327) | `self` | Verify second scan is noop and does not create another backup. |
+| [MetadataFillTests.test_known_dates_positions_and_source_facts_are_preserved](../tests/test_metadata_fill.py#L336) | `self` | Verify known dates positions and source facts are preserved. |
+| [MetadataFillTests.test_suffix_matching_both_directions_does_not_strip_editions](../tests/test_metadata_fill.py#L374) | `self` | Verify suffix matching both directions does not strip editions. |
+| [MetadataFillTests.test_artist_artwork_and_ambiguous_releases_still_require_review](../tests/test_metadata_fill.py#L394) | `self` | Verify artist artwork and ambiguous releases still require review. |
+| [MetadataFillTests.test_artist_artwork_and_ambiguous_releases_still_require_review.ambiguous](../tests/test_metadata_fill.py#L407) | `url` | Ambiguous. |
+| [MetadataFillTests.test_wrong_saved_track_identity_is_never_relinked](../tests/test_metadata_fill.py#L419) | `self` | Verify wrong saved track identity is never relinked. |
+| [MetadataFillTests.test_stale_date_or_source_change_rejects_without_backup](../tests/test_metadata_fill.py#L438) | `self` | Verify stale date or source change rejects without backup. |
+| [MetadataFillTests.test_source_write_failure_rolls_back_all_fills_without_automatic_backup](../tests/test_metadata_fill.py#L457) | `self` | Verify source write failure rolls back all fills without automatic backup. |
+| [MetadataFillTests.test_source_write_failure_rolls_back_all_fills_without_automatic_backup.failing](../tests/test_metadata_fill.py#L463) | `*args` | Failing. |
+| [MetadataFillTests.test_explicit_cleaned_and_unmarked_defaults](../tests/test_metadata_fill.py#L478) | `self` | Verify explicit cleaned and unmarked defaults. |
+| [MetadataFillTests.test_multidisc_fills_verified_disc_track_pairs_and_source](../tests/test_metadata_fill.py#L498) | `self` | Verify multidisc fills verified disc track pairs and source. |
+| [MetadataFillTests.test_completed_scan_endpoint_exposes_new_counts_and_keeps_private_plan_server_side](../tests/test_metadata_fill.py#L517) | `self` | Verify completed scan endpoint exposes new counts and keeps private plan server side. |
 
 ## tests/test_preferences.py
 
@@ -1745,4 +1761,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1195 Python definitions**.
+Total: **1211 Python definitions**.

@@ -466,16 +466,6 @@ body[data-page="dev"] #main .dev-guide-tabs .btn.active {
   border-bottom: 1px solid var(--line);
   text-align: left;
 }
-body[data-page="dev"] .dev-catalog-scroll {
-  max-height: 65dvh;
-  overflow: auto;
-}
-body[data-page="dev"] .dev-catalog-table thead {
-  position: sticky;
-  top: 0;
-  background: var(--panel);
-  z-index: 2;
-}
 @media (max-width: 1300px) {
   body[data-page="dev"] .dev-nav-inner {
     grid-template-columns: minmax(0, 1fr) auto;

@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.3.4 contract. Change the owning shared rule before adding a
+This is the current V5.3.5 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -141,13 +141,16 @@ tag-specific layouts stay in their existing owners. Remove superseded layout rul
 when changing a contract; do not append another version layer.
 
 Songs/artists/albums/tags use one compact table engine. IDs/artwork have narrow
-fixed columns; names/relationships receive flexible width. Centre search and
-secondary controls in two aligned, wrapping rows. Provide visible count/paging,
-in-flow field-filter and column disclosures, a bounded displayed-column checklist
-and order controls. Keep
-Clear filters separate from Reset order. Enter applies a field filter and closes
-its menu. More actions is a compact anchored button list that stays in the viewport.
-Edit remains visible; other frequent actions keep short, useful labels.
+fixed columns; names/relationships receive flexible width. Search stays beside
+Filters and Columns in the top toolbar, wrapping on phones. Filters and column
+checklists expand in flow; filter entry uses Field, Match and Value with suggestions
+from saved rows. Applied conditions appear as individually removable chips. Keep
+Clear filters separate from Reset order. Enter applies a filter and closes its
+panel. Provide row-count choices, a page input and paging above/below the table.
+Catalogue and database rows use the page's vertical scroll; wide tables retain
+horizontal scrolling. Keep Actions reachable at the right edge. Edit remains
+visible; More opens one body-level, viewport-bounded menu with keyboard navigation,
+Escape/focus restoration and dismissal on scrolling or task changes.
 
 All editors share the same form/heading/error/action skeleton. Dev mounts that
 skeleton in the inline workspace; public Stop retains its modal presentation. Group related
@@ -180,8 +183,8 @@ pages with compact status summaries and bounded workspaces. Separate
 code status from live-database status and identify cached/fresh checks. Git comparisons
 show full wrapping hashes, numbered devices/time and native whole-copy selection;
 switching copies clears typed confirmation. Opening a choice collapses the duplicate
-status detail above it. Storage compaction sits with Git actions. Tables,
-long values and backup restore reviews stay inside their own scroll areas.
+status detail above it. Storage compaction sits with Git actions. Database tables use page vertical scrolling and local horizontal overflow;
+long values and backup restore reviews retain bounded review areas.
 Vibe maintenance uses a bounded song queue beside the editor (above the queue on
 phones). Four direct map selectors expose one coordinate group at a time, retaining
 all unsaved map fields; Save remains visible below the bounded fields. Destructive
