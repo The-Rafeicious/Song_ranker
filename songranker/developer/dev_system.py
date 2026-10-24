@@ -2,6 +2,7 @@
 
 from datetime import datetime, timezone
 from io import BytesIO
+from html import escape
 from pathlib import Path
 from tempfile import TemporaryDirectory
 import os
@@ -690,6 +691,7 @@ def require_v3_backup(path):
 @app.get("/api/dev/help/<guide>")
 @admin_required
 def developer_guide(guide):
+    """Read an allowlisted guide, keeping escaped text available without Markdown."""
     filename = {"dev": "DEV_GUIDE.md", "technical": "TECHNICAL_GUIDE.md"}.get(guide)
     if not filename:
         return jsonify(message="Choose a listed guide."), 404
@@ -697,11 +699,18 @@ def developer_guide(guide):
     if not path.is_file():
         path = Path(__file__).resolve().parents[2] / "docs" / filename
     if request.args.get("format") == "html":
-        import markdown
+        source = path.read_text(encoding="utf-8")
+        try:
+            import markdown
+        except ImportError:
+            return jsonify(
+                html='<pre class="dev-guide-source">'+escape(source)+'</pre>',
+                toc="",
+                warning="Formatted rendering is unavailable because the Markdown package could not be loaded. The guide is shown as plain text.",
+                install_command="python -m pip install -r requirements.txt",
+            )
         import posixpath
         from urllib.parse import urlsplit
-
-        source = path.read_text(encoding="utf-8")
 
         def guide_link(match):
             """Resolve local Markdown references into readable guides or repository documents."""

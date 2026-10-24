@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.3.3 contract. Change the owning shared rule before adding a
+This is the current V5.3.4 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -211,3 +211,8 @@ one album card/shelf, with a disc-count caption. Disc and track fields sit toget
 in the shared song editor; bulk album moves accept an optional destination disc.
 Never expose the correct positions before the Shelves answer reveal. Preserve
 compact position badges and wrapping full accessible labels on phones.
+
+If guide formatting is unavailable, show a wrapping escaped-text article at full
+reader width and an in-flow repair notice. Do not render an empty contents column
+or leave a loading/error screen in place of the guide. Normal formatted guides
+retain the shared contents/article layout.
