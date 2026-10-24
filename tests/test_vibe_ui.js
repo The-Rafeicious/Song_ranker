@@ -19,7 +19,7 @@ async function harness(){
  w.PreviewPlayback={source:(id,url)=>'/api/previews/'+id,bind:()=>{},syncVolume:()=>{},play,
   preloadPair:async audios=>{warmCount+=audios.length},forgetPair:async audios=>{forgetCount+=audios.length;audios.forEach(a=>{a.pause();a.remove()})}};
  const maps=['pace_mood','sound_impact','connection','perspective'].map((id,i)=>({id,title:'Map '+(i+1),x_low:'Low X',x_high:'High X',y_low:'Low Y',y_high:'High Y',x_center:i===3?'Present':null}));
- const newRound=()=>({token:'token-'+(++seq),song:{id:seq,title:'Song '+seq,album:'Album',artist:'Artist',artist_links:[{name:'Artist'}],cover_url:'/art.jpg',audio_url:'https://audio-ssl.itunes.apple.com/test.m4a'},maps,map_index:0,revision:0,status:'active',saved_maps:[],draft:null,remaining_ms:null});
+ const newRound=()=>({token:'token-'+(++seq),song:{id:seq,title:'Song '+seq,album:'Album',tag_ids:seq===1?[]:[7],artist:'Artist',artist_links:[{name:'Artist'}],cover_url:'/art.jpg',audio_url:'https://audio-ssl.itunes.apple.com/test.m4a'},maps,map_index:0,revision:0,status:'active',saved_maps:[],draft:null,remaining_ms:null});
  function summary(){const spokes=Array.from({length:8},(_,i)=>({key:''+i,low:'Sad',high:'Happy',label:'Happy',radius:i/8,value:i-4}));server.summary={selection_radar:{spokes},aggregate:{radar:{spokes},completed_passes:1}};}
  const calls=[];w.fetch=async(url,options={})=>{
   const body=options.body?JSON.parse(options.body):null;calls.push({url,body});let replay=false;
@@ -55,6 +55,9 @@ async function harness(){
  const h=await harness(),{d}=h;
  check(d.querySelector('#vibe-back').disabled&&d.querySelector('#vibe-forward').disabled&&d.querySelector('#vibe-finish').disabled,'incomplete maps cannot be skipped or finished');
  check(h.stats().warmCount===1,'current preview automatically warmed once');
+ check(d.querySelector('#vibe-tag-count').textContent==='0 tags','untagged count is explicit');
+ check(d.querySelector('#vibe-tag-count').previousElementSibling.classList.contains('album'),'tag count appears directly below the album');
+ h.stats().server.song.tag_ids=[3,4];
  const audio=d.querySelector('audio');await h.click('#vibe-play');check(!audio.paused,'preview plays');
  h.setHidden(true);check(!audio.paused,'tab change keeps current clip playing');h.end();await flush();check(h.stats().playCount===1,'hidden tab never starts a loop');
  h.setHidden(false);await flush();check(h.stats().playCount===2,'return resumes requested loop');
@@ -62,6 +65,7 @@ async function harness(){
  h.failDraft();await h.place(1.2345,-2.3456);
  check(!d.querySelector('#vibe-error').hidden&&d.querySelector('#vibe-forward').disabled,'failed draft remains visible and blocks navigation');
  await h.click('#vibe-retry');
+ check(d.querySelector('#vibe-tag-count').textContent==='2 tags','latest round replies refresh the count without remounting playback');
  const drafts=h.calls.filter(c=>c.url.endsWith('/draft'));
  check(drafts[0].body.request_id===drafts[1].body.request_id,'retry uses the same idempotent draft');
  check(Math.abs(drafts[1].body.x-1.2345)<1e-12&&Math.abs(drafts[1].body.y+2.3456)<1e-12,'pointer keeps continuous precision');
@@ -89,6 +93,7 @@ async function harness(){
  check(!d.querySelector('.vibe-radar-key,#vibe-edit-results,[data-vibe-next-song]'),'results remove raw figures and duplicate action buttons');
  check(d.querySelector('#vibe-finish').textContent==='Next song →'&&!d.querySelector('#vibe-finish').disabled,'Finish becomes the enabled Next song control');
  await h.click('#vibe-finish');
+ check(d.querySelector('#vibe-tag-count').textContent==='1 tag','next song updates count with singular wording');
  check(h.stats().forgetCount===1&&h.stats().warmCount===2,'next song clears old cache before warming new preview');
  check(d.querySelector('audio')!==audio&&d.querySelector('.vibe-step').textContent.includes('Map 1'),'next song starts a fresh player and maps');
  check(h.errors.length===0,'no browser runtime errors');h.dom.window.close();

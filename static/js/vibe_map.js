@@ -74,8 +74,13 @@
     $("#vibe-reload").hidden = !round;
     controls();
   }
+  const tagCountLabel = (song) => Array.isArray(song.tag_ids)
+    ? `${song.tag_ids.length} ${song.tag_ids.length === 1 ? "tag" : "tags"}`
+    : "Tags unavailable";
   function useRound(next) {
     round = next;
+    const tags = $("#vibe-tag-count");
+    if (tags) tags.textContent = tagCountLabel(next.song);
     deadline = next.draft ? performance.now() + next.remaining_ms : 0;
     advanceBody = null;
   }
@@ -136,7 +141,7 @@
   }
   function mountSong() {
     const song = round.song;
-    card.innerHTML = `<button class="vibe-cover" id="vibe-play" type="button" data-audio="vibe-audio" aria-label="Play ${esc(song.title)}" aria-pressed="false" ${song.audio_url ? "" : "disabled"}>${image(song)}<span class="play-overlay" aria-hidden="true">▶</span></button><div class="vibe-song-copy"><h2><a href="/song/${song.id}" title="${esc(song.title)}">${esc(song.title)}</a></h2><div class="vibe-identity"><div>${(song.artist_links || []).map((a) => `<a class="artist" href="/artist/${encodeURIComponent(a.name)}">${esc(a.name)}</a>`).join(", ") || `<span class="artist">${esc(song.artist || "Unknown artist")}</span>`}</div>${song.album ? `<a class="album" href="/album/${encodeURIComponent(song.album)}">${esc(song.album)}</a>` : ""}</div><small id="vibe-audio-status" class="muted">${song.audio_url ? "" : "No preview available"}</small></div><div class="vibe-controls"><button class="btn" id="vibe-back" type="button" aria-label="Previous map">←</button><button class="btn vibe-primary" id="vibe-finish" type="button" disabled>Finish</button><button class="btn" id="vibe-forward" type="button" aria-label="Next map">→</button></div><div class="vibe-save-state" id="vibe-save-state"><p id="vibe-save-status" role="status" aria-live="polite"></p><div class="vibe-progress" aria-hidden="true"><span id="vibe-progress-fill"></span></div></div>`;
+    card.innerHTML = `<button class="vibe-cover" id="vibe-play" type="button" data-audio="vibe-audio" aria-label="Play ${esc(song.title)}" aria-pressed="false" ${song.audio_url ? "" : "disabled"}>${image(song)}<span class="play-overlay" aria-hidden="true">▶</span></button><div class="vibe-song-copy"><h2><a href="/song/${song.id}" title="${esc(song.title)}">${esc(song.title)}</a></h2><div class="vibe-identity"><div>${(song.artist_links || []).map((a) => `<a class="artist" href="/artist/${encodeURIComponent(a.name)}">${esc(a.name)}</a>`).join(", ") || `<span class="artist">${esc(song.artist || "Unknown artist")}</span>`}</div>${song.album ? `<a class="album" href="/album/${encodeURIComponent(song.album)}">${esc(song.album)}</a>` : ""}<span id="vibe-tag-count" class="tag">${esc(tagCountLabel(song))}</span></div><small id="vibe-audio-status" class="muted">${song.audio_url ? "" : "No preview available"}</small></div><div class="vibe-controls"><button class="btn" id="vibe-back" type="button" aria-label="Previous map">←</button><button class="btn vibe-primary" id="vibe-finish" type="button" disabled>Finish</button><button class="btn" id="vibe-forward" type="button" aria-label="Next map">→</button></div><div class="vibe-save-state" id="vibe-save-state"><p id="vibe-save-status" role="status" aria-live="polite"></p><div class="vibe-progress" aria-hidden="true"><span id="vibe-progress-fill"></span></div></div>`;
     // Mark bound so the generic page listener does not attach a second loop owner.
     audio = document.createElement("audio");
     audio.id = "vibe-audio";

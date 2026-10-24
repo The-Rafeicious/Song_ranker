@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.3.6 · competition generation 3 · schema 21**
+**Application V5.3.6.1 · competition generation 3 · schema 21**
 
-Current implementation reference. `APP_VERSION` is `5.3.6`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.3.6.1`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -225,8 +225,8 @@ ratings for absent saved snapshots.
 V5.1.0 integrates the mode; its internal release is Vibe-Map-v1.1, schema 19,
 definition generation 2. The four maps are Pace & mood (Slow/Upbeat, Sad/Happy),
 Sound & impact (Acoustic/Electronic, Soft/Powerful), Connection
-(Fractured → Secure, Distant / hostile → Devoted), and Perspective
-(Past/Future, Regretful/Hopeful; Present at X centre). Distant / hostile is a display-only
+(Fractured → Secure, Detached → Devoted), and Perspective
+(Past/Future, Regretful/Hopeful; Present at X centre). Detached is a display-only
 rename of canonical stored Casual. Every song has four linked slots.
 
 Play coordinates are continuous −5…+5; storage/comparison readers use −1…+1.

@@ -105,3 +105,12 @@ See [consolidation review](../docs/CONSOLIDATION.md),
   can express closeness, indifference or hatred independently of Fractured/Secure.
 - Text only: saved coordinates, canonical definitions, averaging and comparisons
   stay unchanged. Application 5.3.6; schema 21 and Vibe definition version unchanged.
+
+
+## V5.3.6.1 — Connection label and play-card tags
+
+- Shorten the Connection endpoint to Detached, opposite Devoted, retaining saved
+  coordinates and canonical definitions.
+- Show assigned tag counts below the album on the Vibe Map song card, including
+  zero and singular counts. Refresh from existing round replies without interrupting
+  preview playback. Application 5.3.6.1; no schema or tag-data changes.
