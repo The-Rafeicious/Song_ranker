@@ -101,7 +101,7 @@ class VibeEntityTests(unittest.TestCase):
         self.place(2)
         self.assertTrue(client.get('/api/vibe-map/entity/album/1').json['profile_ready'])
 
-    def test_budding_is_a_read_only_display_label_not_a_stored_definition_change(self):
+    def test_connection_label_is_read_only_without_changing_saved_positions(self):
         from songranker.vibe_maps import map_definitions
         from songranker.storage.vibe_state import validate_schema
         from songranker.modes.vibe_map import common_patterns
@@ -109,9 +109,9 @@ class VibeEntityTests(unittest.TestCase):
         before=capture(self.conn)
         validate_schema(self.conn)
         self.assertEqual(self.conn.execute("SELECT y_low FROM vibe_maps WHERE id='connection'").fetchone()[0],'Casual')
-        self.assertEqual(next(m for m in map_definitions(self.conn) if m['id']=='connection')['y_low'],'Budding')
+        self.assertEqual(next(m for m in map_definitions(self.conn) if m['id']=='connection')['y_low'],'Distant / hostile')
         saved=vibe_map.profile(self.conn,1)
-        self.assertEqual(next(s for s in saved['radar']['spokes'] if s['key']=='connection_y')['low'],'Budding')
+        self.assertEqual(next(s for s in saved['radar']['spokes'] if s['key']=='connection_y')['low'],'Distant / hostile')
         balances,_=common_patterns({1:{'connection':(-.6,-.6)}})
-        self.assertEqual(next(b for b in balances if b['id']=='connection_y')['low'],'Budding')
+        self.assertEqual(next(b for b in balances if b['id']=='connection_y')['low'],'Distant / hostile')
         self.assertEqual(capture(self.conn),before)

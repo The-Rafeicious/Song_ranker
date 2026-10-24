@@ -96,3 +96,12 @@ See [consolidation review](../docs/CONSOLIDATION.md),
 - The latest tracked backup has 228 missing song dates (227 available in saved sources), 12 missing album dates and one missing local Single position. It has no missing names, artwork or previews. Empty/ambiguous releases still require review. No live database or backup is changed by this release.
 - Dev catalogue tables have stable Search/Filters/Columns controls, field/match/value entry with saved-value suggestions, removable filter chips, row-count choices and page jumps. The page owns vertical scrolling, including database inspection; wide tables retain horizontal scrolling. Actions stay reachable; More menus escape table clipping, fit the viewport and support keyboard navigation.
 - Application version 5.3.5; schema remains 21. No migration or tag changes.
+
+
+## V5.3.6 — Connection wording
+
+- Connection's low attachment label is now Distant / hostile, opposite Devoted.
+  Budding or young love belongs nearer Devoted at a lower intensity; breakup songs
+  can express closeness, indifference or hatred independently of Fractured/Secure.
+- Text only: saved coordinates, canonical definitions, averaging and comparisons
+  stay unchanged. Application 5.3.6; schema 21 and Vibe definition version unchanged.

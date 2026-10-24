@@ -1559,7 +1559,7 @@ Regression fixtures and assertions for vibe entities.
 | [VibeEntityTests.test_gets_are_read_only_no_store_and_validate_entity_identity](../tests/test_vibe_entities.py#L67) | `self` | Verify gets are read only no store and validate entity identity. |
 | [VibeEntityTests.test_profile_assets_are_versioned_for_all_four_pages_and_titles_are_escaped](../tests/test_vibe_entities.py#L79) | `self` | Verify profile assets are versioned for all four pages and titles are escaped. |
 | [VibeEntityTests.test_profile_visibility_thresholds_and_song_header_context](../tests/test_vibe_entities.py#L92) | `self` | Verify profile visibility thresholds and song header context. |
-| [VibeEntityTests.test_budding_is_a_read_only_display_label_not_a_stored_definition_change](../tests/test_vibe_entities.py#L104) | `self` | Verify budding is a read only display label not a stored definition change. |
+| [VibeEntityTests.test_connection_label_is_read_only_without_changing_saved_positions](../tests/test_vibe_entities.py#L104) | `self` | Verify connection label is read only without changing saved positions. |
 
 ## tests/test_vibe_library.py
 
