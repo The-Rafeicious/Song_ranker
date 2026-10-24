@@ -1,6 +1,7 @@
 :root {
   color-scheme: dark;
   --bg: #101010;
+  --page-color: var(--song);
   --line: #363636;
   --text: #f5f5f5;
   --muted: #aaa;
@@ -20,14 +21,17 @@
   --vibe: #ed6573;
 }
 /* Mode/entity palette and page-tone variables are defined here once. */
+:root:has(body[data-tone="guesser"]),
 body[data-tone="guesser"] {
   --page-color: var(--guesser);
   --page-rgb: 237, 120, 99;
 }
+:root:has(body[data-tone="shelves"]),
 body[data-tone="shelves"] {
   --page-color: var(--shelves);
   --page-rgb: 89, 40, 98;
 }
+:root:has(body[data-tone="overall"]),
 body[data-tone="overall"] {
   --page-color: var(--overall);
   --page-rgb: 245, 234, 216;
@@ -624,8 +628,6 @@ p {
   gap: 24px;
   overflow-x: auto;
   padding: 5px 3px 20px;
-  scrollbar-width: thin;
-  scrollbar-color: #444 transparent;
 }
 .shelf-card {
   flex: 0 0 278px;
@@ -4228,30 +4230,37 @@ body {
   --page-rgb: 29, 185, 84;
   isolation: isolate;
 }
+:root:has(body[data-tone="artist"]),
 body[data-tone="artist"] {
   --page-color: var(--artist);
   --page-rgb: 91, 155, 255;
 }
+:root:has(body[data-tone="album"]),
 body[data-tone="album"] {
   --page-color: var(--album);
   --page-rgb: 191, 119, 255;
 }
+:root:has(body[data-tone="tag"]),
 body[data-tone="tag"] {
   --page-color: var(--tag);
   --page-rgb: 255, 184, 51;
 }
+:root:has(body[data-tone="standard"]),
 body[data-tone="standard"] {
   --page-color: var(--standard);
   --page-rgb: 240, 163, 91;
 }
+:root:has(body[data-tone="blind"]),
 body[data-tone="blind"] {
   --page-color: var(--blind);
   --page-rgb: 85, 214, 194;
 }
+:root:has(body[data-tone="recognition"]),
 body[data-tone="recognition"] {
   --page-color: var(--recognition);
   --page-rgb: 242, 211, 79;
 }
+:root:has(body[data-tone="tournament"]),
 body[data-tone="tournament"] {
   --page-color: var(--tournament);
   --page-rgb: 255, 120, 166;
@@ -5450,7 +5459,6 @@ a.blind:hover {
   max-height: none;
   overflow-y: hidden;
   padding: 5px 3px 20px;
-  scrollbar-color: color-mix(in srgb, currentColor 45%, transparent) transparent;
   overscroll-behavior-x: contain;
 }
 .shelf-card.recognition {
@@ -6157,7 +6165,7 @@ body[data-tone="shelves"] .btn.primary:hover {
 .shelf-section .scroller {
   padding: 12px 8px 27px;
   gap: 25px;
-  scrollbar-color: rgba(var(--shelf-rgb), 0.45) transparent;
+  --scrollbar-accent: var(--shelf-accent);
   background: radial-gradient(
     ellipse at 50% 80%,
     rgba(var(--shelf-rgb), 0.065),

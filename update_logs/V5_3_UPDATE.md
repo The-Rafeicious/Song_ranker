@@ -114,3 +114,14 @@ See [consolidation review](../docs/CONSOLIDATION.md),
 - Show assigned tag counts below the album on the Vibe Map song card, including
   zero and singular counts. Refresh from existing round replies without interrupting
   preview playback. Application 5.3.6.1; no schema or tag-data changes.
+
+
+## V5.3.6.2 — Shared scrollbars
+
+- Style viewport and inner scrollbars with dark tracks, rounded 12 px rails and
+  the current page's semantic accent. Hover/drag states are clearer; horizontal
+  record shelves retain their own entity/mode colour.
+- Standard-colour fallback supports browsers without scrollbar pseudo-elements.
+  Forced-colour mode keeps native controls; scrolling and OS overlay behaviour
+  stay native. Consolidate older shelf-only scrollbar declarations.
+- Application 5.3.6.2; no data, schema or gameplay changes.
