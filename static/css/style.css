@@ -6447,6 +6447,19 @@ body[data-tone="shelves"] .btn.primary:hover {
   background: color-mix(in srgb, var(--shelf-error-deep) calc(var(--shelf-error-depth) * 100%), var(--shelf-error-light));
   box-shadow: 0 0 22px color-mix(in srgb, var(--shelf-error-colour) 22%, transparent);
 }
+/* Keep semantic copy readable over the stronger error washes. */
+.shelf-track.answer-wrong .shelf-track-title > a.song {
+  color: color-mix(in srgb, var(--song) 50%, var(--text));
+}
+.shelf-track.answer-wrong .shelf-revealed-answer > span {
+  color: var(--text);
+}
+.shelf-track.answer-wrong .shelf-revealed-answer > b {
+  color: color-mix(in srgb, var(--shelves) 50%, var(--text));
+}
+.shelf-track.answer-wrong .shelf-revealed-answer > .answer-wrong {
+  color: color-mix(in srgb, var(--danger) 40%, var(--text));
+}
 .shelf-revealed-answer .answer-correct {
   color: var(--song);
 }
