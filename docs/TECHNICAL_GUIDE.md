@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.3.7.1 · competition generation 3 · schema 21**
+**Application V5.3.7.2 · competition generation 3 · schema 21**
 
-Current implementation reference. `APP_VERSION` is `5.3.7.1`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.3.7.2`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -792,3 +792,22 @@ text, correction labels, counts and points. No grading or placement logic change
 A completed reveal with positive available points and a points/available difference
 under 1e-8 shows one Perfect shelves badge, matching the report's perfect tolerance.
 It has one brief glow, respects reduced motion, and clears with the next round.
+
+
+### Voting report cohort and presentation (V5.3.7.2)
+
+`build_voting_stats` reconstructs tested current songs from valid, active saved
+Non-blind/Blind matches, including eligible tournament first rounds. The Elo
+distribution's median, extrema, standard deviation, mean, starting-rating balance
+and every band use only tested songs with finite Elo. Starting/manual ratings and
+stale `matches_played` counters alone never qualify a song. Excluded unplayed
+tracks and tested tracks with unavailable ratings are separate counts; empty
+cohorts show unavailable summaries and no invented percentages.
+
+Coverage adds effective-appearance depth (<2, 2 to <5, 5+) and the tested-track
+mean. These remain read-only projections in the existing snapshot. Activity keeps
+one seven-day presentation in the shared fourteen-day pulse and a distinct
+thirty-day summary. Tournament preview rows are removed in favour of the existing
+filtered history, and the Daily figures disclosure remains as exact chart evidence.
+The existing report owner supplies mode/entity colours without changing grading,
+Elo calculation, source weights or public routes.

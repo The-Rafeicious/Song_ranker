@@ -155,3 +155,15 @@ See [consolidation review](../docs/CONSOLIDATION.md),
 - After the full reveal, a perfect round gets a small Perfect shelves badge with
   a single soft glow. Reduced-motion mode stays still; no confetti or extra audio.
 - Application 5.3.7.1; scoring, results and playback are unchanged.
+
+
+## V5.3.7.2 — Voting Stats clarity and tested-only Elo
+
+- Exclude songs without saved matches from every Elo distribution summary and bin,
+  including unplayed tracks with manual ratings or stale counters. Separate missing
+  ratings from excluded unplayed songs and handle empty cohorts explicitly.
+- Keep the report's section order; correct Blind, tournament and entity colours,
+  quiet captions and add compact evidence-depth and rated-track balance summaries.
+- Remove repeated weekly activity cards and the duplicate tournament match dropdown.
+  The shared daily figures and filtered/paged history remain available.
+- Application 5.3.7.2. Stored ratings, votes, scoring and schema are unchanged.

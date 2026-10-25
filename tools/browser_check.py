@@ -248,6 +248,20 @@ def run_vibe():
                 clip.writeframes(bytes(30 * 8000 * 2))
             return Response(buf.getvalue(), mimetype="audio/wav")
 
+        @application.app.post("/voting-test-enable")
+        def enable_voting_report():
+            """Seed tested/unplayed Elo cohorts only in the disposable browser fixture."""
+            from songranker.modes.preferences import get_offer, save_vote
+            with sqlite3.connect(os.environ["SONG_RANKER_DB"]) as conn:
+                conn.row_factory = sqlite3.Row
+                for index in range(8):
+                    pair = (1, 2) if index < 7 else (3, 4)
+                    mode = "blind" if index in (1, 3, 5) else "standard"
+                    offer = get_offer(conn, "voting-fixture", mode, lambda: tuple(conn.execute(services.SONG_SELECT + " WHERE s.id=?", (sid,)).fetchone() for sid in pair))
+                    save_vote(conn, "voting-fixture", dict(token=offer["token"], winner_id=pair[0], loser_id=pair[1], mode=mode, rules_version=offer["rules_version"]))
+                conn.execute("UPDATE songs SET elo_score=9000,matches_played=40 WHERE id=7")
+                return {"rated": 4, "excluded": 3}
+
         @application.app.post("/shelves-test-enable")
         def enable_discs():
             """Seed repeated track numbers across discs only in this disposable fixture."""
