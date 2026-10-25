@@ -598,7 +598,7 @@ window.SpecialModes = (() => {
       };
 
       $("#shelf-content").innerHTML =
-        `<div class="shelf-actions"><button class="btn primary" data-shelf-check>Check shelves</button><button class="btn primary shelf-next" data-shelf-next hidden>Next round →</button><div id="shelf-order-score" class="shelf-order-score" hidden role="status"></div><span id="shelf-reveal-progress" class="shelf-reveal-progress" role="status"></span><small id="reveal-audio-note"></small></div><div class="shelf-audio-bar panel dashboard-surface"><span class="shelf-preview-duration">10-second samples</span><button class="btn primary" data-shelf-play aria-pressed="false" ${shelf.songs.some((s) => s.audio_url) ? "" : "disabled"}>▶ Play previews</button><span id="shelf-preview-info" role="status">${shelf.songs.filter((s) => s.audio_url).length} / 10 previews</span><audio id="shelf-preview-audio" preload="none"></audio></div><div id="shelf-board"></div>`;
+        `<div class="shelf-actions"><button class="btn primary" data-shelf-check>Check shelves</button><button class="btn primary shelf-next" data-shelf-next hidden>Next round →</button><div id="shelf-order-score" class="shelf-order-score" hidden role="status"></div><span id="shelf-reveal-progress" class="shelf-reveal-progress" role="status"></span><div id="shelf-perfect" class="shelf-perfect" role="status" hidden><span aria-hidden="true">✦</span><div><strong>Perfect shelves</strong><small>All albums and track orders correct</small></div></div><small id="reveal-audio-note"></small></div><div class="shelf-audio-bar panel dashboard-surface"><span class="shelf-preview-duration">10-second samples</span><button class="btn primary" data-shelf-play aria-pressed="false" ${shelf.songs.some((s) => s.audio_url) ? "" : "disabled"}>▶ Play previews</button><span id="shelf-preview-info" role="status">${shelf.songs.filter((s) => s.audio_url).length} / 10 previews</span><audio id="shelf-preview-audio" preload="none"></audio></div><div id="shelf-board"></div>`;
       renderShelfBoard();
       bindShelfAudio();
     } catch (error) {
@@ -643,6 +643,9 @@ window.SpecialModes = (() => {
         answer.album_correct &&
         (!answer.order_pairs || answer.order_right === answer.order_pairs),
       truth = shelf.result?.answers.find((a) => a.slot === slot);
+    const errorDepth = revealed && !full
+      ? (!answer.album_correct || !answer.order_pairs ? 1 : Math.max(0, Math.min(1, 1 - answer.order_right / answer.order_pairs)))
+      : 0;
     const truthPosition = truth ? window.SongRankerUI.trackPosition(truth, true) : "";
     const status = full
       ? "✓ Correct"
@@ -670,7 +673,7 @@ window.SpecialModes = (() => {
     const feedback = revealed
       ? `<div class="shelf-revealed-answer"><strong class="${full ? "answer-correct" : "answer-wrong"}">${status}</strong><span>${answer.order_pairs ? `${answer.order_right} / ${answer.order_pairs} order comparisons` : "No order comparisons"}</span><b class="shelves">${num(answer.points)} / ${answer.available} points</b></div>`
       : "";
-    return `<div class="shelf-track ${shelf.answered ? "reveal-track" : ""} ${revealed ? (full ? "answer-correct" : "answer-wrong") : "reveal-pending"}" data-shelf-slot="${slot}" ${revealed ? `data-correct-track="${truth.track_number}"` : ""} tabindex="0" draggable="${!shelf.answered}"><div class="shelf-track-title"><span class="shelf-position ${corrected ? "shelf-position-corrected" : ""}" aria-label="${esc(positionLabel)}">${position}</span>${revealed ? `<a class="song" title="${esc(song.title)}" href="/song/${song.id}">${esc(song.title)}</a>` : `<b class="song" title="${esc(song.title)}">${esc(song.title)}</b>`}<button class="preview-track" data-shelf-preview="${slot}" aria-label="Play ${esc(song.title)}" ${song.audio_url && (!shelf.answered || shelf.revealComplete) ? "" : "disabled"}>▶</button></div>${feedback}${shelf.answered ? "" : `<div class="shelf-track-controls">${shelfPicker(song, where)}${where === "pool" ? "" : `<button class="shelf-arrow" data-shelf-shift="${slot}" data-direction="-1" aria-label="Move ${esc(song.title)} up" ${index === 0 ? "disabled" : ""}>↑</button><button class="shelf-arrow" data-shelf-shift="${slot}" data-direction="1" aria-label="Move ${esc(song.title)} down" ${index === length - 1 ? "disabled" : ""}>↓</button>`}</div>`}</div>`;
+    return `<div class="shelf-track ${shelf.answered ? "reveal-track" : ""} ${revealed ? (full ? "answer-correct" : "answer-wrong") : "reveal-pending"}" data-shelf-slot="${slot}" ${revealed && !full ? `style="--shelf-error-depth:${errorDepth.toFixed(4)}"` : ""} ${revealed ? `data-correct-track="${truth.track_number}"` : ""} tabindex="0" draggable="${!shelf.answered}"><div class="shelf-track-title"><span class="shelf-position ${corrected ? "shelf-position-corrected" : ""}" aria-label="${esc(positionLabel)}">${position}</span>${revealed ? `<a class="song" title="${esc(song.title)}" href="/song/${song.id}">${esc(song.title)}</a>` : `<b class="song" title="${esc(song.title)}">${esc(song.title)}</b>`}<button class="preview-track" data-shelf-preview="${slot}" aria-label="Play ${esc(song.title)}" ${song.audio_url && (!shelf.answered || shelf.revealComplete) ? "" : "disabled"}>▶</button></div>${feedback}${shelf.answered ? "" : `<div class="shelf-track-controls">${shelfPicker(song, where)}${where === "pool" ? "" : `<button class="shelf-arrow" data-shelf-shift="${slot}" data-direction="-1" aria-label="Move ${esc(song.title)} up" ${index === 0 ? "disabled" : ""}>↑</button><button class="shelf-arrow" data-shelf-shift="${slot}" data-direction="1" aria-label="Move ${esc(song.title)} down" ${index === length - 1 ? "disabled" : ""}>↓</button>`}</div>`}</div>`;
   }
   function shelfAlbumScore(album) {
     const answers = shelf.result.answers.filter(
@@ -848,6 +851,8 @@ window.SpecialModes = (() => {
     order.innerHTML = `<small>Track order</small><strong>${pct(current.result.order_right, current.result.order_pairs)}</strong>`;
     order.hidden = false;
     $(".shelf-actions").classList.add("shelf-results-ready");
+    const perfect = $("#shelf-perfect");
+    perfect.hidden = !(current.result.available > 0 && Math.abs(current.result.points - current.result.available) < 1e-8);
     $("#shelf-reveal-progress").textContent =
       `${answers.length} / ${answers.length} tracks revealed`;
     $("[data-shelf-next]").hidden = false;

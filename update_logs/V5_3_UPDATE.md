@@ -145,3 +145,13 @@ See [consolidation review](../docs/CONSOLIDATION.md),
 - Verify the existing preview gate (18/minute, 0.5-second spacing), full-round cache
   capacity/expiry and cached range/replay behavior. Normal rotation needs about
   six new clips/minute. No request limits, schema, scoring or saved results change.
+
+
+## V5.3.7.1 — Clearer Shelves reveal feedback
+
+- Near order misses use lighter red; increasingly wrong order comparisons use
+  deeper red. Wrong-album cards use maximum depth; fully correct tracks stay green.
+  Keep the existing correction text, comparison counts and points.
+- After the full reveal, a perfect round gets a small Perfect shelves badge with
+  a single soft glow. Reduced-motion mode stays still; no confetti or extra audio.
+- Application 5.3.7.1; scoring, results and playback are unchanged.

@@ -6438,9 +6438,27 @@ body[data-tone="shelves"] .btn.primary:hover {
   box-shadow: 0 0 24px #1db95433;
 }
 .shelf-track.answer-wrong {
-  border: 2px solid var(--danger);
-  background: linear-gradient(130deg, #ff66751e, #2b2326);
-  box-shadow: 0 0 26px #ff66753a;
+  /* Fraction of failed order comparisons: light pink through deep red. */
+  --shelf-error-depth: 1;
+  --shelf-error-colour: color-mix(in srgb, var(--danger) calc(100% - var(--shelf-error-depth) * 45%), var(--bg));
+  border: 2px solid var(--shelf-error-colour);
+  --shelf-error-light: color-mix(in srgb, var(--danger) 45%, var(--panel));
+  --shelf-error-deep: color-mix(in srgb, var(--danger) 25%, var(--bg));
+  background: color-mix(in srgb, var(--shelf-error-deep) calc(var(--shelf-error-depth) * 100%), var(--shelf-error-light));
+  box-shadow: 0 0 22px color-mix(in srgb, var(--shelf-error-colour) 22%, transparent);
+}
+/* Keep semantic copy readable over the stronger error washes. */
+.shelf-track.answer-wrong .shelf-track-title > a.song {
+  color: color-mix(in srgb, var(--song) 50%, var(--text));
+}
+.shelf-track.answer-wrong .shelf-revealed-answer > span {
+  color: var(--text);
+}
+.shelf-track.answer-wrong .shelf-revealed-answer > b {
+  color: color-mix(in srgb, var(--shelves) 50%, var(--text));
+}
+.shelf-track.answer-wrong .shelf-revealed-answer > .answer-wrong {
+  color: color-mix(in srgb, var(--danger) 40%, var(--text));
 }
 .shelf-revealed-answer .answer-correct {
   color: var(--song);
@@ -6912,6 +6930,29 @@ body[data-tone="shelves"] .btn.primary:hover {
 }
 .shelf-results-ready > #reveal-audio-note {
   grid-column: 1/-1;
+}
+.shelf-perfect {
+  grid-column: 1/-1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border: 1px solid var(--song);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--song) 10%, var(--panel));
+  text-align: left;
+  animation: shelfPerfect 1.4s ease-out 1;
+}
+.shelf-perfect > span {color: var(--song); font-size: 28px;}
+.shelf-perfect strong {display: block; color: var(--song); font-size: 18px;}
+.shelf-perfect small {display: block; color: var(--muted); font-size: 14px;}
+@keyframes shelfPerfect {
+  0%, 100% {box-shadow: 0 0 0 transparent;}
+  40% {box-shadow: 0 0 26px color-mix(in srgb, var(--song) 35%, transparent);}
+}
+@media (prefers-reduced-motion: reduce) {
+  .shelf-perfect {animation: none;}
 }
 .shelf-order-score {
   display: grid;
