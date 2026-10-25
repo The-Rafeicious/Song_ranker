@@ -1,6 +1,6 @@
 # Developer guide
 
-**V5.3.6.3 · Dev workspace**
+**V5.3.7 · Dev workspace**
 
 Open **System Access** on the hosting computer and enter the Dev PIN. Use **Home**,
 **Library**, **Mode edits**, and **Tools & systems** to move between tasks. Each
@@ -273,3 +273,9 @@ unavailable, both in-app guides remain readable as escaped, wrapping plain text
 and show the repair command. From the project folder, using the same Python
 interpreter that runs Song Ranker, run `python -m pip install -r requirements.txt`,
 then restart the app. Plain-text downloads remain available as well.
+
+Album Shelves previews load on play, with no future-track preload. Selecting a
+track restarts the ten-second sample rotation from that track. Seeking and
+buffering respect the remaining sample time. Normal rotation uses about six new
+clips/minute, below the existing shared 18/minute limit; rapid skips may still
+reach it. Completed previews reuse the ten-track, ten-minute memory cache.

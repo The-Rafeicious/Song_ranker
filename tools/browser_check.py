@@ -255,6 +255,7 @@ def run_vibe():
                 for sid, album, track in [(8,1,1),(9,1,2),(10,2,1),(11,2,2)]:
                     conn.execute("INSERT INTO songs(id,title,album_id,disc_number,track_number) VALUES(?,?,?,2,?)", (sid,"Disc two song "+str(sid),album,track))
                     conn.execute("INSERT INTO song_artists VALUES(?,1)", (sid,))
+                conn.execute("UPDATE songs SET audio_url='/tag-test-audio.wav?shelf=' || id WHERE album_id IN (1,2)")
                 conn.row_factory = sqlite3.Row
                 songs = [dict(row) for row in conn.execute("SELECT id,album_id,disc_number,track_number FROM songs WHERE album_id IN (1,2)")]
             return {"songs": songs}
