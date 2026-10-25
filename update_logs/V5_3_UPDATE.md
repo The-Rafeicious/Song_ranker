@@ -125,3 +125,9 @@ See [consolidation review](../docs/CONSOLIDATION.md),
   Forced-colour mode keeps native controls; scrolling and OS overlay behaviour
   stay native. Consolidate older shelf-only scrollbar declarations.
 - Application 5.3.6.2; no data, schema or gameplay changes.
+
+
+## V5.3.6.3 — Quieter Album Shelves board
+
+- Remove the redundant disc/track ordering instruction above the Album Shelves
+  board. Gameplay and ordering rules remain unchanged. Application 5.3.6.3.
