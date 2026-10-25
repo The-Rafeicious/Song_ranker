@@ -128,8 +128,8 @@ window.SpecialModes = (() => {
               : "Preview unavailable";
       });
   }
-  // One buffered answer ahead; playback starts only when its card is revealed.
-  const shelfClips = { current: null, next: null, outgoing: new Set() };
+  // Answer media starts only when its card is revealed; never load ahead.
+  const shelfClips = { current: null, outgoing: new Set() };
   function discardClip(audio) {
     if (!audio) return;
     if (window.PreviewPlayback) window.PreviewPlayback.release(audio);
@@ -142,16 +142,14 @@ window.SpecialModes = (() => {
   }
   function cancelShelfClips() {
     discardClip(shelfClips.current);
-    discardClip(shelfClips.next);
     shelfClips.outgoing.forEach(discardClip);
     shelfClips.current = null;
-    shelfClips.next = null;
     shelfClips.outgoing.clear();
   }
-  function answerAudio(song, buffered = false) {
+  function answerAudio(song) {
     const audio = document.createElement("audio");
-    audio.id = buffered ? "shelf-buffered-snippet" : "answer-snippet";
-    audio.preload = buffered ? "auto" : "none";
+    audio.id = "answer-snippet";
+    audio.preload = "none";
     audio.dataset.song = String(song.id);
     audio.volume = 0;
     audio.src =
@@ -170,17 +168,11 @@ window.SpecialModes = (() => {
       else discardClip(previous);
     }
   }
-  async function shelfAnswerAudio(song, nextSong, generation) {
+  async function shelfAnswerAudio(song, generation) {
     if (generation !== reveal.generation || reveal.closed) return;
     if (!song?.audio_url || window.PreviewPlayback?.blocked()) return;
     const previous = shelfClips.current;
-    let audio =
-      shelfClips.next?.dataset.song === String(song.id)
-        ? shelfClips.next
-        : answerAudio(song);
-    if (shelfClips.next && shelfClips.next !== audio)
-      discardClip(shelfClips.next);
-    shelfClips.next = null;
+    const audio = answerAudio(song);
     if (previous) {
       previous.id = "outgoing-snippet";
       shelfClips.outgoing.add(previous);
@@ -221,19 +213,6 @@ window.SpecialModes = (() => {
           { once: true },
         );
       }
-      if (nextSong?.audio_url)
-        revealDelay(650, generation).then((active) => {
-          if (
-            !active ||
-            shelfClips.current !== audio ||
-            window.PreviewPlayback?.blocked()
-          )
-            return;
-          const buffered = answerAudio(nextSong, true);
-          shelfClips.next = buffered;
-          window.PreviewPlayback?.prime(buffered);
-          if (!window.PreviewPlayback) buffered.load();
-        });
     } catch (error) {
       window.PreviewPlayback?.abandon(audio);
       discardClip(audio);
@@ -454,13 +433,13 @@ window.SpecialModes = (() => {
     }
   }
 
-  let shelfPrimeTimer = null;
+  let shelfPlayback = null;
   function stopShelf(keepAudio = false) {
     previewGeneration++;
     loopRequested = false;
     playingSlot = null;
     clearTimeout(previewTimer);
-    clearTimeout(shelfPrimeTimer);
+    shelfPlayback = null;
     const a = $("#shelf-preview-audio");
     if (a && !keepAudio) {
       if (window.PreviewPlayback) window.PreviewPlayback.cancel(a);
@@ -487,103 +466,89 @@ window.SpecialModes = (() => {
       button.setAttribute("aria-pressed", String(loopRequested));
     }
   }
+  function currentShelfPlayback(state) {
+    return !!state && shelfPlayback === state && state.generation === previewGeneration &&
+      state.audio === $("#shelf-preview-audio") && loopRequested && !state.advanced;
+  }
+  function scheduleShelf(state) {
+    clearTimeout(previewTimer);
+    if (!currentShelfPlayback(state) || !state.ready || state.audio.paused || state.audio.seeking) return;
+    const remaining = 10 - state.audio.currentTime;
+    if (remaining <= 0) { advanceShelf(state); return; }
+    previewTimer = setTimeout(() => {
+      if (!currentShelfPlayback(state)) return;
+      // A stalled or sought clip must earn its remaining media time, not wall time.
+      if (state.audio.currentTime >= 10) advanceShelf(state);
+      else scheduleShelf(state);
+    }, Math.max(100, remaining * 1000));
+  }
   async function playShelf(slot) {
     if (!shelf) return;
     const available = shelf.songs.filter((s) => s.audio_url);
     if (!available.length) return;
-    const s = available.find((s) => s.slot === slot) || available[0],
-      generation = ++previewGeneration;
-    let a = $("#shelf-preview-audio");
-    if (!a) return;
-    clearTimeout(previewTimer);
-    clearTimeout(shelfPrimeTimer);
-    selectedSlot = s.slot;
+    const song = available.find((s) => s.slot === slot) || available[0];
+    // Shelves owns one player. A manual jump also stops pending/fading old clips.
+    stopShelf();
+    let audio = $("#shelf-preview-audio");
+    if (!audio) return;
+    selectedSlot = song.slot;
+    playingSlot = song.slot;
     loopRequested = true;
-    const url =
-        window.PreviewPlayback?.source(s.id, s.audio_url) || s.audio_url,
-      old = a;
-    if (window.PreviewPlayback) a = window.PreviewPlayback.replace(a, url);
-    else {
-      a.pause();
-      a.src = url;
-      a.currentTime = 0;
-    }
-    a.dataset.songId = s.id;
-    if (a !== old) delete a.dataset.shelfBound;
+    const url = window.PreviewPlayback?.source(song.id, song.audio_url) || song.audio_url;
+    const previousAudio = audio;
+    if (window.PreviewPlayback) audio = window.PreviewPlayback.replace(audio, url);
+    else {audio.src = url; audio.currentTime = 0;}
+    audio.preload = "none";
+    audio.loop = false;
+    audio.dataset.songId = song.id;
+    // cloneNode copies data attributes but does not copy event listeners.
+    if (audio !== previousAudio) delete audio.dataset.shelfBound;
+    const state = {audio, slot: song.slot, generation: previewGeneration, ready: false, advanced: false};
+    shelfPlayback = state;
     bindShelfAudio();
     markPlayback();
     try {
-      await (window.PreviewPlayback
-        ? window.PreviewPlayback.play(a)
-        : a.play());
-      if (generation !== previewGeneration || !loopRequested) return;
-      playingSlot = s.slot;
-      $("#shelf-preview-info").textContent = s.title;
+      await (window.PreviewPlayback ? window.PreviewPlayback.play(audio) : audio.play());
+      if (!currentShelfPlayback(state)) return;
+      state.ready = true;
+      $("#shelf-preview-info").textContent = song.title;
       markPlayback();
-      previewTimer = setTimeout(
-        advanceShelf,
-        Math.max(0, 10 - a.currentTime) * 1000,
-      );
-      shelfPrimeTimer = setTimeout(() => {
-        if (generation !== previewGeneration || !loopRequested) return;
-        const at = available.findIndex((item) => item.slot === s.slot),
-          next = available[(at + 1) % available.length];
-        window.PreviewPlayback?.prime(
-          window.PreviewPlayback.source(next.id, next.audio_url),
-        );
-      }, 650);
+      scheduleShelf(state);
     } catch (error) {
-      if (generation !== previewGeneration || error.name === "AbortError")
-        return;
+      if (!currentShelfPlayback(state) || error.name === "AbortError") return;
       stopShelf();
-      U.toast(
-        error.name === "PreviewBlockedError"
-          ? error.message
-          : "Preview unavailable. Choose another track.",
-      );
+      U.toast(error.name === "PreviewBlockedError" ? error.message : "Preview unavailable. Choose another track.");
     }
   }
-  function advanceShelf() {
-    if (!loopRequested || !shelf || window.PreviewPlayback?.isPending()) return;
+  function advanceShelf(state = shelfPlayback) {
+    if (!currentShelfPlayback(state) || !state.ready || !shelf || state.audio.seeking) return;
+    state.advanced = true;
     clearTimeout(previewTimer);
     const available = shelf.songs.filter((s) => s.audio_url),
-      at = available.findIndex((s) => s.slot === playingSlot);
-    if (available.length)
-      playShelf(available[(at + 1) % available.length].slot);
+      at = available.findIndex((s) => s.slot === state.slot);
+    if (available.length) void playShelf(available[(at + 1) % available.length].slot);
   }
   function bindShelfAudio() {
-    const a = $("#shelf-preview-audio");
-    if (a.dataset.shelfBound) return;
-    a.dataset.shelfBound = "true";
-    const current = () => a === $("#shelf-preview-audio") && loopRequested;
-    a.addEventListener("playing", () => {
-      if (current()) {
-        clearTimeout(previewTimer);
-        previewTimer = setTimeout(
-          advanceShelf,
-          Math.max(0, 10 - a.currentTime) * 1000,
-        );
-      }
+    const audio = $("#shelf-preview-audio");
+    if (audio.dataset.shelfBound) return;
+    audio.dataset.shelfBound = "true";
+    const current = () => shelfPlayback?.audio === audio && currentShelfPlayback(shelfPlayback);
+    for (const event of ["playing", "seeked"]) audio.addEventListener(event, () => {
+      if (current()) scheduleShelf(shelfPlayback);
       markPlayback();
     });
-    a.addEventListener("timeupdate", () => {
-      if (current() && a.currentTime >= 10) advanceShelf();
+    audio.addEventListener("timeupdate", () => {
+      if (current() && audio.currentTime >= 10) advanceShelf(shelfPlayback);
     });
-    a.addEventListener("ended", () => {
-      if (current()) advanceShelf();
+    audio.addEventListener("ended", () => {
+      if (current() && audio.ended) advanceShelf(shelfPlayback);
     });
-    a.addEventListener("waiting", () => {
-      if (current()) clearTimeout(previewTimer);
-    });
-    a.addEventListener("pause", () => {
-      if (a !== $("#shelf-preview-audio")) return;
+    for (const event of ["waiting", "seeking", "pause"]) audio.addEventListener(event, () => {
+      if (!current()) return;
       clearTimeout(previewTimer);
-      if (a.paused)
-        $$("[data-shelf-slot]").forEach((row) =>
-          row.classList.remove("is-playing"),
-        );
+      if (event === "pause") $$("[data-shelf-slot]").forEach(row => row.classList.remove("is-playing"));
     });
-    a.addEventListener("error", () => {
+    audio.addEventListener("error", () => {
       if (current() && !window.PreviewPlayback?.isPending()) {
         stopShelf();
         U.toast("Preview unavailable. Try another track.");
@@ -829,10 +794,8 @@ window.SpecialModes = (() => {
         );
         $("#shelf-reveal-progress").textContent =
           `Album ${albumIndex + 1} / ${groups.length} · Track ${trackIndex + 1} / ${group.answers.length}`;
-        const next = answers[index + 1];
         await shelfAnswerAudio(
           current.songs.find((s) => s.slot === slot),
-          next && current.songs.find((s) => s.slot === next.slot),
           generation,
         );
         if (!(await revealDelay(wait("shelfTrack", 2600), generation))) return;

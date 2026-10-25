@@ -662,7 +662,16 @@
       // Start inside the user gesture; fade only after native playback and readiness.
       const ready = waitReady(audio, work);
       ready.catch(() => {});
-      await Promise.all([audio.play(), ready]);
+      const started = Promise.resolve(audio.play()).then(() => {
+        // A readiness wait may already have rejected while native play() was
+        // still pending. Its late success must not restart an obsolete element.
+        if ((id !== serial && focusAudio !== audio) || closed || !audio.isConnected) {
+          audio.pause();
+          if (audio.dataset.previewRetired || !audio.isConnected) dispose(audio);
+          throw aborted();
+        }
+      });
+      await Promise.all([started, ready]);
       if (id !== serial || closed || !audio.isConnected) throw aborted();
       pending = null;
       paint(audio, "playing");
@@ -672,6 +681,15 @@
     } catch (error) {
       work.cancel?.();
       if (pending === work) pending = null;
+      // Native play() can resolve after cancellation. Silence only superseded
+      // elements; the same element may already belong to a newer play request.
+      if (id !== serial) {
+        if (focusAudio !== audio) {
+          audio.pause();
+          if (audio.dataset.previewRetired || !audio.isConnected) dispose(audio);
+        }
+        throw aborted();
+      }
       if (id === serial) {
         audio.pause();
         setGain(audio, 1);

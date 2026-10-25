@@ -131,3 +131,17 @@ See [consolidation review](../docs/CONSOLIDATION.md),
 
 - Remove the redundant disc/track ordering instruction above the Album Shelves
   board. Gameplay and ordering rules remain unchanged. Application 5.3.6.3.
+
+
+## V5.3.7 — Album Shelves playback ownership and on-demand loading
+
+- Manual jumps stop superseded playback and continue the rotation from the selected
+  track. Seeking, buffering and simultaneous timer/media events share one current
+  playback owner and one advance decision. Late native play completions cannot
+  restart old players or silence a newer request on the same player.
+- Remove next-track preloading from play and answer reveals. Only the selected or
+  currently revealed clip loads on play; existing completed-preview RAM caching
+  remains.
+- Verify the existing preview gate (18/minute, 0.5-second spacing), full-round cache
+  capacity/expiry and cached range/replay behavior. Normal rotation needs about
+  six new clips/minute. No request limits, schema, scoring or saved results change.

@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.3.6.3 · competition generation 3 · schema 21**
+**Application V5.3.7 · competition generation 3 · schema 21**
 
-Current implementation reference. `APP_VERSION` is `5.3.6.3`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.3.7`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -755,3 +755,28 @@ recognition also covers SQL dumps without a user-version pragma. Direct upgrades
 make the existing pre-upgrade safety backup. Git baseline hashes are recomputed
 from available baseline SQL under the current schema, so adding default disc
 columns does not falsely look like another device changed the data.
+
+
+## Album Shelves preview lifecycle (V5.3.7)
+
+`special_modes.js` owns one ten-second sample player. Every selection cancels
+pending/retired playback and installs a generation-bound state before starting
+the selected clip. Timer, timeupdate, seeked and ended callbacks share a once-only
+advance guard. Seeking and buffering cancel the deadline; remaining time is
+measured from media position. Only a successful current play starts advancement.
+The shared preview owner also silences native play promises that resolve after
+cancellation, while preserving a newer request on the same element.
+
+Shelves does not prime/preload future tracks, including answer-reveal clips.
+The selected audio uses `preload=none` and loads only when played. Answer reveals
+retain their brief, controlled transition when the revealed clip is ready.
+The existing proxy has 18 new-clip reservations per rolling minute and 0.5-second
+spacing; Apple lookups are separate at 12/minute and 5-second spacing. A normal
+ten-second rotation needs about six new clips/minute and ten per 100-second pass.
+Rapid manual skipping can still reach the shared gate and stops with its normal
+status instead of bypassing or retrying it. Limits are unchanged.
+
+Complete bounded downloads are cached in page-scoped RAM: ten previews, ten-minute
+TTL, up to 4 MiB each. Cache hits (including byte ranges) bypass upstream admission.
+Interrupted/partial streams are not falsely marked complete, so a cache miss may
+need another network request. No disk cache or whole-round warm-up is added.

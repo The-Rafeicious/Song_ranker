@@ -1421,6 +1421,16 @@ Preference transaction/HTTP regressions; no source/live database is written.
 | [PreferenceTests.test_http_invalid_payloads_do_not_write](../tests/test_preferences.py#L366) | `self` | Verify http invalid payloads do not write. |
 | [PreferenceTests.test_song_removal_voids_influence_preserves_receipt_without_automatic_backup](../tests/test_preferences.py#L373) | `self` | Verify song removal voids influence preserves receipt without automatic backup. |
 
+## tests/test_preview_delivery.py
+
+Preview request budgeting and completed-cache reuse without real CDN traffic.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [PreviewDeliveryTests.test_ten_song_rotation_fits_the_existing_gate](../tests/test_preview_delivery.py#L9) | `self` | Verify ten song rotation fits the existing gate. |
+| [PreviewDeliveryTests.test_cached_replay_and_ranges_bypass_upstream_even_during_cooldown](../tests/test_preview_delivery.py#L26) | `self` | Verify cached replay and ranges bypass upstream even during cooldown. |
+| [PreviewDeliveryTests.test_cache_holds_a_full_round_and_expires_without_disk_storage](../tests/test_preview_delivery.py#L59) | `self` | Verify cache holds a full round and expires without disk storage. |
+
 ## tests/test_retired_listening.py
 
 Schema-20 telemetry retirement with a complete old backup and exact game retention.
@@ -1740,7 +1750,7 @@ Disposable served-page and Chromium integration fixtures.
 | [run_vibe.tag_audio_enable](../tools/browser_check.py#L231) | `` | Tag audio enable; POST /tag-test-enable. |
 | [run_vibe.tag_audio](../tools/browser_check.py#L239) | `` | Serve a silent WAV fixture for playback controls without Apple transport. |
 | [run_vibe.enable_discs](../tools/browser_check.py#L252) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
-| [main](../tools/browser_check.py#L280) | `` | Run the requested disposable integration fixture. |
+| [main](../tools/browser_check.py#L281) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 
@@ -1761,4 +1771,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1211 Python definitions**.
+Total: **1214 Python definitions**.

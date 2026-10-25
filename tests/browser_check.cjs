@@ -316,12 +316,28 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.goto(base+'/global_stats');assert.equal(await page.locator('.listening-panel,script[src*="/listening.js"]').count(),0);
   // Disc answers stay hidden while playing; repeated within-disc numbers grade in disc order.
   const discData=await (await page.request.post(base+'/shelves-test-enable')).json();
+  const shelfMedia=[];page.on('request',r=>{if(r.url().includes('/tag-test-audio.wav?shelf='))shelfMedia.push(r.url())});
   const offeredRequest=page.waitForResponse(r=>r.url().endsWith('/api/album-shelves/round')&&r.request().method()==='POST');
   await page.goto(base+'/album_shelves');
   const offered=await (await offeredRequest).json();await page.locator('.shelf-track').first().waitFor();
   assert.equal(offered.songs.length,10);assert.ok(offered.albums.some(a=>a.disc_count===2));
   assert.ok(offered.songs.every(s=>!('disc_number' in s)&&!('track_number' in s)));
   assert.equal(await page.locator('.shelf-position-actual').count(),0);
+  assert.equal(shelfMedia.length,0,'Shelves round loading requests no audio');
+  const playSlot=async song=>{await page.locator(`[data-shelf-preview="${song.slot}"]`).click();await page.waitForFunction(title=>document.querySelector('#shelf-preview-info').textContent===title,song.title);await page.waitForFunction(()=>{const a=document.querySelector('#shelf-preview-audio');return a&&!a.paused&&a.currentTime>0})};
+  await playSlot(offered.songs[0]);
+  await page.evaluate(slots=>{for(const slot of slots)document.querySelector(`[data-shelf-preview="${slot}"]`).click()},[offered.songs[6].slot,offered.songs[2].slot]);
+  await page.waitForFunction(title=>document.querySelector('#shelf-preview-info').textContent===title,offered.songs[2].title);
+  await page.waitForFunction(()=>[...document.querySelectorAll('audio')].filter(a=>!a.paused).length===1);
+  await page.waitForTimeout(800);
+  assert.equal(await page.locator('audio[src]').count(),1,'No retired loop or ahead-loaded media');
+  assert.ok(shelfMedia.every(url=>[offered.songs[0],offered.songs[6],offered.songs[2]].some(s=>new URL(url).searchParams.get('shelf')===String(s.id))),'Only explicitly selected songs loaded');
+  await page.locator('#shelf-preview-audio').evaluate(a=>a.currentTime=8);
+  await page.waitForFunction(()=>document.querySelector('#shelf-preview-audio').currentTime>=8);
+  await page.locator('#shelf-preview-audio').evaluate(a=>a.currentTime=10.2);
+  await page.waitForFunction(title=>document.querySelector('#shelf-preview-info').textContent===title,offered.songs[3].title);
+  assert.equal(await page.locator('audio').evaluateAll(nodes=>nodes.filter(a=>!a.paused).length),1,'Seek advances once from the user-selected song');
+  await page.locator('[data-shelf-play]').click();await page.waitForFunction(()=>[...document.querySelectorAll('audio')].every(a=>a.paused));
   const order=[...discData.songs].sort((a,b)=>a.album_id-b.album_id||a.disc_number-b.disc_number||a.track_number-b.track_number);
   for(const song of order){
     const item=offered.songs.find(s=>s.id===song.id),album=offered.albums.find(a=>a.id===song.album_id);
