@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.3.7 · competition generation 3 · schema 21**
+**Application V5.3.7.1 · competition generation 3 · schema 21**
 
-Current implementation reference. `APP_VERSION` is `5.3.7`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.3.7.1`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -780,3 +780,15 @@ Complete bounded downloads are cached in page-scoped RAM: ten previews, ten-minu
 TTL, up to 4 MiB each. Cache hits (including byte ranges) bypass upstream admission.
 Interrupted/partial streams are not falsely marked complete, so a cache miss may
 need another network request. No disk cache or whole-round warm-up is added.
+
+
+### Shelves reveal feedback (V5.3.7.1)
+
+Revealed wrong cards receive `--shelf-error-depth` from the existing saved item
+comparison counts: `1 - order_right / order_pairs`, bounded to 0–1. Wrong albums
+use 1. Fully correct cards retain green; unrevealed cards expose no error depth.
+The shared stylesheet mixes light and deep red surfaces while retaining readable
+text, correction labels, counts and points. No grading or placement logic changes.
+A completed reveal with positive available points and a points/available difference
+under 1e-8 shows one Perfect shelves badge, matching the report's perfect tolerance.
+It has one brief glow, respects reduced motion, and clears with the next round.

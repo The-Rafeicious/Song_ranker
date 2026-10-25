@@ -323,6 +323,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.equal(offered.songs.length,10);assert.ok(offered.albums.some(a=>a.disc_count===2));
   assert.ok(offered.songs.every(s=>!('disc_number' in s)&&!('track_number' in s)));
   assert.equal(await page.locator('.shelf-position-actual').count(),0);
+  assert.ok(await page.locator('#shelf-perfect').isHidden(),'No celebration while arranging');
   assert.equal(shelfMedia.length,0,'Shelves round loading requests no audio');
   const playSlot=async song=>{await page.locator(`[data-shelf-preview="${song.slot}"]`).click();await page.waitForFunction(title=>document.querySelector('#shelf-preview-info').textContent===title,song.title);await page.waitForFunction(()=>{const a=document.querySelector('#shelf-preview-audio');return a&&!a.paused&&a.currentTime>0})};
   await playSlot(offered.songs[0]);
@@ -347,8 +348,23 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-play',folder);await page.screenshot({path:folder+'/shelves-discs-play-'+width+'.png',fullPage:true});}
   await page.locator('[data-shelf-check]').click();await page.locator('[data-shelf-next]').waitFor({state:'visible',timeout:90000});
   assert.equal(await page.locator('#shelf-running-score').textContent(),'30.00');
+  assert.ok(await page.locator('#shelf-perfect').isVisible(),'Perfect round gets compact feedback after reveal');
+  await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('#shelf-perfect').evaluate(e=>getComputedStyle(e).animationName),'none');await page.emulateMedia({reducedMotion:'no-preference'});
   assert.ok((await page.locator('.shelf-position-actual').allTextContents()).some(t=>t.includes('2·')));
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-result',folder);await page.screenshot({path:folder+'/shelves-discs-result-'+width+'.png',fullPage:true});}
+  // Actual grading: one adjacent swap is a near miss; the other album is reversed.
+  await page.route('**/api/album-shelves/round',async route=>{const response=await route.fetch(),data=await response.json();data.songs.forEach(s=>s.audio_url='');await route.fulfill({response,json:data})});
+  const partialRequest=page.waitForResponse(r=>r.url().endsWith('/api/album-shelves/round')&&r.request().method()==='POST');await page.goto(base+'/album_shelves');const partial=await(await partialRequest).json();await page.locator('.shelf-track').first().waitFor();
+  assert.ok(await page.locator('#shelf-perfect').isHidden(),'Next round resets celebration');
+  for(const [index,album] of partial.albums.entries()){
+    const tracks=order.filter(s=>s.album_id===album.id);if(index===0)[tracks[0],tracks[1]]=[tracks[1],tracks[0]];else tracks.reverse();
+    for(const song of tracks){const item=partial.songs.find(s=>s.id===song.id);await page.locator(`[data-shelf-slot="${item.slot}"] summary`).click();await page.locator(`[data-shelf-pick="${item.slot}"][data-shelf-target="${album.slot}"]`).click()}
+  }
+  await page.locator('[data-shelf-check]').click();await page.locator('[data-shelf-next]').waitFor({state:'visible',timeout:90000});
+  assert.ok(await page.locator('#shelf-perfect').isHidden(),'Partial round does not celebrate');
+  const shades=await page.locator('.shelf-track.answer-wrong').evaluateAll(rows=>rows.map(e=>({depth:Number(e.style.getPropertyValue('--shelf-error-depth')),fill:getComputedStyle(e).backgroundColor})));
+  assert.ok(shades.some(s=>s.depth>0&&s.depth<1)&&shades.some(s=>s.depth===1),'Near and complete order errors use different severity');assert.ok(new Set(shades.map(s=>s.fill)).size>=2,'Browser renders distinct red shades');
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-error-depth',folder);await page.screenshot({path:folder+'/shelves-error-depth-'+width+'.png',fullPage:true})}
   await page.goto(base+'/album_shelves_stats');
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-stats',folder);await page.screenshot({path:folder+'/shelves-discs-stats-'+width+'.png',fullPage:true});}
   assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
