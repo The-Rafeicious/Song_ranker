@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify
+from flask import render_template, request, jsonify, abort
 from songranker.modes.selection import tournament_tracks
 from songranker.services import app, get_db_connection
 from songranker.reports.stats_activity import attach_reports
@@ -401,6 +401,21 @@ def tournament_stats_page():
     finally:
         conn.close()
     return render_template("tournament_stats.html", **data)
+
+
+@app.route("/tournament/<int:tournament_id>/bracket")
+def tournament_bracket_page(tournament_id):
+    """A shareable, read-only bracket workspace with saved match inspection."""
+    conn = get_db_connection()
+    try:
+        conn.execute("BEGIN")
+        data = build_tournament_stats(conn, selected=tournament_id)
+        bracket = next((t for t in data["archive"] if t["id"] == tournament_id), None)
+        if bracket is None:
+            abort(404)
+    finally:
+        conn.close()
+    return render_template("tournament_bracket.html", bracket=bracket)
 
 
 @app.route("/api/tournament_stats", methods=["GET"])

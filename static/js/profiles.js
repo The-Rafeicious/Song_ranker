@@ -219,7 +219,7 @@ window.ProfileUI = (() => {
       ranking("guesser", "guesser") +
         link("guesser", "/elo_guesser_stats", "Stats"),
     );
-    const shelves = panel(
+    const shelves = tracks.some(s => s.shelves_eligible) ? panel(
       "shelves",
       "Album Shelves",
       joined([
@@ -235,7 +235,7 @@ window.ProfileUI = (() => {
         `<div class="profile-detail-grid profile-field-grid"><div class="profile-inset">${rate("Album placement", sums.shelf_album_correct, sums.shelf_attempts)}</div><div class="profile-inset">${rate("Points earned", sums.shelf_points, sums.shelf_available)}</div></div>`,
       ranking("shelves", "shelves") +
         link("shelves", "/album_shelves_stats", "Stats"),
-    );
+    ) : "";
     return voting + recognition + tournament + guesser + shelves;
   }
   return {

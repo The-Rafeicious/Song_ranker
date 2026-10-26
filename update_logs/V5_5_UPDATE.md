@@ -33,3 +33,9 @@ for whole-library tournaments and half for tags, and improves bracket viewing.
   backups, exports, rebuilds and sync preserve explicit flags.
 - This allows grouped placeholder releases instead of separate Single album rows;
   it does not automatically merge records or compress existing data.
+
+## V5.5.2
+
+Excluded albums keep their album identity, but skip the album-name field in new Trivia rounds. Shelves profile panels only appear for tracks and collections with eligible albums. Saved Shelves rounds containing an excluded album are hidden as whole rounds from reports, trends, rankings and Overall evidence; nothing is deleted, and including the album again restores that history.
+
+Tournament history links to a dedicated bracket page. Mirrored halves feed a larger central final, with a smaller third-place match below. Track selection includes route and match details, and replay results advance every 1.6 seconds. Blind identity protection, reduced motion, skip and bounded preview playback remain in place.

@@ -48,15 +48,15 @@ Shared catalogue projections, cross-mode results and Elo history queries.
 | [summarize_votes](../songranker/catalog.py#L165) | `records` | Summarise combined preference records by standard/blind mode and ordinary/tournament origin. |
 | [summarize_votes.project](../songranker/catalog.py#L172) | `rows` | Aggregate wins, losses, match counts and win rates for one subset of preference records. |
 | [collection](../songranker/catalog.py#L197) | `include_overall_sources=False` | Collection; reads competition_state, global_stats, song_artists, song_details, song_genres, songs, sqlite_master, trivia_rounds. |
-| [ranked](../songranker/catalog.py#L311) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
-| [special_records](../songranker/catalog.py#L393) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, elo_guess_rounds, songs. |
-| [display_song](../songranker/catalog.py#L508) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
-| [special_stats](../songranker/catalog.py#L532) | `` | Special stats; GET /api/special-modes/stats. |
-| [source_sql](../songranker/catalog.py#L573) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
-| [filters](../songranker/catalog.py#L590) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
-| [summary](../songranker/catalog.py#L597) | `conn` | Count effective preference matches by mode and origin for the history summary. |
-| [page](../songranker/catalog.py#L615) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
-| [tournament_appearances](../songranker/catalog.py#L651) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
+| [ranked](../songranker/catalog.py#L314) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
+| [special_records](../songranker/catalog.py#L396) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, elo_guess_rounds, songs. |
+| [display_song](../songranker/catalog.py#L511) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
+| [special_stats](../songranker/catalog.py#L535) | `` | Special stats; GET /api/special-modes/stats. |
+| [source_sql](../songranker/catalog.py#L576) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
+| [filters](../songranker/catalog.py#L593) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
+| [summary](../songranker/catalog.py#L600) | `conn` | Count effective preference matches by mode and origin for the history summary. |
+| [page](../songranker/catalog.py#L618) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
+| [tournament_appearances](../songranker/catalog.py#L654) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
 
 ## songranker/developer/catalog_sources.py
 
@@ -507,29 +507,29 @@ Album Shelves eligibility, ordering/grading and detailed Shelves Stats.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [shelf_position](../songranker/modes/shelves.py#L15) | `item` | Order a saved position by disc, then track; legacy facts default to disc one. |
-| [grade_shelf](../songranker/modes/shelves.py#L20) | `items` | 0.5 membership points + up to 2.5 relative-order points per track. |
-| [album_shelves](../songranker/modes/shelves.py#L70) | `` | Album shelves; GET /album_shelves. |
-| [shelf_stats](../songranker/modes/shelves.py#L75) | `` | Shelf stats; GET /album_shelves_stats. |
-| [shelf_pool](../songranker/modes/shelves.py#L93) | `conn` | The existing numbered/proper-album pool, shared by the picker and stats. |
-| [shelf_candidates](../songranker/modes/shelves.py#L115) | `conn, count` | Draw eligible albums and tracks using production exposure, recency and Vibe-aware selection. |
-| [shelf_payload](../songranker/modes/shelves.py#L139) | `conn, row` | Shelf payload; reads album_shelf_items, albums, songs. |
-| [shelf_round](../songranker/modes/shelves.py#L167) | `` | Shelf round; POST /api/album-shelves/round. |
-| [shelf_answer](../songranker/modes/shelves.py#L235) | `` | Shelf answer; POST /api/album-shelves/answer. |
-| [percentage](../songranker/modes/shelves.py#L314) | `right, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [saved_date](../songranker/modes/shelves.py#L318) | `value` | Parse a saved result date for report display and ordering. |
-| [integer](../songranker/modes/shelves.py#L328) | `value, low=1, high=None` | Validate/normalise the feature’s integer input before using it. |
-| [can_grade](../songranker/modes/shelves.py#L332) | `items, rules` | Validate saved Shelves rules, slots, track positions and unique identities before reconstructing a grade. |
-| [can_grade.unique](../songranker/modes/shelves.py#L351) | `keys` | Check that a chosen tuple of saved item fields is unique within the round. |
-| [empty_counts](../songranker/modes/shelves.py#L364) | `` | Create the zeroed track/order/point counters shared by Shelves report aggregates. |
-| [add_counts](../songranker/modes/shelves.py#L381) | `target, source` | Accumulate one Shelves result's known counters into an existing aggregate. |
-| [item_counts](../songranker/modes/shelves.py#L387) | `item` | Project a graded track into album/order/point and error-category report counters. |
-| [finish_counts](../songranker/modes/shelves.py#L405) | `row` | Derive album/order accuracy and wrong-order counts from aggregated Shelves counters. |
-| [window_totals](../songranker/modes/shelves.py#L417) | `rows` | Summarise Shelves rounds in a report window, distinguishing graded results from unknown history. |
-| [page_number](../songranker/modes/shelves.py#L437) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
-| [build_shelves_stats](../songranker/modes/shelves.py#L447) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
-| [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L478) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
-| [build_shelves_stats.records](../songranker/modes/shelves.py#L747) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
+| [shelf_position](../songranker/modes/shelves.py#L23) | `item` | Order a saved position by disc, then track; legacy facts default to disc one. |
+| [grade_shelf](../songranker/modes/shelves.py#L28) | `items` | 0.5 membership points + up to 2.5 relative-order points per track. |
+| [album_shelves](../songranker/modes/shelves.py#L78) | `` | Album shelves; GET /album_shelves. |
+| [shelf_stats](../songranker/modes/shelves.py#L83) | `` | Shelf stats; GET /album_shelves_stats. |
+| [shelf_pool](../songranker/modes/shelves.py#L101) | `conn` | The existing numbered/proper-album pool, shared by the picker and stats. |
+| [shelf_candidates](../songranker/modes/shelves.py#L123) | `conn, count` | Draw eligible albums and tracks using production exposure, recency and Vibe-aware selection. |
+| [shelf_payload](../songranker/modes/shelves.py#L147) | `conn, row` | Shelf payload; reads album_shelf_items, albums, songs. |
+| [shelf_round](../songranker/modes/shelves.py#L175) | `` | Shelf round; POST /api/album-shelves/round. |
+| [shelf_answer](../songranker/modes/shelves.py#L243) | `` | Shelf answer; POST /api/album-shelves/answer. |
+| [percentage](../songranker/modes/shelves.py#L322) | `right, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [saved_date](../songranker/modes/shelves.py#L326) | `value` | Parse a saved result date for report display and ordering. |
+| [integer](../songranker/modes/shelves.py#L336) | `value, low=1, high=None` | Validate/normalise the feature’s integer input before using it. |
+| [can_grade](../songranker/modes/shelves.py#L340) | `items, rules` | Validate saved Shelves rules, slots, track positions and unique identities before reconstructing a grade. |
+| [can_grade.unique](../songranker/modes/shelves.py#L359) | `keys` | Check that a chosen tuple of saved item fields is unique within the round. |
+| [empty_counts](../songranker/modes/shelves.py#L372) | `` | Create the zeroed track/order/point counters shared by Shelves report aggregates. |
+| [add_counts](../songranker/modes/shelves.py#L389) | `target, source` | Accumulate one Shelves result's known counters into an existing aggregate. |
+| [item_counts](../songranker/modes/shelves.py#L395) | `item` | Project a graded track into album/order/point and error-category report counters. |
+| [finish_counts](../songranker/modes/shelves.py#L413) | `row` | Derive album/order accuracy and wrong-order counts from aggregated Shelves counters. |
+| [window_totals](../songranker/modes/shelves.py#L425) | `rows` | Summarise Shelves rounds in a report window, distinguishing graded results from unknown history. |
+| [page_number](../songranker/modes/shelves.py#L445) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
+| [build_shelves_stats](../songranker/modes/shelves.py#L455) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
+| [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L486) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
+| [build_shelves_stats.records](../songranker/modes/shelves.py#L755) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
 
 ## songranker/modes/tournament.py
 
@@ -546,18 +546,19 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | [api_tournaments_list](../songranker/modes/tournament.py#L346) | `` | Serve tournaments list; GET /api/tournaments. |
 | [api_tournament_detail](../songranker/modes/tournament.py#L361) | `tournament_id` | Serve tournament detail; GET /api/tournaments/<int:tournament_id>. |
 | [tournament_stats_page](../songranker/modes/tournament.py#L390) | `` | Read-only tournament dashboard; ranking APIs and game actions stay separate. |
-| [api_tournament_stats](../songranker/modes/tournament.py#L407) | `` | Tournament-only leaderboard; regular Elo and history are not involved. |
-| [api_tournament_complete](../songranker/modes/tournament.py#L445) | `` | Serve tournament complete; POST /api/tournament_complete. |
-| [number](../songranker/modes/tournament.py#L524) | `value` | Read a finite nonnegative saved tournament number, returning unknown for invalid values. |
-| [saved_time](../songranker/modes/tournament.py#L535) | `value` | Resolve the saved tournament timestamp for report display. |
-| [stage_name](../songranker/modes/tournament.py#L559) | `size, round_number, match_type='bracket'` | Label a saved bracket stage, third-place playoff or unsupported historical round. |
-| [recorded_result](../songranker/modes/tournament.py#L586) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
-| [podium_points](../songranker/modes/tournament.py#L602) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
-| [build_tournament_stats](../songranker/modes/tournament.py#L620) | `conn, now=None, selected=None, archive_page=1` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
-| [build_tournament_stats.identity](../songranker/modes/tournament.py#L729) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
-| [build_tournament_stats.scope](../songranker/modes/tournament.py#L741) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
-| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L899) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
-| [build_tournament_stats.category](../songranker/modes/tournament.py#L973) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
+| [tournament_bracket_page](../songranker/modes/tournament.py#L407) | `tournament_id` | A shareable, read-only bracket workspace with saved match inspection. |
+| [api_tournament_stats](../songranker/modes/tournament.py#L422) | `` | Tournament-only leaderboard; regular Elo and history are not involved. |
+| [api_tournament_complete](../songranker/modes/tournament.py#L460) | `` | Serve tournament complete; POST /api/tournament_complete. |
+| [number](../songranker/modes/tournament.py#L539) | `value` | Read a finite nonnegative saved tournament number, returning unknown for invalid values. |
+| [saved_time](../songranker/modes/tournament.py#L550) | `value` | Resolve the saved tournament timestamp for report display. |
+| [stage_name](../songranker/modes/tournament.py#L574) | `size, round_number, match_type='bracket'` | Label a saved bracket stage, third-place playoff or unsupported historical round. |
+| [recorded_result](../songranker/modes/tournament.py#L601) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
+| [podium_points](../songranker/modes/tournament.py#L617) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
+| [build_tournament_stats](../songranker/modes/tournament.py#L635) | `conn, now=None, selected=None, archive_page=1` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
+| [build_tournament_stats.identity](../songranker/modes/tournament.py#L744) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
+| [build_tournament_stats.scope](../songranker/modes/tournament.py#L756) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
+| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L914) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
+| [build_tournament_stats.category](../songranker/modes/tournament.py#L988) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
 
 ## songranker/modes/trivia.py
 
@@ -578,18 +579,18 @@ Timed field recognition, answer grading/corrections and detailed Trivia Stats.
 | [payload](../songranker/modes/trivia.py#L178) | `conn, row, reveal=False` | Payload; reads albums, artists, song_artists. |
 | [trivia_mode](../songranker/modes/trivia.py#L285) | `` | Trivia mode; GET /trivia. |
 | [api_trivia_round](../songranker/modes/trivia.py#L290) | `` | Serve trivia round; GET /api/trivia/round. |
-| [api_trivia_start](../songranker/modes/trivia.py#L350) | `token` | Serve trivia start; POST /api/trivia/<token>/start. |
-| [api_trivia_pause](../songranker/modes/trivia.py#L370) | `token` | Serve trivia pause; POST /api/trivia/<token>/pause. |
-| [api_trivia_field](../songranker/modes/trivia.py#L398) | `token` | Serve trivia field; POST /api/trivia/<token>/field. |
-| [api_trivia_finish](../songranker/modes/trivia.py#L428) | `token` | Serve trivia finish; POST /api/trivia/<token>/finish. |
-| [edit_trivia_totals](../songranker/modes/trivia.py#L496) | `conn, song_id, data` | Sparse manual deltas preserve the detailed history instead of rewriting it. |
-| [percentage](../songranker/modes/trivia.py#L552) | `correct, attempts` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [nonnegative](../songranker/modes/trivia.py#L556) | `value` | Coerce saved recognition counters to nonnegative integers with zero for invalid values. |
-| [finite](../songranker/modes/trivia.py#L566) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
-| [build_recognition_stats](../songranker/modes/trivia.py#L574) | `conn, now=None` | Use one caller-owned read snapshot, with no history LIMIT on aggregates. |
-| [build_recognition_stats.add_group](../songranker/modes/trivia.py#L612) | `target, identity, attempts, correct, sid` | Accumulate recognition attempts, correct answers and distinct tested songs for a collection. |
-| [build_recognition_stats.category](../songranker/modes/trivia.py#L749) | `kind, title, note, source, identities` | Build stable recognition accuracy/struggle leaders for one collection category. |
-| [trivia_stats](../songranker/modes/trivia.py#L891) | `` | Trivia stats; GET /trivia_stats. |
+| [api_trivia_start](../songranker/modes/trivia.py#L351) | `token` | Serve trivia start; POST /api/trivia/<token>/start. |
+| [api_trivia_pause](../songranker/modes/trivia.py#L371) | `token` | Serve trivia pause; POST /api/trivia/<token>/pause. |
+| [api_trivia_field](../songranker/modes/trivia.py#L399) | `token` | Serve trivia field; POST /api/trivia/<token>/field. |
+| [api_trivia_finish](../songranker/modes/trivia.py#L429) | `token` | Serve trivia finish; POST /api/trivia/<token>/finish. |
+| [edit_trivia_totals](../songranker/modes/trivia.py#L497) | `conn, song_id, data` | Sparse manual deltas preserve the detailed history instead of rewriting it. |
+| [percentage](../songranker/modes/trivia.py#L553) | `correct, attempts` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [nonnegative](../songranker/modes/trivia.py#L557) | `value` | Coerce saved recognition counters to nonnegative integers with zero for invalid values. |
+| [finite](../songranker/modes/trivia.py#L567) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
+| [build_recognition_stats](../songranker/modes/trivia.py#L575) | `conn, now=None` | Use one caller-owned read snapshot, with no history LIMIT on aggregates. |
+| [build_recognition_stats.add_group](../songranker/modes/trivia.py#L613) | `target, identity, attempts, correct, sid` | Accumulate recognition attempts, correct answers and distinct tested songs for a collection. |
+| [build_recognition_stats.category](../songranker/modes/trivia.py#L750) | `kind, title, note, source, identities` | Build stable recognition accuracy/struggle leaders for one collection category. |
+| [trivia_stats](../songranker/modes/trivia.py#L892) | `` | Trivia stats; GET /trivia_stats. |
 
 ## songranker/modes/vibe_map.py
 
@@ -750,9 +751,9 @@ Read-only cross-mode Global Stats from one SQLite snapshot.
 | [build_global_stats.misses](../songranker/reports/global_stats_data.py#L104) | `counter, attempts, rows` | Choose the three largest nonzero recognition miss totals with their attempt counts. |
 | [build_global_stats.saved_song](../songranker/reports/global_stats_data.py#L124) | `sid` | Resolve an activity song identity with a safe placeholder for removed tracks. |
 | [build_global_stats.special_leader](../songranker/reports/global_stats_data.py#L138) | `key` | Choose the positive special-mode metric leader, using Elo to break ties. |
-| [build_global_stats.event](../songranker/reports/global_stats_data.py#L157) | `kind, id, when, title, details, href, related, metrics=None, artwork=None, scope=None` | Append a uniform dated activity entry with identities, metrics, scope and artwork. |
-| [build_global_stats.metric](../songranker/reports/global_stats_data.py#L167) | `value, label, state=''` | Represent one activity metric with its display label and semantic state. |
-| [build_global_stats.vote_participant](../songranker/reports/global_stats_data.py#L170) | `h, role` | Build a saved vote participant with winner/loser role and known Elo change. |
+| [build_global_stats.event](../songranker/reports/global_stats_data.py#L158) | `kind, id, when, title, details, href, related, metrics=None, artwork=None, scope=None` | Append a uniform dated activity entry with identities, metrics, scope and artwork. |
+| [build_global_stats.metric](../songranker/reports/global_stats_data.py#L168) | `value, label, state=''` | Represent one activity metric with its display label and semantic state. |
+| [build_global_stats.vote_participant](../songranker/reports/global_stats_data.py#L171) | `h, role` | Build a saved vote participant with winner/loser role and known Elo change. |
 
 ## songranker/reports/health.py
 
@@ -779,7 +780,7 @@ Shared dated activity, comparison charts and report attachments.
 | [build_activity](../songranker/reports/stats_activity.py#L36) | `conn, mode, now=None` | Build fourteen days of mode activity, previous/current-week totals and graded success rates. |
 | [build_activity.rows](../songranker/reports/stats_activity.py#L46) | `table` | Read a known activity source table while tolerating its absence in historical fixtures. |
 | [build_activity.add](../songranker/reports/stats_activity.py#L51) | `when, kind, right=0, denominator=0` | Add an in-window dated result and its success denominator, counting undated records separately. |
-| [attach_reports](../songranker/reports/stats_activity.py#L125) | `conn, data, mode, now=None` | Attach shared activity charts and effective tournament Elo history to a mode report. |
+| [attach_reports](../songranker/reports/stats_activity.py#L126) | `conn, data, mode, now=None` | Attach shared activity charts and effective tournament Elo history to a mode report. |
 
 ## songranker/services.py
 
@@ -1043,9 +1044,12 @@ Album-only Shelves exclusions, preserved rounds and lossless schema upgrades.
 | [AlbumShelvesTests.test_flag_only_excludes_shelves_and_can_be_reversed](../tests/test_album_shelves.py#L29) | `self` | Verify flag only excludes shelves and can be reversed. |
 | [AlbumShelvesTests.test_saved_round_can_still_be_graded_after_exclusion](../tests/test_album_shelves.py#L46) | `self` | Verify saved round can still be graded after exclusion. |
 | [AlbumShelvesTests.test_new_rounds_use_other_albums_and_old_clients_preserve_flag](../tests/test_album_shelves.py#L59) | `self` | Verify new rounds use other albums and old clients preserve flag. |
-| [AlbumShelvesTests.test_invalid_flags_are_rejected_without_changes_and_auth_is_required](../tests/test_album_shelves.py#L72) | `self` | Verify invalid flags are rejected without changes and auth is required. |
-| [AlbumShelvesTests.test_flag_survives_sql_and_lossless_export_rebuild](../tests/test_album_shelves.py#L79) | `self` | Verify flag survives sql and lossless export rebuild. |
-| [AlbumShelvesTests.test_schema_21_upgrade_and_unversioned_dump_default_to_included](../tests/test_album_shelves.py#L90) | `self` | Verify schema 21 upgrade and unversioned dump default to included. |
+| [AlbumShelvesTests.test_excluded_history_is_hidden_everywhere_and_returns_when_included](../tests/test_album_shelves.py#L72) | `self` | Verify excluded history is hidden everywhere and returns when included. |
+| [AlbumShelvesTests.test_new_trivia_skips_excluded_album_name_but_preserves_album](../tests/test_album_shelves.py#L101) | `self` | Verify new trivia skips excluded album name but preserves album. |
+| [AlbumShelvesTests.test_dedicated_bracket_page_has_missing_record_404](../tests/test_album_shelves.py#L112) | `self` | Verify dedicated bracket page has missing record 404. |
+| [AlbumShelvesTests.test_invalid_flags_are_rejected_without_changes_and_auth_is_required](../tests/test_album_shelves.py#L115) | `self` | Verify invalid flags are rejected without changes and auth is required. |
+| [AlbumShelvesTests.test_flag_survives_sql_and_lossless_export_rebuild](../tests/test_album_shelves.py#L122) | `self` | Verify flag survives sql and lossless export rebuild. |
+| [AlbumShelvesTests.test_schema_21_upgrade_and_unversioned_dump_default_to_included](../tests/test_album_shelves.py#L133) | `self` | Verify schema 21 upgrade and unversioned dump default to included. |
 
 ## tests/test_apple_source_columns.py
 
@@ -1847,4 +1851,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1262 Python definitions**.
+Total: **1266 Python definitions**.

@@ -21,11 +21,13 @@ function harness(reduced=false){
  const h=harness(),data=fixture(32),root=h.d.querySelector('#root');
  const tree=h.w.TournamentBracket.mount(root,data);
  check(root.querySelectorAll('.bracket-node').length===31,'32 songs form 31 main matches');
+ check(Number.parseFloat(root.querySelector('.bracket-final').style.left)>Number.parseFloat(root.querySelector('[data-map-match="1"]').style.left),'final is inside the two halves');
+ check(Number.parseFloat(root.querySelector('[data-map-match="16"]').style.left)>Number.parseFloat(root.querySelector('.bracket-final').style.left),'right half feeds inwards');
  check(root.querySelectorAll('svg path').length===30,'every feeder connects to its next round');
  check(root.querySelectorAll('script').length===0,'song names are escaped');
  root.querySelector('[data-map-track="1"]').click();check(root.querySelectorAll('.is-route').length===5,'selected champion route appears across five rounds');
  check(root.querySelector('.bracket-inspector').textContent.includes('5 wins'),'inspector reports path wins');
- root.querySelector('[data-map-round="4"]').click();check(root.querySelector('.bracket-viewport').scrollLeft===976,'round button pans inside the map');
+ root.querySelector('[data-map-round="4"]').click();check(root.querySelector('.bracket-viewport').scrollLeft===1186,'round button pans inside the map');
  check(h.plays.length===0,'viewing a saved bracket does not load audio');tree.cancel();
  const q=harness(),eight=fixture(),second=q.d.querySelector('#root');let done=0;
  const replay=q.w.TournamentBracket.mount(second,eight,{animate:true,sound:true,onDone:()=>done++});

@@ -323,7 +323,8 @@ def api_trivia_round():
         )
         song = get_song_full(selected["id"], conn)
         token = uuid.uuid4().hex
-        available = proper_album({"title": song["album"]})
+        album = conn.execute("SELECT * FROM albums WHERE id=?", (song["album_id"],)).fetchone()
+        available = bool(album and proper_album(dict(album)) and not album["shelves_excluded"])
         state = challenges.progress(conn, run["id"], "trivia")
         conn.execute(
             """INSERT INTO trivia_rounds(token,song_id,album_available,run_id,rules_version,

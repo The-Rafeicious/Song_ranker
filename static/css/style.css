@@ -7753,3 +7753,11 @@ body[data-page="shelves"] .shelf-next:not(:disabled):hover {
 @keyframes bracket-advance { from{transform:translateX(-6px);opacity:.6}to{transform:none;opacity:1} }
 @media(prefers-reduced-motion:reduce){.bracket-node.is-advancing{animation:none}.bracket-viewport{scroll-behavior:auto}}
 @media(max-width:520px){.bracket-toolbar{justify-content:center}.bracket-viewport{height:480px}.bracket-inspector{font-size:14px}}
+
+.tournament-bracket-page { width:100%; min-width:0; }
+body:has(.tournament-bracket-page) #main { max-width:1800px; }
+.tournament-bracket-page .bracket-viewport { height:72vh; max-height:none; }
+.bracket-node.bracket-final { padding:12px; border-width:2px; box-shadow:0 0 24px #ff78a622; }
+.bracket-final .bracket-track { min-height:52px; font-size:15px; }
+.bracket-third { opacity:.9; }
+.bracket-match-details { flex-basis:100%; margin:0; line-height:1.8; }

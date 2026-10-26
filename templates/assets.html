@@ -35,7 +35,7 @@
 
 {% macro scripts() %}
 {{ js('ui') }}
-{% if game or path == '/tournament_stats' %}{{ js('gameplay') }}{% endif %}
+{% if game or path == '/tournament_stats' or path.endswith('/bracket') %}{{ js('gameplay') }}{% endif %}
 {{ js('preview') }}
 {% if path in ['/','/game','/elo_guesser','/album_shelves'] or ranked or dev %}{{ js('special_modes') }}{% endif %}
 {% if path in ['/','/global_stats','/overall_rankings'] or profile or dev %}{{ js('overall') }}{% endif %}
