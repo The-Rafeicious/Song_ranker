@@ -2734,7 +2734,7 @@
               : remaining === 8
                 ? "Quarter-finals"
                 : "Round " + active.round_number;
-    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<button class="btn tournament" type="button" data-view-live-bracket>View bracket</button><div id="live-bracket-map" class="tournament-map" hidden></div><p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
+    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<button class="btn tournament" type="button" data-view-live-bracket aria-expanded="false" aria-controls="live-bracket-map">View bracket</button><div id="live-bracket-map" class="tournament-map" hidden></div><p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
     attachPlayers();
     window.PreviewPlayback?.preloadPair([
       $("#bracket-audio-0"),
@@ -3014,7 +3014,7 @@
   }
 
   document.addEventListener("click", e=>{
-    if(e.target.closest('[data-view-live-bracket]')){const root=$("#live-bracket-map");root.hidden=!root.hidden;if(!root.hidden){bracketMap?.cancel();bracketMap=window.TournamentBracket.mount(root,{tournament:bracketState.tournament,entries:[...bracketState.tracks.values()],matches:bracketState.matches});}else{bracketMap?.cancel();bracketMap=null;}return;}
+    if(e.target.closest('[data-view-live-bracket]')){const root=$("#live-bracket-map");root.hidden=!root.hidden;const toggle=e.target.closest('[data-view-live-bracket]');toggle.setAttribute('aria-expanded',String(!root.hidden));toggle.textContent=root.hidden?'View bracket':'Hide bracket';if(!root.hidden){bracketMap?.cancel();bracketMap=window.TournamentBracket.mount(root,{tournament:bracketState.tournament,entries:[...bracketState.tracks.values()],matches:bracketState.matches});}else{bracketMap?.cancel();bracketMap=null;}return;}
     if(e.target.closest('[data-replay-bracket]')){renderBracketReplay();return;}
     const more=e.target.closest("[data-record-more]");
     if(more){openRecordMenu(more);return;}

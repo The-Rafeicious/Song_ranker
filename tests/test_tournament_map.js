@@ -36,6 +36,9 @@ function harness(reduced=false){
  check(new Set(q.plays.map(a=>a.src)).size<=8,'soundtrack uses at most the last eight tracks');
  check(q.d.querySelectorAll('audio').length===0,'finished replay removes its player');
  check(q.timers.size===0,'completion leaves no replay timers');replay.cancel();
+ const pending=harness(),unfinished=fixture();unfinished.tournament.status='in_progress';const final=unfinished.matches.at(-1);final.status='pending';final.winner_id=null;final.loser_id=null;
+ pending.w.TournamentBracket.mount(pending.d.querySelector('#root'),unfinished);pending.d.querySelector('[data-map-track="1"]').click();
+ check(pending.d.querySelector('.bracket-inspector').textContent.includes('2 played matches'),'pending qualification is not counted as a played result');
  const b=harness(),blind=fixture();blind.tournament.status='in_progress';blind.tournament.is_blind=1;blind.matches.forEach(m=>{m.status='pending';m.winner_id=null;m.loser_id=null});
  b.w.TournamentBracket.mount(b.d.querySelector('#root'),blind);
  check(!b.d.querySelector('.bracket-nodes').textContent.includes('Track 2'),'unplayed blind identities remain hidden');
@@ -48,6 +51,6 @@ function harness(reduced=false){
  check(skipped===1&&skip.timers.size===0&&skip.d.querySelectorAll('audio').length===0,'skip cancels timers and audio before podium');
  const away=harness();const controller=away.w.TournamentBracket.mount(away.d.querySelector('#root'),fixture(),{animate:true,sound:true});controller.cancel();await Promise.resolve();
  check(away.timers.size===0&&away.d.querySelectorAll('audio').length===0,'cancellation silences pending play and retires player');
- for(const x of [h,q,b,reduced,skip,away])x.dom.window.close();
+ for(const x of [h,q,b,reduced,skip,away,pending])x.dom.window.close();
  console.log(checks+' tournament map checks passed');
 })().catch(e=>{console.error(e);process.exitCode=1});
