@@ -383,6 +383,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.request.post(base+'/tournament-test-enable');
   await page.goto(base+'/tournament_stats?tournament=77');await page.locator('#tournament-77 .bracket-node').first().waitFor();
   assert.equal(await page.locator('#tournament-77 .bracket-node').count(),7);
+  assert.ok(await page.locator('#tournament-77 .bracket-track').first().evaluate(e=>e.getBoundingClientRect().height>=44),'Bracket tracks keep touch-sized targets');
   await page.locator('#tournament-77 [data-map-track="20"]').first().click();assert.ok((await page.locator('#tournament-77 .bracket-inspector').textContent()).includes('Bracket track 20'));
   assert.equal(await page.locator('#tournament-77 .is-route').count(),3);
   assert.equal(await page.locator('.ts-entity-artist h2').evaluate(e=>getComputedStyle(e).color),'rgb(91, 155, 255)');

@@ -7736,7 +7736,7 @@ body[data-page="shelves"] .shelf-next:not(:disabled):hover {
 .bracket-lines .bracket-line-done { stroke:var(--tournament); }
 .bracket-node { position:absolute; width:212px; padding:6px; border:1px solid #555; border-radius:12px; background:var(--panel,#242424); box-sizing:border-box; }
 .bracket-node > small { display:block; font-size:12px; color:var(--muted); margin-bottom:4px; }
-.bracket-track { display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%; min-width:0; min-height:32px; border:0; border-radius:6px; text-align:left; padding:6px; background:#181818; color:#ddd; margin-top:3px; font-size:13px; }
+.bracket-track { display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%; min-width:0; min-height:44px; border:0; border-radius:6px; text-align:left; padding:6px; background:#181818; color:#ddd; margin-top:3px; font-size:13px; }
 .bracket-track img { width:24px; height:24px; border-radius:4px; object-fit:cover; flex:none; }
 .bracket-track span { flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .bracket-track b { flex:none; }

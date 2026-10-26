@@ -399,7 +399,7 @@ window.TournamentBracket = (() => {
     const size=Number(data.tournament.size), rounds=Math.log2(size);
     if(![8,16,32].includes(size)){root.textContent="This saved bracket has an unsupported size.";return {cancel(){}};}
     const tracks=new Map(data.entries.map(s=>[Number(s.id),s])), byKey=new Map(data.matches.filter(m=>m.match_type!=="third_place").map(m=>[`${m.round_number}:${m.match_number}`,m]));
-    const height=size/2*124, width=rounds*244+32, shown=new Set(), order=replayOrder(data.matches,size).filter(m=>m.status==="completed"), playlist=soundtrack(data);
+    const height=size/2*144, width=rounds*244+32, shown=new Set(), order=replayOrder(data.matches,size).filter(m=>m.status==="completed"), playlist=soundtrack(data);
     let completed=false, timer=null, index=0, closed=false, playing=false, revealing=!!options.animate, lastRevealed=null, selected=null, sound=!!options.sound, cue=null, audio=null, serial=0;
     const failed=new Set();
     const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
@@ -430,8 +430,8 @@ window.TournamentBracket = (() => {
       for(let round=1;round<=rounds;round++){
         const count=size/2**round;
         for(let n=1;n<=count;n++){
-          const saved=byKey.get(`${round}:${n}`), m=saved||{round_number:round,match_number:n}, resolved=saved&&shown.has(saved.id), x=(round-1)*244+16,y=(n-.5)*(height/count)-56;
-          if(round<rounds){const endY=(Math.ceil(n/2)-.5)*height/(count/2);paths+=`<path class="${resolved?'bracket-line-done':''}" d="M${x+212},${y+56} H${x+228} V${endY} H${x+244}"/>`;}
+          const saved=byKey.get(`${round}:${n}`), m=saved||{round_number:round,match_number:n}, resolved=saved&&shown.has(saved.id), x=(round-1)*244+16,y=(n-.5)*(height/count)-63;
+          if(round<rounds){const endY=(Math.ceil(n/2)-.5)*height/(count/2);paths+=`<path class="${resolved?'bracket-line-done':''}" d="M${x+212},${y+63} H${x+228} V${endY} H${x+244}"/>`;}
           html+=`<article class="bracket-node ${resolved?'is-resolved':''} ${resolved&&saved.id===lastRevealed?'is-advancing':''}" data-map-match="${saved?.id||''}" style="left:${x}px;top:${y}px"><small>${label(size,round)} · ${n}</small>`;
           for(const [slot,side] of [['song1_id',0],['song2_id',1]]){
             let id=participant(m,slot);
