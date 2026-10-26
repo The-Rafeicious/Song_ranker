@@ -3420,3 +3420,9 @@ body.site-style-baseline #main .pulse-scale {
     12px Arial,
     sans-serif;
 }
+
+/* Tournament reports retain the shared section order and entity semantics. */
+.tournament-stats-page .mode-stats-caption,.tournament-stats-page .ts-context { color:var(--muted); }
+.tournament-stats-page .ts-entity-artist { --surface-accent:var(--artist); --mode-stats-border:#5b9bff66; --mode-stats-rule:#5b9bff29; }
+.tournament-stats-page .ts-entity-album { --surface-accent:var(--album); --mode-stats-border:#bf77ff66; --mode-stats-rule:#bf77ff29; }
+.tournament-stats-page .ts-entity-tag { --surface-accent:var(--tag); --mode-stats-border:#ffb83366; --mode-stats-rule:#ffb83329; }

@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.4.0 contract. Change the owning shared rule before adding a
+This is the current V5.5.0 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -239,3 +239,17 @@ orange, Blind teal, tournament evidence pink, and artist/album/tag summaries
 their entity colours. Captions stay quiet. The history owns match lists and filters;
 keep only the useful Daily figures disclosure rather than duplicate match previews.
 Evidence-depth and rated-track balance boxes add context without repeated periods.
+
+
+Tournament Stats keeps its shared report shell and section order. Blind is teal,
+Non-blind orange, tournament results pink, and artist/album/tag headings and scope
+segments use entity colours. Captions are quiet. First-round policy and entry-depth
+boxes add context; the shared activity chart owns the seven-day match figures.
+Use the archive disclosure for each bracket, without a second recent-Elo dropdown.
+
+Tournament maps are connected, readable match cards in a bounded two-dimensional
+pan viewport, with direct round buttons, keyboard track selection and route
+highlighting. This diagram scroll does not expand the document width. The same
+component serves saved progress and the result replay. Winners advance in green,
+eliminations carry an explicit cross/strike-through, and a selected route is pink.
+Preserve Blind identity hiding, Skip, Sound on/off and reduced-motion support.

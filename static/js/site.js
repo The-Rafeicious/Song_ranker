@@ -478,7 +478,10 @@
         .forEach((b) => playState(b, false));
     }
   }
+  let bracketMap = null;
   function stopAudio() {
+    bracketMap?.cancel();
+    bracketMap = null;
     cancelPodiumPlayback();
     if (window.PreviewPlayback) window.PreviewPlayback.stopAll();
     else $$("audio").forEach((a) => a.pause());
@@ -2731,7 +2734,7 @@
               : remaining === 8
                 ? "Quarter-finals"
                 : "Round " + active.round_number;
-    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
+    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<button class="btn tournament" type="button" data-view-live-bracket>View bracket</button><div id="live-bracket-map" class="tournament-map" hidden></div><p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
     attachPlayers();
     window.PreviewPlayback?.preloadPair([
       $("#bracket-audio-0"),
@@ -2813,7 +2816,7 @@
       tournament.third_place_id = bronze?.winner_id;
       tournament.fourth_place_id = bronze?.loser_id;
       tournament.status = "completed";
-      renderChampion();
+      renderBracketReplay();
     } catch (error) {
       main.innerHTML = `<section class="panel"><h2 class="tournament">Finish Tournament</h2><p class="tournament-error" role="alert">${esc(error.message)}</p><button class="btn primary" data-bracket-next>Retry →</button><a class="btn" href="/tournament">Saved tournaments</a></section>`;
     } finally {
@@ -2925,7 +2928,7 @@
     }
     await playPodium(index);
   }
-  function startPodium() {
+  function startPodium(autoplay = true) {
     const queue = $$(".podium-entry audio").filter((a) =>
       a.getAttribute("src"),
     );
@@ -2973,10 +2976,17 @@
         }
       });
     });
-    if (queue.length) playPodium(0);
+    if (queue.length && autoplay) playPodium(0);
     else podiumControl();
   }
-  function renderChampion() {
+  function renderBracketReplay() {
+    cancelRoundTransition();stopAudio();
+    main.innerHTML='<div class="page-head"><h1 class="tournament">Road to the podium</h1></div><section class="panel"><div id="tournament-replay" class="tournament-map"></div></section>';
+    bracketMap=window.TournamentBracket.mount($("#tournament-replay"),{
+      tournament:bracketState.tournament,entries:[...bracketState.tracks.values()],matches:bracketState.matches
+    },{animate:true,sound:true,onDone:state=>renderChampion(state.sound)});
+  }
+  function renderChampion(autoplay = true) {
     cancelRoundTransition();
     stopAudio();
     const { tournament, tracks, matches } = bracketState,
@@ -2992,9 +3002,9 @@
         Number(tournament.runner_up_id || final?.loser_id),
       ),
       third = tracks.get(Number(tournament.third_place_id));
-    main.innerHTML = `<div class="page-head podium-heading"><h1 class="tournament">Tournament Podium</h1></div><section class="winner-podium" aria-label="Tournament podium">${podiumEntry(s, 1, matches)}${runner ? podiumEntry(runner, 2, matches) : ""}${third ? podiumEntry(third, 3, matches) : ""}</section><div class="champion-actions"><button type="button" class="btn" data-podium-toggle aria-pressed="false">Play previews</button><a class="btn primary" href="/tournament">Play Again →</a></div>`;
+    main.innerHTML = `<div class="page-head podium-heading"><h1 class="tournament">Tournament Podium</h1></div><section class="winner-podium" aria-label="Tournament podium">${podiumEntry(s, 1, matches)}${runner ? podiumEntry(runner, 2, matches) : ""}${third ? podiumEntry(third, 3, matches) : ""}</section><div class="champion-actions"><button type="button" class="btn" data-podium-toggle aria-pressed="false">Play previews</button><button class="btn tournament" type="button" data-replay-bracket>View bracket &amp; replay</button><a class="btn primary" href="/tournament">Play Again →</a></div>`;
     attachPlayers();
-    startPodium();
+    startPodium(autoplay);
   }
   function podiumEntry(s, place, matches) {
     const won = matches.filter((m) => m.winner_id === s.id),
@@ -3004,6 +3014,8 @@
   }
 
   document.addEventListener("click", e=>{
+    if(e.target.closest('[data-view-live-bracket]')){const root=$("#live-bracket-map");root.hidden=!root.hidden;if(!root.hidden){bracketMap?.cancel();bracketMap=window.TournamentBracket.mount(root,{tournament:bracketState.tournament,entries:[...bracketState.tracks.values()],matches:bracketState.matches});}else{bracketMap?.cancel();bracketMap=null;}return;}
+    if(e.target.closest('[data-replay-bracket]')){renderBracketReplay();return;}
     const more=e.target.closest("[data-record-more]");
     if(more){openRecordMenu(more);return;}
     if(recordMenu && (!recordMenu.panel.contains(e.target) || e.target.closest("button")))closeRecordMenu();
@@ -3589,6 +3601,7 @@
           : count < size
             ? count + " eligible tracks · " + size + " needed"
             : count + " eligible tracks · " + size + " enter the bracket";
+    if(ready) ready.textContent += scope === 'global' ? ' · Full first-round Elo' : scope === 'tag' ? ' · Half first-round Elo' : ' · Tournament points only';
     const rows = options.filter((r) =>
       normal(r.name + " " + (r.artist || "") + " #" + r.id).includes(q),
     );

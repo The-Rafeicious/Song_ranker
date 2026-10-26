@@ -133,6 +133,7 @@ def attach_reports(conn, data, mode, now=None):
         data['tournament_elo']=dict(standard=sum(r['mode']=='standard' for r in rows),blind=sum(r['mode']=='blind' for r in rows),total=len(rows),full=sum(r['rating_weight']==1 for r in rows),
             half=sum(r['rating_weight']==.5 for r in rows),
             tracks=len({sid for r in rows for sid in (r['winner_id'],r['loser_id']) if sid is not None}))
-        from songranker.services import fetch_match_history
-        data['tournament_elo_history']=fetch_match_history(conn,origin='tournament',limit=4) if rows else []
+        data['tournament_elo']['points_only'] = conn.execute("""SELECT COUNT(*) FROM tournament_matches m JOIN tournaments t ON t.id=m.tournament_id
+            WHERE t.scope_type IN ('artist','album') AND m.round_number=1 AND m.match_type='bracket'
+            AND m.status='completed' AND m.winner_id IS NOT NULL AND m.loser_id IS NOT NULL AND m.winner_id!=m.loser_id""").fetchone()[0]
     return data

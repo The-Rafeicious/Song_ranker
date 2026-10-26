@@ -328,6 +328,7 @@ def save_tournament_preference(conn, tournament, match, winner, loser):
     """Only newly created, eligible first rounds enter the shared preference log."""
     if (
         tournament["elo_policy_version"] != 1
+        or tournament["scope_type"] in ("artist", "album")
         or match["round_number"] != 1
         or match["match_type"] != "bracket"
     ):

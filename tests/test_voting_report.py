@@ -124,7 +124,7 @@ class VotingReportTests(unittest.TestCase):
 
     def test_half_weight_tournament_match_still_qualifies_both_tracks(self):
         self.conn.execute(
-            "INSERT INTO tournaments(id,size,scope_type,scope_id,elo_policy_version,elo_weight) VALUES(1,8,'album',1,1,0.5)"
+            "INSERT INTO tournaments(id,size,scope_type,scope_id,elo_policy_version,elo_weight) VALUES(1,8,'tag',1,1,0.5)"
         )
         self.conn.execute(
             "INSERT INTO tournament_matches(id,tournament_id,round_number,match_number,song1_id,song2_id) VALUES(1,1,1,1,3,4)"

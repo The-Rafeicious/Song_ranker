@@ -27,7 +27,7 @@ feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 4. Use the new code with upgraded databases. Older code may refuse a newer schema;
    source rollback alone does not roll back database structure.
 
-`APP_VERSION` is `5.4.0`; Vibe reports `Vibe-Map-v1.1`.
+`APP_VERSION` is `5.5.0`; Vibe reports `Vibe-Map-v1.1`.
 The documentation release labels v5.1.0/v5.1.1 do not change the runtime footer.
 Install dependencies from `requirements.txt`; configuration is in the
 [technical guide](TECHNICAL_GUIDE.md#configuration).
@@ -58,6 +58,22 @@ workflow, and run the pre-V5.4.0 source. Returning only the source or only the
 archive does not provide a consistent rollback. Starting V5.4.0 with that old
 archive will activate adaptive Elo again. The archive restores the whole database
 to that point in time; it does not merge later votes.
+
+## Artist/album tournament Elo removal (V5.5.0)
+
+The first launch archives affected databases to
+`database_backups/pre_tournament_scope_<timestamp>.db` before removing existing
+artist/album first-round Elo influence. The startup log prints the path. Original
+votes remain saved as facts with void corrections; tournament matches, points,
+placements, catalogue and other modes are retained. Public/independent Elo and
+preference evidence replay without those events. Tags retain half influence and
+whole-library tournaments retain full influence.
+
+The retirement is transactional and runs only while affected policy flags/events
+remain. Failure stops startup with previous data intact. To roll back, stop the
+app, preserve any newer work separately, and restore the archive together with
+pre-V5.5.0 source. Restoring it under V5.5.0 will retire the selective Elo again on
+startup. Schema stays 21, using the existing points-only tournament policy.
 
 ## First competition transfer
 

@@ -86,8 +86,8 @@ def api_generate_bracket():
             """INSERT INTO tournaments
                     (size, scope_type, scope_id, status, created_at, updated_at, current_round, points_version, is_blind, playoff_enabled,
                      elo_policy_version,elo_weight)
-                    VALUES (?, ?, ?, 'in_progress', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 1, ?, 1, 1, ?)""",
-            (size, scope, scope_id, is_blind, 1 if scope == "global" else 0.5),
+                    VALUES (?, ?, ?, 'in_progress', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 1, ?, 1, ?, ?)""",
+            (size, scope, scope_id, is_blind, 0 if scope in ("artist", "album") else 1, 1 if scope == "global" else 0.5 if scope == "tag" else 0),
         )
         tournament_id = cursor.lastrowid
         for seed, song in enumerate(songs, start=1):
@@ -112,8 +112,8 @@ def api_generate_bracket():
                 "tournament_id": tournament_id,
                 "tracks": songs,
                 "matches": _tournament_matches(conn, tournament_id),
-                "elo_policy_version": 1,
-                "elo_weight": 1 if scope == "global" else 0.5,
+                "elo_policy_version": 0 if scope in ("artist", "album") else 1,
+                "elo_weight": 1 if scope == "global" else 0.5 if scope == "tag" else 0,
             }
         )
     except Exception:
@@ -196,7 +196,6 @@ def api_tournament_vote():
             return jsonify({"error": "Tournament not found."}), 404
         if (
             match
-            and tournament["elo_policy_version"] == 1
             and match["status"] == "completed"
         ):
             conn.rollback()
@@ -206,7 +205,7 @@ def api_tournament_vote():
                     409,
                 )
             event = conn.execute(
-                "SELECT * FROM preference_events WHERE tournament_match_id=?",
+                "SELECT p.* FROM preference_events p JOIN preference_effective e ON e.id=p.id WHERE p.tournament_match_id=? AND e.active=1",
                 (match_id,),
             ).fetchone()
             from songranker.modes.preferences import receipt
@@ -1060,6 +1059,11 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
                 )
             )
         t["rounds"] = [dict(label=k, matches=v) for k, v in groups.items()]
+        t["map_data"] = dict(
+            tournament={key: t[key] for key in ("id", "size", "status", "is_blind")},
+            entries=[dict(identity(e["song_id"]), artist=", ".join(a["name"] for a in identity(e["song_id"])["artist_links"])) for e in entries_by[t["id"]]],
+            matches=matches_by[t["id"]],
+        )
         t["selected"] = t["id"] == selected
     return attach_reports(
         conn,
@@ -1103,6 +1107,10 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
                 total=len(songs),
                 champions=sum(s["championships"] > 0 for s in songs.values()),
                 share=percent(len(entered_songs), len(songs)),
+                single=sum(s["entries"] == 1 for s in entered_songs),
+                repeat=sum(s["entries"] >= 2 for s in entered_songs),
+                five_plus=sum(s["entries"] >= 5 for s in entered_songs),
+                average=round(sum(s["entries"] for s in entered_songs) / len(entered_songs), 2) if entered_songs else None,
             ),
             stages=[
                 dict(label=k, count=v, share=percent(v, len(decided)))
