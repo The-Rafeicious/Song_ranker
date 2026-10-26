@@ -526,6 +526,7 @@
       trivia: "recognition",
       tournament_play: "tournament",
       tournament_stats: "tournament",
+      tournament_bracket: "tournament",
       guesser_stats: "guesser",
       shelves_stats: "shelves",
       dev: "mixed",

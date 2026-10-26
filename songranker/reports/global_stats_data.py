@@ -142,11 +142,11 @@ def build_global_stats(conn):
     guess['most_tested']=special_leader('guess_attempts')
     missed_guesses=[dict(songs[sid],value=r['guess_attempts']-r['guess_correct']) for sid,r in special.items() if r['guess_attempts']>r['guess_correct']]
     guess['most_missed']=max(missed_guesses,key=lambda s:(s['value'],s['elo_score']),default=None)
-    from songranker.modes.shelves import SHELF_REPORT_FILTER
+    from songranker.modes.shelves import shelf_report_filter
     shelf_albums=[dict(r) for r in conn.execute(f'''SELECT a.*,COUNT(DISTINCT i.round_id) rounds,
         COUNT(*) placements,SUM(i.answer_slot!=i.album_slot) misses FROM album_shelf_items i
         JOIN album_shelf_rounds r ON r.id=i.round_id JOIN albums a ON a.id=i.album_id
-        WHERE {SHELF_REPORT_FILTER} GROUP BY a.id''')]
+        WHERE {shelf_report_filter(conn)} GROUP BY a.id''')]
     shelf.update(albums=len(shelf_albums),album_accuracy=percent(shelf['album_correct'],shelf['tracks']),
         order_accuracy=percent(shelf['order_right'],shelf['order_pairs']),
         most_played=max(shelf_albums,key=lambda a:(a['rounds'],a['placements']),default=None),
@@ -214,10 +214,10 @@ def build_global_stats(conn):
         elif not scope:metrics.append(metric(scope_kind.capitalize(),'scope'))
         event('tournament',t['id'],t['completed_at'] or t['created_at'],'Tournament',f"{t['size']}-track bracket · champion",
               f"/tournament?tournament={t['id']}",[dict(saved_song(t['champion_id']),role='Champion')],metrics,scope=scope)
-    shelf_times={r['id']:r['completed_at'] for r in conn.execute(f'SELECT id,completed_at FROM album_shelf_rounds r WHERE {SHELF_REPORT_FILTER} ORDER BY completed_at DESC,id DESC LIMIT 10')}
+    shelf_times={r['id']:r['completed_at'] for r in conn.execute(f'SELECT id,completed_at FROM album_shelf_rounds r WHERE {shelf_report_filter(conn)} ORDER BY completed_at DESC,id DESC LIMIT 10')}
     shelf_membership=defaultdict(dict)
     for item in conn.execute(f'''SELECT round_id,album_slot,album_id FROM album_shelf_items
-        WHERE round_id IN (SELECT id FROM album_shelf_rounds r WHERE {SHELF_REPORT_FILTER}
+        WHERE round_id IN (SELECT id FROM album_shelf_rounds r WHERE {shelf_report_filter(conn)}
             ORDER BY completed_at DESC,id DESC LIMIT 10) ORDER BY round_id,album_slot,item_slot'''):
         shelf_membership[item['round_id']].setdefault(item['album_slot'],item['album_id'])
     for r in recent_shelves:

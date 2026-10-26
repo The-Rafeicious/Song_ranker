@@ -29,6 +29,11 @@ function harness(reduced=false){
  check(root.querySelector('.bracket-inspector').textContent.includes('5 wins'),'inspector reports path wins');
  root.querySelector('[data-map-round="4"]').click();check(root.querySelector('.bracket-viewport').scrollLeft===1186,'round button pans inside the map');
  check(h.plays.length===0,'viewing a saved bracket does not load audio');tree.cancel();
+ const bronzeHarness=harness(),withBronze=fixture();withBronze.matches.push({id:8,round_number:3,match_number:0,match_type:'third_place',song1_id:3,song2_id:7,winner_id:3,loser_id:7,status:'completed',points_awarded:1});
+ bronzeHarness.w.TournamentBracket.mount(bronzeHarness.d.querySelector('#root'),withBronze);
+ check(bronzeHarness.d.querySelectorAll('.bracket-third .bracket-track').length===2,'third place is an interactive match');
+ check(parseFloat(bronzeHarness.d.querySelector('.bracket-third').style.top)>parseFloat(bronzeHarness.d.querySelector('.bracket-final').style.top),'third place sits below the central final');
+ bronzeHarness.dom.window.close();
  const q=harness(),eight=fixture(),second=q.d.querySelector('#root');let done=0;
  const replay=q.w.TournamentBracket.mount(second,eight,{animate:true,sound:true,onDone:()=>done++});
  check(second.querySelectorAll('.is-resolved').length===1,'replay reveals one result at a time');

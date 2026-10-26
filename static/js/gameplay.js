@@ -404,7 +404,7 @@ window.TournamentBracket = (() => {
     const failed=new Set();
     const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if(!options.animate || reduced) order.forEach(m=>shown.add(m.id));
-    root.innerHTML=`<div class="bracket-toolbar"><div class="bracket-stages" aria-label="Bracket rounds">${Array.from({length:rounds},(_,i)=>`<button type="button" class="btn" data-map-round="${i}">${label(size,i+1)}</button>`).join('')}</div><div class="bracket-actions"><button type="button" class="btn tournament" data-map-replay>Replay bracket</button><button type="button" class="btn" data-map-sound aria-pressed="${sound}">Sound ${sound?'on':'off'}</button><button type="button" class="btn" data-map-skip>${options.onDone?'Skip to podium':'Show saved results'}</button></div></div><p class="bracket-status" role="status" aria-live="polite"></p><div class="bracket-viewport" tabindex="0" aria-label="Tournament bracket; scroll to explore rounds"><div class="bracket-canvas" style="width:${width}px;height:${height+65}px"><svg class="bracket-lines" width="${width}" height="${height}" aria-hidden="true"></svg><div class="bracket-nodes"></div></div></div><div class="bracket-inspector" aria-live="polite">Select a track to highlight its route through the bracket.</div>`;
+    root.innerHTML=`<div class="bracket-toolbar"><div class="bracket-stages" aria-label="Bracket rounds"><button type="button" class="btn" data-map-half="left">Left half</button><button type="button" class="btn" data-map-half="right">Right half</button>${Array.from({length:rounds},(_,i)=>`<button type="button" class="btn" data-map-round="${i}">${label(size,i+1)}</button>`).join('')}</div><div class="bracket-actions"><button type="button" class="btn tournament" data-map-replay>Replay bracket</button><button type="button" class="btn" data-map-sound aria-pressed="${sound}">Sound ${sound?'on':'off'}</button><button type="button" class="btn" data-map-skip>${options.onDone?'Skip to podium':'Show saved results'}</button></div></div><p class="bracket-status" role="status" aria-live="polite"></p><div class="bracket-viewport" tabindex="0" aria-label="Tournament bracket; scroll to explore rounds"><div class="bracket-canvas" style="width:${width}px;height:${height+65}px"><svg class="bracket-lines" width="${width}" height="${height}" aria-hidden="true"></svg><div class="bracket-nodes"></div></div></div><div class="bracket-inspector" aria-live="polite">Select a track to highlight its route through the bracket.</div>`;
     const viewport=root.querySelector('.bracket-viewport'), nodes=root.querySelector('.bracket-nodes'), svg=root.querySelector('svg'), status=root.querySelector('.bracket-status'), inspector=root.querySelector('.bracket-inspector');
     function stopSound(){serial++; if(audio){window.PreviewPlayback?.cancel?.(audio);audio.pause();audio.remove();audio=null;}cue=null;}
     function playCue(side){
@@ -444,7 +444,7 @@ window.TournamentBracket = (() => {
           for(const [slot,side] of [['song1_id',0],['song2_id',1]]){
             let id=participant(m,slot);
             // An advancing identity only appears after its feeder has resolved.
-            if(!bronze&&round>1&&!shown.has(byKey.get(`${round-1}:${(n-1)*2+side+1}`)?.id)&&revealing&&!reduced)id=null;
+            if(round>1&&revealing&&!reduced&&(bronze?![1,2].every(n=>shown.has(byKey.get(`${rounds-1}:${n}`)?.id)):!shown.has(byKey.get(`${round-1}:${(n-1)*2+side+1}`)?.id)))id=null;
             const hidden=data.tournament.is_blind&&data.tournament.status!=='completed'&&!resolved, song=tracks.get(Number(id));
             const name=hidden?'Hidden track':song?.title||(id?'Track unavailable':'Awaiting winner'), won=resolved&&m.winner_id===id, lost=resolved&&m.loser_id===id;
             html+=`<button type="button" class="bracket-track ${won?'is-winner':''} ${lost?'is-eliminated':''} ${id&&id===selected?'is-route':''}" data-map-track="${hidden||!song?'':id||''}" title="${esc(name)}" aria-pressed="${!!id&&id===selected}" aria-label="${esc(name)}, ${won?'Winner':lost?'Eliminated':'Pending'}" ${!id||hidden||!song?'disabled':''}>${!hidden&&song?.cover_url?`<img src="${esc(song.cover_url)}" alt="" loading="lazy">`:""}<span>${esc(name)}</span><b>${won?'✓':lost?'×':'·'}</b></button>`;
@@ -470,6 +470,7 @@ window.TournamentBracket = (() => {
     function handleClick(event){if(closed)return;
       const button=event.target.closest('button');if(!button)return;
       if(button.hasAttribute('data-map-round')){const round=Number(button.dataset.mapRound)+1, match=data.matches.find(m=>m.round_number===round&&m.match_type!=='third_place'&&(m.song1_id===selected||m.song2_id===selected)), n=match?.match_number||1;pan(round,n);}
+      if(button.hasAttribute('data-map-half'))pan(1,button.dataset.mapHalf==='right'?size/4+1:1);
       if(button.hasAttribute('data-map-replay'))replay();
       if(button.hasAttribute('data-map-sound')){sound=!sound;button.textContent='Sound '+(sound?'on':'off');button.setAttribute('aria-pressed',String(sound));if(!sound)stopSound();else if(playing)playCue(0);}
       if(button.hasAttribute('data-map-skip'))finish();

@@ -7,6 +7,7 @@ import unittest
 
 import test_preferences as fixture
 from songranker import services
+from songranker.modes import trivia
 from songranker.catalog import proper_album
 from songranker.modes.shelves import shelf_pool
 from songranker.overall import shelf_eligible_ids
@@ -93,6 +94,9 @@ class AlbumShelvesTests(unittest.TestCase):
         self.assertEqual(client.get('/api/special-modes/stats').json['participating_albums'],[])
         report=build_shelves_stats(self.conn)
         self.assertEqual(report['summary']['rounds'],0)
+        from songranker.reports.stats_activity import build_activity
+        self.assertEqual(build_activity(self.conn,'shelves')['total'],0)
+        self.assertEqual(build_activity(self.conn,'global')['total'],0)
         self.assertNotIn('Album</a>',client.get('/album_shelves_stats').get_data(as_text=True))
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM album_shelf_items').fetchone()[0],10)
         self.edit(False)
@@ -102,8 +106,7 @@ class AlbumShelvesTests(unittest.TestCase):
         self.conn.execute("UPDATE songs SET audio_url='' WHERE album_id=2")
         self.conn.commit()
         self.edit(True)
-        from songranker.modes import trivia
-        response=self.client().get('/api/trivia/round')
+        response=self.client().get('/api/trivia/round',headers={'Content-Type':'application/json'})
         self.assertEqual(response.status_code,200,response.json)
         self.assertFalse(response.json['album_available'])
         self.assertNotIn('album',response.json['fields'])

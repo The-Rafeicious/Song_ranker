@@ -507,29 +507,30 @@ Album Shelves eligibility, ordering/grading and detailed Shelves Stats.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [shelf_position](../songranker/modes/shelves.py#L23) | `item` | Order a saved position by disc, then track; legacy facts default to disc one. |
-| [grade_shelf](../songranker/modes/shelves.py#L28) | `items` | 0.5 membership points + up to 2.5 relative-order points per track. |
-| [album_shelves](../songranker/modes/shelves.py#L78) | `` | Album shelves; GET /album_shelves. |
-| [shelf_stats](../songranker/modes/shelves.py#L83) | `` | Shelf stats; GET /album_shelves_stats. |
-| [shelf_pool](../songranker/modes/shelves.py#L101) | `conn` | The existing numbered/proper-album pool, shared by the picker and stats. |
-| [shelf_candidates](../songranker/modes/shelves.py#L123) | `conn, count` | Draw eligible albums and tracks using production exposure, recency and Vibe-aware selection. |
-| [shelf_payload](../songranker/modes/shelves.py#L147) | `conn, row` | Shelf payload; reads album_shelf_items, albums, songs. |
-| [shelf_round](../songranker/modes/shelves.py#L175) | `` | Shelf round; POST /api/album-shelves/round. |
-| [shelf_answer](../songranker/modes/shelves.py#L243) | `` | Shelf answer; POST /api/album-shelves/answer. |
-| [percentage](../songranker/modes/shelves.py#L322) | `right, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [saved_date](../songranker/modes/shelves.py#L326) | `value` | Parse a saved result date for report display and ordering. |
-| [integer](../songranker/modes/shelves.py#L336) | `value, low=1, high=None` | Validate/normalise the feature’s integer input before using it. |
-| [can_grade](../songranker/modes/shelves.py#L340) | `items, rules` | Validate saved Shelves rules, slots, track positions and unique identities before reconstructing a grade. |
-| [can_grade.unique](../songranker/modes/shelves.py#L359) | `keys` | Check that a chosen tuple of saved item fields is unique within the round. |
-| [empty_counts](../songranker/modes/shelves.py#L372) | `` | Create the zeroed track/order/point counters shared by Shelves report aggregates. |
-| [add_counts](../songranker/modes/shelves.py#L389) | `target, source` | Accumulate one Shelves result's known counters into an existing aggregate. |
-| [item_counts](../songranker/modes/shelves.py#L395) | `item` | Project a graded track into album/order/point and error-category report counters. |
-| [finish_counts](../songranker/modes/shelves.py#L413) | `row` | Derive album/order accuracy and wrong-order counts from aggregated Shelves counters. |
-| [window_totals](../songranker/modes/shelves.py#L425) | `rows` | Summarise Shelves rounds in a report window, distinguishing graded results from unknown history. |
-| [page_number](../songranker/modes/shelves.py#L445) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
-| [build_shelves_stats](../songranker/modes/shelves.py#L455) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
-| [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L486) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
-| [build_shelves_stats.records](../songranker/modes/shelves.py#L755) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
+| [shelf_report_filter](../songranker/modes/shelves.py#L23) | `conn` | Hide excluded saved rounds; pre-22 read-only archives have no exclusions. |
+| [shelf_position](../songranker/modes/shelves.py#L29) | `item` | Order a saved position by disc, then track; legacy facts default to disc one. |
+| [grade_shelf](../songranker/modes/shelves.py#L34) | `items` | 0.5 membership points + up to 2.5 relative-order points per track. |
+| [album_shelves](../songranker/modes/shelves.py#L84) | `` | Album shelves; GET /album_shelves. |
+| [shelf_stats](../songranker/modes/shelves.py#L89) | `` | Shelf stats; GET /album_shelves_stats. |
+| [shelf_pool](../songranker/modes/shelves.py#L107) | `conn` | The existing numbered/proper-album pool, shared by the picker and stats. |
+| [shelf_candidates](../songranker/modes/shelves.py#L129) | `conn, count` | Draw eligible albums and tracks using production exposure, recency and Vibe-aware selection. |
+| [shelf_payload](../songranker/modes/shelves.py#L153) | `conn, row` | Shelf payload; reads album_shelf_items, albums, songs. |
+| [shelf_round](../songranker/modes/shelves.py#L181) | `` | Shelf round; POST /api/album-shelves/round. |
+| [shelf_answer](../songranker/modes/shelves.py#L249) | `` | Shelf answer; POST /api/album-shelves/answer. |
+| [percentage](../songranker/modes/shelves.py#L328) | `right, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [saved_date](../songranker/modes/shelves.py#L332) | `value` | Parse a saved result date for report display and ordering. |
+| [integer](../songranker/modes/shelves.py#L342) | `value, low=1, high=None` | Validate/normalise the feature’s integer input before using it. |
+| [can_grade](../songranker/modes/shelves.py#L346) | `items, rules` | Validate saved Shelves rules, slots, track positions and unique identities before reconstructing a grade. |
+| [can_grade.unique](../songranker/modes/shelves.py#L365) | `keys` | Check that a chosen tuple of saved item fields is unique within the round. |
+| [empty_counts](../songranker/modes/shelves.py#L378) | `` | Create the zeroed track/order/point counters shared by Shelves report aggregates. |
+| [add_counts](../songranker/modes/shelves.py#L395) | `target, source` | Accumulate one Shelves result's known counters into an existing aggregate. |
+| [item_counts](../songranker/modes/shelves.py#L401) | `item` | Project a graded track into album/order/point and error-category report counters. |
+| [finish_counts](../songranker/modes/shelves.py#L419) | `row` | Derive album/order accuracy and wrong-order counts from aggregated Shelves counters. |
+| [window_totals](../songranker/modes/shelves.py#L431) | `rows` | Summarise Shelves rounds in a report window, distinguishing graded results from unknown history. |
+| [page_number](../songranker/modes/shelves.py#L451) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
+| [build_shelves_stats](../songranker/modes/shelves.py#L461) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
+| [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L492) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
+| [build_shelves_stats.records](../songranker/modes/shelves.py#L761) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
 
 ## songranker/modes/tournament.py
 
@@ -1039,17 +1040,17 @@ Album-only Shelves exclusions, preserved rounds and lossless schema upgrades.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [AlbumShelvesTests.client](../tests/test_album_shelves.py#L21) | `self` | Create the test HTTP client with the requested authentication state. |
-| [AlbumShelvesTests.edit](../tests/test_album_shelves.py#L26) | `self, flag, **extra` | Edit. |
-| [AlbumShelvesTests.test_flag_only_excludes_shelves_and_can_be_reversed](../tests/test_album_shelves.py#L29) | `self` | Verify flag only excludes shelves and can be reversed. |
-| [AlbumShelvesTests.test_saved_round_can_still_be_graded_after_exclusion](../tests/test_album_shelves.py#L46) | `self` | Verify saved round can still be graded after exclusion. |
-| [AlbumShelvesTests.test_new_rounds_use_other_albums_and_old_clients_preserve_flag](../tests/test_album_shelves.py#L59) | `self` | Verify new rounds use other albums and old clients preserve flag. |
-| [AlbumShelvesTests.test_excluded_history_is_hidden_everywhere_and_returns_when_included](../tests/test_album_shelves.py#L72) | `self` | Verify excluded history is hidden everywhere and returns when included. |
-| [AlbumShelvesTests.test_new_trivia_skips_excluded_album_name_but_preserves_album](../tests/test_album_shelves.py#L101) | `self` | Verify new trivia skips excluded album name but preserves album. |
-| [AlbumShelvesTests.test_dedicated_bracket_page_has_missing_record_404](../tests/test_album_shelves.py#L112) | `self` | Verify dedicated bracket page has missing record 404. |
-| [AlbumShelvesTests.test_invalid_flags_are_rejected_without_changes_and_auth_is_required](../tests/test_album_shelves.py#L115) | `self` | Verify invalid flags are rejected without changes and auth is required. |
-| [AlbumShelvesTests.test_flag_survives_sql_and_lossless_export_rebuild](../tests/test_album_shelves.py#L122) | `self` | Verify flag survives sql and lossless export rebuild. |
-| [AlbumShelvesTests.test_schema_21_upgrade_and_unversioned_dump_default_to_included](../tests/test_album_shelves.py#L133) | `self` | Verify schema 21 upgrade and unversioned dump default to included. |
+| [AlbumShelvesTests.client](../tests/test_album_shelves.py#L22) | `self` | Create the test HTTP client with the requested authentication state. |
+| [AlbumShelvesTests.edit](../tests/test_album_shelves.py#L27) | `self, flag, **extra` | Edit. |
+| [AlbumShelvesTests.test_flag_only_excludes_shelves_and_can_be_reversed](../tests/test_album_shelves.py#L30) | `self` | Verify flag only excludes shelves and can be reversed. |
+| [AlbumShelvesTests.test_saved_round_can_still_be_graded_after_exclusion](../tests/test_album_shelves.py#L47) | `self` | Verify saved round can still be graded after exclusion. |
+| [AlbumShelvesTests.test_new_rounds_use_other_albums_and_old_clients_preserve_flag](../tests/test_album_shelves.py#L60) | `self` | Verify new rounds use other albums and old clients preserve flag. |
+| [AlbumShelvesTests.test_excluded_history_is_hidden_everywhere_and_returns_when_included](../tests/test_album_shelves.py#L73) | `self` | Verify excluded history is hidden everywhere and returns when included. |
+| [AlbumShelvesTests.test_new_trivia_skips_excluded_album_name_but_preserves_album](../tests/test_album_shelves.py#L105) | `self` | Verify new trivia skips excluded album name but preserves album. |
+| [AlbumShelvesTests.test_dedicated_bracket_page_has_missing_record_404](../tests/test_album_shelves.py#L115) | `self` | Verify dedicated bracket page has missing record 404. |
+| [AlbumShelvesTests.test_invalid_flags_are_rejected_without_changes_and_auth_is_required](../tests/test_album_shelves.py#L118) | `self` | Verify invalid flags are rejected without changes and auth is required. |
+| [AlbumShelvesTests.test_flag_survives_sql_and_lossless_export_rebuild](../tests/test_album_shelves.py#L125) | `self` | Verify flag survives sql and lossless export rebuild. |
+| [AlbumShelvesTests.test_schema_21_upgrade_and_unversioned_dump_default_to_included](../tests/test_album_shelves.py#L136) | `self` | Verify schema 21 upgrade and unversioned dump default to included. |
 
 ## tests/test_apple_source_columns.py
 
@@ -1851,4 +1852,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1266 Python definitions**.
+Total: **1267 Python definitions**.

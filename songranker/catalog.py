@@ -394,7 +394,7 @@ def ranked(data, kind):
 
 
 def special_records(conn):
-    from songranker.modes.shelves import grade_shelf, SHELF_REPORT_FILTER
+    from songranker.modes.shelves import grade_shelf, shelf_report_filter
 
     """Derive song figures and global mode records from answered rounds only."""
     keys = (
@@ -441,12 +441,12 @@ def special_records(conn):
     shelf_items = defaultdict(list)
     for row in conn.execute(
         f"""SELECT i.* FROM album_shelf_items i JOIN album_shelf_rounds r ON r.id=i.round_id
-                              WHERE {SHELF_REPORT_FILTER} ORDER BY r.id,i.item_slot"""
+                              WHERE {shelf_report_filter(conn)} ORDER BY r.id,i.item_slot"""
     ):
         shelf_items[row["round_id"]].append(dict(row))
     shelf_rows = []
     for round_row in conn.execute(
-        f"SELECT id,completed_at FROM album_shelf_rounds r WHERE {SHELF_REPORT_FILTER} ORDER BY completed_at,id"
+        f"SELECT id,completed_at FROM album_shelf_rounds r WHERE {shelf_report_filter(conn)} ORDER BY completed_at,id"
     ):
         graded = grade_shelf(shelf_items[round_row["id"]])
         shelf_rows.append(
@@ -501,7 +501,7 @@ def special_records(conn):
             albums_played=conn.execute(
                 f"""SELECT COUNT(DISTINCT i.album_id) FROM album_shelf_items i
                 JOIN album_shelf_rounds r ON r.id=i.round_id JOIN albums a ON a.id=i.album_id
-                WHERE {SHELF_REPORT_FILTER}"""
+                WHERE {shelf_report_filter(conn)}"""
             ).fetchone()[0],
         ),
     )
@@ -533,7 +533,7 @@ def display_song(conn, sid, include_album=True):
 
 @app.route("/api/special-modes/stats")
 def special_stats():
-    from songranker.modes.shelves import grade_shelf, SHELF_REPORT_FILTER
+    from songranker.modes.shelves import grade_shelf, shelf_report_filter
 
     conn = get_db_connection()
     try:
@@ -544,12 +544,12 @@ def special_stats():
             SELECT a.id,a.title,a.cover_url,COUNT(DISTINCT r.id) AS rounds,
                 COUNT(*) AS attempts,SUM(i.answer_slot=i.album_slot) AS correct
             FROM album_shelf_items i JOIN album_shelf_rounds r ON r.id=i.round_id
-            JOIN albums a ON a.id=i.album_id WHERE {SHELF_REPORT_FILTER}
+            JOIN albums a ON a.id=i.album_id WHERE {shelf_report_filter(conn)}
             GROUP BY a.id ORDER BY rounds DESC,a.title COLLATE NOCASE""")]
         by_round = defaultdict(list)
         for row in conn.execute(
             f"""SELECT i.* FROM album_shelf_items i JOIN album_shelf_rounds r ON r.id=i.round_id
-                WHERE {SHELF_REPORT_FILTER}"""
+                WHERE {shelf_report_filter(conn)}"""
         ):
             by_round[row["round_id"]].append(dict(row))
         order = defaultdict(lambda: dict(order_right=0, order_pairs=0))

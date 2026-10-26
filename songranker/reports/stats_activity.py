@@ -88,10 +88,10 @@ def build_activity(conn, mode, now=None):
             add(row['completed_at'],'guesser',int((slot==1)==(a>b)) if valid else 0,int(valid))
     if mode in ('global','shelves'):
         from songranker.modes.shelves import can_grade
-        from songranker.modes.shelves import grade_shelf, SHELF_REPORT_FILTER
+        from songranker.modes.shelves import grade_shelf, shelf_report_filter
         groups=defaultdict(list)
         for item in rows('album_shelf_items'):groups[item['round_id']].append(item)
-        visible={r['id'] for r in conn.execute(f'SELECT r.id FROM album_shelf_rounds r WHERE {SHELF_REPORT_FILTER}')}
+        visible={r['id'] for r in conn.execute(f'SELECT r.id FROM album_shelf_rounds r WHERE {shelf_report_filter(conn)}')}
         for row in rows('album_shelf_rounds'):
             if row['id'] not in visible:continue
             items=groups[row['id']]
