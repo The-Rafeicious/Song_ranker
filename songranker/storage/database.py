@@ -93,10 +93,10 @@ def _migrate_legacy(filename):
     finally: conn.close()
 
 
-def _canonical_columns_present(conn, *, legacy_discs=False):
+def _canonical_columns_present(conn, *, legacy_discs=False, legacy_shelves=False):
     objects = {row[0]: row[1] for row in conn.execute("SELECT name,type FROM sqlite_master")}
     types_ok = all(objects.get(name) == kind for kind, name, _ in definitions() if kind in ('table','view'))
-    return types_ok and all((set(expected) - ({'disc_number'} if legacy_discs and name in ('songs','album_shelf_items') else set())) == {r[1] for r in conn.execute(f'PRAGMA table_xinfo("{name}")')}
+    return types_ok and all((set(expected) - ({'disc_number'} if legacy_discs and name in ('songs','album_shelf_items') else set()) - ({'shelves_excluded'} if legacy_shelves and name=='albums' else set())) == {r[1] for r in conn.execute(f'PRAGMA table_xinfo("{name}")')}
                for name, expected in table_columns().items())
 
 
@@ -107,7 +107,7 @@ def _complete_old_layout(conn):
         'global_stats','tournament_entries','tournament_matches','trivia_adjustments','trivia_rounds',
         'elo_guess_rounds','album_shelf_rounds','album_shelf_items'}
     return ('history' in tables and set(LEGACY_COLUMNS) == {r[1] for r in conn.execute('PRAGMA table_xinfo(history)')}
-        and all({r[1] for r in conn.execute(f'PRAGMA table_xinfo("{name}")')} in (set(table_columns()[name]), set(table_columns()[name]) - {'disc_number'})
+        and all({r[1] for r in conn.execute(f'PRAGMA table_xinfo("{name}")')} in (set(table_columns()[name]), set(table_columns()[name]) - {'disc_number'}, set(table_columns()[name]) - {'shelves_excluded'}, set(table_columns()[name]) - {'disc_number','shelves_excluded'})
                 for name in old_names))
 
 
@@ -136,7 +136,7 @@ def migrate(filename):
             conn.commit()
         # SQL iterdump does not retain PRAGMA user_version. A complete v8 layout
         # can be recognised without repeating old, data-changing migrations.
-        complete = _canonical_columns_present(conn) or _canonical_columns_present(conn, legacy_discs=True) or _complete_old_layout(conn)
+        complete = any(_canonical_columns_present(conn, legacy_discs=discs, legacy_shelves=shelves) for discs, shelves in ((False,False),(True,False),(False,True),(True,True))) or _complete_old_layout(conn)
     finally:
         conn.close()
     if version==SCHEMA_VERSION:

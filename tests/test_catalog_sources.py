@@ -467,7 +467,7 @@ class AlbumDiscTests(unittest.TestCase):
         migrate(old)
         for path in (old,restored):
             with readonly(path) as db:
-                self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],21)
+                self.assertEqual(db.execute('PRAGMA user_version').fetchone()[0],22)
                 self.assertEqual(tuple(db.execute('SELECT id,disc_number,track_number FROM songs').fetchone()),(92,1,7))
                 self.assertEqual(tuple(db.execute('SELECT round_id,disc_number,track_number,answer_position FROM album_shelf_items').fetchone()),(93,1,7,1))
                 before=capture(db)

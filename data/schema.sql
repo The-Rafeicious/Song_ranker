@@ -1,4 +1,4 @@
--- Song Ranker schema 21. Canonical definitions for fresh and rebuilt databases.
+-- Song Ranker schema 22. Canonical definitions for fresh and rebuilt databases.
 -- Never put migration-only transforms or user data in this file.
 -- Grade facts and all explicit IDs survive rebuilds; sequences keep deleted-ID high water.
 
@@ -7,7 +7,8 @@ CREATE TABLE IF NOT EXISTS albums (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     title TEXT NOT NULL,
     cover_url TEXT,
-    release_date TEXT
+    release_date TEXT,
+    shelves_excluded INTEGER NOT NULL DEFAULT 0 CHECK(shelves_excluded IN (0,1))
 );
 
 -- artists (table)

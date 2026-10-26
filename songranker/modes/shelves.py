@@ -96,7 +96,7 @@ def shelf_pool(conn):
         dict(r)
         for r in conn.execute(
             """SELECT s.id,s.album_id,s.disc_number,s.track_number FROM songs s JOIN albums a ON a.id=s.album_id
-        WHERE TRIM(a.title)!='' AND LOWER(TRIM(a.title))!='unknown album'
+        WHERE a.shelves_excluded=0 AND TRIM(a.title)!='' AND LOWER(TRIM(a.title))!='unknown album'
         AND LOWER(TRIM(a.title)) NOT LIKE '% - single' AND typeof(s.track_number)='integer' AND s.track_number>0
         AND NOT EXISTS(SELECT 1 FROM songs other WHERE other.album_id=s.album_id
           AND other.disc_number=s.disc_number AND other.track_number=s.track_number AND other.id!=s.id) ORDER BY s.id"""

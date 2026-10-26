@@ -19,3 +19,17 @@ for whole-library tournaments and half for tags, and improves bracket viewing.
 - Tournament Stats retains its layout, corrects semantic colours, adds points-only
   and entry-depth context, and removes duplicate Elo-history and activity figures.
 - Schema remains 21. Tournament points/placements and unrelated game rules stay.
+
+
+## V5.5.1 — per-album Shelves exclusion
+
+- Add **Exclude from Album Shelves** to the existing album editor and an
+  Included/Excluded column/filter in the Dev album table.
+- Flagged albums keep their normal identity, songs, artwork and other modes. New
+  Shelves questions and current eligibility omit them; saved rounds and results
+  remain available. Unchecking restores normal eligibility.
+- Schema 22 adds one default-off integer flag per album, with a verified pre-upgrade
+  backup and atomic migration. Older databases/dumps remain included by default;
+  backups, exports, rebuilds and sync preserve explicit flags.
+- This allows grouped placeholder releases instead of separate Single album rows;
+  it does not automatically merge records or compress existing data.

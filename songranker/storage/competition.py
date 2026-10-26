@@ -13,7 +13,7 @@ from songranker.storage.database_schema import SCHEMA_VERSION
 
 
 CATALOGUE = {
-    'albums': ('id','title','cover_url','release_date'),
+    'albums': ('id','title','cover_url','release_date','shelves_excluded'),
     'artists': ('id','name','cover_url'),
     'genres': ('id','name','description'),
     'songs': ('id','title','album_id','audio_url','disc_number','track_number','release_date','release_date_origin'),

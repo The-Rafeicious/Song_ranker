@@ -1,6 +1,6 @@
 # Upgrades and recovery
 
-Current operating guidance for the generation-3 competition, schema 21.
+Current operating guidance for the generation-3 competition, schema 22.
 Patch-by-patch installation notes are **expired / no longer necessary**; their
 feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 [V5.1](../update_logs/V5_1_UPDATE.md). v5.1.2 includes a backed-up schema migration.
@@ -27,7 +27,7 @@ feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 4. Use the new code with upgraded databases. Older code may refuse a newer schema;
    source rollback alone does not roll back database structure.
 
-`APP_VERSION` is `5.5.0`; Vibe reports `Vibe-Map-v1.1`.
+`APP_VERSION` is `5.5.1`; Vibe reports `Vibe-Map-v1.1`.
 The documentation release labels v5.1.0/v5.1.1 do not change the runtime footer.
 Install dependencies from `requirements.txt`; configuration is in the
 [technical guide](TECHNICAL_GUIDE.md#configuration).
@@ -75,6 +75,18 @@ app, preserve any newer work separately, and restore the archive together with
 pre-V5.5.0 source. Restoring it under V5.5.0 will retire the selective Elo again on
 startup. Schema stays 21, using the existing points-only tournament policy.
 
+## Album Shelves flags (V5.5.1)
+
+Schema 22 adds `albums.shelves_excluded`, defaulting all existing albums to included.
+The normal startup migration creates an integrity-checked pre-upgrade backup before
+publishing the new schema. Saved rounds and historical results retain their facts;
+no albums or songs are merged or removed. Upgrade every device before sharing
+schema-22 snapshots, since older apps reject newer schemas.
+
+Use Dev → Library → Albums → Edit → **Exclude from Album Shelves** for grouped or
+placeholder releases that should stay ordinary albums but never enter new Shelves
+questions. The setting is reversible and is carried in normal backups/Git sync.
+
 ## First competition transfer
 
 Default paths are `song_ranker_v2.db` for the optional old source and
@@ -100,6 +112,7 @@ and catalogue present on your installation determine current counts.
 
 | Schema | Change | Existing-data handling |
 | --- | --- | --- |
+| 22 | Per-album Shelves exclusion. | Verified pre-upgrade backup; existing albums remain included, saved rounds/results unchanged. |
 | 14 | Generation-3 competition baseline. | One-time V2 catalogue-only transfer when creating a new competition. |
 | 15 | Compressed current Apple source snapshots and page-size policy. | Verified pre-upgrade backup; current source retained losslessly, superseded observations removed by that historical migration. Later source saves replace the current row. |
 | 16 | Eight-tag maximum and database write guards. | Retain earliest eight stored attachments on over-limit songs; tag definitions/results stay. Rowid order, with deterministic tag-ID fallback for rowid-free imports. |

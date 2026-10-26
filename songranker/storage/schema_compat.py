@@ -236,3 +236,19 @@ def upgrade_album_discs(original):
                 row.append(1)
     state["user_version"] = 21
     return state
+
+
+def upgrade_album_shelves(original):
+    """Default schema-21 albums to eligible without changing catalogue identity."""
+    if original['user_version'] >= 22:
+        return original
+    state = deepcopy(original)
+    albums = state['tables'].get('albums')
+    if albums is not None:
+        if 'shelves_excluded' in albums['columns']:
+            raise ValueError('A pre-22 extension uses shelves_excluded; review the migration before continuing.')
+        albums['columns'].append('shelves_excluded')
+        for row in albums['rows']:
+            row.append(0)
+    state['user_version'] = 22
+    return state
