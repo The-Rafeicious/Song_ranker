@@ -314,6 +314,18 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.ok(await page.locator('[data-stop-prepare]').isDisabled(),'Externally served browser fixture cannot terminate its host');
   await page.locator('#editor-close').click();
   await page.goto(base+'/global_stats');assert.equal(await page.locator('.listening-panel,script[src*="/listening.js"]').count(),0);
+  await page.request.post(base+'/voting-test-enable');await page.goto(base+'/voting_stats');await page.locator('.voting-stats-page').waitFor();
+  assert.equal(await page.locator('.voting-stats-page details').count(),1,'Only the useful daily-figures disclosure remains');
+  assert.ok((await page.locator('[aria-labelledby="vote-distribution"]').textContent()).includes('4 voted-track ratings · 3 tracks without matches excluded'));
+  assert.ok(!(await page.locator('[aria-labelledby="vote-distribution"]').textContent()).includes('9000'),'Unplayed high Elo is excluded');
+  assert.equal(await page.locator('.voting-mode-blind .mode-stats-small-metrics dd').first().evaluate(e=>getComputedStyle(e).color),'rgb(85, 214, 194)');
+  for(const [kind,colour] of [['artist','rgb(91, 155, 255)'],['album','rgb(191, 119, 255)'],['tag','rgb(255, 184, 51)']])assert.equal(await page.locator('#vote-'+kind).evaluate(e=>getComputedStyle(e).color),colour);
+  for(const width of [390,768,1365]){
+    await page.setViewportSize({width,height:1050});await bounded(page,width,'voting-stats',folder);
+    for(const id of ['vote-overview','vote-modes','vote-coverage','vote-distribution'])await page.locator(`[aria-labelledby="${id}"]`).screenshot({path:folder+'/'+id+'-'+width+'.png'});
+  }
+  await page.locator('.voting-history-filter .pill.tournament').click();await page.locator('.voting-history-filter .pill.tournament.active').waitFor();
+  assert.equal(await page.locator('.voting-history-filter .pill.tournament.active').evaluate(e=>getComputedStyle(e).color),'rgb(255, 120, 166)');
   // Disc answers stay hidden while playing; repeated within-disc numbers grade in disc order.
   const discData=await (await page.request.post(base+'/shelves-test-enable')).json();
   const shelfMedia=[];page.on('request',r=>{if(r.url().includes('/tag-test-audio.wav?shelf='))shelfMedia.push(r.url())});

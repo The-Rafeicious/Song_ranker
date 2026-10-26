@@ -340,6 +340,10 @@ def build_voting_stats(
         voted=len(tested),
         unplayed=len(songs) - len(tested),
         share=percent(len(tested), len(songs)),
+        under_two=sum(s["matches"] < 2 for s in tested),
+        two_to_four=sum(2 <= s["matches"] < 5 for s in tested),
+        five_plus=sum(s["matches"] >= 5 for s in tested),
+        avg_appearances=average(s["matches"] for s in tested),
         both=sum(
             bool(s["standard_matches"] and s["blind_matches"]) for s in songs.values()
         ),
@@ -402,14 +406,22 @@ def build_voting_stats(
         busiest_votes=busiest[1] if busiest else 0,
         max_day=max((d["standard"] + d["blind"] for d in activity), default=0),
     )
-    ratings = [s["elo_score"] for s in songs.values() if s["elo_score"] is not None]
+    # A starting/manual Elo is not voting evidence. All summaries and bands use
+    # the same current-track cohort reconstructed from valid saved matches.
+    rated_tracks = [s for s in tested if s["elo_score"] is not None]
+    ratings = [s["elo_score"] for s in rated_tracks]
     distribution = dict(
         median=round(median(ratings), 1) if ratings else None,
         highest=max(ratings) if ratings else None,
         lowest=min(ratings) if ratings else None,
         spread=round(pstdev(ratings), 1) if ratings else None,
         rated=len(ratings),
-        unavailable=len(songs) - len(ratings),
+        unavailable=len(tested) - len(ratings),
+        excluded=len(songs) - len(tested),
+        average=average(ratings),
+        above_start=sum(value > 1200 for value in ratings),
+        at_start=sum(value == 1200 for value in ratings),
+        below_start=sum(value < 1200 for value in ratings),
         bands=[],
     )
     for low, high, label in (
@@ -419,7 +431,7 @@ def build_voting_stats(
     ):
         group = [
             s
-            for s in songs.values()
+            for s in rated_tracks
             if s["elo_score"] is not None
             and (low is None or s["elo_score"] >= low)
             and (high is None or s["elo_score"] < high)
@@ -607,9 +619,6 @@ def build_voting_stats(
         conn,
         dict(
             source_modes=source_modes,
-            tournament_history=sorted(
-                tournament_matches, key=lambda r: r["id"], reverse=True
-            )[:4],
             elo_summary=elo_summary,
             history_origin=history_origin,
             split_elo=comparison_report(conn, songs.values()),

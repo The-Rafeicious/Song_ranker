@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.3.7.1 contract. Change the owning shared rule before adding a
+This is the current V5.3.7.2 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -233,3 +233,9 @@ with wrong-album cards at maximum depth and fully correct cards retaining green.
 Preserve the explicit correction, comparison counts and points beside the colour.
 Only a completed perfect reveal shows the compact green Perfect shelves badge;
 its glow runs once, with no motion in reduced-motion mode. No confetti or audio.
+
+Voting Stats retains its section order and shared report shell. Non-blind uses
+orange, Blind teal, tournament evidence pink, and artist/album/tag summaries
+their entity colours. Captions stay quiet. The history owns match lists and filters;
+keep only the useful Daily figures disclosure rather than duplicate match previews.
+Evidence-depth and rated-track balance boxes add context without repeated periods.

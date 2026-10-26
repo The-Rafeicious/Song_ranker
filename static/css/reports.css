@@ -1371,12 +1371,31 @@
 }
 .voting-mode-blind {
   --section-color: var(--blind);
+  --surface-accent: var(--blind);
+  --mode-stats-border: #55d6c266;
   --mode-stats-rule: #55d6c229;
   --mode-stats-divider: #55d6c222;
 }
 .voting-mode-standard {
   --section-color: var(--standard);
 }
+.voting-stats-page .mode-stats-panel > p,
+.voting-stats-page .mode-stats-caption {
+  color: var(--muted);
+}
+.voting-stats-page .voting-entity-artist {--section-color: var(--artist);}
+.voting-stats-page .voting-entity-album {--section-color: var(--album);}
+.voting-stats-page .voting-entity-tag {--section-color: var(--tag);}
+.voting-stats-page .voting-origin-tournament {--section-color: var(--tournament);}
+.voting-origin-tournament .mode-stats-metrics > div:first-child {--section-color: var(--standard);}
+.voting-origin-tournament .mode-stats-metrics > div:nth-child(2) {--section-color: var(--blind);}
+.voting-stats-page :is(.voting-entity-artist, .voting-entity-album, .voting-entity-tag, .voting-origin-tournament) {
+  --surface-accent: var(--section-color);
+  --mode-stats-border: color-mix(in srgb, var(--section-color) 40%, transparent);
+  --mode-stats-rule: color-mix(in srgb, var(--section-color) 16%, transparent);
+  --mode-stats-divider: color-mix(in srgb, var(--section-color) 13%, transparent);
+}
+
 .voting-stats-page .mode-stats-inset > .section-head {
   margin-bottom: 18px;
 }
@@ -1517,6 +1536,12 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   border-color: var(--blind);
   background: color-mix(in srgb, var(--blind) 10%, var(--panel));
 }
+.voting-history-filter .pill.tournament.active {
+  color: var(--tournament);
+  border-color: var(--tournament);
+  background: color-mix(in srgb, var(--tournament) 10%, var(--panel));
+}
+
 @media (max-width: 1050px) {
   .voting-gap {
     grid-template-columns: 140px minmax(0, 1fr);

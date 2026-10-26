@@ -682,8 +682,8 @@ Standard/blind voting operations, history page and detailed Voting Stats.
 | [build_voting_stats](../songranker/modes/voting.py#L150) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
 | [build_voting_stats.identity](../songranker/modes/voting.py#L190) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
 | [build_voting_stats.result_totals](../songranker/modes/voting.py#L278) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
-| [build_voting_stats.top](../songranker/modes/voting.py#L498) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
-| [build_voting_stats.category](../songranker/modes/voting.py#L512) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
+| [build_voting_stats.top](../songranker/modes/voting.py#L510) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
+| [build_voting_stats.category](../songranker/modes/voting.py#L524) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
 
 ## songranker/overall.py
 
@@ -1715,6 +1715,20 @@ Descriptive dashboard facts, evidence boundaries and read-only HTTP contract.
 | [VibeStatsTests.test_inspector_escapes_catalogue_text_and_excludes_unknown_album_links](../tests/test_vibe_stats.py#L155) | `self` | Verify inspector escapes catalogue text and excludes unknown album links. |
 | [VibeStatsTests.test_heatmap_points_are_inspect_buttons_with_explicit_song_links_separate](../tests/test_vibe_stats.py#L165) | `self` | Verify heatmap points are inspect buttons with explicit song links separate. |
 
+## tests/test_voting_report.py
+
+Voting report cohorts and compact rendering use saved evidence, without writes.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [VotingReportTests.setUp](../tests/test_voting_report.py#L21) | `self` | Create isolated disposable state and register cleanup for this test. |
+| [VotingReportTests.vote](../tests/test_voting_report.py#L41) | `self, pair=(1, 2), mode='standard'` | Vote. |
+| [VotingReportTests.test_distribution_ignores_unplayed_ratings_and_stale_counters](../tests/test_voting_report.py#L65) | `self` | Verify distribution ignores unplayed ratings and stale counters. |
+| [VotingReportTests.test_unavailable_ratings_and_empty_cohorts_stay_explicit](../tests/test_voting_report.py#L94) | `self` | Verify unavailable ratings and empty cohorts stay explicit. |
+| [VotingReportTests.test_evidence_depth_and_history_filters_reconcile](../tests/test_voting_report.py#L111) | `self` | Verify evidence depth and history filters reconcile. |
+| [VotingReportTests.test_half_weight_tournament_match_still_qualifies_both_tracks](../tests/test_voting_report.py#L125) | `self` | Verify half weight tournament match still qualifies both tracks. |
+| [VotingReportTests.test_page_has_new_summaries_and_one_useful_disclosure](../tests/test_voting_report.py#L147) | `self` | Verify page has new summaries and one useful disclosure. |
+
 ## tests/test_waitress_shutdown.py
 
 Stop must wake select, then close sockets on the event-loop thread.
@@ -1749,8 +1763,9 @@ Disposable served-page and Chromium integration fixtures.
 | [run_vibe.cover](../tools/browser_check.py#L222) | `` | Serve local artwork so browser screenshots do not depend on external images. |
 | [run_vibe.tag_audio_enable](../tools/browser_check.py#L231) | `` | Tag audio enable; POST /tag-test-enable. |
 | [run_vibe.tag_audio](../tools/browser_check.py#L239) | `` | Serve a silent WAV fixture for playback controls without Apple transport. |
-| [run_vibe.enable_discs](../tools/browser_check.py#L252) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
-| [main](../tools/browser_check.py#L281) | `` | Run the requested disposable integration fixture. |
+| [run_vibe.enable_voting_report](../tools/browser_check.py#L252) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
+| [run_vibe.enable_discs](../tools/browser_check.py#L266) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
+| [main](../tools/browser_check.py#L295) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 
@@ -1771,4 +1786,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1214 Python definitions**.
+Total: **1222 Python definitions**.
