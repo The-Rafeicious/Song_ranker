@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.4.0 · competition generation 3 · schema 21**
+**Application V5.5.0 · competition generation 3 · schema 21**
 
-Current implementation reference. `APP_VERSION` is `5.4.0`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.5.0`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -178,7 +178,8 @@ new(A)      = rating(A) + 32 * influence * (actual(A) - expected(A))
 ```
 
 `influence` is 1 for ordinary votes and whole-library tournament first rounds;
-it is 0.5 for selective artist/album/tag first rounds. Later rounds, bronze
+it is 0.5 for tag first rounds. Artist and album brackets never create preference
+events or contribute Elo confidence/exposure. Later rounds, bronze
 playoffs and points-only brackets do not create preference events. There is no
 high-K placement stage, forced rating range or health-based rating adjustment.
 
@@ -837,3 +838,45 @@ thirty-day summary. Tournament preview rows are removed in favour of the existin
 filtered history, and the Daily figures disclosure remains as exact chart evidence.
 The existing report owner supplies mode/entity colours without changing grading,
 Elo calculation, source weights or public routes.
+
+
+### Tournament scope policy and visual brackets (V5.5.0)
+
+New artist/album tournaments use the existing points-only policy (`elo_policy_version=0`,
+`elo_weight=0`). Whole-library first rounds retain full influence; tags retain half.
+Only main first rounds qualify. Points, placements and tournament entry exposure
+remain independent of Elo eligibility. Completed vote retries return the saved
+result without awarding points or Elo twice, including points-only brackets.
+
+After adaptive Elo activation, startup archives any remaining artist/album policy-1
+brackets to `database_backups/pre_tournament_scope_*.db`, records void corrections
+for their effective preference events, and rebuilds public/independent Elo and
+confidence projections. Original matches, submitted receipts, points and placements
+remain. Policy flags and corrections commit together; failure rolls back, and
+subsequent starts find nothing to retire. The original archive remains available
+for whole-database recovery with the earlier source.
+
+`TournamentBracket` in `gameplay.js` renders the same connected tree for saved
+stats brackets, live progress and the post-completion replay. Round buttons pan
+inside its bounded viewport; track selection highlights a route and shows its
+saved match/win context. A server-rendered match fallback remains available without
+JavaScript. Unplayed Blind identities stay hidden in the interactive map.
+
+Completion saves first, then reveals one side's advancing/eliminated tracks, the
+other side, bronze and final, before the podium. Skip completes immediately;
+reduced-motion mode omits staged motion and replay music. Opening a saved completed
+bracket still offers the podium and an explicit replay action.
+
+The soundtrack pool is the eight quarter-final entrants (semi-finals contain four
+songs), restricted to the currently filling side. One cancellable audio element
+plays at a time, looping a six-second sample using the shared preview coordinator.
+No batch preloading or next-track priming occurs. Existing browser/server preview
+caches are reused when warm; missing clips load only on selection and existing
+rate/cooldown limits remain authoritative. Failed clips are skipped and autoplay
+or rate blocking turns sound off. Hide/leave, Skip, cancellation and podium handoff
+retire the replay player; its Sound off choice carries into the podium.
+
+Tournament Stats retains section order, uses semantic visibility/entity colours,
+adds points-only first-round context and entry-depth metrics, and drops the duplicate
+recent-Elo-history disclosure and repeated seven-day activity figures. Archive
+bracket disclosures remain useful navigation and mount their map lazily.

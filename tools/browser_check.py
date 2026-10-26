@@ -262,6 +262,26 @@ def run_vibe():
                 conn.execute("UPDATE songs SET elo_score=9000,matches_played=40 WHERE id=7")
                 return {"rated": 4, "excluded": 3}
 
+        @application.app.post("/tournament-test-enable")
+        def enable_tournament_map():
+            """Seed a points-only bracket awaiting its final in disposable storage."""
+            with sqlite3.connect(os.environ["SONG_RANKER_DB"]) as conn:
+                for sid in range(20, 28):
+                    conn.execute("INSERT INTO songs(id,title,audio_url) VALUES(?,?,?)", (sid, "Bracket track " + str(sid), "/tag-test-audio.wav?tournament=" + str(sid)))
+                    conn.execute("INSERT INTO song_artists VALUES(?,1)", (sid,))
+                conn.execute("INSERT INTO tournaments(id,size,scope_type,scope_id,status,points_version,playoff_enabled,elo_policy_version,elo_weight) VALUES(77,8,'artist',1,'in_progress',1,1,0,0)")
+                for i, sid in enumerate(range(20, 28), 1):
+                    conn.execute("INSERT INTO tournament_entries VALUES(77,?,?)", (sid, i))
+                for round_number, number, a, b, winner, loser, kind in [
+                    (1,1,20,21,20,21,'bracket'), (1,2,22,23,22,23,'bracket'),
+                    (1,3,24,25,24,25,'bracket'), (1,4,26,27,26,27,'bracket'),
+                    (2,1,20,22,20,22,'bracket'), (2,2,24,26,24,26,'bracket'),
+                    (3,0,22,26,22,26,'third_place'), (3,1,20,24,None,None,'bracket'),
+                ]:
+                    conn.execute("""INSERT INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id,winner_id,loser_id,status,points_awarded,match_type)
+                        VALUES(77,?,?,?,?,?,?,?,?,?)""", (round_number, number, a, b, winner, loser, 'completed' if winner else 'pending', 1 if winner else 0, kind))
+            return {"tournament": 77}
+
         @application.app.post("/shelves-test-enable")
         def enable_discs():
             """Seed repeated track numbers across discs only in this disposable fixture."""

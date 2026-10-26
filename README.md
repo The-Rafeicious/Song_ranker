@@ -1,6 +1,6 @@
 # Song Ranker
 
-**Application V5.4.0 · competition generation 3 · SQLite schema 21**
+**Application V5.5.0 · competition generation 3 · SQLite schema 21**
 
 Rank your music, recognise previews, play brackets and quizzes, arrange albums,
 and describe songs on continuous Vibe Maps. Your songs, albums, artists and tags
@@ -28,7 +28,7 @@ restore a generation-3 SQL snapshot, use an optional catalogue seed, or start
 empty. A **first V2-to-V3 transfer** resets results; a routine code update does
 not repeat that reset. See [upgrades and recovery](docs/UPGRADES.md).
 
-The app reports `5.4.0`; Vibe Map retains its internal mode version `1.1`.
+The app reports `5.5.0`; Vibe Map retains its internal mode version `1.1`.
 
 ## Modes
 
@@ -42,7 +42,8 @@ The app reports `5.4.0`; Vibe Map retains its internal mode version `1.1`.
 | 📍 Vibe Map | Place each track on four continuous graphs. | Descriptive averages, radar, similarities, density maps and collection consistency. No performance score or Overall contribution. |
 
 Elo begins at 1200. Global tournament first rounds carry full Elo influence;
-artist/album/tag first rounds carry half. Ordinary votes carry full influence.
+tag first rounds carry half. Artist and album brackets award tournament points
+without changing Elo. Ordinary votes carry full influence.
 The clock menu controls Standard/Quick reveal speed and next-question preparation.
 Playback, loop and preparation state are owned by the current mode; navigation
 ends its players. Unavailable modes report the eligibility they need.

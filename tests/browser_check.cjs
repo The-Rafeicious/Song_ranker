@@ -379,6 +379,24 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-error-depth',folder);await page.screenshot({path:folder+'/shelves-error-depth-'+width+'.png',fullPage:true})}
   await page.goto(base+'/album_shelves_stats');
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-stats',folder);await page.screenshot({path:folder+'/shelves-discs-stats-'+width+'.png',fullPage:true});}
+  // Saved visual brackets and the real final -> replay -> podium handoff.
+  await page.request.post(base+'/tournament-test-enable');
+  await page.goto(base+'/tournament_stats?tournament=77');await page.locator('#tournament-77 .bracket-node').first().waitFor();
+  assert.equal(await page.locator('#tournament-77 .bracket-node').count(),7);
+  assert.ok(await page.locator('#tournament-77 .bracket-track').first().evaluate(e=>e.getBoundingClientRect().height>=44),'Bracket tracks keep touch-sized targets');
+  await page.locator('#tournament-77 [data-map-track="20"]').first().click();assert.ok((await page.locator('#tournament-77 .bracket-inspector').textContent()).includes('Bracket track 20'));
+  assert.equal(await page.locator('#tournament-77 .is-route').count(),3);
+  assert.equal(await page.locator('.ts-entity-artist h2').evaluate(e=>getComputedStyle(e).color),'rgb(91, 155, 255)');
+  assert.equal(await page.locator('.ts-blind-and-non-blind > span').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(85, 214, 194)');
+  for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'tournament-map',folder);await page.locator('#tournament-77').screenshot({path:folder+'/tournament-map-'+width+'.png'});await page.locator('[aria-labelledby="ts-elo"]').screenshot({path:folder+'/tournament-elo-'+width+'.png'})}
+  await page.goto(base+'/tournament?tournament=77');await page.locator('[data-tournament-vote="0"]').waitFor();await page.locator('[data-tournament-vote="0"]').click();
+  await page.locator('#tournament-replay .bracket-node').first().waitFor({timeout:30000});
+  assert.equal(await page.locator('.winner-podium').count(),0,'Bracket replay precedes podium');
+  assert.ok(await page.locator('#tournament-replay audio').count()<=1,'Only one replay player exists');
+  await page.locator('[data-map-sound]').click();await page.locator('[data-map-skip]').click();await page.locator('.winner-podium').waitFor();
+  assert.equal(await page.locator('#tournament-replay').count(),0);assert.equal(await page.locator('audio').evaluateAll(a=>a.filter(x=>!x.paused).length),0,'Sound off remains off on the podium');
+  await page.locator('[data-replay-bracket]').click();await page.locator('#tournament-replay').waitFor();await page.locator('[data-map-skip]').click();await page.locator('.winner-podium').waitFor();
+  await page.emulateMedia({reducedMotion:'reduce'});await page.locator('[data-replay-bracket]').click();await page.locator('.winner-podium').waitFor();assert.equal(await page.locator('#tournament-replay').count(),0,'Reduced motion skips staged animation');await page.emulateMedia({reducedMotion:'no-preference'});
   assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -262,6 +262,44 @@ def activate_adaptive_elo(filename):
 
 
 
+def retire_selective_tournament_elo(filename):
+    """Archive and retract artist/album first-round Elo once; retain match facts.
+
+    Policy 0 on these brackets means points-only. Corrections preserve original
+    events, while normal replay removes their public and independent influence.
+    The caller drains application connections before this startup operation.
+    """
+    from songranker.storage.database_io import create_backup, validate
+    from songranker.storage.preference_state import rebuild_preference_ratings
+    conn = sqlite3.connect(filename, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA foreign_keys=ON')
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        brackets = conn.execute("SELECT id FROM tournaments WHERE scope_type IN ('artist','album') AND elo_policy_version=1").fetchall()
+        events = conn.execute("""SELECT e.* FROM preference_effective e JOIN tournaments t ON t.id=e.tournament_id
+            WHERE e.active=1 AND e.origin='tournament' AND t.scope_type IN ('artist','album')""").fetchall()
+        if not brackets and not events:
+            conn.rollback()
+            return None
+        backup = create_backup(filename, 'pre_tournament_scope')
+        for event in events:
+            conn.execute("""INSERT INTO preference_corrections(event_id,request_token,action,winner_id,loser_id,mode,active,reason)
+                VALUES(?,?,'void',?,?,?,0,'Artist/album tournaments are points-only')""",
+                (event['id'], 'scope-policy-' + str(event['id']), event['winner_id'], event['loser_id'], event['mode']))
+        conn.execute("UPDATE tournaments SET elo_policy_version=0,elo_weight=0 WHERE scope_type IN ('artist','album') AND elo_policy_version=1")
+        if events:
+            rebuild_preference_ratings(conn)
+        validate(conn)
+        conn.commit()
+        return dict(events=len(events), backup=str(backup))
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
 def initialize_database(filename, sql_backup=None):
     """Existing DB wins. Missing DB restores SQL before any empty schema is made."""
     import tempfile
