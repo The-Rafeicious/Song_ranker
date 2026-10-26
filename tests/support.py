@@ -95,7 +95,8 @@ def route_modules():
 
 
 def pre_disc_layout(conn):
-    """Remove schema-21 additions when a test constructs an older database layout."""
+    """Remove post-layout fields when constructing a pre-disc historical fixture."""
+    conn.execute('ALTER TABLE albums DROP COLUMN shelves_excluded')
     for name in ('songs_track_position_insert', 'songs_track_position_update'):
         conn.execute('DROP TRIGGER IF EXISTS '+name)
     for name in ('songs', 'album_shelf_items'):

@@ -1009,7 +1009,7 @@ Reusable assertions and route-module fixtures; never opens an active database.
 | [catalogue](../tests/support.py#L37) | `conn` | Catalogue. |
 | [assert_clean](../tests/support.py#L52) | `conn` | Assert clean; reads global_stats, legacy_elo_changes, song_vibe_positions, song_vibe_progress, songs, sqlite_master. |
 | [route_modules](../tests/support.py#L81) | `` | Read current launcher registration imports for disposable startup stubs. |
-| [pre_disc_layout](../tests/support.py#L97) | `conn` | Remove schema-21 additions when a test constructs an older database layout. |
+| [pre_disc_layout](../tests/support.py#L97) | `conn` | Remove post-layout fields when constructing a pre-disc historical fixture. |
 
 ## tests/test_adaptive_elo.py
 

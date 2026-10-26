@@ -62,7 +62,7 @@ class StorageTests(unittest.TestCase):
         self.vote();self.old_layout();self.insert_old(1,1);self.insert_old(1,2);self.insert_old(2,3)
         before=capture(self.conn);migrate(self.path);after=capture(self.conn)
         for table in before['tables']:
-            if table not in ('song_sources','songs','album_shelf_items'):self.assertEqual(before['tables'][table],after['tables'][table],table)
+            if table not in ('song_sources','songs','album_shelf_items','albums'):self.assertEqual(before['tables'][table],after['tables'][table],table)
         reconcile(before,after)  # Compare every old value across canonical column order.
         self.assertEqual(sources.current_source(self.conn,1)['source'],self.source(2))
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM song_sources').fetchone()[0],2)
