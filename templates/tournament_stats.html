@@ -9,8 +9,8 @@
 {% macro song_name(song) -%}
 {% if song.id is not none %}<a class="song mode-stats-name" title="{{ song.title }}" href="{{ url_for('song_page',song_id=song.id) }}">{{ song.title }}</a>{% else %}<strong class="mode-stats-name muted">{{ song.title }}</strong>{% endif %}
 {%- endmacro %}
-{% macro context(t) -%}
-<div class="ts-context"><span>{{ t.size if t.size else '?' }} tracks · {{ t.visibility }}</span>{{ scope_link(t.scope) }}{{ saved_date(t.date) }}</div>
+{% macro context(t, compact=false) -%}
+<div class="ts-context">{% if not compact %}<span>{{ t.size if t.size else '?' }} tracks · {{ t.visibility }}</span>{% endif %}{{ scope_link(t.scope) }}{{ saved_date(t.date) }}{% if compact and not t.finished %}<a class="btn tournament" href="{{ url_for('tournament',tournament=t.id) }}">Open bracket ↗</a>{% endif %}</div>
 {%- endmacro %}
 {% macro distribution(title, rows) -%}
 {% set colours={'Blind':'var(--blind)','Non-blind':'var(--standard)','Whole collection':'var(--tournament)','Artist':'var(--artist)','Album':'var(--album)','Tag':'var(--tag)'} %}
@@ -139,8 +139,8 @@
     <details class="mode-stats-inset ts-bracket{% if t.selected %} ts-selected{% endif %}" id="tournament-{{ t.id }}"{% if t.selected %} open{% endif %}>
       <summary><span class="ts-bracket-heading"><b>Bracket #{{ t.id }} · {{ t.size if t.size else '?' }} tracks</b><span>{{ t.visibility }} · {{ 'Completed' if t.finished else 'Unfinished' }} · {{ t.decided }}{% if t.expected_matches %} / {{ t.expected_matches }}{% endif %} matches</span></span><span class="ts-expand" aria-hidden="true">View details</span></summary>
       <div class="ts-bracket-body">
-        {{ context(t) }}
-        <div class="ts-bracket-champion"><span class="mode-stats-art">{{ art(t.champion.cover_url) }}</span><div class="mode-stats-copy"><small>{{ 'Champion' if t.finished else 'Saved progress' }}</small>{{ song_name(t.champion) }}{{ metadata(t.champion) }}</div><a class="btn tournament" href="{{ url_for('tournament',tournament=t.id) }}">{{ 'View podium' if t.finished else 'Open bracket' }} ↗</a></div>
+        {{ context(t, true) }}
+        {% if t.finished %}<div class="ts-bracket-champion"><span class="mode-stats-art">{{ art(t.champion.cover_url) }}</span><div class="mode-stats-copy"><small>{{ 'Champion' if t.finished else 'Saved progress' }}</small>{{ song_name(t.champion) }}{{ metadata(t.champion) }}</div><a class="btn tournament" href="{{ url_for('tournament',tournament=t.id) }}">View podium ↗</a></div>{% endif %}
         {% if not t.finished %}{{ progress('Bracket '+(t.id|string)+' progress',t.progress) }}{% endif %}
         <script type="application/json" id="bracket-data-{{t.id}}">{{ t.map_data|tojson }}</script>
         <div class="tournament-map" data-tournament-map="bracket-data-{{t.id}}"></div>

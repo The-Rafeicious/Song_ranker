@@ -85,6 +85,7 @@ class TournamentPolicyTests(unittest.TestCase):
         for text in ['data-tournament-map','Entry depth','Points-only matches','ts-entity-artist']:
             self.assertIn(text,rendered.text)
         self.assertNotIn('Recent first-round Elo history',rendered.text)
+        self.assertNotIn('class="ts-bracket-champion"',rendered.text)
         self.assertEqual(capture(self.conn),before)
 
 if __name__=='__main__':unittest.main()
