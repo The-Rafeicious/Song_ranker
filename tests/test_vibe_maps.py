@@ -162,7 +162,7 @@ class VibeMapTests(unittest.TestCase):
             self.assertEqual(c.execute('SELECT COUNT(*) FROM song_vibe_positions').fetchone()[0],4)
             self.assertEqual(c.execute("SELECT COUNT(*) FROM song_vibe_positions WHERE status='placed'").fetchone()[0],0)
         for name,table in before['tables'].items():
-            if name in ('listening_observations','songs','album_shelf_items'):continue  # Retired/additive columns are checked by reconcile below.
+            if name in ('listening_observations','songs','album_shelf_items','albums'):continue  # Retired/additive columns are checked by reconcile below.
             self.assertEqual(after['tables'][name],table,name)
         reconcile(before,after)
         self.assertEqual(upgrade_state(before),upgrade_state(upgrade_state(before)))

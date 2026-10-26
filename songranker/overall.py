@@ -72,7 +72,7 @@ def shelf_eligible_ids(data):
             occupied[(song.get('album_id'),disc,position)].append(song['id'])
     groups=defaultdict(list)
     for (album_id,_,_),ids in occupied.items():
-        if len(ids)==1 and proper_album(albums.get(album_id,{})):
+        if len(ids)==1 and proper_album(albums.get(album_id,{})) and not albums[album_id].get('shelves_excluded',0):
             groups[album_id].extend(ids)
     return {sid for ids in groups.values() if len(ids)>=2 for sid in ids}
 

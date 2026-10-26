@@ -1,6 +1,6 @@
 # Developer guide
 
-**V5.5.0 · Dev workspace**
+**V5.5.1 · Dev workspace**
 
 Open **System Access** on the hosting computer and enter the Dev PIN. Use **Home**,
 **Library**, **Mode edits**, and **Tools & systems** to move between tasks. Each
@@ -279,3 +279,10 @@ track restarts the ten-second sample rotation from that track. Seeking and
 buffering respect the remaining sample time. Normal rotation uses about six new
 clips/minute, below the existing shared 18/minute limit; rapid skips may still
 reach it. Completed previews reuse the ten-track, ten-minute memory cache.
+
+
+In Library → Albums → Edit, **Exclude from Album Shelves** keeps a grouped release
+as a normal album while preventing its tracks from entering new Shelves rounds.
+The Album Shelves table column displays Included/Excluded and supports the normal
+filters. Old clients that omit the setting preserve it. Existing saved rounds can
+still be finished, and unchecking the flag restores normal selection eligibility.

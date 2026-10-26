@@ -34,7 +34,7 @@ class RetireListeningTests(unittest.TestCase):
         self.assertEqual(after['user_version'],SCHEMA_VERSION)
         self.assertNotIn('listening_observations',after['tables'])
         for name,data in before['tables'].items():
-            if name not in ('listening_observations','songs','album_shelf_items'):self.assertEqual(after['tables'][name],data,name)
+            if name not in ('listening_observations','songs','album_shelf_items','albums'):self.assertEqual(after['tables'][name],data,name)
         reconcile(before,after)
         backup=next(self.path.parent.joinpath('database_backups').glob('pre_upgrade_*.db'))
         with readonly(backup) as old:self.assertEqual(capture(old),before)

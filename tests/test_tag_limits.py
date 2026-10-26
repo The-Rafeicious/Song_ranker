@@ -111,7 +111,7 @@ class TagLimitTests(unittest.TestCase):
         self.assertEqual(self.conn.execute('PRAGMA user_version').fetchone()[0],SCHEMA_VERSION)
         after=capture(self.conn);reconcile(before,after)
         for name,data in before['tables'].items():
-            if name not in ('song_genres','songs','album_shelf_items'):self.assertEqual(data,after['tables'][name],name)
+            if name not in ('song_genres','songs','album_shelf_items','albums'):self.assertEqual(data,after['tables'][name],name)
         backups=list((self.path.parent/'database_backups').glob('*.db'));self.assertEqual(len(backups),1)
         old=sqlite3.connect(backups[0]);self.assertEqual(old.execute('SELECT COUNT(*) FROM song_genres WHERE song_id=1').fetchone()[0],11);old.close()
         migrate(self.path);self.assertEqual(after,capture(self.conn));self.assertEqual(backups,list((self.path.parent/'database_backups').glob('*.db')))

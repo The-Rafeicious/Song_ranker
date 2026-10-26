@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.5.0 · competition generation 3 · schema 21**
+**Application V5.5.1 · competition generation 3 · schema 22**
 
-Current implementation reference. `APP_VERSION` is `5.5.0`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.5.1`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -880,3 +880,23 @@ Tournament Stats retains section order, uses semantic visibility/entity colours,
 adds points-only first-round context and entry-depth metrics, and drops the duplicate
 recent-Elo-history disclosure and repeated seven-day activity figures. Archive
 bracket disclosures remain useful navigation and mount their map lazily.
+
+
+### Album Shelves exclusion (V5.5.1 / schema 22)
+
+`albums.shelves_excluded` is a checked integer flag, default 0. Dev → Library →
+Albums → Edit exposes **Exclude from Album Shelves**. The album table has an
+Included/Excluded column with the normal filtering and sorting controls. The API
+accepts only JSON booleans; omitting the field preserves its current value.
+
+The flag excludes the album from new Shelves draws, current Shelves coverage and
+Overall's Shelves eligibility. It does not turn it into a Single, change its songs,
+artwork, other mode eligibility or album identity. Frozen rounds remain answerable,
+and completed rounds/results remain recorded. Unchecking restores normal eligibility
+subject to the existing numbered-track and capacity requirements.
+
+Startup uses the existing integrity-checked pre-upgrade backup and atomic migration.
+Older schema-21 databases and unversioned SQL dumps default every album to included.
+Exports, rebuilds, Git SQL snapshots and catalogue transfers preserve explicit flags.
+Grouping tracks under an existing album can avoid extra placeholder album rows;
+this flag itself does not merge or remove data or compress the database.

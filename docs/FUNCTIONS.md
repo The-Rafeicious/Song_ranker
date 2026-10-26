@@ -128,33 +128,33 @@ Developer authentication, catalogue edits, records and controlled resets.
 | [api_edit_song](../songranker/developer/dev.py#L318) | `song_id` | Serve edit song; POST /api/dev/edit_song/<int:song_id>. |
 | [api_delete_song](../songranker/developer/dev.py#L332) | `song_id` | Keep vote facts, void their influence, remove links, then replay surviving ratings. |
 | [edit_catalogue_record](../songranker/developer/dev.py#L367) | `table, record_id, fields` | Validate editable entity fields and always release the database connection. |
-| [api_edit_artist](../songranker/developer/dev.py#L416) | `artist_id` | Serve edit artist; POST /api/dev/edit_artist/<int:artist_id>. |
-| [delete_catalogue_record](../songranker/developer/dev.py#L420) | `table, record_id` | Remove an entity and its catalogue links, preserving referenced game facts. |
-| [api_delete_artist](../songranker/developer/dev.py#L444) | `artist_id` | Serve delete artist; DELETE /api/dev/delete_artist/<int:artist_id>. |
-| [api_edit_album](../songranker/developer/dev.py#L450) | `album_id` | Serve edit album; POST /api/dev/edit_album/<int:album_id>. |
-| [api_delete_album](../songranker/developer/dev.py#L456) | `album_id` | Serve delete album; DELETE /api/dev/delete_album/<int:album_id>. |
-| [api_edit_genre](../songranker/developer/dev.py#L462) | `genre_id` | Serve edit genre; POST /api/dev/edit_genre/<int:genre_id>. |
-| [api_delete_genre](../songranker/developer/dev.py#L468) | `genre_id` | Serve delete genre; DELETE /api/dev/delete_genre/<int:genre_id>. |
-| [api_dev_overview](../songranker/developer/dev.py#L474) | `` | Serve dev overview; GET /api/dev/overview. |
-| [api_dev_backup](../songranker/developer/dev.py#L486) | `` | Serve dev backup; POST /api/dev/backup. |
-| [api_dev_restore_backup](../songranker/developer/dev.py#L497) | `` | Serve dev restore backup; POST /api/dev/restore-backup. |
-| [api_dev_reset_preview](../songranker/developer/dev.py#L504) | `` | Serve dev reset preview; GET /api/dev/reset-preview. |
-| [reset_competition_data](../songranker/developer/dev.py#L515) | `scope` | Keep the library and reset only the requested competition records. |
-| [api_dev_reset_history](../songranker/developer/dev.py#L541) | `scope` | Serve dev reset history; POST /api/dev/reset-history/<scope>. |
-| [delete_special_round](../songranker/developer/dev.py#L552) | `mode, round_id` | Delete special round; POST /api/dev/special-round/<mode>/<int:round_id>. |
-| [api_dev_reset_database](../songranker/developer/dev.py#L569) | `` | Serve dev reset database; POST /api/dev/reset-database. |
-| [api_dev_elo_correction](../songranker/developer/dev.py#L577) | `` | Serve dev elo correction; POST /api/dev/elo-correction. |
-| [api_dev_preferences](../songranker/developer/dev.py#L593) | `` | Serve dev preferences; GET /api/dev/preferences. |
-| [api_dev_preference](../songranker/developer/dev.py#L616) | `event_id` | Serve dev preference; GET, POST /api/dev/preferences/<int:event_id>. |
-| [api_dev_edit_trivia](../songranker/developer/dev.py#L634) | `song_id` | Serve dev edit trivia; POST, DELETE /api/dev/trivia/<int:song_id>. |
-| [api_dev_integrity](../songranker/developer/dev.py#L661) | `` | Serve dev integrity; GET /api/dev/integrity. |
-| [api_dev_activity](../songranker/developer/dev.py#L674) | `` | Serve dev activity; GET /api/dev/activity. |
-| [api_dev_delete_tournament](../songranker/developer/dev.py#L686) | `tournament_id` | Serve dev delete tournament; DELETE /api/dev/tournaments/<int:tournament_id>. |
-| [api_sync](../songranker/developer/dev.py#L710) | `` | Serve sync; POST /api/dev/sync. |
-| [api_export](../songranker/developer/dev.py#L717) | `` | Endpoint to manually trigger a database text export. |
-| [api_dev_bulk_songs](../songranker/developer/dev.py#L728) | `` | Serve dev bulk songs; POST /api/dev/bulk_songs. |
-| [api_dev_trivia_records](../songranker/developer/dev.py#L775) | `` | Serve dev trivia records; POST /api/dev/trivia-records. |
-| [api_dev_tournament_placements](../songranker/developer/dev.py#L792) | `tournament_id` | Serve dev tournament placements; POST /api/dev/tournaments/<int:tournament_id>/placements. |
+| [api_edit_artist](../songranker/developer/dev.py#L420) | `artist_id` | Serve edit artist; POST /api/dev/edit_artist/<int:artist_id>. |
+| [delete_catalogue_record](../songranker/developer/dev.py#L424) | `table, record_id` | Remove an entity and its catalogue links, preserving referenced game facts. |
+| [api_delete_artist](../songranker/developer/dev.py#L448) | `artist_id` | Serve delete artist; DELETE /api/dev/delete_artist/<int:artist_id>. |
+| [api_edit_album](../songranker/developer/dev.py#L454) | `album_id` | Serve edit album; POST /api/dev/edit_album/<int:album_id>. |
+| [api_delete_album](../songranker/developer/dev.py#L460) | `album_id` | Serve delete album; DELETE /api/dev/delete_album/<int:album_id>. |
+| [api_edit_genre](../songranker/developer/dev.py#L466) | `genre_id` | Serve edit genre; POST /api/dev/edit_genre/<int:genre_id>. |
+| [api_delete_genre](../songranker/developer/dev.py#L472) | `genre_id` | Serve delete genre; DELETE /api/dev/delete_genre/<int:genre_id>. |
+| [api_dev_overview](../songranker/developer/dev.py#L478) | `` | Serve dev overview; GET /api/dev/overview. |
+| [api_dev_backup](../songranker/developer/dev.py#L490) | `` | Serve dev backup; POST /api/dev/backup. |
+| [api_dev_restore_backup](../songranker/developer/dev.py#L501) | `` | Serve dev restore backup; POST /api/dev/restore-backup. |
+| [api_dev_reset_preview](../songranker/developer/dev.py#L508) | `` | Serve dev reset preview; GET /api/dev/reset-preview. |
+| [reset_competition_data](../songranker/developer/dev.py#L519) | `scope` | Keep the library and reset only the requested competition records. |
+| [api_dev_reset_history](../songranker/developer/dev.py#L545) | `scope` | Serve dev reset history; POST /api/dev/reset-history/<scope>. |
+| [delete_special_round](../songranker/developer/dev.py#L556) | `mode, round_id` | Delete special round; POST /api/dev/special-round/<mode>/<int:round_id>. |
+| [api_dev_reset_database](../songranker/developer/dev.py#L573) | `` | Serve dev reset database; POST /api/dev/reset-database. |
+| [api_dev_elo_correction](../songranker/developer/dev.py#L581) | `` | Serve dev elo correction; POST /api/dev/elo-correction. |
+| [api_dev_preferences](../songranker/developer/dev.py#L597) | `` | Serve dev preferences; GET /api/dev/preferences. |
+| [api_dev_preference](../songranker/developer/dev.py#L620) | `event_id` | Serve dev preference; GET, POST /api/dev/preferences/<int:event_id>. |
+| [api_dev_edit_trivia](../songranker/developer/dev.py#L638) | `song_id` | Serve dev edit trivia; POST, DELETE /api/dev/trivia/<int:song_id>. |
+| [api_dev_integrity](../songranker/developer/dev.py#L665) | `` | Serve dev integrity; GET /api/dev/integrity. |
+| [api_dev_activity](../songranker/developer/dev.py#L678) | `` | Serve dev activity; GET /api/dev/activity. |
+| [api_dev_delete_tournament](../songranker/developer/dev.py#L690) | `tournament_id` | Serve dev delete tournament; DELETE /api/dev/tournaments/<int:tournament_id>. |
+| [api_sync](../songranker/developer/dev.py#L714) | `` | Serve sync; POST /api/dev/sync. |
+| [api_export](../songranker/developer/dev.py#L721) | `` | Endpoint to manually trigger a database text export. |
+| [api_dev_bulk_songs](../songranker/developer/dev.py#L732) | `` | Serve dev bulk songs; POST /api/dev/bulk_songs. |
+| [api_dev_trivia_records](../songranker/developer/dev.py#L779) | `` | Serve dev trivia records; POST /api/dev/trivia-records. |
+| [api_dev_tournament_placements](../songranker/developer/dev.py#L796) | `tournament_id` | Serve dev tournament placements; POST /api/dev/tournaments/<int:tournament_id>/placements. |
 
 ## songranker/developer/dev_catalog.py
 
@@ -831,7 +831,7 @@ Backed-up transactional bootstrap and versioned migration.
 | Definition | Signature | Purpose |
 | --- | --- | --- |
 | [_migrate_legacy](../songranker/storage/database.py#L10) | `filename` |  migrate legacy; reads elo_history, history, sqlite_master, sqlite_sequence, tournament_matches, trivia_stats; writes history, legacy_elo_changes, sqlite_sequence, tournament_matches_slim, trivia_stats. |
-| [_canonical_columns_present](../songranker/storage/database.py#L96) | `conn, *, legacy_discs=False` |  canonical columns present; reads sqlite_master. |
+| [_canonical_columns_present](../songranker/storage/database.py#L96) | `conn, *, legacy_discs=False, legacy_shelves=False` |  canonical columns present; reads sqlite_master. |
 | [_complete_old_layout](../songranker/storage/database.py#L103) | `conn` |  complete old layout; reads sqlite_master. |
 | [migrate](../songranker/storage/database.py#L114) | `filename` | Canonicalise to the current schema with rollback and a pre-upgrade SQLite snapshot. |
 | [activate_adaptive_elo](../songranker/storage/database.py#L179) | `filename` | One-time startup burn-in: archive first, replay atomically, mark only on success. |
@@ -935,10 +935,10 @@ Pure preference replay and lossless historical state transport.
 | [_upgrade_to_11](../songranker/storage/preference_state.py#L289) | `original` | Normalize 8/9/10 transports to 11 without rewriting existing stored facts. |
 | [_upgrade_to_11.view_hash](../songranker/storage/preference_state.py#L322) | `values` | Hash deterministically sorted view rows to verify the migrated preference projection. |
 | [upgrade_state](../songranker/storage/preference_state.py#L335) | `original` | Apply lossless upgrades; recognize complete known SQL-dump layouts. |
-| [replay](../songranker/storage/preference_state.py#L386) | `songs, seeds, events, overrides, cutoff, boundary, rules_version=1` | Return current ratings/counts and effective snapshots from immutable inputs. |
-| [replay.set_rating](../songranker/storage/preference_state.py#L406) | `sid, value` | Update one replayed song's Elo while keeping the sorted rating index consistent. |
-| [replay.apply_before](../songranker/storage/preference_state.py#L422) | `event_id` | Apply saved manual rating adjustments that precede the next replayed preference event. |
-| [rebuild_preference_ratings](../songranker/storage/preference_state.py#L466) | `conn` | Replace derived Elo projections inside the caller's transaction, without Flask. |
+| [replay](../songranker/storage/preference_state.py#L387) | `songs, seeds, events, overrides, cutoff, boundary, rules_version=1` | Return current ratings/counts and effective snapshots from immutable inputs. |
+| [replay.set_rating](../songranker/storage/preference_state.py#L407) | `sid, value` | Update one replayed song's Elo while keeping the sorted rating index consistent. |
+| [replay.apply_before](../songranker/storage/preference_state.py#L423) | `event_id` | Apply saved manual rating adjustments that precede the next replayed preference event. |
+| [rebuild_preference_ratings](../songranker/storage/preference_state.py#L467) | `conn` | Replace derived Elo projections inside the caller's transaction, without Flask. |
 
 ## songranker/storage/schema_compat.py
 
@@ -952,6 +952,7 @@ Offline historical quiz/source/retirement adapters; no Flask imports.
 | [upgrade_sources](../songranker/storage/schema_compat.py#L152) | `original` | Adapt pre-13 song/source metadata without replacing extensions or existing stored values. |
 | [retire_listening](../songranker/storage/schema_compat.py#L193) | `original` | Remove supported retired listening storage at schema 20 while refusing dependent custom extensions. |
 | [upgrade_album_discs](../songranker/storage/schema_compat.py#L220) | `original` | Default pre-21 catalogue and saved Shelves positions to disc one. |
+| [upgrade_album_shelves](../songranker/storage/schema_compat.py#L241) | `original` | Default schema-21 albums to eligible without changing catalogue identity. |
 
 ## songranker/storage/source_storage.py
 
@@ -1008,7 +1009,7 @@ Reusable assertions and route-module fixtures; never opens an active database.
 | [catalogue](../tests/support.py#L37) | `conn` | Catalogue. |
 | [assert_clean](../tests/support.py#L52) | `conn` | Assert clean; reads global_stats, legacy_elo_changes, song_vibe_positions, song_vibe_progress, songs, sqlite_master. |
 | [route_modules](../tests/support.py#L81) | `` | Read current launcher registration imports for disposable startup stubs. |
-| [pre_disc_layout](../tests/support.py#L97) | `conn` | Remove schema-21 additions when a test constructs an older database layout. |
+| [pre_disc_layout](../tests/support.py#L97) | `conn` | Remove post-layout fields when constructing a pre-disc historical fixture. |
 
 ## tests/test_adaptive_elo.py
 
@@ -1030,6 +1031,21 @@ Adaptive ratings, startup archives and deterministic replay on disposable data.
 | [AdaptiveEloTests.test_protected_anchor_is_retained_and_unknown_policy_is_rejected](../tests/test_adaptive_elo.py#L179) | `self` | Verify protected anchor is retained and unknown policy is rejected. |
 | [AdaptiveEloTests.test_wal_archive_contains_latest_committed_state](../tests/test_adaptive_elo.py#L194) | `self` | Verify wal archive contains latest committed state. |
 | [AdaptiveEloTests.test_large_mature_history_remains_finite_balanced_and_deterministic](../tests/test_adaptive_elo.py#L203) | `self` | Verify large mature history remains finite balanced and deterministic. |
+
+## tests/test_album_shelves.py
+
+Album-only Shelves exclusions, preserved rounds and lossless schema upgrades.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [AlbumShelvesTests.client](../tests/test_album_shelves.py#L21) | `self` | Create the test HTTP client with the requested authentication state. |
+| [AlbumShelvesTests.edit](../tests/test_album_shelves.py#L26) | `self, flag, **extra` | Edit. |
+| [AlbumShelvesTests.test_flag_only_excludes_shelves_and_can_be_reversed](../tests/test_album_shelves.py#L29) | `self` | Verify flag only excludes shelves and can be reversed. |
+| [AlbumShelvesTests.test_saved_round_can_still_be_graded_after_exclusion](../tests/test_album_shelves.py#L46) | `self` | Verify saved round can still be graded after exclusion. |
+| [AlbumShelvesTests.test_new_rounds_use_other_albums_and_old_clients_preserve_flag](../tests/test_album_shelves.py#L59) | `self` | Verify new rounds use other albums and old clients preserve flag. |
+| [AlbumShelvesTests.test_invalid_flags_are_rejected_without_changes_and_auth_is_required](../tests/test_album_shelves.py#L72) | `self` | Verify invalid flags are rejected without changes and auth is required. |
+| [AlbumShelvesTests.test_flag_survives_sql_and_lossless_export_rebuild](../tests/test_album_shelves.py#L79) | `self` | Verify flag survives sql and lossless export rebuild. |
+| [AlbumShelvesTests.test_schema_21_upgrade_and_unversioned_dump_default_to_included](../tests/test_album_shelves.py#L90) | `self` | Verify schema 21 upgrade and unversioned dump default to included. |
 
 ## tests/test_apple_source_columns.py
 
@@ -1831,4 +1847,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1253 Python definitions**.
+Total: **1262 Python definitions**.

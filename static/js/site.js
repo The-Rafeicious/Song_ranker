@@ -1253,6 +1253,7 @@
       ["cover_url", "Cover"],
       ["name", "Album / release"],
       ["release_date", "Released"],
+      ["shelves_excluded", "Album Shelves"],
       ["song_count", "Songs"],
       ["score", "Impact"],
       ["avg_elo", "Avg Elo"],
@@ -1304,6 +1305,7 @@
       "cover_url",
       "name",
       "release_date",
+      "shelves_excluded",
       "song_count",
       "score",
       "release_type",
@@ -1360,6 +1362,7 @@
         ) || ""
       );
     if (k === "preview") return r.audio_url ? "yes" : "no";
+    if (k === "shelves_excluded") return r.shelves_excluded ? "Excluded" : "Included";
     if (k === "release_type") return single(r) ? "Single" : "Album";
     return r[k] ?? "";
   }
@@ -1780,7 +1783,8 @@
         "Album",
         field("title", "Title", r.title, "text", "required") +
           field("release_date", "Release date", r.release_date || "", "date") +
-          field("cover_url", "Cover URL", r.cover_url),
+          field("cover_url", "Cover URL", r.cover_url) +
+          `<label class="checkbox-label"><input type="checkbox" id="field-shelves_excluded" name="shelves_excluded" ${r.shelves_excluded ? "checked" : ""}>Exclude from Album Shelves</label><p class="muted">Keeps this as an album. Its tracks will not appear in new Album Shelves rounds.</p>`,
       );
     if (type === "tags")
       body = group(
@@ -1839,6 +1843,7 @@
     const { type, id } = editTarget,
       gen = editorGeneration,
       payload = { ...values, artist: values.artists, genres: values.tags };
+    if (type === "albums") payload.shelves_excluded = !!$("#field-shelves_excluded")?.checked;
     try {
       const result = await api(
         `/api/dev/edit_${{ songs: "song", artists: "artist", albums: "album", tags: "genre" }[type]}/${id}`,
