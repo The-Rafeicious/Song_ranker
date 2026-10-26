@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.3.7.2 · competition generation 3 · schema 21**
+**Application V5.4.0 · competition generation 3 · schema 21**
 
-Current implementation reference. `APP_VERSION` is `5.3.7.2`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.4.0`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -166,10 +166,14 @@ from browser text. New analyses do not change saved outcomes.
 
 ## Preferences and Elo
 
-Public Elo starts at 1200 and uses the retained logistic K32 policy:
+Public Elo starts at 1200. Policy 2 retains the K32 budget with a tested-population
+scale, evaluated immediately before each effective event:
 
 ```text
-expected(A) = 1 / (1 + 10 ** ((rating(B) - rating(A)) / 400))
+target      = clamp(8 * IQR(tested ratings), 200, 400)
+mean        = completed appearances / tested songs
+scale       = 400 + mean / (mean + 4) * (target - 400)
+expected(A) = 1 / (1 + 10 ** ((rating(B) - rating(A)) / scale))
 new(A)      = rating(A) + 32 * influence * (actual(A) - expected(A))
 ```
 
@@ -177,6 +181,28 @@ new(A)      = rating(A) + 32 * influence * (actual(A) - expected(A))
 it is 0.5 for selective artist/album/tag first rounds. Later rounds, bronze
 playoffs and points-only brackets do not create preference events. There is no
 high-K placement stage, forced rating range or health-based rating adjustment.
+
+The IQR uses linearly interpolated quartiles, excluding zero-evidence songs.
+Fewer than four tested songs use scale 400. Completed eligible first-round
+tournament appearances count once for scale maturity, including scoped events;
+their exchange budget remains halved. Public evidence is seeded ordinary matches
+plus effective ordinary and tournament appearances. Each independent stream
+uses only its own tested ratings and completed appearances. No catalogue-wide
+mean or rank rescaling moves ratings without a saved result. The blend is bounded
+200–400; broad mature distributions return to the classic scale of 400. Stable
+logistic arithmetic handles very wide rating gaps without exponent overflow.
+
+At startup, after Git database reconciliation and before serving, policy-1
+databases receive a verified `database_backups/pre_adaptive_elo_*.db` archive.
+The app replays effective events by ascending event ID, preserves ordered manual
+overrides and legacy anchors, rebuilds public/independent projections, and updates
+`preference_replay_state.rules_version` to 2 in the same write transaction.
+Full-history peaks are rebuilt under policy 2; protected legacy-anchor peaks and
+cutoffs remain. Backup/replay failure stops startup with ratings and marker
+unchanged. Concurrent startups serialize; successful activation is never repeated.
+Fresh databases start on policy 2. Lossless import/export/recovery does not itself
+activate or modify an older policy; startup performs that explicit operation.
+Original event receipts and frozen Guesser questions remain historical facts.
 
 An ordinary offer freezes pair/order, owner, visibility mode, rules and identity
 facts. The server validates the accepted choice against that offer. Its immutable

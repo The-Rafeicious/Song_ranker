@@ -6,6 +6,7 @@ feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 [V5.1](../update_logs/V5_1_UPDATE.md). v5.1.2 includes a backed-up schema migration.
 
 - [Routine updates](#routine-updates)
+- [Adaptive Elo activation](#adaptive-elo-activation-v540)
 - [First competition transfer](#first-competition-transfer)
 - [Schema and storage changes](#schema-and-storage-changes)
 - [Tags and catalogue policy](#tags-and-catalogue-policy)
@@ -26,10 +27,37 @@ feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 4. Use the new code with upgraded databases. Older code may refuse a newer schema;
    source rollback alone does not roll back database structure.
 
-`APP_VERSION` is `5.3.7.2`; Vibe reports `Vibe-Map-v1.1`.
+`APP_VERSION` is `5.4.0`; Vibe reports `Vibe-Map-v1.1`.
 The documentation release labels v5.1.0/v5.1.1 do not change the runtime footer.
 Install dependencies from `requirements.txt`; configuration is in the
 [technical guide](TECHNICAL_GUIDE.md#configuration).
+
+## Adaptive Elo activation (V5.4.0)
+
+On the first launch with a policy-1 database, startup creates an integrity-checked
+SQLite archive beside the live database, in
+`database_backups/pre_adaptive_elo_<timestamp>.db`. It includes committed WAL data.
+The startup log prints its full path. This historical archive is never rotated
+out by the three-slot rolling backup policy.
+
+After normal Git database reconciliation, and before requests are served, the app
+replays saved effective matches in event-ID order. Corrections, voids, weighted
+first-round tournament results and manual overrides retain their meaning. Public
+and independent mode ratings are rebuilt, along with full-history peaks. Missing
+legacy history is never invented: protected anchor values/cutoffs remain.
+Catalogue, tags, other game results and immutable original vote receipts stay intact.
+
+The completion marker and all projections commit together. Later launches skip
+activation. A backup, replay or validation failure stops startup and leaves the
+old ratings and marker intact; fix the failure and restart to retry. A restored
+older snapshot with a policy-1 marker will be activated on its next startup.
+
+To return to the old calculation, stop the app, keep a separate backup of any
+newer votes, restore the printed pre-adaptive archive using the existing recovery
+workflow, and run the pre-V5.4.0 source. Returning only the source or only the
+archive does not provide a consistent rollback. Starting V5.4.0 with that old
+archive will activate adaptive Elo again. The archive restores the whole database
+to that point in time; it does not merge later votes.
 
 ## First competition transfer
 

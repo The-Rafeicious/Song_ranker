@@ -10,15 +10,114 @@ LEGACY_COLUMNS = ('id', 'winner_id', 'loser_id', 'mode', 'created_at',
                   'winner_before', 'winner_after', 'loser_before', 'loser_after')
 EVENT_COLUMNS = LEGACY_COLUMNS + ('offer_token', 'origin', 'rules_version',
                                   'winner_snapshot', 'loser_snapshot')
+ELO_RULES_VERSION = 2
 
 
-def calculate_new_elo(winner, loser, k_factor=32):
-    """Calculate winner/loser Elo updates with the supplied K factor and standard
-    expected-score formula.
+def calculate_new_elo(winner, loser, k_factor=32, scale=400):
+    """Conserve a pair's rating total, with stable arithmetic for very wide gaps.
+
+    The default is the historical policy, retained for transport verification.
+    Current writers and replay supply the population's adaptive scale explicitly.
     """
-    expected_winner = 1 / (1 + 10 ** ((loser - winner) / 400))
-    expected_loser = 1 / (1 + 10 ** ((winner - loser) / 400))
-    return winner + k_factor * (1 - expected_winner), loser - k_factor * expected_loser
+    if (
+        not all(math.isfinite(v) for v in (winner, loser, k_factor, scale))
+        or scale <= 0
+        or k_factor < 0
+    ):
+        raise ValueError(
+            "Finite ratings, nonnegative K and a positive scale are required."
+        )
+    exponent = (loser / scale - winner / scale) * math.log(10)
+    tail = math.exp(-abs(exponent))
+    loss_probability = 1 / (1 + tail) if exponent >= 0 else tail / (1 + tail)
+    change = k_factor * loss_probability
+    return winner + change, loser - change
+
+
+
+class EloPopulation:
+    """Incremental tested-only distribution shared by replay and live updates.
+
+    Scale target = clamp(8 * IQR, 200, 400). Blend from 400 with maturity
+    mean completed appearances / (mean + 4); unplayed catalogue additions have
+    no effect. Counts include eligible first-round tournaments, including scoped
+    appearances (their Elo budget, rather than evidence count, is halved).
+    """
+
+    def __init__(self, rows=()):
+        self.ratings = {}
+        self.counts = {}
+        self.ordered = []
+        self.appearances = 0
+        for sid, rating, count in rows:
+            if not math.isfinite(rating) or not math.isfinite(count) or count < 0:
+                raise ValueError("Invalid Elo population evidence.")
+            if count > 0:
+                self.ratings[sid] = rating
+                self.counts[sid] = count
+        self.ordered = sorted((rating, sid) for sid, rating in self.ratings.items())
+        self.appearances = math.fsum(self.counts.values())
+
+    def set(self, sid, rating, count):
+        """Replace one tested rating/count without sorting the whole catalogue."""
+        if not math.isfinite(rating) or not math.isfinite(count) or count < 0:
+            raise ValueError("Invalid Elo population evidence.")
+        if sid in self.ratings:
+            old = (self.ratings.pop(sid), sid)
+            self.ordered.pop(bisect_right(self.ordered, old) - 1)
+            self.appearances -= self.counts.pop(sid)
+        if count > 0:
+            self.ratings[sid] = rating
+            self.counts[sid] = count
+            self.appearances += count
+            insort(self.ordered, (rating, sid))
+
+    def scale(self):
+        """Use interpolated quartiles before the next event, with a sparse fallback."""
+        size = len(self.ordered)
+        if size < 4:
+            return 400.0
+
+        def quantile(fraction):
+            position = (size - 1) * fraction
+            lower = int(position)
+            upper = min(lower + 1, size - 1)
+            return self.ordered[lower][0] * (1 - position + lower) + self.ordered[
+                upper
+            ][0] * (position - lower)
+
+        spread = quantile(0.75) - quantile(0.25)
+        target = min(400.0, max(200.0, 8 * spread))
+        mean = self.appearances / size
+        return 400 + mean / (mean + 4) * (target - 400)
+
+
+
+def live_elo_scale(conn, mode=None):
+    """Read a current public or independent-mode distribution, never match history.
+
+    The caller holds the preference write transaction. Persisted projections
+    supply the same completed appearances used by the sequential replay.
+    """
+    state = conn.execute(
+        "SELECT rules_version FROM preference_replay_state WHERE id=1"
+    ).fetchone()
+    if state is None or state[0] == 1:
+        return 400.0
+    if state[0] != ELO_RULES_VERSION:
+        raise ValueError("Elo policy needs a newer app.")
+    if mode is None:
+        rows = conn.execute("""SELECT s.id,s.elo_score,
+            s.matches_played + COALESCE(SUM(m.tournament_matches),0)
+            FROM songs s LEFT JOIN preference_mode_ratings m ON m.song_id=s.id
+            GROUP BY s.id""")
+    else:
+        rows = conn.execute(
+            "SELECT song_id,elo,matches FROM preference_mode_ratings WHERE mode=?",
+            (mode,),
+        )
+    return EloPopulation(rows).scale()
+
 
 
 def compact(value):
@@ -153,20 +252,38 @@ def effective_events(state):
     return result
 
 
-def mode_replay(songs, events):
-    """Independent K32 streams. Public overrides/anchors never leak into them."""
-    result = {(s['id'], mode): dict(elo=1200.0, matches=0, tournament_matches=0)
-              for s in songs for mode in ('standard', 'blind')}
-    for event in sorted(events, key=lambda row: row['id']):
-        w, l, mode = event['winner_id'], event['loser_id'], event['mode']
-        if not event.get('active', 1) or w == l or (w, mode) not in result or (l, mode) not in result:
+def mode_replay(songs, events, rules_version=1):
+    """Independent streams; each mode owns its population and evidence scale."""
+    if rules_version not in (1, ELO_RULES_VERSION):
+        raise ValueError('Elo policy needs a newer app.')
+    result = {
+        (s["id"], mode): dict(elo=1200.0, matches=0, tournament_matches=0)
+        for s in songs
+        for mode in ("standard", "blind")
+    }
+    populations = {mode: EloPopulation() for mode in ("standard", "blind")}
+    for event in sorted(events, key=lambda row: row["id"]):
+        w, l, mode = event["winner_id"], event["loser_id"], event["mode"]
+        if (
+            not event.get("active", 1)
+            or w == l
+            or (w, mode) not in result
+            or (l, mode) not in result
+        ):
             continue
         first, second = result[w, mode], result[l, mode]
-        first['elo'], second['elo'] = calculate_new_elo(first['elo'], second['elo'], 32 * event.get('rating_weight', 1))
-        for row in (first, second):
-            row['matches'] += 1
-            row['tournament_matches'] += int(event['origin'] == 'tournament')
+        population = populations[mode]
+        scale = population.scale() if rules_version == ELO_RULES_VERSION else 400
+        first["elo"], second["elo"] = calculate_new_elo(
+            first["elo"], second["elo"], 32 * event.get("rating_weight", 1), scale
+        )
+        for sid, row in ((w, first), (l, second)):
+            row["matches"] += 1
+            row["tournament_matches"] += int(event["origin"] == "tournament")
+            if rules_version == ELO_RULES_VERSION:
+                population.set(sid, row["elo"], row["matches"])
     return result
+
 
 
 def _upgrade_to_11(original):
@@ -266,49 +383,143 @@ def upgrade_state(original):
     return upgrade_album_discs(retire_listening(upgrade_vibes(upgrade_tags(upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original))))))))
 
 
-def replay(songs, seeds, events, overrides, cutoff, boundary):
+def replay(songs, seeds, events, overrides, cutoff, boundary, rules_version=1):
     """Return current ratings/counts and effective snapshots from immutable inputs."""
-    result = {s['id']: dict(seeds[s['id']]) for s in songs}
-    ordered = sorted((row['elo'], sid) for sid, row in result.items())
+    if rules_version not in (1, ELO_RULES_VERSION):
+        raise ValueError('Elo policy needs a newer app.')
+    result = {s["id"]: dict(seeds[s["id"]]) for s in songs}
+    ordered = sorted((row["elo"], sid) for sid, row in result.items())
+    adaptive = rules_version == ELO_RULES_VERSION
+    population = EloPopulation(
+        (sid, row["elo"], row["matches"]) for sid, row in result.items()
+    )
+    if adaptive and cutoff == 0:
+        # Old recorded peaks belong to the old calculation. Rebuild peaks from
+        # the known baseline and every effective event, including legacy events.
+        for sid, row in result.items():
+            row["highest_elo"] = row["elo"]
+            row["highest_rank"] = 9999
     projected = {}
-    adjustments = sorted(overrides, key=lambda row: (row['after_event_id'], row['id']))
+    adjustments = sorted(overrides, key=lambda row: (row["after_event_id"], row["id"]))
     index = 0
+
     def set_rating(sid, value):
         """Update one replayed song's Elo while keeping the sorted rating index
         consistent.
         """
         if sid not in result:
             return
-        old = (result[sid]['elo'], sid)
+        old = (result[sid]["elo"], sid)
         pos = bisect_right(ordered, old) - 1
         if pos < 0 or ordered[pos] != old:
-            raise ValueError('Rating projection is inconsistent.')
-        ordered.pop(pos); insort(ordered, (value, sid)); result[sid]['elo'] = value
+            raise ValueError("Rating projection is inconsistent.")
+        ordered.pop(pos)
+        insort(ordered, (value, sid))
+        result[sid]["elo"] = value
+        if adaptive:
+            population.set(sid, value, population.counts.get(sid, 0))
+
     def apply_before(event_id):
         """Apply saved manual rating adjustments that precede the next replayed
         preference event.
         """
         nonlocal index
-        while index < len(adjustments) and adjustments[index]['after_event_id'] < event_id:
-            row = adjustments[index]; set_rating(row['song_id'], row['new_elo']); index += 1
-    for event in sorted(events, key=lambda row: row['id']):
-        if event['id'] <= cutoff:
+        while (
+            index < len(adjustments) and adjustments[index]["after_event_id"] < event_id
+        ):
+            row = adjustments[index]
+            set_rating(row["song_id"], row["new_elo"])
+            index += 1
+
+    for event in sorted(events, key=lambda row: row["id"]):
+        if event["id"] <= cutoff:
             continue
-        apply_before(event['id'])
-        w, l = event['winner_id'], event['loser_id']
-        if not event['active'] or w not in result or l not in result or w == l:
+        apply_before(event["id"])
+        w, l = event["winner_id"], event["loser_id"]
+        if not event["active"] or w not in result or l not in result or w == l:
             continue
-        a, b = result[w]['elo'], result[l]['elo']
-        na, nb = calculate_new_elo(a, b, 32 * event.get('rating_weight', 1))
-        set_rating(w, na); set_rating(l, nb)
-        if event['origin'] in ('legacy', 'ordinary'):
-            result[w]['matches'] += 1; result[l]['matches'] += 1
-        projected[event['id']] = (a, na, b, nb)
-        if event['id'] > boundary:
+        a, b = result[w]["elo"], result[l]["elo"]
+        scale = population.scale() if adaptive else 400
+        na, nb = calculate_new_elo(a, b, 32 * event.get("rating_weight", 1), scale)
+        set_rating(w, na)
+        set_rating(l, nb)
+        if adaptive:
             for sid in (w, l):
-                value = result[sid]['elo']
-                result[sid]['highest_elo'] = max(result[sid]['highest_elo'], value)
-                rank = len(ordered) - bisect_right(ordered, (value, float('inf'))) + 1
-                result[sid]['highest_rank'] = min(result[sid]['highest_rank'], rank)
-    apply_before(float('inf'))
+                population.set(
+                    sid, result[sid]["elo"], population.counts.get(sid, 0) + 1
+                )
+        if event["origin"] in ("legacy", "ordinary"):
+            result[w]["matches"] += 1
+            result[l]["matches"] += 1
+        projected[event["id"]] = (a, na, b, nb)
+        if event["id"] > boundary or (adaptive and cutoff == 0):
+            for sid in (w, l):
+                value = result[sid]["elo"]
+                result[sid]["highest_elo"] = max(result[sid]["highest_elo"], value)
+                rank = len(ordered) - bisect_right(ordered, (value, float("inf"))) + 1
+                result[sid]["highest_rank"] = min(result[sid]["highest_rank"], rank)
+    apply_before(float("inf"))
     return result, projected
+
+
+
+def rebuild_preference_ratings(conn):
+    """Replace derived Elo projections inside the caller's transaction, without Flask.
+
+    Immutable events, corrections, overrides and seed anchors remain untouched.
+    Legacy anchors with missing early history retain their cutoff and old peaks.
+    """
+    settings = dict(
+        conn.execute("SELECT * FROM preference_replay_state WHERE id=1").fetchone()
+    )
+    version = settings["rules_version"]
+    if version not in (1, ELO_RULES_VERSION):
+        raise ValueError("Elo policy needs a newer app.")
+    songs = [dict(r) for r in conn.execute("SELECT id FROM songs")]
+    seeds = {
+        r["song_id"]: dict(r)
+        for r in conn.execute("SELECT * FROM preference_rating_seeds")
+    }
+    events = [
+        dict(r) for r in conn.execute("SELECT * FROM preference_effective ORDER BY id")
+    ]
+    overrides = [
+        dict(r)
+        for r in conn.execute(
+            "SELECT * FROM preference_rating_overrides ORDER BY after_event_id,id"
+        )
+    ]
+    ratings, projected = replay(
+        songs,
+        seeds,
+        events,
+        overrides,
+        settings["cutoff_event_id"],
+        settings["legacy_boundary"],
+        version,
+    )
+    conn.execute(
+        "DELETE FROM preference_rating_projection WHERE event_id>?",
+        (settings["cutoff_event_id"],),
+    )
+    conn.executemany(
+        "INSERT INTO preference_rating_projection VALUES(?,?,?,?,?)",
+        ((event_id, *values) for event_id, values in projected.items()),
+    )
+    conn.executemany(
+        "UPDATE songs SET elo_score=?,matches_played=?,highest_elo=?,highest_rank=? WHERE id=?",
+        (
+            (row["elo"], row["matches"], row["highest_elo"], row["highest_rank"], sid)
+            for sid, row in ratings.items()
+        ),
+    )
+    conn.executemany(
+        """INSERT INTO preference_mode_ratings VALUES(?,?,?,?,?)
+        ON CONFLICT(song_id,mode) DO UPDATE SET elo=excluded.elo,
+        matches=excluded.matches,tournament_matches=excluded.tournament_matches""",
+        (
+            (sid, mode, row["elo"], row["matches"], row["tournament_matches"])
+            for (sid, mode), row in mode_replay(songs, events, version).items()
+        ),
+    )
+    return len(projected)

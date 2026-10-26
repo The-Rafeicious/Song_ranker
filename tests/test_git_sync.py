@@ -572,7 +572,7 @@ class GitSyncTests(unittest.TestCase):
             "from pathlib import Path\ndef configured_paths(root):return Path(root)/'unused.db',Path(root)/'old.db'\n"
         )
         (pkg / "services.py").write_text(
-            "from types import SimpleNamespace\nfrom app import VERSION\nprint('loaded '+VERSION)\napp=SimpleNamespace(config={'MAX_CONTENT_LENGTH':4194304},extensions={'song_ranker_stop':None})\ndef init_db():print('bootstrap '+VERSION)\n"
+            "from types import SimpleNamespace\nfrom app import VERSION\nprint('loaded '+VERSION)\napp=SimpleNamespace(config={'MAX_CONTENT_LENGTH':4194304},extensions={'song_ranker_stop':None})\ndef init_db():print('bootstrap '+VERSION)\ndef activate_elo_policy():print('elo '+VERSION)\n"
         )
         (self.seed / "waitress.py").write_text(
             "from types import SimpleNamespace\ndef create_server(*a,**k):return SimpleNamespace(run=lambda:print('served fixture'))\n"

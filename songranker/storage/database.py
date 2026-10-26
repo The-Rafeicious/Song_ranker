@@ -176,6 +176,92 @@ def migrate(filename):
     compact_database(path,force=True,backed_up=True)
 
 
+def activate_adaptive_elo(filename):
+    """One-time startup burn-in: archive first, replay atomically, mark only on success.
+
+    A write reservation serializes concurrent startups and blocks votes until the
+    integrity-checked SQLite backup and replay finish. Old snapshots keep policy
+    1 during lossless import; this explicit startup operation activates policy 2.
+    Any backup/replay/validation failure aborts startup and rolls back all writes.
+    """
+    import json
+    from songranker.storage.database_io import create_backup, validate
+    from songranker.storage.preference_state import (
+        ELO_RULES_VERSION,
+        rebuild_preference_ratings,
+    )
+
+    path = Path(filename).resolve(strict=True)
+    conn = sqlite3.connect(path, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys=ON")
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        state = conn.execute(
+            "SELECT * FROM preference_replay_state WHERE id=1"
+        ).fetchone()
+        if state is None:
+            raise ValueError(
+                "Preference replay state is missing; restore a verified backup."
+            )
+        if state["rules_version"] == ELO_RULES_VERSION:
+            conn.rollback()
+            return None
+        if state["rules_version"] != 1:
+            raise ValueError(
+                "Elo policy needs a newer app; database was left unchanged."
+            )
+        backup = create_backup(path, "pre_adaptive_elo")
+        missing = conn.execute("""SELECT 1 FROM songs s
+            LEFT JOIN preference_rating_seeds seed ON seed.song_id=s.id
+            WHERE seed.song_id IS NULL AND s.matches_played!=0
+            UNION ALL
+            SELECT 1 FROM preference_effective e
+            JOIN songs w ON w.id=e.winner_id JOIN songs l ON l.id=e.loser_id
+            LEFT JOIN preference_rating_seeds ws ON ws.song_id=w.id
+            LEFT JOIN preference_rating_seeds ls ON ls.song_id=l.id
+            WHERE e.active=1 AND e.mode IN ('standard','blind') AND w.id!=l.id
+            AND (ws.song_id IS NULL OR ls.song_id IS NULL) LIMIT 1""").fetchone()
+        if missing:
+            raise ValueError('A tested song is missing its rating baseline; restore a verified backup. No ratings were changed.')
+        conn.execute(
+            """INSERT INTO preference_rating_seeds(song_id,elo,matches,highest_elo,highest_rank)
+            SELECT id,elo_score,COALESCE(matches_played,0),COALESCE(highest_elo,elo_score),COALESCE(highest_rank,9999)
+            FROM songs WHERE id NOT IN (SELECT song_id FROM preference_rating_seeds)"""
+        )
+        conn.execute(
+            "UPDATE preference_replay_state SET rules_version=? WHERE id=1",
+            (ELO_RULES_VERSION,),
+        )
+        count = rebuild_preference_ratings(conn)
+        validate(conn)
+        report = dict(
+            policy=ELO_RULES_VERSION,
+            events=count,
+            backup=str(backup),
+            completed_at=datetime.now().isoformat(),
+            anchored=state["cutoff_event_id"] > 0,
+        )
+        row = conn.execute(
+            "SELECT migration_report FROM competition_state WHERE id=1"
+        ).fetchone()
+        if row:
+            metadata = json.loads(row[0])
+            metadata["adaptive_elo"] = report
+            conn.execute(
+                "UPDATE competition_state SET migration_report=? WHERE id=1",
+                (json.dumps(metadata),),
+            )
+        conn.commit()
+        return report
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()
+
+
+
 def initialize_database(filename, sql_backup=None):
     """Existing DB wins. Missing DB restores SQL before any empty schema is made."""
     import tempfile
@@ -213,7 +299,7 @@ def initialize_database(filename, sql_backup=None):
                 create_objects(conn)
                 from songranker.storage.vibe_state import seed_definitions
                 seed_definitions(conn)
-                conn.execute("INSERT INTO preference_replay_state VALUES(1,0,0,'verified_replay',1)")
+                conn.execute("INSERT INTO preference_replay_state VALUES(1,0,0,'verified_replay',2)")
                 conn.execute("INSERT INTO competition_state VALUES(1,3,unixepoch(),'{}')")
                 conn.executemany('INSERT INTO global_stats(key,value) VALUES(?,?)',
                     [('trivia_high_score', 0), ('trivia_high_streak', 0), ('trivia_scoring_version', 2)])
