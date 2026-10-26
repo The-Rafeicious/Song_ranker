@@ -399,12 +399,12 @@ window.TournamentBracket = (() => {
     const size=Number(data.tournament.size), rounds=Math.log2(size);
     if(![8,16,32].includes(size)){root.textContent="This saved bracket has an unsupported size.";return {cancel(){}};}
     const tracks=new Map(data.entries.map(s=>[Number(s.id),s])), byKey=new Map(data.matches.filter(m=>m.match_type!=="third_place").map(m=>[`${m.round_number}:${m.match_number}`,m]));
-    const height=size/2*144, width=rounds*244+32, shown=new Set(), order=replayOrder(data.matches,size).filter(m=>m.status==="completed"), playlist=soundtrack(data);
+    const height=Math.max(480,size/4*160), width=2*(rounds-1)*260+292, shown=new Set(), order=replayOrder(data.matches,size).filter(m=>m.status==="completed"), playlist=soundtrack(data);
     let completed=false, timer=null, index=0, closed=false, playing=false, revealing=!!options.animate, lastRevealed=null, selected=null, sound=!!options.sound, cue=null, audio=null, serial=0;
     const failed=new Set();
     const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if(!options.animate || reduced) order.forEach(m=>shown.add(m.id));
-    root.innerHTML=`<div class="bracket-toolbar"><div class="bracket-stages" aria-label="Bracket rounds">${Array.from({length:rounds},(_,i)=>`<button type="button" class="btn" data-map-round="${i}">${label(size,i+1)}</button>`).join('')}</div><div class="bracket-actions"><button type="button" class="btn tournament" data-map-replay>Replay bracket</button><button type="button" class="btn" data-map-sound aria-pressed="${sound}">Sound ${sound?'on':'off'}</button><button type="button" class="btn" data-map-skip>${options.onDone?'Skip to podium':'Show saved results'}</button></div></div><p class="bracket-status" role="status" aria-live="polite"></p><div class="bracket-viewport" tabindex="0" aria-label="Tournament bracket; scroll to explore rounds"><div class="bracket-canvas" style="width:${width}px;height:${height+65}px"><svg class="bracket-lines" width="${width}" height="${height}" aria-hidden="true"></svg><div class="bracket-nodes"></div></div></div><div class="bracket-inspector" aria-live="polite">Select a track to highlight its route through the bracket.</div>`;
+    root.innerHTML=`<div class="bracket-toolbar"><div class="bracket-stages" aria-label="Bracket rounds"><button type="button" class="btn" data-map-half="left">Left half</button><button type="button" class="btn" data-map-half="right">Right half</button>${Array.from({length:rounds},(_,i)=>`<button type="button" class="btn" data-map-round="${i}">${label(size,i+1)}</button>`).join('')}</div><div class="bracket-actions"><button type="button" class="btn tournament" data-map-replay>Replay bracket</button><button type="button" class="btn" data-map-sound aria-pressed="${sound}">Sound ${sound?'on':'off'}</button><button type="button" class="btn" data-map-skip>${options.onDone?'Skip to podium':'Show saved results'}</button></div></div><p class="bracket-status" role="status" aria-live="polite"></p><div class="bracket-viewport" tabindex="0" aria-label="Tournament bracket; scroll to explore rounds"><div class="bracket-canvas" style="width:${width}px;height:${height+65}px"><svg class="bracket-lines" width="${width}" height="${height}" aria-hidden="true"></svg><div class="bracket-nodes"></div></div></div><div class="bracket-inspector" aria-live="polite">Select a track to highlight its route through the bracket.</div>`;
     const viewport=root.querySelector('.bracket-viewport'), nodes=root.querySelector('.bracket-nodes'), svg=root.querySelector('svg'), status=root.querySelector('.bracket-status'), inspector=root.querySelector('.bracket-inspector');
     function stopSound(){serial++; if(audio){window.PreviewPlayback?.cancel?.(audio);audio.pause();audio.remove();audio=null;}cue=null;}
     function playCue(side){
@@ -425,27 +425,32 @@ window.TournamentBracket = (() => {
       const parent=byKey.get(`${m.round_number-1}:${(m.match_number-1)*2+(slot==='song1_id'?1:2)}`);
       return parent&&shown.has(parent.id)?parent.winner_id:null;
     }
+    function position(round,n,bronze=false){
+      if(round===rounds)return {x:(width-(bronze?212:260))/2,y:height/2+(bronze?115:-80),w:bronze?212:260};
+      const half=size/2**round/2, side=n>half, local=side?n-half:n;
+      return {x:side?width-228-(round-1)*260:(round-1)*260+16,y:(local-.5)*height/half-63,w:212};
+    }
+    function pan(round,n,bronze=false){const p=position(round,n,bronze);viewport.scrollTo?.({left:Math.max(0,p.x+p.w/2-viewport.clientWidth/2),top:Math.max(0,p.y-viewport.clientHeight/2+63),behavior:reduced?'instant':'smooth'});}
     function draw(){
       let html='', paths='';
-      for(let round=1;round<=rounds;round++){
-        const count=size/2**round;
-        for(let n=1;n<=count;n++){
-          const saved=byKey.get(`${round}:${n}`), m=saved||{round_number:round,match_number:n}, resolved=saved&&shown.has(saved.id), x=(round-1)*244+16,y=(n-.5)*(height/count)-63;
-          if(round<rounds){const endY=(Math.ceil(n/2)-.5)*height/(count/2);paths+=`<path class="${resolved?'bracket-line-done':''}" d="M${x+212},${y+63} H${x+228} V${endY} H${x+244}"/>`;}
-          html+=`<article class="bracket-node ${resolved?'is-resolved':''} ${resolved&&saved.id===lastRevealed?'is-advancing':''}" data-map-match="${saved?.id||''}" style="left:${x}px;top:${y}px"><small>${label(size,round)} · ${n}</small>`;
+      const cells=[];
+      for(let round=1;round<=rounds;round++)for(let n=1;n<=size/2**round;n++)cells.push({round,n,saved:byKey.get(`${round}:${n}`)});
+      const bronze=data.matches.find(m=>m.match_type==='third_place');
+      if(bronze)cells.push({round:rounds,n:1,saved:bronze,bronze:true});
+      for(const cell of cells){
+          const {round,n,saved,bronze}=cell, m=saved||{round_number:round,match_number:n}, resolved=saved&&shown.has(saved.id), {x,y,w}=position(round,n,bronze);
+          if(round<rounds){const next=position(round+1,Math.ceil(n/2)),right=n>size/2**round/2,from=right?x:x+w,to=right?next.x+next.w:next.x,mid=(from+to)/2;paths+=`<path class="${resolved?'bracket-line-done':''}" d="M${from},${y+63} H${mid} V${next.y+63} H${to}"/>`;}
+          html+=`<article class="bracket-node ${round===rounds&&!bronze?'bracket-final':''} ${bronze?'bracket-third':''} ${resolved?'is-resolved':''} ${resolved&&saved.id===lastRevealed?'is-advancing':''}" data-map-match="${saved?.id||''}" style="left:${x}px;top:${y}px;width:${w}px"><small>${bronze?'Third place':label(size,round)+' · '+n}</small>`;
           for(const [slot,side] of [['song1_id',0],['song2_id',1]]){
             let id=participant(m,slot);
             // An advancing identity only appears after its feeder has resolved.
-            if(round>1&&!shown.has(byKey.get(`${round-1}:${(n-1)*2+side+1}`)?.id)&&revealing&&!reduced)id=null;
+            if(round>1&&revealing&&!reduced&&(bronze?![1,2].every(n=>shown.has(byKey.get(`${rounds-1}:${n}`)?.id)):!shown.has(byKey.get(`${round-1}:${(n-1)*2+side+1}`)?.id)))id=null;
             const hidden=data.tournament.is_blind&&data.tournament.status!=='completed'&&!resolved, song=tracks.get(Number(id));
             const name=hidden?'Hidden track':song?.title||(id?'Track unavailable':'Awaiting winner'), won=resolved&&m.winner_id===id, lost=resolved&&m.loser_id===id;
             html+=`<button type="button" class="bracket-track ${won?'is-winner':''} ${lost?'is-eliminated':''} ${id&&id===selected?'is-route':''}" data-map-track="${hidden||!song?'':id||''}" title="${esc(name)}" aria-pressed="${!!id&&id===selected}" aria-label="${esc(name)}, ${won?'Winner':lost?'Eliminated':'Pending'}" ${!id||hidden||!song?'disabled':''}>${!hidden&&song?.cover_url?`<img src="${esc(song.cover_url)}" alt="" loading="lazy">`:""}<span>${esc(name)}</span><b>${won?'✓':lost?'×':'·'}</b></button>`;
           }
           html+='</article>';
-        }
       }
-      const bronze=data.matches.find(m=>m.match_type==='third_place');
-      if(bronze)html+=`<div class="bracket-bronze" style="top:${height+10}px">Third place: ${shown.has(bronze.id)?esc(tracks.get(bronze.winner_id)?.title||'Track unavailable'):'Awaiting playoff'}</div>`;
       nodes.innerHTML=html;svg.innerHTML=paths;lastRevealed=null;
     }
     function halt(){playing=false;clearTimeout(timer);stopSound();if(activeReplay===halt)activeReplay=null;}
@@ -457,18 +462,19 @@ window.TournamentBracket = (() => {
       const m=order[index++];if(!m){finish();return;}
       shown.add(m.id);lastRevealed=m.id;draw();status.textContent=`${label(size,m.round_number)} · ${index} / ${order.length} results`;
       const half=size/2**m.round_number/2, side=m.match_number>half?1:0;playCue(side);
-      viewport.scrollTo?.({left:(m.round_number-1)*244,top:Math.max(0,(m.match_number-.5)*height/(size/2**m.round_number)-viewport.clientHeight/2),behavior:reduced?'instant':'smooth'});
-      timer=setTimeout(step,options.stepMs||850);
+      pan(m.round_number,m.match_number,m.match_type==='third_place');
+      timer=setTimeout(step,options.stepMs||1600);
     }
     function replay(){if(closed)return;completed=false;activeReplay?.();activeReplay=halt;clearTimeout(timer);stopSound();if(reduced||!order.length){order.forEach(m=>shown.add(m.id));draw();queueMicrotask(finish);return;}shown.clear();index=0;playing=true;revealing=true;root.querySelector('[data-map-replay]').textContent='Restart replay';draw();step();}
 
     function handleClick(event){if(closed)return;
       const button=event.target.closest('button');if(!button)return;
-      if(button.hasAttribute('data-map-round')){const round=Number(button.dataset.mapRound)+1, match=data.matches.find(m=>m.round_number===round&&m.match_type!=='third_place'&&(m.song1_id===selected||m.song2_id===selected)), n=match?.match_number||1;viewport.scrollTo?.({left:(round-1)*244,top:Math.max(0,(n-.5)*height/(size/2**round)-viewport.clientHeight/2),behavior:reduced?'instant':'smooth'});}
+      if(button.hasAttribute('data-map-round')){const round=Number(button.dataset.mapRound)+1, match=data.matches.find(m=>m.round_number===round&&m.match_type!=='third_place'&&(m.song1_id===selected||m.song2_id===selected)), n=match?.match_number||1;pan(round,n);}
+      if(button.hasAttribute('data-map-half'))pan(1,button.dataset.mapHalf==='right'?size/4+1:1);
       if(button.hasAttribute('data-map-replay'))replay();
       if(button.hasAttribute('data-map-sound')){sound=!sound;button.textContent='Sound '+(sound?'on':'off');button.setAttribute('aria-pressed',String(sound));if(!sound)stopSound();else if(playing)playCue(0);}
       if(button.hasAttribute('data-map-skip'))finish();
-      if(button.dataset.mapTrack){if(playing){halt();status.textContent='Replay paused · select Restart replay to continue';}const matchId=button.closest('[data-map-match]')?.dataset.mapMatch;selected=Number(button.dataset.mapTrack);const song=tracks.get(selected), appearances=data.matches.filter(m=>m.song1_id===selected||m.song2_id===selected),wins=appearances.filter(m=>m.winner_id===selected).length, eliminated=appearances.find(m=>m.loser_id===selected&&m.match_type!=='third_place'), champion=data.matches.find(m=>m.round_number===rounds&&m.match_type!=='third_place')?.winner_id===selected, points=appearances.filter(m=>m.winner_id===selected).reduce((n,m)=>Number.isFinite(m.points_awarded)?n+m.points_awarded:NaN,0);draw();inspector.innerHTML=`<strong class="song">${esc(song?.title||'Track unavailable')}</strong><span>${esc(song?.artist||'')} · ${wins} wins · ${appearances.filter(m=>m.status==='completed').length} played matches · ${Number.isFinite(points)?points.toFixed(2)+' points':'Points unavailable'}</span><span>${champion?'Champion':eliminated?'Eliminated · '+label(size,eliminated.round_number):'Saved progress'}</span><a class="song" href="/song/${selected}">Open song ↗</a>`;nodes.querySelector(`[data-map-match="${matchId}"] [data-map-track="${selected}"]`)?.focus({preventScroll:true});}
+      if(button.dataset.mapTrack){if(playing){halt();status.textContent='Replay paused · select Restart replay to continue';}const matchId=button.closest('[data-map-match]')?.dataset.mapMatch;selected=Number(button.dataset.mapTrack);const song=tracks.get(selected), appearances=data.matches.filter(m=>shown.has(m.id)&&(m.song1_id===selected||m.song2_id===selected)),wins=appearances.filter(m=>m.winner_id===selected).length, eliminated=appearances.find(m=>m.loser_id===selected&&m.match_type!=='third_place'), champion=data.matches.find(m=>shown.has(m.id)&&m.round_number===rounds&&m.match_type!=='third_place')?.winner_id===selected, points=appearances.filter(m=>m.winner_id===selected).reduce((n,m)=>Number.isFinite(m.points_awarded)?n+m.points_awarded:NaN,0);draw();inspector.innerHTML=`<strong class="song">${esc(song?.title||'Track unavailable')}</strong><span>${esc(song?.artist||'')} · ${wins} wins · ${appearances.filter(m=>m.status==='completed').length} played matches · ${Number.isFinite(points)?points.toFixed(2)+' points':'Points unavailable'}</span><span>${champion?'Champion':eliminated?'Eliminated · '+label(size,eliminated.round_number):'Saved progress'}</span><a class="song" href="/song/${selected}">Open song ↗</a><ol class="bracket-match-details">${appearances.map(m=>`<li>${m.match_type==='third_place'?'Third place':label(size,m.round_number)} · ${m.status==='completed'?(m.winner_id===selected?'Won':'Lost'):'Pending'} vs ${esc(tracks.get(m.song1_id===selected?m.song2_id:m.song1_id)?.title||'Track unavailable')}${Number.isFinite(m.points_awarded)?' · '+m.points_awarded+' points to winner':''}</li>`).join('')}</ol>`;nodes.querySelector(`[data-map-match="${matchId}"] [data-map-track="${selected}"]`)?.focus({preventScroll:true});}
     }
     root.addEventListener('click',handleClick);
     function visibility(){if(document.hidden)stopSound();}
@@ -479,6 +485,7 @@ window.TournamentBracket = (() => {
     document.addEventListener('visibilitychange',visibility);
     document.addEventListener('preview-blocked',blocked);
     draw();status.textContent=data.tournament.status==='completed'?'Completed bracket':'Saved bracket progress';
+    pan(rounds,1);
     if(options.animate)replay();
     return {cancel};
   }

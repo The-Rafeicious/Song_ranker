@@ -142,15 +142,7 @@
         {{ context(t, true) }}
         {% if t.finished %}<div class="ts-bracket-champion"><span class="mode-stats-art">{{ art(t.champion.cover_url) }}</span><div class="mode-stats-copy"><small>{{ 'Champion' if t.finished else 'Saved progress' }}</small>{{ song_name(t.champion) }}{{ metadata(t.champion) }}</div><a class="btn tournament" href="{{ url_for('tournament',tournament=t.id) }}">View podium ↗</a></div>{% endif %}
         {% if not t.finished %}{{ progress('Bracket '+(t.id|string)+' progress',t.progress) }}{% endif %}
-        <script type="application/json" id="bracket-data-{{t.id}}">{{ t.map_data|tojson }}</script>
-        <div class="tournament-map" data-tournament-map="bracket-data-{{t.id}}"></div>
-        <div class="ts-bracket-fallback">        {% for round in t.rounds %}<div class="ts-round"><h3>{{ round.label }}</h3><ol class="ts-matches">
-          {% for match in round.matches %}<li class="ts-match" data-match="{{ match.id }}">
-            {{ match_side(match.left,match.song1_id,match,t.is_blind and not t.finished and match.status!='completed') }}
-            <div class="ts-match-result"><strong>{{ '← Win' if match.status=='completed' and match.winner_id==match.song1_id and match.winner_id is not none else 'Win →' if match.status=='completed' and match.winner_id==match.song2_id and match.winner_id is not none else 'Result saved' if match.status=='completed' else 'Pending' }}</strong><span>{{ ('%g'|format(match.points))+' points' if match.status=='completed' and match.points is not none else '—' }}</span>{{ saved_date(match.date) if match.status=='completed' else '' }}</div>
-            {{ match_side(match.right,match.song2_id,match,t.is_blind and not t.finished and match.status!='completed') }}
-          </li>{% endfor %}
-        </ol></div>{% else %}<div class="empty">Detailed rounds were not recorded for this bracket.</div>{% endfor %}</div>
+        <a class="btn tournament" href="{{url_for('tournament_bracket_page',tournament_id=t.id)}}">Explore bracket ↗</a>
       </div>
     </details>
     {% else %}<div class="empty">No tournaments yet.</div>{% endfor %}

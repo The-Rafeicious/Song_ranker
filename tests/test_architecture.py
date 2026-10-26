@@ -62,9 +62,9 @@ class ArchitectureTests(unittest.TestCase):
             r
             for r in actual
             if r["endpoint"]
-            in ("dev_area", "dev_task", "use_remote_database", "compact_git_storage")
+            in ("dev_area", "dev_task", "use_remote_database", "compact_git_storage", "tournament_bracket_page")
         ]
-        self.assertEqual(4, len(added))
+        self.assertEqual(5, len(added))
         self.assertEqual(expected, [r for r in actual if r not in added])
 
     def test_pages_use_one_asset_registry_and_last_shared_baseline(self):

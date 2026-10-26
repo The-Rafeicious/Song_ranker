@@ -12,6 +12,20 @@ from math import ceil, isclose
 from songranker.catalog import proper_album
 
 
+# A round is one scored exercise: hide it as a whole when a saved album is
+# excluded, rather than manufacturing a smaller round or a new perfect score.
+SHELF_REPORT_FILTER = """r.completed_at IS NOT NULL AND NOT EXISTS (
+    SELECT 1 FROM album_shelf_items excluded_item
+    JOIN albums excluded_album ON excluded_album.id=excluded_item.album_id
+    WHERE excluded_item.round_id=r.id AND excluded_album.shelves_excluded=1)"""
+
+
+def shelf_report_filter(conn):
+    """Hide excluded saved rounds; pre-22 read-only archives have no exclusions."""
+    columns = {r[1] for r in conn.execute("PRAGMA table_info(albums)")}
+    return SHELF_REPORT_FILTER if "shelves_excluded" in columns else "r.completed_at IS NOT NULL"
+
+
 def shelf_position(item):
     """Order a saved position by disc, then track; legacy facts default to disc one."""
     return (item.get("disc_number", 1), item["track_number"])
@@ -500,12 +514,12 @@ def build_shelves_stats(conn, now=None, history_page=1, album_page=1, selected=N
     rounds = {
         r["id"]: dict(r, items=[], groups=[], **empty_counts())
         for r in conn.execute(
-            "SELECT id,completed_at,rules_version FROM album_shelf_rounds WHERE completed_at IS NOT NULL"
+            f"SELECT id,completed_at,rules_version FROM album_shelf_rounds r WHERE {shelf_report_filter(conn)}"
         )
     }
     for raw in conn.execute(
-        """SELECT i.* FROM album_shelf_items i JOIN album_shelf_rounds r
-                               ON r.id=i.round_id WHERE r.completed_at IS NOT NULL ORDER BY i.round_id,i.item_slot"""
+        f"""SELECT i.* FROM album_shelf_items i JOIN album_shelf_rounds r
+                               ON r.id=i.round_id WHERE {shelf_report_filter(conn)} ORDER BY i.round_id,i.item_slot"""
     ):
         rounds[raw["round_id"]]["items"].append(dict(raw))
     album_totals = {}

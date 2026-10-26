@@ -9,14 +9,15 @@ function fixture(size=75){
  const songs=Array.from({length:size},(_,i)=>({id:i+1,title:'Song '+(i+1),album_id:i<35?1:Math.floor((i-35)/5)+2,track_number:i<35?i+1:(i-35)%5+1,
   artist_ids:[1],tag_ids:[1],audio_url:'https://audio.example.test/'+(i+1),elo_score:1200+i,matches_played:2,
   attempts:2,new_attempts:2,correct:4,available_points:6,title_correct:1,artist_correct:2,album_correct:1,album_attempts:2,
-  guess_attempts:2,guess_correct:1,shelf_attempts:1,shelf_album_correct:1,shelf_order_right:2,shelf_order_pairs:3,shelf_points:.8,shelf_available:1,
+  shelves_eligible:true,guess_attempts:2,guess_correct:1,shelf_attempts:1,shelf_album_correct:1,shelf_order_right:2,shelf_order_pairs:3,shelf_points:.8,shelf_available:1,
   tournament_points:1.25,tournament_wins:1,tournament_losses:1,championships:i===0?1:0,podiums:i===0?1:0,
   voting:{standard_wins:1,standard_losses:0,blind_wins:0,blind_losses:1,raw:{standard_wins:1,standard_losses:0,blind_wins:0,blind_losses:1}},
   mode_ratings:{standard:{elo:1210,matches:1},blind:{elo:1190,matches:1}},listening:{samples:1,seconds:12}}));
  return {songs,albums,artists:[{id:1,name:'Artist'}],tags:[{id:1,name:'Tag',description:'Tag notes'}],history:[],elo_history:[],tournaments:[{id:1,size:8,status:'completed'}],tournament_matches:[],tournament_entries:songs.map(s=>({song_id:s.id,tournament_id:1})),global_stats:{}};
 }
-async function harness(page,width=1280,size=75){
+async function harness(page,width=1280,size=75,eligible=true){
  const data=fixture(size),kind={artist:'artists',album:'albums',tag:'tags'}[page],name=page==='album'?'Album 1':page==='artist'?'Artist':'Tag';
+ if(!eligible)data.songs.forEach(s=>s.shelves_eligible=false);
  const html=`<body class="site-style-baseline" data-page="${page}" data-entity="1"><main id="main"><div id="loading"></div></main>${kind?`<script id="profile-data" type="application/json">${JSON.stringify({kind,name})}</script>`:''}<input id="volume-range" value=".5"><span id="volume-value"></span><button id="volume-btn"></button><div id="volume-panel" hidden></div><dialog id="editor"><form id="editor-form"><h2 id="editor-title"></h2><div id="editor-fields"></div><button id="editor-submit"></button></form></dialog><div id="toast"></div></body>`;
  const errors=[],vc=new VirtualConsole();vc.on('jsdomError',e=>errors.push(e.message));
  const dom=new JSDOM(html,{url:'http://localhost/'+page,runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc}),w=dom.window,d=w.document;
@@ -33,6 +34,12 @@ async function harness(page,width=1280,size=75){
  return {dom,w,d,data,errors,click:async selector=>{const b=d.querySelector(selector);assert.ok(b,'Missing '+selector);b.click();await flush()}};
 }
 (async()=>{
+ for(const type of ['song','artist','album','tag']){
+  const h=await harness(type,390,75,false);
+  check(!h.d.querySelector('[data-profile-panel="shelves"]'),type+' hides Shelves without an eligible album');
+  check(h.d.querySelector('[data-profile-panel="guesser"]'),type+' retains other modes');
+  h.dom.window.close();
+ }
  const expected=['standard','recognition','tournament','guesser','shelves'];
  for(const width of [390,1280])for(const type of ['song','artist','album','tag']){
   const h=await harness(type,width),{d}=h;

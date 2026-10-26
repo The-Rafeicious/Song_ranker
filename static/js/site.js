@@ -526,6 +526,7 @@
       trivia: "recognition",
       tournament_play: "tournament",
       tournament_stats: "tournament",
+      tournament_bracket: "tournament",
       guesser_stats: "guesser",
       shelves_stats: "shelves",
       dev: "mixed",
@@ -1784,7 +1785,7 @@
         field("title", "Title", r.title, "text", "required") +
           field("release_date", "Release date", r.release_date || "", "date") +
           field("cover_url", "Cover URL", r.cover_url) +
-          `<label class="checkbox-label"><input type="checkbox" id="field-shelves_excluded" name="shelves_excluded" ${r.shelves_excluded ? "checked" : ""}>Exclude from Album Shelves</label><p class="muted">Keeps this as an album. Its tracks will not appear in new Album Shelves rounds.</p>`,
+          `<label class="checkbox-label"><input type="checkbox" id="field-shelves_excluded" name="shelves_excluded" ${r.shelves_excluded ? "checked" : ""}>Exclude from Album Shelves</label><p class="muted">Keeps this as an album. Skips its name in new Trivia rounds; hides it from Shelves play, profiles and statistics. Saved Shelves rounds containing it are hidden until included again.</p>`,
       );
     if (type === "tags")
       body = group(
@@ -2746,7 +2747,7 @@
               : remaining === 8
                 ? "Quarter-finals"
                 : "Round " + active.round_number;
-    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<button class="btn tournament" type="button" data-view-live-bracket aria-expanded="false" aria-controls="live-bracket-map">View bracket</button><div id="live-bracket-map" class="tournament-map" hidden></div><p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
+    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<a class="btn tournament" href="/tournament/${tournament.id}/bracket">Explore bracket ↗</a><p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
     attachPlayers();
     window.PreviewPlayback?.preloadPair([
       $("#bracket-audio-0"),
@@ -2993,7 +2994,7 @@
   }
   function renderBracketReplay() {
     cancelRoundTransition();stopAudio();
-    main.innerHTML='<div class="page-head"><h1 class="tournament">Road to the podium</h1></div><section class="panel"><div id="tournament-replay" class="tournament-map"></div></section>';
+    main.innerHTML='<div class="page-head"><h1 class="tournament">Road to the podium</h1></div><div id="tournament-replay" class="tournament-map"></div>';
     bracketMap=window.TournamentBracket.mount($("#tournament-replay"),{
       tournament:bracketState.tournament,entries:[...bracketState.tracks.values()],matches:bracketState.matches
     },{animate:true,sound:true,onDone:state=>renderChampion(state.sound)});
@@ -3026,7 +3027,7 @@
   }
 
   document.addEventListener("click", e=>{
-    if(e.target.closest('[data-view-live-bracket]')){const root=$("#live-bracket-map");root.hidden=!root.hidden;const toggle=e.target.closest('[data-view-live-bracket]');toggle.setAttribute('aria-expanded',String(!root.hidden));toggle.textContent=root.hidden?'View bracket':'Hide bracket';if(!root.hidden){bracketMap?.cancel();bracketMap=window.TournamentBracket.mount(root,{tournament:bracketState.tournament,entries:[...bracketState.tracks.values()],matches:bracketState.matches});}else{bracketMap?.cancel();bracketMap=null;}return;}
+
     if(e.target.closest('[data-replay-bracket]')){renderBracketReplay();return;}
     const more=e.target.closest("[data-record-more]");
     if(more){openRecordMenu(more);return;}

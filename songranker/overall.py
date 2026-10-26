@@ -123,7 +123,7 @@ def features(data):
           'blind_wins':ratio(v.get('blind_wins'),v.get('blind_matches'),applicable=audio_available),
           'trivia_title':ratio(t.get('title_correct'),title_n,applicable=audio_available),
           'trivia_artist':ratio(t.get('artist_correct'),title_n,applicable=audio_available),
-          'trivia_album':ratio(t.get('album_correct'),t.get('album_attempts'),applicable=audio_available and proper_album(albums.get(song.get('album_id'),{}))),
+          'trivia_album':ratio(t.get('album_correct'),t.get('album_attempts'),applicable=audio_available and proper_album(albums.get(song.get('album_id'),{})) and not albums.get(song.get('album_id'),{}).get('shelves_excluded',0)),
           'trivia_perfect':ratio(*perfect[sid],applicable=audio_available),
           'tournament_wins':ratio(song.get('tournament_wins'),number(song.get('tournament_wins'))+number(song.get('tournament_losses'))),
           'tournament_podium':ratio(podium,len(completed)),
@@ -188,7 +188,7 @@ def topology(data):
     structural changes.
     """
     rows=[(s['id'],s.get('album_id'),s.get('disc_number',1),s.get('track_number'),bool(str(s.get('audio_url') or '').strip()),sorted(set(s.get('artist_ids',[]))),sorted(set(s.get('tag_ids',[])))) for s in data.get('songs',[])]
-    structure=[sorted(rows),[(kind,sorted((r['id'],proper_album(r) if kind=='albums' else True) for r in data.get(kind,[]))) for kind in ('artists','albums','tags')]]
+    structure=[sorted(rows),[(kind,sorted((r['id'],(proper_album(r),bool(r.get('shelves_excluded',0))) if kind=='albums' else True) for r in data.get(kind,[]))) for kind in ('artists','albums','tags')]]
     return hashlib.sha256(json.dumps(structure).encode()).hexdigest()
 
 

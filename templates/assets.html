@@ -4,7 +4,7 @@
 {% set profile = page|default('') in ['song','artist','album','tag'] %}
 {% set dev = page|default('') == 'dev' %}
 {% set game = path in ['/game','/trivia','/tournament','/elo_guesser','/album_shelves'] %}
-{% set report = path in ['/global_stats','/voting_stats','/trivia_stats','/tournament_stats','/elo_guesser_stats','/album_shelves_stats','/vibe_map_stats','/history'] %}
+{% set report = path.endswith('/bracket') or path in ['/global_stats','/voting_stats','/trivia_stats','/tournament_stats','/elo_guesser_stats','/album_shelves_stats','/vibe_map_stats','/history'] %}
 {% set vibe = profile or path in ['/','/global_stats','/mode_rankings/vibe','/vibe_map_stats','/vibe-map'] %}
 {% set ranked = path in ['/leaderboard','/artists','/albums','/tags','/overall_rankings','/artist_stats','/album_stats'] or path.startswith('/mode_rankings/') %}
 
@@ -35,7 +35,7 @@
 
 {% macro scripts() %}
 {{ js('ui') }}
-{% if game or path == '/tournament_stats' %}{{ js('gameplay') }}{% endif %}
+{% if game or path == '/tournament_stats' or path.endswith('/bracket') %}{{ js('gameplay') }}{% endif %}
 {{ js('preview') }}
 {% if path in ['/','/game','/elo_guesser','/album_shelves'] or ranked or dev %}{{ js('special_modes') }}{% endif %}
 {% if path in ['/','/global_stats','/overall_rankings'] or profile or dev %}{{ js('overall') }}{% endif %}

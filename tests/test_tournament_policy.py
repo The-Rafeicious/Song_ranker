@@ -82,8 +82,13 @@ class TournamentPolicyTests(unittest.TestCase):
         self.assertEqual(data['coverage']['single'],8)
         rendered=self.client.get('/tournament_stats?tournament=1')
         self.assertEqual(rendered.status_code,200)
-        for text in ['data-tournament-map','Entry depth','Points-only matches','ts-entity-artist']:
+        for text in ['Explore bracket','Entry depth','Points-only matches','ts-entity-artist']:
             self.assertIn(text,rendered.text)
+        self.assertNotIn('data-tournament-map',rendered.text)
+        bracket=self.client.get('/tournament/1/bracket')
+        self.assertEqual(bracket.status_code,200)
+        self.assertIn('data-tournament-map',bracket.text)
+        self.assertIn('Tournament stats',bracket.text)
         self.assertNotIn('Recent first-round Elo history',rendered.text)
         self.assertNotIn('class="ts-bracket-champion"',rendered.text)
         self.assertEqual(capture(self.conn),before)

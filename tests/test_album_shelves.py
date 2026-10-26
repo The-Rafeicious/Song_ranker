@@ -7,6 +7,7 @@ import unittest
 
 import test_preferences as fixture
 from songranker import services
+from songranker.modes import trivia
 from songranker.catalog import proper_album
 from songranker.modes.shelves import shelf_pool
 from songranker.overall import shelf_eligible_ids
@@ -68,6 +69,51 @@ class AlbumShelvesTests(unittest.TestCase):
             response=self.client().post('/api/album-shelves/round',json={'album_count':2})
             self.assertEqual(response.status_code,200,response.json)
             self.assertEqual({a['id'] for a in response.json['albums']},{2,3})
+
+    def test_excluded_history_is_hidden_everywhere_and_returns_when_included(self):
+        from songranker.catalog import collection, special_records
+        from songranker.modes.shelves import build_shelves_stats
+        from songranker.overall import features, topology
+        client=self.client()
+        offered=client.post('/api/album-shelves/round',json={'album_count':2}).json
+        rows=[dict(r) for r in self.conn.execute('SELECT * FROM album_shelf_items')]
+        placements={str(slot):[r['item_slot'] for r in sorted(rows,key=lambda r:(r['disc_number'],r['track_number'])) if r['album_slot']==slot] for slot in (1,2)}
+        self.assertEqual(client.post('/api/album-shelves/answer',json=dict(token=offered['token'],placements=placements)).status_code,200)
+        baseline=special_records(self.conn)
+        self.assertEqual(baseline[1]['shelves']['rounds'],1)
+        old=collection(include_overall_sources=True)
+        self.edit(True)
+        data=collection(include_overall_sources=True)
+        self.assertNotEqual(topology(old),topology(data))
+        self.assertEqual(data['special_modes']['shelves']['rounds'],0)
+        self.assertTrue(all(s['shelf_attempts']==0 for s in data['songs']))
+        self.assertTrue(all(not s['shelves_eligible'] for s in data['songs'] if s['album_id']==1))
+        self.assertTrue(all(s['shelves_eligible'] for s in data['songs'] if s['album_id']==2))
+        self.assertTrue(all(s['mode_appearances']['shelves']==0 for s in features(data).values()))
+        self.assertEqual(special_records(self.conn)[3],[])
+        self.assertEqual(client.get('/api/special-modes/stats').json['participating_albums'],[])
+        report=build_shelves_stats(self.conn)
+        self.assertEqual(report['summary']['rounds'],0)
+        from songranker.reports.stats_activity import build_activity
+        self.assertEqual(build_activity(self.conn,'shelves')['total'],0)
+        self.assertEqual(build_activity(self.conn,'global')['total'],0)
+        self.assertNotIn('Album</a>',client.get('/album_shelves_stats').get_data(as_text=True))
+        self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM album_shelf_items').fetchone()[0],10)
+        self.edit(False)
+        self.assertEqual(special_records(self.conn),baseline)
+
+    def test_new_trivia_skips_excluded_album_name_but_preserves_album(self):
+        self.conn.execute("UPDATE songs SET audio_url='' WHERE album_id=2")
+        self.conn.commit()
+        self.edit(True)
+        response=self.client().get('/api/trivia/round',headers={'Content-Type':'application/json'})
+        self.assertEqual(response.status_code,200,response.json)
+        self.assertFalse(response.json['album_available'])
+        self.assertNotIn('album',response.json['fields'])
+        self.assertTrue(proper_album(dict(self.conn.execute('SELECT * FROM albums WHERE id=1').fetchone())))
+
+    def test_dedicated_bracket_page_has_missing_record_404(self):
+        self.assertEqual(self.client().get('/tournament/9999/bracket').status_code,404)
 
     def test_invalid_flags_are_rejected_without_changes_and_auth_is_required(self):
         before=capture(self.conn)

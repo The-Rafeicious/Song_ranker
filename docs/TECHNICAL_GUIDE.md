@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.5.1 · competition generation 3 · schema 22**
+**Application V5.5.2 · competition generation 3 · schema 22**
 
-Current implementation reference. `APP_VERSION` is `5.5.1`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.5.2`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -882,7 +882,7 @@ recent-Elo-history disclosure and repeated seven-day activity figures. Archive
 bracket disclosures remain useful navigation and mount their map lazily.
 
 
-### Album Shelves exclusion (V5.5.1 / schema 22)
+### Album Shelves exclusion (V5.5.2 / schema 22)
 
 `albums.shelves_excluded` is a checked integer flag, default 0. Dev → Library →
 Albums → Edit exposes **Exclude from Album Shelves**. The album table has an
@@ -891,7 +891,7 @@ accepts only JSON booleans; omitting the field preserves its current value.
 
 The flag excludes the album from new Shelves draws, current Shelves coverage and
 Overall's Shelves eligibility. It does not turn it into a Single, change its songs,
-artwork, other mode eligibility or album identity. Frozen rounds remain answerable,
+artwork or album identity. New Trivia rounds also skip its album-name field. Frozen rounds remain answerable,
 and completed rounds/results remain recorded. Unchecking restores normal eligibility
 subject to the existing numbered-track and capacity requirements.
 
@@ -900,3 +900,9 @@ Older schema-21 databases and unversioned SQL dumps default every album to inclu
 Exports, rebuilds, Git SQL snapshots and catalogue transfers preserve explicit flags.
 Grouping tracks under an existing album can avoid extra placeholder album rows;
 this flag itself does not merge or remove data or compress the database.
+
+### Exclusion evidence and bracket workspace (V5.5.2)
+
+Completed Shelves rounds containing any currently excluded saved album are hidden as whole exercises in all public summaries, trends, history, rankings and Overall evidence. Including that album again restores the unchanged saved facts. Keeping whole-round denominators avoids turning part of a saved round into a new perfect result. Dev inspection/export still retains every record. Profile Shelves panels require at least one current eligible track. Overall calibration topology includes the album flag. Read-only pre-22 archive grading assumes included albums.
+
+`/tournament/<int:tournament_id>/bracket` is a shareable read-only workspace, linked from Tournament Stats and live play. The shared map mirrors the two halves into a central final, with third place below. Left/right and round controls pan internally; selecting a track inspects its route, opponents, results and points. Replays hold each result for 1.6 seconds. Existing API endpoints and saved tournament rules are unchanged.

@@ -268,6 +268,8 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.goto(base+'/dev/library/albums');await page.locator('[data-edit="albums"][data-id="1"]').click();
   await page.locator('#field-shelves_excluded').waitFor();assert.ok(!(await page.locator('#field-shelves_excluded').isChecked()));
   await page.locator('#field-shelves_excluded').check();const excludeSaved=page.waitForResponse(r=>r.url().endsWith('/api/dev/edit_album/1')&&r.request().method()==='POST');await page.locator('#editor-submit').click();assert.equal((await excludeSaved).status(),200);await page.locator('#field-shelves_excluded').waitFor({state:'hidden'});
+  await page.goto(base+'/song/1');await page.locator('#overall-profile').waitFor();assert.equal(await page.locator('[data-profile-panel="shelves"]').count(),0,'Excluded song has no Shelves panel');
+  await page.goto(base+'/dev/library/albums');
   await page.locator('[data-edit="albums"][data-id="1"]').click();await page.locator('#field-shelves_excluded').waitFor();assert.ok(await page.locator('#field-shelves_excluded').isChecked(),'Saved exclusion is reflected when reopened');
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'album-shelves-flag',folder);await page.screenshot({path:folder+'/album-shelves-flag-'+width+'.png',fullPage:true})}
   await page.locator('#field-shelves_excluded').uncheck();const includeSaved=page.waitForResponse(r=>r.url().endsWith('/api/dev/edit_album/1')&&r.request().method()==='POST');await page.locator('#editor-submit').click();assert.equal((await includeSaved).status(),200);await page.locator('#field-shelves_excluded').waitFor({state:'hidden'});
@@ -387,14 +389,16 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-stats',folder);await page.screenshot({path:folder+'/shelves-discs-stats-'+width+'.png',fullPage:true});}
   // Saved visual brackets and the real final -> replay -> podium handoff.
   await page.request.post(base+'/tournament-test-enable');
-  await page.goto(base+'/tournament_stats?tournament=77');await page.locator('#tournament-77 .bracket-node').first().waitFor();
-  assert.equal(await page.locator('#tournament-77 .bracket-node').count(),7);
+  await page.goto(base+'/tournament_stats?tournament=77');
+  assert.equal(await page.locator('[data-tournament-map]').count(),0);
+  assert.equal(await page.locator('.ts-entity-artist h2').evaluate(e=>getComputedStyle(e).color),'rgb(91, 155, 255)');
+  assert.equal(await page.locator('.ts-blind-and-non-blind > span').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(85, 214, 194)');
+  await page.locator('#tournament-77 a[href="/tournament/77/bracket"]').click();await page.locator('#tournament-77 .bracket-node').first().waitFor();
+  assert.equal(await page.locator('#tournament-77 .bracket-node').count(),8);
   assert.ok(await page.locator('#tournament-77 .bracket-track').first().evaluate(e=>e.getBoundingClientRect().height>=44),'Bracket tracks keep touch-sized targets');
   await page.locator('#tournament-77 [data-map-track="20"]').first().click();assert.ok((await page.locator('#tournament-77 .bracket-inspector').textContent()).includes('Bracket track 20'));
   assert.equal(await page.locator('#tournament-77 .is-route').count(),3);
-  assert.equal(await page.locator('.ts-entity-artist h2').evaluate(e=>getComputedStyle(e).color),'rgb(91, 155, 255)');
-  assert.equal(await page.locator('.ts-blind-and-non-blind > span').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(85, 214, 194)');
-  for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'tournament-map',folder);await page.locator('#tournament-77').screenshot({path:folder+'/tournament-map-'+width+'.png'});await page.locator('[aria-labelledby="ts-elo"]').screenshot({path:folder+'/tournament-elo-'+width+'.png'})}
+  for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'tournament-map',folder);await page.locator('#tournament-77').screenshot({path:folder+'/tournament-map-'+width+'.png'})}
   await page.goto(base+'/tournament?tournament=77');await page.locator('[data-tournament-vote="0"]').waitFor();await page.locator('[data-tournament-vote="0"]').click();
   await page.locator('#tournament-replay .bracket-node').first().waitFor({timeout:30000});
   assert.equal(await page.locator('.winner-podium').count(),0,'Bracket replay precedes podium');
