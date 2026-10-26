@@ -90,6 +90,17 @@ def init_db():
         start_competition(DB_NAME, LEGACY_DB_PATH, ROOT / 'data/catalogue_seed.db')
 
 
+def activate_elo_policy():
+    """Back up and activate adaptive Elo after startup database reconciliation."""
+    from songranker.storage.database import activate_adaptive_elo
+    with gate.maintenance():
+        report = activate_adaptive_elo(DB_NAME)
+    if report:
+        app.logger.warning('Adaptive Elo replay complete: %s events; rollback backup: %s',
+                           report['events'], report['backup'])
+    return report
+
+
 def export_rankings():
     """Exports a comprehensive database snapshot to a text file."""
     conn = get_db_connection()

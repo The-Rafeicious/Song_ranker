@@ -439,32 +439,32 @@ Preference offers, idempotent writes, corrections/replay and rating projections.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [PreferenceError.__init__](../songranker/modes/preferences.py#L28) | `self, message, status=400` | Initialise this object’s state and dependencies. |
-| [transaction](../songranker/modes/preferences.py#L34) | `conn` | Run atomic preference writes in an immediate transaction or nested savepoint with rollback on failure. |
-| [owner_hash](../songranker/modes/preferences.py#L53) | `owner` | Hash a browser-owner identity before persisting preference ownership. |
-| [snapshot_song](../songranker/modes/preferences.py#L58) | `conn, song` | Snapshot song; reads artists, song_artists, song_genres. |
-| [ensure_seeds](../songranker/modes/preferences.py#L97) | `conn` | Ensure seeds; reads preference_events, preference_rating_seeds, preference_replay_state, songs; writes preference_mode_ratings, preference_rating_seeds, preference_replay_state. |
-| [get_offer](../songranker/modes/preferences.py#L124) | `conn, owner, mode, choose_pair` | Read offer; reads preference_offers, songs; writes preference_offers. |
-| [integer](../songranker/modes/preferences.py#L182) | `value, label` | Validate/normalise the feature’s integer input before using it. |
-| [token](../songranker/modes/preferences.py#L194) | `value` | Validate the shape and length of a preference offer token before lookup. |
-| [receipt](../songranker/modes/preferences.py#L203) | `event` | Build a saved vote receipt from frozen song snapshots and before/after ratings. |
-| [receipt.side](../songranker/modes/preferences.py#L207) | `prefix` | Project one receipt participant with its saved identity and exact Elo change. |
-| [record_preference](../songranker/modes/preferences.py#L229) | `conn, w, l, mode, snapshots, *, offer_token=None, tournament_id=None, tournament_match_id=None, weight=1` | One atomic fact/public/mode update, called inside the owning transaction. |
-| [save_tournament_preference](../songranker/modes/preferences.py#L322) | `conn, tournament, match, winner, loser` | Only newly created, eligible first rounds enter the shared preference log. |
-| [save_vote](../songranker/modes/preferences.py#L350) | `conn, owner, data` | Save vote; reads preference_events, preference_offers, the; writes preference_offers. |
-| [rebuild_ratings](../songranker/modes/preferences.py#L411) | `conn` | Rebuild ratings; reads preference_effective, preference_mode_ratings, preference_rating_overrides, preference_rating_projection, preference_rating_seeds, songs; writes preference_mode_ratings, preference_rating_projection, songs. |
-| [fingerprint](../songranker/modes/preferences.py#L460) | `event` | Hash a preference event's compact representation for stale correction checks. |
-| [event_detail](../songranker/modes/preferences.py#L465) | `conn, event_id` | Event detail; reads preference_corrections, preference_effective, preference_events, preference_replay_state. |
-| [correction_response](../songranker/modes/preferences.py#L503) | `row` | Return the corrected event ID, revision and active state after successful replay. |
-| [correct_vote](../songranker/modes/preferences.py#L516) | `conn, event_id, data` | Correct vote; reads backup, preference_corrections, songs; writes preference_corrections. |
-| [override_rating](../songranker/modes/preferences.py#L600) | `conn, data` | Override rating; reads preference_events, preference_rating_overrides, songs; writes preference_rating_overrides, songs. |
-| [void_song_votes](../songranker/modes/preferences.py#L665) | `conn, song_id` | Void song votes; reads preference_effective; writes preference_corrections, preference_offers. |
-| [reset_preferences](../songranker/modes/preferences.py#L694) | `conn` | Reset preferences; reads preference_events, preference_mode_ratings, preference_offers, preference_rating_overrides, preference_rating_seeds, preference_replay_state; writes preference_events, preference_mode_ratings, preference_offers, preference_rating_overrides, preference_rating_seeds, preference_replay_state, songs. |
-| [void_tournament_preferences](../songranker/modes/preferences.py#L707) | `conn, tournament_id=None` | Keep original facts after bracket deletion/reset, and remove their influence. |
-| [exposure_totals](../songranker/modes/preferences.py#L730) | `conn` | Exposure totals; reads mode_exposures, songs. |
-| [song_mode_ratings](../songranker/modes/preferences.py#L743) | `conn` | Song mode ratings; reads preference_mode_ratings, songs, sqlite_master. |
-| [coverage](../songranker/modes/preferences.py#L762) | `conn` | Coverage; reads preference_effective, preference_replay_state, songs, sqlite_master. |
-| [comparison_report](../songranker/modes/preferences.py#L780) | `conn, songs` | Compare standard and blind rating projections, tested coverage and song-level differences. |
+| [PreferenceError.__init__](../songranker/modes/preferences.py#L29) | `self, message, status=400` | Initialise this object’s state and dependencies. |
+| [transaction](../songranker/modes/preferences.py#L35) | `conn` | Run atomic preference writes in an immediate transaction or nested savepoint with rollback on failure. |
+| [owner_hash](../songranker/modes/preferences.py#L54) | `owner` | Hash a browser-owner identity before persisting preference ownership. |
+| [snapshot_song](../songranker/modes/preferences.py#L59) | `conn, song` | Snapshot song; reads artists, song_artists, song_genres. |
+| [ensure_seeds](../songranker/modes/preferences.py#L98) | `conn` | Ensure seeds; reads preference_events, preference_rating_seeds, preference_replay_state, songs; writes preference_mode_ratings, preference_rating_seeds, preference_replay_state. |
+| [get_offer](../songranker/modes/preferences.py#L126) | `conn, owner, mode, choose_pair` | Read offer; reads preference_offers, songs; writes preference_offers. |
+| [integer](../songranker/modes/preferences.py#L184) | `value, label` | Validate/normalise the feature’s integer input before using it. |
+| [token](../songranker/modes/preferences.py#L196) | `value` | Validate the shape and length of a preference offer token before lookup. |
+| [receipt](../songranker/modes/preferences.py#L205) | `event` | Build a saved vote receipt from frozen song snapshots and before/after ratings. |
+| [receipt.side](../songranker/modes/preferences.py#L210) | `prefix` | Project one receipt participant with its saved identity and exact Elo change. |
+| [record_preference](../songranker/modes/preferences.py#L232) | `conn, w, l, mode, snapshots, *, offer_token=None, tournament_id=None, tournament_match_id=None, weight=1` | One atomic fact/public/mode update, called inside the owning transaction. |
+| [save_tournament_preference](../songranker/modes/preferences.py#L327) | `conn, tournament, match, winner, loser` | Only newly created, eligible first rounds enter the shared preference log. |
+| [save_vote](../songranker/modes/preferences.py#L355) | `conn, owner, data` | Save vote; reads preference_events, preference_offers, the; writes preference_offers. |
+| [rebuild_ratings](../songranker/modes/preferences.py#L416) | `conn` | Rebuild projections with the database's activated Elo policy. |
+| [fingerprint](../songranker/modes/preferences.py#L422) | `event` | Hash a preference event's compact representation for stale correction checks. |
+| [event_detail](../songranker/modes/preferences.py#L427) | `conn, event_id` | Event detail; reads preference_corrections, preference_effective, preference_events, preference_replay_state. |
+| [correction_response](../songranker/modes/preferences.py#L465) | `row` | Return the corrected event ID, revision and active state after successful replay. |
+| [correct_vote](../songranker/modes/preferences.py#L478) | `conn, event_id, data` | Correct vote; reads backup, preference_corrections, songs; writes preference_corrections. |
+| [override_rating](../songranker/modes/preferences.py#L562) | `conn, data` | Override rating; reads preference_events, preference_rating_overrides, songs; writes preference_rating_overrides, songs. |
+| [void_song_votes](../songranker/modes/preferences.py#L627) | `conn, song_id` | Void song votes; reads preference_effective; writes preference_corrections, preference_offers. |
+| [reset_preferences](../songranker/modes/preferences.py#L656) | `conn` | Reset preferences; reads preference_events, preference_mode_ratings, preference_offers, preference_rating_overrides, preference_rating_seeds, preference_replay_state; writes preference_events, preference_mode_ratings, preference_offers, preference_rating_overrides, preference_rating_seeds, preference_replay_state, songs. |
+| [void_tournament_preferences](../songranker/modes/preferences.py#L669) | `conn, tournament_id=None` | Keep original facts after bracket deletion/reset, and remove their influence. |
+| [exposure_totals](../songranker/modes/preferences.py#L692) | `conn` | Exposure totals; reads mode_exposures, songs. |
+| [song_mode_ratings](../songranker/modes/preferences.py#L705) | `conn` | Song mode ratings; reads preference_mode_ratings, songs, sqlite_master. |
+| [coverage](../songranker/modes/preferences.py#L724) | `conn` | Coverage; reads preference_effective, preference_replay_state, songs, sqlite_master. |
+| [comparison_report](../songranker/modes/preferences.py#L742) | `conn, songs` | Compare standard and blind rating projections, tested coverage and song-level differences. |
 
 ## songranker/modes/selection.py
 
@@ -793,15 +793,16 @@ Flask configuration, managed connections, song hydration and catalogue writes.
 | [_AppConnection.close](../songranker/services.py#L44) | `self` | Close SQLite and release its maintenance-gate lease even when closing raises. |
 | [get_db_connection](../songranker/services.py#L56) | `` | Open the configured app database with foreign keys, row objects and a maintenance-gate lease. |
 | [init_db](../songranker/services.py#L81) | `` | Restore before creating anything, then apply the single versioned schema. |
-| [export_rankings](../songranker/services.py#L93) | `` | Exports a comprehensive database snapshot to a text file. |
-| [is_close_match](../songranker/services.py#L156) | `guess, actual, threshold=0.75` | Compare trimmed case-insensitive answer text using the configured sequence-similarity threshold. |
-| [fetch_songs](../songranker/services.py#L169) | `conn, *, song_id=None, audio_only=False` | Consistent song metadata plus batched, independent Vibe Map placements. |
-| [get_song_full](../songranker/services.py#L182) | `song_id, conn` | Hydrate one catalogue song through the shared song query, returning no result when absent. |
-| [fetch_match_history](../songranker/services.py#L190) | `conn, song_id=None, limit=50, *, offset=0, mode='all', origin='all'` | Fetch recent matches with the rich song records used by shared VS rows. |
-| [create_database_backup](../songranker/services.py#L252) | `prefix='song_ranker'` | Save the configured live database through the shared rotating-backup policy. |
-| [get_or_create_album](../songranker/services.py#L258) | `conn, album_title, cover_url=None, release_date=None` | Retrieves an existing album or creates one, updating artwork if missing. |
-| [link_artists_to_song](../songranker/services.py#L277) | `conn, song_id, artist_string, default_cover=None, *, artist_names=None` | Splits an artist string and links each artist via the song_artists junction table. |
-| [link_genres_to_song](../songranker/services.py#L301) | `conn, song_id, genre_string` | Splits a genre string and links each tag via the song_genres junction table. |
+| [activate_elo_policy](../songranker/services.py#L93) | `` | Back up and activate adaptive Elo after startup database reconciliation. |
+| [export_rankings](../songranker/services.py#L104) | `` | Exports a comprehensive database snapshot to a text file. |
+| [is_close_match](../songranker/services.py#L167) | `guess, actual, threshold=0.75` | Compare trimmed case-insensitive answer text using the configured sequence-similarity threshold. |
+| [fetch_songs](../songranker/services.py#L180) | `conn, *, song_id=None, audio_only=False` | Consistent song metadata plus batched, independent Vibe Map placements. |
+| [get_song_full](../songranker/services.py#L193) | `song_id, conn` | Hydrate one catalogue song through the shared song query, returning no result when absent. |
+| [fetch_match_history](../songranker/services.py#L201) | `conn, song_id=None, limit=50, *, offset=0, mode='all', origin='all'` | Fetch recent matches with the rich song records used by shared VS rows. |
+| [create_database_backup](../songranker/services.py#L263) | `prefix='song_ranker'` | Save the configured live database through the shared rotating-backup policy. |
+| [get_or_create_album](../songranker/services.py#L269) | `conn, album_title, cover_url=None, release_date=None` | Retrieves an existing album or creates one, updating artwork if missing. |
+| [link_artists_to_song](../songranker/services.py#L288) | `conn, song_id, artist_string, default_cover=None, *, artist_names=None` | Splits an artist string and links each artist via the song_artists junction table. |
+| [link_genres_to_song](../songranker/services.py#L312) | `conn, song_id, genre_string` | Splits a genre string and links each tag via the song_genres junction table. |
 
 ## songranker/storage/competition.py
 
@@ -833,8 +834,9 @@ Backed-up transactional bootstrap and versioned migration.
 | [_canonical_columns_present](../songranker/storage/database.py#L96) | `conn, *, legacy_discs=False` |  canonical columns present; reads sqlite_master. |
 | [_complete_old_layout](../songranker/storage/database.py#L103) | `conn` |  complete old layout; reads sqlite_master. |
 | [migrate](../songranker/storage/database.py#L114) | `filename` | Canonicalise to the current schema with rollback and a pre-upgrade SQLite snapshot. |
-| [initialize_database](../songranker/storage/database.py#L179) | `filename, sql_backup=None` | Existing DB wins. Missing DB restores SQL before any empty schema is made. |
-| [initialize_database.authorize](../songranker/storage/database.py#L198) | `action, arg1, arg2, db, trigger` | Deny ATTACH/DETACH statements while importing a supplied SQL snapshot. |
+| [activate_adaptive_elo](../songranker/storage/database.py#L179) | `filename` | One-time startup burn-in: archive first, replay atomically, mark only on success. |
+| [initialize_database](../songranker/storage/database.py#L253) | `filename, sql_backup=None` | Existing DB wins. Missing DB restores SQL before any empty schema is made. |
+| [initialize_database.authorize](../songranker/storage/database.py#L272) | `action, arg1, arg2, db, trigger` | Deny ATTACH/DETACH statements while importing a supplied SQL snapshot. |
 
 ## songranker/storage/database_access.py
 
@@ -915,21 +917,27 @@ Pure preference replay and lossless historical state transport.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [calculate_new_elo](../songranker/storage/preference_state.py#L15) | `winner, loser, k_factor=32` | Calculate winner/loser Elo updates with the supplied K factor and standard expected-score formula. |
-| [compact](../songranker/storage/preference_state.py#L24) | `value` | Serialise deterministic compact JSON for preference snapshots and replay hashes. |
-| [records](../songranker/storage/preference_state.py#L31) | `state, name` | Decode one captured table into column-keyed records, tolerating absent historical tables. |
-| [table](../songranker/storage/preference_state.py#L39) | `columns, rows, key=None` | Build a deterministically ordered captured table, optionally retaining explicit row IDs. |
-| [catalogue_snapshots](../songranker/storage/preference_state.py#L50) | `state` | Freeze each song's catalogue identity and linked artists into deterministic JSON snapshots. |
-| [verified_legacy](../songranker/storage/preference_state.py#L72) | `songs, events` | Replay legacy votes and verify every saved before/after rating and final song count before migration. |
-| [_upgrade_history](../songranker/storage/preference_state.py#L95) | `original` | Map the old physical history to immutable events; preserve all original cells. |
-| [effective_events](../songranker/storage/preference_state.py#L138) | `state` | Apply the latest correction revision to each event without discarding its historical identity. |
-| [mode_replay](../songranker/storage/preference_state.py#L156) | `songs, events` | Independent K32 streams. Public overrides/anchors never leak into them. |
-| [_upgrade_to_11](../songranker/storage/preference_state.py#L172) | `original` | Normalize 8/9/10 transports to 11 without rewriting existing stored facts. |
-| [_upgrade_to_11.view_hash](../songranker/storage/preference_state.py#L205) | `values` | Hash deterministically sorted view rows to verify the migrated preference projection. |
-| [upgrade_state](../songranker/storage/preference_state.py#L218) | `original` | Apply lossless upgrades; recognize complete known SQL-dump layouts. |
-| [replay](../songranker/storage/preference_state.py#L269) | `songs, seeds, events, overrides, cutoff, boundary` | Return current ratings/counts and effective snapshots from immutable inputs. |
-| [replay.set_rating](../songranker/storage/preference_state.py#L276) | `sid, value` | Update one replayed song's Elo while keeping the sorted rating index consistent. |
-| [replay.apply_before](../songranker/storage/preference_state.py#L287) | `event_id` | Apply saved manual rating adjustments that precede the next replayed preference event. |
+| [calculate_new_elo](../songranker/storage/preference_state.py#L16) | `winner, loser, k_factor=32, scale=400` | Conserve a pair's rating total, with stable arithmetic for very wide gaps. |
+| [EloPopulation.__init__](../songranker/storage/preference_state.py#L47) | `self, rows=()` | Initialise this object’s state and dependencies. |
+| [EloPopulation.set](../songranker/storage/preference_state.py#L61) | `self, sid, rating, count` | Replace one tested rating/count without sorting the whole catalogue. |
+| [EloPopulation.scale](../songranker/storage/preference_state.py#L75) | `self` | Use interpolated quartiles before the next event, with a sparse fallback. |
+| [EloPopulation.scale.quantile](../songranker/storage/preference_state.py#L81) | `fraction` | Quantile. |
+| [live_elo_scale](../songranker/storage/preference_state.py#L96) | `conn, mode=None` | Read a current public or independent-mode distribution, never match history. |
+| [compact](../songranker/storage/preference_state.py#L123) | `value` | Serialise deterministic compact JSON for preference snapshots and replay hashes. |
+| [records](../songranker/storage/preference_state.py#L130) | `state, name` | Decode one captured table into column-keyed records, tolerating absent historical tables. |
+| [table](../songranker/storage/preference_state.py#L138) | `columns, rows, key=None` | Build a deterministically ordered captured table, optionally retaining explicit row IDs. |
+| [catalogue_snapshots](../songranker/storage/preference_state.py#L149) | `state` | Freeze each song's catalogue identity and linked artists into deterministic JSON snapshots. |
+| [verified_legacy](../songranker/storage/preference_state.py#L171) | `songs, events` | Replay legacy votes and verify every saved before/after rating and final song count before migration. |
+| [_upgrade_history](../songranker/storage/preference_state.py#L194) | `original` | Map the old physical history to immutable events; preserve all original cells. |
+| [effective_events](../songranker/storage/preference_state.py#L237) | `state` | Apply the latest correction revision to each event without discarding its historical identity. |
+| [mode_replay](../songranker/storage/preference_state.py#L255) | `songs, events, rules_version=1` | Independent streams; each mode owns its population and evidence scale. |
+| [_upgrade_to_11](../songranker/storage/preference_state.py#L289) | `original` | Normalize 8/9/10 transports to 11 without rewriting existing stored facts. |
+| [_upgrade_to_11.view_hash](../songranker/storage/preference_state.py#L322) | `values` | Hash deterministically sorted view rows to verify the migrated preference projection. |
+| [upgrade_state](../songranker/storage/preference_state.py#L335) | `original` | Apply lossless upgrades; recognize complete known SQL-dump layouts. |
+| [replay](../songranker/storage/preference_state.py#L386) | `songs, seeds, events, overrides, cutoff, boundary, rules_version=1` | Return current ratings/counts and effective snapshots from immutable inputs. |
+| [replay.set_rating](../songranker/storage/preference_state.py#L406) | `sid, value` | Update one replayed song's Elo while keeping the sorted rating index consistent. |
+| [replay.apply_before](../songranker/storage/preference_state.py#L422) | `event_id` | Apply saved manual rating adjustments that precede the next replayed preference event. |
+| [rebuild_preference_ratings](../songranker/storage/preference_state.py#L466) | `conn` | Replace derived Elo projections inside the caller's transaction, without Flask. |
 
 ## songranker/storage/schema_compat.py
 
@@ -1000,6 +1008,26 @@ Reusable assertions and route-module fixtures; never opens an active database.
 | [assert_clean](../tests/support.py#L52) | `conn` | Assert clean; reads global_stats, legacy_elo_changes, song_vibe_positions, song_vibe_progress, songs, sqlite_master. |
 | [route_modules](../tests/support.py#L81) | `` | Read current launcher registration imports for disposable startup stubs. |
 | [pre_disc_layout](../tests/support.py#L97) | `conn` | Remove schema-21 additions when a test constructs an older database layout. |
+
+## tests/test_adaptive_elo.py
+
+Adaptive ratings, startup archives and deterministic replay on disposable data.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [AdaptiveEloTests.setUp](../tests/test_adaptive_elo.py#L22) | `self` | Create isolated disposable state and register cleanup for this test. |
+| [AdaptiveEloTests.vote](../tests/test_adaptive_elo.py#L37) | `self, winner, loser, mode='standard', half=False` | Vote; reads tournament_matches; writes tournament_matches. |
+| [AdaptiveEloTests.history](../tests/test_adaptive_elo.py#L49) | `self, rounds=80` | History. |
+| [AdaptiveEloTests.test_scale_is_tested_only_bounded_mature_and_population_relative](../tests/test_adaptive_elo.py#L55) | `self` | Verify scale is tested only bounded mature and population relative. |
+| [AdaptiveEloTests.test_pair_conservation_equal_split_half_weight_and_extreme_gaps](../tests/test_adaptive_elo.py#L68) | `self` | Verify pair conservation equal split half weight and extreme gaps. |
+| [AdaptiveEloTests.test_live_and_replay_agree_after_mixed_history_and_manual_override](../tests/test_adaptive_elo.py#L83) | `self` | Verify live and replay agree after mixed history and manual override. |
+| [AdaptiveEloTests.test_startup_archives_old_policy_replays_once_and_preserves_facts](../tests/test_adaptive_elo.py#L103) | `self` | Verify startup archives old policy replays once and preserves facts. |
+| [AdaptiveEloTests.test_failed_archive_or_replay_leaves_old_database_and_marker_intact](../tests/test_adaptive_elo.py#L139) | `self` | Verify failed archive or replay leaves old database and marker intact. |
+| [AdaptiveEloTests.test_failed_archive_or_replay_leaves_old_database_and_marker_intact.fail](../tests/test_adaptive_elo.py#L149) | `conn` | Fail; writes songs. |
+| [AdaptiveEloTests.test_concurrent_startups_only_publish_one_replay_and_archive](../tests/test_adaptive_elo.py#L159) | `self` | Verify concurrent startups only publish one replay and archive. |
+| [AdaptiveEloTests.test_protected_anchor_is_retained_and_unknown_policy_is_rejected](../tests/test_adaptive_elo.py#L168) | `self` | Verify protected anchor is retained and unknown policy is rejected. |
+| [AdaptiveEloTests.test_wal_archive_contains_latest_committed_state](../tests/test_adaptive_elo.py#L182) | `self` | Verify wal archive contains latest committed state. |
+| [AdaptiveEloTests.test_large_mature_history_remains_finite_balanced_and_deterministic](../tests/test_adaptive_elo.py#L191) | `self` | Verify large mature history remains finite balanced and deterministic. |
 
 ## tests/test_apple_source_columns.py
 
@@ -1142,12 +1170,12 @@ Schema 9 recovery/integrity regressions. Only temporary databases are written.
 | [DatabaseFoundationTests.test_wal_commits_are_included_in_exports](../tests/test_database_foundation.py#L325) | `self` | Verify wal commits are included in exports. |
 | [DatabaseFoundationTests.test_cli_export_rebuild_compare_restore_and_errors](../tests/test_database_foundation.py#L335) | `self` | Verify cli export rebuild compare restore and errors. |
 | [DatabaseFoundationTests.startup_events](../tests/test_database_foundation.py#L348) | `self, run_name` | Startup events. |
-| [DatabaseFoundationTests.test_script_startup_pulls_before_bootstrap_and_serving](../tests/test_database_foundation.py#L365) | `self` | Verify script startup pulls before bootstrap and serving. |
-| [DatabaseFoundationTests.test_wsgi_startup_bootstraps_without_git_or_starting_a_server](../tests/test_database_foundation.py#L368) | `self` | Verify wsgi startup bootstraps without git or starting a server. |
-| [MaintenanceGateTests.test_normal_connections_remain_concurrent_and_timeout_reopens_gate](../tests/test_database_foundation.py#L373) | `self` | Verify normal connections remain concurrent and timeout reopens gate. |
-| [MaintenanceGateTests.test_maintenance_drains_connections_and_blocks_new_ones](../tests/test_database_foundation.py#L383) | `self` | Verify maintenance drains connections and blocks new ones. |
-| [MaintenanceGateTests.test_maintenance_drains_connections_and_blocks_new_ones.maintain](../tests/test_database_foundation.py#L387) | `` | Maintain. |
-| [MaintenanceGateTests.test_maintenance_drains_connections_and_blocks_new_ones.connect](../tests/test_database_foundation.py#L395) | `` | Open the fixture database with the row/connection settings needed by this test. |
+| [DatabaseFoundationTests.test_script_startup_pulls_before_bootstrap_and_serving](../tests/test_database_foundation.py#L366) | `self` | Verify script startup pulls before bootstrap and serving. |
+| [DatabaseFoundationTests.test_wsgi_startup_bootstraps_without_git_or_starting_a_server](../tests/test_database_foundation.py#L369) | `self` | Verify wsgi startup bootstraps without git or starting a server. |
+| [MaintenanceGateTests.test_normal_connections_remain_concurrent_and_timeout_reopens_gate](../tests/test_database_foundation.py#L374) | `self` | Verify normal connections remain concurrent and timeout reopens gate. |
+| [MaintenanceGateTests.test_maintenance_drains_connections_and_blocks_new_ones](../tests/test_database_foundation.py#L384) | `self` | Verify maintenance drains connections and blocks new ones. |
+| [MaintenanceGateTests.test_maintenance_drains_connections_and_blocks_new_ones.maintain](../tests/test_database_foundation.py#L388) | `` | Maintain. |
+| [MaintenanceGateTests.test_maintenance_drains_connections_and_blocks_new_ones.connect](../tests/test_database_foundation.py#L396) | `` | Open the fixture database with the row/connection settings needed by this test. |
 
 ## tests/test_database_inspector.py
 
@@ -1786,4 +1814,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1222 Python definitions**.
+Total: **1243 Python definitions**.

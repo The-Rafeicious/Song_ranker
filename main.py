@@ -22,7 +22,7 @@ if __name__ == '__main__':
             os.execv(sys.executable, [sys.executable, *sys.argv])
             raise SystemExit(0)  # execv does not return in normal use.
 
-from songranker.services import (app, init_db)
+from songranker.services import (app, init_db, activate_elo_policy)
 from songranker import apple_access  # Registers streamed preview diagnostics and request safeguards.
 from songranker import pages  # Registers page and library routes.
 from songranker.modes import trivia  # Registers field-by-field trivia routes.
@@ -44,6 +44,12 @@ if __name__ == '__main__':
     # Also runs when Git was pulled manually or there was no incoming code update.
     database_update = updater.reconcile_database()
     print(database_update['message'], flush=True)
+
+# Replay the final selected database, after Git adoption and before any requests.
+# WSGI imports also activate the policy, without running Git or starting a server.
+activate_elo_policy()
+
+if __name__ == '__main__':
     try:
         from waitress import create_server
     except ImportError as error:

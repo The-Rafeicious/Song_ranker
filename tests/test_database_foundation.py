@@ -356,6 +356,7 @@ class DatabaseFoundationTests(unittest.TestCase):
             reconcile_database=lambda:(calls.append('database') or dict(code='database_matches',message='Test database check'))))
         with patch.dict(sys.modules, modules), patch.object(services, 'ROOT', self.root), \
              patch.object(services, 'init_db', side_effect=lambda: calls.append('bootstrap')), \
+             patch.object(services, 'activate_elo_policy', side_effect=lambda: calls.append('elo')), \
              patch('waitress.create_server', return_value=SimpleNamespace(run=lambda:calls.append('serve'))), \
              patch('songranker.hosting.register_waitress_shutdown'), \
              patch.dict(os.environ, {'SONG_RANKER_PORT': '5000','SONG_RANKER_BOOT_COMMIT':''}):
@@ -363,10 +364,10 @@ class DatabaseFoundationTests(unittest.TestCase):
         return calls
 
     def test_script_startup_pulls_before_bootstrap_and_serving(self):
-        self.assertEqual(self.startup_events('__main__'), ['pull', 'bootstrap', 'database', 'serve'])
+        self.assertEqual(self.startup_events('__main__'), ['pull', 'bootstrap', 'database', 'elo', 'serve'])
 
     def test_wsgi_startup_bootstraps_without_git_or_starting_a_server(self):
-        self.assertEqual(self.startup_events('isolated_wsgi_import'), ['bootstrap'])
+        self.assertEqual(self.startup_events('isolated_wsgi_import'), ['bootstrap', 'elo'])
 
 
 class MaintenanceGateTests(unittest.TestCase):

@@ -8,8 +8,9 @@ import secrets
 from songranker.storage.preference_state import (
     calculate_new_elo,
     compact,
-    replay,
-    mode_replay,
+    ELO_RULES_VERSION,
+    live_elo_scale,
+    rebuild_preference_ratings,
 )
 
 RULES_VERSION = 1
@@ -102,7 +103,8 @@ def ensure_seeds(conn):
                 "Preference replay state is missing. Restore a verified backup.", 409
             )
         conn.execute(
-            "INSERT INTO preference_replay_state VALUES(1,0,0,'verified_replay',1)"
+            "INSERT INTO preference_replay_state VALUES(1,0,0,'verified_replay',?)",
+            (ELO_RULES_VERSION,),
         )
         state = conn.execute(
             "SELECT * FROM preference_replay_state WHERE id=1"
@@ -204,6 +206,7 @@ def receipt(event):
     """Build a saved vote receipt from frozen song snapshots and before/after
     ratings.
     """
+
     def side(prefix):
         """Project one receipt participant with its saved identity and exact Elo
         change.
@@ -259,7 +262,7 @@ def record_preference(
         )
     ensure_seeds(conn)
     a, b = songs[w]["elo_score"], songs[l]["elo_score"]
-    na, nb = calculate_new_elo(a, b, 32 * weight)
+    na, nb = calculate_new_elo(a, b, 32 * weight, live_elo_scale(conn))
     cursor = conn.execute(
         """INSERT INTO preference_events(winner_id,loser_id,mode,created_at,
         winner_before,winner_after,loser_before,loser_after,offer_token,origin,rules_version,
@@ -309,7 +312,9 @@ def record_preference(
             (mode, w, l),
         )
     }
-    values = calculate_new_elo(current[w], current[l], 32 * weight)
+    values = calculate_new_elo(
+        current[w], current[l], 32 * weight, live_elo_scale(conn, mode)
+    )
     for sid, value in zip((w, l), values):
         conn.execute(
             """UPDATE preference_mode_ratings SET elo=?,matches=matches+1,
@@ -409,52 +414,9 @@ def save_vote(conn, owner, data):
 
 
 def rebuild_ratings(conn):
-    settings = ensure_seeds(conn)
-    songs = [dict(r) for r in conn.execute("SELECT id FROM songs")]
-    seeds = {
-        r["song_id"]: dict(r)
-        for r in conn.execute("SELECT * FROM preference_rating_seeds")
-    }
-    events = [
-        dict(r) for r in conn.execute("SELECT * FROM preference_effective ORDER BY id")
-    ]
-    overrides = [
-        dict(r)
-        for r in conn.execute(
-            "SELECT * FROM preference_rating_overrides ORDER BY after_event_id,id"
-        )
-    ]
-    ratings, projected = replay(
-        songs,
-        seeds,
-        events,
-        overrides,
-        settings["cutoff_event_id"],
-        settings["legacy_boundary"],
-    )
-    conn.execute(
-        "DELETE FROM preference_rating_projection WHERE event_id>?",
-        (settings["cutoff_event_id"],),
-    )
-    conn.executemany(
-        "INSERT INTO preference_rating_projection VALUES(?,?,?,?,?)",
-        ((event_id, *values) for event_id, values in projected.items()),
-    )
-    conn.executemany(
-        "UPDATE songs SET elo_score=?,matches_played=?,highest_elo=?,highest_rank=? WHERE id=?",
-        (
-            (row["elo"], row["matches"], row["highest_elo"], row["highest_rank"], sid)
-            for sid, row in ratings.items()
-        ),
-    )
-    conn.execute("DELETE FROM preference_mode_ratings")
-    conn.executemany(
-        "INSERT INTO preference_mode_ratings VALUES(?,?,?,?,?)",
-        (
-            (sid, mode, row["elo"], row["matches"], row["tournament_matches"])
-            for (sid, mode), row in mode_replay(songs, events).items()
-        ),
-    )
+    """Rebuild projections with the database's activated Elo policy."""
+    ensure_seeds(conn)
+    rebuild_preference_ratings(conn)
 
 
 def fingerprint(event):
