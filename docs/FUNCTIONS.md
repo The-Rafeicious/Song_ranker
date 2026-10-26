@@ -835,8 +835,8 @@ Backed-up transactional bootstrap and versioned migration.
 | [_complete_old_layout](../songranker/storage/database.py#L103) | `conn` |  complete old layout; reads sqlite_master. |
 | [migrate](../songranker/storage/database.py#L114) | `filename` | Canonicalise to the current schema with rollback and a pre-upgrade SQLite snapshot. |
 | [activate_adaptive_elo](../songranker/storage/database.py#L179) | `filename` | One-time startup burn-in: archive first, replay atomically, mark only on success. |
-| [initialize_database](../songranker/storage/database.py#L253) | `filename, sql_backup=None` | Existing DB wins. Missing DB restores SQL before any empty schema is made. |
-| [initialize_database.authorize](../songranker/storage/database.py#L272) | `action, arg1, arg2, db, trigger` | Deny ATTACH/DETACH statements while importing a supplied SQL snapshot. |
+| [initialize_database](../songranker/storage/database.py#L265) | `filename, sql_backup=None` | Existing DB wins. Missing DB restores SQL before any empty schema is made. |
+| [initialize_database.authorize](../songranker/storage/database.py#L284) | `action, arg1, arg2, db, trigger` | Deny ATTACH/DETACH statements while importing a supplied SQL snapshot. |
 
 ## songranker/storage/database_access.py
 
@@ -1025,9 +1025,10 @@ Adaptive ratings, startup archives and deterministic replay on disposable data.
 | [AdaptiveEloTests.test_failed_archive_or_replay_leaves_old_database_and_marker_intact](../tests/test_adaptive_elo.py#L139) | `self` | Verify failed archive or replay leaves old database and marker intact. |
 | [AdaptiveEloTests.test_failed_archive_or_replay_leaves_old_database_and_marker_intact.fail](../tests/test_adaptive_elo.py#L149) | `conn` | Fail; writes songs. |
 | [AdaptiveEloTests.test_concurrent_startups_only_publish_one_replay_and_archive](../tests/test_adaptive_elo.py#L159) | `self` | Verify concurrent startups only publish one replay and archive. |
-| [AdaptiveEloTests.test_protected_anchor_is_retained_and_unknown_policy_is_rejected](../tests/test_adaptive_elo.py#L168) | `self` | Verify protected anchor is retained and unknown policy is rejected. |
-| [AdaptiveEloTests.test_wal_archive_contains_latest_committed_state](../tests/test_adaptive_elo.py#L182) | `self` | Verify wal archive contains latest committed state. |
-| [AdaptiveEloTests.test_large_mature_history_remains_finite_balanced_and_deterministic](../tests/test_adaptive_elo.py#L191) | `self` | Verify large mature history remains finite balanced and deterministic. |
+| [AdaptiveEloTests.test_missing_tested_baseline_stops_instead_of_replaying_from_final_rating](../tests/test_adaptive_elo.py#L168) | `self` | Verify missing tested baseline stops instead of replaying from final rating. |
+| [AdaptiveEloTests.test_protected_anchor_is_retained_and_unknown_policy_is_rejected](../tests/test_adaptive_elo.py#L179) | `self` | Verify protected anchor is retained and unknown policy is rejected. |
+| [AdaptiveEloTests.test_wal_archive_contains_latest_committed_state](../tests/test_adaptive_elo.py#L194) | `self` | Verify wal archive contains latest committed state. |
+| [AdaptiveEloTests.test_large_mature_history_remains_finite_balanced_and_deterministic](../tests/test_adaptive_elo.py#L203) | `self` | Verify large mature history remains finite balanced and deterministic. |
 
 ## tests/test_apple_source_columns.py
 
@@ -1814,4 +1815,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1243 Python definitions**.
+Total: **1244 Python definitions**.

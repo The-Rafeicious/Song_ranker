@@ -212,6 +212,18 @@ def activate_adaptive_elo(filename):
                 "Elo policy needs a newer app; database was left unchanged."
             )
         backup = create_backup(path, "pre_adaptive_elo")
+        missing = conn.execute("""SELECT 1 FROM songs s
+            LEFT JOIN preference_rating_seeds seed ON seed.song_id=s.id
+            WHERE seed.song_id IS NULL AND s.matches_played!=0
+            UNION ALL
+            SELECT 1 FROM preference_effective e
+            JOIN songs w ON w.id=e.winner_id JOIN songs l ON l.id=e.loser_id
+            LEFT JOIN preference_rating_seeds ws ON ws.song_id=w.id
+            LEFT JOIN preference_rating_seeds ls ON ls.song_id=l.id
+            WHERE e.active=1 AND e.mode IN ('standard','blind') AND w.id!=l.id
+            AND (ws.song_id IS NULL OR ls.song_id IS NULL) LIMIT 1""").fetchone()
+        if missing:
+            raise ValueError('A tested song is missing its rating baseline; restore a verified backup. No ratings were changed.')
         conn.execute(
             """INSERT INTO preference_rating_seeds(song_id,elo,matches,highest_elo,highest_rank)
             SELECT id,elo_score,COALESCE(matches_played,0),COALESCE(highest_elo,elo_score),COALESCE(highest_rank,9999)

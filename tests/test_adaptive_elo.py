@@ -165,9 +165,21 @@ class AdaptiveEloTests(unittest.TestCase):
         self.assertEqual(sum(report is not None for report in reports), 1)
         self.assertEqual(len(list(self.path.parent.glob("database_backups/pre_adaptive_elo_*.db"))), 1)
 
+    def test_missing_tested_baseline_stops_instead_of_replaying_from_final_rating(self):
+        self.conn.execute("UPDATE preference_replay_state SET rules_version=1")
+        self.conn.commit()
+        self.vote(1, 2)
+        self.conn.execute("DELETE FROM preference_rating_seeds WHERE song_id=1")
+        self.conn.commit()
+        before = capture(self.conn)
+        with self.assertRaisesRegex(ValueError, "missing its rating baseline"):
+            activate_adaptive_elo(self.path)
+        self.assertEqual(capture(self.conn), before)
+
     def test_protected_anchor_is_retained_and_unknown_policy_is_rejected(self):
         self.conn.execute("UPDATE preference_replay_state SET rules_version=1,baseline_kind='legacy_anchor',cutoff_event_id=100,legacy_boundary=100")
         self.conn.execute("UPDATE songs SET elo_score=1350,matches_played=8,highest_elo=1400 WHERE id=1")
+        self.conn.execute("INSERT INTO preference_rating_seeds VALUES(1,1350,8,1400,9999)")
         self.conn.commit()
         report = activate_adaptive_elo(self.path)
         self.assertTrue(report["anchored"])
