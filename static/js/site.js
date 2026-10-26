@@ -432,12 +432,19 @@
   }
   window.addEventListener("pagehide", () => {
     roundTransition.closed = true;
+    bracketMapRestore = !!bracketMap;
     cancelRoundTransition();
     stopAudio();
   });
   window.addEventListener("pageshow", (e) => {
     roundTransition.closed = false;
     if (e.persisted) {
+      if (page === "tournament_play" && bracketMapRestore) {
+        bracketMapRestore = false;
+        const id = Number(new URLSearchParams(location.search).get("tournament"));
+        if (id) loadBracket(id, false).catch(error => toast(error.message));
+        return;
+      }
       if (page === "standard" && revealed)
         scheduleRoundTransition(null, nextMatch);
       if (page === "tournament_play" && bracketReveal)
@@ -478,7 +485,7 @@
         .forEach((b) => playState(b, false));
     }
   }
-  let bracketMap = null;
+  let bracketMap = null, bracketMapRestore = false;
   function stopAudio() {
     bracketMap?.cancel();
     bracketMap = null;
@@ -2598,7 +2605,7 @@
       if ($("#tournament-setup")) renderScope();
     }
   }
-  async function loadBracket(id) {
+  async function loadBracket(id, autoplay = true) {
     cancelRoundTransition();
     stopAudio();
     const data = await api("/api/tournaments/" + id);
@@ -2618,7 +2625,7 @@
       "/tournament?tournament=" + data.tournament.id,
     );
     if (data.tournament.status === "completed") {
-      renderChampion();
+      renderChampion(autoplay);
       return;
     }
     await nextBracketMatch();

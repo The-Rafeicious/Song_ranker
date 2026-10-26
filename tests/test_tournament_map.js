@@ -51,6 +51,8 @@ function harness(reduced=false){
  check(skipped===1&&skip.timers.size===0&&skip.d.querySelectorAll('audio').length===0,'skip cancels timers and audio before podium');
  const away=harness();const controller=away.w.TournamentBracket.mount(away.d.querySelector('#root'),fixture(),{animate:true,sound:true});controller.cancel();await Promise.resolve();
  check(away.timers.size===0&&away.d.querySelectorAll('audio').length===0,'cancellation silences pending play and retires player');
- for(const x of [h,q,b,reduced,skip,away,pending])x.dom.window.close();
+ const back=harness();back.w.TournamentBracket.mount(back.d.querySelector('#root'),fixture());back.w.dispatchEvent(new back.w.PageTransitionEvent('pagehide',{persisted:true}));back.w.dispatchEvent(new back.w.PageTransitionEvent('pageshow',{persisted:true}));back.d.querySelector('[data-map-track="1"]').click();
+ check(back.d.querySelectorAll('.is-route').length===3,'saved bracket stays interactive after browser-back restoration');
+ for(const x of [h,q,b,reduced,skip,away,pending,back])x.dom.window.close();
  console.log(checks+' tournament map checks passed');
 })().catch(e=>{console.error(e);process.exitCode=1});

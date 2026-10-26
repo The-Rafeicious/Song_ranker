@@ -473,8 +473,9 @@ window.TournamentBracket = (() => {
     root.addEventListener('click',handleClick);
     function visibility(){if(document.hidden)stopSound();}
     function blocked(){sound=false;stopSound();const button=root.querySelector('[data-map-sound]');button.textContent='Sound off';button.setAttribute('aria-pressed','false');}
-    const cancel=()=>{closed=true;halt();root.removeEventListener('click',handleClick);document.removeEventListener('visibilitychange',visibility);document.removeEventListener('preview-blocked',blocked);window.removeEventListener('pagehide',cancel);};
-    window.addEventListener('pagehide',cancel,{once:true});
+    const cancel=()=>{closed=true;halt();root.removeEventListener('click',handleClick);document.removeEventListener('visibilitychange',visibility);document.removeEventListener('preview-blocked',blocked);window.removeEventListener('pagehide',pauseForPage);};
+    function pauseForPage(){const wasPlaying=playing;halt();if(wasPlaying)status.textContent='Replay paused · select Restart replay to continue';}
+    window.addEventListener('pagehide',pauseForPage);
     document.addEventListener('visibilitychange',visibility);
     document.addEventListener('preview-blocked',blocked);
     draw();status.textContent=data.tournament.status==='completed'?'Completed bracket':'Saved bracket progress';
