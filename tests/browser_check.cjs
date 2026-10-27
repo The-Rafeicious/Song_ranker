@@ -396,13 +396,17 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('#tournament-77 a[href="/tournament/77/bracket"]').click();await page.locator('#tournament-77 .bracket-node').first().waitFor();
   assert.equal(await page.locator('#tournament-77 .bracket-node').count(),8);
   assert.ok(await page.locator('#tournament-77 .bracket-track').first().evaluate(e=>e.getBoundingClientRect().height>=44),'Bracket tracks keep touch-sized targets');
+  const pan=page.locator('#tournament-77 .bracket-viewport');await pan.evaluate(e=>{e.scrollLeft=100;e.scrollTop=0;});const panBox=await pan.boundingBox();const beforePan=await pan.evaluate(e=>({x:e.scrollLeft,y:e.scrollTop}));
+  await page.mouse.move(panBox.x+180,panBox.y+180);await page.mouse.down();await page.mouse.move(panBox.x+100,panBox.y+120,{steps:8});await page.mouse.up();
+  const afterPan=await pan.evaluate(e=>({x:e.scrollLeft,y:e.scrollTop}));assert.ok(afterPan.x>beforePan.x&&afterPan.y>beforePan.y,'Mouse drag pans both axes');assert.equal(await page.locator('#tournament-77 .is-route').count(),0,'Dragging does not select a track');
   await page.locator('#tournament-77 [data-map-track="20"]').first().click();assert.ok((await page.locator('#tournament-77 .bracket-inspector').textContent()).includes('Bracket track 20'));
   assert.equal(await page.locator('#tournament-77 .is-route').count(),3);
   for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'tournament-map',folder);await page.locator('#tournament-77').screenshot({path:folder+'/tournament-map-'+width+'.png'})}
   await page.goto(base+'/tournament?tournament=77');await page.locator('[data-tournament-vote="0"]').waitFor();await page.locator('[data-tournament-vote="0"]').click();
   await page.locator('#tournament-replay .bracket-node').first().waitFor({timeout:30000});
   assert.equal(await page.locator('.winner-podium').count(),0,'Bracket replay precedes podium');
-  assert.ok(await page.locator('#tournament-replay audio').count()<=1,'Only one replay player exists');
+  assert.ok(await page.locator('#tournament-replay audio').count()<=2,'Only the incoming clip and fading tail can exist');
+  assert.equal(await page.locator('[data-map-sound]').getAttribute('aria-pressed'),'true','Replay starts with sound enabled');
   await page.locator('[data-map-sound]').click();await page.locator('[data-map-skip]').click();await page.locator('.winner-podium').waitFor();
   assert.equal(await page.locator('#tournament-replay').count(),0);assert.equal(await page.locator('audio').evaluateAll(a=>a.filter(x=>!x.paused).length),0,'Sound off remains off on the podium');
   await page.locator('[data-replay-bracket]').click();await page.locator('#tournament-replay').waitFor();await page.locator('[data-map-skip]').click();await page.locator('.winner-podium').waitFor();

@@ -8,14 +8,14 @@ function fixture(size=8){
  return {tournament:{id:1,size,status:'completed',is_blind:0},entries,matches};
 }
 function harness(reduced=false){
- const dom=new JSDOM('<body><div id="root"></div><div id="second"></div></body>',{url:'http://localhost/tournament',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document,timers=new Map(),plays=[],pauses=[];let seq=0;
+ const dom=new JSDOM('<body><div id="root"></div><div id="second"></div></body>',{url:'http://localhost/tournament',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document,timers=new Map(),plays=[],pauses=[],retired=[],fades=[];let seq=0;
  w.matchMedia=()=>({matches:reduced});w.HTMLElement.prototype.scrollTo=function(o){this.scrollLeft=o.left||0;this.scrollTop=o.top||0};
  w.setTimeout=fn=>{timers.set(++seq,fn);return seq};w.clearTimeout=id=>timers.delete(id);
  w.HTMLMediaElement.prototype.pause=function(){pauses.push(this)};
- w.PreviewPlayback={source:(id,url)=>'/cached/'+id,play:async a=>{plays.push(a)},cancel:a=>pauses.push(a)};
+ w.PreviewPlayback={source:(id,url)=>'/cached/'+id,play:async a=>{plays.push(a)},cancel:a=>pauses.push(a),retire:a=>retired.push(a),fadeOut:(a,ms)=>fades.push(ms)};
  for(const f of ['ui.js','gameplay.js'])w.eval(fs.readFileSync('static/js/'+f,'utf8'));
  const tick=async()=>{const [id,fn]=timers.entries().next().value||[];if(fn){timers.delete(id);fn();}await Promise.resolve();};
- return {w,d,dom,timers,plays,pauses,tick};
+ return {w,d,dom,timers,plays,pauses,retired,fades,tick};
 }
 (async()=>{
  const h=harness(),data=fixture(32),root=h.d.querySelector('#root');
@@ -34,13 +34,24 @@ function harness(reduced=false){
  check(bronzeHarness.d.querySelectorAll('.bracket-third .bracket-track').length===2,'third place is an interactive match');
  check(parseFloat(bronzeHarness.d.querySelector('.bracket-third').style.top)>parseFloat(bronzeHarness.d.querySelector('.bracket-final').style.top),'third place sits below the central final');
  bronzeHarness.dom.window.close();
+ for(const size of [8,16,32]){const f=fixture(size),ids=[...h.w.TournamentBracket.soundtrack(f)];check(ids.length===4&&ids.every(id=>f.matches.some(m=>m.round_number===Math.log2(size)-1&&(m.song1_id===id||m.song2_id===id))),'soundtrack is exactly the semi-finalists for '+size);}
+ const dragHarness=harness(),dragRoot=dragHarness.d.querySelector('#root'),dragTree=dragHarness.w.TournamentBracket.mount(dragRoot,fixture()),viewport=dragRoot.querySelector('.bracket-viewport');
+ const pointer=(type,x,y)=>{const e=new dragHarness.w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0});Object.defineProperty(e,'pointerId',{value:1});Object.defineProperty(e,'pointerType',{value:'mouse'});viewport.dispatchEvent(e);};
+ viewport.scrollLeft=100;viewport.scrollTop=100;pointer('pointerdown',100,100);pointer('pointermove',60,70);pointer('pointerup',60,70);
+ check(viewport.scrollLeft===140&&viewport.scrollTop===130,'drag pans both axes');
+ dragRoot.querySelector('[data-map-track="1"]').click();check(dragRoot.querySelectorAll('.is-route').length===0,'drag release does not select a track');
+ dragRoot.querySelector('[data-map-track="1"]').click();check(dragRoot.querySelectorAll('.is-route').length===3,'ordinary clicks still select tracks');
+ dragTree.cancel();pointer('pointerdown',100,100);pointer('pointermove',0,0);check(viewport.scrollLeft===140,'cancellation removes drag listeners');dragHarness.dom.window.close();
  const q=harness(),eight=fixture(),second=q.d.querySelector('#root');let done=0;
- const replay=q.w.TournamentBracket.mount(second,eight,{animate:true,sound:true,onDone:()=>done++});
+ const replay=q.w.TournamentBracket.mount(second,eight,{animate:true,onDone:()=>done++});
+ check(second.querySelector('[data-map-sound]').getAttribute('aria-pressed')==='true','replay sound defaults on');
  check(second.querySelectorAll('.is-resolved').length===1,'replay reveals one result at a time');
  check(second.querySelector('[data-map-match="7"] [data-map-track="1"]')===null,'final identities wait for feeders');
  for(let i=0;i<15&&done===0;i++)await q.tick();
+ check(q.retired.length>0,'cue changes retain an outgoing clip for the shared crossfade');
+ check(q.fades.includes(600),'natural completion fades before the podium');
  check(done===1,'podium callback follows final resolution once');
- check(new Set(q.plays.map(a=>a.src)).size<=8,'soundtrack uses at most the last eight tracks');
+ check(new Set(q.plays.map(a=>a.src)).size<=4,'soundtrack uses at most the four semi-finalists');
  check(q.d.querySelectorAll('audio').length===0,'finished replay removes its player');
  check(q.timers.size===0,'completion leaves no replay timers');replay.cancel();
  const pending=harness(),unfinished=fixture();unfinished.tournament.status='in_progress';const final=unfinished.matches.at(-1);final.status='pending';final.winner_id=null;final.loser_id=null;

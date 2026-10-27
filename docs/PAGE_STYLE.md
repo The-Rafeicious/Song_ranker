@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.5.2 contract. Change the owning shared rule before adding a
+This is the current V5.5.3 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -262,3 +262,5 @@ Included/Excluded through its shared column/filter engine; use no separate edito
 Tournament archive entries link to `/tournament/<id>/bracket`, a dedicated wide workspace. Mirrored halves progress inward to the larger central final, with the smaller third-place match below. The same geometry serves the pre-podium replay at 1.6 seconds per result. Track selection exposes route and per-match evidence. Keep panning inside the viewport.
 
 Shelves profile panels require at least one currently eligible track. An excluded album hides whole saved rounds containing it from public performance reports; Dev retains raw saved facts. New Trivia rounds skip its album-name field, preserving frozen existing rounds.
+
+Bracket viewports support mouse/pen drag panning with a grab cursor and a movement threshold that preserves track clicks; touch retains native scrolling. Replay sound defaults on, uses the four semi-finalists and the shared preview crossfade. Natural completion fades before the podium; cancellation remains immediate.
