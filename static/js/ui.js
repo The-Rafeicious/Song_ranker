@@ -61,7 +61,7 @@ window.SongRankerUI = (() => {
     const rated = (rows) =>
       new Map(
         rows
-          .filter((s) => s.id != null && Number.isFinite(s.elo_score))
+          .filter((s) => s.id != null && s.matches_played > 0 && Number.isFinite(s.elo_score))
           .map((s) => [s.id, s.elo_score]),
       );
     const library = rated(songs),
@@ -74,11 +74,11 @@ window.SongRankerUI = (() => {
       ? [...library.values()].reduce((n, v) => n + v, 0) / library.size
       : 1200;
     const mid = Math.floor(sizes.length / 2),
-      prior = sizes.length
+      prior = Math.sqrt(sizes.length
         ? sizes.length % 2
           ? sizes[mid]
           : (sizes[mid - 1] + sizes[mid]) / 2
-        : 1;
+        : 1);
     return {
       baseline,
       prior_tracks: prior,

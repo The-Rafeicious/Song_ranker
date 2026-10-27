@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.5.8 · competition generation 3 · schema 22**
+**Application V5.5.9 · competition generation 3 · schema 22**
 
-Current implementation reference. `APP_VERSION` is `5.5.8`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.5.9`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -332,18 +332,15 @@ frozen even when the pool changes later.
 
 ## Impact and Overall
 
-Collection Impact uses one finite current Elo per distinct linked song. The
-baseline is the current-library mean, and prior breadth is the median nonempty
-peer collection size in that entity class:
+Collection Impact uses one finite current Elo per distinct linked song that has played at least one match. Unplayed songs do not dilute averages or supply evidence. The baseline is the tested-library mean; prior breadth is the square root of the median nonempty tested peer collection size in that entity class:
 
 ```text
-support = tracks / (tracks + prior_tracks)
-impact  = library_mean + support * (collection_mean - library_mean)
+prior_tracks = sqrt(median tested tracks per nonempty peer)
+support = tested_tracks / (tested_tracks + prior_tracks)
+impact = tested_library_mean + support * (tested_collection_mean - tested_library_mean)
 ```
 
-Empty collections have no Impact/rank; proper albums alone participate in album
-peer calibration. Values display to one decimal and sort at full precision.
-All new songs start at 1200, so nonempty collections initially share 1200 Impact.
+The lighter prior avoids pulling typical collections halfway back to baseline, while still tempering tiny samples. Collections without tested songs have no Impact/rank; proper albums alone participate in album peer calibration. Values display to one decimal and sort at full precision. Catalogue song counts remain unchanged. This is a read-only calculation: song Elo, match history and Overall are unchanged.
 
 Overall retains five equally based game families: voting, Trivia, Tournament,
 Guesser and Shelves. Voting's correlated Elo/Non-blind/Blind views split its 20
@@ -910,4 +907,4 @@ Tournament replay walks each quarter's feeder matches in order before its semi-f
 
 ### Full-page bracket replay (V5.5.6)
 
-The shared map holds each result for 3.5 seconds and fills the available space between the banner and footer in both the saved workspace and pre-podium replay. The viewport has no inset border or rounded box. Resize observation fits its height to the actual header/footer; diagram overflow stays inside the drag surface. Stage selector controls are removed. Match details are attached to their selected node, support Close/Escape with focus restoration, and keep content scrollable on short screens. Round-local CSS variables produce darker outer rounds and brighter central rounds with increasing glow; winner/elimination markers and Blind privacy remain independent.
+The shared map holds each result for 3.5 seconds and fills the available space between the banner and footer in both the saved workspace and pre-podium replay. The viewport has no inset border or rounded box. Resize observation gives the map almost a viewport of its own, with the header and footer outside that height; diagram overflow stays inside the drag surface. Stage selector controls are removed. Match details are attached to their selected node, support Close/Escape with focus restoration, and keep content scrollable on short screens. Round-local CSS variables produce darker outer rounds and brighter central rounds with increasing glow; winner/elimination markers and Blind privacy remain independent.

@@ -7728,7 +7728,7 @@ body[data-page="shelves"] .shelf-next:not(:disabled):hover {
 .bracket-toolbar .btn { font-size:14px; min-height:44px; padding:8px 14px; }
 .bracket-hint,.bracket-status { color:var(--muted); font-size:13px; }
 .bracket-status { flex-basis:100%; text-align:center; min-height:18px; margin:0; }
-.bracket-viewport { height:var(--bracket-view-height,70dvh); min-height:300px; width:100%; overflow:auto; border:0; border-radius:0; background:radial-gradient(ellipse at center,#ff78a606,transparent 70%),#100e10; overscroll-behavior:contain; cursor:grab; }
+.bracket-viewport { height:var(--bracket-view-height,94dvh); min-height:300px; width:100%; overflow:auto; border:0; border-radius:0; background:radial-gradient(ellipse at center,#ff78a606,transparent 70%),#100e10; overscroll-behavior-x:contain; overscroll-behavior-y:auto; cursor:grab; }
 .bracket-viewport:focus-visible { outline:2px solid var(--tournament); outline-offset:-2px; }
 .bracket-canvas { position:relative; margin:0 auto; }
 .bracket-lines,.bracket-nodes { position:absolute; inset:0; }

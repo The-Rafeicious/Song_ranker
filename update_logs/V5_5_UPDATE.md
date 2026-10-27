@@ -71,3 +71,9 @@ Active tournament matches no longer show the out-of-place Explore bracket link d
 Roll back automatic preview loudness balancing and its checkbox. Native recording levels, site volume and smooth crossfades remain.
 
 Tournament replay completes each quarter in order, following its semi-finalist's song without restarting on each result. Semi-finals, third place and the final play their winners. Full previews loop naturally instead of jumping back every six seconds; song changes use the shared ready-only crossfade. Missing clips stay silent rather than substituting unrelated tracks.
+
+## V5.5.9
+
+Bracket workspaces have almost a full viewport of diagram height, with the banner/header outside it so the page can scroll them away. Vertical scrolling can continue from the map onto the page.
+
+Impact now uses only songs that have played a match, and a lighter square-root median tested peer-size prior. This removes unplayed-1200 dilution and excessive compression without changing song Elo or saved results. Collections without tested tracks show no Impact. On the current backup, proper-album scores span approximately 33 points instead of 14; artist and tag spreads also widen.

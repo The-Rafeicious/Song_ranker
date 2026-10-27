@@ -1,27 +1,27 @@
 """Read-only catalogue-relative Impact, in the current public Elo scale."""
 
-from math import isfinite
+from math import isfinite, sqrt
 from statistics import fmean, median
 
 
 def rated(songs):
-    """One finite rating per linked song; duplicate relationships add no weight."""
+    """One finite rating per tested song; unplayed tracks and duplicate links add no weight."""
     result={}
     for raw in songs:
         song=dict(raw);value=song.get('elo_score')
-        if song.get('id') is not None and type(value) in (int,float) and isfinite(value):
+        if song.get('id') is not None and (song.get('matches_played') or 0)>0 and type(value) in (int,float) and isfinite(value):
             result[song['id']]=value
     return result
 
 
 def calibrate(songs, peers):
-    """Derive the catalogue Elo baseline and median tested peer-group size for Impact
+    """Derive the catalogue Elo baseline and square-root median tested peer-group size for Impact
     shrinkage.
     """
     library=rated(songs)
     sizes=[len(set(rated(group)) & library.keys()) for group in peers]
     return dict(baseline=fmean(library.values()) if library else 1200.0,
-                prior_tracks=float(median(n for n in sizes if n)) if any(sizes) else 1.0,
+                prior_tracks=sqrt(median(n for n in sizes if n)) if any(sizes) else 1.0,
                 ratings=library)
 
 
