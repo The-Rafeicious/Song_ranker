@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.5.6 contract. Change the owning shared rule before adding a
+This is the current V5.5.7 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
