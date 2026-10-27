@@ -3445,3 +3445,6 @@ body.site-style-baseline #main .pulse-scale {
   .local-tournament-stats .mode-stats-row { grid-template-columns:minmax(0,1fr); }
   .local-tournament-stats .mode-stats-row > .mode-stats-result { text-align:left; display:block; }
 }
+
+.local-tournament-groups > .artist { --section-color:var(--artist); --surface-accent:var(--artist); --mode-stats-border:#5b9bff66; --mode-stats-rule:#5b9bff29; }
+.local-tournament-groups > .album { --section-color:var(--album); --surface-accent:var(--album); --mode-stats-border:#bf77ff66; --mode-stats-rule:#bf77ff29; }
