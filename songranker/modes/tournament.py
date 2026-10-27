@@ -1,4 +1,4 @@
-from flask import render_template, request, jsonify, abort
+from flask import render_template, request, jsonify, abort, redirect, url_for
 from songranker.modes.selection import tournament_tracks
 from songranker.services import app, get_db_connection
 from songranker.reports.stats_activity import attach_reports
@@ -393,10 +393,15 @@ def tournament_stats_page():
     conn = get_db_connection()
     try:
         conn.execute("BEGIN")
+        selected=request.args.get("tournament",type=int)
+        row=conn.execute("SELECT scope_type,scope_id FROM tournaments WHERE id=?",(selected,)).fetchone()
+        if row and row['scope_type'] in ('artist','album'):
+            return redirect(url_for('local_tournament_stats_page',scope=row['scope_type'],scope_id=row['scope_id'])+'#local-bracket-'+str(selected))
         data = build_tournament_stats(
             conn,
             selected=request.args.get("tournament", type=int),
             archive_page=request.args.get("archive_page", 1, type=int),
+            competition_only=True,
         )
     finally:
         conn.close()
@@ -632,7 +637,7 @@ def podium_points(sid, matches):
     return round(sum(won), 2) if all(p is not None for p in won) else None
 
 
-def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
+def build_tournament_stats(conn, now=None, selected=None, archive_page=1, competition_only=False):
     """A caller-owned snapshot; no writes, API calls, history cap or Elo inference."""
     now = datetime.now(timezone.utc).timestamp() if now is None else now
     artists = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM artists")}
@@ -659,6 +664,8 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
         )
         songs[song["id"]] = song
     brackets = {r["id"]: dict(r) for r in conn.execute("SELECT * FROM tournaments")}
+    if competition_only:
+        brackets={tid:t for tid,t in brackets.items() if t.get('scope_type') in ('global','tag')}
     entries = [
         dict(r)
         for r in conn.execute("SELECT * FROM tournament_entries")
@@ -1178,4 +1185,97 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
         ),
         "tournament",
         now=now,
+        tournament_ids=set(brackets) if competition_only else None,
     )
+
+
+@app.route('/tournament_local_stats')
+def local_tournament_stats_page():
+    """Compare artist/album-only brackets without contributing to competition."""
+    scope=request.args.get('scope','all')
+    scope_id=request.args.get('scope_id',type=int)
+    view=request.args.get('view')
+    if view:
+        parts=view.split(':',1)
+        scope=parts[0]
+        try:scope_id=int(parts[1]) if len(parts)==2 else None
+        except ValueError:abort(400)
+    if scope not in ('all','artist','album') or (scope=='all' and scope_id is not None):abort(400)
+    conn=get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        data=build_local_tournament_stats(conn,scope,scope_id,request.args.get('page',1,type=int))
+    finally:conn.close()
+    return render_template('tournament_local_stats.html',**data)
+
+
+def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
+    """Raw local results: only finished brackets reveal participant comparisons.
+    Scope filters apply before every aggregate; archived unfinished Blind identities
+    stay hidden. Counts are observed results, not a new cross-library rating.
+    """
+    artists={r['id']:dict(r) for r in conn.execute('SELECT * FROM artists')}
+    albums={r['id']:dict(r) for r in conn.execute('SELECT * FROM albums')}
+    songs={r['id']:dict(r) for r in conn.execute('SELECT * FROM songs')}
+    links=defaultdict(set)
+    for r in conn.execute('SELECT song_id,artist_id FROM song_artists'):links[r['song_id']].add(r['artist_id'])
+    brackets=[dict(r) for r in conn.execute("SELECT * FROM tournaments WHERE scope_type IN ('artist','album') ORDER BY id DESC")]
+    choices=[]
+    for kind,rows in [('artist',artists),('album',albums)]:
+        for key in sorted({t['scope_id'] for t in brackets if t['scope_type']==kind},key=lambda key: str(rows.get(key,{}).get('name',rows.get(key,{}).get('title',''))).casefold()):
+            row=rows.get(key,{})
+            choices.append(dict(value=f'{kind}:{key}',name=row.get('name',row.get('title',f'Removed {kind} #{key}')),kind=kind))
+    if scope_id is not None and scope_id not in (artists if scope=='artist' else albums) and not any(t['scope_type']==scope and t['scope_id']==scope_id for t in brackets):abort(404)
+    brackets=[t for t in brackets if (scope=='all' or t['scope_type']==scope) and (scope_id is None or t['scope_id']==scope_id)]
+    by_id={t['id']:t for t in brackets}
+    matches=[dict(r) for r in conn.execute('SELECT * FROM tournament_matches') if r['tournament_id'] in by_id]
+    entries=[dict(r) for r in conn.execute('SELECT * FROM tournament_entries') if r['tournament_id'] in by_id]
+    finished={t['id'] for t in brackets if t['status']=='completed'}
+    decided=[m for m in matches if m['tournament_id'] in finished and recorded_result(m)]
+    for t in brackets:
+        if t['id'] not in finished:continue
+        size=t.get('size');final=size.bit_length()-1 if isinstance(size,int) and size>=2 else None
+        for m in decided:
+            if m['tournament_id']!=t['id']:continue
+            keys=('third_place_id','fourth_place_id') if m.get('match_type')=='third_place' else ('champion_id','runner_up_id') if m['round_number']==final else None
+            if keys:
+                for key,sid in zip(keys,(m['winner_id'],m['loser_id'])):
+                    if t.get(key) is None:t[key]=sid
+    complete_data=dict(songs=list(songs.values()),tournaments=[t for t in brackets if t['id'] in finished],tournament_entries=[e for e in entries if e['tournament_id'] in finished],tournament_matches=decided)
+    performance=song_performance(complete_data,competitive=False)
+    track_rows=[]
+    for sid,stats in performance.items():
+        played=stats['tournament_wins']+stats['tournament_losses']
+        if not played:continue
+        song=songs[sid];album=albums.get(song.get('album_id'),{})
+        track_rows.append(dict(song,**stats,name=song['title'],cover_url=album.get('cover_url',''),played=played,win_rate=percent(stats['tournament_wins'],played),title_rate=percent(stats['championships'],stats['tournament_appearances']),artist=', '.join(artists[a]['name'] for a in sorted(links[sid]) if a in artists)))
+    def rank(rows):
+        """Order observed titles, then win rate and match evidence; names break ties."""
+        return sorted(rows,key=lambda r:(-r['championships'],-(r['win_rate'] or 0),-r['played'],r['name'].casefold()))
+    track_rows=rank(track_rows)
+    groups=[]
+    for kind,rows in [('artist',artists),('album',albums)]:
+        grouped=[]
+        for key,identity in rows.items():
+            related=[s for s in track_rows if (key in links[s['id']] if kind=='artist' else s.get('album_id')==key)]
+            if not related:continue
+            wins=sum(s['tournament_wins'] for s in related);losses=sum(s['tournament_losses'] for s in related)
+            grouped.append(dict(id=key,name=identity.get('name',identity.get('title')),tracks=len(related),championships=sum(s['championships'] for s in related),podiums=sum(s['podiums'] for s in related),entries=sum(s['tournament_appearances'] for s in related),played=wins+losses,wins=wins,win_rate=percent(wins,wins+losses),points=sum(s['tournament_points'] for s in related),favourite=rank(related)[0]))
+        groups.append(dict(kind=kind,rows=rank(grouped)[:25]))
+    pairs={}
+    for m in decided:
+        a,b=sorted((m['winner_id'],m['loser_id']))
+        if a not in songs or b not in songs:continue
+        pair=pairs.setdefault((a,b),dict(a=songs[a],b=songs[b],a_wins=0,b_wins=0,total=0))
+        pair['a_wins' if m['winner_id']==a else 'b_wins']+=1;pair['total']+=1
+    head_to_head=sorted(pairs.values(),key=lambda r:(-r['total'],r['a']['title'].casefold(),r['b']['title'].casefold()))[:20]
+    decided_counts=Counter(m['tournament_id'] for m in matches if recorded_result(m))
+    for t in brackets:
+        identity=(artists if t['scope_type']=='artist' else albums).get(t['scope_id'],{})
+        t['name']=identity.get('name',identity.get('title','Removed collection'))
+        t['decided']=decided_counts[t['id']]
+        t['winner']=songs.get(t.get('champion_id')) if t['status']=='completed' else None
+    pages=max(1,ceil(len(brackets)/20));page=min(pages,max(1,page or 1))
+    return dict(scope=scope,scope_id=scope_id,view=f'{scope}:{scope_id}' if scope_id is not None else scope,choices=choices,
+                summary=dict(brackets=len(brackets),completed=len(finished),matches=len(decided),tracks=len(track_rows),points=sum(number(m.get('points_awarded')) or 0 for m in decided)),
+                tracks=track_rows[:50],groups=groups,pairs=head_to_head,archive=brackets[(page-1)*20:page*20],page=page,pages=pages)

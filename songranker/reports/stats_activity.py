@@ -33,7 +33,7 @@ def latest_vibe_saves(conn):
         WHERE v.status!='unmapped' GROUP BY v.song_id""")]
 
 
-def build_activity(conn, mode, now=None):
+def build_activity(conn, mode, now=None, tournament_ids=None):
     """Build fourteen days of mode activity, previous/current-week totals and graded
     success rates.
     """
@@ -78,6 +78,7 @@ def build_activity(conn, mode, now=None):
             add(row['completed_at'],'recognition',sum(v==1 for v in values) if graded else 0,len(values) if graded else 0)
     if mode in ('global','tournament'):
         for row in rows('tournaments'):
+            if tournament_ids is not None and row['id'] not in tournament_ids:continue
             if row.get('status')=='completed':
                 add(row.get('completed_at') or row.get('timestamp') or row.get('created_at'),'tournament')
     if mode in ('global','guesser'):
@@ -123,11 +124,11 @@ def build_activity(conn, mode, now=None):
         legend=[dict(kind=k,label=COLORS[k],count=sum(b['count'] for d in result for b in d['bars'] if b['kind']==k)) for k in COLORS if k in kinds])
 
 
-def attach_reports(conn, data, mode, now=None):
+def attach_reports(conn, data, mode, now=None, tournament_ids=None):
     """Attach shared activity charts and effective tournament Elo history to a mode
     report.
     """
-    data['pulse_data']=build_activity(conn, mode, now=now)
+    data['pulse_data']=build_activity(conn, mode, now=now, tournament_ids=tournament_ids)
     if mode=='tournament':
         from songranker.catalog import source_sql
         rows=[dict(r) for r in conn.execute('SELECT * FROM '+source_sql(conn)+" WHERE origin='tournament'")]
@@ -137,4 +138,5 @@ def attach_reports(conn, data, mode, now=None):
         data['tournament_elo']['points_only'] = conn.execute("""SELECT COUNT(*) FROM tournament_matches m JOIN tournaments t ON t.id=m.tournament_id
             WHERE t.scope_type IN ('artist','album') AND m.round_number=1 AND m.match_type='bracket'
             AND m.status='completed' AND m.winner_id IS NOT NULL AND m.loser_id IS NOT NULL AND m.winner_id!=m.loser_id""").fetchone()[0]
+    if mode=='tournament' and tournament_ids is not None:data['tournament_elo']['points_only']=0
     return data

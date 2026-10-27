@@ -624,7 +624,7 @@
       )
       .slice(0, HOME_BANNER_LIMIT);
     const champions = DB.tournaments
-      .filter((t) => t.status === "completed" && byId(songs, t.champion_id))
+      .filter((t) => t.status === "completed" && !["artist","album"].includes(t.scope_type) && byId(songs, t.champion_id))
       .sort(
         (a, b) =>
           String(b.completed_at || b.created_at || "").localeCompare(
@@ -633,7 +633,7 @@
       )
       .slice(0, HOME_BANNER_LIMIT);
     const recognition = homeRecognitionTotals(songs),
-      completed = DB.tournaments.filter((t) => t.status === "completed"),
+      completed = DB.tournaments.filter((t) => t.status === "completed" && !["artist","album"].includes(t.scope_type)),
       entered = homeTournamentEntries(completed, DB.tournament_entries);
     const triviaSummary = `<section class="panel recognition-panel stats-glow glow-recognition" data-home-mode="recognition"><div class="section-head"><h2 class="recognition">Trivia Records</h2><a class="recognition" href="/trivia_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="recognition">${Number(DB.challenge_records?.trivia?.best_score || 0).toFixed(2)}</b><small>Challenge best score</small></div><div><b class="recognition">${Number(DB.challenge_records?.trivia?.best_streak || 0)} 🔥</b><small>Challenge best streak</small></div><div><b class="recognition">${songs.filter((s) => s.attempts > 0).length}</b><small>Tested tracks</small></div></div>${homeRateBar("recognition", "Fields correct", recognition.correct, recognition.available, "No tested fields yet", "fields")}</section>`;
     const tournamentSummary = `<section class="panel tournament-panel stats-glow glow-tournament" data-home-mode="tournament"><div class="section-head"><h2 class="tournament">Tournament Records</h2><a class="tournament" href="/tournament_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="tournament">${completed.length}</b><small>Completed</small></div><div><b class="tournament">${entered ?? "—"}</b><small title="Entry slots in completed brackets; repeat appearances count each time">Tracks entered</small></div><div><b class="tournament">${Number(songs.reduce((n, s) => n + Number(s.podiums || 0), 0).toFixed(2))}</b><small>Podium credit</small></div></div>${homeBracketBar(completed)}</section>`;

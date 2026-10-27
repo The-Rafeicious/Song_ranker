@@ -118,9 +118,9 @@ def build_global_stats(conn):
     recognition.update(best_score=globals_.get('trivia_high_score',0),best_streak=globals_.get('trivia_high_streak',0))
     from songranker.modes.challenges import records as challenge_records
     recognition['challenge']=challenge_records(conn,'trivia')
-    brackets=[dict(r) for r in conn.execute('SELECT * FROM tournaments')]
+    brackets=[dict(r) for r in conn.execute("SELECT * FROM tournaments WHERE scope_type IN ('global','tag')")]
     finished=sorted((t for t in brackets if t['status']=='completed'),key=lambda t:(timestamp(t['completed_at'] or t['created_at']),t['id']),reverse=True)
-    bracket_matches=[dict(r) for r in conn.execute("SELECT * FROM tournament_matches WHERE status='completed'")]
+    bracket_matches=[dict(r) for r in conn.execute("SELECT m.* FROM tournament_matches m JOIN tournaments t ON t.id=m.tournament_id WHERE m.status='completed' AND t.scope_type IN ('global','tag')")]
     def saved_song(sid):
         """Resolve an activity song identity with a safe placeholder for removed
         tracks.

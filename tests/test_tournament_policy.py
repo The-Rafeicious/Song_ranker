@@ -80,9 +80,11 @@ class TournamentPolicyTests(unittest.TestCase):
         data=build_tournament_stats(self.conn,selected=1)
         self.assertEqual(len(data['archive'][0]['map_data']['entries']),8)
         self.assertEqual(data['coverage']['single'],8)
-        rendered=self.client.get('/tournament_stats?tournament=1')
+        redirected=self.client.get('/tournament_stats?tournament=1')
+        self.assertEqual(redirected.status_code,302)
+        rendered=self.client.get('/tournament_stats')
         self.assertEqual(rendered.status_code,200)
-        for text in ['Explore bracket','Entry depth','Points-only matches','ts-entity-artist']:
+        for text in ['Entry depth','ts-entity-artist']:
             self.assertIn(text,rendered.text)
         self.assertNotIn('data-tournament-map',rendered.text)
         self.assertNotIn('Competition records use scope credit',rendered.text)
@@ -94,6 +96,41 @@ class TournamentPolicyTests(unittest.TestCase):
         self.assertIn('Tournament stats',bracket.text)
         self.assertNotIn('Recent first-round Elo history',rendered.text)
         self.assertNotIn('class="ts-bracket-champion"',rendered.text)
+        local=self.client.get('/tournament_local_stats?scope=artist&scope_id=1')
+        self.assertEqual(local.status_code,200)
+        self.assertIn('Explore bracket',local.text)
+        self.assertIn('Head-to-head',local.text)
         self.assertEqual(capture(self.conn),before)
+
+    def test_local_comparisons_filter_finished_results_and_keep_raw_counts(self):
+        data=self.generate('artist');second=self.generate('artist');tid=data['tournament_id']
+        for bracket_id in (tid,second['tournament_id']):
+            self.conn.execute("UPDATE tournament_matches SET status='completed',winner_id=song1_id,loser_id=song2_id,points_awarded=1 WHERE tournament_id=?",(bracket_id,))
+            self.conn.execute("UPDATE tournaments SET status='completed',champion_id=1 WHERE id=?",(bracket_id,))
+        self.conn.commit()
+        from songranker.modes.tournament import build_local_tournament_stats, build_tournament_stats
+        local=build_local_tournament_stats(self.conn,'artist',1)
+        self.assertEqual(local['summary']['completed'],2)
+        self.assertEqual(local['summary']['matches'],8)
+        self.assertEqual(len(local['tracks']),8)
+        self.assertEqual(sum(r['tournament_wins'] for r in local['tracks']),8)
+        self.assertEqual(sum(p['total'] for p in local['pairs']),8)
+        self.assertTrue(all(s['tournament_appearances']==2 for s in local['tracks']))
+        self.assertEqual(local['groups'][0]['rows'][0]['championships'],2)
+        self.assertEqual(build_local_tournament_stats(self.conn,'album',1)['summary']['matches'],0)
+        self.assertEqual(build_tournament_stats(self.conn,competition_only=True)['summary']['brackets'],0)
+        self.assertEqual(self.client.get('/tournament_local_stats?view=artist:1').status_code,200)
+        self.assertEqual(self.client.get('/tournament_local_stats?view=artist:invalid').status_code,400)
+        self.assertEqual(self.client.get('/tournament_local_stats?scope=artist&scope_id=99999').status_code,404)
+
+    def test_unfinished_blind_comparisons_hide_identities(self):
+        data=self.generate('artist');tid=data['tournament_id']
+        self.conn.execute('UPDATE tournaments SET is_blind=1 WHERE id=?',(tid,))
+        self.conn.execute("UPDATE tournament_matches SET status='completed',winner_id=song1_id,loser_id=song2_id WHERE tournament_id=?",(tid,));self.conn.commit()
+        from songranker.modes.tournament import build_local_tournament_stats
+        local=build_local_tournament_stats(self.conn)
+        self.assertEqual(local['tracks'],[])
+        self.assertEqual(local['pairs'],[])
+        self.assertIsNone(local['archive'][0]['winner'])
 
 if __name__=='__main__':unittest.main()

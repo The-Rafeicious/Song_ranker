@@ -16,13 +16,16 @@ class TournamentCreditTests(unittest.TestCase):
         for repeats in (1,10,1000):
             data=self.data(repeats=repeats);weights=tournament_weights(data)
             for scope,cap in [('artist',.02),('album',.005)]:
-                self.assertAlmostEqual(sum(weights[1,t['id']] for t in data['tournaments'] if t['scope_type']==scope),min(repeats*cap,1.5*cap))
-            stats=song_performance(data)[1];expected=1.5+min(repeats,1.5)*.025
+                self.assertAlmostEqual(sum(weights[1,t['id']] for t in data['tournaments'] if t['scope_type']==scope),0)
+            stats=song_performance(data)[1];expected=1.5
             self.assertAlmostEqual(stats['championships'],expected)
             self.assertAlmostEqual(stats['tournament_points'],7*expected)
             self.assertAlmostEqual(stats['tournament_wins'],expected)
             self.assertAlmostEqual(stats['tournament_appearances'],expected)
             self.assertEqual(song_performance(data,competitive=False)[1]['championships'],2+2*repeats)
+
+    def test_local_results_leave_all_overall_features_identical(self):
+        self.assertEqual(features(self.data(repeats=0)),features(self.data(repeats=1000)))
 
     def test_local_only_has_no_competition_evidence(self):
         data=self.data(broad=False)
@@ -33,16 +36,16 @@ class TournamentCreditTests(unittest.TestCase):
         data=self.data(repeats=1000)
         for s in data['songs']:s.update(tournament_wins=999999,tournament_losses=0,tournament_appearances=999999)
         facts=features(data)[1]
-        self.assertAlmostEqual(facts['tournament_points']['n'],1.5375)
-        self.assertAlmostEqual(facts['mode_appearances']['tournament'],1.5375)
-        self.assertAlmostEqual(facts['tournament_wins']['n'],1.5375)
+        self.assertAlmostEqual(facts['tournament_points']['n'],1.5)
+        self.assertAlmostEqual(facts['mode_appearances']['tournament'],1.5)
+        self.assertAlmostEqual(facts['tournament_wins']['n'],1.5)
         local=features(self.data(broad=False))[1]
         self.assertIsNone(local['tournament_podium']['value'])
         self.assertEqual(local['mode_appearances']['tournament'],0)
 
     def test_scope_order_and_unknown_legacy_policy(self):
         data=self.data(repeats=1);weights=tournament_weights(data)
-        self.assertEqual([weights[1,i] for i in range(1,5)],[1,.5,.02,.005])
+        self.assertEqual([weights[1,i] for i in range(1,5)],[1,.5,0,0])
         del data['tournaments'][0]['scope_type']
         data['tournaments'][1]['scope_type']='unknown'
         self.assertEqual(tournament_weights(data)[1,1],1)

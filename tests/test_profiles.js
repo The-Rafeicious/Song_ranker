@@ -45,7 +45,7 @@ async function harness(page,width=1280,size=75,eligible=true){
   const h=await harness(type,width),{d}=h;
   check(d.body.classList.contains('profile-page'),type+' profile class '+width);
   check(JSON.stringify([...d.querySelectorAll('[data-profile-panel]')].map(n=>n.dataset.profilePanel))===JSON.stringify(expected),type+' uses the five shared records');
-  check(d.querySelectorAll('.song-sections details').length===(['artist','album'].includes(type)?1:0),type+' only local bracket history uses a disclosure');
+  check(d.querySelectorAll('.song-sections details').length===0,type+' local summary has no nested bracket list');
   check(d.querySelectorAll('#overall-profile details').length===1,type+' keeps Overall dropdown');
   check(!d.querySelector('#overall-profile .overall-balance-copy,#overall-profile .overall-mode-context'),type+' removes Overall explanation');
   check(d.querySelectorAll('#recognition .profile-inset').length===3,type+' fields shown inline');
@@ -53,7 +53,7 @@ async function harness(page,width=1280,size=75,eligible=true){
   check(!d.querySelector('.profile-listening,.profile-extra,.profile-bracket'),type+' has no extra diagnostic/nested panels');
   check(d.querySelectorAll('[data-profile-panel] > .joined-metrics').length===5,type+' summaries share one structure');
   check(h.errors.length===0,type+' loads without errors');
-  if(['artist','album'].includes(type)){check(d.querySelector('a[href="/tournament/'+(type==='artist'?2:3)+'/bracket"]'),type+' has its own selective replay link');check(d.querySelector('#tournament').nextElementSibling.id==='local-tournaments',type+' local tournaments have a separate box below the main record');check(d.querySelector('#local-tournaments .joined-metrics').textContent.includes('Tracks played'),type+' local box shows additional summary statistics');check(!d.querySelector('#tournament').textContent.includes('Scope-weighted competition results'),type+' omits the repeated policy note');}
+  if(['artist','album'].includes(type)){check(d.querySelector('a[href="/tournament/'+(type==='artist'?2:3)+'/bracket"]'),type+' has its own selective replay link');check(d.querySelector('#tournament').nextElementSibling.id==='local-tournaments',type+' local tournaments have a separate box below the main record');check(d.querySelector('#local-tournaments .joined-metrics').textContent.includes('Completed brackets'),type+' local box shows compact summary statistics');check(d.querySelector('#local-tournaments a[href^="/tournament_local_stats?scope="]'),type+' links to filtered local comparisons');check(!d.querySelector('#tournament').textContent.includes('Scope-weighted competition results'),type+' omits the repeated policy note');}
   if(type!=='song'){
    check(d.querySelectorAll('.profile-track-row').length===30,type+' starts with thirty songs');
    const audio=d.querySelector('.profile-track-row audio'),row=audio.parentElement;
