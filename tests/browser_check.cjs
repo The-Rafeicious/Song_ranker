@@ -401,7 +401,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
    await page.goto(base+path);await page.locator('.matchup .match-cover .cover-button').first().waitFor();
    const covers=page.locator('.matchup .match-cover');
    assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::before').animationName),'none','Idle cover stays soft');
-   await covers.first().evaluate(e=>{const a=e.querySelector('audio');a.dataset.previewWanted='true';a.dispatchEvent(new Event('play'));a.dispatchEvent(new Event('playing'));});
+   await covers.first().locator('.cover-button').click();await covers.first().locator('.cover-button[data-playing="true"][data-preview-state="playing"]').waitFor();
    assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::before').animationName),'cover-glow-orbit',mode+' playing rim orbits');
    assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::after').animationName),'cover-glow-wave',mode+' playing cover emits a wave');
    assert.equal(await covers.nth(1).evaluate(e=>getComputedStyle(e,'::before').animationName),'none','Other cover stays soft');
@@ -409,7 +409,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
    for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'cover-glow-'+mode,folder);await page.screenshot({path:folder+'/cover-glow-'+mode+'-'+width+'.png',fullPage:true});}
    await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::before').animationName),'none','Reduced motion keeps a stationary rim');assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::after').animationName),'none','Reduced motion suppresses the wave');await page.emulateMedia({reducedMotion:'no-preference'});
    await covers.first().evaluate(e=>e.querySelector('audio').dispatchEvent(new Event('waiting')));assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::before').animationName),'none','Buffering stops the orbit');
-   await covers.first().evaluate(e=>{const a=e.querySelector('audio');a.dispatchEvent(new Event('playing'));a.dispatchEvent(new Event('pause'));});assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::after').animationName),'none','Pause stops the wave');
+   await covers.first().evaluate(e=>e.querySelector('audio').pause());await covers.first().locator('.cover-button[data-playing="false"]').waitFor();assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::after').animationName),'none','Pause stops the wave');
   }
 
   await page.locator('[data-audio="bracket-audio-0"]').click();await page.locator('#bracket-audio-0[data-loudness-balanced="true"]').waitFor({state:'attached'});
@@ -424,13 +424,16 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.equal(await page.locator('.ts-blind-and-non-blind > span').first().evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(85, 214, 194)');
   await page.locator('#tournament-77 a[href="/tournament/77/bracket"]').click();await page.locator('#tournament-77 .bracket-node').first().waitFor();
   assert.equal(await page.locator('#tournament-77 .bracket-node').count(),8);
+  assert.equal(await page.locator('[data-map-round],[data-map-half]').count(),0,'Stage selectors are removed');
   assert.ok(await page.locator('#tournament-77 .bracket-track').first().evaluate(e=>e.getBoundingClientRect().height>=44),'Bracket tracks keep touch-sized targets');
   const pan=page.locator('#tournament-77 .bracket-viewport');await pan.evaluate(e=>{e.style.width='min(100%, 600px)';e.style.height='300px';e.scrollLeft=100;e.scrollTop=0;});const panBox=await pan.boundingBox();const beforePan=await pan.evaluate(e=>({x:e.scrollLeft,y:e.scrollTop}));
   await page.mouse.move(panBox.x+180,panBox.y+180);await page.mouse.down();await page.mouse.move(panBox.x+100,panBox.y+120,{steps:8});await page.mouse.up();
   const afterPan=await pan.evaluate(e=>({x:e.scrollLeft,y:e.scrollTop}));assert.ok(afterPan.x>beforePan.x&&afterPan.y>beforePan.y,'Mouse drag pans both axes');assert.equal(await page.locator('#tournament-77 .is-route').count(),0,'Dragging does not select a track');await pan.evaluate(e=>{e.style.removeProperty('width');e.style.removeProperty('height');});
   await page.locator('#tournament-77 [data-map-track="20"]').first().click();assert.ok((await page.locator('#tournament-77 .bracket-inspector').textContent()).includes('Bracket track 20'));
   assert.equal(await page.locator('#tournament-77 .is-route').count(),3);
-  for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'tournament-map',folder);await page.locator('#tournament-77').screenshot({path:folder+'/tournament-map-'+width+'.png'})}
+  assert.ok(await page.locator('.bracket-inspector').evaluate(e=>e.parentElement.classList.contains('bracket-node')),'Details drop from the chosen match');
+  await page.keyboard.press('Escape');assert.equal(await page.locator('.bracket-inspector').count(),0);await page.locator('#tournament-77 [data-map-track="20"]').first().click();
+  for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'tournament-map',folder);const frame=await page.locator('.bracket-viewport').boundingBox();assert.ok(Math.abs(frame.x)<1&&Math.abs(frame.width-width)<1,'Bracket spans the full page width');assert.equal(await page.locator('.bracket-viewport').evaluate(e=>getComputedStyle(e).borderTopWidth),'0px');await page.screenshot({path:folder+'/tournament-map-'+width+'.png',fullPage:true})}
   await page.goto(base+'/tournament?tournament=77');await page.locator('[data-tournament-vote="0"]').waitFor();await page.locator('[data-tournament-vote="0"]').click();
   await page.locator('#tournament-replay .bracket-node').first().waitFor({timeout:30000});
   assert.equal(await page.locator('.winner-podium').count(),0,'Bracket replay precedes podium');

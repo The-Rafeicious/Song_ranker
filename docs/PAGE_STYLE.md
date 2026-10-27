@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.5.5 contract. Change the owning shared rule before adding a
+This is the current V5.5.6 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -247,9 +247,9 @@ segments use entity colours. Captions are quiet. First-round policy and entry-de
 boxes add context; the shared activity chart owns the seven-day match figures.
 Use the archive disclosure for each bracket, without a second recent-Elo dropdown.
 
-Tournament maps are connected, readable match cards in a bounded two-dimensional
-pan viewport, with direct round buttons, keyboard track selection and route
-highlighting. This diagram scroll does not expand the document width. The same
+Tournament maps fill the page between the navigation banner and footer, without
+an inset frame or stage selectors. Mouse/pen drag, native touch scrolling and
+keyboard track selection remain available; diagram panning never expands the document width. The same
 component serves saved progress and the result replay. Winners advance in green,
 eliminations carry an explicit cross/strike-through, and a selected route is pink.
 Preserve Blind identity hiding, Skip, Sound on/off and reduced-motion support.
@@ -259,7 +259,7 @@ Album edit uses the existing checkbox-label style for **Exclude from Album Shelv
 with a short explanation that album identity is retained. The album table exposes
 Included/Excluded through its shared column/filter engine; use no separate editor.
 
-Tournament archive entries link to `/tournament/<id>/bracket`, a dedicated wide workspace. Mirrored halves progress inward to the larger central final, with the smaller third-place match below. The same geometry serves the pre-podium replay at 1.6 seconds per result. Track selection exposes route and per-match evidence. Keep panning inside the viewport.
+Tournament archive entries link to `/tournament/<id>/bracket`, a dedicated wide workspace. Mirrored halves progress inward to the larger central final, with the smaller third-place match below. The same geometry serves the pre-podium replay at 3.5 seconds per result. Track selection highlights the route and drops a closeable details panel directly below that match. Round borders/backgrounds step from darker tournament pink at the outside to brighter shades and a stronger glow at the central final. Escape closes the details and restores track focus.
 
 Shelves profile panels require at least one currently eligible track. An excluded album hides whole saved rounds containing it from public performance reports; Dev retains raw saved facts. New Trivia rounds skip its album-name field, preserving frozen existing rounds.
 

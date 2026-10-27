@@ -3,8 +3,7 @@
 {% block page_kind %}tournament_bracket{% endblock %}
 {% block content %}
 <div class="tournament-bracket-page" id="tournament-{{bracket.id}}">
-  <div class="page-head"><h1 class="tournament">Bracket #{{bracket.id}}</h1><a class="btn tournament" href="{{url_for('tournament_stats_page',tournament=bracket.id)}}#tournament-{{bracket.id}}">← Tournament stats</a><a class="btn tournament" href="{{url_for('tournament',tournament=bracket.id)}}">{{'View podium' if bracket.finished else 'Continue tournament'}} →</a></div>
-  <p class="mode-stats-caption">{{bracket.size}} tracks · {{bracket.visibility}} · {{bracket.decided}} matches decided. Select a track for its route and match details.</p>
+  <div class="bracket-page-header"><h1 class="tournament">Bracket #{{bracket.id}}</h1><div class="bracket-page-actions"><a class="btn tournament" href="{{url_for('tournament_stats_page',tournament=bracket.id)}}#tournament-{{bracket.id}}" aria-label="Back to Tournament stats">← Stats</a><a class="btn tournament" href="{{url_for('tournament',tournament=bracket.id)}}">{{'Podium' if bracket.finished else 'Continue'}} →</a></div><span class="bracket-page-meta">{{bracket.size}} tracks · {{bracket.visibility}} · {{bracket.decided}} decided</span></div>
   <script type="application/json" id="bracket-data-{{bracket.id}}">{{bracket.map_data|tojson}}</script>
   <div class="tournament-map" data-tournament-map="bracket-data-{{bracket.id}}"></div>
   <noscript>{% for round in bracket.rounds %}<section><h2>{{round.label}}</h2><ul>{% for match in round.matches %}<li>{% if bracket.is_blind and not bracket.finished and match.status!='completed' %}Hidden tracks{% else %}{{match.left.title}} / {{match.right.title}}{% endif %} · {{match.status}}</li>{% endfor %}</ul></section>{% endfor %}</noscript>

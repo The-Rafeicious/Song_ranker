@@ -271,6 +271,9 @@ def run_vibe():
         def enable_tournament_map():
             """Seed a points-only bracket awaiting its final in disposable storage."""
             with sqlite3.connect(os.environ["SONG_RANKER_DB"]) as conn:
+                # Real cover-state checks need playable media even for the
+                # intentionally unpreviewed catalogue rows seeded above.
+                conn.execute("UPDATE songs SET audio_url='/tag-test-audio.wav?glow=' || id WHERE TRIM(COALESCE(audio_url,''))=''")
                 for sid in range(20, 28):
                     conn.execute("INSERT INTO songs(id,title,audio_url) VALUES(?,?,?)", (sid, "Bracket track " + str(sid), "/tag-test-audio.wav?tournament=" + str(sid)))
                     conn.execute("INSERT INTO song_artists VALUES(?,1)", (sid,))

@@ -1830,8 +1830,8 @@ Disposable served-page and Chromium integration fixtures.
 | [run_vibe.tag_audio](../tools/browser_check.py#L239) | `` | Serve silence or bounded test tones without Apple transport. |
 | [run_vibe.enable_voting_report](../tools/browser_check.py#L257) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
 | [run_vibe.enable_tournament_map](../tools/browser_check.py#L271) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
-| [run_vibe.enable_discs](../tools/browser_check.py#L291) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
-| [main](../tools/browser_check.py#L320) | `` | Run the requested disposable integration fixture. |
+| [run_vibe.enable_discs](../tools/browser_check.py#L294) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
+| [main](../tools/browser_check.py#L323) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 

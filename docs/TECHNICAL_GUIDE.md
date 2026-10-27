@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.5.5 · competition generation 3 · schema 22**
+**Application V5.5.6 · competition generation 3 · schema 22**
 
-Current implementation reference. `APP_VERSION` is `5.5.5`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.5.6`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -857,9 +857,7 @@ subsequent starts find nothing to retire. The original archive remains available
 for whole-database recovery with the earlier source.
 
 `TournamentBracket` in `gameplay.js` renders the same connected tree for saved
-stats brackets, live progress and the post-completion replay. Round buttons pan
-inside its bounded viewport; track selection highlights a route and shows its
-saved match/win context. A server-rendered match fallback remains available without
+stats brackets, live progress and the post-completion replay. The borderless workspace fills the page between banner and footer; drag/touch/keyboard navigation replaces stage selectors. Track selection highlights a route and opens saved match/win context directly below its match. A server-rendered match fallback remains available without
 JavaScript. Unplayed Blind identities stay hidden in the interactive map.
 
 Completion saves first, then reveals one side's advancing/eliminated tracks, the
@@ -867,9 +865,7 @@ other side, bronze and final, before the podium. Skip completes immediately;
 reduced-motion mode omits staged motion and replay music. Opening a saved completed
 bracket still offers the podium and an explicit replay action.
 
-The soundtrack pool is the eight quarter-final entrants (semi-finals contain four
-songs), restricted to the currently filling side. One cancellable audio element
-plays at a time, looping a six-second sample using the shared preview coordinator.
+The soundtrack pool is the four semi-finalists, restricted to the currently filling side. The shared preview coordinator bounds playback to the incoming clip and one fading tail, looping six-second samples.
 No batch preloading or next-track priming occurs. Existing browser/server preview
 caches are reused when warm; missing clips load only on selection and existing
 rate/cooldown limits remain authoritative. Failed clips are skipped and autoplay
@@ -878,8 +874,7 @@ retire the replay player; its Sound off choice carries into the podium.
 
 Tournament Stats retains section order, uses semantic visibility/entity colours,
 adds points-only first-round context and entry-depth metrics, and drops the duplicate
-recent-Elo-history disclosure and repeated seven-day activity figures. Archive
-bracket disclosures remain useful navigation and mount their map lazily.
+recent-Elo-history disclosure and repeated seven-day activity figures. Archive bracket disclosures link to the dedicated bracket workspace.
 
 
 ### Album Shelves exclusion (V5.5.5 / schema 22)
@@ -905,7 +900,7 @@ this flag itself does not merge or remove data or compress the database.
 
 Completed Shelves rounds containing any currently excluded saved album are hidden as whole exercises in all public summaries, trends, history, rankings and Overall evidence. Including that album again restores the unchanged saved facts. Keeping whole-round denominators avoids turning part of a saved round into a new perfect result. Dev inspection/export still retains every record. Profile Shelves panels require at least one current eligible track. Overall calibration topology includes the album flag. Read-only pre-22 archive grading assumes included albums.
 
-`/tournament/<int:tournament_id>/bracket` is a shareable read-only workspace, linked from Tournament Stats and live play. The shared map mirrors the two halves into a central final, with third place below. Left/right and round controls pan internally; selecting a track inspects its route, opponents, results and points. Replays hold each result for 1.6 seconds. Existing API endpoints and saved tournament rules are unchanged.
+`/tournament/<int:tournament_id>/bracket` is a shareable read-only workspace, linked from Tournament Stats and live play. The shared map mirrors the two halves into a central final, with third place below. Drag, touch and keyboard navigation explore the full-width surface. Selecting a track opens an attached details panel with its route, opponents, results and points; Close or Escape dismisses it. Round shades brighten and gain glow towards the final. Replays hold each result for 3.5 seconds. Existing API endpoints and saved tournament rules are unchanged.
 
 ### Preview loudness balancing (V5.5.5)
 
@@ -914,3 +909,7 @@ The shared player defaults **Balance preview loudness** on, beside the site volu
 A gated RMS estimate uses the upper audible percentile of up to six seconds, starts after ten audible samples and targets 0.1 RMS (approximately -20 dBFS, not a LUFS measurement). Silence below 0.003 is ignored. Gain is limited to 0.35–2 (roughly -9 to +6 dB), moves smoothly with a 1.5-second time constant, and uses gentle peak protection. It reduces common preview level differences rather than promising identical perceived loudness. The master volume and fades are applied once after the balancing stage. Off returns normalization and compression to unity.
 
 At most 64 source-revision/gain pairs persist in tab session storage, independent of page tokens; changing a preview URL/revision learns afresh. Metering stops when idle. Disposed players disconnect their audio nodes, and source replacement clones previously routed elements so external replacements remain audible.
+
+### Full-page bracket replay (V5.5.6)
+
+The shared map holds each result for 3.5 seconds and fills the available space between the banner and footer in both the saved workspace and pre-podium replay. The viewport has no inset border or rounded box. Resize observation fits its height to the actual header/footer; diagram overflow stays inside the drag surface. Stage selector controls are removed. Match details are attached to their selected node, support Close/Escape with focus restoration, and keep content scrollable on short screens. Round-local CSS variables produce darker outer rounds and brighter central rounds with increasing glow; winner/elimination markers and Blind privacy remain independent.

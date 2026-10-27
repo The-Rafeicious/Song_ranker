@@ -55,3 +55,9 @@ Standard Vote, Tournament and Elo Guesser cover artwork gains a soft mode-colour
 Automatic preview loudness balancing is on by default, with an on/off checkbox beside the site volume slider. The shared player measures audible levels as a preview plays, gently boosts quieter clips and reduces louder clips within conservative limits. Site volume remains the overall level; existing fades and loops remain independent.
 
 Learning uses the playing audio stream, so it adds no downloads or database storage. A small tab cache remembers levels by source revision. Direct external previews and browsers unable to use Web Audio keep normal playback. Very quiet recordings and different mixes may still sound different; this is practical balancing rather than a full loudness remaster.
+
+## V5.5.6
+
+Tournament replay holds each result for 3.5 seconds. The bracket fills the page between the navigation banner and footer, with no inset frame or stage selectors. Drag, touch scrolling and keyboard selection remain available.
+
+Selecting a track drops its details directly below that match; Close or Escape dismisses the panel. Outer rounds use darker tournament pink, stepping into brighter shades and a stronger glow towards the central final. Existing results, Blind privacy and the four-track audio handoff are preserved.
