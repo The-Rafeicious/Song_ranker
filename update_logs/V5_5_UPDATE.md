@@ -65,3 +65,9 @@ Selecting a track drops its details directly below that match; Close or Escape d
 ## V5.5.7
 
 Active tournament matches no longer show the out-of-place Explore bracket link during voting or answer reveals. Saved brackets remain accessible from Tournament Stats, and the completed tournament still shows its bracket replay before the podium.
+
+## V5.5.8
+
+Roll back automatic preview loudness balancing and its checkbox. Native recording levels, site volume and smooth crossfades remain.
+
+Tournament replay completes each quarter in order, following its semi-finalist's song without restarting on each result. Semi-finals, third place and the final play their winners. Full previews loop naturally instead of jumping back every six seconds; song changes use the shared ready-only crossfade. Missing clips stay silent rather than substituting unrelated tracks.

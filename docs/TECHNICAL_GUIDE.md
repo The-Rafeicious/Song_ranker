@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.5.7 · competition generation 3 · schema 22**
+**Application V5.5.8 · competition generation 3 · schema 22**
 
-Current implementation reference. `APP_VERSION` is `5.5.7`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.5.8`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -900,15 +900,13 @@ this flag itself does not merge or remove data or compress the database.
 
 Completed Shelves rounds containing any currently excluded saved album are hidden as whole exercises in all public summaries, trends, history, rankings and Overall evidence. Including that album again restores the unchanged saved facts. Keeping whole-round denominators avoids turning part of a saved round into a new perfect result. Dev inspection/export still retains every record. Profile Shelves panels require at least one current eligible track. Overall calibration topology includes the album flag. Read-only pre-22 archive grading assumes included albums.
 
-`/tournament/<int:tournament_id>/bracket` is a shareable read-only workspace, linked from Tournament Stats and live play. The shared map mirrors the two halves into a central final, with third place below. Drag, touch and keyboard navigation explore the full-width surface. Selecting a track opens an attached details panel with its route, opponents, results and points; Close or Escape dismisses it. Round shades brighten and gain glow towards the final. Replays hold each result for 3.5 seconds. Existing API endpoints and saved tournament rules are unchanged.
+`/tournament/<int:tournament_id>/bracket` is a shareable read-only workspace, linked from Tournament Stats. The shared map mirrors the two halves into a central final, with third place below. Drag, touch and keyboard navigation explore the full-width surface. Selecting a track opens an attached details panel with its route, opponents, results and points; Close or Escape dismisses it. Round shades brighten and gain glow towards the final. Replays hold each result for 3.5 seconds. Existing API endpoints and saved tournament rules are unchanged.
 
-### Preview loudness balancing (V5.5.5)
+### Preview audio and tournament cues (V5.5.8)
 
-The shared player defaults **Balance preview loudness** on, beside the site volume slider. Web Audio meters already-playing same-origin previews before normalization, crossfade and master volume. No extra media requests, file decoding, audio copies or database columns are needed. Direct cross-origin URLs retain native playback to avoid CORS-silenced media; unsupported or blocked Web Audio contexts also retain native playback.
+The V5.5.5 loudness balancing has been removed. Previews retain their native recording level, site volume and shared crossfades; there is no Web Audio normalization, compression or calibration cache in the playback path.
 
-A gated RMS estimate uses the upper audible percentile of up to six seconds, starts after ten audible samples and targets 0.1 RMS (approximately -20 dBFS, not a LUFS measurement). Silence below 0.003 is ignored. Gain is limited to 0.35–2 (roughly -9 to +6 dB), moves smoothly with a 1.5-second time constant, and uses gentle peak protection. It reduces common preview level differences rather than promising identical perceived loudness. The master volume and fades are applied once after the balancing stage. Off returns normalization and compression to unity.
-
-At most 64 source-revision/gain pairs persist in tab session storage, independent of page tokens; changing a preview URL/revision learns afresh. Metering stops when idle. Disposed players disconnect their audio nodes, and source replacement clones previously routed elements so external replacements remain audible.
+Tournament replay walks each quarter's feeder matches in order before its semi-final, then the other half, third place and final. A quarter uses its qualifying semi-finalist's preview, continuously across results. Semi-finals, third place and final play their winner. Identical consecutive cues keep the same audio element and playback position. Whole previews loop natively rather than seeking every six seconds. The result hold begins after the cue is ready, so slow loading cannot race into the next song. A different cue retains one outgoing clip until the incoming clip is ready for the shared 1.5-second crossfade. Missing or failed previews leave that section silent rather than selecting an unrelated song. Mute/unmute uses the current match, and skip/cancellation still silence all clips.
 
 ### Full-page bracket replay (V5.5.6)
 
