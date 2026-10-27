@@ -415,7 +415,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
    const card=page.locator('#local-tournaments');assert.equal(await card.locator('details').count(),0,'Local card stays compact');
    for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'local-brackets-'+kind,folder);await card.screenshot({path:folder+'/local-brackets-'+kind+'-'+width+'.png'});}
    await card.locator('a[href^="/tournament_local_stats"]').click();await page.locator('.local-tournament-stats').waitFor();assert.ok(page.url().includes('scope_id=1'));
-   await page.locator('#local-bracket-'+id+' a').waitFor();
+   await page.locator('#local-bracket-'+id+' a[href="/tournament/'+id+'/bracket"]').waitFor();
   }
   await page.goto(base+'/tournament_local_stats');await page.locator('#local-track-comparisons .mode-stats-row').first().waitFor();
   for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'local-tournament-stats',folder);await page.screenshot({path:folder+'/local-tournament-stats-'+width+'.png',fullPage:true});}
