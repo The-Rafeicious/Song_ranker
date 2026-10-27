@@ -887,6 +887,7 @@
   window.PreviewPlayback = {
     source,
     balanceTarget,
+    balanceState(audio){const graph=loudnessGraphs.get(audio);return {enabled:balanceEnabled,context:loudnessContext?.state||'native',samples:graph?.samples.length||0,gain:graph?.normal.gain.value??1,target:learnedLevels.get(loudnessKey(audio))??null,rms:graph?.samples.at(-1)??null};},
     setBalance,
     balanceEnabled:()=>balanceEnabled,
     bind,
