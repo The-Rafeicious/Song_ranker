@@ -7,14 +7,14 @@ function fixture(size=8){
  while(ids.length>1){const next=[];for(let i=0;i<ids.length;i+=2){matches.push({id:mid++,round_number:r,match_number:i/2+1,song1_id:ids[i],song2_id:ids[i+1],winner_id:ids[i],loser_id:ids[i+1],status:'completed',match_type:'bracket',points_awarded:1});next.push(ids[i]);}ids=next;r++;}
  return {tournament:{id:1,size,status:'completed',is_blind:0},entries,matches};
 }
-function harness(reduced=false){
+function harness(reduced=false,playGate=null){
  const dom=new JSDOM('<body><div id="root"></div><div id="second"></div></body>',{url:'http://localhost/tournament',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document,timers=new Map(),plays=[],pauses=[],retired=[],fades=[];let seq=0;
  w.matchMedia=()=>({matches:reduced});w.HTMLElement.prototype.scrollTo=function(o){this.scrollLeft=o.left||0;this.scrollTop=o.top||0};
  const delays=[];w.setTimeout=(fn,ms)=>{delays.push(ms);timers.set(++seq,fn);return seq};w.clearTimeout=id=>timers.delete(id);
  w.HTMLMediaElement.prototype.pause=function(){pauses.push(this)};
- w.PreviewPlayback={source:(id,url)=>'/cached/'+id,play:async a=>{plays.push(a)},cancel:a=>pauses.push(a),retire:a=>retired.push(a),fadeOut:(a,ms)=>fades.push(ms)};
+ w.PreviewPlayback={source:(id,url)=>'/cached/'+id,play:async a=>{plays.push(a);await playGate?.(a)},cancel:a=>pauses.push(a),retire:a=>{retired.push(a);a.id='test-tail-'+retired.length;},fadeOut:(a,ms)=>fades.push(ms)};
  for(const f of ['ui.js','gameplay.js'])w.eval(fs.readFileSync('static/js/'+f,'utf8'));
- const tick=async()=>{const [id,fn]=timers.entries().next().value||[];if(fn){timers.delete(id);fn();}await Promise.resolve();};
+ const tick=async()=>{const [id,fn]=timers.entries().next().value||[];if(fn){timers.delete(id);fn();}for(let i=0;i<8;i++)await Promise.resolve();};
  return {w,d,dom,timers,plays,pauses,retired,fades,delays,tick};
 }
 (async()=>{
@@ -38,6 +38,34 @@ function harness(reduced=false){
  check(parseFloat(bronzeHarness.d.querySelector('.bracket-third').style.top)>parseFloat(bronzeHarness.d.querySelector('.bracket-final').style.top),'third place sits below the central final');
  bronzeHarness.dom.window.close();
  for(const size of [8,16,32]){const f=fixture(size),ids=[...h.w.TournamentBracket.soundtrack(f)];check(ids.length===4&&ids.every(id=>f.matches.some(m=>m.round_number===Math.log2(size)-1&&(m.song1_id===id||m.song2_id===id))),'soundtrack is exactly the semi-finalists for '+size);}
+ // Verify every reveal's soundtrack, grouping and continuity at each supported size.
+ for(const size of [8,16,32]){
+  const x=harness(),f=fixture(size),rounds=Math.log2(size),bronze={id:size,round_number:rounds,match_number:0,match_type:'third_place',song1_id:size/4+1,song2_id:size*3/4+1,winner_id:size*3/4+1,loser_id:size/4+1,status:'completed'};
+  f.matches.push(bronze);const order=[...x.w.TournamentBracket.replayOrder(f.matches,size)],playlist=[...x.w.TournamentBracket.soundtrack(f)];
+  check(order.length===size&&new Set(order.map(m=>m.id)).size===size,'each result appears once for '+size);
+  const quarters=order.filter(m=>m.round_number<=rounds-2).map(m=>Math.floor((m.match_number-1)/(size/2**m.round_number/4)));
+  check(quarters.every((q,i)=>!i||q>=quarters[i-1]),'quarters finish in order for '+size);
+  check(order.at(-2).id===bronze.id&&order.at(-1).round_number===rounds,'third place and final close the replay for '+size);
+  const controller=x.w.TournamentBracket.mount(x.d.querySelector('#root'),f,{animate:true});for(let i=0;i<8;i++)await Promise.resolve();let prior=null,previousAudio=null;
+  for(let i=0;i<order.length;i++){
+   const m=order[i],quarter=Math.floor((m.match_number-1)/(size/2**m.round_number/4)),expected=m.round_number>=rounds-1?m.winner_id:playlist[quarter],clip=x.d.querySelector('#bracket-map-audio');
+   check(clip?.getAttribute('src')==='/cached/'+expected,'cue follows quarter or deciding winner for '+size+' result '+i);
+   if(expected===prior)check(clip===previousAudio,'consecutive matching cues preserve the player');
+   check(clip.loop,'whole previews loop naturally');clip.currentTime=12;clip.dispatchEvent(new x.w.Event('timeupdate'));check(clip.currentTime===12,'no six-second seek reset');
+   prior=expected;previousAudio=clip;
+   if(i<order.length-1)await x.tick();
+  }
+  controller.cancel();x.dom.window.close();
+ }
+ let releaseReady;const slow=harness(false,()=>new Promise(resolve=>releaseReady=resolve)),slowRoot=slow.d.querySelector('#root'),slowController=slow.w.TournamentBracket.mount(slowRoot,fixture(),{animate:true});
+ check(slow.timers.size===0,'a buffering cue cannot race into the next result');releaseReady();for(let i=0;i<12;i++)await Promise.resolve();
+ check(slow.delays.includes(3500),'the full result hold starts when audio is ready');slowController.cancel();slow.dom.window.close();
+ let releaseLate;const late=harness(false,()=>new Promise(resolve=>releaseLate=resolve)),lateController=late.w.TournamentBracket.mount(late.d.querySelector('#root'),fixture(),{animate:true});lateController.cancel();releaseLate();for(let i=0;i<12;i++)await Promise.resolve();
+ check(late.timers.size===0&&late.d.querySelectorAll('audio').length===0,'a late cue cannot restart a cancelled replay');late.dom.window.close();
+ const toggle=harness(),toggleRoot=toggle.d.querySelector('#root'),toggleController=toggle.w.TournamentBracket.mount(toggleRoot,fixture(),{animate:true});
+ for(let i=0;i<8;i++)await Promise.resolve();for(let i=0;i<4;i++)await toggle.tick();
+ const expectedCue=toggleRoot.querySelector('#bracket-map-audio').getAttribute('src');toggleRoot.querySelector('[data-map-sound]').click();toggleRoot.querySelector('[data-map-sound]').click();
+ check(toggleRoot.querySelector('#bracket-map-audio').getAttribute('src')===expectedCue,'unmute resumes the current section instead of the left half');toggleController.cancel();toggle.dom.window.close();
  const dragHarness=harness(),dragRoot=dragHarness.d.querySelector('#root'),dragTree=dragHarness.w.TournamentBracket.mount(dragRoot,fixture()),viewport=dragRoot.querySelector('.bracket-viewport');
  const pointer=(type,x,y)=>{const e=new dragHarness.w.MouseEvent(type,{bubbles:true,cancelable:true,clientX:x,clientY:y,button:0});Object.defineProperty(e,'pointerId',{value:1});Object.defineProperty(e,'pointerType',{value:'mouse'});viewport.dispatchEvent(e);};
  viewport.scrollLeft=100;viewport.scrollTop=100;pointer('pointerdown',100,100);pointer('pointermove',60,70);pointer('pointerup',60,70);
@@ -46,7 +74,7 @@ function harness(reduced=false){
  dragRoot.querySelector('[data-map-track="1"]').click();check(dragRoot.querySelectorAll('.is-route').length===3,'ordinary clicks still select tracks');
  const beforeCancel=viewport.scrollLeft;dragTree.cancel();pointer('pointerdown',100,100);pointer('pointermove',0,0);check(viewport.scrollLeft===beforeCancel,'cancellation removes drag listeners');dragHarness.dom.window.close();
  const q=harness(),eight=fixture(),second=q.d.querySelector('#root');let done=0;
- const replay=q.w.TournamentBracket.mount(second,eight,{animate:true,onDone:()=>done++});
+ const replay=q.w.TournamentBracket.mount(second,eight,{animate:true,onDone:()=>done++});for(let i=0;i<8;i++)await Promise.resolve();
  check(second.querySelector('[data-map-sound]').getAttribute('aria-pressed')==='true','replay sound defaults on');
  check(q.delays.includes(3500),'replay holds each result for 3.5 seconds');
  check(second.querySelectorAll('.is-resolved').length===1,'replay reveals one result at a time');

@@ -382,14 +382,16 @@ window.TournamentBracket = (() => {
   let activeReplay = null, mapInstance = 0;
   const label = (size, round) => ({2:"Final",4:"Semi-finals",8:"Quarter-finals"}[size / 2 ** (round - 1)] || "Round of " + size / 2 ** (round - 1));
   function replayOrder(matches, size) {
-    const final = Math.log2(size), regular = matches.filter(m=>m.match_type !== "third_place");
-    const result=[];
-    for (const side of [0,1]) for (let round=1;round<final;round++) {
-      const half=size / 2 ** round / 2;
-      result.push(...regular.filter(m=>m.round_number===round && (m.match_number>half?1:0)===side).sort((a,b)=>a.match_number-b.match_number));
+    const final=Math.log2(size), regular=new Map(matches.filter(m=>m.match_type!=="third_place").map(m=>[`${m.round_number}:${m.match_number}`,m])), result=[];
+    // Finish each quarter's feeders before moving on; then resolve its semi-final.
+    function visit(round,number){
+      if(round>1){visit(round-1,number*2-1);visit(round-1,number*2);}
+      const match=regular.get(`${round}:${number}`);if(match)result.push(match);
     }
-    return result.concat(matches.filter(m=>m.match_type==="third_place"),regular.filter(m=>m.round_number===final));
+    visit(final-1,1);visit(final-1,2);
+    return result.concat(matches.filter(m=>m.match_type==="third_place"),regular.get(`${final}:1`)||[]);
   }
+
   function soundtrack(data) {
     const round=Math.max(1,Math.log2(data.tournament.size)-1), ids=[];
     for(const m of [...data.matches].sort((a,b)=>a.match_number-b.match_number)) if(m.round_number===round && m.match_type!=="third_place") for(const id of [m.song1_id,m.song2_id]) if(id && !ids.includes(id)) ids.push(id);
@@ -400,7 +402,7 @@ window.TournamentBracket = (() => {
     if(![8,16,32].includes(size)){root.textContent="This saved bracket has an unsupported size.";return {cancel(){}};}
     const tracks=new Map(data.entries.map(s=>[Number(s.id),s])), byKey=new Map(data.matches.filter(m=>m.match_type!=="third_place").map(m=>[`${m.round_number}:${m.match_number}`,m]));
     const height=Math.max(480,size/4*160), width=2*(rounds-1)*260+292, shown=new Set(), order=replayOrder(data.matches,size).filter(m=>m.status==="completed"), playlist=soundtrack(data);
-    let completed=false, timer=null, index=0, closed=false, playing=false, revealing=!!options.animate, lastRevealed=null, selected=null, selectedMatch=null, sound=options.sound!==false, cue=null, audio=null, serial=0;
+    let completed=false, timer=null, index=0, closed=false, playing=false, revealing=!!options.animate, lastRevealed=null, selected=null, selectedMatch=null, sound=options.sound!==false, cue=null, audio=null, serial=0, currentMatch=null, cueReady=null, run=0;
     const failed=new Set(), tails=new Set();
     const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if(!options.animate || reduced) order.forEach(m=>shown.add(m.id));
@@ -408,21 +410,22 @@ window.TournamentBracket = (() => {
     const viewport=root.querySelector('.bracket-viewport'), canvas=root.querySelector('.bracket-canvas'), nodes=root.querySelector('.bracket-nodes'), svg=root.querySelector('svg'), status=root.querySelector('.bracket-status');
     const workspace=root.id==='tournament-replay'||root.hasAttribute('data-tournament-map');
     function releaseClip(clip){if(!clip)return;window.PreviewPlayback?.abandon?.(clip);clip.pause();if(window.PreviewPlayback?.release)window.PreviewPlayback.release(clip);else clip.remove();}
-    function stopSound(){serial++;releaseClip(audio);audio=null;tails.forEach(releaseClip);tails.clear();cue=null;}
-    function playCue(side){
-      if(!sound||closed||document.hidden)return;
-      const available=playlist.filter(id=>!failed.has(id)&&tracks.get(id)?.audio_url), pool=available.filter(id=>(playlist.indexOf(id)<playlist.length/2?0:1)===side), choices=pool.length?pool:available;
-      const id=choices[Math.floor(index/6)%Math.max(1,choices.length)];
-      if(id===cue)return;
+    function stopSound(){serial++;releaseClip(audio);audio=null;tails.forEach(releaseClip);tails.clear();cue=null;cueReady=null;}
+    function playCue(match){
+      if(!sound||closed||document.hidden||!match)return;
+      // Each quarter follows its semi-finalist; deciding matches play their winner.
+      const quarter=Math.floor((match.match_number-1)/(size/2**match.round_number/4));
+      const semi=byKey.get(`${rounds-1}:${Math.floor(quarter/2)+1}`);
+      const id=match.match_type==='third_place'||match.round_number>=rounds-1?match.winner_id:semi?.[quarter%2?'song2_id':'song1_id'];
+      if(!playlist.includes(id)||failed.has(id)||!tracks.get(id)?.audio_url){stopSound();return;}
+      if(id===cue)return cueReady;
       const track=tracks.get(id);if(!track?.audio_url)return;
       // Keep one outgoing clip alive until the shared ready-only crossfade starts.
       tails.forEach(releaseClip);tails.clear();
       if(audio){tails.add(audio);window.PreviewPlayback?.retire?.(audio);}
-      cue=id; const token=++serial;audio=document.createElement('audio');audio.id='bracket-map-audio';audio.preload='none';audio.src=window.PreviewPlayback?.source(id,track.audio_url)||track.audio_url;audio.loop=false;root.append(audio);
+      cue=id; const token=++serial;audio=document.createElement('audio');audio.id='bracket-map-audio';audio.preload='none';audio.src=window.PreviewPlayback?.source(id,track.audio_url)||track.audio_url;audio.loop=true;root.append(audio);
       const current=audio;
-      current.addEventListener('timeupdate',()=>{if(!closed&&audio===current&&current.currentTime>=6)current.currentTime=0;});
-      current.addEventListener('ended',()=>{if(!closed&&audio===current&&sound){current.currentTime=0;window.PreviewPlayback?.play(current).catch(()=>{if(audio===current)stopSound();});}});
-      Promise.resolve(window.PreviewPlayback?.play(current)).then(()=>{if(closed||token!==serial)current.pause();}).catch(error=>{if(token===serial){failed.add(id);stopSound();if(['PreviewBlockedError','NotAllowedError'].includes(error.name))blocked();}});
+      return cueReady=Promise.resolve(window.PreviewPlayback?.play(current)).then(()=>{if(closed||token!==serial)current.pause();}).catch(error=>{if(token===serial){failed.add(id);stopSound();if(['PreviewBlockedError','NotAllowedError'].includes(error.name))blocked();}});
     }
     function participant(m,slot){
       if(m?.[slot])return m[slot];
@@ -467,7 +470,7 @@ window.TournamentBracket = (() => {
       }
       nodes.innerHTML=html;svg.innerHTML=paths;lastRevealed=null;
     }
-    function halt(keepAudio=false){playing=false;clearTimeout(timer);if(!keepAudio)stopSound();if(activeReplay===halt)activeReplay=null;}
+    function halt(keepAudio=false){run++;playing=false;clearTimeout(timer);if(!keepAudio)stopSound();if(activeReplay===halt)activeReplay=null;}
     function finish(soft=false){
       if(closed||completed)return;completed=true;halt(soft);revealing=false;order.forEach(m=>shown.add(m.id));draw();
       const done=()=>{timer=null;if(closed)return;stopSound();root.querySelector('[data-map-replay]').textContent='Replay';status.textContent=data.tournament.status==='completed'?'Bracket complete':'Saved results';if(options.onDone)options.onDone({sound:sound&&!reduced});};
@@ -478,17 +481,18 @@ window.TournamentBracket = (() => {
       if(closed||!playing)return;
       if(document.hidden){stopSound();timer=setTimeout(step,500);return;}
       const m=order[index++];if(!m){finish(true);return;}
-      shown.add(m.id);lastRevealed=m.id;draw();status.textContent=`${label(size,m.round_number)} · ${index} / ${order.length} results`;
-      const half=size/2**m.round_number/2, side=m.match_number>half?1:0;playCue(side);
+      currentMatch=m;shown.add(m.id);lastRevealed=m.id;draw();status.textContent=`${label(size,m.round_number)} · ${index} / ${order.length} results`;
+      const generation=run, ready=playCue(m);
       pan(m.round_number,m.match_number,m.match_type==='third_place');
-      timer=setTimeout(step,options.stepMs||3500);
+      // Give each cue its full hold after buffering; never race a slow clip.
+      Promise.resolve(ready).then(()=>{if(!closed&&playing&&run===generation)timer=setTimeout(step,options.stepMs||3500);});
     }
-    function replay(){if(closed)return;selected=null;selectedMatch=null;completed=false;activeReplay?.();activeReplay=halt;clearTimeout(timer);stopSound();if(reduced||!order.length){order.forEach(m=>shown.add(m.id));draw();queueMicrotask(finish);return;}shown.clear();index=0;playing=true;revealing=true;root.querySelector('[data-map-replay]').textContent='Restart';draw();step();}
+    function replay(){if(closed)return;selected=null;selectedMatch=null;completed=false;activeReplay?.();activeReplay=halt;clearTimeout(timer);stopSound();if(reduced||!order.length){order.forEach(m=>shown.add(m.id));draw();queueMicrotask(finish);return;}shown.clear();index=0;run++;playing=true;revealing=true;root.querySelector('[data-map-replay]').textContent='Restart';draw();step();}
 
     function handleClick(event){if(closed)return;
       const button=event.target.closest('button');if(!button)return;
       if(button.hasAttribute('data-map-replay'))replay();
-      if(button.hasAttribute('data-map-sound')){sound=!sound;button.textContent='Sound '+(sound?'on':'off');button.setAttribute('aria-pressed',String(sound));if(!sound)stopSound();else if(playing)playCue(0);}
+      if(button.hasAttribute('data-map-sound')){sound=!sound;button.textContent='Sound '+(sound?'on':'off');button.setAttribute('aria-pressed',String(sound));if(!sound)stopSound();else if(playing)playCue(currentMatch);}
       if(button.hasAttribute('data-map-skip'))finish();
       if(button.hasAttribute('data-map-close')){closeInspection();return;}
       if(button.dataset.mapTrack){

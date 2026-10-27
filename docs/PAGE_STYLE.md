@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.5.7 contract. Change the owning shared rule before adding a
+This is the current V5.5.8 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -267,4 +267,4 @@ Bracket viewports support mouse/pen drag panning with a grab cursor and a moveme
 
 Paired Standard Vote, Tournament and Elo Guesser covers use one playback halo in gameplay.css: a quiet stationary rim at rest, a brighter orbit and small outward wave during confirmed playback. Buffering/paused/error states return to the quiet rim. The halo follows the mode accent, stays outside artwork without blocking input, and becomes stationary in reduced motion. It does not apply to podiums, profiles or Shelves.
 
-The existing volume popover includes one **Balance preview loudness** checkbox, enabled by default and remembered. Keep the master slider unchanged and use a wrapping, touch-sized label. The shared preview owner handles all gain/metering logic; mode controllers do not implement their own normalization.
+Preview audio uses the native recording level and the shared master volume. There is no automatic loudness balancing or compression. Tournament replay completes each quarter before its semi-final, with the quarter's semi-finalist playing continuously. Semi-finals, third place and the final use the match winner's preview. Whole previews loop naturally, with shared ready-only crossfades between different songs.
