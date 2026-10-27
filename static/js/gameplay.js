@@ -379,7 +379,7 @@ window.RoundFlow = (() => {
 window.TournamentBracket = (() => {
   "use strict";
   const {esc} = window.SongRankerUI;
-  let activeReplay = null;
+  let activeReplay = null, mapInstance = 0;
   const label = (size, round) => ({2:"Final",4:"Semi-finals",8:"Quarter-finals"}[size / 2 ** (round - 1)] || "Round of " + size / 2 ** (round - 1));
   function replayOrder(matches, size) {
     const final = Math.log2(size), regular = matches.filter(m=>m.match_type !== "third_place");
@@ -396,16 +396,17 @@ window.TournamentBracket = (() => {
     return ids.slice(0,4);
   }
   function mount(root,data,options={}) {
-    const size=Number(data.tournament.size), rounds=Math.log2(size);
+    const instance=++mapInstance, size=Number(data.tournament.size), rounds=Math.log2(size);
     if(![8,16,32].includes(size)){root.textContent="This saved bracket has an unsupported size.";return {cancel(){}};}
     const tracks=new Map(data.entries.map(s=>[Number(s.id),s])), byKey=new Map(data.matches.filter(m=>m.match_type!=="third_place").map(m=>[`${m.round_number}:${m.match_number}`,m]));
     const height=Math.max(480,size/4*160), width=2*(rounds-1)*260+292, shown=new Set(), order=replayOrder(data.matches,size).filter(m=>m.status==="completed"), playlist=soundtrack(data);
-    let completed=false, timer=null, index=0, closed=false, playing=false, revealing=!!options.animate, lastRevealed=null, selected=null, sound=options.sound!==false, cue=null, audio=null, serial=0;
+    let completed=false, timer=null, index=0, closed=false, playing=false, revealing=!!options.animate, lastRevealed=null, selected=null, selectedMatch=null, sound=options.sound!==false, cue=null, audio=null, serial=0;
     const failed=new Set(), tails=new Set();
     const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if(!options.animate || reduced) order.forEach(m=>shown.add(m.id));
-    root.innerHTML=`<div class="bracket-toolbar"><div class="bracket-stages" aria-label="Bracket rounds"><button type="button" class="btn" data-map-half="left">Left half</button><button type="button" class="btn" data-map-half="right">Right half</button>${Array.from({length:rounds},(_,i)=>`<button type="button" class="btn" data-map-round="${i}">${label(size,i+1)}</button>`).join('')}</div><div class="bracket-actions"><button type="button" class="btn tournament" data-map-replay>Replay bracket</button><button type="button" class="btn" data-map-sound aria-pressed="${sound}">Sound ${sound?'on':'off'}</button><button type="button" class="btn" data-map-skip>${options.onDone?'Skip to podium':'Show saved results'}</button></div></div><p class="bracket-status" role="status" aria-live="polite"></p><div class="bracket-viewport" tabindex="0" aria-label="Tournament bracket; scroll or click and drag to explore rounds"><div class="bracket-canvas" style="width:${width}px;height:${height+65}px"><svg class="bracket-lines" width="${width}" height="${height}" aria-hidden="true"></svg><div class="bracket-nodes"></div></div></div><div class="bracket-inspector" aria-live="polite">Select a track to highlight its route through the bracket.</div>`;
-    const viewport=root.querySelector('.bracket-viewport'), nodes=root.querySelector('.bracket-nodes'), svg=root.querySelector('svg'), status=root.querySelector('.bracket-status'), inspector=root.querySelector('.bracket-inspector');
+    root.innerHTML=`<div class="bracket-toolbar"><span class="bracket-hint">Drag to explore · Select a track for details</span><div class="bracket-actions"><button type="button" class="btn tournament" data-map-replay>Replay bracket</button><button type="button" class="btn" data-map-sound aria-pressed="${sound}">Sound ${sound?'on':'off'}</button><button type="button" class="btn" data-map-skip>${options.onDone?'Skip to podium':'Show saved results'}</button></div><p class="bracket-status" role="status" aria-live="polite"></p></div><div class="bracket-viewport" tabindex="0" aria-label="Tournament bracket; scroll or click and drag to explore rounds"><div class="bracket-canvas" style="width:${width}px;height:${height+65}px"><svg class="bracket-lines" width="${width}" height="${height}" aria-hidden="true"></svg><div class="bracket-nodes"></div></div></div>`;
+    const viewport=root.querySelector('.bracket-viewport'), canvas=root.querySelector('.bracket-canvas'), nodes=root.querySelector('.bracket-nodes'), svg=root.querySelector('svg'), status=root.querySelector('.bracket-status');
+    const workspace=root.id==='tournament-replay'||root.hasAttribute('data-tournament-map');
     function releaseClip(clip){if(!clip)return;window.PreviewPlayback?.abandon?.(clip);clip.pause();if(window.PreviewPlayback?.release)window.PreviewPlayback.release(clip);else clip.remove();}
     function stopSound(){serial++;releaseClip(audio);audio=null;tails.forEach(releaseClip);tails.clear();cue=null;}
     function playCue(side){
@@ -430,29 +431,38 @@ window.TournamentBracket = (() => {
       return parent&&shown.has(parent.id)?parent.winner_id:null;
     }
     function position(round,n,bronze=false){
-      if(round===rounds)return {x:(width-(bronze?212:260))/2,y:height/2+(bronze?115:-80),w:bronze?212:260};
+      const pad=Math.max(0,(viewport.clientHeight-height)/2);
+      if(round===rounds)return {x:(width-(bronze?212:260))/2,y:pad+height/2+(bronze?115:-80),w:bronze?212:260};
       const half=size/2**round/2, side=n>half, local=side?n-half:n;
-      return {x:side?width-228-(round-1)*260:(round-1)*260+16,y:(local-.5)*height/half-63,w:212};
+      return {x:side?width-228-(round-1)*260:(round-1)*260+16,y:pad+(local-.5)*height/half-63,w:212};
     }
     function pan(round,n,bronze=false){const p=position(round,n,bronze);viewport.scrollTo?.({left:Math.max(0,p.x+p.w/2-viewport.clientWidth/2),top:Math.max(0,p.y-viewport.clientHeight/2+63),behavior:reduced?'instant':'smooth'});}
+    function inspection(){
+      const song=tracks.get(selected), appearances=data.matches.filter(m=>shown.has(m.id)&&(m.song1_id===selected||m.song2_id===selected)), wins=appearances.filter(m=>m.winner_id===selected).length, eliminated=appearances.find(m=>m.loser_id===selected&&m.match_type!=='third_place'), champion=data.matches.find(m=>shown.has(m.id)&&m.round_number===rounds&&m.match_type!=='third_place')?.winner_id===selected, points=appearances.filter(m=>m.winner_id===selected).reduce((n,m)=>Number.isFinite(m.points_awarded)?n+m.points_awarded:NaN,0);
+      return `<section class="bracket-inspector" id="bracket-detail-${instance}-${selectedMatch}" aria-label="Selected track details"><div class="bracket-detail-heading"><strong class="song">${esc(song?.title||'Track unavailable')}</strong><button type="button" class="btn" data-map-close aria-label="Close match details">Close</button></div><span>${esc(song?.artist||'')} · ${wins} wins · ${appearances.filter(m=>m.status==='completed').length} played matches · ${Number.isFinite(points)?points.toFixed(2)+' points':'Points unavailable'}</span><span>${champion?'Champion':eliminated?'Eliminated · '+label(size,eliminated.round_number):'Saved progress'}</span><a class="song" href="/song/${selected}">Open song ↗</a><ol class="bracket-match-details">${appearances.map(m=>`<li>${m.match_type==='third_place'?'Third place':label(size,m.round_number)} · ${m.status==='completed'?(m.winner_id===selected?'Won':'Lost'):'Pending'} vs ${esc(tracks.get(m.song1_id===selected?m.song2_id:m.song1_id)?.title||'Track unavailable')}${Number.isFinite(m.points_awarded)?' · '+m.points_awarded+' points to winner':''}</li>`).join('')}</ol></section>`;
+    }
+    function closeInspection(){const id=selected,match=selectedMatch;selected=null;selectedMatch=null;draw();nodes.querySelector(`[data-map-match="${match}"] [data-map-track="${id}"]`)?.focus({preventScroll:true});}
     function draw(){
       let html='', paths='';
+      canvas.style.height=Math.max(height+(selectedMatch?440:65),viewport.clientHeight)+'px';svg.setAttribute('height',Math.max(height,viewport.clientHeight));
       const cells=[];
       for(let round=1;round<=rounds;round++)for(let n=1;n<=size/2**round;n++)cells.push({round,n,saved:byKey.get(`${round}:${n}`)});
       const bronze=data.matches.find(m=>m.match_type==='third_place');
       if(bronze)cells.push({round:rounds,n:1,saved:bronze,bronze:true});
       for(const cell of cells){
           const {round,n,saved,bronze}=cell, m=saved||{round_number:round,match_number:n}, resolved=saved&&shown.has(saved.id), {x,y,w}=position(round,n,bronze);
-          if(round<rounds){const next=position(round+1,Math.ceil(n/2)),right=n>size/2**round/2,from=right?x:x+w,to=right?next.x+next.w:next.x,mid=(from+to)/2;paths+=`<path class="${resolved?'bracket-line-done':''}" d="M${from},${y+63} H${mid} V${next.y+63} H${to}"/>`;}
-          html+=`<article class="bracket-node ${round===rounds&&!bronze?'bracket-final':''} ${bronze?'bracket-third':''} ${resolved?'is-resolved':''} ${resolved&&saved.id===lastRevealed?'is-advancing':''}" data-map-match="${saved?.id||''}" style="left:${x}px;top:${y}px;width:${w}px"><small>${bronze?'Third place':label(size,round)+' · '+n}</small>`;
+          const progress=bronze ? .65 : (round-1)/(rounds-1), tone=`--round-light:${38+62*progress}%;--round-halo:${4+22*progress}%;--round-radius:${6+22*progress}px`, open=String(saved?.id)===selectedMatch;
+          if(round<rounds){const next=position(round+1,Math.ceil(n/2)),right=n>size/2**round/2,from=right?x:x+w,to=right?next.x+next.w:next.x,mid=(from+to)/2;paths+=`<path style="${tone}" class="${resolved?'bracket-line-done':''}" d="M${from},${y+63} H${mid} V${next.y+63} H${to}"/>`;}
+          html+=`<article class="bracket-node ${open?'has-details':''} ${x>width/2?'is-right':''} ${round===rounds&&!bronze?'bracket-final':''} ${bronze?'bracket-third':''} ${resolved?'is-resolved':''} ${resolved&&saved.id===lastRevealed?'is-advancing':''}" data-map-match="${saved?.id||''}" style="${tone};left:${x}px;top:${y}px;width:${w}px"><small>${bronze?'Third place':label(size,round)+' · '+n}</small>`;
           for(const [slot,side] of [['song1_id',0],['song2_id',1]]){
             let id=participant(m,slot);
             // An advancing identity only appears after its feeder has resolved.
             if(round>1&&revealing&&!reduced&&(bronze?![1,2].every(n=>shown.has(byKey.get(`${rounds-1}:${n}`)?.id)):!shown.has(byKey.get(`${round-1}:${(n-1)*2+side+1}`)?.id)))id=null;
             const hidden=data.tournament.is_blind&&data.tournament.status!=='completed'&&!resolved, song=tracks.get(Number(id));
             const name=hidden?'Hidden track':song?.title||(id?'Track unavailable':'Awaiting winner'), won=resolved&&m.winner_id===id, lost=resolved&&m.loser_id===id;
-            html+=`<button type="button" class="bracket-track ${won?'is-winner':''} ${lost?'is-eliminated':''} ${id&&id===selected?'is-route':''}" data-map-track="${hidden||!song?'':id||''}" title="${esc(name)}" aria-pressed="${!!id&&id===selected}" aria-label="${esc(name)}, ${won?'Winner':lost?'Eliminated':'Pending'}" ${!id||hidden||!song?'disabled':''}>${!hidden&&song?.cover_url?`<img src="${esc(song.cover_url)}" alt="" loading="lazy">`:""}<span>${esc(name)}</span><b>${won?'✓':lost?'×':'·'}</b></button>`;
+            html+=`<button type="button" class="bracket-track ${won?'is-winner':''} ${lost?'is-eliminated':''} ${id&&id===selected?'is-route':''}" data-map-track="${hidden||!song?'':id||''}" title="${esc(name)}" aria-pressed="${!!id&&id===selected}" aria-expanded="${open&&id===selected}" ${open&&id===selected?`aria-controls="bracket-detail-${instance}-${selectedMatch}"`:""} aria-label="${esc(name)}, ${won?'Winner':lost?'Eliminated':'Pending'}" ${!id||hidden||!song?'disabled':''}>${!hidden&&song?.cover_url?`<img src="${esc(song.cover_url)}" alt="" loading="lazy">`:""}<span>${esc(name)}</span><b>${won?'✓':lost?'×':'·'}</b></button>`;
           }
+          if(open)html+=inspection();
           html+='</article>';
       }
       nodes.innerHTML=html;svg.innerHTML=paths;lastRevealed=null;
@@ -471,37 +481,57 @@ window.TournamentBracket = (() => {
       shown.add(m.id);lastRevealed=m.id;draw();status.textContent=`${label(size,m.round_number)} · ${index} / ${order.length} results`;
       const half=size/2**m.round_number/2, side=m.match_number>half?1:0;playCue(side);
       pan(m.round_number,m.match_number,m.match_type==='third_place');
-      timer=setTimeout(step,options.stepMs||1600);
+      timer=setTimeout(step,options.stepMs||3500);
     }
-    function replay(){if(closed)return;completed=false;activeReplay?.();activeReplay=halt;clearTimeout(timer);stopSound();if(reduced||!order.length){order.forEach(m=>shown.add(m.id));draw();queueMicrotask(finish);return;}shown.clear();index=0;playing=true;revealing=true;root.querySelector('[data-map-replay]').textContent='Restart replay';draw();step();}
+    function replay(){if(closed)return;selected=null;selectedMatch=null;completed=false;activeReplay?.();activeReplay=halt;clearTimeout(timer);stopSound();if(reduced||!order.length){order.forEach(m=>shown.add(m.id));draw();queueMicrotask(finish);return;}shown.clear();index=0;playing=true;revealing=true;root.querySelector('[data-map-replay]').textContent='Restart replay';draw();step();}
 
     function handleClick(event){if(closed)return;
       const button=event.target.closest('button');if(!button)return;
-      if(button.hasAttribute('data-map-round')){const round=Number(button.dataset.mapRound)+1, match=data.matches.find(m=>m.round_number===round&&m.match_type!=='third_place'&&(m.song1_id===selected||m.song2_id===selected)), n=match?.match_number||1;pan(round,n);}
-      if(button.hasAttribute('data-map-half'))pan(1,button.dataset.mapHalf==='right'?size/4+1:1);
       if(button.hasAttribute('data-map-replay'))replay();
       if(button.hasAttribute('data-map-sound')){sound=!sound;button.textContent='Sound '+(sound?'on':'off');button.setAttribute('aria-pressed',String(sound));if(!sound)stopSound();else if(playing)playCue(0);}
       if(button.hasAttribute('data-map-skip'))finish();
-      if(button.dataset.mapTrack){if(playing){halt();status.textContent='Replay paused · select Restart replay to continue';}const matchId=button.closest('[data-map-match]')?.dataset.mapMatch;selected=Number(button.dataset.mapTrack);const song=tracks.get(selected), appearances=data.matches.filter(m=>shown.has(m.id)&&(m.song1_id===selected||m.song2_id===selected)),wins=appearances.filter(m=>m.winner_id===selected).length, eliminated=appearances.find(m=>m.loser_id===selected&&m.match_type!=='third_place'), champion=data.matches.find(m=>shown.has(m.id)&&m.round_number===rounds&&m.match_type!=='third_place')?.winner_id===selected, points=appearances.filter(m=>m.winner_id===selected).reduce((n,m)=>Number.isFinite(m.points_awarded)?n+m.points_awarded:NaN,0);draw();inspector.innerHTML=`<strong class="song">${esc(song?.title||'Track unavailable')}</strong><span>${esc(song?.artist||'')} · ${wins} wins · ${appearances.filter(m=>m.status==='completed').length} played matches · ${Number.isFinite(points)?points.toFixed(2)+' points':'Points unavailable'}</span><span>${champion?'Champion':eliminated?'Eliminated · '+label(size,eliminated.round_number):'Saved progress'}</span><a class="song" href="/song/${selected}">Open song ↗</a><ol class="bracket-match-details">${appearances.map(m=>`<li>${m.match_type==='third_place'?'Third place':label(size,m.round_number)} · ${m.status==='completed'?(m.winner_id===selected?'Won':'Lost'):'Pending'} vs ${esc(tracks.get(m.song1_id===selected?m.song2_id:m.song1_id)?.title||'Track unavailable')}${Number.isFinite(m.points_awarded)?' · '+m.points_awarded+' points to winner':''}</li>`).join('')}</ol>`;nodes.querySelector(`[data-map-match="${matchId}"] [data-map-track="${selected}"]`)?.focus({preventScroll:true});}
+      if(button.hasAttribute('data-map-close')){closeInspection();return;}
+      if(button.dataset.mapTrack){
+        if(playing){halt();status.textContent='Replay paused · select Restart replay to continue';}
+        const matchId=button.closest('[data-map-match]')?.dataset.mapMatch, id=Number(button.dataset.mapTrack);
+        if(selected===id&&selectedMatch===matchId){closeInspection();return;}
+        selected=id;selectedMatch=matchId;draw();
+        const node=nodes.querySelector(`[data-map-match="${matchId}"]`), detail=node?.querySelector('.bracket-inspector');
+        node?.querySelector(`[data-map-track="${id}"]`)?.focus({preventScroll:true});
+        if(detail){const x=parseFloat(node.style.left)+detail.offsetLeft;viewport.scrollTo?.({left:Math.max(0,x+detail.offsetWidth/2-viewport.clientWidth/2),top:Math.max(0,parseFloat(node.style.top)-16),behavior:reduced?'instant':'smooth'});}
+      }
     }
     // Mouse/pen panning leaves native touch scrolling and keyboard navigation intact.
     let drag=null, suppressClick=false;
-    function pointerDown(event){if(event.button!==0||event.pointerType==='touch')return;drag={id:event.pointerId,x:event.clientX,y:event.clientY,left:viewport.scrollLeft,top:viewport.scrollTop,moved:false};suppressClick=false;}
+    function pointerDown(event){if(event.button!==0||event.pointerType==='touch'||event.target.closest('.bracket-inspector'))return;drag={id:event.pointerId,x:event.clientX,y:event.clientY,left:viewport.scrollLeft,top:viewport.scrollTop,moved:false};suppressClick=false;}
     function pointerMove(event){if(!drag||event.pointerId!==drag.id)return;const dx=event.clientX-drag.x,dy=event.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)<6)return;if(!drag.moved){drag.moved=true;if(playing){halt();status.textContent='Replay paused · select Restart replay to continue';}viewport.setPointerCapture?.(drag.id);viewport.classList.add('is-dragging');}event.preventDefault();viewport.scrollLeft=drag.left-dx;viewport.scrollTop=drag.top-dy;}
     function pointerUp(event){if(!drag||event.pointerId!==drag.id)return;suppressClick=drag.moved&&event.type==='pointerup';const id=drag.id;drag=null;viewport.classList.remove('is-dragging');if(viewport.hasPointerCapture?.(id))viewport.releasePointerCapture(id);}
     function dragClick(event){if(suppressClick){suppressClick=false;event.preventDefault();event.stopImmediatePropagation();}}
     function preventImageDrag(event){event.preventDefault();}
     viewport.addEventListener('pointerdown',pointerDown);viewport.addEventListener('pointermove',pointerMove);viewport.addEventListener('pointerup',pointerUp);viewport.addEventListener('pointercancel',pointerUp);viewport.addEventListener('lostpointercapture',pointerUp);viewport.addEventListener('click',dragClick,true);viewport.addEventListener('dragstart',preventImageDrag);
+    function keyDown(event){if(event.key==='Escape'&&selectedMatch){event.preventDefault();closeInspection();}}
+    root.addEventListener('keydown',keyDown);
+    function fit(){
+      if(closed||!workspace)return;
+      const footer=document.querySelector('.footer'), top=viewport.getBoundingClientRect().top+window.scrollY, available=Math.max(300,window.innerHeight-top-(footer?.getBoundingClientRect().height||0));
+      if(root.style.getPropertyValue('--bracket-view-height')===available+'px')return;
+      const focused=document.activeElement, track=focused?.dataset.mapTrack, match=focused?.closest('[data-map-match]')?.dataset.mapMatch, close=focused?.hasAttribute('data-map-close');
+      root.style.setProperty('--bracket-view-height',available+'px');draw();
+      if(track)nodes.querySelector(`[data-map-match="${match}"] [data-map-track="${track}"]`)?.focus({preventScroll:true});else if(close)nodes.querySelector('[data-map-close]')?.focus({preventScroll:true});
+    }
+    window.addEventListener('resize',fit);
+    const observer=workspace&&window.ResizeObserver?new ResizeObserver(fit):null;
+    for(const node of [document.querySelector('.navbar'),document.querySelector('.footer'),root.querySelector('.bracket-toolbar'),document.querySelector('.bracket-page-header')])if(node)observer?.observe(node);
     root.addEventListener('click',handleClick);
     function visibility(){if(document.hidden)stopSound();}
     function blocked(){sound=false;stopSound();const button=root.querySelector('[data-map-sound]');button.textContent='Sound off';button.setAttribute('aria-pressed','false');}
-    const cancel=()=>{closed=true;halt();drag=null;viewport.classList.remove('is-dragging');viewport.removeEventListener('pointerdown',pointerDown);viewport.removeEventListener('pointermove',pointerMove);viewport.removeEventListener('pointerup',pointerUp);viewport.removeEventListener('pointercancel',pointerUp);viewport.removeEventListener('lostpointercapture',pointerUp);viewport.removeEventListener('click',dragClick,true);viewport.removeEventListener('dragstart',preventImageDrag);root.removeEventListener('click',handleClick);document.removeEventListener('visibilitychange',visibility);document.removeEventListener('preview-blocked',blocked);window.removeEventListener('pagehide',pauseForPage);};
+    const cancel=()=>{closed=true;halt();observer?.disconnect();window.removeEventListener('resize',fit);root.removeEventListener('keydown',keyDown);drag=null;viewport.classList.remove('is-dragging');viewport.removeEventListener('pointerdown',pointerDown);viewport.removeEventListener('pointermove',pointerMove);viewport.removeEventListener('pointerup',pointerUp);viewport.removeEventListener('pointercancel',pointerUp);viewport.removeEventListener('lostpointercapture',pointerUp);viewport.removeEventListener('click',dragClick,true);viewport.removeEventListener('dragstart',preventImageDrag);root.removeEventListener('click',handleClick);document.removeEventListener('visibilitychange',visibility);document.removeEventListener('preview-blocked',blocked);window.removeEventListener('pagehide',pauseForPage);};
     function pauseForPage(){const wasPlaying=playing;halt();if(wasPlaying)status.textContent='Replay paused · select Restart replay to continue';}
     window.addEventListener('pagehide',pauseForPage);
     document.addEventListener('visibilitychange',visibility);
     document.addEventListener('preview-blocked',blocked);
     draw();status.textContent=data.tournament.status==='completed'?'Completed bracket':'Saved bracket progress';
-    pan(rounds,1);
+    fit();pan(rounds,1);
     if(options.animate)replay();
     return {cancel};
   }

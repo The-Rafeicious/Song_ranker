@@ -7722,21 +7722,23 @@ body[data-page="shelves"] .shelf-next:not(:disabled):hover {
 }
 
 /* Shared visual tournament tree: local pan keeps the document width stable. */
-.tournament-map { min-width:0; width:100%; margin-top:20px; }
-.bracket-toolbar,.bracket-actions,.bracket-stages { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; }
-.bracket-toolbar { justify-content:space-between; gap:16px; }
+.tournament-map { min-width:0; width:100%; margin:0; }
+.bracket-toolbar,.bracket-actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; justify-content:center; }
+.bracket-toolbar { padding:10px 20px; border-bottom:1px solid #ff78a622; gap:8px 20px; }
 .bracket-toolbar .btn { font-size:14px; min-height:44px; padding:8px 14px; }
-.bracket-status { text-align:center; color:var(--muted); min-height:24px; }
-.bracket-viewport { max-height:65vh; height:620px; width:100%; overflow:auto; border:1px solid color-mix(in srgb,var(--tournament) 35%,transparent); border-radius:18px; background:#161216; overscroll-behavior:contain; }
-.bracket-viewport:focus-visible { outline:2px solid var(--tournament); }
+.bracket-hint,.bracket-status { color:var(--muted); font-size:13px; }
+.bracket-status { flex-basis:100%; text-align:center; min-height:18px; margin:0; }
+.bracket-viewport { height:var(--bracket-view-height,70dvh); min-height:300px; width:100%; overflow:auto; border:0; border-radius:0; background:radial-gradient(ellipse at center,#ff78a606,transparent 70%),#100e10; overscroll-behavior:contain; cursor:grab; }
+.bracket-viewport:focus-visible { outline:2px solid var(--tournament); outline-offset:-2px; }
 .bracket-canvas { position:relative; margin:0 auto; }
 .bracket-lines,.bracket-nodes { position:absolute; inset:0; }
 .bracket-lines { pointer-events:none; }
-.bracket-lines path { fill:none; stroke:#555; stroke-width:2; }
-.bracket-lines .bracket-line-done { stroke:var(--tournament); }
-.bracket-node { position:absolute; width:212px; padding:6px; border:1px solid #555; border-radius:12px; background:var(--panel,#242424); box-sizing:border-box; }
-.bracket-node > small { display:block; font-size:12px; color:var(--muted); margin-bottom:4px; }
-.bracket-track { display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%; min-width:0; min-height:44px; border:0; border-radius:6px; text-align:left; padding:6px; background:#181818; color:#ddd; margin-top:3px; font-size:13px; }
+.bracket-lines path,.bracket-node { --round-color:color-mix(in srgb,var(--tournament) var(--round-light,38%),#29131d); }
+.bracket-lines path { fill:none; stroke:var(--round-color); stroke-width:2; opacity:.4; }
+.bracket-lines .bracket-line-done { opacity:1; }
+.bracket-node { position:absolute; z-index:1; width:212px; padding:6px; border:1px solid var(--round-color); border-radius:12px; background:color-mix(in srgb,var(--round-color) 13%,#1a151a); box-shadow:0 0 var(--round-radius,6px) color-mix(in srgb,var(--tournament) var(--round-halo,4%),transparent); box-sizing:border-box; }
+.bracket-node > small { display:block; font-size:12px; color:color-mix(in srgb,var(--round-color) 55%,#e8dfe3); margin-bottom:4px; }
+.bracket-track { display:flex; align-items:center; justify-content:space-between; gap:6px; width:100%; min-width:0; min-height:44px; border:0; border-radius:6px; text-align:left; padding:6px; background:#181418; color:#ddd; margin-top:3px; font-size:13px; }
 .bracket-track img { width:24px; height:24px; border-radius:4px; object-fit:cover; flex:none; }
 .bracket-track span { flex:1; min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .bracket-track b { flex:none; }
@@ -7745,26 +7747,35 @@ body[data-page="shelves"] .shelf-next:not(:disabled):hover {
 .bracket-track.is-eliminated span { text-decoration:line-through; }
 .bracket-track.is-route { outline:2px solid var(--tournament); }
 .bracket-track:focus-visible { outline:2px solid white; }
-.bracket-node.is-resolved { border-color:var(--tournament); }
 .bracket-node.is-advancing { animation:bracket-advance .35s ease-out; }
-.bracket-inspector { display:flex; justify-content:center; flex-wrap:wrap; gap:10px 20px; padding:18px; background:var(--panel,#242424); border-radius:18px; margin-top:16px; }
+.bracket-node.has-details { z-index:5; border-color:var(--tournament); }
+.bracket-inspector { position:absolute; top:100%; left:0; width:288px; max-width:calc(100vw - 24px); max-height:min(360px,calc(var(--bracket-view-height,600px) - 155px)); overflow:auto; display:flex; flex-direction:column; gap:10px; padding:14px; background:#251b24; border:1px solid var(--round-color); border-radius:0 0 14px 14px; box-shadow:0 12px 28px #000b; cursor:auto; font-size:14px; }
+.bracket-node.is-right .bracket-inspector { left:auto; right:0; }
 .bracket-inspector > * { min-width:0; max-width:100%; overflow-wrap:anywhere; }
-.bracket-bronze { position:absolute; left:16px; right:16px; overflow-wrap:anywhere; color:var(--tournament); }
-@keyframes bracket-advance { from{transform:translateX(-6px);opacity:.6}to{transform:none;opacity:1} }
-@media(prefers-reduced-motion:reduce){.bracket-node.is-advancing{animation:none}.bracket-viewport{scroll-behavior:auto}}
-@media(max-width:520px){.bracket-toolbar{justify-content:center}.bracket-viewport{height:480px}.bracket-inspector{font-size:14px}}
-
-.tournament-bracket-page { width:100%; min-width:0; }
-body:has(.tournament-bracket-page) #main { max-width:1800px; }
-.tournament-bracket-page .bracket-viewport { height:72vh; max-height:none; }
-.bracket-node.bracket-final { padding:12px; border-width:2px; box-shadow:0 0 24px #ff78a622; }
+.bracket-detail-heading { display:flex; align-items:center; gap:10px; }
+.bracket-detail-heading strong { flex:1; }
+.bracket-detail-heading .btn { min-height:44px; padding:8px 12px; font-size:13px; }
+.bracket-match-details { margin:0; padding-left:20px; line-height:1.6; }
+.bracket-node.bracket-final { padding:12px; border-width:2px; }
 .bracket-final .bracket-track { min-height:52px; font-size:15px; }
 .bracket-third { opacity:.9; }
-.bracket-match-details { flex-basis:100%; margin:0; line-height:1.8; }
-
-.bracket-viewport { cursor:grab; }
 .bracket-viewport.is-dragging,.bracket-viewport.is-dragging * { cursor:grabbing; user-select:none; }
 .bracket-viewport img { -webkit-user-drag:none; }
+@keyframes bracket-advance { from{transform:translateX(-6px);opacity:.6}to{transform:none;opacity:1} }
+@media(prefers-reduced-motion:reduce){.bracket-node.is-advancing{animation:none}.bracket-viewport{scroll-behavior:auto}}
+body:is([data-page="tournament_bracket"],:has(#tournament-replay)) #main { max-width:none; width:100%; padding:0; margin:0; min-height:0 !important; }
+body:is([data-page="tournament_bracket"],:has(#tournament-replay)) .footer { width:100%; max-width:none; margin:0; }
+.tournament-bracket-page { width:100%; min-width:0; }
+.bracket-page-header { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px 16px; padding:12px 24px; background:#141014; }
+#main .bracket-page-header h1 { font-size:24px; line-height:1.2; margin:0 auto 0 0; }
+.bracket-page-header .btn { min-height:44px; font-size:14px; padding:8px 14px; }
+.bracket-page-meta { color:var(--muted); font-size:13px; }
+@media(max-width:760px){
+ .bracket-page-header { padding:10px 16px; gap:8px; }
+ #main .bracket-page-header h1 { flex-basis:100%; text-align:center; margin:0; }
+ .bracket-page-meta { flex-basis:100%; text-align:center; }
+ .bracket-toolbar { padding:8px 12px; }
+}
 
 .volume-panel label.volume-balance { justify-content:flex-start; align-items:center; gap:10px; margin-top:14px; min-height:44px; font-size:14px; line-height:1.4; }
 .volume-panel .volume-balance input { width:18px; height:18px; flex:none; margin:0; }

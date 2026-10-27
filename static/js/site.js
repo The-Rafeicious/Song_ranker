@@ -2994,7 +2994,7 @@
   }
   function renderBracketReplay() {
     cancelRoundTransition();stopAudio();
-    main.innerHTML='<div class="page-head"><h1 class="tournament">Road to the podium</h1></div><div id="tournament-replay" class="tournament-map"></div>';
+    main.innerHTML='<div class="bracket-page-header"><h1 class="tournament">Road to the podium</h1></div><div id="tournament-replay" class="tournament-map"></div>';
     bracketMap=window.TournamentBracket.mount($("#tournament-replay"),{
       tournament:bracketState.tournament,entries:[...bracketState.tracks.values()],matches:bracketState.matches
     },{animate:true,sound:true,onDone:state=>renderChampion(state.sound)});

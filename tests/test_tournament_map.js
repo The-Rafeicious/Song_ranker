@@ -10,12 +10,12 @@ function fixture(size=8){
 function harness(reduced=false){
  const dom=new JSDOM('<body><div id="root"></div><div id="second"></div></body>',{url:'http://localhost/tournament',runScripts:'outside-only',pretendToBeVisual:true}),w=dom.window,d=w.document,timers=new Map(),plays=[],pauses=[],retired=[],fades=[];let seq=0;
  w.matchMedia=()=>({matches:reduced});w.HTMLElement.prototype.scrollTo=function(o){this.scrollLeft=o.left||0;this.scrollTop=o.top||0};
- w.setTimeout=fn=>{timers.set(++seq,fn);return seq};w.clearTimeout=id=>timers.delete(id);
+ const delays=[];w.setTimeout=(fn,ms)=>{delays.push(ms);timers.set(++seq,fn);return seq};w.clearTimeout=id=>timers.delete(id);
  w.HTMLMediaElement.prototype.pause=function(){pauses.push(this)};
  w.PreviewPlayback={source:(id,url)=>'/cached/'+id,play:async a=>{plays.push(a)},cancel:a=>pauses.push(a),retire:a=>retired.push(a),fadeOut:(a,ms)=>fades.push(ms)};
  for(const f of ['ui.js','gameplay.js'])w.eval(fs.readFileSync('static/js/'+f,'utf8'));
  const tick=async()=>{const [id,fn]=timers.entries().next().value||[];if(fn){timers.delete(id);fn();}await Promise.resolve();};
- return {w,d,dom,timers,plays,pauses,retired,fades,tick};
+ return {w,d,dom,timers,plays,pauses,retired,fades,delays,tick};
 }
 (async()=>{
  const h=harness(),data=fixture(32),root=h.d.querySelector('#root');
@@ -27,7 +27,10 @@ function harness(reduced=false){
  check(root.querySelectorAll('script').length===0,'song names are escaped');
  root.querySelector('[data-map-track="1"]').click();check(root.querySelectorAll('.is-route').length===5,'selected champion route appears across five rounds');
  check(root.querySelector('.bracket-inspector').textContent.includes('5 wins'),'inspector reports path wins');
- root.querySelector('[data-map-round="4"]').click();check(root.querySelector('.bracket-viewport').scrollLeft===1186,'round button pans inside the map');
+ check(!root.querySelector('[data-map-round],[data-map-half]'),'stage selectors are removed');
+ check(root.querySelector('.bracket-inspector').closest('[data-map-match]')===root.querySelector('[data-map-match="1"]'),'details drop from the selected match');
+ check(parseFloat(root.querySelector('.bracket-final').style.getPropertyValue('--round-light'))>parseFloat(root.querySelector('[data-map-match="1"]').style.getPropertyValue('--round-light')),'round shades brighten towards the final');
+ root.querySelector('[data-map-close]').click();check(!root.querySelector('.bracket-inspector'),'details can close without leaving the map');
  check(h.plays.length===0,'viewing a saved bracket does not load audio');tree.cancel();
  const bronzeHarness=harness(),withBronze=fixture();withBronze.matches.push({id:8,round_number:3,match_number:0,match_type:'third_place',song1_id:3,song2_id:7,winner_id:3,loser_id:7,status:'completed',points_awarded:1});
  bronzeHarness.w.TournamentBracket.mount(bronzeHarness.d.querySelector('#root'),withBronze);
@@ -41,10 +44,11 @@ function harness(reduced=false){
  check(viewport.scrollLeft===140&&viewport.scrollTop===130,'drag pans both axes');
  dragRoot.querySelector('[data-map-track="1"]').click();check(dragRoot.querySelectorAll('.is-route').length===0,'drag release does not select a track');
  dragRoot.querySelector('[data-map-track="1"]').click();check(dragRoot.querySelectorAll('.is-route').length===3,'ordinary clicks still select tracks');
- dragTree.cancel();pointer('pointerdown',100,100);pointer('pointermove',0,0);check(viewport.scrollLeft===140,'cancellation removes drag listeners');dragHarness.dom.window.close();
+ const beforeCancel=viewport.scrollLeft;dragTree.cancel();pointer('pointerdown',100,100);pointer('pointermove',0,0);check(viewport.scrollLeft===beforeCancel,'cancellation removes drag listeners');dragHarness.dom.window.close();
  const q=harness(),eight=fixture(),second=q.d.querySelector('#root');let done=0;
  const replay=q.w.TournamentBracket.mount(second,eight,{animate:true,onDone:()=>done++});
  check(second.querySelector('[data-map-sound]').getAttribute('aria-pressed')==='true','replay sound defaults on');
+ check(q.delays.includes(3500),'replay holds each result for 3.5 seconds');
  check(second.querySelectorAll('.is-resolved').length===1,'replay reveals one result at a time');
  check(second.querySelector('[data-map-match="7"] [data-map-track="1"]')===null,'final identities wait for feeders');
  for(let i=0;i<15&&done===0;i++)await q.tick();
