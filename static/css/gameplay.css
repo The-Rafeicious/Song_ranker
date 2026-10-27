@@ -881,3 +881,66 @@ body.gameplay-page #main .shelf-cover-score .shelf-point-gain {
 body.gameplay-page #main .shelf-cover-score .shelf-point-gain:empty {
   display: none;
 }
+
+/* Cover-only playback halo shared by the three paired selection screens. */
+@property --cover-glow-angle {
+  syntax: '<angle>';
+  initial-value: 0deg;
+  inherits: false;
+}
+body.gameplay-page:is([data-page="standard"], [data-page="tournament_play"], [data-page="guesser"]) #main .matchup .match-cover {
+  --cover-glow: var(--game-accent);
+  border-radius: 14px;
+  isolation: isolate;
+  box-shadow: 0 0 12px color-mix(in srgb, var(--cover-glow) 14%, transparent);
+  transition: box-shadow .6s ease;
+}
+body.gameplay-page:is([data-page="standard"], [data-page="tournament_play"], [data-page="guesser"]) #main .matchup .match-cover::before,
+body.gameplay-page:is([data-page="standard"], [data-page="tournament_play"], [data-page="guesser"]) #main .matchup .match-cover::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 17px;
+  pointer-events: none;
+  z-index: 2;
+}
+body.gameplay-page:is([data-page="standard"], [data-page="tournament_play"], [data-page="guesser"]) #main .matchup .match-cover::before {
+  padding: 2px;
+  background: conic-gradient(from var(--cover-glow-angle), transparent, var(--cover-glow) 22%, transparent 45%, var(--cover-glow) 72%, transparent);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  opacity: .22;
+  transition: opacity .6s ease;
+}
+body.gameplay-page:is([data-page="standard"], [data-page="tournament_play"], [data-page="guesser"]) #main .matchup .match-cover::after {
+  border: 1px solid var(--cover-glow);
+  box-shadow: 0 0 9px color-mix(in srgb, var(--cover-glow) 35%, transparent);
+  opacity: 0;
+}
+body.gameplay-page:is([data-page="standard"], [data-page="tournament_play"], [data-page="guesser"]) #main .matchup .match-cover:has(> .cover-button[data-playing="true"][data-preview-state="playing"]) {
+  box-shadow: 0 0 12px color-mix(in srgb, var(--cover-glow) 45%, transparent), 0 0 26px color-mix(in srgb, var(--cover-glow) 22%, transparent);
+}
+body.gameplay-page:is([data-page="standard"], [data-page="tournament_play"], [data-page="guesser"]) #main .matchup .match-cover:has(> .cover-button[data-playing="true"][data-preview-state="playing"])::before {
+  opacity: 1;
+  animation: cover-glow-orbit 3.6s linear infinite;
+}
+body.gameplay-page:is([data-page="standard"], [data-page="tournament_play"], [data-page="guesser"]) #main .matchup .match-cover:has(> .cover-button[data-playing="true"][data-preview-state="playing"])::after {
+  animation: cover-glow-wave 2.4s ease-out infinite;
+}
+@keyframes cover-glow-orbit { to { --cover-glow-angle: 360deg; } }
+@keyframes cover-glow-wave {
+  0% { opacity: 0; transform: scale(1); }
+  18% { opacity: .42; }
+  100% { opacity: 0; transform: scale(1.045); }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.gameplay-page #main .matchup .match-cover,
+  body.gameplay-page #main .matchup .match-cover::before,
+  body.gameplay-page #main .matchup .match-cover::after { animation: none !important; transition: none !important; }
+}
+@media (forced-colors: active) {
+  body.gameplay-page #main .matchup .match-cover::before,
+  body.gameplay-page #main .matchup .match-cover::after { display: none; }
+}

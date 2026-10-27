@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.5.3 · competition generation 3 · schema 22**
+**Application V5.5.4 · competition generation 3 · schema 22**
 
-Current implementation reference. `APP_VERSION` is `5.5.3`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.5.4`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -882,7 +882,7 @@ recent-Elo-history disclosure and repeated seven-day activity figures. Archive
 bracket disclosures remain useful navigation and mount their map lazily.
 
 
-### Album Shelves exclusion (V5.5.3 / schema 22)
+### Album Shelves exclusion (V5.5.4 / schema 22)
 
 `albums.shelves_excluded` is a checked integer flag, default 0. Dev → Library →
 Albums → Edit exposes **Exclude from Album Shelves**. The album table has an
@@ -901,7 +901,7 @@ Exports, rebuilds, Git SQL snapshots and catalogue transfers preserve explicit f
 Grouping tracks under an existing album can avoid extra placeholder album rows;
 this flag itself does not merge or remove data or compress the database.
 
-### Exclusion evidence and bracket workspace (V5.5.3)
+### Exclusion evidence and bracket workspace (V5.5.4)
 
 Completed Shelves rounds containing any currently excluded saved album are hidden as whole exercises in all public summaries, trends, history, rankings and Overall evidence. Including that album again restores the unchanged saved facts. Keeping whole-round denominators avoids turning part of a saved round into a new perfect result. Dev inspection/export still retains every record. Profile Shelves panels require at least one current eligible track. Overall calibration topology includes the album flag. Read-only pre-22 archive grading assumes included albums.
 
