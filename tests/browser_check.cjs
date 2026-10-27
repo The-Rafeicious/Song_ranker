@@ -434,7 +434,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.ok(await page.locator('.bracket-inspector').evaluate(e=>e.parentElement.classList.contains('bracket-node')),'Details drop from the chosen match');
   await page.keyboard.press('Escape');assert.equal(await page.locator('.bracket-inspector').count(),0);await page.locator('#tournament-77 [data-map-track="20"]').first().click();
   for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'tournament-map',folder);const frame=await page.locator('.bracket-viewport').boundingBox();assert.ok(Math.abs(frame.x)<1&&Math.abs(frame.width-width)<1,'Bracket spans the full page width');assert.equal(await page.locator('.bracket-viewport').evaluate(e=>getComputedStyle(e).borderTopWidth),'0px');await page.screenshot({path:folder+'/tournament-map-'+width+'.png',fullPage:true})}
-  await page.goto(base+'/tournament?tournament=77');await page.locator('[data-tournament-vote="0"]').waitFor();await page.locator('[data-tournament-vote="0"]').click();
+  await page.goto(base+'/tournament?tournament=77');await page.locator('[data-tournament-vote="0"]').waitFor();assert.equal(await page.locator('#main a[href="/tournament/77/bracket"]').count(),0,'Active matches omit the archive bracket link');await page.locator('[data-tournament-vote="0"]').click();
   await page.locator('#tournament-replay .bracket-node').first().waitFor({timeout:30000});
   assert.equal(await page.locator('.winner-podium').count(),0,'Bracket replay precedes podium');
   assert.ok(await page.locator('#tournament-replay audio').count()<=2,'Only the incoming clip and fading tail can exist');

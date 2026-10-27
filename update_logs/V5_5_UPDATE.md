@@ -61,3 +61,7 @@ Learning uses the playing audio stream, so it adds no downloads or database stor
 Tournament replay holds each result for 3.5 seconds. The bracket fills the page between the navigation banner and footer, with no inset frame or stage selectors. Drag, touch scrolling and keyboard selection remain available.
 
 Selecting a track drops its details directly below that match; Close or Escape dismisses the panel. Outer rounds use darker tournament pink, stepping into brighter shades and a stronger glow towards the central final. Existing results, Blind privacy and the four-track audio handoff are preserved.
+
+## V5.5.7
+
+Active tournament matches no longer show the out-of-place Explore bracket link during voting or answer reveals. Saved brackets remain accessible from Tournament Stats, and the completed tournament still shows its bracket replay before the podium.

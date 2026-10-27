@@ -2747,7 +2747,7 @@
               : remaining === 8
                 ? "Quarter-finals"
                 : "Round " + active.round_number;
-    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<a class="btn tournament" href="/tournament/${tournament.id}/bracket">Explore bracket ↗</a><p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
+    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
     attachPlayers();
     window.PreviewPlayback?.preloadPair([
       $("#bracket-audio-0"),

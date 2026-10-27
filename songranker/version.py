@@ -1,2 +1,2 @@
 """Single application version for the footer and every asset cache key."""
-APP_VERSION = "5.5.6"
+APP_VERSION = "5.5.7"
