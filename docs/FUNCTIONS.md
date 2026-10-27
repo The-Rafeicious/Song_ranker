@@ -42,21 +42,22 @@ Shared catalogue projections, cross-mode results and Elo history queries.
 | --- | --- | --- |
 | [proper_album](../songranker/catalog.py#L10) | `album` | Distinguish named full releases from unknown-album and Single placeholders. |
 | [versus_metadata](../songranker/catalog.py#L16) | `album, linked_artists` | Shared display links for paired song rows; preserve whole artist names. |
-| [song_performance](../songranker/catalog.py#L44) | `data` | Derive achievements from saved matches; final placements require completion. |
-| [aggregate_performance](../songranker/catalog.py#L109) | `songs` | Pool recognition attempts and total distinct linked songs' achievements. |
-| [voting_records](../songranker/catalog.py#L128) | `conn` | Combined public preference results, retaining origin and mode breakdowns. |
-| [summarize_votes](../songranker/catalog.py#L165) | `records` | Summarise combined preference records by standard/blind mode and ordinary/tournament origin. |
-| [summarize_votes.project](../songranker/catalog.py#L172) | `rows` | Aggregate wins, losses, match counts and win rates for one subset of preference records. |
-| [collection](../songranker/catalog.py#L197) | `include_overall_sources=False` | Collection; reads competition_state, global_stats, song_artists, song_details, song_genres, songs, sqlite_master, trivia_rounds. |
-| [ranked](../songranker/catalog.py#L314) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
-| [special_records](../songranker/catalog.py#L396) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, elo_guess_rounds, songs. |
-| [display_song](../songranker/catalog.py#L511) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
-| [special_stats](../songranker/catalog.py#L535) | `` | Special stats; GET /api/special-modes/stats. |
-| [source_sql](../songranker/catalog.py#L576) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
-| [filters](../songranker/catalog.py#L593) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
-| [summary](../songranker/catalog.py#L600) | `conn` | Count effective preference matches by mode and origin for the history summary. |
-| [page](../songranker/catalog.py#L618) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
-| [tournament_appearances](../songranker/catalog.py#L654) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
+| [tournament_weights](../songranker/catalog.py#L44) | `data` | Per-song competition credit: global 1, tag .5; artist/album are bounded to 2%/.5% of that song's completed broad entries, regardless of repetition. Missing legacy scope is global; unknown scopes receive no credit. |
+| [song_performance](../songranker/catalog.py#L70) | `data, competitive=True` | Project scope-weighted competition achievements, or full raw achievements when competitive=False. Final placements require completion. |
+| [aggregate_performance](../songranker/catalog.py#L139) | `songs` | Pool recognition attempts and total distinct linked songs' achievements. |
+| [voting_records](../songranker/catalog.py#L158) | `conn` | Combined public preference results, retaining origin and mode breakdowns. |
+| [summarize_votes](../songranker/catalog.py#L195) | `records` | Summarise combined preference records by standard/blind mode and ordinary/tournament origin. |
+| [summarize_votes.project](../songranker/catalog.py#L202) | `rows` | Aggregate wins, losses, match counts and win rates for one subset of preference records. |
+| [collection](../songranker/catalog.py#L227) | `include_overall_sources=False` | Collection; reads competition_state, global_stats, song_artists, song_details, song_genres, songs, sqlite_master, trivia_rounds. |
+| [ranked](../songranker/catalog.py#L344) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
+| [special_records](../songranker/catalog.py#L426) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, elo_guess_rounds, songs. |
+| [display_song](../songranker/catalog.py#L541) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
+| [special_stats](../songranker/catalog.py#L565) | `` | Special stats; GET /api/special-modes/stats. |
+| [source_sql](../songranker/catalog.py#L606) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
+| [filters](../songranker/catalog.py#L623) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
+| [summary](../songranker/catalog.py#L630) | `conn` | Count effective preference matches by mode and origin for the history summary. |
+| [page](../songranker/catalog.py#L648) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
+| [tournament_appearances](../songranker/catalog.py#L684) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
 
 ## songranker/developer/catalog_sources.py
 
@@ -556,10 +557,10 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | [recorded_result](../songranker/modes/tournament.py#L601) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
 | [podium_points](../songranker/modes/tournament.py#L617) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
 | [build_tournament_stats](../songranker/modes/tournament.py#L635) | `conn, now=None, selected=None, archive_page=1` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
-| [build_tournament_stats.identity](../songranker/modes/tournament.py#L744) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
-| [build_tournament_stats.scope](../songranker/modes/tournament.py#L756) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
-| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L914) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
-| [build_tournament_stats.category](../songranker/modes/tournament.py#L988) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
+| [build_tournament_stats.identity](../songranker/modes/tournament.py#L745) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
+| [build_tournament_stats.scope](../songranker/modes/tournament.py#L757) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
+| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L915) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
+| [build_tournament_stats.category](../songranker/modes/tournament.py#L989) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
 
 ## songranker/modes/trivia.py
 
@@ -698,22 +699,22 @@ Derived, calibrated Overall scores and their rankings/details APIs.
 | [ratio](../songranker/overall.py#L59) | `right, total, evidence=None, applicable=True` | Build a bounded success-rate feature with explicit evidence and eligibility. |
 | [shelf_eligible_ids](../songranker/overall.py#L65) | `data` | Match the game's per-track pool: real album, unique slot, >=2 tracks. |
 | [features](../songranker/overall.py#L80) | `data` | Derive per-song Overall metric values and mode appearances from saved catalogue/result facts. |
-| [quantile](../songranker/overall.py#L141) | `values, fraction` | Interpolate a population quantile, returning zero for an empty distribution. |
-| [exposure_reference](../songranker/overall.py#L149) | `values` | Average = 50% evidence; robust high (90th percentile) = 100%. |
-| [relative_evidence](../songranker/overall.py#L158) | `n, reference` | Scale a song's appearances against the population average and high-exposure reference. |
-| [population](../songranker/overall.py#L168) | `facts` | Build metric calibration statistics from eligible songs with measured evidence. |
-| [topology](../songranker/overall.py#L186) | `data` | Hash catalogue eligibility and membership so Overall calibration detects structural changes. |
-| [capped_shares](../songranker/overall.py#L195) | `strengths, cap` | Proportional shares with a family cap; release excess to other families. |
-| [calibrate](../songranker/overall.py#L208) | `facts, data, force=False` | Build and cache current Overall metric/mode calibration from result evidence and catalogue eligibility. |
-| [metric_score](../songranker/overall.py#L261) | `value, calibration` | Normalise an observed metric against its population and shrink it toward neutral by evidence. |
-| [song_score](../songranker/overall.py#L276) | `fact, model, details=False` | Combine eligible mode contributions into a song's Overall score and evidence diagnostics. |
-| [entity_score](../songranker/overall.py#L307) | `ids, scores, details=False` | Aggregate member-song scores into an evidence-adjusted collection score with a neutral prior. |
-| [apply_display_scores](../songranker/overall.py#L344) | `rows` | Preserve raw distances/endpoints; category standing never rescales a score. |
-| [evaluate](../songranker/overall.py#L361) | `data, force=False, details=False` | Compute and rank Overall songs, artists, albums and tags with calibration and summary diagnostics. |
-| [overall_rankings](../songranker/overall.py#L403) | `` | Overall rankings; GET /overall_rankings. |
-| [overall_api](../songranker/overall.py#L406) | `` | Overall api; GET /api/overall. |
-| [overall_details](../songranker/overall.py#L410) | `` | Overall details; GET /api/overall/details. |
-| [recalibrate_overall](../songranker/overall.py#L422) | `` | Recalibrate overall; POST /api/dev/overall/recalibrate. |
+| [quantile](../songranker/overall.py#L143) | `values, fraction` | Interpolate a population quantile, returning zero for an empty distribution. |
+| [exposure_reference](../songranker/overall.py#L151) | `values` | Average = 50% evidence; robust high (90th percentile) = 100%. |
+| [relative_evidence](../songranker/overall.py#L160) | `n, reference` | Scale a song's appearances against the population average and high-exposure reference. |
+| [population](../songranker/overall.py#L170) | `facts` | Build metric calibration statistics from eligible songs with measured evidence. |
+| [topology](../songranker/overall.py#L188) | `data` | Hash catalogue eligibility and membership so Overall calibration detects structural changes. |
+| [capped_shares](../songranker/overall.py#L197) | `strengths, cap` | Proportional shares with a family cap; release excess to other families. |
+| [calibrate](../songranker/overall.py#L210) | `facts, data, force=False` | Build and cache current Overall metric/mode calibration from result evidence and catalogue eligibility. |
+| [metric_score](../songranker/overall.py#L263) | `value, calibration` | Normalise an observed metric against its population and shrink it toward neutral by evidence. |
+| [song_score](../songranker/overall.py#L278) | `fact, model, details=False` | Combine eligible mode contributions into a song's Overall score and evidence diagnostics. |
+| [entity_score](../songranker/overall.py#L309) | `ids, scores, details=False` | Aggregate member-song scores into an evidence-adjusted collection score with a neutral prior. |
+| [apply_display_scores](../songranker/overall.py#L346) | `rows` | Preserve raw distances/endpoints; category standing never rescales a score. |
+| [evaluate](../songranker/overall.py#L363) | `data, force=False, details=False` | Compute and rank Overall songs, artists, albums and tags with calibration and summary diagnostics. |
+| [overall_rankings](../songranker/overall.py#L405) | `` | Overall rankings; GET /overall_rankings. |
+| [overall_api](../songranker/overall.py#L408) | `` | Overall api; GET /api/overall. |
+| [overall_details](../songranker/overall.py#L412) | `` | Overall details; GET /api/overall/details. |
+| [recalibrate_overall](../songranker/overall.py#L424) | `` | Recalibrate overall; POST /api/dev/overall/recalibrate. |
 
 ## songranker/pages.py
 
@@ -1615,6 +1616,18 @@ Tag review/apply HTTP and atomicity checks. Only isolated fixture DBs are used.
 | [TagWorkbenchTests.test_new_links_and_definitions_survive_full_export_rebuild](../tests/test_tag_workbench.py#L228) | `self` | Verify new links and definitions survive full export rebuild. |
 | [TagWorkbenchTests.test_requested_backup_before_tag_edit_can_be_restored](../tests/test_tag_workbench.py#L234) | `self` | Verify requested backup before tag edit can be restored. |
 
+## tests/test_tournament_credit.py
+
+Selective repetition cannot dominate cross-library tournament evidence.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [TournamentCreditTests.data](../tests/test_tournament_credit.py#L8) | `self, broad=True, repeats=10` | Data. |
+| [TournamentCreditTests.test_repetition_shares_a_cap_in_all_achievements](../tests/test_tournament_credit.py#L15) | `self` | Verify repetition shares a cap in all achievements. |
+| [TournamentCreditTests.test_local_only_has_no_competition_evidence](../tests/test_tournament_credit.py#L27) | `self` | Verify local only has no competition evidence. |
+| [TournamentCreditTests.test_overall_uses_weighted_evidence_instead_of_raw_counters](../tests/test_tournament_credit.py#L32) | `self` | Verify overall uses weighted evidence instead of raw counters. |
+| [TournamentCreditTests.test_scope_order_and_unknown_legacy_policy](../tests/test_tournament_credit.py#L43) | `self` | Verify scope order and unknown legacy policy. |
+
 ## tests/test_tournament_policy.py
 
 Tournament scope policy and backed-up removal of historical selective Elo.
@@ -1834,14 +1847,14 @@ Disposable served-page and Chromium integration fixtures.
 | [run_dev](../tools/browser_check.py#L19) | `` | Run served Dev DOM checks against a disposable local fixture server. |
 | [serve_dev](../tools/browser_check.py#L58) | `database, port` | Serve dev; reads songs; writes albums, artists, genres, song_artists, song_genres, songs. |
 | [serve_dev.lookup](../tools/browser_check.py#L118) | `url` | Return deterministic Apple track offers for served import/review checks. |
-| [run_vibe](../tools/browser_check.py#L146) | `` | Run vibe; reads songs; writes albums, artists, genres, song_artists, song_genres, song_vibe_positions, songs, tournament_entries. |
+| [run_vibe](../tools/browser_check.py#L146) | `` | Run vibe; reads songs, tournament_entries, tournament_matches; writes albums, artists, genres, song_artists, song_genres, song_vibe_positions, songs, tournament_entries. |
 | [run_vibe.cover](../tools/browser_check.py#L222) | `` | Serve local artwork so browser screenshots do not depend on external images. |
 | [run_vibe.tag_audio_enable](../tools/browser_check.py#L231) | `` | Tag audio enable; POST /tag-test-enable. |
 | [run_vibe.tag_audio](../tools/browser_check.py#L239) | `` | Serve silence or bounded test tones without Apple transport. |
 | [run_vibe.enable_voting_report](../tools/browser_check.py#L257) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
 | [run_vibe.enable_tournament_map](../tools/browser_check.py#L271) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
-| [run_vibe.enable_discs](../tools/browser_check.py#L294) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
-| [main](../tools/browser_check.py#L323) | `` | Run the requested disposable integration fixture. |
+| [run_vibe.enable_discs](../tools/browser_check.py#L299) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
+| [main](../tools/browser_check.py#L328) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 
@@ -1862,4 +1875,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1270 Python definitions**.
+Total: **1276 Python definitions**.

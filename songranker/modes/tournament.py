@@ -5,7 +5,7 @@ from songranker.reports.stats_activity import attach_reports
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from math import ceil, isfinite
-from songranker.catalog import proper_album, song_performance
+from songranker.catalog import proper_album, song_performance, tournament_weights
 from songranker.reports.global_stats_data import percent, timestamp
 
 
@@ -724,6 +724,7 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
                 if t.get(key) in songs:
                     appearances[t[key]].add(t["id"])
 
+    weights=tournament_weights(dict(tournaments=list(brackets.values()),tournament_entries=entries,tournament_matches=matches))
     # Reuse the existing achievement owner, with invalid point values excluded.
     performance = song_performance(
         dict(
@@ -737,7 +738,7 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
         )
     )
     for sid, song in songs.items():
-        song.update(performance[sid], entries=len(appearances[sid]))
+        song.update(performance[sid], entries=len(appearances[sid]), entry_credit=performance[sid]["tournament_appearances"])
         song["played"] = song["tournament_wins"] + song["tournament_losses"]
         song["win_rate"] = percent(song["tournament_wins"], song["played"])
 
@@ -952,7 +953,7 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
         ("Most titles", "championships", "titles", entered_songs),
         ("Most podiums", "podiums", "podiums", entered_songs),
         ("Most tournament points", "tournament_points", "points", entered_songs),
-        ("Most entries", "entries", "brackets", entered_songs),
+        ("Most entry credit", "entry_credit", "entry credit", entered_songs),
         ("Most match wins", "tournament_wins", "wins", entered_songs),
         (
             "Best win rate · 3+ matches",
@@ -1003,7 +1004,7 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1):
                     podiums=sum(s["podiums"] for s in related),
                     points=round(sum(s["tournament_points"] for s in related), 2),
                     tracks=len(related),
-                    brackets=len(set().union(*(appearances[s["id"]] for s in related))),
+                    brackets=round(sum(max(weights.get((s["id"],tid),0) for s in related) for tid in set().union(*(appearances[s["id"]] for s in related))),2),
                 )
             )
         rows.sort(

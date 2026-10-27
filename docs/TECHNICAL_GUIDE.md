@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.5.9 · competition generation 3 · schema 22**
+**Application V5.5.10 · competition generation 3 · schema 22**
 
-Current implementation reference. `APP_VERSION` is `5.5.9`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.5.10`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -908,3 +908,9 @@ Tournament replay walks each quarter's feeder matches in order before its semi-f
 ### Full-page bracket replay (V5.5.6)
 
 The shared map holds each result for 3.5 seconds and fills the available space between the banner and footer in both the saved workspace and pre-podium replay. The viewport has no inset border or rounded box. Resize observation gives the map almost a viewport of its own, with the header and footer outside that height; diagram overflow stays inside the drag surface. Stage selector controls are removed. Match details are attached to their selected node, support Close/Escape with focus restoration, and keep content scrollable on short screens. Round-local CSS variables produce darker outer rounds and brighter central rounds with increasing glow; winner/elimination markers and Blind privacy remain independent.
+
+### Tournament competition scope credit (V5.5.10)
+
+All public achievement projections, Tournament leaders and Overall use library weight 1 and tag weight 0.5. For each song, artist-only entry weight is min(0.02, 0.02 × completed broad-entry credit / artist entries); album-only uses 0.005 in place of 0.02. Thus repeated selective brackets share a fixed budget: artist credit cannot exceed 2%, and album credit 0.5%, of that song's completed broad-entry credit. With no broad evidence they supply no competition evidence. Wins, losses, placements, points and entry evidence all use the same per-song credit. Missing legacy scope means library; unknown scope receives no credit.
+
+Raw stored matches, points, archive summaries, activity counts and bracket replays remain unchanged. Artist and album profiles have local-bracket history with full match/point summaries, winners and replay links. Overall calibration version 7 recalculates the changed evidence; Elo rules and database schema are unchanged.

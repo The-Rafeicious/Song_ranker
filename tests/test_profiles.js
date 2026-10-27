@@ -13,7 +13,7 @@ function fixture(size=75){
   tournament_points:1.25,tournament_wins:1,tournament_losses:1,championships:i===0?1:0,podiums:i===0?1:0,
   voting:{standard_wins:1,standard_losses:0,blind_wins:0,blind_losses:1,raw:{standard_wins:1,standard_losses:0,blind_wins:0,blind_losses:1}},
   mode_ratings:{standard:{elo:1210,matches:1},blind:{elo:1190,matches:1}},listening:{samples:1,seconds:12}}));
- return {songs,albums,artists:[{id:1,name:'Artist'}],tags:[{id:1,name:'Tag',description:'Tag notes'}],history:[],elo_history:[],tournaments:[{id:1,size:8,status:'completed'}],tournament_matches:[],tournament_entries:songs.map(s=>({song_id:s.id,tournament_id:1})),global_stats:{}};
+ return {songs,albums,artists:[{id:1,name:'Artist'}],tags:[{id:1,name:'Tag',description:'Tag notes'}],history:[],elo_history:[],tournaments:[{id:1,size:8,status:'completed'},{id:2,size:8,status:'completed',scope_type:'artist',scope_id:1,champion_id:1},{id:3,size:8,status:'in_progress',scope_type:'album',scope_id:1}],tournament_matches:[],tournament_entries:songs.map(s=>({song_id:s.id,tournament_id:1})),global_stats:{}};
 }
 async function harness(page,width=1280,size=75,eligible=true){
  const data=fixture(size),kind={artist:'artists',album:'albums',tag:'tags'}[page],name=page==='album'?'Album 1':page==='artist'?'Artist':'Tag';
@@ -45,7 +45,7 @@ async function harness(page,width=1280,size=75,eligible=true){
   const h=await harness(type,width),{d}=h;
   check(d.body.classList.contains('profile-page'),type+' profile class '+width);
   check(JSON.stringify([...d.querySelectorAll('[data-profile-panel]')].map(n=>n.dataset.profilePanel))===JSON.stringify(expected),type+' uses the five shared records');
-  check(d.querySelectorAll('.song-sections details').length===0,type+' mode records have no disclosures');
+  check(d.querySelectorAll('.song-sections details').length===(['artist','album'].includes(type)?1:0),type+' only local bracket history uses a disclosure');
   check(d.querySelectorAll('#overall-profile details').length===1,type+' keeps Overall dropdown');
   check(!d.querySelector('#overall-profile .overall-balance-copy,#overall-profile .overall-mode-context'),type+' removes Overall explanation');
   check(d.querySelectorAll('#recognition .profile-inset').length===3,type+' fields shown inline');
@@ -53,6 +53,7 @@ async function harness(page,width=1280,size=75,eligible=true){
   check(!d.querySelector('.profile-listening,.profile-extra,.profile-bracket'),type+' has no extra diagnostic/nested panels');
   check(d.querySelectorAll('[data-profile-panel] > .joined-metrics').length===5,type+' summaries share one structure');
   check(h.errors.length===0,type+' loads without errors');
+  if(['artist','album'].includes(type)){check(d.querySelector('a[href="/tournament/'+(type==='artist'?2:3)+'/bracket"]'),type+' has its own selective replay link');check(d.querySelector('#tournament').textContent.includes('credit is capped'),type+' explains bounded competition credit');}
   if(type!=='song'){
    check(d.querySelectorAll('.profile-track-row').length===30,type+' starts with thirty songs');
    const audio=d.querySelector('.profile-track-row audio'),row=audio.parentElement;

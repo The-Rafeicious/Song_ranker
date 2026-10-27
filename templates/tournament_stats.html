@@ -97,11 +97,11 @@
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-records">
     <div class="section-head"><h2 class="tournament" id="ts-records">Track records</h2><a class="tournament" href="/mode_rankings/tournament">Rankings ↗</a></div>
-    <div class="ts-records">{% for record in records %}<article class="mode-stats-inset ts-record">
+    <p class="muted">Competition records use scope credit: library 100%, tags 50%. Artist-only and album-only results add at most 2% and 0.5% of each track’s broader completed entries; repeats share that cap. Archive results below remain full, unweighted results.</p><div class="ts-records">{% for record in records %}<article class="mode-stats-inset ts-record">
       <h3>{{ record.label }}</h3>
       {% if record.song %}<div class="ts-record-track"><span class="mode-stats-art">{{ art(record.song.cover_url) }}</span><div class="mode-stats-copy">{{ song_name(record.song) }}{{ metadata(record.song) }}</div></div>
       <strong class="mode-stats-primary">{{ '%g'|format(record.value) }}{{ '%' if record.unit=='%' else '' }}{% if record.unit!='%' %}<small> {{ record.unit }}</small>{% endif %}</strong>
-      <p>{{ record.song.tournament_wins }}W · {{ record.song.tournament_losses }}L · {{ record.song.entries }} brackets</p>
+      <p>{{ '%.2f'|format(record.song.tournament_wins) }}W · {{ '%.2f'|format(record.song.tournament_losses) }}L · {{ record.song.entries }} brackets</p>
       {% else %}<div class="empty">No qualifying result yet.</div>{% endif %}
     </article>{% endfor %}</div>
   </section>
@@ -109,7 +109,7 @@
   {% for category in categories %}
   <section class="panel dashboard-surface mode-stats-panel ts-entity ts-entity-{{ category.kind }}" aria-labelledby="ts-{{ category.kind }}-records">
     <div class="section-head"><h2 class="{{ category.kind }}" id="ts-{{ category.kind }}-records">{{ {'artist':'Artist records','album':'Album records','tag':'Tag records'}[category.kind] }}</h2></div>
-    <p class="mode-stats-caption">Titles, podiums and points · current collection links</p>
+    <p class="mode-stats-caption">Scope-weighted title, podium and point credit · current collection links</p>
     <ol class="mode-stats-list mode-stats-dense">
     {% for row in category.rows %}<li class="mode-stats-row">
       <span class="mode-stats-art">{{ art(row.cover_url|default(''),category.kind=='artist') }}</span>
@@ -117,7 +117,7 @@
         {% if category.kind=='artist' %}{% set href=url_for('artist_page',artist_name=row.name) %}{% elif category.kind=='album' %}{% set href=url_for('album_page',album_title=row.name) %}{% else %}{% set href=url_for('tag_page',tag_name=row.name) %}{% endif %}
         <a class="{{ category.kind }} mode-stats-name" title="{{ row.name }}" href="{{ href }}">{{ row.name }}</a><span>{{ row.tracks }} {{ 'track' if row.tracks==1 else 'tracks' }} · {{ row.brackets }} brackets</span>
       </div>
-      <div class="mode-stats-result"><strong>{{ row.titles }}<small> {{ 'title' if row.titles==1 else 'titles' }}</small></strong><span>{{ row.podiums }} podiums · {{ '%g'|format(row.points) }} points</span></div>
+      <div class="mode-stats-result"><strong>{{ '%.2f'|format(row.titles) }}<small> {{ 'title' if row.titles==1 else 'titles' }}</small></strong><span>{{ '%.2f'|format(row.podiums) }} podium credit · {{ '%g'|format(row.points) }} points</span></div>
     </li>{% else %}<li class="empty">No tournament entries yet.</li>{% endfor %}
     </ol>
   </section>

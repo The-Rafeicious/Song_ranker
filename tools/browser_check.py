@@ -288,6 +288,11 @@ def run_vibe():
                 ]:
                     conn.execute("""INSERT INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id,winner_id,loser_id,status,points_awarded,match_type)
                         VALUES(77,?,?,?,?,?,?,?,?,?)""", (round_number, number, a, b, winner, loser, 'completed' if winner else 'pending', 1 if winner else 0, kind))
+                conn.execute("UPDATE songs SET album_id=1 WHERE id BETWEEN 20 AND 27")
+                conn.execute("INSERT INTO tournaments(id,size,scope_type,scope_id,status,champion_id,runner_up_id,third_place_id,fourth_place_id,points_version,playoff_enabled,elo_policy_version,elo_weight) VALUES(78,8,'album',1,'completed',20,24,22,26,1,1,0,0)")
+                conn.execute("INSERT INTO tournament_entries SELECT 78,song_id,seed FROM tournament_entries WHERE tournament_id=77")
+                conn.execute("""INSERT INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id,winner_id,loser_id,status,points_awarded,match_type)
+                    SELECT 78,round_number,match_number,song1_id,song2_id,COALESCE(winner_id,20),COALESCE(loser_id,24),'completed',1,match_type FROM tournament_matches WHERE tournament_id=77""")
             return {"tournament": 77}
 
         @application.app.post("/shelves-test-enable")

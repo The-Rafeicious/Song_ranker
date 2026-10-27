@@ -69,7 +69,7 @@ window.ProfileUI = (() => {
   window.addEventListener("resize", () => {
     if (U) fitTags();
   });
-  function stats(tracks, type = "songs") {
+  function stats(tracks, type = "songs", identity = null) {
     tracks = [...new Map(tracks.map((s) => [s.id, s])).values()];
     const sums = sumFields(tracks, [
       "attempts",
@@ -172,28 +172,20 @@ window.ProfileUI = (() => {
       ranking("trivia", "recognition") +
         link("recognition", "/trivia_stats", "Stats"),
     );
-    const ids = new Set(tracks.map((s) => s.id)),
-      db = U.data(),
-      brackets = new Set((db.tournaments || []).map((t) => t.id));
-    const entries = (db.tournament_entries || []).filter((e) =>
-      ids.has(e.song_id),
-    );
-    const matches = (db.tournament_matches || []).filter(
-      (m) => ids.has(m.song1_id) || ids.has(m.song2_id),
-    );
-    const countBrackets = new Set(
-      [
-        ...entries.map((e) => e.tournament_id),
-        ...matches.map((m) => m.tournament_id),
-      ].filter((id) => brackets.has(id)),
-    ).size;
+    const db = U.data();
+    const localKind=type==='artists'?'artist':type==='albums'?'album':null;
+    const localBrackets=identity&&localKind?(db.tournaments||[]).filter(t=>t.scope_type===localKind&&Number(t.scope_id)===Number(identity.id)):[];
+    const localHistory=localBrackets.length?`<details class="profile-inset"><summary>${localKind==='artist'?'Artist':'Album'}-only brackets · ${localBrackets.length}</summary><p class="muted">Full local results. Competition credit is capped so repeats cannot dominate broader brackets.</p>${localBrackets.map(t=>{
+      const played=(db.tournament_matches||[]).filter(m=>m.tournament_id===t.id&&m.status==='completed'&&m.winner_id&&m.loser_id),winner=t.status==='completed'?(db.songs||[]).find(s=>s.id===t.champion_id):null;
+      return `<article class="profile-inset"><h3>Bracket #${t.id}</h3><p>${t.size} tracks · ${esc(t.status==='completed'?'Completed':'In progress')} · ${played.length} matches · ${played.reduce((n,m)=>n+Number(m.points_awarded||0),0).toFixed(2)} points</p>${winner?`<p>Winner: <a class="song" href="/song/${winner.id}">${esc(winner.title)}</a></p>`:''}<a class="tournament" href="/tournament/${t.id}/bracket">Replay & bracket ↗</a></article>`;
+    }).join('')}</details>`:'';
     const tournament = panel(
       "tournament",
       "Tournament Record",
       joined([
         [sums.tournament_points.toFixed(2), "Points"],
-        [countBrackets, "Brackets"],
-        [sums.podiums, "Podiums"],
+        [Number(sumFields(tracks,["tournament_appearances"]).tournament_appearances.toFixed(2)), "Entry credit"],
+        [Number(sums.podiums.toFixed(2)), "Podium credit"],
       ]) +
         rate(
           "Match wins",
@@ -201,10 +193,10 @@ window.ProfileUI = (() => {
           sums.tournament_wins + sums.tournament_losses,
         ) +
         `<div class="profile-secondary-metrics">${joined([
-          [sums.championships, "First"],
-          [sums.runner_ups, "Second"],
-          [sums.third_places, "Third"],
-        ])}</div>`,
+          [Number(sums.championships.toFixed(2)), "First credit"],
+          [Number(sums.runner_ups.toFixed(2)), "Second credit"],
+          [Number(sums.third_places.toFixed(2)), "Third credit"],
+        ])}</div><p class="muted">Scope-weighted competition results: library 100%, tags 50%; artist/album credit is capped at 2%/0.5% of broader entries.</p>${localHistory}`,
       ranking("tournament", "tournament") +
         link("tournament", "/tournament_stats", "Stats"),
     );
