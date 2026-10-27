@@ -85,6 +85,9 @@ class TournamentPolicyTests(unittest.TestCase):
         for text in ['Explore bracket','Entry depth','Points-only matches','ts-entity-artist']:
             self.assertIn(text,rendered.text)
         self.assertNotIn('data-tournament-map',rendered.text)
+        self.assertNotIn('Competition records use scope credit',rendered.text)
+        self.assertIn('not its current rank',rendered.text)
+        self.assertIn('later seed beat an earlier one',rendered.text)
         bracket=self.client.get('/tournament/1/bracket')
         self.assertEqual(bracket.status_code,200)
         self.assertIn('data-tournament-map',bracket.text)

@@ -83,3 +83,7 @@ Impact now uses only songs that have played a match, and a lighter square-root m
 Tournament competition credit favours library brackets (100%), then tags (50%). Artist-only and album-only evidence is limited to 2% and 0.5% of each track's completed broader entry credit; repeating local brackets shares that cap instead of inflating it. No broader evidence means no local contribution to competition. Weighted wins, points, podiums and entry evidence feed rankings, record leaders and Overall consistently.
 
 Artist and album profiles show their own selective brackets with full raw match/point summaries, winners and replay links. Archives, saved results and Elo stay unchanged. Overall calibration updates automatically.
+
+## V5.5.10.1
+
+Remove repeated scope-credit policy notes from tournament stats, rankings and profiles. Artist/album-only tournaments have a separate profile box below the main tournament record, with completed-bracket, match, played-track and point totals plus individual bracket/replay links. Seed patterns now explains starting seeds, top/bottom halves and later-seed wins. Scoring is unchanged.
