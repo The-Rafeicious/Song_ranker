@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.5.8 contract. Change the owning shared rule before adding a
+This is the current V5.5.9 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -268,3 +268,5 @@ Bracket viewports support mouse/pen drag panning with a grab cursor and a moveme
 Paired Standard Vote, Tournament and Elo Guesser covers use one playback halo in gameplay.css: a quiet stationary rim at rest, a brighter orbit and small outward wave during confirmed playback. Buffering/paused/error states return to the quiet rim. The halo follows the mode accent, stays outside artwork without blocking input, and becomes stationary in reduced motion. It does not apply to podiums, profiles or Shelves.
 
 Preview audio uses the native recording level and the shared master volume. There is no automatic loudness balancing or compression. Tournament replay completes each quarter before its semi-final, with the quarter's semi-finalist playing continuously. Semi-finals, third place and the final use the match winner's preview. Whole previews loop naturally, with shared ready-only crossfades between different songs.
+
+Bracket workspaces get nearly a full viewport of diagram height in addition to the page header. Vertical wheel/touch scrolling can continue onto the page to move the banner out of view; horizontal overflow stays within the map. Impact uses tested tracks only and a square-root median peer-breadth prior, retaining the Elo scale. Empty evidence shows unavailable.

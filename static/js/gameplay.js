@@ -517,7 +517,8 @@ window.TournamentBracket = (() => {
     root.addEventListener('keydown',keyDown);
     function fit(){
       if(closed||!workspace)return;
-      const footer=document.querySelector('.footer'), top=viewport.getBoundingClientRect().top+window.scrollY, available=Math.max(300,window.innerHeight-top-(footer?.getBoundingClientRect().height||0));
+      // Give the diagram its own viewport; the page header can scroll away.
+      const available=Math.max(360,window.innerHeight);
       if(root.style.getPropertyValue('--bracket-view-height')===available+'px')return;
       const focused=document.activeElement, track=focused?.dataset.mapTrack, match=focused?.closest('[data-map-match]')?.dataset.mapMatch, close=focused?.hasAttribute('data-map-close');
       root.style.setProperty('--bracket-view-height',available+'px');draw();

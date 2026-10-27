@@ -366,8 +366,8 @@ Pure catalogue-relative Impact calculations; JavaScript parity lives in ui.js.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [rated](../songranker/impact.py#L7) | `songs` | One finite rating per linked song; duplicate relationships add no weight. |
-| [calibrate](../songranker/impact.py#L17) | `songs, peers` | Derive the catalogue Elo baseline and median tested peer-group size for Impact shrinkage. |
+| [rated](../songranker/impact.py#L7) | `songs` | One finite rating per tested song; unplayed tracks and duplicate links add no weight. |
+| [calibrate](../songranker/impact.py#L17) | `songs, peers` | Derive the catalogue Elo baseline and square-root median tested peer-group size for Impact shrinkage. |
 | [measure](../songranker/impact.py#L28) | `songs, context` | Compute a collection's supported Elo average and shrink its Impact toward the catalogue baseline. |
 
 ## songranker/lan_security.py
@@ -1396,6 +1396,16 @@ Real local repositories/remotes only. Never contacts the user's remote.
 | [GitSyncTests.test_new_code_clears_only_its_python_cache](../tests/test_git_sync.py#L548) | `self` | Verify new code clears only its python cache. |
 | [GitSyncTests.test_cli_update_reexecutes_before_importing_new_application_modules](../tests/test_git_sync.py#L558) | `self` | Verify cli update reexecutes before importing new application modules. |
 
+## tests/test_impact.py
+
+Impact evidence, shrinkage and browser/server parity.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [ImpactTests.test_tested_only_distinct_evidence_and_lighter_prior](../tests/test_impact.py#L10) | `self` | Verify tested only distinct evidence and lighter prior. |
+| [ImpactTests.test_empty_flat_and_broad_catalogues_remain_finite](../tests/test_impact.py#L22) | `self` | Verify empty flat and broad catalogues remain finite. |
+| [ImpactTests.test_javascript_matches_python_for_sparse_and_wide_ratings](../tests/test_impact.py#L31) | `self` | Verify javascript matches python for sparse and wide ratings. |
+
 ## tests/test_metadata_fill.py
 
 Fill-only schema-13 metadata: mocked Apple, real backup and atomic writes.
@@ -1852,4 +1862,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1267 Python definitions**.
+Total: **1270 Python definitions**.
