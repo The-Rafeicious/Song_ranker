@@ -209,7 +209,7 @@ def run_vibe():
 
         services.ROOT = Path(temporary)
         import main as application  # WSGI import never launches the Git updater.
-        from flask import Response
+        from flask import Response, request
         from werkzeug.serving import make_server
         from songranker.modes import vibe_map
 
@@ -237,7 +237,7 @@ def run_vibe():
 
         @application.app.get("/tag-test-audio.wav")
         def tag_audio():
-            """Serve a silent WAV fixture for playback controls without Apple transport."""
+            """Serve silence or bounded test tones without Apple transport."""
             import io, wave
 
             buf = io.BytesIO()
@@ -245,7 +245,12 @@ def run_vibe():
                 clip.setnchannels(1)
                 clip.setsampwidth(2)
                 clip.setframerate(8000)
-                clip.writeframes(bytes(30 * 8000 * 2))
+                amplitude = {"quiet": .08, "loud": .25}.get(request.args.get("level"))
+                if amplitude is None:
+                    clip.writeframes(bytes(30 * 8000 * 2))
+                else:
+                    import math, struct
+                    clip.writeframes(b"".join(struct.pack("<h", int(32767 * amplitude * math.sin(2 * math.pi * 440 * i / 8000))) for i in range(30 * 8000)))
             return Response(buf.getvalue(), mimetype="audio/wav")
 
         @application.app.post("/voting-test-enable")
