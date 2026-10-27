@@ -15,6 +15,14 @@ async function bounded(page,width,phase,folder){
   const page=await browser.newPage({viewport:{width:1365,height:1050}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   const base=process.env.VIBE_TEST_URL,folder='artifacts/vibe-map';fs.mkdirSync(folder,{recursive:true});
+  await page.goto(base+'/');await page.locator('#volume-btn').waitFor();
+  const measured={};
+  for(const level of ['quiet','loud']){
+   await page.evaluate(level=>{const a=document.createElement('audio');a.id='loudness-browser-test';a.src='/tag-test-audio.wav?level='+level;a.preload='none';const b=document.createElement('button');b.id='loudness-play-test';b.textContent='Test preview';b.onclick=()=>window.PreviewPlayback.play(a);document.body.append(a,b);},level);await page.locator('#loudness-play-test').click();
+   await page.locator('#loudness-browser-test[data-loudness-balanced="true"]').waitFor({state:'attached'});await page.waitForTimeout(2000);
+   measured[level]=await page.evaluate(level=>{const diagnostics=window.PreviewPlayback.balanceState(document.getElementById('loudness-browser-test'));window.PreviewPlayback.stopAll();window.PreviewPlayback.release(document.getElementById('loudness-browser-test'));const rows=JSON.parse(sessionStorage.getItem('previewLoudnessLevels')||'[]');const result=rows.find(([key])=>key==='/tag-test-audio.wav?level='+level)?.[1];document.getElementById('loudness-play-test').remove();return {target:result,diagnostics};},level);
+  }
+  assert.ok(measured.quiet.target>1.4&&measured.loud.target<.8,'Real Web Audio boosts a quiet tone and reduces a loud tone: '+JSON.stringify(measured));assert.ok(Math.abs(measured.quiet.target*.08-measured.loud.target*.25)<.025,'Real measured output levels converge independently of master volume');
   await page.goto(base+'/vibe-map');await page.locator('#vibe-plane').waitFor();
   assert.match(await page.locator('#vibe-tag-count').textContent(),/^\d+ tags?$/);
   assert.ok(await page.locator('#vibe-tag-count').evaluate(e=>e.previousElementSibling.classList.contains('album')));
@@ -404,6 +412,12 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
    await covers.first().evaluate(e=>{const a=e.querySelector('audio');a.dispatchEvent(new Event('playing'));a.dispatchEvent(new Event('pause'));});assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::after').animationName),'none','Pause stops the wave');
   }
 
+  await page.locator('[data-audio="bracket-audio-0"]').click();await page.locator('#bracket-audio-0[data-loudness-balanced="true"]').waitFor({state:'attached'});
+  assert.equal(await page.locator('#bracket-audio-0').evaluate(a=>a.volume),1,'Web Audio owns the master level without double attenuation');
+  await page.locator('[data-audio="bracket-audio-0"]').click();await page.locator('#volume-btn').click();await page.locator('#preview-loudness-balance').uncheck();assert.equal(await page.evaluate(()=>window.PreviewPlayback.balanceEnabled()),false);
+  await page.reload();await page.locator('[data-tournament-vote="0"]').waitFor();await page.locator('#volume-btn').click();assert.ok(!(await page.locator('#preview-loudness-balance').isChecked()),'Balancing preference survives navigation');await page.locator('#preview-loudness-balance').check();
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'preview-loudness',folder);const panel=await page.locator('#volume-panel').boundingBox();assert.ok(panel.x>=0&&panel.x+panel.width<=width,'Volume popover stays inside the screen');await page.locator('#volume-panel').screenshot({path:folder+'/preview-loudness-'+width+'.png'});}
+  await page.locator('#volume-btn').click();
   await page.goto(base+'/tournament_stats?tournament=77');
   assert.equal(await page.locator('[data-tournament-map]').count(),0);
   assert.equal(await page.locator('.ts-entity-artist h2').evaluate(e=>getComputedStyle(e).color),'rgb(91, 155, 255)');

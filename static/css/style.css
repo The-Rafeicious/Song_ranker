@@ -7765,3 +7765,8 @@ body:has(.tournament-bracket-page) #main { max-width:1800px; }
 .bracket-viewport { cursor:grab; }
 .bracket-viewport.is-dragging,.bracket-viewport.is-dragging * { cursor:grabbing; user-select:none; }
 .bracket-viewport img { -webkit-user-drag:none; }
+
+.volume-panel label.volume-balance { justify-content:flex-start; align-items:center; gap:10px; margin-top:14px; min-height:44px; font-size:14px; line-height:1.4; }
+.volume-panel .volume-balance input { width:18px; height:18px; flex:none; margin:0; }
+
+@media(max-width:760px){.volume-panel { right:50%; transform:translateX(50%); width:min(235px,calc(100vw - 36px)); }}

@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.5.4 contract. Change the owning shared rule before adding a
+This is the current V5.5.5 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -266,3 +266,5 @@ Shelves profile panels require at least one currently eligible track. An exclude
 Bracket viewports support mouse/pen drag panning with a grab cursor and a movement threshold that preserves track clicks; touch retains native scrolling. Replay sound defaults on, uses the four semi-finalists and the shared preview crossfade. Natural completion fades before the podium; cancellation remains immediate.
 
 Paired Standard Vote, Tournament and Elo Guesser covers use one playback halo in gameplay.css: a quiet stationary rim at rest, a brighter orbit and small outward wave during confirmed playback. Buffering/paused/error states return to the quiet rim. The halo follows the mode accent, stays outside artwork without blocking input, and becomes stationary in reduced motion. It does not apply to podiums, profiles or Shelves.
+
+The existing volume popover includes one **Balance preview loudness** checkbox, enabled by default and remembered. Keep the master slider unchanged and use a wrapping, touch-sized label. The shared preview owner handles all gain/metering logic; mode controllers do not implement their own normalization.

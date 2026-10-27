@@ -1827,11 +1827,11 @@ Disposable served-page and Chromium integration fixtures.
 | [run_vibe](../tools/browser_check.py#L146) | `` | Run vibe; reads songs; writes albums, artists, genres, song_artists, song_genres, song_vibe_positions, songs, tournament_entries. |
 | [run_vibe.cover](../tools/browser_check.py#L222) | `` | Serve local artwork so browser screenshots do not depend on external images. |
 | [run_vibe.tag_audio_enable](../tools/browser_check.py#L231) | `` | Tag audio enable; POST /tag-test-enable. |
-| [run_vibe.tag_audio](../tools/browser_check.py#L239) | `` | Serve a silent WAV fixture for playback controls without Apple transport. |
-| [run_vibe.enable_voting_report](../tools/browser_check.py#L252) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
-| [run_vibe.enable_tournament_map](../tools/browser_check.py#L266) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
-| [run_vibe.enable_discs](../tools/browser_check.py#L286) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
-| [main](../tools/browser_check.py#L315) | `` | Run the requested disposable integration fixture. |
+| [run_vibe.tag_audio](../tools/browser_check.py#L239) | `` | Serve silence or bounded test tones without Apple transport. |
+| [run_vibe.enable_voting_report](../tools/browser_check.py#L257) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
+| [run_vibe.enable_tournament_map](../tools/browser_check.py#L271) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
+| [run_vibe.enable_discs](../tools/browser_check.py#L291) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
+| [main](../tools/browser_check.py#L320) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 

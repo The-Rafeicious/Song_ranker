@@ -122,13 +122,117 @@
   }
   const aborted = () =>
     Object.assign(Error("Preview playback cancelled"), { name: "AbortError" });
+  // Live, gated RMS balancing: no extra fetches, decoded files or database writes.
+  // The analyser precedes normalization, fade and site volume, so those controls
+  // never feed back into the estimate. Keep external URLs on native playback:
+  // MediaElementAudioSourceNode would silence a non-CORS recording.
+  const loudnessGraphs = new WeakMap(), metering = new Set(), learnedLevels = new Map();
+  let loudnessContext = null, meterTimer = null, balanceEnabled = true;
+  try {
+    balanceEnabled = localStorage.getItem('previewLoudnessBalance') !== 'false';
+    const saved = JSON.parse(sessionStorage.getItem('previewLoudnessLevels') || '[]');
+    for (const [key,gain] of saved.slice(-64)) if(typeof key==='string'&&Number.isFinite(gain)&&gain>=.35&&gain<=2)learnedLevels.set(key,gain);
+  } catch {}
+  function loudnessKey(audio) {
+    try {
+      const url = new URL(audio.getAttribute('src') || '', location.href);
+      if(url.origin!==location.origin||!['http:','https:'].includes(url.protocol))return null;
+      url.searchParams.delete('play');url.searchParams.delete('page');
+      return url.pathname+url.search;
+    } catch { return null; }
+  }
+  function rememberLevels() {
+    try { sessionStorage.setItem('previewLoudnessLevels',JSON.stringify([...learnedLevels])); } catch {}
+  }
+  function balanceTarget(samples) {
+    const audible=samples.filter(value=>Number.isFinite(value)&&value>.003).sort((a,b)=>a-b);
+    if(audible.length<10)return null;
+    // Upper audible percentile avoids turning pauses and quiet intros into noise.
+    const rms=audible[Math.floor((audible.length-1)*.8)];
+    return Math.max(.35,Math.min(2,.1/rms));
+  }
+  function outputLevel(audio) {
+    const graph=loudnessGraphs.get(audio), value=level()*(gains.get(audio)??1);
+    if(graph){audio.volume=1;graph.output.gain.setValueAtTime(value,loudnessContext.currentTime);}
+    else audio.volume=value;
+  }
+  function runMeter() {
+    meterTimer=null;
+    for(const graph of metering){
+      const {audio}=graph;
+      if(!audio.isConnected||audio.paused||audio.ended){metering.delete(graph);continue;}
+      if(!balanceEnabled||document.hidden||loudnessContext.state!=='running'||audio.readyState<3)continue;
+      const key=loudnessKey(audio);
+      if(key!==graph.key){graph.key=key;graph.samples=[];graph.normal.gain.setTargetAtTime(learnedLevels.get(key)||1,loudnessContext.currentTime,.4);}
+      if(!key)continue;
+      graph.analyser.getFloatTimeDomainData(graph.buffer);
+      let energy=0;for(const sample of graph.buffer)energy+=sample*sample;
+      const rms=Math.sqrt(energy/graph.buffer.length);
+      if(rms>.003){graph.samples.push(rms);if(graph.samples.length>60)graph.samples.shift();}
+      const target=balanceTarget(graph.samples);
+      if(target!==null){
+        graph.normal.gain.setTargetAtTime(target,loudnessContext.currentTime,1.5);
+        learnedLevels.delete(key);learnedLevels.set(key,target);
+        while(learnedLevels.size>64)learnedLevels.delete(learnedLevels.keys().next().value);
+      }
+    }
+    if(metering.size)meterTimer=setTimeout(runMeter,100);
+  }
+  function meter(audio) {
+    const graph=loudnessGraphs.get(audio);if(!graph)return;
+    metering.add(graph);if(meterTimer===null)meterTimer=setTimeout(runMeter,100);
+  }
+  function startBalance(audio) {
+    const key=loudnessKey(audio), existing=loudnessGraphs.get(audio);
+    if(!key||(!balanceEnabled&&!existing))return;
+    const Context=window.AudioContext||window.webkitAudioContext;
+    if(!Context)return;
+    try {
+      loudnessContext ||= new Context();
+      // Resume in the same gesture as native play. Never delay native playback
+      // waiting for an audio graph; unsupported/blocked contexts stay native.
+      const ready=loudnessContext.state==='running'?Promise.resolve():loudnessContext.resume();
+      Promise.resolve(ready).then(()=>{
+        if(closed||!audio.isConnected||loudnessContext.state!=='running'||loudnessKey(audio)!==key)return;
+        let graph=loudnessGraphs.get(audio);
+        if(!graph&&balanceEnabled){
+          const analyser=loudnessContext.createAnalyser(), normal=loudnessContext.createGain(), limiter=loudnessContext.createDynamicsCompressor(), output=loudnessContext.createGain();
+          analyser.fftSize=2048;
+          normal.gain.value=learnedLevels.get(key)||1;
+          limiter.threshold.value=-6;limiter.knee.value=6;limiter.ratio.value=12;limiter.attack.value=.003;limiter.release.value=.2;
+          output.gain.value=level()*(gains.get(audio)??1);
+          const source=loudnessContext.createMediaElementSource(audio);
+          source.connect(analyser);analyser.connect(normal);normal.connect(limiter);limiter.connect(output);output.connect(loudnessContext.destination);
+          graph={audio,source,analyser,normal,limiter,output,key,samples:[],buffer:new Float32Array(analyser.fftSize)};
+          loudnessGraphs.set(audio,graph);audio.dataset.loudnessBalanced='true';
+        }
+        if(graph){outputLevel(audio);if(balanceEnabled)meter(audio);else metering.delete(graph);}
+      }).catch(()=>{});
+    } catch {} // Native playback remains available when Web Audio cannot start.
+  }
+  function setBalance(enabled) {
+    balanceEnabled=!!enabled;
+    try {localStorage.setItem('previewLoudnessBalance',String(balanceEnabled));}catch{}
+    const toggle=document.getElementById('preview-loudness-balance');if(toggle)toggle.checked=balanceEnabled;
+    if(!balanceEnabled){clearTimeout(meterTimer);meterTimer=null;metering.clear();}
+    for(const audio of players){
+      const graph=loudnessGraphs.get(audio);
+      if(graph){graph.normal.gain.setTargetAtTime(balanceEnabled?(learnedLevels.get(loudnessKey(audio))||1):1,loudnessContext.currentTime,.4);graph.limiter.ratio.setValueAtTime(balanceEnabled?12:1,loudnessContext.currentTime);graph.limiter.threshold.setValueAtTime(balanceEnabled?-6:0,loudnessContext.currentTime);}
+      if(!audio.paused)startBalance(audio);
+    }
+    return balanceEnabled;
+  }
+  document.addEventListener('change',event=>{if(event.target.id==='preview-loudness-balance')setBalance(event.target.checked);});
+  document.addEventListener('DOMContentLoaded',()=>{
+    const toggle=document.getElementById('preview-loudness-balance');if(toggle){toggle.checked=balanceEnabled;toggle.disabled=!(window.AudioContext||window.webkitAudioContext);}
+  });
   function setGain(audio, gain) {
     gains.set(audio, Math.max(0, Math.min(1, gain)));
-    audio.volume = level() * gains.get(audio);
+    outputLevel(audio);
   }
   function syncVolume() {
     for (const audio of document.querySelectorAll("audio"))
-      audio.volume = level() * (gains.get(audio) ?? 1);
+      outputLevel(audio);
   }
   function bank() {
     let root = document.getElementById("preview-audio-bank");
@@ -143,6 +247,8 @@
   function dispose(audio) {
     if (!audio) return;
     fades.delete(audio);
+    const graph=loudnessGraphs.get(audio);
+    if(graph){metering.delete(graph);for(const node of [graph.source,graph.analyser,graph.normal,graph.limiter,graph.output])node.disconnect();rememberLevels();}
     players.delete(audio);
     audio.pause();
     audio.removeAttribute("src");
@@ -357,11 +463,12 @@
     if (next) {
       prepared.delete(url);
       delete next.dataset.previewPrepared;
-    } else if (!audio.paused || pending?.audio === audio) {
+    } else if (!audio.paused || pending?.audio === audio || loudnessGraphs.has(audio)) {
       next = audio.cloneNode(false);
       delete next.dataset.bound;
       delete next.dataset.previewRetired;
       delete next.dataset.previewPrimed;
+      delete next.dataset.loudnessBalanced;
     } else next = audio;
     if (next !== audio) {
       next.id = audio.id;
@@ -485,11 +592,13 @@
       }
     });
     audio.addEventListener("playing", () => {
+      startBalance(audio);
       delete audio.dataset.previewStalled;
       paint(audio, "playing");
       report(audio, "Preview playing", "ready", 2);
     });
     audio.addEventListener("pause", () => {
+      const graph=loudnessGraphs.get(audio);if(graph)metering.delete(graph);rememberLevels();
       const tails = mixes.get(audio);
       if (tails) {
         mixes.delete(audio);
@@ -620,6 +729,7 @@
   }
   async function play(audio) {
     bind(audio);
+    startBalance(audio);
     if (closed) throw aborted();
     if (Date.now() < cooldown && audio.readyState < 3) {
       paint(audio, "blocked");
@@ -776,6 +886,10 @@
   }
   window.PreviewPlayback = {
     source,
+    balanceTarget,
+    balanceState(audio){const graph=loudnessGraphs.get(audio);return {enabled:balanceEnabled,context:loudnessContext?.state||'native',samples:graph?.samples.length||0,gain:graph?.normal.gain.value??1,target:learnedLevels.get(loudnessKey(audio))??null,rms:graph?.samples.at(-1)??null};},
+    setBalance,
+    balanceEnabled:()=>balanceEnabled,
     bind,
     play,
     arm,
@@ -803,6 +917,7 @@
     closed = true;
     stopAll();
     clearTimeout(hideTimer);
+    clearTimeout(meterTimer);meterTimer=null;metering.clear();rememberLevels();
     clearPage();
   });
   window.addEventListener("pageshow", (event) => {
