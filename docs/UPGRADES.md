@@ -27,7 +27,7 @@ feature history is consolidated in [V5.0](../update_logs/V5_0_UPDATE.md) and
 4. Use the new code with upgraded databases. Older code may refuse a newer schema;
    source rollback alone does not roll back database structure.
 
-`APP_VERSION` is `5.5.2`; Vibe reports `Vibe-Map-v1.1`.
+`APP_VERSION` is `5.5.3`; Vibe reports `Vibe-Map-v1.1`.
 The documentation release labels v5.1.0/v5.1.1 do not change the runtime footer.
 Install dependencies from `requirements.txt`; configuration is in the
 [technical guide](TECHNICAL_GUIDE.md#configuration).
@@ -75,7 +75,7 @@ app, preserve any newer work separately, and restore the archive together with
 pre-V5.5.0 source. Restoring it under V5.5.0 will retire the selective Elo again on
 startup. Schema stays 21, using the existing points-only tournament policy.
 
-## Album Shelves flags (V5.5.2)
+## Album Shelves flags (V5.5.3)
 
 Schema 22 adds `albums.shelves_excluded`, defaulting all existing albums to included.
 The normal startup migration creates an integrity-checked pre-upgrade backup before

@@ -39,3 +39,9 @@ for whole-library tournaments and half for tags, and improves bracket viewing.
 Excluded albums keep their album identity, but skip the album-name field in new Trivia rounds. Shelves profile panels only appear for tracks and collections with eligible albums. Saved Shelves rounds containing an excluded album are hidden as whole rounds from reports, trends, rankings and Overall evidence; nothing is deleted, and including the album again restores that history.
 
 Tournament history links to a dedicated bracket page. Mirrored halves feed a larger central final, with a smaller third-place match below. Track selection includes route and match details, and replay results advance every 1.6 seconds. Blind identity protection, reduced motion, skip and bounded preview playback remain in place.
+
+## V5.5.3
+
+Bracket replay audio uses the four semi-finalists, with sound enabled by default. Clip changes reuse the shared ready-only 1.5-second crossfade, and natural completion fades out before the podium. Sound off, skip, leave and reduced-motion behavior remain explicit.
+
+Mouse and pen users can click and drag the bracket in both directions. A movement threshold preserves normal track selection; touch scrolling and keyboard/round controls remain available.

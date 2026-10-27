@@ -7761,3 +7761,7 @@ body:has(.tournament-bracket-page) #main { max-width:1800px; }
 .bracket-final .bracket-track { min-height:52px; font-size:15px; }
 .bracket-third { opacity:.9; }
 .bracket-match-details { flex-basis:100%; margin:0; line-height:1.8; }
+
+.bracket-viewport { cursor:grab; }
+.bracket-viewport.is-dragging,.bracket-viewport.is-dragging * { cursor:grabbing; user-select:none; }
+.bracket-viewport img { -webkit-user-drag:none; }
