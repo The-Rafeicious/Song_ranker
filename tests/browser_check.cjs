@@ -404,6 +404,10 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
    await covers.first().evaluate(e=>{const a=e.querySelector('audio');a.dispatchEvent(new Event('playing'));a.dispatchEvent(new Event('pause'));});assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::after').animationName),'none','Pause stops the wave');
   }
 
+  await page.locator('[data-audio="bracket-audio-0"]').click();await page.locator('#bracket-audio-0[data-loudness-balanced="true"]').waitFor();
+  assert.equal(await page.locator('#bracket-audio-0').evaluate(a=>a.volume),1,'Web Audio owns the master level without double attenuation');
+  await page.locator('[data-audio="bracket-audio-0"]').click();await page.locator('#volume-btn').click();await page.locator('#preview-loudness-balance').uncheck();assert.equal(await page.evaluate(()=>window.PreviewPlayback.balanceEnabled()),false);
+  await page.reload();await page.locator('[data-tournament-vote="0"]').waitFor();await page.locator('#volume-btn').click();assert.ok(!(await page.locator('#preview-loudness-balance').isChecked()),'Balancing preference survives navigation');await page.locator('#preview-loudness-balance').check();await page.locator('#volume-btn').click();
   await page.goto(base+'/tournament_stats?tournament=77');
   assert.equal(await page.locator('[data-tournament-map]').count(),0);
   assert.equal(await page.locator('.ts-entity-artist h2').evaluate(e=>getComputedStyle(e).color),'rgb(91, 155, 255)');

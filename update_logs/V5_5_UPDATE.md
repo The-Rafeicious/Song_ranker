@@ -49,3 +49,9 @@ Mouse and pen users can click and drag the bracket in both directions. A movemen
 ## V5.5.4
 
 Standard Vote, Tournament and Elo Guesser cover artwork gains a soft mode-coloured rim. Confirmed playback brightens the rim, moves a glow around its edge and sends out a small fading wave. The other cover stays quiet; buffering, pause and stop remove the pulse. Reduced-motion users retain a stationary playback highlight. Playback and voting rules are unchanged.
+
+## V5.5.5
+
+Automatic preview loudness balancing is on by default, with an on/off checkbox beside the site volume slider. The shared player measures audible levels as a preview plays, gently boosts quieter clips and reduces louder clips within conservative limits. Site volume remains the overall level; existing fades and loops remain independent.
+
+Learning uses the playing audio stream, so it adds no downloads or database storage. A small tab cache remembers levels by source revision. Direct external previews and browsers unable to use Web Audio keep normal playback. Very quiet recordings and different mixes may still sound different; this is practical balancing rather than a full loudness remaster.
