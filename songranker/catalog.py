@@ -41,8 +41,38 @@ TOURNAMENT_TOTALS = (
 )
 
 
-def song_performance(data):
-    """Derive achievements from saved matches; final placements require completion."""
+def tournament_weights(data):
+    """Per-song competition credit: global 1, tag .5; artist/album are bounded
+    to 2%/.5% of that song's completed broad entries, regardless of repetition.
+    Missing legacy scope is global; unknown scopes receive no credit.
+    """
+    brackets={t['id']:t for t in data.get('tournaments',[])}
+    entered=defaultdict(set)
+    for e in data.get('tournament_entries',[]):entered[e['song_id']].add(e['tournament_id'])
+    for m in data.get('tournament_matches',[]):
+        for key in ('song1_id','song2_id','winner_id','loser_id'):
+            if m.get(key):entered[m[key]].add(m['tournament_id'])
+    for t in brackets.values():
+        for key in ('champion_id','runner_up_id','third_place_id','fourth_place_id'):
+            if t.get(key):entered[t[key]].add(t['id'])
+    weights={}
+    for sid,ids in entered.items():
+        broad=sum({'global':1,'tag':.5}.get(brackets[i].get('scope_type','global'),0) for i in ids if i in brackets and brackets[i].get('status')=='completed')
+        counts={kind:sum(brackets[i].get('scope_type')==kind for i in ids if i in brackets) for kind in ('artist','album')}
+        for tid in ids:
+            if tid not in brackets:continue
+            kind=brackets[tid].get('scope_type','global')
+            cap={'artist':.02,'album':.005}.get(kind,0)
+            weights[sid,tid]=min(cap,cap*broad/max(1,counts[kind])) if cap else {'global':1,'tag':.5}.get(kind,0)
+    return weights
+
+
+def song_performance(data, competitive=True):
+    """Project scope-weighted competition achievements, or full raw achievements
+    when competitive=False. Final placements require completion.
+    """
+    weights=tournament_weights(data) if competitive else None
+    credit=lambda sid,tid: weights.get((sid,tid),0) if competitive else 1
     result = {s["id"]: {key: 0 for key in TOURNAMENT_TOTALS} for s in data["songs"]}
     brackets = {t["id"]: t for t in data.get("tournaments", [])}
     appearances = defaultdict(set)
@@ -81,9 +111,9 @@ def song_performance(data):
             or winner == loser
         ):
             continue
-        result[winner]["tournament_wins"] += 1
-        result[loser]["tournament_losses"] += 1
-        result[winner]["tournament_points"] += float(match.get("points_awarded") or 0)
+        result[winner]["tournament_wins"] += credit(winner,t["id"])
+        result[loser]["tournament_losses"] += credit(loser,t["id"])
+        result[winner]["tournament_points"] += float(match.get("points_awarded") or 0)*credit(winner,t["id"])
         if t.get("status") == "completed":
             size = int(t.get("size") or 0)
             if size >= 2 and size & (size - 1) == 0:
@@ -93,16 +123,16 @@ def song_performance(data):
                 if match.get("round_number") == final_round:
                     placements["runner_ups"].add((t["id"], loser))
     for key, finishes in placements.items():
-        for _, song_id in finishes:
-            result[song_id][key] += 1
-    for _, song_id in (
+        for tid, song_id in finishes:
+            result[song_id][key] += credit(song_id,tid)
+    for tid, song_id in (
         placements["championships"]
         | placements["runner_ups"]
         | placements["third_places"]
     ):
-        result[song_id]["podiums"] += 1
+        result[song_id]["podiums"] += credit(song_id,tid)
     for song_id, stats in result.items():
-        stats["tournament_appearances"] = len(appearances[song_id])
+        stats["tournament_appearances"] = sum(credit(song_id,tid) for tid in appearances[song_id])
     return result
 
 

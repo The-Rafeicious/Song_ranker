@@ -77,3 +77,9 @@ Tournament replay completes each quarter in order, following its semi-finalist's
 Bracket workspaces have almost a full viewport of diagram height, with the banner/header outside it so the page can scroll them away. Vertical scrolling can continue from the map onto the page.
 
 Impact now uses only songs that have played a match, and a lighter square-root median tested peer-size prior. This removes unplayed-1200 dilution and excessive compression without changing song Elo or saved results. Collections without tested tracks show no Impact. On the current backup, proper-album scores span approximately 33 points instead of 14; artist and tag spreads also widen.
+
+## V5.5.10
+
+Tournament competition credit favours library brackets (100%), then tags (50%). Artist-only and album-only evidence is limited to 2% and 0.5% of each track's completed broader entry credit; repeating local brackets shares that cap instead of inflating it. No broader evidence means no local contribution to competition. Weighted wins, points, podiums and entry evidence feed rankings, record leaders and Overall consistently.
+
+Artist and album profiles show their own selective brackets with full raw match/point summaries, winners and replay links. Archives, saved results and Elo stay unchanged. Overall calibration updates automatically.

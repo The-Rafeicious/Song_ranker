@@ -409,6 +409,13 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('[data-audio="bracket-audio-0"]').click();await page.locator('[data-audio="bracket-audio-0"][data-preview-state="playing"]').waitFor();
   await page.waitForTimeout(1600);assert.equal(await page.locator('#bracket-audio-0').evaluate(a=>a.volume),await page.evaluate(()=>window.PreviewPlayback.getVolume()),'Native preview follows the site volume');
   await page.locator('[data-audio="bracket-audio-0"]').click();
+  const localCatalog=await (await page.request.get(base+'/api/collection')).json();
+  for(const [kind,entity,id] of [['artist',localCatalog.artists.find(a=>a.id===1),77],['album',localCatalog.albums.find(a=>a.id===1),78]]){
+   await page.goto(base+'/'+kind+'/'+encodeURIComponent(entity.name||entity.title));await page.locator('#tournament').waitFor();
+   const history=page.locator('#tournament details').filter({has:page.locator('a[href="/tournament/'+id+'/bracket"]')});await history.locator('summary').click();
+   await history.locator('a[href="/tournament/'+id+'/bracket"]').waitFor();assert.ok((await history.textContent()).includes('matches'),'Local history has raw match summaries');
+   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'local-brackets-'+kind,folder);await page.locator('#tournament').screenshot({path:folder+'/local-brackets-'+kind+'-'+width+'.png'});}
+  }
   await page.goto(base+'/tournament_stats?tournament=77');
   assert.equal(await page.locator('[data-tournament-map]').count(),0);
   assert.equal(await page.locator('.ts-entity-artist h2').evaluate(e=>getComputedStyle(e).color),'rgb(91, 155, 255)');
