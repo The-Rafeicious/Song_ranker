@@ -417,7 +417,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
    await card.locator('a[href^="/tournament_local_stats"]').click();await page.locator('.local-tournament-stats').waitFor();assert.ok(page.url().includes('scope_id=1'));
    await page.locator('#local-bracket-'+id+' a[href="/tournament/'+id+'/bracket"]').waitFor();
   }
-  await page.goto(base+'/tournament_local_stats');await page.locator('#local-track-comparisons .mode-stats-row').first().waitFor();
+  await page.goto(base+'/tournament_local_stats');assert.equal(await page.locator('body').getAttribute('data-tone'),'tournament','Local report uses the tournament theme');await page.locator('#local-track-comparisons .mode-stats-row').first().waitFor();
   for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'local-tournament-stats',folder);await page.screenshot({path:folder+'/local-tournament-stats-'+width+'.png',fullPage:true});}
   await page.goto(base+'/tournament_stats');
   assert.equal(await page.locator('[data-tournament-map]').count(),0);

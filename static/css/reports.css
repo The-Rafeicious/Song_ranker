@@ -3453,3 +3453,7 @@ body.site-style-baseline #main .pulse-scale {
   .local-tournament-stats .page-head h1 { grid-column:1; }
   .local-tournament-stats .page-head > a { justify-self:center; }
 }
+
+.local-tournament-stats .mode-stats-copy > a,
+.local-tournament-stats .mode-stats-copy > strong { display:block; font-size:18px; font-weight:700; }
+.local-tournament-stats .mode-stats-copy > span { display:block; margin-top:4px; color:var(--muted); line-height:1.4; }
