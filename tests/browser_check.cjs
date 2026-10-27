@@ -389,6 +389,21 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-stats',folder);await page.screenshot({path:folder+'/shelves-discs-stats-'+width+'.png',fullPage:true});}
   // Saved visual brackets and the real final -> replay -> podium handoff.
   await page.request.post(base+'/tournament-test-enable');
+  for(const [mode,path] of [['vote','/game'],['guesser','/elo_guesser'],['tournament','/tournament?tournament=77']]){
+   await page.goto(base+path);await page.locator('.matchup .match-cover .cover-button').first().waitFor();
+   const covers=page.locator('.matchup .match-cover');
+   assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::before').animationName),'none','Idle cover stays soft');
+   await covers.first().evaluate(e=>{const a=e.querySelector('audio');a.dataset.previewWanted='true';a.dispatchEvent(new Event('play'));a.dispatchEvent(new Event('playing'));});
+   assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::before').animationName),'cover-glow-orbit',mode+' playing rim orbits');
+   assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::after').animationName),'cover-glow-wave',mode+' playing cover emits a wave');
+   assert.equal(await covers.nth(1).evaluate(e=>getComputedStyle(e,'::before').animationName),'none','Other cover stays soft');
+   assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::after').pointerEvents),'none','Glow never blocks the cover');
+   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'cover-glow-'+mode,folder);await page.screenshot({path:folder+'/cover-glow-'+mode+'-'+width+'.png',fullPage:true});}
+   await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::before').animationName),'none','Reduced motion keeps a stationary rim');assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::after').animationName),'none','Reduced motion suppresses the wave');await page.emulateMedia({reducedMotion:'no-preference'});
+   await covers.first().evaluate(e=>e.querySelector('audio').dispatchEvent(new Event('waiting')));assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::before').animationName),'none','Buffering stops the orbit');
+   await covers.first().evaluate(e=>{const a=e.querySelector('audio');a.dispatchEvent(new Event('playing'));a.dispatchEvent(new Event('pause'));});assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::after').animationName),'none','Pause stops the wave');
+  }
+
   await page.goto(base+'/tournament_stats?tournament=77');
   assert.equal(await page.locator('[data-tournament-map]').count(),0);
   assert.equal(await page.locator('.ts-entity-artist h2').evaluate(e=>getComputedStyle(e).color),'rgb(91, 155, 255)');

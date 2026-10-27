@@ -45,3 +45,7 @@ Tournament history links to a dedicated bracket page. Mirrored halves feed a lar
 Bracket replay audio uses the four semi-finalists, with sound enabled by default. Clip changes reuse the shared ready-only 1.5-second crossfade, and natural completion fades out before the podium. Sound off, skip, leave and reduced-motion behavior remain explicit.
 
 Mouse and pen users can click and drag the bracket in both directions. A movement threshold preserves normal track selection; touch scrolling and keyboard/round controls remain available.
+
+## V5.5.4
+
+Standard Vote, Tournament and Elo Guesser cover artwork gains a soft mode-coloured rim. Confirmed playback brightens the rim, moves a glow around its edge and sends out a small fading wave. The other cover stays quiet; buffering, pause and stop remove the pulse. Reduced-motion users retain a stationary playback highlight. Playback and voting rules are unchanged.

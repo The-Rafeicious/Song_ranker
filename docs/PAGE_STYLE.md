@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.5.3 contract. Change the owning shared rule before adding a
+This is the current V5.5.4 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -264,3 +264,5 @@ Tournament archive entries link to `/tournament/<id>/bracket`, a dedicated wide 
 Shelves profile panels require at least one currently eligible track. An excluded album hides whole saved rounds containing it from public performance reports; Dev retains raw saved facts. New Trivia rounds skip its album-name field, preserving frozen existing rounds.
 
 Bracket viewports support mouse/pen drag panning with a grab cursor and a movement threshold that preserves track clicks; touch retains native scrolling. Replay sound defaults on, uses the four semi-finalists and the shared preview crossfade. Natural completion fades before the podium; cancellation remains immediate.
+
+Paired Standard Vote, Tournament and Elo Guesser covers use one playback halo in gameplay.css: a quiet stationary rim at rest, a brighter orbit and small outward wave during confirmed playback. Buffering/paused/error states return to the quiet rim. The halo follows the mode accent, stays outside artwork without blocking input, and becomes stationary in reduced motion. It does not apply to podiums, profiles or Shelves.
