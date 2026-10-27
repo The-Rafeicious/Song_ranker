@@ -28,26 +28,26 @@ window.SearchPage = (() => {
       out = [];
     const add = (mode, text, priority, detail) =>
       out.push({ mode, text, priority, detail });
-    if (sums.championships)
+    if (Number(sums.championships.toFixed(2)) > 0)
       add(
         "tournament",
-        `🏆 ${sums.championships} ${sums.championships === 1 ? "title" : "titles"}`,
+        `🏆 ${Number(sums.championships.toFixed(2))} ${sums.championships === 1 ? "title" : "titles"}`,
         100,
-        "Completed tournament championships",
+        "Scope-weighted tournament championship credit",
       );
-    else if (sums.runner_ups)
+    else if (Number(sums.runner_ups.toFixed(2)) > 0)
       add(
         "tournament",
-        `🥈 ${sums.runner_ups} ${sums.runner_ups === 1 ? "runner-up" : "runners-up"}`,
+        `🥈 ${Number(sums.runner_ups.toFixed(2))} ${sums.runner_ups === 1 ? "runner-up" : "runners-up"}`,
         85,
-        "Completed tournament second places",
+        "Scope-weighted tournament second-place credit",
       );
-    else if (sums.third_places)
+    else if (Number(sums.third_places.toFixed(2)) > 0)
       add(
         "tournament",
-        `🥉 ${sums.third_places} third`,
+        `🥉 ${Number(sums.third_places.toFixed(2))} third`,
         84,
-        "Completed tournament third places",
+        "Scope-weighted tournament third-place credit",
       );
     const rate = (mode, right, total, min, threshold, label) => {
       if (total >= min && right / total >= threshold)
