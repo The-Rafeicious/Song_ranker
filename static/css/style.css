@@ -7749,7 +7749,7 @@ body[data-page="shelves"] .shelf-next:not(:disabled):hover {
 .bracket-track:focus-visible { outline:2px solid white; }
 .bracket-node.is-advancing { animation:bracket-advance .35s ease-out; }
 .bracket-node.has-details { z-index:5; border-color:var(--tournament); }
-.bracket-inspector { position:absolute; top:100%; left:0; width:288px; max-width:calc(100vw - 24px); max-height:min(360px,calc(var(--bracket-view-height,600px) - 155px)); overflow:auto; display:flex; flex-direction:column; gap:10px; padding:14px; background:#251b24; border:1px solid var(--round-color); border-radius:0 0 14px 14px; box-shadow:0 12px 28px #000b; cursor:auto; font-size:14px; }
+.bracket-inspector { position:absolute; top:100%; left:0; width:288px; max-width:calc(100vw - 24px); max-height:min(360px,calc(var(--bracket-view-height,600px) - 185px)); overflow:auto; display:flex; flex-direction:column; gap:10px; padding:14px; background:#251b24; border:1px solid var(--round-color); border-radius:0 0 14px 14px; box-shadow:0 12px 28px #000b; cursor:auto; font-size:14px; }
 .bracket-node.is-right .bracket-inspector { left:auto; right:0; }
 .bracket-inspector > * { min-width:0; max-width:100%; overflow-wrap:anywhere; }
 .bracket-detail-heading { display:flex; align-items:center; gap:10px; }
@@ -7768,12 +7768,14 @@ body:is([data-page="tournament_bracket"],:has(#tournament-replay)) .footer { wid
 .tournament-bracket-page { width:100%; min-width:0; }
 .bracket-page-header { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:8px 16px; padding:12px 24px; background:#141014; }
 #main .bracket-page-header h1 { font-size:24px; line-height:1.2; margin:0 auto 0 0; }
+.bracket-page-actions { display:flex; gap:8px; flex:none; }
 .bracket-page-header .btn { min-height:44px; font-size:14px; padding:8px 14px; }
 .bracket-page-meta { color:var(--muted); font-size:13px; }
 @media(max-width:760px){
  .bracket-page-header { padding:10px 16px; gap:8px; }
- #main .bracket-page-header h1 { flex-basis:100%; text-align:center; margin:0; }
- .bracket-page-meta { flex-basis:100%; text-align:center; }
+ #main .bracket-page-header h1 { flex:0 0 auto; order:1; font-size:22px; text-align:left; margin:0; }
+ .bracket-page-meta { flex:1 0 150px; order:2; text-align:right; font-size:12px; }
+ .bracket-page-actions { order:3; }
  .bracket-toolbar { padding:8px 12px; }
 }
 

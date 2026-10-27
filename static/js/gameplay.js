@@ -404,7 +404,7 @@ window.TournamentBracket = (() => {
     const failed=new Set(), tails=new Set();
     const reduced=window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
     if(!options.animate || reduced) order.forEach(m=>shown.add(m.id));
-    root.innerHTML=`<div class="bracket-toolbar"><span class="bracket-hint">Drag to explore · Select a track for details</span><div class="bracket-actions"><button type="button" class="btn tournament" data-map-replay>Replay bracket</button><button type="button" class="btn" data-map-sound aria-pressed="${sound}">Sound ${sound?'on':'off'}</button><button type="button" class="btn" data-map-skip>${options.onDone?'Skip to podium':'Show saved results'}</button></div><p class="bracket-status" role="status" aria-live="polite"></p></div><div class="bracket-viewport" tabindex="0" aria-label="Tournament bracket; scroll or click and drag to explore rounds"><div class="bracket-canvas" style="width:${width}px;height:${height+65}px"><svg class="bracket-lines" width="${width}" height="${height}" aria-hidden="true"></svg><div class="bracket-nodes"></div></div></div>`;
+    root.innerHTML=`<div class="bracket-toolbar"><span class="bracket-hint">Drag to explore · Select a track for details</span><div class="bracket-actions"><button type="button" class="btn tournament" data-map-replay>Replay</button><button type="button" class="btn" data-map-sound aria-pressed="${sound}">Sound ${sound?'on':'off'}</button><button type="button" class="btn" data-map-skip>${options.onDone?'Skip to podium':'Show results'}</button></div><p class="bracket-status" role="status" aria-live="polite"></p></div><div class="bracket-viewport" tabindex="0" aria-label="Tournament bracket; scroll or click and drag to explore rounds"><div class="bracket-canvas" style="width:${width}px;height:${height+65}px"><svg class="bracket-lines" width="${width}" height="${height}" aria-hidden="true"></svg><div class="bracket-nodes"></div></div></div>`;
     const viewport=root.querySelector('.bracket-viewport'), canvas=root.querySelector('.bracket-canvas'), nodes=root.querySelector('.bracket-nodes'), svg=root.querySelector('svg'), status=root.querySelector('.bracket-status');
     const workspace=root.id==='tournament-replay'||root.hasAttribute('data-tournament-map');
     function releaseClip(clip){if(!clip)return;window.PreviewPlayback?.abandon?.(clip);clip.pause();if(window.PreviewPlayback?.release)window.PreviewPlayback.release(clip);else clip.remove();}
@@ -470,7 +470,7 @@ window.TournamentBracket = (() => {
     function halt(keepAudio=false){playing=false;clearTimeout(timer);if(!keepAudio)stopSound();if(activeReplay===halt)activeReplay=null;}
     function finish(soft=false){
       if(closed||completed)return;completed=true;halt(soft);revealing=false;order.forEach(m=>shown.add(m.id));draw();
-      const done=()=>{timer=null;if(closed)return;stopSound();root.querySelector('[data-map-replay]').textContent='Replay bracket';status.textContent=data.tournament.status==='completed'?'Bracket complete':'Saved results';if(options.onDone)options.onDone({sound:sound&&!reduced});};
+      const done=()=>{timer=null;if(closed)return;stopSound();root.querySelector('[data-map-replay]').textContent='Replay';status.textContent=data.tournament.status==='completed'?'Bracket complete':'Saved results';if(options.onDone)options.onDone({sound:sound&&!reduced});};
       if(soft&&audio&&window.PreviewPlayback?.fadeOut){window.PreviewPlayback.fadeOut(audio,600);tails.forEach(a=>window.PreviewPlayback.fadeOut(a,600));timer=setTimeout(done,650);}else done();
     }
 
@@ -483,7 +483,7 @@ window.TournamentBracket = (() => {
       pan(m.round_number,m.match_number,m.match_type==='third_place');
       timer=setTimeout(step,options.stepMs||3500);
     }
-    function replay(){if(closed)return;selected=null;selectedMatch=null;completed=false;activeReplay?.();activeReplay=halt;clearTimeout(timer);stopSound();if(reduced||!order.length){order.forEach(m=>shown.add(m.id));draw();queueMicrotask(finish);return;}shown.clear();index=0;playing=true;revealing=true;root.querySelector('[data-map-replay]').textContent='Restart replay';draw();step();}
+    function replay(){if(closed)return;selected=null;selectedMatch=null;completed=false;activeReplay?.();activeReplay=halt;clearTimeout(timer);stopSound();if(reduced||!order.length){order.forEach(m=>shown.add(m.id));draw();queueMicrotask(finish);return;}shown.clear();index=0;playing=true;revealing=true;root.querySelector('[data-map-replay]').textContent='Restart';draw();step();}
 
     function handleClick(event){if(closed)return;
       const button=event.target.closest('button');if(!button)return;
@@ -492,7 +492,7 @@ window.TournamentBracket = (() => {
       if(button.hasAttribute('data-map-skip'))finish();
       if(button.hasAttribute('data-map-close')){closeInspection();return;}
       if(button.dataset.mapTrack){
-        if(playing){halt();status.textContent='Replay paused · select Restart replay to continue';}
+        if(playing){halt();status.textContent='Paused · Restart to replay';}
         const matchId=button.closest('[data-map-match]')?.dataset.mapMatch, id=Number(button.dataset.mapTrack);
         if(selected===id&&selectedMatch===matchId){closeInspection();return;}
         selected=id;selectedMatch=matchId;draw();
@@ -504,7 +504,7 @@ window.TournamentBracket = (() => {
     // Mouse/pen panning leaves native touch scrolling and keyboard navigation intact.
     let drag=null, suppressClick=false;
     function pointerDown(event){if(event.button!==0||event.pointerType==='touch'||event.target.closest('.bracket-inspector'))return;drag={id:event.pointerId,x:event.clientX,y:event.clientY,left:viewport.scrollLeft,top:viewport.scrollTop,moved:false};suppressClick=false;}
-    function pointerMove(event){if(!drag||event.pointerId!==drag.id)return;const dx=event.clientX-drag.x,dy=event.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)<6)return;if(!drag.moved){drag.moved=true;if(playing){halt();status.textContent='Replay paused · select Restart replay to continue';}viewport.setPointerCapture?.(drag.id);viewport.classList.add('is-dragging');}event.preventDefault();viewport.scrollLeft=drag.left-dx;viewport.scrollTop=drag.top-dy;}
+    function pointerMove(event){if(!drag||event.pointerId!==drag.id)return;const dx=event.clientX-drag.x,dy=event.clientY-drag.y;if(!drag.moved&&Math.hypot(dx,dy)<6)return;if(!drag.moved){drag.moved=true;if(playing){halt();status.textContent='Paused · Restart to replay';}viewport.setPointerCapture?.(drag.id);viewport.classList.add('is-dragging');}event.preventDefault();viewport.scrollLeft=drag.left-dx;viewport.scrollTop=drag.top-dy;}
     function pointerUp(event){if(!drag||event.pointerId!==drag.id)return;suppressClick=drag.moved&&event.type==='pointerup';const id=drag.id;drag=null;viewport.classList.remove('is-dragging');if(viewport.hasPointerCapture?.(id))viewport.releasePointerCapture(id);}
     function dragClick(event){if(suppressClick){suppressClick=false;event.preventDefault();event.stopImmediatePropagation();}}
     function preventImageDrag(event){event.preventDefault();}
@@ -526,7 +526,7 @@ window.TournamentBracket = (() => {
     function visibility(){if(document.hidden)stopSound();}
     function blocked(){sound=false;stopSound();const button=root.querySelector('[data-map-sound]');button.textContent='Sound off';button.setAttribute('aria-pressed','false');}
     const cancel=()=>{closed=true;halt();observer?.disconnect();window.removeEventListener('resize',fit);root.removeEventListener('keydown',keyDown);drag=null;viewport.classList.remove('is-dragging');viewport.removeEventListener('pointerdown',pointerDown);viewport.removeEventListener('pointermove',pointerMove);viewport.removeEventListener('pointerup',pointerUp);viewport.removeEventListener('pointercancel',pointerUp);viewport.removeEventListener('lostpointercapture',pointerUp);viewport.removeEventListener('click',dragClick,true);viewport.removeEventListener('dragstart',preventImageDrag);root.removeEventListener('click',handleClick);document.removeEventListener('visibilitychange',visibility);document.removeEventListener('preview-blocked',blocked);window.removeEventListener('pagehide',pauseForPage);};
-    function pauseForPage(){const wasPlaying=playing;halt();if(wasPlaying)status.textContent='Replay paused · select Restart replay to continue';}
+    function pauseForPage(){const wasPlaying=playing;halt();if(wasPlaying)status.textContent='Paused · Restart to replay';}
     window.addEventListener('pagehide',pauseForPage);
     document.addEventListener('visibilitychange',visibility);
     document.addEventListener('preview-blocked',blocked);
