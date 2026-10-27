@@ -97,7 +97,7 @@
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-records">
     <div class="section-head"><h2 class="tournament" id="ts-records">Track records</h2><a class="tournament" href="/mode_rankings/tournament">Rankings ↗</a></div>
-    <p class="muted">Competition records use scope credit: library 100%, tags 50%. Artist-only and album-only results add at most 2% and 0.5% of each track’s broader completed entries; repeats share that cap. Archive results below remain full, unweighted results.</p><div class="ts-records">{% for record in records %}<article class="mode-stats-inset ts-record">
+    <div class="ts-records">{% for record in records %}<article class="mode-stats-inset ts-record">
       <h3>{{ record.label }}</h3>
       {% if record.song %}<div class="ts-record-track"><span class="mode-stats-art">{{ art(record.song.cover_url) }}</span><div class="mode-stats-copy">{{ song_name(record.song) }}{{ metadata(record.song) }}</div></div>
       <strong class="mode-stats-primary">{{ '%g'|format(record.value) }}{{ '%' if record.unit=='%' else '' }}{% if record.unit!='%' %}<small> {{ record.unit }}</small>{% endif %}</strong>
@@ -109,7 +109,7 @@
   {% for category in categories %}
   <section class="panel dashboard-surface mode-stats-panel ts-entity ts-entity-{{ category.kind }}" aria-labelledby="ts-{{ category.kind }}-records">
     <div class="section-head"><h2 class="{{ category.kind }}" id="ts-{{ category.kind }}-records">{{ {'artist':'Artist records','album':'Album records','tag':'Tag records'}[category.kind] }}</h2></div>
-    <p class="mode-stats-caption">Scope-weighted title, podium and point credit · current collection links</p>
+    <p class="mode-stats-caption">Titles, podiums and points · current collection links</p>
     <ol class="mode-stats-list mode-stats-dense">
     {% for row in category.rows %}<li class="mode-stats-row">
       <span class="mode-stats-art">{{ art(row.cover_url|default(''),category.kind=='artist') }}</span>
@@ -125,12 +125,14 @@
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-seeds">
     <div class="section-head"><h2 class="tournament" id="ts-seeds">Seed patterns</h2></div>
+    <p class="mode-stats-caption">A seed is a track’s saved starting position in that bracket, not its current rank. Lower numbers are placed earlier. The draw combines Elo with randomness and gives previous champions priority.</p>
+    <p class="mode-stats-caption">Top half means seeds 1–8 in a 16-track bracket; bottom half means 9–16. Seed #1 champions counts bracket wins by the first seed, which is also included in the top-half count. The championship share compares top-half winners with all champions whose seed was saved.</p>
     <dl class="joined-metrics mode-stats-metrics">{{ figure('Seed #1 champions',seeds.first) }}{{ figure('Top-half champions',seeds.top_half) }}{{ figure('Bottom-half champions',seeds.bottom_half) }}</dl>
     <div class="mode-stats-comparisons">
       <div class="mode-stats-inset mode-stats-rate"><h3>Top-half championship share</h3><strong class="mode-stats-primary">{{ rate(seeds.top_share) }}</strong>{{ progress('Top-half championship share',seeds.top_share) }}<p>{{ seeds.top_half }} / {{ seeds.known }} champions with saved seeds</p></div>
-      <div class="mode-stats-inset mode-stats-rate"><h3>Higher-numbered seed wins</h3><strong class="mode-stats-primary">{{ rate(seeds.upset_share) }}</strong>{{ progress('Higher-numbered seed wins',seeds.upset_share) }}<p>{{ seeds.upsets }} / {{ seeds.matches }} matches with both seeds</p></div>
+      <div class="mode-stats-inset mode-stats-rate"><h3>Higher-numbered seed wins</h3><strong class="mode-stats-primary">{{ rate(seeds.upset_share) }}</strong>{{ progress('Higher-numbered seed wins',seeds.upset_share) }}<p>{{ seeds.upsets }} / {{ seeds.matches }} matches with both seeds</p><p class="mode-stats-caption">How often a later seed beat an earlier one — for example, #12 beating #3. Only decided matches with both starting seeds saved count.</p></div>
     </div>
-    {% if seeds.largest %}<div class="mode-stats-inset ts-seed-record"><h3>Highest-numbered champion seed</h3><div class="ts-record-track"><span class="mode-stats-art">{{ art(seeds.largest.song.cover_url) }}</span><div class="mode-stats-copy">{{ song_name(seeds.largest.song) }}{{ metadata(seeds.largest.song) }}</div><div class="mode-stats-result"><strong>#{{ seeds.largest.seed }}</strong><a class="tournament" href="{{ url_for('tournament_stats_page',tournament=seeds.largest.bracket.id) }}#tournament-{{ seeds.largest.bracket.id }}">{{ seeds.largest.bracket.size }}-track bracket #{{ seeds.largest.bracket.id }} ↗</a></div></div></div>{% endif %}
+    {% if seeds.largest %}<div class="mode-stats-inset ts-seed-record"><h3>Highest-numbered champion seed</h3><p class="mode-stats-caption">The highest seed number to win a completed bracket.</p><div class="ts-record-track"><span class="mode-stats-art">{{ art(seeds.largest.song.cover_url) }}</span><div class="mode-stats-copy">{{ song_name(seeds.largest.song) }}{{ metadata(seeds.largest.song) }}</div><div class="mode-stats-result"><strong>#{{ seeds.largest.seed }}</strong><a class="tournament" href="{{ url_for('tournament_stats_page',tournament=seeds.largest.bracket.id) }}#tournament-{{ seeds.largest.bracket.id }}">{{ seeds.largest.bracket.size }}-track bracket #{{ seeds.largest.bracket.id }} ↗</a></div></div></div>{% endif %}
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" id="tournament-archive" aria-labelledby="ts-archive">

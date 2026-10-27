@@ -1069,7 +1069,7 @@ window.SpecialModes = (() => {
                 `${num(row.podiums)} podium credit`,
                 `${num(row.tournament_wins)} win credit · ${num(row.tournament_appearances)} entry credit`,
               ];
-    U.main.innerHTML = `<div class="page-head"><h1 class="${tone}">${titles[mode]} Rankings</h1></div>${window.SongRankerUI.modeRankingControls("/mode_rankings/" + mode, r.type, r.bottom, "special")}${mode === "tournament" ? '<p class="muted">Scope-weighted credit: library 100%, tags 50%; artist/album results share caps of 2%/0.5% of broader entry credit.</p>' : ""}<div class="leaderboard">${rows.map((row, i) => window.SongRankerUI.modeRankingRow(U, row, r.type, i, eligible.length, r.bottom, tone, m[4] === "number" ? rankingValue(row, m) : m[4] === "decimal" ? num(rankingValue(row, m)) : rankingValue(row, m).toFixed(2) + "%", m[1], facts(row))).join("") || '<div class="empty">No results for this category yet</div>'}</div>`;
+    U.main.innerHTML = `<div class="page-head"><h1 class="${tone}">${titles[mode]} Rankings</h1></div>${window.SongRankerUI.modeRankingControls("/mode_rankings/" + mode, r.type, r.bottom, "special")}<div class="leaderboard">${rows.map((row, i) => window.SongRankerUI.modeRankingRow(U, row, r.type, i, eligible.length, r.bottom, tone, m[4] === "number" ? rankingValue(row, m) : m[4] === "decimal" ? num(rankingValue(row, m)) : rankingValue(row, m).toFixed(2) + "%", m[1], facts(row))).join("") || '<div class="empty">No results for this category yet</div>'}</div>`;
     history.replaceState(
       {},
       "",
