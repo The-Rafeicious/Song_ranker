@@ -75,7 +75,9 @@ def api_generate_bracket():
         from songranker.modes.selection import with_catalogue_age
 
         pool = with_catalogue_age(conn, pool)
-        songs = tournament_tracks(pool, size, counts=mode_counts(conn, "tournament"))
+        from songranker.modes.selection import preference_evidence
+        _, local_strength = preference_evidence(conn)
+        songs = tournament_tracks(pool, size, counts=mode_counts(conn, "tournament"), local_strength=local_strength)
         if songs is None:
             return (
                 jsonify(error="Not enough tracks with valid Elo for this bracket."),
