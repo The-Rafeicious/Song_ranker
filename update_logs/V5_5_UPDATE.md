@@ -129,3 +129,7 @@ Standard Vote family surfaces use light green, distinct from song green and the 
 ## V5.6.2
 
 Data Analysis adds read-only song, artist, album and tag lookups, peer comparisons, selectable bar/scatter/activity/Elo charts, library benchmarks, evidence depth, opponents, tournament routes, recognition timing, Overall contributions and relationship/Vibe tables. Home and navigation link to the page and a separate feature guide documents measurement rules and display limits.
+
+## V5.6.2.1
+
+Analysis gains searchable artwork selectors, evidence-aware charts/axes, visual summaries with expandable raw values, grouped report views and linked song artwork/artist/album metadata. No scoring changes.

@@ -285,3 +285,5 @@ Local tournament lookup has separate entity-type and record selectors; entity op
 Standard Vote family navigation, summaries and report headers use light green. Non-blind remains orange and Blind teal. Tournament Elo rows retain pink origin accents plus orange/teal visibility edges and labels.
 
 Data Analysis uses existing report surfaces, full-size controls, labelled SVG charts and internally scrolling data tables. Feature explanations belong in docs/ANALYSIS.md, linked through the analysis guide.
+
+Analysis uses searchable record selectors, evidence-aware chart controls and four report views. Visual summaries reveal exact figures through keyboard-accessible disclosures; raw tables remain available. Song references retain artwork and linked metadata.

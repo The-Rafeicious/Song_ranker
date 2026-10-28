@@ -61,7 +61,7 @@ def build_analysis(data, args):
         page=max(1,int(args.get('page',1)));minimum=max(0,int(args.get('minimum',0)))
     except (ValueError,TypeError):raise ValueError('Invalid record or pagination')
     entities={'song':list(songs.values()),'artist':data['artists'],'album':data['albums'],'tag':data['tags']}
-    choices=sorted([dict(id=e['id'],name=e.get('name',e.get('title','')),cover_url=e.get('cover_url','')) for e in entities[kind]],key=lambda e:(e['name'].casefold(),e['id']))
+    choices=sorted([dict(id=e['id'],name=e.get('name',e.get('title','')),cover_url=e.get('cover_url',''),subtitle=e.get('artist','')) for e in entities[kind]],key=lambda e:(e['name'].casefold(),e['id']))
     if not selected and choices:selected=choices[0]['id']
     identity=next((e for e in entities[kind] if e['id']==selected),None)
     if identity is None and choices:raise ValueError('Record unavailable')
@@ -142,5 +142,20 @@ def build_analysis(data, args):
         values=sorted(s[key] for s in songs.values() if s[key] is not None)
         selected_values=[s[key] for s in rows if s[key] is not None]
         population.append(dict(label=label,tone=tone,n=len(values),mean=fmean(values) if values else None,median=median(values) if values else None,low=values[int((len(values)-1)*.1)] if values else None,high=values[int((len(values)-1)*.9)] if values else None,percentile=ratio(sum(v<=fmean(selected_values) for v in values),len(values)) if values and selected_values else None))
+    metric_counts={key:sum(s[key] is not None for s in pool) for key,_,_ in metrics}
+    axis_pairs={key:[] for key,_,_ in metrics}
+    for x,_,_ in metrics:
+        for y,_,_ in metrics:
+            shared=[s for s in pool if s[x] is not None and s[y] is not None]
+            if x!=y and len(shared)>=2 and len({s[x] for s in shared})>1 and len({s[y] for s in shared})>1:axis_pairs[x].append(y)
+    chart_ready=dict(bars=any(metric_counts.values()),scatter=any(axis_pairs.values()),activity=bool(days),elo=kind=='song' and len(elo_values)>=2)
+    chart_notice=''
+    if chart=='scatter' and y_metric not in axis_pairs[metric]:
+        chart_notice='Scatter needs two different, varying metrics on at least two shared tracks.'
+        chart='bars'
+    elif not chart_ready[chart]:
+        chart_notice='This chart needs more recorded evidence for the current selection.'
+        chart='bars'
+    chart_config=dict(counts=metric_counts,pairs=axis_pairs,charts=chart_ready)
     pages=max(1,ceil(len(measured)/30));page=min(page,pages)
-    return dict(song_lookup=songs,population=population,event_count=len(events),official=next((r for r in overall['entities'][kind+'s' if kind!='song' else 'songs'] if r['id']==selected),None),kind=kind,identity=identity,selected=selected,peer=peer,choices=choices,rows=rows,primary=primary,comparison=comparison,peer_identity=next((e for e in entities[kind] if e['id']==peer),None),metrics=metrics,metric=metric,metric_label=metric_map[metric][1],metric_tone=metric_map[metric][2],y_metric=y_metric,y_label=metric_map[y_metric][1],chart=chart,minimum=minimum,bars=bars,points=points,xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax,line=line,low=low,high=high,elo_values=elo_values,coverage=coverage,breadth=sorted(breadth.items()),opponents=opponent_rows[:20],events=events[:30],sources=[dict(origin=o,mode=m,count=n) for (o,m),n in sources.items()],upsets=upsets,upset_opportunities=eligible,days=sorted(days.items())[-90:],day_max=max(days.values(),default=1),routes=routes[-20:],local_record=local_record,timings=timings,relationships=relationships,facts=facts,scores=scores,table=measured[(page-1)*30:page*30],page=page,pages=pages,total=len(measured),snapshot=overall['calibration']['id'])
+    return dict(artist_lookup=data['artists'],chart_config=chart_config,chart_notice=chart_notice,song_lookup=songs,population=population,event_count=len(events),official=next((r for r in overall['entities'][kind+'s' if kind!='song' else 'songs'] if r['id']==selected),None),kind=kind,identity=identity,selected=selected,peer=peer,choices=choices,rows=rows,primary=primary,comparison=comparison,peer_identity=next((e for e in entities[kind] if e['id']==peer),None),metrics=metrics,metric=metric,metric_label=metric_map[metric][1],metric_tone=metric_map[metric][2],y_metric=y_metric,y_label=metric_map[y_metric][1],chart=chart,minimum=minimum,bars=bars,points=points,xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax,line=line,low=low,high=high,elo_values=elo_values,coverage=coverage,breadth=sorted(breadth.items()),opponents=opponent_rows[:20],events=events[:30],sources=[dict(origin=o,mode=m,count=n) for (o,m),n in sources.items()],upsets=upsets,upset_opportunities=eligible,days=sorted(days.items())[-90:],day_max=max(days.values(),default=1),routes=routes[-20:],local_record=local_record,timings=timings,relationships=relationships,facts=facts,scores=scores,table=measured[(page-1)*30:page*30],page=page,pages=pages,total=len(measured),snapshot=overall['calibration']['id'])

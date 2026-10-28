@@ -53,6 +53,7 @@
   {{ js('dev_records') }}{{ js('dev_vibe') }}{{ js('dev_tags') }}
   {{ js('dev_system') }}
 {% endif %}
+{% if path == '/analysis' %}{{ js('analysis') }}{% endif %}
 {{ js('app_stop') }}
 {{ js('site') }}
 {% endmacro %}

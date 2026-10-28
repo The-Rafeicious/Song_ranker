@@ -55,6 +55,12 @@ class AnalysisTests(unittest.TestCase):
             self.assertEqual(pair['primary']['win_rate']['value'],100)
             self.assertEqual(pair['comparison']['win_rate']['value'],0)
             self.assertEqual(len(pair['bars']),2)
+            scatter=build_analysis(data,dict(kind='song',id='1',compare='2',chart='scatter',metric='elo',y='win_rate'))
+            self.assertEqual(scatter['chart'],'scatter')
+            invalid=build_analysis(data,dict(kind='song',id='1',chart='scatter',metric='elo',y='elo'))
+            self.assertEqual(invalid['chart'],'bars')
+            self.assertTrue(invalid['chart_notice'])
+            self.assertFalse(invalid['chart_config']['charts']['scatter'])
 
     @unittest.skipUnless(shutil.which('google-chrome') or shutil.which('chromium'), 'Chromium is unavailable')
     def test_analysis_browser_layout_and_controls(self):

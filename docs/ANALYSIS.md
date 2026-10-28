@@ -50,3 +50,9 @@ Overall contributions show production mode scores, evidence and allocated weight
 ## Snapshot and limits
 
 All catalogue and result inputs are read within the shared collection read transaction, and Overall is evaluated from that same data. Another tab's later results appear on refresh. The page is not a historical snapshot comparison, and it does not store custom dashboards. Bounded charts, opponent rows, route rows and the Vibe preview keep the page digestible; the track explorer is paged. No future-performance estimates, statistical significance, causal conclusions or automatic leaderboard corrections are claimed.
+
+## Visual navigation (V5.6.2.1)
+
+Search each selector by typing into its menu. Record options include artwork. Changing the record, comparison or minimum evidence refreshes the available chart choices. Charts and axes with insufficient compatible evidence are disabled. Scatter requires different axes, two shared tracks and variation on both axes; Elo trajectories require two saved points and a song selection. Invalid direct chart links fall back to bars with a status message. When no measured data exists the empty state stays explicit.
+
+Overview, Games, Relationships and Records views organise the page without deleting data. Rate, percentile, coverage, timing and contribution bars open exact figures when clicked or activated with the keyboard. Full raw tables remain in disclosures. Song references include cover art and linked artist/album metadata.
