@@ -13,7 +13,7 @@ window.ProfileUI = (() => {
     return `<div class="profile-rate"><div class="profile-rate-caption"><span>${esc(label)}</span><strong>${ratio(right, total)}</strong></div><div class="overall-progress" ${total ? `role="progressbar" aria-label="${esc(label)}" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}"` : 'aria-hidden="true"'}><span style="width:${pct}%"></span></div><small>${total ? `${shown(right)} / ${shown(total)}` : "No results yet"}</small></div>`;
   }
   function panel(tone, title, body, links = "") {
-    return `<section id="${tone === "standard" ? "voting-record" : tone === "recognition" || tone === "tournament" ? tone : "profile-" + tone}" class="panel profile-mode-panel dashboard-surface ${tone}" data-profile-panel="${tone}" style="--section-color:var(--${tone});--surface-accent:var(--${tone})"><div class="section-head"><h2 class="${tone}">${title}</h2><div class="profile-stat-links">${links}</div></div>${body}</section>`;
+    return `<section id="${tone === "standard" ? "voting-record" : tone === "recognition" || tone === "tournament" ? tone : "profile-" + tone}" class="panel profile-mode-panel dashboard-surface ${tone=== "standard" ? "voting" : tone}" data-profile-panel="${tone}" style="--section-color:var(--${tone=== "standard" ? "voting" : tone});--surface-accent:var(--${tone=== "standard" ? "voting" : tone})"><div class="section-head"><h2 class="${tone=== "standard" ? "voting" : tone}">${title}</h2><div class="profile-stat-links">${links}</div></div>${body}</section>`;
   }
   const link = (tone, path, text) =>
     `<a class="${tone}" href="${path}">${text} ↗</a>`;
@@ -133,8 +133,8 @@ window.ProfileUI = (() => {
       outcomes +
         rate("Weighted win rate", votes.wins, votes.matches) +
         `<div class="profile-detail-grid profile-vote-grid">${modeCards}</div>`,
-      link("standard", "/voting_stats", "Stats") +
-        link("standard", "/history", "History"),
+      link("voting", "/voting_stats", "Stats") +
+        link("voting", "/history", "History"),
     );
     const fieldRows = [
       ["title", "Song"],

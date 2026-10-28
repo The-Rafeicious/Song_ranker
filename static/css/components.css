@@ -487,3 +487,10 @@ body.site-style-baseline #main .quality-flag input {
   height: 20px;
   flex: 0 0 auto;
 }
+
+:where(.mode-card,.shelf-card,.spotlight,.dashboard-surface).voting { --surface-accent:var(--voting); }
+body.site-style-baseline #main .versus-row[data-match-origin="tournament"] { border-inline-start:3px solid var(--tournament); }
+body.site-style-baseline #main .versus-row[data-match-origin="tournament"][data-match-mode="standard"] { border-inline-end:3px solid var(--standard); }
+body.site-style-baseline #main .versus-row[data-match-origin="tournament"][data-match-mode="blind"] { border-inline-end:3px solid var(--blind); }
+.versus-row[data-match-mode="standard"] .versus-mode-label { color:var(--standard); }
+.versus-row[data-match-mode="blind"] .versus-mode-label { color:var(--blind); }

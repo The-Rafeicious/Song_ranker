@@ -948,3 +948,8 @@ body.gameplay-page:is([data-page="standard"], [data-page="tournament_play"], [da
 .game-option-art.artist { border-radius:50%; }
 .game-option-art img { position:absolute; width:100%; height:100%; object-fit:cover; }
 .game-option-copy { flex:1; min-width:0; overflow-wrap:anywhere; }
+
+body[data-page="standard"][data-vote-mode="standard"] { --game-accent:var(--standard); }
+body[data-page="standard"][data-vote-mode="blind"] { --game-accent:var(--blind); }
+body[data-page="standard"] [data-mode="standard"] { color:var(--standard); }
+body[data-page="standard"] [data-mode="blind"] { color:var(--blind); }

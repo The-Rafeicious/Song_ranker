@@ -1,5 +1,5 @@
 {% macro pulse(data, boxed=true) -%}
-{% if boxed %}<section class="panel dashboard-surface stats-pulse" style="--pulse-accent:var(--{{ 'standard' if data.mode in ['global','voting','history'] else data.mode }})" aria-label="Recent activity">{% else %}<div class="mode-stats-inset stats-pulse">{% endif %}
+{% if boxed %}<section class="panel dashboard-surface stats-pulse" style="--pulse-accent:var(--{{ 'voting' if data.mode in ['global','voting','history'] else data.mode }})" aria-label="Recent activity">{% else %}<div class="mode-stats-inset stats-pulse">{% endif %}
  <div class="pulse-head"><h2>Last 14 days</h2><span>UTC</span></div>
  <div class="joined-metrics pulse-metrics" data-columns="4"><div><b>{{data.total}}</b><span>Saved results</span></div><div><b>{{data.current}}</b><span>Last 7 days</span></div><div><b>{{'%+d'|format(data.current-data.previous)}}</b><span>vs previous 7 days</span></div><div><b>{{data.active}} / 14</b><span>Active days</span></div></div>
  <div class="pulse-charts{% if not data.rate_label %} pulse-single{% endif %}">

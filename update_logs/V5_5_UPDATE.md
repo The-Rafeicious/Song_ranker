@@ -121,3 +121,7 @@ Reviewed adaptive mode selectors. Tournament seeding prioritises strength over p
 Tournament entry draws retain exposure fairness and bounded Vibe affinity. Seeding now follows Elo with only 2% pool-spread jitter; a former title alone no longer overrides strength. Seeds one/two occupy opposite halves and the top four separate quarters. Artist/album match outcomes add at most 10% of pool spread to seed strength, adjusted against current opponent Elo, shrunk by eight neutral observations per opponent and averaged equally across distinct opponents. This is private selection evidence, not a rating.
 
 Standard and Blind voting softly reduce repeat-opponent weight using ordinary effective votes and all valid saved tournament matches, including local rounds. The multiplier bottoms out at 25%; exposure fairness, Elo proximity and exploration remain. Trivia, Guesser, Shelves and Vibe retain their existing mode-specific policies. Public Elo, Overall and saved history are unchanged. Difficult losses already cost less Elo than unexpected losses; selection does not fabricate rating corrections from a small sample.
+
+## V5.6.1
+
+Standard Vote family surfaces use light green, distinct from song green and the unchanged orange Non-blind / teal Blind subsets. Tournament first-round history combines pink origin edges with visibility-coloured edges and labels. Scoring and selection are unchanged.
