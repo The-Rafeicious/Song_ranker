@@ -3520,3 +3520,11 @@ body.site-style-baseline #main .pulse-scale {
 .analysis-page,.analysis-page > .panel { min-width:0; }
 .analysis-page .panel { --mode-stats-border:color-mix(in srgb,var(--section-color) 40%,transparent); }
 .analysis-identity > div { min-width:0; overflow-wrap:anywhere; }
+
+.analysis-page .panel.voting { --section-color:var(--voting); --surface-accent:var(--voting); }
+.analysis-page .panel.tournament { --section-color:var(--tournament); --surface-accent:var(--tournament); }
+.analysis-page .panel.recognition { --section-color:var(--recognition); --surface-accent:var(--recognition); }
+.analysis-page .panel.shelves { --section-color:var(--shelves); --surface-accent:var(--shelves); }
+.analysis-page .panel.guesser { --section-color:var(--guesser); --surface-accent:var(--guesser); }
+.analysis-page .panel.vibe { --section-color:var(--vibe); --surface-accent:var(--vibe); }
+.analysis-page .panel.overall { --section-color:var(--overall); --surface-accent:var(--overall); }
