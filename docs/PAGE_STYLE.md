@@ -278,3 +278,5 @@ Local artist/album tournament reports are separate from the library/tag dashboar
 Local tournament comparisons use shared report rows and top/bottom five summaries, with a filtered lookup near the archive for full details. Quick summaries use a compact leading-track inset.
 
 Local tournament filters reuse the tournament mode selector. Activity, bracket mix and evidence panels use tournament colours; entity comparisons and lookup results use their entity accents.
+
+Local tournament lookup has separate entity-type and record selectors; entity options show artwork with circular artist portraits. Panel borders, dividers and glows share the entity accent.

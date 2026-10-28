@@ -943,3 +943,8 @@ body.gameplay-page:is([data-page="standard"], [data-page="tournament_play"], [da
   body.gameplay-page #main .matchup .match-cover::before,
   body.gameplay-page #main .matchup .match-cover::after { display: none; }
 }
+
+.game-option-art { position:relative; display:grid; place-items:center; flex:0 0 44px; width:44px; height:44px; border-radius:8px; overflow:hidden; background:#181818; }
+.game-option-art.artist { border-radius:50%; }
+.game-option-art img { position:absolute; width:100%; height:100%; object-fit:cover; }
+.game-option-copy { flex:1; min-width:0; overflow-wrap:anywhere; }
