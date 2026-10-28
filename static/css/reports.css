@@ -3427,38 +3427,26 @@ body.site-style-baseline #main .pulse-scale {
 .tournament-stats-page .ts-entity-album { --surface-accent:var(--album); --mode-stats-border:#bf77ff66; --mode-stats-rule:#bf77ff29; }
 .tournament-stats-page .ts-entity-tag { --surface-accent:var(--tag); --mode-stats-border:#ffb83366; --mode-stats-rule:#ffb83329; }
 
-/* Local tournament comparisons share report rows; filters stay in page flow. */
-.local-tournament-filter { display:flex; align-items:center; flex-wrap:wrap; gap:12px; }
-.local-tournament-filter select { min-width:0; max-width:100%; flex:1 1 240px; font-size:16px; min-height:44px; }
-.local-tournament-groups { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
-.local-tournament-stats .mode-stats-result { max-width:100%; }
-.local-tournament-stats .mode-stats-result span { display:block; }
-.local-tournament-stats .mode-stats-copy { min-width:0; overflow-wrap:anywhere; }
-@media(max-width:900px) { .local-tournament-groups { grid-template-columns:minmax(0,1fr); } }
-
-.local-tournament-stats .mode-stats-row { grid-template-columns:minmax(0,1fr) auto; gap:12px; }
-.local-tournament-stats .mode-stats-row > .mode-stats-copy,
-.local-tournament-stats .mode-stats-row > .mode-stats-result { grid-column:auto; }
-.local-tournament-stats .mode-stats-result { overflow-wrap:anywhere; }
-.local-tournament-stats .mode-stats-result > strong { font-size:24px; }
+/* Artist and album tournament report uses the shared comparison rows. */
+.local-tournament-filter { display:flex; align-items:center; flex-wrap:wrap; gap:12px; margin-top:20px; padding:16px; background:var(--inset, #242424); border:1px solid #ff78a64d; border-radius:18px; }
+.local-tournament-filter label { font-weight:700; color:var(--tournament); }
+.local-tournament-filter select { min-width:0; max-width:100%; flex:1 1 240px; min-height:44px; padding:10px 40px 10px 14px; font:inherit; color:var(--text, #fff); background:#181818; border:1px solid #ff78a666; border-radius:12px; }
+.local-tournament-filter select:focus-visible { outline:2px solid var(--tournament); outline-offset:2px; }
+.local-tournament-stats .local-ranking .mode-stats-row { grid-template-columns:24px 64px minmax(0,1fr) auto; gap:12px; }
+.local-tournament-stats .local-ranking .mode-stats-art { --mode-stats-art-size:64px; }
+.local-tournament-stats .local-ranking .mode-stats-name { font-size:18px; }
+.local-tournament-stats .local-ranking .mode-stats-result strong { font-size:24px; }
+.local-tournament-stats .local-pair { grid-template-columns:minmax(0,1fr) auto; }
+.local-tournament-stats .local-pair .mode-stats-copy > span { display:block; color:var(--muted); margin-top:4px; }
+.local-tournament-stats .artist { --section-color:var(--artist); --surface-accent:var(--artist); }
+.local-tournament-stats .album { --section-color:var(--album); --surface-accent:var(--album); }
+.local-lookup-result { margin-top:20px; }
+.local-lookup-heading { display:flex; gap:16px; align-items:center; margin-bottom:16px; }
+.local-lookup-heading h3 { margin:0; }
+.local-lookup-heading span { color:var(--muted); }
 @media(max-width:600px) {
-  .local-tournament-stats .mode-stats-row { grid-template-columns:minmax(0,1fr); }
-  .local-tournament-stats .mode-stats-row > .mode-stats-result { text-align:left; display:block; }
+  .local-tournament-stats .local-ranking .mode-stats-row { grid-template-columns:24px 52px minmax(0,1fr); }
+  .local-tournament-stats .local-ranking .mode-stats-art { --mode-stats-art-size:52px; }
+  .local-tournament-stats .local-ranking .mode-stats-result { grid-column:3; text-align:left; }
+  .local-tournament-stats .local-pair { grid-template-columns:minmax(0,1fr); }
 }
-
-.local-tournament-groups > .artist { --section-color:var(--artist); --surface-accent:var(--artist); --mode-stats-border:#5b9bff66; --mode-stats-rule:#5b9bff29; }
-.local-tournament-groups > .album { --section-color:var(--album); --surface-accent:var(--album); --mode-stats-border:#bf77ff66; --mode-stats-rule:#bf77ff29; }
-@media(max-width:1100px) {
-  .local-tournament-stats .page-head { grid-template-columns:minmax(0,1fr); }
-  .local-tournament-stats .page-head h1 { grid-column:1; }
-  .local-tournament-stats .page-head > a { justify-self:center; }
-}
-
-.local-tournament-stats .mode-stats-copy > a,
-.local-tournament-stats .mode-stats-copy > strong { display:block; font-size:18px; font-weight:700; }
-.local-tournament-stats .mode-stats-copy > span { display:block; margin-top:4px; color:var(--muted); line-height:1.4; }
-
-.local-tournament-stats #local-track-comparisons .mode-stats-row { grid-template-columns:56px minmax(0,1fr) auto; }
-.local-track-art { width:56px; height:56px; overflow:hidden; border-radius:10px; }
-.local-track-art img { width:100%; height:100%; object-fit:cover; }
-@media(max-width:520px) { .local-tournament-stats #local-track-comparisons .mode-stats-row { grid-template-columns:56px minmax(0,1fr); } .local-tournament-stats #local-track-comparisons .mode-stats-result { grid-column:2; } }

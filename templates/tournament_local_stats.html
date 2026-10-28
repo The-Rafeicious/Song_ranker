@@ -4,31 +4,41 @@
 {% block title %}Artist & Album Tournament Stats · Song Ranker{% endblock %}
 {% block page_kind %}tournament_local_stats{% endblock %}
 {% macro song_link(song) %}<a class="song" href="{{url_for('song_page',song_id=song.id)}}">{{song.title}}</a>{% endmacro %}
+{% macro ranking(rows, kind, start=1) %}
+<ol class="mode-stats-list mode-stats-dense local-ranking" start="{{start}}">
+{% for r in rows %}
+<li class="mode-stats-row"><span class="mode-stats-rank">{{start+loop.index0}}</span><span class="mode-stats-art">{{art(r.cover_url,kind=='artist')}}</span><div class="mode-stats-copy">
+{% if kind=='song' %}<a class="song mode-stats-name" title="{{r.title}}" href="{{url_for('song_page',song_id=r.id)}}">{{r.title}}</a><span class="artist">{{r.artist}}</span>
+{% else %}<a class="{{kind}} mode-stats-name" title="{{r.name}}" href="{{url_for('artist_page',artist_name=r.name) if kind=='artist' else url_for('album_page',album_title=r.name)}}">{{r.name}}</a><span>{{r.tracks}} tracks · {{r.entries}} entries</span>{% endif %}</div>
+<div class="mode-stats-result"><strong>{{r.championships}}</strong><span>{{'title' if r.championships==1 else 'titles'}}</span><span>{{rate(r.win_rate)}} wins · {{r.played}} matches</span></div></li>
+{% else %}<li class="empty">No completed comparisons yet.</li>{% endfor %}</ol>
+{% endmacro %}
+{% macro comparison(rows, kind, title) %}
+<section class="panel dashboard-surface mode-stats-panel {{kind}}" id="local-{{'track' if kind=='song' else kind}}-comparisons"><div class="section-head"><h2 class="{{kind}}">{{title}}</h2><a class="tournament" href="#local-lookup">Look up ↗</a></div>
+<div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3>Top {{[5,rows|length]|min}}</h3>{{ranking(rows[:5],kind)}}</div>
+{% if rows|length>5 %}{% set bottom_start=[5,rows|length-5]|max %}<div class="mode-stats-inset"><h3>Bottom {{rows|length-bottom_start}}</h3>{{ranking(rows[bottom_start:],kind,bottom_start+1)}}</div>{% endif %}</div></section>
+{% endmacro %}
 {% block content %}
 <div class="mode-stats-page tournament-stats-page local-tournament-stats">
   <div class="page-head"><h1 class="tournament">Artist & Album Tournaments</h1><a class="tournament" href="{{url_for('tournament_stats_page')}}">Library & tag stats ↗</a></div>
-  <form class="panel local-tournament-filter" method="get">
-    <label for="local-view">Compare results</label><select id="local-view" name="view">
-      {% for value,label in [('all','All local tournaments'),('artist','Artist-only tournaments'),('album','Album-only tournaments')] %}<option value="{{value}}" {{'selected' if view==value else ''}}>{{label}}</option>{% endfor %}
-      {% for kind in ['artist','album'] %}<optgroup label="{{kind|title}}">{% for choice in choices if choice.kind==kind %}<option value="{{choice.value}}" {{'selected' if view==choice.value else ''}}>{{choice.name}}</option>{% endfor %}</optgroup>{% endfor %}
-    </select><button class="btn tournament" type="submit">Apply</button>
-  </form>
-  <section class="panel dashboard-surface mode-stats-panel tournament"><div class="section-head"><h2 class="tournament">Local results</h2></div>
+  <section class="panel dashboard-surface mode-stats-panel tournament"><div class="section-head"><h2 class="tournament">Tournament overview</h2></div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Completed brackets',summary.completed)}}{{figure('Decided matches',summary.matches)}}{{figure('Tracks compared',summary.tracks)}}{{figure('Points',summary.points|round(2))}}</dl>
-    
+    <form class="local-tournament-filter" method="get"><label for="local-view">Compare tournaments</label><select id="local-view" name="view">
+      {% for value,label in [('all','All artist & album tournaments'),('artist','Artist tournaments'),('album','Album tournaments')] %}<option value="{{value}}" {{'selected' if view==value else ''}}>{{label}}</option>{% endfor %}
+      {% for kind in ['artist','album'] %}<optgroup label="{{kind|title}}">{% for choice in choices if choice.kind==kind %}<option value="{{choice.value}}" {{'selected' if view==choice.value else ''}}>{{choice.name}}</option>{% endfor %}</optgroup>{% endfor %}
+    </select><button class="btn tournament" type="submit">Apply</button></form>
   </section>
-  <section class="panel dashboard-surface mode-stats-panel tournament" id="local-track-comparisons"><div class="section-head"><h2 class="song">Track favourites</h2></div>
-    
-    <ol class="mode-stats-list">{% for s in tracks %}<li class="mode-stats-row"><div class="local-track-art">{{art(s.cover_url)}}</div><div class="mode-stats-copy">{{song_link(s)}}<span>{{s.artist}} · {{s.tournament_appearances}} {{'entry' if s.tournament_appearances==1 else 'entries'}} · {{s.played}} {{'match' if s.played==1 else 'matches'}}</span></div><div class="mode-stats-result"><strong>{{s.championships}} {{'title' if s.championships==1 else 'titles'}} · {{rate(s.title_rate)}} title rate</strong><span>{{s.tournament_wins}}W / {{s.tournament_losses}}L · {{rate(s.win_rate)}} wins</span><span>{{s.podiums}} {{'podium' if s.podiums==1 else 'podiums'}} · {{s.tournament_points|round(2)}} points</span></div></li>{% else %}<li class="empty">Complete an artist or album bracket to compare its tracks.</li>{% endfor %}</ol>
-  </section>
-  <div class="local-tournament-groups">{% for group in groups %}<section class="panel dashboard-surface mode-stats-panel {{group.kind}}"><div class="section-head"><h2 class="{{group.kind}}">{{group.kind|title}} comparisons</h2></div>
-    <ol class="mode-stats-list">{% for r in group.rows %}<li class="mode-stats-row"><div class="mode-stats-copy"><a class="{{group.kind}}" href="{{url_for('artist_page',artist_name=r.name) if group.kind=='artist' else url_for('album_page',album_title=r.name)}}">{{r.name}}</a><span>{{r.tracks}} tracks · {{r.entries}} track entries</span><span>Leading track: {{song_link(r.favourite)}}</span></div><div class="mode-stats-result"><strong>{{r.championships}} {{'title' if r.championships==1 else 'titles'}}</strong><span>{{r.wins}} / {{r.played}} match wins · {{rate(r.win_rate)}}</span><span>{{r.points|round(2)}} points</span></div></li>{% else %}<li class="empty">No completed comparisons yet.</li>{% endfor %}</ol>
-  </section>{% endfor %}</div>
+  {{comparison(tracks,'song','Track favourites')}}
+  {% for group in groups %}{{comparison(group.rows,group.kind,group.kind|title+' comparisons')}}{% endfor %}
   <section class="panel dashboard-surface mode-stats-panel tournament"><div class="section-head"><h2 class="tournament">Head-to-head</h2></div>
-    <ol class="mode-stats-list">{% for p in pairs %}<li class="mode-stats-row"><div class="mode-stats-copy">{{song_link(p.a)}}<span>against {{song_link(p.b)}}</span></div><div class="mode-stats-result"><strong>{{p.a_wins}} – {{p.b_wins}}</strong><span>{{p.total}} {{'match' if p.total==1 else 'matches'}}</span></div></li>{% else %}<li class="empty">No completed pairings yet.</li>{% endfor %}</ol>
+    <ol class="mode-stats-list">{% for p in pairs[:5] %}<li class="mode-stats-row local-pair"><div class="mode-stats-copy">{{song_link(p.a)}}<span>against {{song_link(p.b)}}</span></div><div class="mode-stats-result"><strong>{{p.a_wins}} – {{p.b_wins}}</strong><span>{{p.total}} {{'match' if p.total==1 else 'matches'}}</span></div></li>{% else %}<li class="empty">No completed pairings yet.</li>{% endfor %}</ol>
+  </section>
+  <section class="panel dashboard-surface mode-stats-panel tournament" id="local-lookup"><div class="section-head"><h2 class="tournament">Look up results</h2></div>
+    <form class="local-tournament-filter" method="get" action="{{url_for('local_tournament_stats_page')}}#local-lookup"><input type="hidden" name="view" value="{{view}}"><label for="local-lookup-select">Track, artist or album</label><select id="local-lookup-select" name="lookup" required><option value="">Choose a result</option>{% for kind,label in [('song','Tracks'),('artist','Artists'),('album','Albums')] %}<optgroup label="{{label}}">{% for option in lookup_options if option.kind==kind %}<option value="{{option.value}}" {{'selected' if lookup_value==option.value else ''}}>{{option.row.name}}{% if kind=='song' and option.row.artist %} · {{option.row.artist}}{% endif %}</option>{% endfor %}</optgroup>{% endfor %}</select><button class="btn tournament" type="submit">View stats</button></form>
+    {% if lookup %}{% set r=lookup.row %}<div class="mode-stats-inset local-lookup-result"><div class="local-lookup-heading">{{art(r.cover_url,lookup.kind=='artist')}}<div><h3 class="{{lookup.kind}}">{{r.name}}</h3><span>{{lookup.kind|title}}</span></div></div><dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Titles',r.championships)}}{{figure('Podiums',r.podiums)}}{{figure('Match win rate',rate(r.win_rate))}}{{figure('Points',r.tournament_points|round(2) if lookup.kind=='song' else r.points|round(2))}}{{figure('Matches',r.played)}}{{figure('Wins',r.tournament_wins if lookup.kind=='song' else r.wins)}}{{figure('Entries',r.tournament_appearances if lookup.kind=='song' else r.entries)}}{{figure('Title rate',rate(r.title_rate) if lookup.kind=='song' else '—')}}</dl>{% if lookup.kind!='song' %}<p>Leading track: {{song_link(r.favourite)}}</p>{% endif %}</div>{% elif lookup_value %}<p role="status">No result found in this selection.</p>{% endif %}
   </section>
   <section class="panel dashboard-surface mode-stats-panel tournament"><div class="section-head"><h2 class="tournament">Local brackets</h2></div>
-    <ol class="mode-stats-list">{% for t in archive %}<li class="mode-stats-row" id="local-bracket-{{t.id}}"><div class="mode-stats-copy"><strong>{{t.name}} · #{{t.id}}</strong><span>{{t.scope_type|title}} · {{t.size}} tracks · {{'Blind' if t.is_blind else 'Non-blind'}} · {{'Completed' if t.status=='completed' else 'In progress'}} · {{t.decided}} decided</span>{% if t.winner %}<span>Winner: {{song_link(t.winner)}}</span>{% endif %}</div><a class="btn tournament" href="{{url_for('tournament_bracket_page',tournament_id=t.id)}}">Explore bracket ↗</a></li>{% else %}<li class="empty">No artist or album brackets saved.</li>{% endfor %}</ol>
+    <ol class="mode-stats-list">{% for t in archive %}<li class="mode-stats-row local-pair" id="local-bracket-{{t.id}}"><div class="mode-stats-copy"><strong>{{t.name}} · #{{t.id}}</strong><span>{{t.scope_type|title}} · {{t.size}} tracks · {{'Blind' if t.is_blind else 'Non-blind'}} · {{'Completed' if t.status=='completed' else 'In progress'}} · {{t.decided}} decided</span>{% if t.winner %}<span>Winner: {{song_link(t.winner)}}</span>{% endif %}</div><a class="btn tournament" href="{{url_for('tournament_bracket_page',tournament_id=t.id)}}">Explore bracket ↗</a></li>{% else %}<li class="empty">No artist or album brackets saved.</li>{% endfor %}</ol>
     {% if pages>1 %}<nav class="pill-nav" aria-label="Local bracket pages">{% if page>1 %}<a class="btn" href="{{url_for('local_tournament_stats_page',view=view,page=page-1)}}">Previous</a>{% endif %}<span>{{page}} / {{pages}}</span>{% if page<pages %}<a class="btn" href="{{url_for('local_tournament_stats_page',view=view,page=page+1)}}">Next</a>{% endif %}</nav>{% endif %}
   </section>
 </div>
