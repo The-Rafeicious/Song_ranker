@@ -103,3 +103,7 @@ Tournament Stats includes a compact artist/album summary linked to its dedicated
 ## V5.5.10.4
 
 Artist and album tournament stats use shared report rows with top and bottom comparisons and a lookup for individual track, artist and album results. Filters use styled native controls. Tournament and collection profiles show the leading track in a compact inset.
+
+## V5.5.10.5
+
+Local tournament reports reuse tournament selection controls, show recent activity, bracket distributions and repeated-entry/champion evidence. Lookups align titles, podiums, rates, wins, losses and points, with related tracks or opponent records. Scope filters apply throughout; no scoring or Elo changes.

@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.5.10.4 contract. Change the owning shared rule before adding a
+This is the current V5.5.10.5 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -276,3 +276,5 @@ Keep tournament scope-policy explanations in the guide rather than repeated on s
 Local artist/album tournament reports are separate from the library/tag dashboard. Use shared report rows, semantic entity links, a native collection filter and page-bound archives. Do not repeat the report archive inside the profile.
 
 Local tournament comparisons use shared report rows and top/bottom five summaries, with a filtered lookup near the archive for full details. Quick summaries use a compact leading-track inset.
+
+Local tournament filters reuse the tournament mode selector. Activity, bracket mix and evidence panels use tournament colours; entity comparisons and lookup results use their entity accents.
