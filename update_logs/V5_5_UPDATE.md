@@ -93,3 +93,9 @@ Remove repeated scope-credit policy notes from tournament stats, rankings and pr
 Artist/album tournaments now have zero competition and Overall influence. Library/tag reports exclude them; saved results and all bracket replays remain available.
 
 A dedicated Artist & Album Tournament Stats page compares completed local results: track titles, win/title rates, repeated entries, podiums, points, artist/album breakdowns and head-to-head pairings, with collection filters and a paged archive. Unfinished Blind identities stay hidden. Profile cards become compact summaries linking to the filtered report and latest bracket.
+
+## V5.5.10.3
+
+Library and tag tournaments both contribute full competition credit to tournament stats and Overall; artist and album brackets remain excluded. Tag first-round Elo retains half influence. Existing results are recalculated without changing saved matches or Elo.
+
+Tournament Stats includes a compact artist/album summary linked to its dedicated report, which uses shorter labels and track artwork.

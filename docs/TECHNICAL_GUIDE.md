@@ -911,7 +911,7 @@ The shared map holds each result for 3.5 seconds and fills the available space b
 
 ### Tournament competition and local reports (V5.5.10.2)
 
-Library tournament results have competition weight 1, tags 0.5, and artist/album brackets zero. Local results cannot affect tournament competition achievements or Overall values, evidence, appearances or calibration. Overall calibration version 8 refreshes the changed policy. Saved points, matches, replay data and Elo are unchanged.
+Library and tag tournament results have competition weight 1, and artist/album brackets zero. Tag first-round Elo remains half-weight. Local results cannot affect tournament competition achievements or Overall values, evidence, appearances or calibration. Overall calibration version 9 refreshes the changed policy. Saved points, matches, replay data and Elo are unchanged.
 
 `/tournament_stats` contains only library/tag brackets, including its activity counts and archives. Old selected-local-bracket links redirect to `/tournament_local_stats`, filtered by saved scope. Direct bracket workspaces remain valid for every scope and link back to the appropriate report.
 

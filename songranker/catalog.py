@@ -42,7 +42,7 @@ TOURNAMENT_TOTALS = (
 
 
 def tournament_weights(data):
-    """Per-song competition credit: library 1, tags .5, artist/album zero.
+    """Per-song competition credit: library and tags 1, artist/album zero.
     Missing legacy scope is global; unknown scopes receive no credit.
     """
     brackets={t['id']:t for t in data.get('tournaments',[])}
@@ -59,7 +59,7 @@ def tournament_weights(data):
         for tid in ids:
             if tid not in brackets:continue
             kind=brackets[tid].get('scope_type','global')
-            weights[sid,tid]={'global':1,'tag':.5}.get(kind,0)
+            weights[sid,tid]={'global':1,'tag':1}.get(kind,0)
     return weights
 
 

@@ -30,7 +30,11 @@
 
 {% block content %}
 <div class="tournament-stats-page mode-stats-page">
-  <div class="page-head"><h1 class="tournament">Tournament Stats</h1><div class="pill-nav"><a class="tournament" href="{{url_for('local_tournament_stats_page')}}">Artist & album stats ↗</a><a class="btn tournament" href="{{ url_for('tournament') }}">Play Tournament →</a></div></div>
+  <div class="page-head"><h1 class="tournament">Tournament Stats</h1><a class="btn tournament" href="{{ url_for('tournament') }}">Play Tournament →</a></div>
+  <section class="panel dashboard-surface mode-stats-panel tournament" id="local-tournament-summary"><div class="section-head"><h2 class="tournament">Artist &amp; album tournaments</h2><a class="tournament" href="{{url_for('local_tournament_stats_page')}}">Stats &amp; comparisons ↗</a></div>
+    <dl class="joined-metrics mode-stats-metrics">{{figure('Completed brackets',local_summary.summary.completed)}}{{figure('Matches',local_summary.summary.matches)}}{{figure('Tracks compared',local_summary.summary.tracks)}}</dl>
+    {% if local_summary.tracks %}<p>Leading track: <a class="song" href="{{url_for('song_page',song_id=local_summary.tracks[0].id)}}">{{local_summary.tracks[0].title}}</a> · {{local_summary.tracks[0].championships}} titles</p>{% endif %}
+  </section>
   {% if selected_missing %}<p class="mode-stats-caption" role="status">That bracket is no longer available. Your tournament stats are below.</p>{% endif %}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-overview">
