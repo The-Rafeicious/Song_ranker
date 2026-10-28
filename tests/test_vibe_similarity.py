@@ -163,3 +163,46 @@ class AlbumVibeDataTests(unittest.TestCase):
 
 
 if __name__=='__main__':unittest.main()
+
+
+class SelectionEvidenceReviewTests(unittest.TestCase):
+    def test_seed_strength_beats_old_champion_flag_and_separates_favourites(self):
+        from songranker.modes.tournament import _tournament_seed_order
+        for size in (8,16,32):
+            rows=[dict(id=i,elo_score=2000-100*i,championships=int(i==size-1)) for i in range(size)]
+            chosen=S.tournament_tracks(rows,size,random.Random(7))
+            self.assertEqual([r['id'] for r in chosen[:4]],[0,1,2,3])
+            positions=_tournament_seed_order(size)
+            self.assertNotEqual(positions.index(0)//(size//2),positions.index(1)//(size//2))
+            self.assertEqual(len({positions.index(i)//(size//4) for i in range(4)}),4)
+            self.assertEqual({r['id'] for r in chosen},set(range(size)))
+
+    def test_saved_pair_history_softly_reduces_repeats(self):
+        rows=[dict(id=i,elo_score=1200) for i in range(4)]
+        def repeats(counts):
+            rng=random.Random(42)
+            return sum(set(s['id'] for s in S.choose_match(rows,rng,pair_counts=counts))=={0,1} for _ in range(2000))
+        self.assertLess(repeats({(0,1):100}),repeats({})*.6)
+        self.assertGreater(repeats({(0,1):100}),0)
+
+    def test_local_evidence_is_read_only_bounded_and_opponent_adjusted(self):
+        import sqlite3
+        c=sqlite3.connect(':memory:');c.row_factory=sqlite3.Row
+        c.executescript("""CREATE TABLE songs(id INTEGER,elo_score REAL);
+            INSERT INTO songs VALUES(1,1000),(2,1400),(3,800);
+            CREATE TABLE history(winner_id INTEGER,loser_id INTEGER);
+            INSERT INTO history VALUES(1,2);
+            CREATE TABLE tournaments(id INTEGER,scope_type TEXT);
+            INSERT INTO tournaments VALUES(1,'artist');
+            CREATE TABLE tournament_matches(tournament_id INTEGER,status TEXT,winner_id INTEGER,loser_id INTEGER,song1_id INTEGER,song2_id INTEGER);
+            INSERT INTO tournament_matches VALUES(1,'completed',2,1,1,2);""")
+        before=c.total_changes
+        pairs,strength=S.preference_evidence(c)
+        self.assertEqual(pairs[(1,2)],2)
+        self.assertLess(strength[1],0)
+        self.assertGreater(strength[1],-.1,'A loss against a stronger opponent is weak negative evidence')
+        self.assertEqual(c.total_changes,before)
+        c.executemany("INSERT INTO tournament_matches VALUES(1,'completed',2,1,1,2)",[()]*100)
+        _,strength=S.preference_evidence(c)
+        self.assertTrue(all(-1<=v<=1 for v in strength.values()))
+        c.close()

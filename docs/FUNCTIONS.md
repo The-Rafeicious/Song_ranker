@@ -482,25 +482,26 @@ Adaptive draw algorithms plus the shared SQL exposure/recency adapters.
 | [rating_spread](../songranker/modes/selection.py#L117) | `ratings` | IQR, then 10–90% span, then median adjacent distinct-rating gap. |
 | [rated_pool](../songranker/modes/selection.py#L136) | `songs` | Keep unique songs with finite numeric Elo ratings for preference and tournament draws. |
 | [counts_for](../songranker/modes/selection.py#L156) | `songs, counts, fallback` | Resolve per-song mode exposure counts, using the requested row field only when no count map exists. |
-| [choose_match](../songranker/modes/selection.py#L166) | `songs, rng=random, *, counts=None, previous=()` | Public Elo distances, explicit per-mode exposures supplied by app callers. |
+| [choose_match](../songranker/modes/selection.py#L166) | `songs, rng=random, *, counts=None, previous=(), pair_counts=None` | Exposure-fair Elo neighbours with bounded saved-opponent repeat avoidance. |
 | [choose_match.closeness](../songranker/modes/selection.py#L183) | `i` | Weight a candidate by its rating distance from the first song relative to the pool scale. |
-| [choose_single](../songranker/modes/selection.py#L207) | `songs, rng=random, *, counts=None, previous=None` | Draw one exposure-weighted song while avoiding the previous song when alternatives exist. |
-| [vibe_probabilities](../songranker/modes/selection.py#L220) | `songs, *, counts=None, previous=None, now=None` | Adaptive draws with extra mass for the least-completed Vibe Map pass. |
-| [choose_vibe_song](../songranker/modes/selection.py#L246) | `songs, rng=random, *, counts=None, previous=None` | One unique eligible song; coverage first, no rating or preview requirement. |
-| [gap_positions](../songranker/modes/selection.py#L261) | `values, tolerance=0.0` | Assign normalised midpoint ranks, treating values within tolerance as tied. |
-| [choose_guess_pair](../songranker/modes/selection.py#L280) | `songs, rng=random, *, counts=None, previous=(), target=0.6` | Relative gap kernel; the caller freezes the versioned run target at offer time. |
-| [draw_entries](../songranker/modes/selection.py#L322) | `pool, size, rng=random, *, counts=None` | Select unique exposure-weighted tournament entries with a bounded Vibe affinity after the first draw. |
-| [tournament_tracks](../songranker/modes/selection.py#L347) | `pool, size, rng=random, *, counts=None` | Entry-fair draw, relative noisy seeding, existing champion-first spread. |
-| [shelves_feasible](../songranker/modes/selection.py#L364) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
-| [draw_shelves](../songranker/modes/selection.py#L374) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None` | Album-first fairness; frozen ten-track draws with capacity lookahead. |
-| [mode_counts](../songranker/modes/selection.py#L469) | `conn, mode` | Read mode exposures and add effective weighted tournament participation to voting modes. |
-| [preference_pair](../songranker/modes/selection.py#L487) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
-| [vibe_song](../songranker/modes/selection.py#L509) | `conn, *, counts=None, previous=None, rng=random` | Read-only Vibe Map draw, ready for the later round controller. |
-| [album_vibe_groups](../songranker/modes/selection.py#L539) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
-| [previous_preference](../songranker/modes/selection.py#L554) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
-| [previous_guess](../songranker/modes/selection.py#L578) | `conn, token=None` | Read a completed Guesser pair from the supplied round or latest result to avoid an immediate repeat. |
-| [shelf_history](../songranker/modes/selection.py#L595) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
-| [with_catalogue_age](../songranker/modes/selection.py#L610) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
+| [choose_single](../songranker/modes/selection.py#L208) | `songs, rng=random, *, counts=None, previous=None` | Draw one exposure-weighted song while avoiding the previous song when alternatives exist. |
+| [vibe_probabilities](../songranker/modes/selection.py#L221) | `songs, *, counts=None, previous=None, now=None` | Adaptive draws with extra mass for the least-completed Vibe Map pass. |
+| [choose_vibe_song](../songranker/modes/selection.py#L247) | `songs, rng=random, *, counts=None, previous=None` | One unique eligible song; coverage first, no rating or preview requirement. |
+| [gap_positions](../songranker/modes/selection.py#L262) | `values, tolerance=0.0` | Assign normalised midpoint ranks, treating values within tolerance as tied. |
+| [choose_guess_pair](../songranker/modes/selection.py#L281) | `songs, rng=random, *, counts=None, previous=(), target=0.6` | Relative gap kernel; the caller freezes the versioned run target at offer time. |
+| [draw_entries](../songranker/modes/selection.py#L323) | `pool, size, rng=random, *, counts=None` | Select unique exposure-weighted tournament entries with a bounded Vibe affinity after the first draw. |
+| [tournament_tracks](../songranker/modes/selection.py#L348) | `pool, size, rng=random, *, counts=None, local_strength=None` | Fair entry draw followed by strength seeding; local evidence is bounded. |
+| [preference_evidence](../songranker/modes/selection.py#L367) | `conn` | Read pair exposure and local seed evidence without writing ratings. |
+| [shelves_feasible](../songranker/modes/selection.py#L401) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
+| [draw_shelves](../songranker/modes/selection.py#L411) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None` | Album-first fairness; frozen ten-track draws with capacity lookahead. |
+| [mode_counts](../songranker/modes/selection.py#L506) | `conn, mode` | Read mode exposures and add effective weighted tournament participation to voting modes. |
+| [preference_pair](../songranker/modes/selection.py#L524) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
+| [vibe_song](../songranker/modes/selection.py#L547) | `conn, *, counts=None, previous=None, rng=random` | Read-only Vibe Map draw, ready for the later round controller. |
+| [album_vibe_groups](../songranker/modes/selection.py#L577) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
+| [previous_preference](../songranker/modes/selection.py#L592) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
+| [previous_guess](../songranker/modes/selection.py#L616) | `conn, token=None` | Read a completed Guesser pair from the supplied round or latest result to avoid an immediate repeat. |
+| [shelf_history](../songranker/modes/selection.py#L633) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
+| [with_catalogue_age](../songranker/modes/selection.py#L648) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
 
 ## songranker/modes/shelves.py
 
@@ -541,29 +542,29 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | --- | --- | --- |
 | [tournament](../songranker/modes/tournament.py#L13) | `` | Use the shared application shell; catalogue scopes load with the collection. |
 | [api_generate_bracket](../songranker/modes/tournament.py#L21) | `` | Serve generate bracket; GET /api/generate_bracket. |
-| [_tournament_seed_order](../songranker/modes/tournament.py#L127) | `size` | Return zero-based track indexes in the same bracket seeding order as tournament.html. |
-| [_tournament_matches](../songranker/modes/tournament.py#L140) | `conn, tournament_id` | Read one bracket's saved matches in round and match order. |
-| [_round_points](../songranker/modes/tournament.py#L152) | `size, round_number` | Scale round points so a champion's maximum totals seven across supported bracket sizes. |
-| [api_tournament_vote](../songranker/modes/tournament.py#L161) | `` | Serve tournament vote; POST /api/tournament_vote. |
-| [api_tournaments_list](../songranker/modes/tournament.py#L346) | `` | Serve tournaments list; GET /api/tournaments. |
-| [api_tournament_detail](../songranker/modes/tournament.py#L361) | `tournament_id` | Serve tournament detail; GET /api/tournaments/<int:tournament_id>. |
-| [tournament_stats_page](../songranker/modes/tournament.py#L390) | `` | Read-only tournament dashboard; ranking APIs and game actions stay separate. |
-| [tournament_bracket_page](../songranker/modes/tournament.py#L413) | `tournament_id` | A shareable, read-only bracket workspace with saved match inspection. |
-| [api_tournament_stats](../songranker/modes/tournament.py#L428) | `` | Tournament-only leaderboard; regular Elo and history are not involved. |
-| [api_tournament_complete](../songranker/modes/tournament.py#L466) | `` | Serve tournament complete; POST /api/tournament_complete. |
-| [number](../songranker/modes/tournament.py#L545) | `value` | Read a finite nonnegative saved tournament number, returning unknown for invalid values. |
-| [saved_time](../songranker/modes/tournament.py#L556) | `value` | Resolve the saved tournament timestamp for report display. |
-| [stage_name](../songranker/modes/tournament.py#L580) | `size, round_number, match_type='bracket'` | Label a saved bracket stage, third-place playoff or unsupported historical round. |
-| [recorded_result](../songranker/modes/tournament.py#L607) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
-| [podium_points](../songranker/modes/tournament.py#L623) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
-| [build_tournament_stats](../songranker/modes/tournament.py#L641) | `conn, now=None, selected=None, archive_page=1, competition_only=False` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
-| [build_tournament_stats.identity](../songranker/modes/tournament.py#L753) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
-| [build_tournament_stats.scope](../songranker/modes/tournament.py#L765) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
-| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L923) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
-| [build_tournament_stats.category](../songranker/modes/tournament.py#L997) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
-| [local_tournament_stats_page](../songranker/modes/tournament.py#L1194) | `` | Compare artist/album-only brackets without contributing to competition. |
-| [build_local_tournament_stats](../songranker/modes/tournament.py#L1231) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
-| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1271) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
+| [_tournament_seed_order](../songranker/modes/tournament.py#L129) | `size` | Return zero-based track indexes in the same bracket seeding order as tournament.html. |
+| [_tournament_matches](../songranker/modes/tournament.py#L142) | `conn, tournament_id` | Read one bracket's saved matches in round and match order. |
+| [_round_points](../songranker/modes/tournament.py#L154) | `size, round_number` | Scale round points so a champion's maximum totals seven across supported bracket sizes. |
+| [api_tournament_vote](../songranker/modes/tournament.py#L163) | `` | Serve tournament vote; POST /api/tournament_vote. |
+| [api_tournaments_list](../songranker/modes/tournament.py#L348) | `` | Serve tournaments list; GET /api/tournaments. |
+| [api_tournament_detail](../songranker/modes/tournament.py#L363) | `tournament_id` | Serve tournament detail; GET /api/tournaments/<int:tournament_id>. |
+| [tournament_stats_page](../songranker/modes/tournament.py#L392) | `` | Read-only tournament dashboard; ranking APIs and game actions stay separate. |
+| [tournament_bracket_page](../songranker/modes/tournament.py#L415) | `tournament_id` | A shareable, read-only bracket workspace with saved match inspection. |
+| [api_tournament_stats](../songranker/modes/tournament.py#L430) | `` | Tournament-only leaderboard; regular Elo and history are not involved. |
+| [api_tournament_complete](../songranker/modes/tournament.py#L468) | `` | Serve tournament complete; POST /api/tournament_complete. |
+| [number](../songranker/modes/tournament.py#L547) | `value` | Read a finite nonnegative saved tournament number, returning unknown for invalid values. |
+| [saved_time](../songranker/modes/tournament.py#L558) | `value` | Resolve the saved tournament timestamp for report display. |
+| [stage_name](../songranker/modes/tournament.py#L582) | `size, round_number, match_type='bracket'` | Label a saved bracket stage, third-place playoff or unsupported historical round. |
+| [recorded_result](../songranker/modes/tournament.py#L609) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
+| [podium_points](../songranker/modes/tournament.py#L625) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
+| [build_tournament_stats](../songranker/modes/tournament.py#L643) | `conn, now=None, selected=None, archive_page=1, competition_only=False` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
+| [build_tournament_stats.identity](../songranker/modes/tournament.py#L755) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
+| [build_tournament_stats.scope](../songranker/modes/tournament.py#L767) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
+| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L925) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
+| [build_tournament_stats.category](../songranker/modes/tournament.py#L999) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
+| [local_tournament_stats_page](../songranker/modes/tournament.py#L1196) | `` | Compare artist/album-only brackets without contributing to competition. |
+| [build_local_tournament_stats](../songranker/modes/tournament.py#L1233) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
+| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1273) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
 
 ## songranker/modes/trivia.py
 
@@ -1790,6 +1791,10 @@ Bounded similarity, adaptive coverage and hotspot-aware production draws.
 | [AlbumVibeDataTests.setUp](../tests/test_vibe_similarity.py#L138) | `self` | Create isolated disposable state and register cleanup for this test. |
 | [AlbumVibeDataTests.connect](../tests/test_vibe_similarity.py#L142) | `self` | Open the fixture database with the row/connection settings needed by this test. |
 | [AlbumVibeDataTests.test_shelves_profile_includes_unnumbered_songs_without_drawing_them](../tests/test_vibe_similarity.py#L146) | `self` | Verify shelves profile includes unnumbered songs without drawing them. |
+| [SelectionEvidenceReviewTests.test_seed_strength_beats_old_champion_flag_and_separates_favourites](../tests/test_vibe_similarity.py#L169) | `self` | Verify seed strength beats old champion flag and separates favourites. |
+| [SelectionEvidenceReviewTests.test_saved_pair_history_softly_reduces_repeats](../tests/test_vibe_similarity.py#L180) | `self` | Verify saved pair history softly reduces repeats. |
+| [SelectionEvidenceReviewTests.test_saved_pair_history_softly_reduces_repeats.repeats](../tests/test_vibe_similarity.py#L182) | `counts` | Repeats. |
+| [SelectionEvidenceReviewTests.test_local_evidence_is_read_only_bounded_and_opponent_adjusted](../tests/test_vibe_similarity.py#L188) | `self` | Verify local evidence is read only bounded and opponent adjusted. |
 
 ## tests/test_vibe_stats.py
 
@@ -1882,4 +1887,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1283 Python definitions**.
+Total: **1288 Python definitions**.

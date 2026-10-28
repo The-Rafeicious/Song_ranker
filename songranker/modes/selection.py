@@ -163,8 +163,8 @@ def counts_for(songs, counts, fallback):
     ]
 
 
-def choose_match(songs, rng=random, *, counts=None, previous=()):
-    """Public Elo distances, explicit per-mode exposures supplied by app callers."""
+def choose_match(songs, rng=random, *, counts=None, previous=(), pair_counts=None):
+    """Exposure-fair Elo neighbours with bounded saved-opponent repeat avoidance."""
     songs = rated_pool([dict(s) for s in songs])
     if len(songs) < 2:
         return None, None
@@ -195,6 +195,7 @@ def choose_match(songs, rng=random, *, counts=None, previous=()):
                 base[i]
                 * (stage["match_floor"] + stage["match_close"] * closeness(i))
                 * vibe.multiplier(songs[first]["id"], songs[i]["id"])
+                * max(.25, 1 / math.sqrt(1 + nonnegative((pair_counts or {}).get(tuple(sorted((songs[first]["id"], songs[i]["id"]))), 0))))
                 for i in candidates
             ],
             rng,
@@ -344,21 +345,57 @@ def draw_entries(pool, size, rng=random, *, counts=None):
     return chosen
 
 
-def tournament_tracks(pool, size, rng=random, *, counts=None):
-    """Entry-fair draw, relative noisy seeding, existing champion-first spread."""
+def tournament_tracks(pool, size, rng=random, *, counts=None, local_strength=None):
+    """Fair entry draw followed by strength seeding; local evidence is bounded.
+
+    Local opponent-adjusted evidence can shift a seed by at most 10% of the
+    eligible pool's rating spread. Two-percent jitter preserves near-tie variety.
+    Standard mirrored seed positions separate the top two/four seeds until the
+    final/semi-finals. This changes neither eligibility nor public ratings.
+    """
     pool = rated_pool([dict(s) for s in pool])
     chosen = draw_entries(pool, size, rng, counts=counts)
     if chosen is None:
         return None
-    scale = rating_spread(s["elo_score"] for s in pool)
-    chosen.sort(
-        key=lambda s: s["elo_score"] + rng.uniform(-scale / 2, scale / 2), reverse=True
-    )
-    champions = [s for s in chosen if s.get("championships", 0) > 0]
-    champions.sort(
-        key=lambda s: s["elo_score"] + rng.uniform(-scale / 4, scale / 4), reverse=True
-    )
-    return champions + [s for s in chosen if s not in champions]
+    scale = rating_spread(s['elo_score'] for s in pool) or 1.0
+    chosen.sort(key=lambda s: s['elo_score'] + scale * .10 *
+                max(-1, min(1, (local_strength or {}).get(s['id'], 0))) +
+                rng.uniform(-scale * .02, scale * .02), reverse=True)
+    return chosen
+
+
+def preference_evidence(conn):
+    """Read pair exposure and local seed evidence without writing ratings.
+
+    Ordinary effective votes count once; all valid saved tournament rounds count
+    once, including local brackets. Local seed evidence shrinks each opponent's
+    result towards its current Elo expectation with eight neutral observations;
+    opponents then contribute equally, so repeating one rivalry cannot dominate.
+    """
+    from collections import defaultdict
+    from songranker.catalog import source_sql
+    ratings={r['id']:r['elo_score'] for r in rated_pool([dict(row) for row in conn.execute('SELECT id,elo_score FROM songs')])}
+    spread=rating_spread(ratings.values())
+    pairs=defaultdict(int)
+    local=defaultdict(lambda: [0,0])
+    for row in conn.execute('SELECT winner_id,loser_id FROM '+source_sql(conn)+" WHERE origin='ordinary'"):
+        a,b=row
+        if a in ratings and b in ratings and a!=b:pairs[tuple(sorted((a,b)))]+=1
+    for row in conn.execute("""SELECT m.winner_id,m.loser_id,t.scope_type
+        FROM tournament_matches m JOIN tournaments t ON t.id=m.tournament_id
+        WHERE m.status='completed' AND m.winner_id!=m.loser_id
+        AND ((m.winner_id=m.song1_id AND m.loser_id=m.song2_id)
+          OR (m.winner_id=m.song2_id AND m.loser_id=m.song1_id))"""):
+        a,b,scope=row
+        if a not in ratings or b not in ratings:continue
+        pairs[tuple(sorted((a,b)))]+=1
+        if scope not in ('artist','album'):continue
+        for sid,other,won in ((a,b,1),(b,a,0)):
+            expected=1/(1+math.exp(max(-35,min(35,(ratings[other]-ratings[sid])/spread)))) if spread else .5
+            bucket=local[sid,other];bucket[0]+=won-expected;bucket[1]+=1
+    evidence=defaultdict(list)
+    for (sid,other),(residual,n) in local.items():evidence[sid].append(2*residual/(n+8))
+    return dict(pairs), {sid:statistics.fmean(values) for sid,values in evidence.items()}
 
 
 def shelves_feasible(groups, available, count):
@@ -499,7 +536,8 @@ def preference_pair(conn, mode, owner=None, rng=random):
         for s in conn.execute("SELECT id,elo_score FROM songs" + where + " ORDER BY id")
     ]
     pool = with_catalogue_age(conn, pool)
-    pair = choose_match(pool, rng, counts=mode_counts(conn, mode), previous=previous)
+    pair_counts, _ = preference_evidence(conn)
+    pair = choose_match(pool, rng, counts=mode_counts(conn, mode), previous=previous, pair_counts=pair_counts)
     if pair[0] is None:
         return pair
     # Hydrate two songs after the draw rather than all catalogue metadata.
