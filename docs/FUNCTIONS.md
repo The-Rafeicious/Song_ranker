@@ -42,7 +42,7 @@ Shared catalogue projections, cross-mode results and Elo history queries.
 | --- | --- | --- |
 | [proper_album](../songranker/catalog.py#L10) | `album` | Distinguish named full releases from unknown-album and Single placeholders. |
 | [versus_metadata](../songranker/catalog.py#L16) | `album, linked_artists` | Shared display links for paired song rows; preserve whole artist names. |
-| [tournament_weights](../songranker/catalog.py#L44) | `data` | Per-song competition credit: library 1, tags .5, artist/album zero. Missing legacy scope is global; unknown scopes receive no credit. |
+| [tournament_weights](../songranker/catalog.py#L44) | `data` | Per-song competition credit: library and tags 1, artist/album zero. Missing legacy scope is global; unknown scopes receive no credit. |
 | [song_performance](../songranker/catalog.py#L66) | `data, competitive=True` | Project scope-weighted competition achievements, or full raw achievements when competitive=False. Final placements require completion. |
 | [aggregate_performance](../songranker/catalog.py#L135) | `songs` | Pool recognition attempts and total distinct linked songs' achievements. |
 | [voting_records](../songranker/catalog.py#L154) | `conn` | Combined public preference results, retaining origin and mode breakdowns. |
@@ -1627,10 +1627,11 @@ Selective repetition cannot dominate cross-library tournament evidence.
 | --- | --- | --- |
 | [TournamentCreditTests.data](../tests/test_tournament_credit.py#L8) | `self, broad=True, repeats=10` | Data. |
 | [TournamentCreditTests.test_repetition_shares_a_cap_in_all_achievements](../tests/test_tournament_credit.py#L15) | `self` | Verify repetition shares a cap in all achievements. |
-| [TournamentCreditTests.test_local_results_leave_all_overall_features_identical](../tests/test_tournament_credit.py#L27) | `self` | Verify local results leave all overall features identical. |
-| [TournamentCreditTests.test_local_only_has_no_competition_evidence](../tests/test_tournament_credit.py#L30) | `self` | Verify local only has no competition evidence. |
-| [TournamentCreditTests.test_overall_uses_weighted_evidence_instead_of_raw_counters](../tests/test_tournament_credit.py#L35) | `self` | Verify overall uses weighted evidence instead of raw counters. |
-| [TournamentCreditTests.test_scope_order_and_unknown_legacy_policy](../tests/test_tournament_credit.py#L46) | `self` | Verify scope order and unknown legacy policy. |
+| [TournamentCreditTests.test_tag_and_global_results_have_equal_competition_and_overall_credit](../tests/test_tournament_credit.py#L27) | `self` | Verify tag and global results have equal competition and overall credit. |
+| [TournamentCreditTests.test_local_results_leave_all_overall_features_identical](../tests/test_tournament_credit.py#L34) | `self` | Verify local results leave all overall features identical. |
+| [TournamentCreditTests.test_local_only_has_no_competition_evidence](../tests/test_tournament_credit.py#L37) | `self` | Verify local only has no competition evidence. |
+| [TournamentCreditTests.test_overall_uses_weighted_evidence_instead_of_raw_counters](../tests/test_tournament_credit.py#L42) | `self` | Verify overall uses weighted evidence instead of raw counters. |
+| [TournamentCreditTests.test_scope_order_and_unknown_legacy_policy](../tests/test_tournament_credit.py#L53) | `self` | Verify scope order and unknown legacy policy. |
 
 ## tests/test_tournament_policy.py
 
@@ -1881,4 +1882,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1282 Python definitions**.
+Total: **1283 Python definitions**.

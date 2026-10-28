@@ -17,7 +17,7 @@ from songranker.services import app, admin_required
 from songranker.catalog import collection, proper_album, tournament_weights, song_performance
 
 
-VERSION=8
+VERSION=9
 # Five equally based game families. Voting's three correlated views share 20%.
 MODE_SPECS=[('elo','Elo',8),('standard','Non-blind voting',6),('blind','Blind voting',6),
             ('trivia','Recognisability',20),('tournament','Tournament',20),
