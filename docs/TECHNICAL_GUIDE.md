@@ -1,8 +1,8 @@
 # Song Ranker technical guide
 
-**Application V5.5.10.1 · competition generation 3 · schema 22**
+**Application V5.5.10.2 · competition generation 3 · schema 22**
 
-Current implementation reference. `APP_VERSION` is `5.5.10.1`; the internal mode
+Current implementation reference. `APP_VERSION` is `5.5.10.2`; the internal mode
 version remains `Vibe-Map-v1.1`.
 Setup is in the [README](../README.md), migration/recovery in [UPGRADES.md](UPGRADES.md),
 and historical changes in [release notes](../update_logs/README.md).
@@ -909,8 +909,10 @@ Tournament replay walks each quarter's feeder matches in order before its semi-f
 
 The shared map holds each result for 3.5 seconds and fills the available space between the banner and footer in both the saved workspace and pre-podium replay. The viewport has no inset border or rounded box. Resize observation gives the map almost a viewport of its own, with the header and footer outside that height; diagram overflow stays inside the drag surface. Stage selector controls are removed. Match details are attached to their selected node, support Close/Escape with focus restoration, and keep content scrollable on short screens. Round-local CSS variables produce darker outer rounds and brighter central rounds with increasing glow; winner/elimination markers and Blind privacy remain independent.
 
-### Tournament competition scope credit (V5.5.10)
+### Tournament competition and local reports (V5.5.10.2)
 
-All public achievement projections, Tournament leaders and Overall use library weight 1 and tag weight 0.5. For each song, artist-only entry weight is min(0.02, 0.02 × completed broad-entry credit / artist entries); album-only uses 0.005 in place of 0.02. Thus repeated selective brackets share a fixed budget: artist credit cannot exceed 2%, and album credit 0.5%, of that song's completed broad-entry credit. With no broad evidence they supply no competition evidence. Wins, losses, placements, points and entry evidence all use the same per-song credit. Missing legacy scope means library; unknown scope receives no credit.
+Library tournament results have competition weight 1, tags 0.5, and artist/album brackets zero. Local results cannot affect tournament competition achievements or Overall values, evidence, appearances or calibration. Overall calibration version 8 refreshes the changed policy. Saved points, matches, replay data and Elo are unchanged.
 
-Raw stored matches, points, archive summaries, activity counts and bracket replays remain unchanged. Artist and album profiles have local-bracket history with full match/point summaries, winners and replay links. Overall calibration version 7 recalculates the changed evidence; Elo rules and database schema are unchanged.
+`/tournament_stats` contains only library/tag brackets, including its activity counts and archives. Old selected-local-bracket links redirect to `/tournament_local_stats`, filtered by saved scope. Direct bracket workspaces remain valid for every scope and link back to the appropriate report.
+
+`/tournament_local_stats` accepts `scope=artist|album` and optional `scope_id`, or the form's `view=all|artist|album|artist:<id>|album:<id>`. All comparisons use completed local brackets only, before aggregation. Track favourites sort observed titles, win rate and match evidence, showing repeated entries, title rate, points and podiums. Artist/album comparisons pool those track facts; head-to-head scores count each valid pairing once. These are within-selection results, not cross-library strength estimates. Track, collection and pairing lists show up to 50, 25 and 20 rows; the full bracket archive pages by 20. Unfinished Blind participant identities never appear in comparisons. Compact artist/album profile panels link to their filtered report and latest replay.

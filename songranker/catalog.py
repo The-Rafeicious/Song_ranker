@@ -42,8 +42,7 @@ TOURNAMENT_TOTALS = (
 
 
 def tournament_weights(data):
-    """Per-song competition credit: global 1, tag .5; artist/album are bounded
-    to 2%/.5% of that song's completed broad entries, regardless of repetition.
+    """Per-song competition credit: library 1, tags .5, artist/album zero.
     Missing legacy scope is global; unknown scopes receive no credit.
     """
     brackets={t['id']:t for t in data.get('tournaments',[])}
@@ -57,13 +56,10 @@ def tournament_weights(data):
             if t.get(key):entered[t[key]].add(t['id'])
     weights={}
     for sid,ids in entered.items():
-        broad=sum({'global':1,'tag':.5}.get(brackets[i].get('scope_type','global'),0) for i in ids if i in brackets and brackets[i].get('status')=='completed')
-        counts={kind:sum(brackets[i].get('scope_type')==kind for i in ids if i in brackets) for kind in ('artist','album')}
         for tid in ids:
             if tid not in brackets:continue
             kind=brackets[tid].get('scope_type','global')
-            cap={'artist':.02,'album':.005}.get(kind,0)
-            weights[sid,tid]=min(cap,cap*broad/max(1,counts[kind])) if cap else {'global':1,'tag':.5}.get(kind,0)
+            weights[sid,tid]={'global':1,'tag':.5}.get(kind,0)
     return weights
 
 

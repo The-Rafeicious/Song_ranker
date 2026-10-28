@@ -175,14 +175,19 @@ window.ProfileUI = (() => {
     const db = U.data();
     const localKind=type==='artists'?'artist':type==='albums'?'album':null;
     const localBrackets=identity&&localKind?(db.tournaments||[]).filter(t=>t.scope_type===localKind&&Number(t.scope_id)===Number(identity.id)):[];
-    const localMatches=(db.tournament_matches||[]).filter(m=>localBrackets.some(t=>t.id===m.tournament_id)&&m.status==='completed'&&m.winner_id&&m.loser_id);
-    const localTracks=new Set(localMatches.flatMap(m=>[m.song1_id,m.song2_id]).filter(Boolean));
-    const localHistory=localBrackets.length?`<section id="local-tournaments" class="panel profile-mode-panel dashboard-surface tournament" style="--section-color:var(--tournament);--surface-accent:var(--tournament)"><div class="section-head"><h2 class="tournament">${localKind==='artist'?'Artist':'Album'}-only tournaments</h2></div>${joined([
-      [localBrackets.filter(t=>t.status==='completed').length,'Completed'],[localMatches.length,'Matches'],[localTracks.size,'Tracks played'],[localMatches.reduce((n,m)=>n+Number(m.points_awarded||0),0).toFixed(2),'Points']
-    ])}<details class="profile-inset"><summary>Brackets · ${localBrackets.length}</summary>${localBrackets.map(t=>{
-      const played=localMatches.filter(m=>m.tournament_id===t.id),winner=t.status==='completed'?(db.songs||[]).find(s=>s.id===t.champion_id):null;
-      return `<article class="profile-inset"><h3>Bracket #${t.id}</h3><p>${t.size} tracks · ${t.is_blind?'Blind':'Non-blind'} · ${t.status==='completed'?'Completed':'In progress'}</p><p>${played.length} matches · ${played.reduce((n,m)=>n+Number(m.points_awarded||0),0).toFixed(2)} points</p>${winner?`<p>Winner: <a class="song" href="/song/${winner.id}">${esc(winner.title)}</a></p>`:''}<a class="tournament" href="/tournament/${t.id}/bracket">Replay & bracket ↗</a></article>`;
-    }).join('')}</details></section>`:'';
+    const localMatches=(db.tournament_matches||[]).filter(m=>localBrackets.some(t=>t.id===m.tournament_id&&t.status==='completed')&&m.status==='completed'&&m.winner_id&&m.loser_id);
+    const completedLocal=localBrackets.filter(t=>t.status==='completed'),localTitles=new Map();
+    for(const t of completedLocal)if(t.champion_id)localTitles.set(t.champion_id,(localTitles.get(t.champion_id)||0)+1);
+    const localScores=new Map();
+    for(const m of localMatches)for(const sid of [m.winner_id,m.loser_id]){
+      const score=localScores.get(sid)||{wins:0,played:0};score.played++;if(sid===m.winner_id)score.wins++;localScores.set(sid,score);
+    }
+    const localCandidates=(db.songs||[]).filter(s=>localScores.has(s.id)).sort((a,b)=>{
+      const x=localScores.get(a.id),y=localScores.get(b.id);
+      return (localTitles.get(b.id)||0)-(localTitles.get(a.id)||0)||y.wins/y.played-x.wins/x.played||y.played-x.played||a.title.localeCompare(b.title);
+    });
+    const localLeader=localCandidates[0],leadingLocal=localLeader?[localLeader.id,localTitles.get(localLeader.id)||0]:null;
+    const localHistory=localBrackets.length?`<section id="local-tournaments" class="panel profile-mode-panel dashboard-surface tournament" style="--section-color:var(--tournament);--surface-accent:var(--tournament)"><div class="section-head"><h2 class="tournament">${localKind==='artist'?'Artist':'Album'}-only tournaments</h2><a class="tournament" href="/tournament_local_stats?scope=${localKind}&scope_id=${identity.id}">Stats & comparisons ↗</a></div>${joined([[completedLocal.length,'Completed brackets'],[localMatches.length,'Matches']])}${localLeader?`<p>Leading track: <a class="song" href="/song/${localLeader.id}">${esc(localLeader.title)}</a> · ${leadingLocal[1]} ${leadingLocal[1]===1?'title':'titles'}</p>`:''}<a class="tournament" href="/tournament/${localBrackets[0].id}/bracket">Latest bracket ↗</a></section>`:'';
     const tournament = panel(
       "tournament",
       "Tournament Record",

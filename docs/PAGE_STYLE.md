@@ -1,6 +1,6 @@
 # Song Ranker styling guide
 
-This is the current V5.5.10.1 contract. Change the owning shared rule before adding a
+This is the current V5.5.10.2 contract. Change the owning shared rule before adding a
 feature exception. Older layout instructions and patch chronology remain in Git
 history and `update_logs/`; they are not alternative implementations to restore.
 
@@ -271,4 +271,6 @@ Preview audio uses the native recording level and the shared master volume. Ther
 
 Bracket workspaces get nearly a full viewport of diagram height in addition to the page header. Vertical wheel/touch scrolling can continue onto the page to move the banner out of view; horizontal overflow stays within the map. Impact uses tested tracks only and a square-root median peer-breadth prior, retaining the Elo scale. Empty evidence shows unavailable.
 
-Keep tournament scope-policy explanations in the guide rather than repeated on stats, rankings or profile records. Artist and album profiles have a separate local-tournament panel immediately after their main tournament record, with completed, match, played-track and point totals and bracket replay links. Seed patterns explains saved starting positions and the denominators in plain language. Preserve Blind identities for unfinished brackets.
+Keep tournament scope-policy explanations in the guide rather than repeated on stats, rankings or profile records. Artist and album profiles have a separate compact local-tournament panel immediately after their main tournament record. It shows completed brackets, matches and a leading track, with filtered comparison stats and latest-bracket links. Seed patterns explains saved starting positions and the denominators in plain language. Preserve Blind identities for unfinished brackets.
+
+Local artist/album tournament reports are separate from the library/tag dashboard. Use shared report rows, semantic entity links, a native collection filter and page-bound archives. Do not repeat the report archive inside the profile.

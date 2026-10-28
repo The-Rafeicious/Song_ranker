@@ -87,3 +87,9 @@ Artist and album profiles show their own selective brackets with full raw match/
 ## V5.5.10.1
 
 Remove repeated scope-credit policy notes from tournament stats, rankings and profiles. Artist/album-only tournaments have a separate profile box below the main tournament record, with completed-bracket, match, played-track and point totals plus individual bracket/replay links. Seed patterns now explains starting seeds, top/bottom halves and later-seed wins. Scoring is unchanged.
+
+## V5.5.10.2
+
+Artist/album tournaments now have zero competition and Overall influence. Library/tag reports exclude them; saved results and all bracket replays remain available.
+
+A dedicated Artist & Album Tournament Stats page compares completed local results: track titles, win/title rates, repeated entries, podiums, points, artist/album breakdowns and head-to-head pairings, with collection filters and a paged archive. Unfinished Blind identities stay hidden. Profile cards become compact summaries linking to the filtered report and latest bracket.

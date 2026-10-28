@@ -30,7 +30,7 @@
 
 {% block content %}
 <div class="tournament-stats-page mode-stats-page">
-  <div class="page-head"><h1 class="tournament">Tournament Stats</h1><a class="btn tournament" href="{{ url_for('tournament') }}">Play Tournament →</a></div>
+  <div class="page-head"><h1 class="tournament">Tournament Stats</h1><div class="pill-nav"><a class="tournament" href="{{url_for('local_tournament_stats_page')}}">Artist & album stats ↗</a><a class="btn tournament" href="{{ url_for('tournament') }}">Play Tournament →</a></div></div>
   {% if selected_missing %}<p class="mode-stats-caption" role="status">That bracket is no longer available. Your tournament stats are below.</p>{% endif %}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-overview">
@@ -46,7 +46,7 @@
   {{pulse(pulse_data)}}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-elo"><div class="section-head"><h2 class="tournament" id="ts-elo">First-round Elo</h2><a class="tournament" href="/history?origin=tournament">Match history ↗</a></div>
-    <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Full influence',tournament_elo.full)}}{{figure('Half influence',tournament_elo.half)}}{{figure('Points-only matches',tournament_elo.points_only)}}{{figure('Elo tracks involved',tournament_elo.tracks)}}</dl>
+    <dl class="joined-metrics mode-stats-metrics">{{figure('Full influence',tournament_elo.full)}}{{figure('Half influence',tournament_elo.half)}}{{figure('Elo tracks involved',tournament_elo.tracks)}}</dl>
     <p class="mode-stats-caption">Whole library: full Elo · Tags: half Elo · Artist / album: tournament points only</p>
     <p class="mode-stats-caption">{{tournament_elo.total}} Elo matches · <span class="standard">{{tournament_elo.standard}} Non-blind</span> · <span class="blind">{{tournament_elo.blind}} Blind</span></p>
   </section>
