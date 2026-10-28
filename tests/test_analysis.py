@@ -36,7 +36,8 @@ class AnalysisTests(unittest.TestCase):
             sid=data['songs'][0]['id']
             result=build_analysis(data,dict(kind='song',id=str(sid),metric='win_rate'))
             self.assertIsNone(result['primary']['win_rate']['value'])
-            self.assertEqual(result['bars'],[])
+            self.assertNotEqual(result['metric'],'win_rate')
+            self.assertTrue(result['chart_notice'])
             self.assertEqual(result['coverage'][0]['tested'],0)
             self.assertEqual(result['event_count'],0)
 

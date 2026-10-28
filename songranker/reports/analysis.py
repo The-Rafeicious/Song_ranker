@@ -157,5 +157,15 @@ def build_analysis(data, args):
         chart_notice='This chart needs more recorded evidence for the current selection.'
         chart='bars'
     chart_config=dict(counts=metric_counts,pairs=axis_pairs,charts=chart_ready)
+    if chart=='bars' and not metric_counts[metric]:
+        fallback=next((key for key,_,_ in metrics if metric_counts[key]),None)
+        if fallback:
+            metric=fallback
+            chart_notice=(chart_notice+' ' if chart_notice else '')+'No measurements for the requested metric; showing '+metric_map[metric][1]+'.'
+            measured=sorted([s for s in pool if s[metric] is not None],key=lambda s:(-s[metric],s['title'].casefold()))
+            chart_rows=measured[:10]+[s for s in measured[-10:] if s not in measured[:10]]
+            max_value=max([abs(s[metric]) for s in chart_rows]+[1])
+            bars=[dict(song=s,value=s[metric],width=100*abs(s[metric])/max_value) for s in chart_rows]
+
     pages=max(1,ceil(len(measured)/30));page=min(page,pages)
     return dict(artist_lookup=data['artists'],chart_config=chart_config,chart_notice=chart_notice,song_lookup=songs,population=population,event_count=len(events),official=next((r for r in overall['entities'][kind+'s' if kind!='song' else 'songs'] if r['id']==selected),None),kind=kind,identity=identity,selected=selected,peer=peer,choices=choices,rows=rows,primary=primary,comparison=comparison,peer_identity=next((e for e in entities[kind] if e['id']==peer),None),metrics=metrics,metric=metric,metric_label=metric_map[metric][1],metric_tone=metric_map[metric][2],y_metric=y_metric,y_label=metric_map[y_metric][1],chart=chart,minimum=minimum,bars=bars,points=points,xmin=xmin,xmax=xmax,ymin=ymin,ymax=ymax,line=line,low=low,high=high,elo_values=elo_values,coverage=coverage,breadth=sorted(breadth.items()),opponents=opponent_rows[:20],events=events[:30],sources=[dict(origin=o,mode=m,count=n) for (o,m),n in sources.items()],upsets=upsets,upset_opportunities=eligible,days=sorted(days.items())[-90:],day_max=max(days.values(),default=1),routes=routes[-20:],local_record=local_record,timings=timings,relationships=relationships,facts=facts,scores=scores,table=measured[(page-1)*30:page*30],page=page,pages=pages,total=len(measured),snapshot=overall['calibration']['id'])

@@ -1078,8 +1078,8 @@ Entity analysis uses current production projections and remains read-only.
 | --- | --- | --- |
 | [AnalysisTests.test_entity_pages_charts_and_guide_render_without_writes](../tests/test_analysis.py#L20) | `self` | Verify entity pages charts and guide render without writes. |
 | [AnalysisTests.test_missing_evidence_is_unavailable_and_comparisons_keep_links](../tests/test_analysis.py#L33) | `self` | Verify missing evidence is unavailable and comparisons keep links. |
-| [AnalysisTests.test_internal_votes_pool_track_opportunities_but_count_one_event](../tests/test_analysis.py#L43) | `self` | Verify internal votes pool track opportunities but count one event. |
-| [AnalysisTests.test_analysis_browser_layout_and_controls](../tests/test_analysis.py#L66) | `self` | Verify analysis browser layout and controls. |
+| [AnalysisTests.test_internal_votes_pool_track_opportunities_but_count_one_event](../tests/test_analysis.py#L44) | `self` | Verify internal votes pool track opportunities but count one event. |
+| [AnalysisTests.test_analysis_browser_layout_and_controls](../tests/test_analysis.py#L67) | `self` | Verify analysis browser layout and controls. |
 
 ## tests/test_apple_source_columns.py
 
