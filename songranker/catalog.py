@@ -220,7 +220,7 @@ def summarize_votes(records):
     return totals
 
 
-def collection(include_overall_sources=False):
+def collection(include_overall_sources=False, include_analysis_sources=False):
     conn = get_db_connection()
     try:
         conn.execute(
@@ -302,6 +302,8 @@ def collection(include_overall_sources=False):
                 mode_ratings=modes[song["id"]],
                 **special[song["id"]],
             )
+        if include_analysis_sources:
+            data['analysis_trivia']=[dict(r) for r in conn.execute('SELECT * FROM trivia_rounds WHERE completed_at IS NOT NULL ORDER BY id')]
         if include_overall_sources:
             data["overall_sources"] = {
                 "trivia_stats": [

@@ -283,3 +283,5 @@ Local tournament filters reuse the tournament mode selector. Activity, bracket m
 Local tournament lookup has separate entity-type and record selectors; entity options show artwork with circular artist portraits. Panel borders, dividers and glows share the entity accent.
 
 Standard Vote family navigation, summaries and report headers use light green. Non-blind remains orange and Blind teal. Tournament Elo rows retain pink origin accents plus orange/teal visibility edges and labels.
+
+Data Analysis uses existing report surfaces, full-size controls, labelled SVG charts and internally scrolling data tables. Feature explanations belong in docs/ANALYSIS.md, linked through the analysis guide.

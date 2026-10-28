@@ -169,3 +169,24 @@ def collection_profile(kind, table, column, name):
         profile_name=row["name"],
         entity_id=row["id"],
     )
+
+
+@app.route('/analysis')
+def analysis_page():
+    """Read-only entity analysis from one hydrated catalogue/result snapshot."""
+    from songranker.reports.analysis import build_analysis
+    data=collection(include_overall_sources=True,include_analysis_sources=True)
+    try:
+        result=build_analysis(data,request.args)
+    except ValueError as error:
+        abort(400,str(error))
+    return render_template('analysis.html',**result)
+
+
+@app.route('/analysis/guide')
+def analysis_guide():
+    """Render the maintained analysis feature guide without user HTML input."""
+    from pathlib import Path
+    import markdown
+    text=(Path(__file__).resolve().parents[1]/'docs/ANALYSIS.md').read_text()
+    return render_template('analysis_guide.html',guide=markdown.markdown(text,extensions=['tables','fenced_code']))

@@ -125,3 +125,7 @@ Standard and Blind voting softly reduce repeat-opponent weight using ordinary ef
 ## V5.6.1
 
 Standard Vote family surfaces use light green, distinct from song green and the unchanged orange Non-blind / teal Blind subsets. Tournament first-round history combines pink origin edges with visibility-coloured edges and labels. Scoring and selection are unchanged.
+
+## V5.6.2
+
+Data Analysis adds read-only song, artist, album and tag lookups, peer comparisons, selectable bar/scatter/activity/Elo charts, library benchmarks, evidence depth, opponents, tournament routes, recognition timing, Overall contributions and relationship/Vibe tables. Home and navigation link to the page and a separate feature guide documents measurement rules and display limits.
