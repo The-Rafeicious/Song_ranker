@@ -127,6 +127,17 @@ window.GameplayUI = (() => {
   });
   window.addEventListener("resize", () => close());
   window.addEventListener("pagehide", () => close());
+  document.addEventListener('DOMContentLoaded',()=>{
+    for(const control of document.querySelectorAll('.local-tournament-filter select')){
+      const label=document.querySelector('label[for="'+control.id+'"]');
+      const wrapper=document.createElement('div');
+      wrapper.innerHTML=select(control.id,label?.textContent||'Select',Array.from(control.options,o=>({value:o.value,label:o.textContent,detail:o.parentElement.tagName==='OPTGROUP'?o.parentElement.label:''})),control.value);
+      const replacement=wrapper.firstElementChild;
+      replacement.querySelector('select').name=control.name;
+      replacement.querySelector('select').required=control.required;
+      label?.remove();control.replaceWith(replacement);
+    }
+  });
   return Object.freeze({ select, close });
 })();
 

@@ -1211,6 +1211,15 @@ def local_tournament_stats_page():
         data['lookup_options']=[dict(value=f"{kind}:{row['id']}",kind=kind,row=row) for kind,rows in options for row in rows]
         data['lookup']=next((item for item in data['lookup_options'] if item['value']==lookup),None)
         data['lookup_value']=lookup
+        data['lookup_pairs']=[]
+        data['lookup_tracks']=[]
+        if data['lookup']:
+            item=data['lookup'];row=item['row']
+            if item['kind']=='song':
+                data['lookup_pairs']=[p for p in data['pairs'] if row['id'] in (p['a']['id'],p['b']['id'])][:5]
+            else:
+                members={r[0] for r in conn.execute('SELECT song_id FROM song_artists WHERE artist_id=?',(row['id'],))} if item['kind']=='artist' else {r[0] for r in conn.execute('SELECT id FROM songs WHERE album_id=?',(row['id'],))}
+                data['lookup_tracks']=[s for s in data['tracks'] if s['id'] in members][:5]
     finally:conn.close()
     return render_template('tournament_local_stats.html',**data)
 
@@ -1266,7 +1275,7 @@ def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
             related=[s for s in track_rows if (key in links[s['id']] if kind=='artist' else s.get('album_id')==key)]
             if not related:continue
             wins=sum(s['tournament_wins'] for s in related);losses=sum(s['tournament_losses'] for s in related)
-            grouped.append(dict(id=key,name=identity.get('name',identity.get('title')),cover_url=identity.get('cover_url') or '',tracks=len(related),championships=sum(s['championships'] for s in related),podiums=sum(s['podiums'] for s in related),entries=sum(s['tournament_appearances'] for s in related),played=wins+losses,wins=wins,win_rate=percent(wins,wins+losses),points=sum(s['tournament_points'] for s in related),favourite=rank(related)[0]))
+            grouped.append(dict(id=key,name=identity.get('name',identity.get('title')),cover_url=identity.get('cover_url') or '',tracks=len(related),championships=sum(s['championships'] for s in related),podiums=sum(s['podiums'] for s in related),entries=sum(s['tournament_appearances'] for s in related),played=wins+losses,wins=wins,win_rate=percent(wins,wins+losses),losses=losses,title_rate=percent(sum(s['championships'] for s in related),sum(s['tournament_appearances'] for s in related)),points=sum(s['tournament_points'] for s in related),favourite=rank(related)[0]))
         groups.append(dict(kind=kind,rows=rank(grouped)))
     pairs={}
     for m in decided:
@@ -1274,14 +1283,23 @@ def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
         if a not in songs or b not in songs:continue
         pair=pairs.setdefault((a,b),dict(a=songs[a],b=songs[b],a_wins=0,b_wins=0,total=0))
         pair['a_wins' if m['winner_id']==a else 'b_wins']+=1;pair['total']+=1
-    head_to_head=sorted(pairs.values(),key=lambda r:(-r['total'],r['a']['title'].casefold(),r['b']['title'].casefold()))[:20]
+    head_to_head=sorted(pairs.values(),key=lambda r:(-r['total'],r['a']['title'].casefold(),r['b']['title'].casefold()))
     decided_counts=Counter(m['tournament_id'] for m in matches if recorded_result(m))
     for t in brackets:
         identity=(artists if t['scope_type']=='artist' else albums).get(t['scope_id'],{})
         t['name']=identity.get('name',identity.get('title','Removed collection'))
         t['decided']=decided_counts[t['id']]
         t['winner']=songs.get(t.get('champion_id')) if t['status']=='completed' else None
+    entry_counts=Counter(e['song_id'] for e in entries if e['tournament_id'] in finished)
+    title_counts=Counter(t.get('champion_id') for t in brackets if t['id'] in finished and t.get('champion_id') in songs)
+    distributions=[]
+    for title,field,labels in [('Bracket scope','scope_type',{'artist':'Artist','album':'Album'}),('Bracket size','size',{8:'8 tracks',16:'16 tracks',32:'32 tracks'}),('Visibility','is_blind',{0:'Non-blind',1:'Blind'})]:
+        counts=Counter(t[field] for t in brackets)
+        distributions.append(dict(title=title,rows=[dict(label=label,count=counts[key],share=percent(counts[key],len(brackets)) or 0,tone=key if field=='scope_type' else ('blind' if key else 'standard') if field=='is_blind' else 'tournament') for key,label in labels.items()]))
+    depth=dict(unfinished=len(brackets)-len(finished),entries=sum(entry_counts.values()),repeated=sum(n>1 for n in entry_counts.values()),single=sum(n==1 for n in entry_counts.values()),champions=len(title_counts),repeat_champions=sum(n>1 for n in title_counts.values()),most_entries=max(entry_counts.values(),default=0),completion=percent(len(finished),len(brackets)),average_matches=round(len(decided)/len(finished),2) if finished else None)
+    from songranker.reports.stats_activity import build_activity
+    activity=build_activity(conn,'tournament',tournament_ids=set(by_id))
     pages=max(1,ceil(len(brackets)/20));page=min(pages,max(1,page or 1))
-    return dict(scope=scope,scope_id=scope_id,view=f'{scope}:{scope_id}' if scope_id is not None else scope,choices=choices,
+    return dict(depth=depth,distributions=distributions,activity=activity,scope=scope,scope_id=scope_id,view=f'{scope}:{scope_id}' if scope_id is not None else scope,choices=choices,
                 summary=dict(brackets=len(brackets),completed=len(finished),matches=len(decided),tracks=len(track_rows),points=sum(number(m.get('points_awarded')) or 0 for m in decided)),
                 tracks=track_rows,groups=groups,pairs=head_to_head,archive=brackets[(page-1)*20:page*20],page=page,pages=pages)
