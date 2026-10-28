@@ -65,6 +65,7 @@ class ArchitectureTests(unittest.TestCase):
             in ("dev_area", "dev_task", "use_remote_database", "compact_git_storage", "tournament_bracket_page")
         ]
         self.assertEqual(5, len(added))
+        added.extend([dict(path='/analysis',endpoint='analysis_page',methods=['GET']),dict(path='/analysis/guide',endpoint='analysis_guide',methods=['GET'])])
         added.append(dict(path='/tournament_local_stats',endpoint='local_tournament_stats_page',methods=['GET']))
         self.assertEqual(expected, [r for r in actual if r not in added])
 

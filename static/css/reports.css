@@ -3478,3 +3478,53 @@ body.site-style-baseline #main .pulse-scale {
 .global-stats-page .glow-voting { --section-color:var(--voting); --surface-accent:var(--voting); }
 
 .voting-history-filter .pill.all.active { color:var(--voting); border-color:var(--voting); background:color-mix(in srgb,var(--voting) 10%,var(--panel)); }
+
+/* Data analysis reuses report surfaces, metrics and scrollable tables. */
+.analysis-page { --section-color:var(--overall); --surface-accent:var(--overall); }
+.analysis-controls { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px; align-items:end; }
+.analysis-controls label { display:grid; gap:10px; font-weight:700; min-width:0; }
+.analysis-controls :is(select,input) { width:100%; min-width:0; min-height:48px; padding:10px 14px; font:inherit; color:var(--text,#eee); background:var(--raised,#242424); border:1px solid #f5ead866; border-radius:12px; }
+.analysis-identity { display:flex; align-items:center; gap:24px; margin-bottom:24px; }
+.analysis-identity h2 { margin:0; }
+.analysis-table { width:100%; border-collapse:collapse; min-width:600px; }
+.analysis-table :is(th,td) { padding:16px; border-bottom:1px solid #ffffff1a; text-align:left; vertical-align:middle; font-size:18px; }
+.analysis-table td small { display:block; font-size:16px; color:var(--muted); margin-top:6px; }
+.analysis-table a { display:inline-block; max-width:300px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; vertical-align:middle; }
+.analysis-bars { list-style:none; padding:0; margin:0; display:grid; gap:18px; }
+.analysis-bars li { display:grid; grid-template-columns:minmax(120px,1fr) minmax(80px,2fr) 90px; align-items:center; gap:18px; }
+.analysis-bars a { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.analysis-bar-track { height:18px; border-radius:9px; background:#242424; overflow:hidden; }
+.analysis-bar-track span { height:100%; display:block; }
+.analysis-chart { width:100%; min-width:0; color:var(--section-color); }
+.analysis-chart text { fill:var(--muted); font-size:14px; }
+.analysis-chart circle { fill:var(--section-color); }
+.analysis-chart circle:focus { stroke:white; stroke-width:3; }
+.analysis-chart polyline { fill:none; stroke:var(--voting); stroke-width:3; }
+.analysis-axis { fill:none; stroke:#888; stroke-width:1; }
+.analysis-days { display:flex; height:250px; align-items:end; gap:12px; overflow-x:auto; padding-bottom:50px; }
+.analysis-days > div { position:relative; min-width:48px; height:180px; display:flex; align-items:end; }
+.analysis-days span { width:100%; min-height:2px; background:var(--voting); }
+.analysis-days small { position:absolute; top:0; width:100%; text-align:center; }
+.analysis-days time { position:absolute; bottom:-30px; font-size:15px; }
+.analysis-relations { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:16px; }
+.analysis-relations > div { padding:16px; background:#242424; border-radius:18px; overflow-wrap:anywhere; }
+.analysis-relations strong { display:block; margin-top:8px; }
+.analysis-guide { max-width:1100px; margin:auto; line-height:1.7; font-size:18px; }
+.analysis-page .panel.song { --section-color:var(--song); --surface-accent:var(--song); }
+.analysis-page .panel.artist { --section-color:var(--artist); --surface-accent:var(--artist); }
+.analysis-page .panel.album { --section-color:var(--album); --surface-accent:var(--album); }
+.analysis-page .panel.tag { --section-color:var(--tag); --surface-accent:var(--tag); }
+@media(max-width:900px) { .analysis-controls { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:520px) { .analysis-controls,.analysis-relations { grid-template-columns:1fr; } .analysis-bars li { grid-template-columns:minmax(0,1fr) 70px; gap:8px; } .analysis-bar-track { grid-column:1 / -1; grid-row:2; } .analysis-identity { align-items:start; gap:16px; } }
+
+.analysis-page,.analysis-page > .panel { min-width:0; }
+.analysis-page .panel { --mode-stats-border:color-mix(in srgb,var(--section-color) 40%,transparent); }
+.analysis-identity > div { min-width:0; overflow-wrap:anywhere; }
+
+.analysis-page .panel.voting { --section-color:var(--voting); --surface-accent:var(--voting); }
+.analysis-page .panel.tournament { --section-color:var(--tournament); --surface-accent:var(--tournament); }
+.analysis-page .panel.recognition { --section-color:var(--recognition); --surface-accent:var(--recognition); }
+.analysis-page .panel.shelves { --section-color:var(--shelves); --surface-accent:var(--shelves); }
+.analysis-page .panel.guesser { --section-color:var(--guesser); --surface-accent:var(--guesser); }
+.analysis-page .panel.vibe { --section-color:var(--vibe); --surface-accent:var(--vibe); }
+.analysis-page .panel.overall { --section-color:var(--overall); --surface-accent:var(--overall); }

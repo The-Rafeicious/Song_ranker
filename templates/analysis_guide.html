@@ -1,0 +1,4 @@
+{% extends 'base.html' %}
+{% block title %}Analysis feature guide · Song Ranker{% endblock %}
+{% block page_kind %}analysis{% endblock %}
+{% block content %}<div class="page-head"><h1 class="overall">Analysis guide</h1><a class="btn overall" href="{{url_for('analysis_page')}}">Open analysis →</a></div><article class="panel analysis-guide">{{guide|safe}}</article>{% endblock %}

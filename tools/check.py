@@ -34,6 +34,7 @@ OWNERS = {
     "songranker/modes/vibe_similarity.py": "Pure coordinate similarity and coverage-aware selector affinity.",
     "songranker/reports/global_stats_data.py": "Read-only cross-mode Global Stats from one SQLite snapshot.",
     "songranker/reports/stats_activity.py": "Shared dated activity, comparison charts and report attachments.",
+    "songranker/reports/analysis.py": "Read-only entity analysis, comparisons and chart projections from one snapshot.",
     "songranker/reports/health.py": "Shared exposure/coverage health and diagnostics using production selectors.",
     "songranker/developer/dev.py": "Developer authentication, catalogue edits, records and controlled resets.",
     "songranker/developer/dev_catalog.py": "Reviewed Apple source changes, release inspection and Singles moves.",
