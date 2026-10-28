@@ -1,5 +1,10 @@
 """Entity analysis uses current production projections and remains read-only."""
 import unittest
+import shutil
+import subprocess
+import os
+from threading import Thread
+from werkzeug.serving import make_server
 from unittest.mock import patch
 import test_preferences as fixture
 from songranker import pages, services
@@ -34,3 +39,13 @@ class AnalysisTests(unittest.TestCase):
             self.assertEqual(result['bars'],[])
             self.assertEqual(result['coverage'][0]['tested'],0)
             self.assertEqual(result['event_count'],0)
+
+    @unittest.skipUnless(shutil.which('google-chrome') or shutil.which('chromium'), 'Chromium is unavailable')
+    def test_analysis_browser_layout_and_controls(self):
+        server=make_server('127.0.0.1',0,services.app,threaded=True)
+        thread=Thread(target=server.serve_forever,daemon=True);thread.start()
+        try:
+            env=dict(os.environ,ANALYSIS_URL=f'http://127.0.0.1:{server.server_port}',ANALYSIS_CHROME=shutil.which('google-chrome') or shutil.which('chromium'))
+            subprocess.run(['node','tests/browser_analysis.cjs'],env=env,check=True,timeout=120)
+        finally:
+            server.shutdown();server.server_close();thread.join(timeout=5)

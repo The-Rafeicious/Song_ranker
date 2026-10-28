@@ -1076,8 +1076,9 @@ Entity analysis uses current production projections and remains read-only.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [AnalysisTests.test_entity_pages_charts_and_guide_render_without_writes](../tests/test_analysis.py#L15) | `self` | Verify entity pages charts and guide render without writes. |
-| [AnalysisTests.test_missing_evidence_is_unavailable_and_comparisons_keep_links](../tests/test_analysis.py#L28) | `self` | Verify missing evidence is unavailable and comparisons keep links. |
+| [AnalysisTests.test_entity_pages_charts_and_guide_render_without_writes](../tests/test_analysis.py#L20) | `self` | Verify entity pages charts and guide render without writes. |
+| [AnalysisTests.test_missing_evidence_is_unavailable_and_comparisons_keep_links](../tests/test_analysis.py#L33) | `self` | Verify missing evidence is unavailable and comparisons keep links. |
+| [AnalysisTests.test_analysis_browser_layout_and_controls](../tests/test_analysis.py#L44) | `self` | Verify analysis browser layout and controls. |
 
 ## tests/test_apple_source_columns.py
 
@@ -1909,4 +1910,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1296 Python definitions**.
+Total: **1297 Python definitions**.
