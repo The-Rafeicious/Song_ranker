@@ -58,6 +58,10 @@ class AnalysisTests(unittest.TestCase):
 
     @unittest.skipUnless(shutil.which('google-chrome') or shutil.which('chromium'), 'Chromium is unavailable')
     def test_analysis_browser_layout_and_controls(self):
+        from songranker.modes.preferences import record_preference
+        self.conn.execute('BEGIN IMMEDIATE')
+        record_preference(self.conn,1,2,'standard',{sid:dict(id=sid,title=f'Song {sid}') for sid in (1,2)})
+        self.conn.commit()
         server=make_server('127.0.0.1',0,services.app,threaded=True)
         thread=Thread(target=server.serve_forever,daemon=True);thread.start()
         try:

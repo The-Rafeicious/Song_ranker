@@ -8,7 +8,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs');
   page.on('pageerror',e=>errors.push(e.message));
   for(const kind of ['song','artist','album','tag']){
    await page.goto(base+'/analysis?kind='+kind);await page.locator('.analysis-page').waitFor();
-   await page.locator('select[name=chart]').selectOption('scatter');await page.locator('#analysis-controls button').click();await page.locator('.analysis-chart').waitFor();
+   await page.locator('select[name=chart]').selectOption('scatter');await page.locator('#analysis-controls button').click();await page.locator('.analysis-chart').waitFor();assert.ok(await page.locator('.analysis-chart circle').count()>0,'Measured tracks produce chart points');
    for(const width of [390,768,1365]){
     await page.setViewportSize({width,height:1050});
     assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),'Analysis fits '+width);
