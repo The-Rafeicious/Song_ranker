@@ -33,7 +33,7 @@ Each game family shows tested songs, repeat-tested songs, opportunities/appearan
 
 ## Opponents and sources
 
-The source split separates ordinary/tournament origin and Non-blind/Blind visibility. Opponent rows include external opponents only, with raw wins/losses and total saved Elo weight. Up to twenty most-played opponents are displayed. A win over a higher-rated opponent uses saved pre-match ratings, excludes ties and missing snapshots, and counts only wins by selected tracks over external opponents; its denominator is selected-side wins with unequal known ratings. It is not the rate across all opportunities to cause an upset.
+The source split separates ordinary/tournament origin and Non-blind/Blind visibility. Opponent rows include external opponents only, with raw wins/losses and total saved Elo weight. Up to twenty most-played opponents are displayed. The recent preference table shows the latest thirty effective events, visibility/source, entity links and saved before/after Elo. A win over a higher-rated opponent uses saved pre-match ratings, excludes ties and missing snapshots, and counts only wins by selected tracks over external opponents; its denominator is selected-side wins with unequal known ratings. It is not the rate across all opportunities to cause an upset.
 
 ## Tournament analysis
 
@@ -45,7 +45,7 @@ Recognition separates title, artist and eligible album correctness. Correct-answ
 
 ## Overall, relationships and Vibe
 
-Song Overall contributions show production mode scores, evidence and allocated weights. No extra scoring system is introduced. Relationship sections list linked artists, albums and tags with distinct member-track counts and tag descriptions. Vibe lists saved status and coordinates for the first thirty selected tracks across their maps; coordinate values are descriptive, not a performance ranking. The full selection remains available through the existing Vibe and entity pages.
+Overall contributions show production mode scores, evidence and allocated weights. No extra scoring system is introduced. Relationship sections list linked artists, albums and tags with distinct member-track counts and tag descriptions. Vibe lists saved status and coordinates for the first thirty selected tracks across their maps; coordinate values are descriptive, not a performance ranking. The full selection remains available through the existing Vibe and entity pages.
 
 ## Snapshot and limits
 

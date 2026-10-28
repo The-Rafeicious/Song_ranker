@@ -40,6 +40,22 @@ class AnalysisTests(unittest.TestCase):
             self.assertEqual(result['coverage'][0]['tested'],0)
             self.assertEqual(result['event_count'],0)
 
+    def test_internal_votes_pool_track_opportunities_but_count_one_event(self):
+        from songranker.modes.preferences import record_preference
+        self.conn.execute('BEGIN IMMEDIATE')
+        record_preference(self.conn,1,2,'standard',{sid:dict(id=sid,title=f'Song {sid}') for sid in (1,2)})
+        self.conn.commit()
+        with services.app.test_request_context('/analysis'):
+            data=collection(include_overall_sources=True,include_analysis_sources=True)
+            album=build_analysis(data,dict(kind='album',id='1'))
+            self.assertEqual(album['primary']['win_rate']['value'],50)
+            self.assertEqual(album['event_count'],1)
+            self.assertEqual(album['opponents'],[])
+            pair=build_analysis(data,dict(kind='song',id='1',compare='2',metric='win_rate'))
+            self.assertEqual(pair['primary']['win_rate']['value'],100)
+            self.assertEqual(pair['comparison']['win_rate']['value'],0)
+            self.assertEqual(len(pair['bars']),2)
+
     @unittest.skipUnless(shutil.which('google-chrome') or shutil.which('chromium'), 'Chromium is unavailable')
     def test_analysis_browser_layout_and_controls(self):
         server=make_server('127.0.0.1',0,services.app,threaded=True)
