@@ -22,13 +22,13 @@
 {%- endmacro %}
 {% block content %}
 <div class="global-stats-page">
-  <div class="page-head"><h1 class="standard">Global Stats</h1></div>
+  <div class="page-head"><h1 class="voting">Global Stats</h1></div>
   <div class="global-top" data-global-section="totals">
     <div class="stats global-stat-grid">{{ stat('Songs',total_songs) }}{{ stat('Artists',total_artists,'artist') }}{{ stat('Albums',total_albums,'album') }}{{ stat('Elo matches',total_matches,'standard') }}</div>
     <div class="stats global-stat-grid global-mode-totals">{% for row in mode_totals %}{{ stat(row.label,row.value,row.kind) }}{% endfor %}</div>
   </div>
   {{pulse(pulse_data)}}
-  <section class="panel stats-glow glow-voting"><div class="section-head"><h2 class="standard">Public Elo activity</h2><a class="standard" href="/history">History ↗</a></div><div class="joined-metrics" data-columns="3">{{metric('Elo matches',elo_summary.total,'standard')}}{{metric('Voting',elo_summary.ordinary,'standard')}}{{metric('Tournament first rounds',elo_summary.tournament,'tournament')}}</div><p class="mode-stats-caption tournament">Round 1 · {{elo_summary.tournament_standard}} Non-blind · {{elo_summary.tournament_blind}} Blind</p></section>
+  <section class="panel stats-glow glow-voting"><div class="section-head"><h2 class="voting">Public Elo activity</h2><a class="standard" href="/history">History ↗</a></div><div class="joined-metrics" data-columns="3">{{metric('Elo matches',elo_summary.total,'standard')}}{{metric('Voting',elo_summary.ordinary,'voting')}}{{metric('Tournament first rounds',elo_summary.tournament,'tournament')}}</div><p class="mode-stats-caption tournament">Round 1 · {{elo_summary.tournament_standard}} Non-blind · {{elo_summary.tournament_blind}} Blind</p></section>
   <section id="global-collection" class="panel stats-glow glow-collection" data-global-section="collection">
     <div class="section-head"><h2 class="song">Collection Records</h2></div>
     <div class="collection-record-grid">{% for record in collection_records %}<article class="collection-record"><small>{{ record.label }}</small><div class="record-identity">
@@ -38,17 +38,17 @@
   </section>
   <section id="overall-global" class="panel overall-panel" data-global-section="overall"><h2 class="overall">Overall Stats</h2><div class="empty" role="status">Calculating…</div></section>
   <section id="global-voting" class="panel stats-glow glow-voting" data-global-section="voting">
-    <div class="section-head"><h2 class="standard">Voting Results</h2><a class="standard" href="/history">Match history ↗</a></div>
-    <div class="voting-columns">{% for key,prefix,label,kind in [('overall','','Overall','standard'),('standard','standard_','Non-blind','standard'),('blind','blind_','Blind','blind')] %}<div class="vote-column {{ kind }}">
+    <div class="section-head"><h2 class="voting">Voting Results</h2><a class="standard" href="/history">Match history ↗</a></div>
+    <div class="voting-columns">{% for key,prefix,label,kind in [('overall','','Overall','voting'),('standard','standard_','Non-blind','standard'),('blind','blind_','Blind','blind')] %}<div class="vote-column {{ kind }}">
       <h3 class="{{ kind }}">{{ label }}</h3><strong class="vote-total {{ kind }}">{{ voting[prefix+'wins'] }}<small>vote weight</small></strong><p class="sub-label">Highest track win rates</p>
       {% for row in voting_leaders[key] %}<div class="vote-leader">{{ art(row.cover_url) }}<div>{{ entity_link(row) }}<small>{{ row.wins }}W · {{ row.losses }}L</small></div><b class="{{ kind }}">{{ row.win_rate }}%</b></div>{% else %}<div class="empty">No votes yet</div>{% endfor %}
     </div>{% endfor %}</div>
-    <div class="stats-subsection frequent-matchups"><div class="subsection-head"><h3 class="standard">Frequent Matchups</h3>{% if expand_matchups %}<label class="stats-check"><input type="checkbox" id="frequent-five" aria-controls="global-matchups"> Show five</label>{% endif %}</div>
+    <div class="stats-subsection frequent-matchups"><div class="subsection-head"><h3 class="voting">Frequent Matchups</h3>{% if expand_matchups %}<label class="stats-check"><input type="checkbox" id="frequent-five" aria-controls="global-matchups"> Show five</label>{% endif %}</div>
       <div id="global-matchups">{% for match in matchups %}{{ versus_row(match.s1,match.s2,encounters=match.encounters,hidden=loop.index>3) }}{% else %}<div class="empty">No matchups yet</div>{% endfor %}</div>
     </div>
   </section>
   <section id="global-elo" class="panel stats-glow glow-standard" data-global-section="elo">
-    <div class="section-head"><h2 class="standard">Elo Distribution</h2></div>
+    <div class="section-head"><h2 class="voting">Elo Distribution</h2></div>
     <div class="stats-group elo-band-group">
     {% set max_count=(elo_distribution|map(attribute='count')|max) if elo_distribution else 1 %}
     {% for band in elo_distribution %}<div class="distribution-row"><span>{{ band.band }}</span><div class="distribution-bar"><span style="width:{{ 100*band.count/(max_count or 1) }}%"></span></div><strong class="standard">{{ band.count }}</strong></div>{% else %}<div class="empty">No tracks</div>{% endfor %}

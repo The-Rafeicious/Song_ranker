@@ -4,9 +4,9 @@
 {% block page_kind %}history{% endblock %}
 
 {% block content %}
-<div class="page-head history-page-header"><h1 class="standard">Match History</h1></div>
+<div class="page-head history-page-header"><h1 class="voting">Match History</h1></div>
 <section class="panel history-overview">
- <div class="joined-metrics" data-columns="3"><div><b>{{elo_summary.total}}</b><span>Elo matches</span></div><div><b class="standard">{{elo_summary.ordinary}}</b><span>Voting</span></div><div><b class="tournament">{{elo_summary.tournament}}</b><span>Tournament first rounds</span></div></div>
+ <div class="joined-metrics" data-columns="3"><div><b>{{elo_summary.total}}</b><span>Elo matches</span></div><div><b class="voting">{{elo_summary.ordinary}}</b><span>Voting</span></div><div><b class="tournament">{{elo_summary.tournament}}</b><span>Tournament first rounds</span></div></div>
  <nav class="pill-nav history-filters" aria-label="Match filter">{% for key,label in [('all','All modes'),('standard','Non-blind'),('blind','Blind')] %}<a class="pill {{key}}{% if history_mode==key %} active{% endif %}" href="{{url_for('history',mode=key,origin=history_origin)}}"{% if history_mode==key %} aria-current="page"{% endif %}>{{label}}</a>{% endfor %}</nav>
  <nav class="pill-nav history-filters" aria-label="Match origin">{% for key,label in [('all','All Elo matches'),('ordinary','Voting'),('tournament','Tournament first rounds')] %}<a class="pill{% if key=='tournament' %} tournament{% endif %}{% if history_origin==key %} active{% endif %}" href="{{url_for('history',mode=history_mode,origin=key)}}"{% if history_origin==key %} aria-current="page"{% endif %}>{{label}}</a>{% endfor %}</nav>
 </section>

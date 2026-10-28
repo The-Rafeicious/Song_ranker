@@ -405,7 +405,7 @@
   display: grid;
   gap: 24px;
   min-width: 0;
-  --section-color: var(--standard);
+  --section-color: var(--voting);
 }
 .global-stats-page > .page-head {
   margin: 6px 0 4px;
@@ -1363,11 +1363,11 @@
 }
 /* Voting report composition; shared mode_stats/components/baseline own geometry. */
 .voting-stats-page {
-  --section-color: var(--standard);
-  --surface-accent: var(--standard);
-  --mode-stats-border: #f0a35b66;
-  --mode-stats-rule: #f0a35b29;
-  --mode-stats-divider: #f0a35b22;
+  --section-color: var(--voting);
+  --surface-accent: var(--voting);
+  --mode-stats-border: #9cdb9166;
+  --mode-stats-rule: #9cdb9129;
+  --mode-stats-divider: #9cdb9122;
 }
 .voting-mode-blind {
   --section-color: var(--blind);
@@ -1378,6 +1378,10 @@
 }
 .voting-mode-standard {
   --section-color: var(--standard);
+  --surface-accent:var(--standard);
+  --mode-stats-border:#f0a35b66;
+  --mode-stats-rule:#f0a35b29;
+  --mode-stats-divider:#f0a35b22;
 }
 .voting-stats-page .mode-stats-panel > p,
 .voting-stats-page .mode-stats-caption {
@@ -1435,7 +1439,7 @@
   grid-template-columns: 60px minmax(0, 1fr) 36px;
   gap: 14px;
   align-items: center;
-  color: var(--standard);
+  color: var(--voting);
 }
 .voting-day-list li > span {
   text-align: right;
@@ -1445,7 +1449,7 @@
   grid-template-columns: 130px minmax(0, 1fr) 180px;
   align-items: center;
   gap: 18px;
-  color: var(--standard);
+  color: var(--voting);
 }
 .voting-bands li > span {
   text-align: right;
@@ -1476,7 +1480,7 @@
 .voting-gap > div > strong {
   display: block;
   font-size: 28px;
-  color: var(--standard);
+  color: var(--voting);
   margin-bottom: 8px;
 }
 .voting-gap p {
@@ -1516,7 +1520,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   justify-content: center;
   align-items: center;
   gap: 12px 18px;
-  color: var(--standard);
+  color: var(--voting);
 }
 .voting-stats-page .voting-tag-art {
   font-size: 32px;
@@ -3470,3 +3474,7 @@ body.site-style-baseline #main .pulse-scale {
 .local-tournament-stats .song { --section-color:var(--song); --surface-accent:var(--song); --mode-stats-border:#1db95466; --mode-stats-rule:#1db95429; }
 .local-tournament-filter [data-game-select="local-lookup-kind"] { flex:0 1 170px; }
 .local-lookup-result { border-color:var(--mode-stats-border); }
+
+.global-stats-page .glow-voting { --section-color:var(--voting); --surface-accent:var(--voting); }
+
+.voting-history-filter .pill.all.active { color:var(--voting); border-color:var(--voting); background:color-mix(in srgb,var(--voting) 10%,var(--panel)); }

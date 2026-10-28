@@ -12,6 +12,7 @@
   --recognition: #f2d34f;
   --tournament: #ff78a6;
   --blind: #55d6c2;
+  --voting: #9cdb91;
   --standard: #f0a35b;
   --danger: #ff6675;
   --guesser: #ed7863;
@@ -4801,8 +4802,8 @@ summary:focus-visible {
   --stat-a: var(--standard);
 }
 .glow-voting {
-  --stat-a: var(--standard);
-  --stat-b: var(--blind);
+  --stat-a: var(--voting);
+  --stat-b: var(--voting);
 }
 .glow-collection {
   --stat-a: var(--song);
@@ -7781,3 +7782,10 @@ body:is([data-page="tournament_bracket"],:has(#tournament-replay)) .footer { wid
 
 
 @media(max-width:760px){.volume-panel { right:50%; transform:translateX(50%); width:min(235px,calc(100vw - 36px)); }}
+
+/* Voting family is distinct from its Non-blind and Blind subsets. */
+.voting { color:var(--voting); }
+:root:has(body[data-tone="voting"]),body[data-tone="voting"] { --page-color:var(--voting); --page-rgb:156,219,145; }
+.mode-card.voting { --surface-accent:var(--voting); border-color:color-mix(in srgb,var(--voting) 45%,transparent); background:linear-gradient(145deg,#9cdb911a,#1e1e1e); }
+.mode-card.voting h2 { color:var(--voting); }
+.stat.voting { --stat-color:var(--voting); }

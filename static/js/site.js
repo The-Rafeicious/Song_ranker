@@ -518,10 +518,10 @@
   pageTone(
     {
       home: "mixed",
-      standard: "standard",
-      global_stats: "standard",
-      voting_stats: "standard",
-      history: "standard",
+      standard: "voting",
+      global_stats: "voting",
+      voting_stats: "voting",
+      history: "voting",
       recognition_stats: "recognition",
       trivia: "recognition",
       tournament_play: "tournament",
@@ -638,7 +638,7 @@
       entered = homeTournamentEntries(completed, DB.tournament_entries);
     const triviaSummary = `<section class="panel recognition-panel stats-glow glow-recognition" data-home-mode="recognition"><div class="section-head"><h2 class="recognition">Trivia Records</h2><a class="recognition" href="/trivia_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="recognition">${Number(DB.challenge_records?.trivia?.best_score || 0).toFixed(2)}</b><small>Challenge best score</small></div><div><b class="recognition">${Number(DB.challenge_records?.trivia?.best_streak || 0)} 🔥</b><small>Challenge best streak</small></div><div><b class="recognition">${songs.filter((s) => s.attempts > 0).length}</b><small>Tested tracks</small></div></div>${homeRateBar("recognition", "Fields correct", recognition.correct, recognition.available, "No tested fields yet", "fields")}</section>`;
     const tournamentSummary = `<section class="panel tournament-panel stats-glow glow-tournament" data-home-mode="tournament"><div class="section-head"><h2 class="tournament">Tournament Records</h2><a class="tournament" href="/tournament_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="tournament">${completed.length}</b><small>Completed</small></div><div><b class="tournament">${entered ?? "—"}</b><small title="Entry slots in completed brackets; repeat appearances count each time">Tracks entered</small></div><div><b class="tournament">${Number(songs.reduce((n, s) => n + Number(s.podiums || 0), 0).toFixed(2))}</b><small>Podium credit</small></div></div>${homeBracketBar(completed)}</section>`;
-    main.innerHTML = `<section class="hero"><h1>Song Ranker</h1></section><section class="mode-section" id="play"><div class="section-head"><h2>Ways to Play</h2></div><div class="modes"><a class="mode-card standard" href="/game"><span class="mode-icon">🔥</span><h2>Standard Vote</h2></a><a class="mode-card recognition" href="/trivia"><span class="mode-icon">🧠</span><h2>Trivia</h2></a><a class="mode-card tournament" href="/tournament"><span class="mode-icon">🏆</span><h2>Tournament</h2></a><a class="mode-card guesser" href="/elo_guesser"><span class="mode-icon">🎯</span><h2>Elo Guesser</h2></a><a class="mode-card shelves" href="/album_shelves"><span class="mode-icon">🗂️</span><h2>Album Shelves</h2></a><a class="mode-card vibe" href="/vibe-map"><span class="mode-icon">📍</span><h2>Vibe Map</h2></a></div></section><div class="stats home-collection-totals" role="group" aria-label="Collection totals">${stat("Songs", songs.length)}${stat("Artists", artists.length, "artist")}${stat("Albums", albums.filter(properAlbum).length, "album")}</div><div class="spotlights home-record-stats" role="group" aria-label="Mode records">${triviaSummary}${tournamentSummary}${window.SpecialModes.homeSummary()}</div>${shelf("songs", "Top Tracks", songs, "/leaderboard")}${shelf("artists", "Top Artists", artists, "/artists")}${shelf("albums", "Top Albums", albums.filter(properAlbum), "/albums")}${homeRecords(recognized, champions)}${window.SpecialModes.homeBanners()}`;
+    main.innerHTML = `<section class="hero"><h1>Song Ranker</h1></section><section class="mode-section" id="play"><div class="section-head"><h2>Ways to Play</h2></div><div class="modes"><a class="mode-card voting" href="/game"><span class="mode-icon">🔥</span><h2>Standard Vote</h2></a><a class="mode-card recognition" href="/trivia"><span class="mode-icon">🧠</span><h2>Trivia</h2></a><a class="mode-card tournament" href="/tournament"><span class="mode-icon">🏆</span><h2>Tournament</h2></a><a class="mode-card guesser" href="/elo_guesser"><span class="mode-icon">🎯</span><h2>Elo Guesser</h2></a><a class="mode-card shelves" href="/album_shelves"><span class="mode-icon">🗂️</span><h2>Album Shelves</h2></a><a class="mode-card vibe" href="/vibe-map"><span class="mode-icon">📍</span><h2>Vibe Map</h2></a></div></section><div class="stats home-collection-totals" role="group" aria-label="Collection totals">${stat("Songs", songs.length)}${stat("Artists", artists.length, "artist")}${stat("Albums", albums.filter(properAlbum).length, "album")}</div><div class="spotlights home-record-stats" role="group" aria-label="Mode records">${triviaSummary}${tournamentSummary}${window.SpecialModes.homeSummary()}</div>${shelf("songs", "Top Tracks", songs, "/leaderboard")}${shelf("artists", "Top Artists", artists, "/artists")}${shelf("albums", "Top Albums", albums.filter(properAlbum), "/albums")}${homeRecords(recognized, champions)}${window.SpecialModes.homeBanners()}`;
     attachShelves();
   }
   const shelfState = new Map();
@@ -772,7 +772,7 @@
           "standard",
         ],
       ],
-    )}<div class="song-sections">${window.ProfileUI.stats([track])}<section class="panel profile-mode-panel dashboard-surface standard" id="history" style="--section-color:var(--standard)"><div class="section-head"><h2 class="standard">Recent Matches</h2><a class="standard" href="/history">History ↗</a></div><div class="profile-history-body"><div class="pill-nav" aria-label="Match filter"><button class="pill" data-history="all">All</button><button class="pill" data-history="blind">Blind</button><button class="pill" data-history="standard">Non-blind</button></div><div class="pill-nav" aria-label="Match source"><button class="pill" data-history-origin="all">All Elo matches</button><button class="pill" data-history-origin="ordinary">Voting</button><button class="pill tournament" data-history-origin="tournament">Tournament first rounds</button></div><div id="song-history"></div></div></section></div>`;
+    )}<div class="song-sections">${window.ProfileUI.stats([track])}<section class="panel profile-mode-panel dashboard-surface voting" id="history" style="--section-color:var(--voting)"><div class="section-head"><h2 class="voting">Recent Matches</h2><a class="voting" href="/history">History ↗</a></div><div class="profile-history-body"><div class="pill-nav" aria-label="Match filter"><button class="pill" data-history="all">All</button><button class="pill" data-history="blind">Blind</button><button class="pill" data-history="standard">Non-blind</button></div><div class="pill-nav" aria-label="Match source"><button class="pill" data-history-origin="all">All Elo matches</button><button class="pill" data-history-origin="ordinary">Voting</button><button class="pill tournament" data-history-origin="tournament">Tournament first rounds</button></div><div id="song-history"></div></div></section></div>`;
     renderSongHistory();
     attachPlayers();
   }
@@ -856,9 +856,10 @@
   function renderGame() {
     const releaseHeight = holdGameHeight();
     try {
-      pageTone(blind ? "blind" : "standard");
+      pageTone("voting");
+      document.body.dataset.voteMode=blind ? "blind" : "standard";
       document.body.classList.add("game-page");
-      main.innerHTML = `<div class="game-head" style="--mode-color:var(--${blind ? "blind" : "standard"})"><h1>${blind ? "Blind Audition" : "Which track is better?"}</h1><div class="pill-nav" aria-label="Voting mode"><button class="pill ${!blind ? "active" : ""}" data-mode="standard" ${revealed ? "disabled" : ""}>Non-blind</button><button class="pill ${blind ? "active" : ""}" data-mode="blind" ${revealed ? "disabled" : ""}>Blind</button></div></div><div class="matchup">${gameCard(pair[0], 0)}<span class="vs-circle">VS</span>${gameCard(pair[1], 1)}</div>${revealed ? roundProgress() : ""}`;
+      main.innerHTML = `<div class="game-head" style="--mode-color:var(--voting)"><h1>${blind ? "Blind Audition" : "Which track is better?"}</h1><div class="pill-nav" aria-label="Voting mode"><button class="pill ${!blind ? "active" : ""}" data-mode="standard" ${revealed ? "disabled" : ""}>Non-blind</button><button class="pill ${blind ? "active" : ""}" data-mode="blind" ${revealed ? "disabled" : ""}>Blind</button></div></div><div class="matchup">${gameCard(pair[0], 0)}<span class="vs-circle">VS</span>${gameCard(pair[1], 1)}</div>${revealed ? roundProgress() : ""}`;
       $$("[data-mode]").forEach((b) =>
         b.setAttribute(
           "aria-pressed",

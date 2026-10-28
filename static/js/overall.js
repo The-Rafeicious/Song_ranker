@@ -28,7 +28,7 @@ window.Overall = (() => {
     const collection = type !== "songs",
       known = row.score != null;
     const tones = {
-      elo: "standard",
+      elo: "voting",
       standard: "standard",
       blind: "blind",
       trivia: "recognition",
