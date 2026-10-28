@@ -99,3 +99,7 @@ A dedicated Artist & Album Tournament Stats page compares completed local result
 Library and tag tournaments both contribute full competition credit to tournament stats and Overall; artist and album brackets remain excluded. Tag first-round Elo retains half influence. Existing results are recalculated without changing saved matches or Elo.
 
 Tournament Stats includes a compact artist/album summary linked to its dedicated report, which uses shorter labels and track artwork.
+
+## V5.5.10.4
+
+Artist and album tournament stats use shared report rows with top and bottom comparisons and a lookup for individual track, artist and album results. Filters use styled native controls. Tournament and collection profiles show the leading track in a compact inset.

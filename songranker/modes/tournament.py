@@ -1206,6 +1206,11 @@ def local_tournament_stats_page():
     try:
         conn.execute('BEGIN')
         data=build_local_tournament_stats(conn,scope,scope_id,request.args.get('page',1,type=int))
+        lookup=request.args.get('lookup','')
+        options=[('song',data['tracks'])]+[(g['kind'],g['rows']) for g in data['groups']]
+        data['lookup_options']=[dict(value=f"{kind}:{row['id']}",kind=kind,row=row) for kind,rows in options for row in rows]
+        data['lookup']=next((item for item in data['lookup_options'] if item['value']==lookup),None)
+        data['lookup_value']=lookup
     finally:conn.close()
     return render_template('tournament_local_stats.html',**data)
 
@@ -1261,8 +1266,8 @@ def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
             related=[s for s in track_rows if (key in links[s['id']] if kind=='artist' else s.get('album_id')==key)]
             if not related:continue
             wins=sum(s['tournament_wins'] for s in related);losses=sum(s['tournament_losses'] for s in related)
-            grouped.append(dict(id=key,name=identity.get('name',identity.get('title')),tracks=len(related),championships=sum(s['championships'] for s in related),podiums=sum(s['podiums'] for s in related),entries=sum(s['tournament_appearances'] for s in related),played=wins+losses,wins=wins,win_rate=percent(wins,wins+losses),points=sum(s['tournament_points'] for s in related),favourite=rank(related)[0]))
-        groups.append(dict(kind=kind,rows=rank(grouped)[:25]))
+            grouped.append(dict(id=key,name=identity.get('name',identity.get('title')),cover_url=identity.get('cover_url') or '',tracks=len(related),championships=sum(s['championships'] for s in related),podiums=sum(s['podiums'] for s in related),entries=sum(s['tournament_appearances'] for s in related),played=wins+losses,wins=wins,win_rate=percent(wins,wins+losses),points=sum(s['tournament_points'] for s in related),favourite=rank(related)[0]))
+        groups.append(dict(kind=kind,rows=rank(grouped)))
     pairs={}
     for m in decided:
         a,b=sorted((m['winner_id'],m['loser_id']))
@@ -1279,4 +1284,4 @@ def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
     pages=max(1,ceil(len(brackets)/20));page=min(pages,max(1,page or 1))
     return dict(scope=scope,scope_id=scope_id,view=f'{scope}:{scope_id}' if scope_id is not None else scope,choices=choices,
                 summary=dict(brackets=len(brackets),completed=len(finished),matches=len(decided),tracks=len(track_rows),points=sum(number(m.get('points_awarded')) or 0 for m in decided)),
-                tracks=track_rows[:50],groups=groups,pairs=head_to_head,archive=brackets[(page-1)*20:page*20],page=page,pages=pages)
+                tracks=track_rows,groups=groups,pairs=head_to_head,archive=brackets[(page-1)*20:page*20],page=page,pages=pages)

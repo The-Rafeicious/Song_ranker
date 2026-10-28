@@ -489,3 +489,6 @@ body.profile-page #main #history .pill-nav {
     grid-row: 2;
   }
 }
+
+.local-leader { margin:16px 0; }
+.local-leader h3 { margin:0 0 10px; }
