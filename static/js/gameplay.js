@@ -7,7 +7,7 @@ window.GameplayUI = (() => {
     letterTimer;
   function select(id, label, options, value) {
     const selected = options.find((o) => o.value === value) || options[0];
-    return `<div class="game-select" data-game-select="${esc(id)}"><span id="${id}-label" class="game-control-label">${esc(label)}</span><select id="${id}" hidden tabindex="-1" aria-label="${esc(label)}">${options.map((o) => `<option value="${esc(o.value)}" ${o.value === selected.value ? "selected" : ""}>${esc(o.label)}</option>`).join("")}</select><button type="button" class="game-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="${id}-menu" aria-labelledby="${id}-label ${id}-value"><span id="${id}-value">${esc(selected.label)}</span><span aria-hidden="true">⌄</span></button><div class="game-select-menu" id="${id}-menu" role="listbox" aria-labelledby="${id}-label" hidden>${options.map((o) => `<button type="button" role="option" tabindex="-1" aria-selected="${o.value === selected.value}" data-game-option="${esc(o.value)}"><span><b>${esc(o.label)}</b>${o.detail ? `<small>${esc(o.detail)}</small>` : ""}</span><span class="game-select-check" aria-hidden="true">✓</span></button>`).join("")}</div></div>`;
+    return `<div class="game-select" data-game-select="${esc(id)}"><span id="${id}-label" class="game-control-label">${esc(label)}</span><select id="${id}" hidden tabindex="-1" aria-label="${esc(label)}">${options.map((o) => `<option value="${esc(o.value)}" ${o.value === selected.value ? "selected" : ""}>${esc(o.label)}</option>`).join("")}</select><button type="button" class="game-select-trigger" aria-haspopup="listbox" aria-expanded="false" aria-controls="${id}-menu" aria-labelledby="${id}-label ${id}-value"><span id="${id}-value">${esc(selected.label)}</span><span aria-hidden="true">⌄</span></button><div class="game-select-menu" id="${id}-menu" role="listbox" aria-labelledby="${id}-label" hidden>${options.map((o) => `<button type="button" role="option" tabindex="-1" aria-selected="${o.value === selected.value}" data-game-option="${esc(o.value)}">${o.kind ? `<span class="game-option-art ${esc(o.kind)}" aria-hidden="true">♫${o.cover ? `<img src="${esc(o.cover)}" alt="" loading="lazy" onerror="this.hidden=true">` : ""}</span>` : ""}<span class="game-option-copy"><b>${esc(o.label)}</b>${o.detail ? `<small>${esc(o.detail)}</small>` : ""}</span><span class="game-select-check" aria-hidden="true">✓</span></button>`).join("")}</div></div>`;
   }
   function close(focus = false) {
     if (!opened) return;
@@ -131,11 +131,14 @@ window.GameplayUI = (() => {
     for(const control of document.querySelectorAll('.local-tournament-filter select')){
       const label=document.querySelector('label[for="'+control.id+'"]');
       const wrapper=document.createElement('div');
-      wrapper.innerHTML=select(control.id,label?.textContent||'Select',Array.from(control.options,o=>({value:o.value,label:o.textContent,detail:o.parentElement.tagName==='OPTGROUP'?o.parentElement.label:''})),control.value);
+      wrapper.innerHTML=select(control.id,label?.textContent||'Select',Array.from(control.options,o=>({value:o.value,label:o.textContent,cover:o.dataset.cover,kind:o.dataset.kind,detail:o.parentElement.tagName==='OPTGROUP'?o.parentElement.label:''})),control.value);
       const replacement=wrapper.firstElementChild;
       replacement.querySelector('select').name=control.name;
       replacement.querySelector('select').required=control.required;
       label?.remove();control.replaceWith(replacement);
+      if(control.id==='local-lookup-kind')replacement.querySelector('select').addEventListener('change',()=>{
+        document.getElementById('local-lookup-select').value='';replacement.closest('form').requestSubmit();
+      });
     }
   });
   return Object.freeze({ select, close });

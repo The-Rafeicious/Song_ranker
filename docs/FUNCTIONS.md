@@ -562,8 +562,8 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L923) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
 | [build_tournament_stats.category](../songranker/modes/tournament.py#L997) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
 | [local_tournament_stats_page](../songranker/modes/tournament.py#L1194) | `` | Compare artist/album-only brackets without contributing to competition. |
-| [build_local_tournament_stats](../songranker/modes/tournament.py#L1227) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
-| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1267) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
+| [build_local_tournament_stats](../songranker/modes/tournament.py#L1231) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
+| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1271) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
 
 ## songranker/modes/trivia.py
 
@@ -1647,7 +1647,7 @@ Tournament scope policy and backed-up removal of historical selective Elo.
 | [TournamentPolicyTests.test_failure_during_scope_replay_rolls_back_and_retains_archive](../tests/test_tournament_policy.py#L69) | `self` | Verify failure during scope replay rolls back and retains archive. |
 | [TournamentPolicyTests.test_report_has_semantic_colours_depth_and_bracket_payload](../tests/test_tournament_policy.py#L76) | `self` | Verify report has semantic colours depth and bracket payload. |
 | [TournamentPolicyTests.test_local_comparisons_filter_finished_results_and_keep_raw_counts](../tests/test_tournament_policy.py#L105) | `self` | Verify local comparisons filter finished results and keep raw counts. |
-| [TournamentPolicyTests.test_unfinished_blind_comparisons_hide_identities](../tests/test_tournament_policy.py#L139) | `self` | Verify unfinished blind comparisons hide identities. |
+| [TournamentPolicyTests.test_unfinished_blind_comparisons_hide_identities](../tests/test_tournament_policy.py#L144) | `self` | Verify unfinished blind comparisons hide identities. |
 
 ## tests/test_vibe_entities.py
 

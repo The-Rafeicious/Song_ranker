@@ -421,6 +421,9 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.ok(await page.locator('#local-track-comparisons .mode-stats-inset').count()<=2,'Track comparisons use bounded groups');
   const lookup=page.locator('#local-lookup-select');const firstValue=await lookup.locator('option[value^="song:"]').first().getAttribute('value');await page.locator('[data-game-select="local-lookup-select"] .game-select-trigger').click();await page.locator('[data-game-select="local-lookup-select"] [data-game-option="'+firstValue+'"]').click();await page.locator('#local-lookup button[type=submit]').click();await page.locator('.local-lookup-result').waitFor();assert.equal(await page.locator('#local-lookup-select').inputValue(),firstValue,'Lookup preserves the selected result');
   for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'local-tournament-stats',folder);await page.screenshot({path:folder+'/local-tournament-stats-'+width+'.png',fullPage:true});}
+  await page.locator('[data-game-select="local-lookup-kind"] .game-select-trigger').click();await page.locator('[data-game-select="local-lookup-kind"] [data-game-option="artist"]').click();await page.waitForURL('**lookup_kind=artist**');
+  assert.equal(await page.locator('#local-lookup-select option[value^="song:"]').count(),0,'Artist lookup excludes songs');
+  assert.ok(await page.locator('[data-game-select="local-lookup-select"] .game-option-art.artist').count()>0,'Artist options have artwork');
   await page.goto(base+'/tournament_stats');
   assert.equal(await page.locator('[data-tournament-map]').count(),0);
   assert.equal(await page.locator('.ts-entity-artist h2').evaluate(e=>getComputedStyle(e).color),'rgb(91, 155, 255)');

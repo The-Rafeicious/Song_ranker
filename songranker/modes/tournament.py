@@ -1210,6 +1210,10 @@ def local_tournament_stats_page():
         options=[('song',data['tracks'])]+[(g['kind'],g['rows']) for g in data['groups']]
         data['lookup_options']=[dict(value=f"{kind}:{row['id']}",kind=kind,row=row) for kind,rows in options for row in rows]
         data['lookup']=next((item for item in data['lookup_options'] if item['value']==lookup),None)
+        lookup_kind=request.args.get('lookup_kind',lookup.split(':',1)[0] if ':' in lookup else 'song')
+        if lookup_kind not in ('song','artist','album'):abort(400)
+        if data['lookup'] and data['lookup']['kind']!=lookup_kind:data['lookup']=None;lookup=''
+        data['lookup_kind']=lookup_kind
         data['lookup_value']=lookup
         data['lookup_pairs']=[]
         data['lookup_tracks']=[]
@@ -1239,7 +1243,7 @@ def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
     for kind,rows in [('artist',artists),('album',albums)]:
         for key in sorted({t['scope_id'] for t in brackets if t['scope_type']==kind},key=lambda key: str(rows.get(key,{}).get('name',rows.get(key,{}).get('title',''))).casefold()):
             row=rows.get(key,{})
-            choices.append(dict(value=f'{kind}:{key}',name=row.get('name',row.get('title',f'Removed {kind} #{key}')),kind=kind))
+            choices.append(dict(value=f'{kind}:{key}',name=row.get('name',row.get('title',f'Removed {kind} #{key}')),cover_url=row.get('cover_url') or '',kind=kind))
     if scope_id is not None and scope_id not in (artists if scope=='artist' else albums) and not any(t['scope_type']==scope and t['scope_id']==scope_id for t in brackets):abort(404)
     brackets=[t for t in brackets if (scope=='all' or t['scope_type']==scope) and (scope_id is None or t['scope_id']==scope_id)]
     by_id={t['id']:t for t in brackets}

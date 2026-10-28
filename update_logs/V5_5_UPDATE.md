@@ -107,3 +107,7 @@ Artist and album tournament stats use shared report rows with top and bottom com
 ## V5.5.10.5
 
 Local tournament reports reuse tournament selection controls, show recent activity, bracket distributions and repeated-entry/champion evidence. Lookups align titles, podiums, rates, wins, losses and points, with related tracks or opponent records. Scope filters apply throughout; no scoring or Elo changes.
+
+## V5.5.10.5.1
+
+Tournament report menus include entity artwork. Lookup separates songs, artists and albums with a compact type selector. Entity comparison borders, dividers and glows use matching semantic colours.
