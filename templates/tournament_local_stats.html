@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% from 'mode_stats_components.html' import figure, rate %}
+{% from 'components.html' import art %}
 {% block title %}Artist & Album Tournament Stats · Song Ranker{% endblock %}
 {% block page_kind %}tournament_local_stats{% endblock %}
 {% macro song_link(song) %}<a class="song" href="{{url_for('song_page',song_id=song.id)}}">{{song.title}}</a>{% endmacro %}
@@ -14,16 +15,16 @@
   </form>
   <section class="panel dashboard-surface mode-stats-panel tournament"><div class="section-head"><h2 class="tournament">Local results</h2></div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Completed brackets',summary.completed)}}{{figure('Decided matches',summary.matches)}}{{figure('Tracks compared',summary.tracks)}}{{figure('Points',summary.points|round(2))}}</dl>
-    <p class="mode-stats-caption">Comparisons use completed brackets only. Results describe preferences inside these selections; they do not affect Overall or library competition rankings.</p>
+    
   </section>
   <section class="panel dashboard-surface mode-stats-panel tournament" id="local-track-comparisons"><div class="section-head"><h2 class="song">Track favourites</h2></div>
-    <p class="mode-stats-caption">Most titles first, then match win rate and matches played. Title rate is titles divided by completed entries. Compare the sample counts as well as the percentages. Up to 50 tracks.</p>
-    <ol class="mode-stats-list">{% for s in tracks %}<li class="mode-stats-row"><div class="mode-stats-copy">{{song_link(s)}}<span>{{s.artist}} · {{s.tournament_appearances}} {{'entry' if s.tournament_appearances==1 else 'entries'}} · {{s.played}} {{'match' if s.played==1 else 'matches'}}</span></div><div class="mode-stats-result"><strong>{{s.championships}} {{'title' if s.championships==1 else 'titles'}} · {{rate(s.title_rate)}} title rate</strong><span>{{s.tournament_wins}}W / {{s.tournament_losses}}L · {{rate(s.win_rate)}} wins</span><span>{{s.podiums}} {{'podium' if s.podiums==1 else 'podiums'}} · {{s.tournament_points|round(2)}} points</span></div></li>{% else %}<li class="empty">Complete an artist or album bracket to compare its tracks.</li>{% endfor %}</ol>
+    
+    <ol class="mode-stats-list">{% for s in tracks %}<li class="mode-stats-row"><div class="local-track-art">{{art(s.cover_url)}}</div><div class="mode-stats-copy">{{song_link(s)}}<span>{{s.artist}} · {{s.tournament_appearances}} {{'entry' if s.tournament_appearances==1 else 'entries'}} · {{s.played}} {{'match' if s.played==1 else 'matches'}}</span></div><div class="mode-stats-result"><strong>{{s.championships}} {{'title' if s.championships==1 else 'titles'}} · {{rate(s.title_rate)}} title rate</strong><span>{{s.tournament_wins}}W / {{s.tournament_losses}}L · {{rate(s.win_rate)}} wins</span><span>{{s.podiums}} {{'podium' if s.podiums==1 else 'podiums'}} · {{s.tournament_points|round(2)}} points</span></div></li>{% else %}<li class="empty">Complete an artist or album bracket to compare its tracks.</li>{% endfor %}</ol>
   </section>
-  <div class="local-tournament-groups">{% for group in groups %}<section class="panel dashboard-surface mode-stats-panel {{group.kind}}"><div class="section-head"><h2 class="{{group.kind}}">{{group.kind|title}} comparisons</h2></div><p class="mode-stats-caption">Pooled track results in the selected local brackets; entry counts include repeat appearances. Up to 25 collections.</p>
+  <div class="local-tournament-groups">{% for group in groups %}<section class="panel dashboard-surface mode-stats-panel {{group.kind}}"><div class="section-head"><h2 class="{{group.kind}}">{{group.kind|title}} comparisons</h2></div>
     <ol class="mode-stats-list">{% for r in group.rows %}<li class="mode-stats-row"><div class="mode-stats-copy"><a class="{{group.kind}}" href="{{url_for('artist_page',artist_name=r.name) if group.kind=='artist' else url_for('album_page',album_title=r.name)}}">{{r.name}}</a><span>{{r.tracks}} tracks · {{r.entries}} track entries</span><span>Leading track: {{song_link(r.favourite)}}</span></div><div class="mode-stats-result"><strong>{{r.championships}} {{'title' if r.championships==1 else 'titles'}}</strong><span>{{r.wins}} / {{r.played}} match wins · {{rate(r.win_rate)}}</span><span>{{r.points|round(2)}} points</span></div></li>{% else %}<li class="empty">No completed comparisons yet.</li>{% endfor %}</ol>
   </section>{% endfor %}</div>
-  <section class="panel dashboard-surface mode-stats-panel tournament"><div class="section-head"><h2 class="tournament">Head-to-head</h2></div><p class="mode-stats-caption">Most-played pairings first. The score shows each track’s wins against this opponent.</p>
+  <section class="panel dashboard-surface mode-stats-panel tournament"><div class="section-head"><h2 class="tournament">Head-to-head</h2></div>
     <ol class="mode-stats-list">{% for p in pairs %}<li class="mode-stats-row"><div class="mode-stats-copy">{{song_link(p.a)}}<span>against {{song_link(p.b)}}</span></div><div class="mode-stats-result"><strong>{{p.a_wins}} – {{p.b_wins}}</strong><span>{{p.total}} {{'match' if p.total==1 else 'matches'}}</span></div></li>{% else %}<li class="empty">No completed pairings yet.</li>{% endfor %}</ol>
   </section>
   <section class="panel dashboard-surface mode-stats-panel tournament"><div class="section-head"><h2 class="tournament">Local brackets</h2></div>

@@ -403,6 +403,7 @@ def tournament_stats_page():
             archive_page=request.args.get("archive_page", 1, type=int),
             competition_only=True,
         )
+        data["local_summary"] = build_local_tournament_stats(conn)
     finally:
         conn.close()
     return render_template("tournament_stats.html", **data)
