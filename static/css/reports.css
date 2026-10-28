@@ -3516,3 +3516,7 @@ body.site-style-baseline #main .pulse-scale {
 .analysis-page .panel.tag { --section-color:var(--tag); --surface-accent:var(--tag); }
 @media(max-width:900px) { .analysis-controls { grid-template-columns:repeat(2,minmax(0,1fr)); } }
 @media(max-width:520px) { .analysis-controls,.analysis-relations { grid-template-columns:1fr; } .analysis-bars li { grid-template-columns:minmax(0,1fr) 70px; gap:8px; } .analysis-bar-track { grid-column:1 / -1; grid-row:2; } .analysis-identity { align-items:start; gap:16px; } }
+
+.analysis-page,.analysis-page > .panel { min-width:0; }
+.analysis-page .panel { --mode-stats-border:color-mix(in srgb,var(--section-color) 40%,transparent); }
+.analysis-identity > div { min-width:0; overflow-wrap:anywhere; }
