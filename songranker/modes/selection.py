@@ -1,6 +1,7 @@
 """Adaptive draws from eligible pools; standard library only, no stored counters."""
 
 import math
+from itertools import groupby
 import random
 import statistics
 import sys
@@ -163,22 +164,26 @@ def counts_for(songs, counts, fallback):
     ]
 
 
-def voting_weights(songs, counts=None, other_counts=None, recent=()):
+def voting_weights(songs, counts=None, other_counts=None, recent=(), *, fallback="matches_played"):
     """Apply pool-sized recency and each track's own visibility balance to exposure.
 
-    Recent pairs are newest first. Recency fades over sqrt(pool size)/2 matches;
+    Recent groups are newest first; their size measures elapsed pair-equivalents.
+    Recency fades over sqrt(pool size)/2 pair-equivalents;
     the newest occurrence controls a track, and small pools recover sooner.
     Visibility pressure uses the signed count gap in units of sqrt(1+lower count),
     independent of the pool mean. Only entries present in other_counts can play
     both modes. Every weight remains positive: these are preferences, not quotas.
     """
-    current = counts_for(songs, counts, "matches_played")
-    weights = pool_probabilities(songs, counts, "matches_played")
+    current = counts_for(songs, counts, fallback)
+    weights = pool_probabilities(songs, counts, fallback)
     recovery = max(1.0, math.sqrt(len(songs)) / 2)
     last_seen = {}
-    for age, pair in enumerate(recent):
-        for sid in pair:
+    age = 0
+    for group in recent:
+        for sid in group:
             last_seen.setdefault(sid, age)
+        # A bracket represents many track appearances, not one ordinary pair.
+        age += max(1, len(group) / 2)
     for i, (song, count) in enumerate(zip(songs, current)):
         sid = song["id"]
         if sid in last_seen:
@@ -348,14 +353,14 @@ def choose_guess_pair(songs, rng=random, *, counts=None, previous=(), target=0.6
     return songs[first], songs[second]
 
 
-def draw_entries(pool, size, rng=random, *, counts=None):
+def draw_entries(pool, size, rng=random, *, counts=None, other_counts=None, recent=()):
     """Select unique exposure-weighted tournament entries with a bounded Vibe
     affinity after the first draw.
     """
     pool = rated_pool([dict(s) for s in pool])
     if type(size) is not int or size < 1 or len(pool) < size:
         return None
-    weights = pool_probabilities(pool, counts, "tournament_entries")
+    weights = voting_weights(pool, counts, other_counts, recent, fallback="tournament_entries")
     vibe = SongVibeBias(pool)
     chosen = []
     factors = None
@@ -373,7 +378,8 @@ def draw_entries(pool, size, rng=random, *, counts=None):
     return chosen
 
 
-def tournament_tracks(pool, size, rng=random, *, counts=None, local_strength=None):
+def tournament_tracks(pool, size, rng=random, *, counts=None, local_strength=None,
+                      other_counts=None, recent=()):
     """Fair entry draw followed by strength seeding; local evidence is bounded.
 
     Local opponent-adjusted evidence can shift a seed by at most 10% of the
@@ -382,7 +388,7 @@ def tournament_tracks(pool, size, rng=random, *, counts=None, local_strength=Non
     final/semi-finals. This changes neither eligibility nor public ratings.
     """
     pool = rated_pool([dict(s) for s in pool])
-    chosen = draw_entries(pool, size, rng, counts=counts)
+    chosen = draw_entries(pool, size, rng, counts=counts, other_counts=other_counts, recent=recent)
     if chosen is None:
         return None
     scale = rating_spread(s['elo_score'] for s in pool) or 1.0
@@ -390,6 +396,39 @@ def tournament_tracks(pool, size, rng=random, *, counts=None, local_strength=Non
                 max(-1, min(1, (local_strength or {}).get(s['id'], 0))) +
                 rng.uniform(-scale * .02, scale * .02), reverse=True)
     return chosen
+
+
+def tournament_selection_evidence(conn, pool, is_blind):
+    """Read entry-based visibility counts and pool-relative recent bracket groups.
+
+    Each saved entry counts once, including unfinished brackets; advancement and
+    repeated matches never inflate it. Counts span scopes, while recency retains
+    only eligible tracks so unrelated brackets do not erase a scoped pool's
+    memory. Retain eight recovery timescales in pair-equivalent appearances.
+    """
+    pool = rated_pool([dict(song) for song in pool])
+    ids = {song["id"] for song in pool}
+    counts, other = {}, {}
+    for row in conn.execute("""SELECT e.song_id,t.is_blind,COUNT(*)
+        FROM tournament_entries e JOIN tournaments t ON t.id=e.tournament_id
+        GROUP BY e.song_id,t.is_blind"""):
+        target = counts if bool(row[1]) == bool(is_blind) else other
+        target[row[0]] = target.get(row[0], 0) + row[2]
+    other = {song["id"]: other.get(song["id"], 0) for song in pool
+             if str(song.get("audio_url") or "").strip()}
+    recent, units = [], 0
+    horizon = max(8, math.ceil(4 * math.sqrt(len(pool))))
+    if ids:
+        rows = conn.execute("""SELECT tournament_id,song_id FROM tournament_entries
+            ORDER BY tournament_id DESC,seed""")
+        for _, entries in groupby(rows, key=lambda row: row[0]):
+            group = tuple(row[1] for row in entries if row[1] in ids)
+            if group:
+                recent.append(group)
+                units += max(1, len(group) / 2)
+                if units >= horizon:
+                    break
+    return dict(counts=counts, other_counts=other, recent=recent)
 
 
 def preference_evidence(conn):

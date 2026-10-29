@@ -181,6 +181,8 @@ def build_selection_health(conn, context=None):
                 excluded.clear()
             adjusted = S.voting_weights(rows, counts, other_counts, recent)
             weights = [0 if s["id"] in excluded else w for s, w in zip(rows, adjusted)]
+        elif rule == "entries":
+            weights = S.voting_weights(rows, counts, other_counts, recent, fallback="tournament_entries")
         elif rule == "single" and n > 1:
             weights = [0 if s["id"] in excluded else w for s, w in zip(rows, base)]
         elif rule == "guess":
@@ -276,21 +278,11 @@ def build_selection_health(conn, context=None):
         rule="single",
         ready=bool(previews),
     )
-    tournament_counts = mode_counts(conn, "tournament")
-    pool(
-        "tournament",
-        "Tournament · non-blind",
-        valid,
-        tournament_counts,
-        ready=len(valid) >= 8,
-    )
-    pool(
-        "tournament_blind",
-        "Tournament · blind",
-        [s for s in valid if s["id"] in preview_ids],
-        tournament_counts,
-        ready=len([s for s in valid if s["id"] in preview_ids]) >= 8,
-    )
+    for key, label, blind in [("tournament", "Tournament · non-blind", False),
+                              ("tournament_blind", "Tournament · blind", True)]:
+        rows = [s for s in valid if not blind or s["id"] in preview_ids]
+        evidence = S.tournament_selection_evidence(conn, rows, blind)
+        pool(key, label, rows, rule="entries", ready=len(rows) >= 8, **evidence)
     pool(
         "guesser",
         "Elo Guesser",
