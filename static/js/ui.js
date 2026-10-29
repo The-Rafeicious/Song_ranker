@@ -33,6 +33,46 @@ window.SongRankerUI = (() => {
       .toLocaleLowerCase()
       .replace(/\s+/g, " ")
       .trim();
+  const countFormatter = new Intl.NumberFormat("en-GB", {
+    notation: "compact", maximumFractionDigits: 1,
+  });
+  const countText = (value) => Number.isFinite(value)
+    ? Math.abs(value) >= 1000 ? countFormatter.format(value).replace("K", "k") : String(value)
+    : "—";
+  // Only summary counts are shortened. Ratings, positions, rates and raw tables
+  // retain their precision; refreshed summaries are handled by the same observer.
+  function refreshCounts() {
+    if (typeof document === "undefined" || !document) return;
+    document.querySelectorAll(".stat-value, .mode-stats-metrics dd, .mode-stats-small-metrics dd, .global-metric > strong, .pulse-metrics b, .mini-stats b, [data-count]").forEach((node) => {
+      const label = node.parentElement.querySelector("dt, .stat-label, small, span")?.textContent || "";
+      if (/elo(?! matches)|rating|score|points|mean|average|accuracy|rate|gap|gain|credit|active days/i.test(label)) return;
+      const raw = node.textContent.trim();
+      if (node.classList.contains("compact-count") && /^[+-]?\d+(?:\.\d+)?$/.test(raw)) {
+        node.removeAttribute("title");
+        node.removeAttribute("aria-label");
+        node.removeAttribute("tabindex");
+        node.classList.remove("compact-count");
+      }
+      if (!/^[+-]?\d+(?:\.\d+)?$/.test(raw) || Math.abs(Number(raw)) < 1000) return;
+      const exact = new Intl.NumberFormat("en-GB", {maximumFractionDigits: 20}).format(Number(raw));
+      node.textContent = countText(Number(raw));
+      node.title = exact;
+      node.setAttribute("aria-label", exact);
+      node.setAttribute("tabindex", "0");
+      node.classList.add("compact-count");
+    });
+  }
+  if (typeof document !== "undefined" && typeof MutationObserver !== "undefined") {
+    document.addEventListener("DOMContentLoaded", () => {
+      refreshCounts();
+      const main = document.querySelector("#main");
+      if (main) {
+        const observer = new MutationObserver(refreshCounts);
+        observer.observe(main, {subtree: true, childList: true, characterData: true});
+        window.addEventListener("pagehide", () => observer.disconnect(), {once: true});
+      }
+    });
+  }
   const impactText = (value) =>
     Number.isFinite(value) ? value.toFixed(1) : "—";
   const ratio = (right, total) =>
@@ -161,6 +201,7 @@ window.SongRankerUI = (() => {
     ratio,
     impactModel,
     impactText,
+    countText,
     sumFields,
     trackPosition,
     entityTypes,

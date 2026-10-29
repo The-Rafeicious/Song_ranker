@@ -8,6 +8,19 @@ COLORS = {'standard':'Non-blind', 'blind':'Blind', 'recognition':'Trivia',
           'tournament':'Tournament', 'guesser':'Elo Guesser', 'shelves':'Album Shelves', 'vibe':'Vibe Map'}
 
 
+def coverage_milestone(counts):
+    """Find the first unfinished whole-appearance target in the current eligible pool.
+
+    Recompute from evidence on every report; new eligible records reset the target.
+    Fractional effective votes only complete a milestone at its actual threshold.
+    """
+    counts = list(counts)
+    target = int(min(counts)) + 1 if counts else 1
+    reached = sum(value >= target for value in counts)
+    return dict(target=target, reached=reached, total=len(counts),
+                share=round(100 * reached / len(counts), 1) if counts else None)
+
+
 def timestamp(value):
     """Parse supported saved times as finite UTC datetimes, preserving unavailable
     dates as null.

@@ -112,6 +112,7 @@ body.site-style-baseline #main .joined-metrics[data-columns="2"] {
 }
 body.site-style-baseline #main .joined-metrics > * {
   min-width: 0;
+  container-type: inline-size;
   padding: 8px 12px;
   text-align: center;
   overflow-wrap: anywhere;
@@ -494,3 +495,31 @@ body.site-style-baseline #main .versus-row[data-match-origin="tournament"][data-
 body.site-style-baseline #main .versus-row[data-match-origin="tournament"][data-match-mode="blind"] { border-inline-end:3px solid var(--blind); }
 .versus-row[data-match-mode="standard"] .versus-mode-label { color:var(--standard); }
 .versus-row[data-match-mode="blind"] .versus-mode-label { color:var(--blind); }
+
+/* Numeric summaries scale with their slot; labels wrap independently. */
+body.site-style-baseline #main :is(.stat, .global-metric) {
+  min-width: 0;
+  container-type: inline-size;
+}
+body.site-style-baseline #main :is(.joined-metrics dd, .joined-metrics b, .stat-value, .global-metric > strong) {
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: normal;
+  word-break: normal;
+  max-width: 100%;
+}
+body.site-style-baseline #main :is(.joined-metrics dd, .joined-metrics b, .stat-value, .global-metric > strong).compact-count {
+  font-size: clamp(18px, 25cqi, var(--site-value-size, 36px));
+  white-space: nowrap;
+  cursor: help;
+}
+.compact-count:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
+
+body.site-style-baseline #main .joined-metrics > * > :is(dd, b),
+body.site-style-baseline #main .stat > .stat-value,
+body.site-style-baseline #main .global-metric > strong {
+  font-size: clamp(16px, 22cqi, var(--site-value-size, 36px));
+}
+
+body.site-style-baseline #main .mode-stats-small-metrics > * > dd {
+  font-size: clamp(16px, 22cqi, 28px);
+}
