@@ -22,3 +22,13 @@ Validation: structure and function documentation checks, focused Python regressi
 - No database migration or changes to saved results.
 
 Validation: 69 focused selection, preference, adaptive-Elo and Vibe/Shelves regression tests pass, including seeded repeated-play comparisons, balance recovery, tiny pools, owner history, preview eligibility and read-only checks. Structure and generated function documentation checks pass.
+
+## V5.6.3.1 — Adaptive tournament selection
+
+- Tournament entries use the same soft recency and per-song Blind/Non-blind balance as Standard Vote. Selection suppresses the overplayed visibility relative to the song's own tournament entries, even below the pool average.
+- Count one appearance per saved bracket entry, including unfinished brackets; advancement and match counts do not inflate exposure. Counts span tournament scopes.
+- Recent bracket groups use a pool-sized memory and pair-equivalent elapsed appearances. Unrelated tracks do not age a scoped pool's history. Small and full-pool brackets remain playable without fixed quotas or lockouts.
+- Preserve preview eligibility, Vibe affinity, unique entries, Elo/local-evidence seeding and existing brackets. Non-preview tracks are exempt from Non-blind visibility balance. Selection diagnostics share the production weights.
+- No schema migration or saved-result rewrite.
+
+Validation: 51 focused selection, bracket-route, tournament policy/credit, Vibe and Shelves tests pass, including entry-count semantics, both visibilities, recent scoped history, unique/full-pool draws and diagnostic parity. Full regression checks were also invoked.

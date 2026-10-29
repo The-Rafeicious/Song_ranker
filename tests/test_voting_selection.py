@@ -177,3 +177,85 @@ class VotingHistoryTests(unittest.TestCase):
         for row in standard['rows']:
             self.assertAlmostEqual(row['probability'], weights[row['id'] - 1] / total)
         self.assertEqual(capture(self.conn), before)
+
+    def bracket(self, tid, ids, blind=False, status='in_progress'):
+        """Save a bracket's unique entrants without manufacturing match results."""
+        self.conn.execute("INSERT INTO tournaments(id,size,is_blind,status,scope_type) VALUES(?,8,?,?,'global')",
+                          (tid, blind, status))
+        self.conn.executemany('INSERT INTO tournament_entries(tournament_id,song_id,seed) VALUES(?,?,?)',
+                              [(tid, sid, seed) for seed, sid in enumerate(ids, 1)])
+
+    def test_tournament_counts_split_visibility_and_count_entries_once(self):
+        self.bracket(1, [1, 2, 3, 4], blind=True)
+        self.bracket(2, [1, 2, 5, 6], status='completed')
+        rows = list(map(dict, self.conn.execute('SELECT * FROM songs ORDER BY id')))
+        before = capture(self.conn)
+        evidence = S.tournament_selection_evidence(self.conn, rows, True)
+        self.assertEqual(evidence['counts'], {1:1, 2:1, 3:1, 4:1})
+        self.assertEqual(evidence['other_counts'], {1:1, 2:1, 3:0, 4:0})
+        self.assertEqual(evidence['recent'], [(1, 2, 5, 6), (1, 2, 3, 4)])
+        self.assertEqual(capture(self.conn), before)
+        standard = S.tournament_selection_evidence(self.conn, rows, False)
+        self.assertEqual(standard['counts'][5], 1)
+        self.assertNotIn(5, standard['other_counts'])
+
+    def test_tournament_history_ignores_unrelated_scopes_and_scales_group_age(self):
+        self.bracket(1, [1, 2, 3, 4])
+        self.bracket(2, [5, 6, 7, 8])
+        rows = list(map(dict, self.conn.execute('SELECT * FROM songs WHERE id<=4')))
+        evidence = S.tournament_selection_evidence(self.conn, rows, False)
+        self.assertEqual(evidence['recent'], [(1, 2, 3, 4)])
+        pool = [dict(id=i, elo_score=1200) for i in range(1000)]
+        small_group = S.voting_weights(pool, recent=[tuple(range(8)), (50, 51)])[50]
+        large_group = S.voting_weights(pool, recent=[tuple(range(32)), (50, 51)])[50]
+        self.assertGreater(large_group, small_group)
+
+    def test_tournament_draw_soft_balance_unique_and_full_pool_fallback(self):
+        rows = [dict(id=i, elo_score=1200) for i in range(100)]
+        counts, other = {i:20 for i in range(100)}, {i:20 for i in range(100)}
+        other[0] = 0
+        rng = random.Random(5631)
+        for _ in range(100):
+            chosen = S.tournament_tracks(rows, 8, rng, counts=counts, other_counts=other,
+                                          recent=[tuple(range(1, 9))])
+            self.assertEqual(len({s['id'] for s in chosen}), 8)
+            self.assertNotIn(0, {s['id'] for s in chosen})
+        self.assertEqual(len(S.tournament_tracks(rows[:8], 8, rng, counts=counts,
+                                                other_counts=other, recent=[tuple(range(8))])), 8)
+        self.assertIsNone(S.tournament_tracks(rows[:7], 8))
+
+    def test_tournament_diagnostics_match_entry_weights(self):
+        from songranker.reports.health import build_selection_health
+        self.bracket(1, [1, 2, 3, 4], blind=True)
+        self.bracket(2, [3, 4, 5, 6])
+        rows = S.with_catalogue_age(self.conn, self.conn.execute('SELECT * FROM songs ORDER BY id'))
+        evidence = S.tournament_selection_evidence(self.conn, rows, False)
+        weights = S.voting_weights(rows, **evidence, fallback='tournament_entries')
+        before = capture(self.conn)
+        report = build_selection_health(self.conn)
+        tournament = next(p for p in report['pools'] if p['key']=='tournament')
+        for row in tournament['rows']:
+            self.assertAlmostEqual(row['probability'], weights[row['id']-1]/sum(weights))
+        self.assertEqual(capture(self.conn), before)
+
+    def test_bracket_route_passes_visibility_evidence_and_preserves_eligibility(self):
+        from songranker import services
+        from songranker.modes import tournament
+        self.bracket(1, [1, 2, 3, 4], blind=True)
+        self.conn.commit()
+        path = self.conn.execute('PRAGMA database_list').fetchone()[2]
+        with patch.object(services, 'DB_NAME', path), \
+             patch.object(tournament, 'tournament_tracks', wraps=S.tournament_tracks) as draw:
+            client = services.app.test_client()
+            result = client.get('/api/generate_bracket?size=8', content_type='application/json')
+            self.assertEqual(result.status_code, 200, result.json)
+            self.assertEqual(draw.call_args.kwargs['other_counts'][1], 1)
+            self.assertNotIn(5, draw.call_args.kwargs['other_counts'])
+            self.assertEqual(client.get('/api/generate_bracket?size=8&is_blind=true', content_type='application/json').status_code, 400)
+            self.conn.execute("UPDATE songs SET audio_url='preview'")
+            self.conn.commit()
+            result = client.get('/api/generate_bracket?size=8&is_blind=true', content_type='application/json')
+            self.assertEqual(result.status_code, 200, result.json)
+            tid = result.json['tournament_id']
+            self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM tournament_entries WHERE tournament_id=?',
+                                               (tid,)).fetchone()[0], 8)

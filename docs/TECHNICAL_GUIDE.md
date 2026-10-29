@@ -344,8 +344,15 @@ pairings modestly as evidence grows and remains relative to the live database.
 
 Trivia excludes the previous track when alternatives exist. Guesser retains its
 previous-pair multiplier 0.25 and the relative gap-target kernel (0.05 floor,
-0.95 target weight, width 0.10). Tournament draws entries without replacement,
-then uses the retained relative noisy seeding/champion spread. Shelves chooses
+0.95 target weight, width 0.10). Tournament draws entries without replacement using the same soft recency and
+own-track visibility adjustment as voting. Exposure is one entry per bracket,
+split by Blind/Non-blind across scopes, including unfinished brackets. Advancement
+and round counts do not inflate exposure. Recency groups contain eligible tracks
+from recent brackets; group size advances the clock in pair-equivalent units,
+and unrelated scoped brackets do not erase a collection's recent history. The
+history horizon grows with the eligible pool. Non-preview tracks remain exempt
+from visibility balancing. A full-pool bracket can still select every entry.
+Diagnostics use these same initial entry weights. Tournament then uses the retained relative noisy seeding/champion spread. Shelves chooses
 albums by exposure and recency with capacity lookahead, then distributes ten
 tracks and draws within each album by exposure. All prepared questions remain
 frozen even when the pool changes later.
