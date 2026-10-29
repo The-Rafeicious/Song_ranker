@@ -482,26 +482,28 @@ Adaptive draw algorithms plus the shared SQL exposure/recency adapters.
 | [rating_spread](../songranker/modes/selection.py#L117) | `ratings` | IQR, then 10–90% span, then median adjacent distinct-rating gap. |
 | [rated_pool](../songranker/modes/selection.py#L136) | `songs` | Keep unique songs with finite numeric Elo ratings for preference and tournament draws. |
 | [counts_for](../songranker/modes/selection.py#L156) | `songs, counts, fallback` | Resolve per-song mode exposure counts, using the requested row field only when no count map exists. |
-| [choose_match](../songranker/modes/selection.py#L166) | `songs, rng=random, *, counts=None, previous=(), pair_counts=None` | Exposure-fair Elo neighbours with bounded saved-opponent repeat avoidance. |
-| [choose_match.closeness](../songranker/modes/selection.py#L183) | `i` | Weight a candidate by its rating distance from the first song relative to the pool scale. |
-| [choose_single](../songranker/modes/selection.py#L208) | `songs, rng=random, *, counts=None, previous=None` | Draw one exposure-weighted song while avoiding the previous song when alternatives exist. |
-| [vibe_probabilities](../songranker/modes/selection.py#L221) | `songs, *, counts=None, previous=None, now=None` | Adaptive draws with extra mass for the least-completed Vibe Map pass. |
-| [choose_vibe_song](../songranker/modes/selection.py#L247) | `songs, rng=random, *, counts=None, previous=None` | One unique eligible song; coverage first, no rating or preview requirement. |
-| [gap_positions](../songranker/modes/selection.py#L262) | `values, tolerance=0.0` | Assign normalised midpoint ranks, treating values within tolerance as tied. |
-| [choose_guess_pair](../songranker/modes/selection.py#L281) | `songs, rng=random, *, counts=None, previous=(), target=0.6` | Relative gap kernel; the caller freezes the versioned run target at offer time. |
-| [draw_entries](../songranker/modes/selection.py#L323) | `pool, size, rng=random, *, counts=None` | Select unique exposure-weighted tournament entries with a bounded Vibe affinity after the first draw. |
-| [tournament_tracks](../songranker/modes/selection.py#L348) | `pool, size, rng=random, *, counts=None, local_strength=None` | Fair entry draw followed by strength seeding; local evidence is bounded. |
-| [preference_evidence](../songranker/modes/selection.py#L367) | `conn` | Read pair exposure and local seed evidence without writing ratings. |
-| [shelves_feasible](../songranker/modes/selection.py#L401) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
-| [draw_shelves](../songranker/modes/selection.py#L411) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None` | Album-first fairness; frozen ten-track draws with capacity lookahead. |
-| [mode_counts](../songranker/modes/selection.py#L506) | `conn, mode` | Read mode exposures and add effective weighted tournament participation to voting modes. |
-| [preference_pair](../songranker/modes/selection.py#L524) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
-| [vibe_song](../songranker/modes/selection.py#L547) | `conn, *, counts=None, previous=None, rng=random` | Read-only Vibe Map draw, ready for the later round controller. |
-| [album_vibe_groups](../songranker/modes/selection.py#L577) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
-| [previous_preference](../songranker/modes/selection.py#L592) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
-| [previous_guess](../songranker/modes/selection.py#L616) | `conn, token=None` | Read a completed Guesser pair from the supplied round or latest result to avoid an immediate repeat. |
-| [shelf_history](../songranker/modes/selection.py#L633) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
-| [with_catalogue_age](../songranker/modes/selection.py#L648) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
+| [voting_weights](../songranker/modes/selection.py#L166) | `songs, counts=None, other_counts=None, recent=()` | Apply pool-sized recency and each track's own visibility balance to exposure. |
+| [choose_match](../songranker/modes/selection.py#L193) | `songs, rng=random, *, counts=None, previous=(), pair_counts=None, other_counts=None, recent=()` | Exposure-fair Elo neighbours with soft recency and per-track mode balance. |
+| [choose_match.closeness](../songranker/modes/selection.py#L211) | `i` | Weight a candidate by its rating distance from the first song relative to the pool scale. |
+| [choose_single](../songranker/modes/selection.py#L236) | `songs, rng=random, *, counts=None, previous=None` | Draw one exposure-weighted song while avoiding the previous song when alternatives exist. |
+| [vibe_probabilities](../songranker/modes/selection.py#L249) | `songs, *, counts=None, previous=None, now=None` | Adaptive draws with extra mass for the least-completed Vibe Map pass. |
+| [choose_vibe_song](../songranker/modes/selection.py#L275) | `songs, rng=random, *, counts=None, previous=None` | One unique eligible song; coverage first, no rating or preview requirement. |
+| [gap_positions](../songranker/modes/selection.py#L290) | `values, tolerance=0.0` | Assign normalised midpoint ranks, treating values within tolerance as tied. |
+| [choose_guess_pair](../songranker/modes/selection.py#L309) | `songs, rng=random, *, counts=None, previous=(), target=0.6` | Relative gap kernel; the caller freezes the versioned run target at offer time. |
+| [draw_entries](../songranker/modes/selection.py#L351) | `pool, size, rng=random, *, counts=None` | Select unique exposure-weighted tournament entries with a bounded Vibe affinity after the first draw. |
+| [tournament_tracks](../songranker/modes/selection.py#L376) | `pool, size, rng=random, *, counts=None, local_strength=None` | Fair entry draw followed by strength seeding; local evidence is bounded. |
+| [preference_evidence](../songranker/modes/selection.py#L395) | `conn` | Read pair exposure and local seed evidence without writing ratings. |
+| [shelves_feasible](../songranker/modes/selection.py#L429) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
+| [draw_shelves](../songranker/modes/selection.py#L439) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None` | Album-first fairness; frozen ten-track draws with capacity lookahead. |
+| [mode_counts](../songranker/modes/selection.py#L534) | `conn, mode` | Read mode exposures and add effective weighted tournament participation to voting modes. |
+| [preference_pair](../songranker/modes/selection.py#L552) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
+| [vibe_song](../songranker/modes/selection.py#L585) | `conn, *, counts=None, previous=None, rng=random` | Read-only Vibe Map draw, ready for the later round controller. |
+| [album_vibe_groups](../songranker/modes/selection.py#L615) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
+| [recent_preferences](../songranker/modes/selection.py#L630) | `conn, owner=None, limit=128` | Read a bounded newest-first song history across both voting visibilities. |
+| [previous_preference](../songranker/modes/selection.py#L656) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
+| [previous_guess](../songranker/modes/selection.py#L680) | `conn, token=None` | Read a completed Guesser pair from the supplied round or latest result to avoid an immediate repeat. |
+| [shelf_history](../songranker/modes/selection.py#L697) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
+| [with_catalogue_age](../songranker/modes/selection.py#L712) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
 
 ## songranker/modes/shelves.py
 
@@ -767,13 +769,13 @@ Shared exposure/coverage health and diagnostics using production selectors.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [label](../songranker/reports/health.py#L14) | `text, level` | Represent a short health label with its semantic display level. |
-| [exposure_health](../songranker/reports/health.py#L19) | `values, spread=None` | Describe exposure balance, evidence stage and population-relative reference bands. |
-| [coverage_health](../songranker/reports/health.py#L68) | `right, total` | Classify a covered-versus-eligible ratio into a shared health label. |
-| [normalize](../songranker/reports/health.py#L91) | `weights` | Normalise diagnostic weights to probabilities, returning zeros for an empty-weight distribution. |
-| [build_selection_health](../songranker/reports/health.py#L99) | `conn, context=None` | Build selection health; reads albums, challenge_runs, genres, shelf_album_exposures, song_details, song_genres, songs, sqlite_master. |
-| [build_selection_health.pool](../songranker/reports/health.py#L157) | `key, label, rows, counts, *, previous=(), rule='base', unit='tracks', kind='song', ready=True` | Project an eligible draw pool into production-rule probabilities and exposure diagnostics. |
-| [build_selection_health.coverage](../songranker/reports/health.py#L312) | `label, count` | Describe one eligibility count relative to the full catalogue with coverage health. |
+| [label](../songranker/reports/health.py#L13) | `text, level` | Represent a short health label with its semantic display level. |
+| [exposure_health](../songranker/reports/health.py#L18) | `values, spread=None` | Describe exposure balance, evidence stage and population-relative reference bands. |
+| [coverage_health](../songranker/reports/health.py#L67) | `right, total` | Classify a covered-versus-eligible ratio into a shared health label. |
+| [normalize](../songranker/reports/health.py#L90) | `weights` | Normalise diagnostic weights to probabilities, returning zeros for an empty-weight distribution. |
+| [build_selection_health](../songranker/reports/health.py#L98) | `conn, context=None` | Build selection health; reads albums, challenge_runs, genres, shelf_album_exposures, song_details, song_genres, songs, sqlite_master. |
+| [build_selection_health.pool](../songranker/reports/health.py#L156) | `key, label, rows, counts, *, previous=(), rule='base', recent=(), other_counts=None, unit='tracks', kind='song', ready=True` | Project an eligible draw pool into production-rule probabilities and exposure diagnostics. |
+| [build_selection_health.coverage](../songranker/reports/health.py#L319) | `label, count` | Describe one eligibility count relative to the full catalogue with coverage health. |
 
 ## songranker/reports/stats_activity.py
 
@@ -1839,6 +1841,27 @@ Voting report cohorts and compact rendering use saved evidence, without writes.
 | [VotingReportTests.test_half_weight_tournament_match_still_qualifies_both_tracks](../tests/test_voting_report.py#L125) | `self` | Verify half weight tournament match still qualifies both tracks. |
 | [VotingReportTests.test_page_has_new_summaries_and_one_useful_disclosure](../tests/test_voting_report.py#L149) | `self` | Verify page has new summaries and one useful disclosure. |
 
+## tests/test_voting_selection.py
+
+Voting recency, per-track visibility balance and saved-history routing.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [VotingWeightTests.pool](../tests/test_voting_selection.py#L17) | `self, size` | Build a uniform finite-rating pool with no freshness or Vibe bias. |
+| [VotingWeightTests.test_visibility_gap_overrides_below_average_catchup_and_recovers](../tests/test_voting_selection.py#L21) | `self` | Verify visibility gap overrides below average catchup and recovers. |
+| [VotingWeightTests.test_equal_counts_are_uniform_and_mode_swap_reverses_pressure](../tests/test_voting_selection.py#L37) | `self` | Verify equal counts are uniform and mode swap reverses pressure. |
+| [VotingWeightTests.test_five_match_repeats_are_damped_and_penalty_fades](../tests/test_voting_selection.py#L46) | `self` | Verify five match repeats are damped and penalty fades. |
+| [VotingWeightTests.test_both_slots_respect_balance_and_small_pools_remain_playable](../tests/test_voting_selection.py#L58) | `self` | Verify both slots respect balance and small pools remain playable. |
+| [VotingWeightTests.test_seeded_repeated_play_reduces_short_returns_without_stalling](../tests/test_voting_selection.py#L76) | `self` | Verify seeded repeated play reduces short returns without stalling. |
+| [VotingWeightTests.test_seeded_repeated_play_reduces_short_returns_without_stalling.simulate](../tests/test_voting_selection.py#L78) | `adaptive` | Count short returns while updating the same per-mode exposure facts. |
+| [VotingHistoryTests.setUp](../tests/test_voting_selection.py#L102) | `self` | Create isolated disposable state and register cleanup for this test. |
+| [VotingHistoryTests.offer](../tests/test_voting_selection.py#L114) | `self, index, owner='browser', mode='standard', status='answered'` | Save presentation history without adding exposure or rating evidence. |
+| [VotingHistoryTests.test_history_spans_modes_is_bounded_and_ignores_other_browsers_and_open_offers](../tests/test_voting_selection.py#L121) | `self` | Verify history spans modes is bounded and ignores other browsers and open offers. |
+| [VotingHistoryTests.test_fallback_uses_effective_saved_results_and_both_modes](../tests/test_voting_selection.py#L132) | `self` | Verify fallback uses effective saved results and both modes. |
+| [VotingHistoryTests.test_preview_eligibility_balance_inputs_and_reads_do_not_change_data](../tests/test_voting_selection.py#L139) | `self` | Verify preview eligibility balance inputs and reads do not change data. |
+| [VotingHistoryTests.test_production_history_horizon_grows_with_eligible_collection](../tests/test_voting_selection.py#L149) | `self` | The production reader scales its horizon and respects preview eligibility. |
+| [VotingHistoryTests.test_diagnostics_match_production_anchor_weights_without_writes](../tests/test_voting_selection.py#L160) | `self` | Selection health uses the same recency and own-mode balance rules. |
+
 ## tests/test_waitress_shutdown.py
 
 Stop must wake select, then close sockets on the event-loop thread.
@@ -1897,4 +1920,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1291 Python definitions**.
+Total: **1307 Python definitions**.
