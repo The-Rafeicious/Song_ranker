@@ -1,3 +1,4 @@
+{% from "mode_stats_components.html" import milestone %}
 {% extends 'base.html' %}
 {% from 'stats_visuals.html' import pulse %}
 {% from 'components.html' import art %}
@@ -111,7 +112,7 @@
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-coverage">
     <div class="section-head"><h2 id="recognition-coverage" class="recognition">Collection coverage</h2></div>
     <dl class="joined-metrics mode-stats-metrics">{{ figure('Tracks with previews',coverage.playable) }}{{ figure('Already tested',coverage.tested) }}{{ figure('Still to try',coverage.untested) }}</dl>
-    <div class="mode-stats-inset mode-stats-rate"><h3>Preview-ready tracks tested</h3><strong class="mode-stats-primary">{{ rate(coverage.accuracy) }}</strong>{{ progress('Preview-ready tracks tested',coverage.accuracy) }}<p>{{ coverage.tested }} / {{ coverage.playable }} tracks</p></div>
+    {{ milestone(coverage.milestone, 'Preview-ready tracks') }}
     {% if coverage.without_preview %}<p class="mode-stats-caption">{{ coverage.without_preview }} other tested {{ 'track has' if coverage.without_preview==1 else 'tracks have' }} no current preview.</p>{% endif %}
   </section>
 

@@ -141,6 +141,8 @@ class VotingReportTests(unittest.TestCase):
         self.assertEqual(report["distribution"]["rated"], 2)
         self.assertEqual(report["distribution"]["excluded"], 4)
         self.assertEqual(report["coverage"]["avg_appearances"], 0.5)
+        self.assertEqual(report["coverage"]["milestone"]["target"], 1)
+        self.assertEqual(report["coverage"]["milestone"]["reached"], 2)
         self.assertEqual(report["history_total"], 1)
         self.assertEqual(report["elo_summary"]["half"], 1)
 

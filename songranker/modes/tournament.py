@@ -1,7 +1,7 @@
 from flask import render_template, request, jsonify, abort, redirect, url_for
 from songranker.modes.selection import tournament_tracks
 from songranker.services import app, get_db_connection
-from songranker.reports.stats_activity import attach_reports
+from songranker.reports.stats_activity import attach_reports, coverage_milestone
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from math import ceil, isfinite
@@ -1128,6 +1128,7 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1, compet
             scopes=scope_rows,
             visibility=visibility_rows,
             coverage=dict(
+                milestone=coverage_milestone((s["entries"] for s in songs.values())),
                 entered=len(entered_songs),
                 unentered=len(songs) - len(entered_songs),
                 total=len(songs),

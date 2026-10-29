@@ -1,3 +1,4 @@
+{% from "mode_stats_components.html" import milestone %}
 {% extends 'base.html' %}
 {% from 'stats_visuals.html' import pulse %}
 {% from 'components.html' import art, versus_row, song %}
@@ -95,7 +96,7 @@
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-coverage">
     <div class="section-head"><h2 class="tournament" id="ts-coverage">Collection coverage</h2></div>
     <dl class="joined-metrics mode-stats-metrics">{{ figure('Different tracks entered',coverage.entered) }}{{ figure('Yet to enter',coverage.unentered) }}{{ figure('Different champions',coverage.champions) }}</dl>
-    <div class="mode-stats-inset mode-stats-rate"><h3>Collection entered in tournaments</h3><strong class="mode-stats-primary">{{ rate(coverage.share) }}</strong>{{ progress('Collection entered in tournaments',coverage.share) }}<p>{{ coverage.entered }} / {{ coverage.total }} current tracks</p></div>
+    {{ milestone(coverage.milestone, 'Current tracks') }}
     <div class="mode-stats-inset"><h3>Entry depth</h3><dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Single entry',coverage.single)}}{{figure('Repeat entrants',coverage.repeat)}}{{figure('Five or more entries',coverage.five_plus)}}{{figure('Mean entries',coverage.average if coverage.average is not none else '—')}}</dl></div>
   </section>
 

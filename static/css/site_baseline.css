@@ -230,7 +230,7 @@ body.site-style-baseline dialog .btn {
 /* T2/W3/A3 ranking rows, with all cover dimensions constrained together. */
 body.site-style-baseline #main .leaderboard .leader-row {
   --ranking-art-size: var(--site-art-size);
-  grid-template-columns: 54px var(--ranking-art-size) minmax(0, 1fr) auto;
+  grid-template-columns: minmax(54px, max-content) var(--ranking-art-size) minmax(0, 1fr) auto;
   align-items: center;
   gap: var(--site-gap);
   padding: var(--site-padding);
@@ -258,6 +258,10 @@ body.site-style-baseline #main .leaderboard a.leader-title {
 }
 body.site-style-baseline #main .leaderboard .leader-meta {
   font-size: var(--site-meta-size);
+}
+body.site-style-baseline #main .leaderboard .leader-rank {
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
 }
 body.site-style-baseline #main .leaderboard .leader-score {
   font-size: var(--site-value-size);
@@ -312,7 +316,7 @@ body.site-style-baseline #main .metadata a {
   }
   body.site-style-baseline #main .leaderboard .leader-row {
     --ranking-art-size: 88px;
-    grid-template-columns: 34px var(--ranking-art-size) minmax(0, 1fr) auto;
+    grid-template-columns: minmax(34px, max-content) var(--ranking-art-size) minmax(0, 1fr) auto;
     gap: 16px;
     padding: 20px;
   }
@@ -389,7 +393,7 @@ body.site-style-baseline #main .metadata a {
   }
   body.site-style-baseline #main .leaderboard .leader-row {
     --ranking-art-size: 72px;
-    grid-template-columns: 24px var(--ranking-art-size) minmax(0, 1fr);
+    grid-template-columns: minmax(24px, max-content) var(--ranking-art-size) minmax(0, 1fr);
     gap: 10px 12px;
     padding: 18px 14px;
   }

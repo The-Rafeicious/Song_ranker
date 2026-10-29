@@ -1,3 +1,4 @@
+{% from "mode_stats_components.html" import milestone %}
 {% extends 'base.html' %}
 {% from 'stats_visuals.html' import pulse %}
 {% from 'components.html' import art %}
@@ -66,8 +67,8 @@
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="shelves-coverage">
     <div class="section-head"><h2 class="shelves" id="shelves-coverage">Collection coverage</h2></div>
-    <div class="mode-stats-inset mode-stats-rate"><h3>Eligible albums played</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Eligible albums',coverage.albums) }}{{ figure('Already tested',coverage.albums_tested) }}{{ figure('Still to try',coverage.albums_untested) }}</dl><strong class="mode-stats-primary">{{ rate(coverage.album_share) }}</strong>{{ progress('Eligible albums played',coverage.album_share) }}</div>
-    <div class="mode-stats-inset mode-stats-rate"><h3>Eligible tracks tested</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Eligible tracks',coverage.tracks) }}{{ figure('Already tested',coverage.tracks_tested) }}{{ figure('Still to try',coverage.tracks_untested) }}</dl><strong class="mode-stats-primary">{{ rate(coverage.track_share) }}</strong>{{ progress('Eligible tracks tested',coverage.track_share) }}</div>
+    <div class="mode-stats-inset mode-stats-rate"><h3>Eligible albums played</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Eligible albums',coverage.albums) }}{{ figure('Already tested',coverage.albums_tested) }}{{ figure('Still to try',coverage.albums_untested) }}</dl>{{ milestone(coverage.album_milestone, 'Eligible albums') }}</div>
+    <div class="mode-stats-inset mode-stats-rate"><h3>Eligible tracks tested</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Eligible tracks',coverage.tracks) }}{{ figure('Already tested',coverage.tracks_tested) }}{{ figure('Still to try',coverage.tracks_untested) }}</dl>{{ milestone(coverage.track_milestone, 'Eligible tracks') }}</div>
     {% if coverage.other_albums or coverage.other_tracks %}<p class="mode-stats-caption">{{ coverage.other_albums }} other played albums and {{ coverage.other_tracks }} other tested tracks are outside the current eligible pool.</p>{% endif %}
     {% if not coverage.albums %}<p class="mode-stats-caption">A round needs ten uniquely numbered tracks across two or three proper albums, with at least two tracks per album.</p>{% endif %}
   </section>

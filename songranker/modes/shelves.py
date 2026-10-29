@@ -6,7 +6,7 @@ import time
 from flask import jsonify, render_template, request, session
 from songranker.services import app, get_db_connection
 from songranker.catalog import display_song
-from songranker.reports.stats_activity import attach_reports
+from songranker.reports.stats_activity import attach_reports, coverage_milestone
 from datetime import datetime, timezone
 from math import ceil, isclose
 from songranker.catalog import proper_album
@@ -741,8 +741,15 @@ def build_shelves_stats(conn, now=None, history_page=1, album_page=1, selected=N
     }
     eligible_tracks = {s["id"] for aid in playable for s in pool[aid]}
     tested_tracks = {s["id"] for s in songs.values() if s["attempts"]}
+    album_appearances = defaultdict(set)
+    for row in ordered:
+        if row["graded"]:
+            for item in row["items"]:
+                album_appearances[item["album_id"]].add(row["id"])
     tested_albums = {aid for aid, row in album_totals.items() if row["graded_tracks"]}
     coverage = dict(
+        album_milestone=coverage_milestone(len(album_appearances[aid]) for aid in playable),
+        track_milestone=coverage_milestone(songs[sid]["attempts"] for sid in eligible_tracks),
         albums=len(playable),
         albums_tested=len(playable & tested_albums),
         albums_untested=len(playable - tested_albums),

@@ -2,7 +2,7 @@
 
 from flask import render_template, request, session, jsonify, redirect
 from songranker.services import app, get_db_connection, fetch_match_history
-from songranker.reports.stats_activity import attach_reports
+from songranker.reports.stats_activity import attach_reports, coverage_milestone
 from collections import Counter, defaultdict
 from datetime import datetime, timezone, timedelta
 from math import ceil, isfinite
@@ -173,6 +173,7 @@ def build_voting_stats(
         s.update(
             elo_score=finite(s.get("elo_score")),
             highest_elo=finite(s.get("highest_elo")),
+            appearances=0,
             wins=0,
             losses=0,
             standard_wins=0,
@@ -255,6 +256,7 @@ def build_voting_stats(
             if sid not in songs:
                 continue
             s = songs[sid]
+            s["appearances"] += 1
             s["wins" if won else "losses"] += r.get("rating_weight", 1)
             s[r["mode"] + ("_wins" if won else "_losses")] += r.get("rating_weight", 1)
             if delta is not None:
@@ -336,6 +338,7 @@ def build_voting_stats(
         m["share"] = percent(m["matches"], len(matches))
     tested = [s for s in songs.values() if s["matches"]]
     coverage = dict(
+        milestone=coverage_milestone(s["appearances"] for s in songs.values()),
         total=len(songs),
         voted=len(tested),
         unplayed=len(songs) - len(tested),

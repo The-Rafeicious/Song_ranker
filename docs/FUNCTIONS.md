@@ -432,7 +432,7 @@ Elo Guesser rounds, frozen-answer results and detailed Guesser Stats.
 | [totals](../songranker/modes/guesser.py#L278) | `rows` | Summarise graded, unknown, correct and wrong Guesser rounds with accuracy. |
 | [build_guesser_stats](../songranker/modes/guesser.py#L293) | `conn, now=None, history_page=1` | One caller-owned SELECT snapshot; aggregate all history, page only its display. |
 | [build_guesser_stats.identity](../songranker/modes/guesser.py#L323) | `sid` | Resolve a report song identity with a safe placeholder when the track has been removed. |
-| [build_guesser_stats.category](../songranker/modes/guesser.py#L473) | `kind, title, identities, links` | Aggregate Guesser attempts and accuracy into artist, album or tag report leaders. |
+| [build_guesser_stats.category](../songranker/modes/guesser.py#L474) | `kind, title, identities, links` | Aggregate Guesser attempts and accuracy into artist, album or tag report leaders. |
 
 ## songranker/modes/preferences.py
 
@@ -532,7 +532,7 @@ Album Shelves eligibility, ordering/grading and detailed Shelves Stats.
 | [page_number](../songranker/modes/shelves.py#L451) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
 | [build_shelves_stats](../songranker/modes/shelves.py#L461) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
 | [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L492) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
-| [build_shelves_stats.records](../songranker/modes/shelves.py#L761) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
+| [build_shelves_stats.records](../songranker/modes/shelves.py#L768) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
 
 ## songranker/modes/tournament.py
 
@@ -562,9 +562,9 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | [build_tournament_stats.scope](../songranker/modes/tournament.py#L767) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
 | [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L925) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
 | [build_tournament_stats.category](../songranker/modes/tournament.py#L999) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
-| [local_tournament_stats_page](../songranker/modes/tournament.py#L1196) | `` | Compare artist/album-only brackets without contributing to competition. |
-| [build_local_tournament_stats](../songranker/modes/tournament.py#L1233) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
-| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1273) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
+| [local_tournament_stats_page](../songranker/modes/tournament.py#L1197) | `` | Compare artist/album-only brackets without contributing to competition. |
+| [build_local_tournament_stats](../songranker/modes/tournament.py#L1234) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
+| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1274) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
 
 ## songranker/modes/trivia.py
 
@@ -596,7 +596,7 @@ Timed field recognition, answer grading/corrections and detailed Trivia Stats.
 | [build_recognition_stats](../songranker/modes/trivia.py#L575) | `conn, now=None` | Use one caller-owned read snapshot, with no history LIMIT on aggregates. |
 | [build_recognition_stats.add_group](../songranker/modes/trivia.py#L613) | `target, identity, attempts, correct, sid` | Accumulate recognition attempts, correct answers and distinct tested songs for a collection. |
 | [build_recognition_stats.category](../songranker/modes/trivia.py#L750) | `kind, title, note, source, identities` | Build stable recognition accuracy/struggle leaders for one collection category. |
-| [trivia_stats](../songranker/modes/trivia.py#L892) | `` | Trivia stats; GET /trivia_stats. |
+| [trivia_stats](../songranker/modes/trivia.py#L893) | `` | Trivia stats; GET /trivia_stats. |
 
 ## songranker/modes/vibe_map.py
 
@@ -687,10 +687,10 @@ Standard/blind voting operations, history page and detailed Voting Stats.
 | [average](../songranker/modes/voting.py#L126) | `values` | Return a rounded mean for report values, preserving unavailable for an empty sample. |
 | [saved_date](../songranker/modes/voting.py#L134) | `value` | Parse a saved result date for report display and ordering. |
 | [build_voting_stats](../songranker/modes/voting.py#L150) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
-| [build_voting_stats.identity](../songranker/modes/voting.py#L190) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
-| [build_voting_stats.result_totals](../songranker/modes/voting.py#L278) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
-| [build_voting_stats.top](../songranker/modes/voting.py#L510) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
-| [build_voting_stats.category](../songranker/modes/voting.py#L524) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
+| [build_voting_stats.identity](../songranker/modes/voting.py#L191) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
+| [build_voting_stats.result_totals](../songranker/modes/voting.py#L280) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
+| [build_voting_stats.top](../songranker/modes/voting.py#L513) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
+| [build_voting_stats.category](../songranker/modes/voting.py#L527) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
 
 ## songranker/overall.py
 
@@ -781,12 +781,13 @@ Shared dated activity, comparison charts and report attachments.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [timestamp](../songranker/reports/stats_activity.py#L11) | `value` | Parse supported saved times as finite UTC datetimes, preserving unavailable dates as null. |
-| [latest_vibe_saves](../songranker/reports/stats_activity.py#L26) | `conn` | One retained update per song, not an invented log of completed passes. |
-| [build_activity](../songranker/reports/stats_activity.py#L36) | `conn, mode, now=None, tournament_ids=None` | Build fourteen days of mode activity, previous/current-week totals and graded success rates. |
-| [build_activity.rows](../songranker/reports/stats_activity.py#L46) | `table` | Read a known activity source table while tolerating its absence in historical fixtures. |
-| [build_activity.add](../songranker/reports/stats_activity.py#L51) | `when, kind, right=0, denominator=0` | Add an in-window dated result and its success denominator, counting undated records separately. |
-| [attach_reports](../songranker/reports/stats_activity.py#L127) | `conn, data, mode, now=None, tournament_ids=None` | Attach shared activity charts and effective tournament Elo history to a mode report. |
+| [coverage_milestone](../songranker/reports/stats_activity.py#L11) | `counts` | Find the first unfinished whole-appearance target in the current eligible pool. |
+| [timestamp](../songranker/reports/stats_activity.py#L24) | `value` | Parse supported saved times as finite UTC datetimes, preserving unavailable dates as null. |
+| [latest_vibe_saves](../songranker/reports/stats_activity.py#L39) | `conn` | One retained update per song, not an invented log of completed passes. |
+| [build_activity](../songranker/reports/stats_activity.py#L49) | `conn, mode, now=None, tournament_ids=None` | Build fourteen days of mode activity, previous/current-week totals and graded success rates. |
+| [build_activity.rows](../songranker/reports/stats_activity.py#L59) | `table` | Read a known activity source table while tolerating its absence in historical fixtures. |
+| [build_activity.add](../songranker/reports/stats_activity.py#L64) | `when, kind, right=0, denominator=0` | Add an in-window dated result and its success denominator, counting undated records separately. |
+| [attach_reports](../songranker/reports/stats_activity.py#L140) | `conn, data, mode, now=None, tournament_ids=None` | Attach shared activity charts and effective tournament Elo history to a mode report. |
 
 ## songranker/services.py
 
@@ -1509,6 +1510,15 @@ Schema-20 telemetry retirement with a complete old backup and exact game retenti
 | [RetireListeningTests.test_public_pages_and_payloads_have_no_listening_process_or_data](../tests/test_retired_listening.py#L52) | `self` | Verify public pages and payloads have no listening process or data. |
 | [sql_dump_from_legacy](../tests/test_retired_listening.py#L61) | `state, folder` | Sql dump from legacy. |
 
+## tests/test_scalable_stats.py
+
+Milestone regressions for collection growth and weighted exposure.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [CoverageMilestoneTests.test_next_unfinished_target_and_growth](../tests/test_scalable_stats.py#L7) | `self` | Completed milestones advance; newly added records return to one. |
+| [CoverageMilestoneTests.test_empty_and_fractional_evidence](../tests/test_scalable_stats.py#L14) | `self` | Empty pools are unavailable and fractional appearances never round up. |
+
 ## tests/test_shutdown.py
 
 Rotating backup durability, fresh-PIN shutdown, acknowledgement and failure recovery.
@@ -1827,7 +1837,7 @@ Voting report cohorts and compact rendering use saved evidence, without writes.
 | [VotingReportTests.test_unavailable_ratings_and_empty_cohorts_stay_explicit](../tests/test_voting_report.py#L94) | `self` | Verify unavailable ratings and empty cohorts stay explicit. |
 | [VotingReportTests.test_evidence_depth_and_history_filters_reconcile](../tests/test_voting_report.py#L111) | `self` | Verify evidence depth and history filters reconcile. |
 | [VotingReportTests.test_half_weight_tournament_match_still_qualifies_both_tracks](../tests/test_voting_report.py#L125) | `self` | Verify half weight tournament match still qualifies both tracks. |
-| [VotingReportTests.test_page_has_new_summaries_and_one_useful_disclosure](../tests/test_voting_report.py#L147) | `self` | Verify page has new summaries and one useful disclosure. |
+| [VotingReportTests.test_page_has_new_summaries_and_one_useful_disclosure](../tests/test_voting_report.py#L149) | `self` | Verify page has new summaries and one useful disclosure. |
 
 ## tests/test_waitress_shutdown.py
 
@@ -1887,4 +1897,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1288 Python definitions**.
+Total: **1291 Python definitions**.

@@ -9,7 +9,7 @@ from flask import jsonify, render_template, request, session
 from songranker.services import app, get_db_connection
 from songranker.modes import challenges
 from songranker.catalog import special_records, display_song
-from songranker.reports.stats_activity import attach_reports
+from songranker.reports.stats_activity import attach_reports, coverage_milestone
 from datetime import datetime, timezone
 from math import ceil, isfinite
 from songranker.catalog import proper_album
@@ -463,6 +463,7 @@ def build_guesser_stats(conn, now=None, history_page=1):
     tested_ids = {s["id"] for s in tested}
     covered = len(eligible & tested_ids)
     coverage = dict(
+        milestone=coverage_milestone(songs[sid]["attempts"] for sid in eligible),
         eligible=len(eligible),
         tested=covered,
         untested=len(eligible) - covered,

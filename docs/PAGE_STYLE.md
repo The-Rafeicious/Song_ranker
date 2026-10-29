@@ -283,3 +283,10 @@ Local tournament filters reuse the tournament mode selector. Activity, bracket m
 Local tournament lookup has separate entity-type and record selectors; entity options show artwork with circular artist portraits. Panel borders, dividers and glows share the entity accent.
 
 Standard Vote family navigation, summaries and report headers use light green. Non-blind remains orange and Blind teal. Tournament Elo rows retain pink origin accents plus orange/teal visibility edges and labels.
+
+Summary counts use compact notation from 1,000 (for example 1.3k), with exact
+values in the title and accessible label. Preserve ratings, scores, percentages,
+positions and raw tables. Numeric slots use tabular figures and responsive size.
+Participation bars show the first unfinished whole-appearance milestone across
+the current eligible pool, recalculated each report. Existing once-tested totals
+remain explicit. Vibe coverage measures retained map selections, not repeat plays.

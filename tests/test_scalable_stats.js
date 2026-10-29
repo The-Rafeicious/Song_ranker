@@ -1,0 +1,24 @@
+const {JSDOM} = require('jsdom');
+const fs = require('node:fs'), assert = require('node:assert/strict');
+(async () => {
+  const dom = new JSDOM('<main id="main"><dl class="mode-stats-metrics"><div><dt>Tracks voted</dt><dd>1300</dd></div><div><dt>Elo rating</dt><dd>1234.56</dd></div><div><dt>Best score</dt><dd>12345</dd></div></dl></main>', {runScripts:'outside-only'});
+  const w = dom.window;
+  w.eval(fs.readFileSync('static/js/ui.js', 'utf8'));
+  w.document.dispatchEvent(new w.Event('DOMContentLoaded'));
+  const counts = w.document.querySelectorAll('dd');
+  assert.equal(counts[0].textContent, '1.3k');
+  assert.equal(counts[0].getAttribute('aria-label'), '1,300');
+  assert.equal(counts[1].textContent, '1234.56');
+  assert.equal(counts[2].textContent, '12345');
+  counts[0].textContent = '23';
+  await new Promise(resolve => w.setTimeout(resolve, 0));
+  assert.equal(counts[0].textContent, '23');
+  assert.equal(counts[0].hasAttribute('aria-label'), false);
+  counts[0].textContent = '1234567';
+  await new Promise(resolve => w.setTimeout(resolve, 0));
+  assert.equal(counts[0].textContent, '1.2m');
+  assert.equal(counts[0].title, '1,234,567');
+  assert.equal(w.SongRankerUI.countText(null), '—');
+  dom.window.close();
+  console.log('Scalable summaries: compact counts, exact labels, score precision and refreshed counts passed.');
+})().catch(error => { console.error(error); process.exitCode = 1; });

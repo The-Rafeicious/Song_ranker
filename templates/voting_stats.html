@@ -1,3 +1,4 @@
+{% from "mode_stats_components.html" import milestone %}
 {% extends 'base.html' %}
 {% from 'stats_visuals.html' import pulse %}
 {% from 'components.html' import art %}
@@ -81,7 +82,7 @@
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-coverage">
     <div class="section-head"><h2 class="voting" id="vote-coverage">Collection coverage</h2></div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Both modes',coverage.both)}}{{figure('Non-blind only',coverage.standard_only)}}{{figure('Blind only',coverage.blind_only)}}{{figure('Not voted',coverage.unplayed)}}</dl>
-    <div class="mode-stats-inset mode-stats-rate"><h3>Tracks with a saved vote</h3><strong class="mode-stats-primary">{{rate(coverage.share)}}</strong>{{progress('Current tracks voted',coverage.share)}}<p>{{coverage.voted}} / {{coverage.total}} current tracks</p></div>
+    {{ milestone(coverage.milestone, 'Current tracks') }}
     <div class="mode-stats-inset" id="vote-evidence-depth"><h3>Voting evidence depth</h3><dl class="joined-metrics mode-stats-small-metrics" data-columns="4">{{figure('Under 2 effective appearances',coverage.under_two)}}{{figure('2 to <5 effective appearances',coverage.two_to_four)}}{{figure('5+ effective appearances',coverage.five_plus)}}{{figure('Mean appearances / voted track',number(coverage.avg_appearances))}}</dl></div>
   </section>
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-distribution">

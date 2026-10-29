@@ -11,7 +11,7 @@ from songranker.catalog import proper_album
 from songranker.modes.selection import choose_single
 from songranker.modes.selection import mode_counts
 from songranker.modes import challenges
-from songranker.reports.stats_activity import attach_reports
+from songranker.reports.stats_activity import attach_reports, coverage_milestone
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from math import isfinite
@@ -839,6 +839,7 @@ def build_recognition_stats(conn, now=None):
             outcomes=outcomes_list,
             recent=recent,
             coverage=dict(
+                milestone=coverage_milestone((s.get("attempts", 0) for s in playable)),
                 playable=len(playable),
                 tested=tested_playable,
                 untested=len(playable) - tested_playable,

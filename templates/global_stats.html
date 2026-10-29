@@ -40,7 +40,7 @@
   <section id="global-voting" class="panel stats-glow glow-voting" data-global-section="voting">
     <div class="section-head"><h2 class="voting">Voting Results</h2><a class="standard" href="/history">Match history ↗</a></div>
     <div class="voting-columns">{% for key,prefix,label,kind in [('overall','','Overall','voting'),('standard','standard_','Non-blind','standard'),('blind','blind_','Blind','blind')] %}<div class="vote-column {{ kind }}">
-      <h3 class="{{ kind }}">{{ label }}</h3><strong class="vote-total {{ kind }}">{{ voting[prefix+'wins'] }}<small>vote weight</small></strong><p class="sub-label">Highest track win rates</p>
+      <h3 class="{{ kind }}">{{ label }}</h3><strong class="vote-total {{ kind }}"><span data-count>{{ voting[prefix+'wins'] }}</span><small>vote weight</small></strong><p class="sub-label">Highest track win rates</p>
       {% for row in voting_leaders[key] %}<div class="vote-leader">{{ art(row.cover_url) }}<div>{{ entity_link(row) }}<small>{{ row.wins }}W · {{ row.losses }}L</small></div><b class="{{ kind }}">{{ row.win_rate }}%</b></div>{% else %}<div class="empty">No votes yet</div>{% endfor %}
     </div>{% endfor %}</div>
     <div class="stats-subsection frequent-matchups"><div class="subsection-head"><h3 class="voting">Frequent Matchups</h3>{% if expand_matchups %}<label class="stats-check"><input type="checkbox" id="frequent-five" aria-controls="global-matchups"> Show five</label>{% endif %}</div>

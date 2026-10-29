@@ -21,3 +21,7 @@
 <a class="{{ scope.kind }} mode-stats-name" title="{{ scope.name }}" href="{{ href }}">{{ scope.name }}</a>
 {% else %}<span class="mode-stats-name tournament" title="{{ scope.name }}">{{ scope.name }}</span>{% endif %}
 {%- endmacro %}
+
+{% macro milestone(data, label) -%}
+<div class="mode-stats-inset mode-stats-rate"><h3>{{ label }} · at least {{ data.target }} {{ 'appearance' if data.target == 1 else 'appearances' }}</h3><strong class="mode-stats-primary">{{ rate(data.share) }}</strong>{{ progress(label ~ ' with at least ' ~ data.target ~ ' appearances', data.share) }}<p>{{ data.reached }} / {{ data.total }} currently eligible · target advances when everyone reaches it</p></div>
+{%- endmacro %}
