@@ -769,13 +769,13 @@ Shared exposure/coverage health and diagnostics using production selectors.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [label](../songranker/reports/health.py#L14) | `text, level` | Represent a short health label with its semantic display level. |
-| [exposure_health](../songranker/reports/health.py#L19) | `values, spread=None` | Describe exposure balance, evidence stage and population-relative reference bands. |
-| [coverage_health](../songranker/reports/health.py#L68) | `right, total` | Classify a covered-versus-eligible ratio into a shared health label. |
-| [normalize](../songranker/reports/health.py#L91) | `weights` | Normalise diagnostic weights to probabilities, returning zeros for an empty-weight distribution. |
-| [build_selection_health](../songranker/reports/health.py#L99) | `conn, context=None` | Build selection health; reads albums, challenge_runs, genres, shelf_album_exposures, song_details, song_genres, songs, sqlite_master. |
-| [build_selection_health.pool](../songranker/reports/health.py#L157) | `key, label, rows, counts, *, previous=(), rule='base', unit='tracks', kind='song', ready=True` | Project an eligible draw pool into production-rule probabilities and exposure diagnostics. |
-| [build_selection_health.coverage](../songranker/reports/health.py#L312) | `label, count` | Describe one eligibility count relative to the full catalogue with coverage health. |
+| [label](../songranker/reports/health.py#L13) | `text, level` | Represent a short health label with its semantic display level. |
+| [exposure_health](../songranker/reports/health.py#L18) | `values, spread=None` | Describe exposure balance, evidence stage and population-relative reference bands. |
+| [coverage_health](../songranker/reports/health.py#L67) | `right, total` | Classify a covered-versus-eligible ratio into a shared health label. |
+| [normalize](../songranker/reports/health.py#L90) | `weights` | Normalise diagnostic weights to probabilities, returning zeros for an empty-weight distribution. |
+| [build_selection_health](../songranker/reports/health.py#L98) | `conn, context=None` | Build selection health; reads albums, challenge_runs, genres, shelf_album_exposures, song_details, song_genres, songs, sqlite_master. |
+| [build_selection_health.pool](../songranker/reports/health.py#L156) | `key, label, rows, counts, *, previous=(), rule='base', recent=(), other_counts=None, unit='tracks', kind='song', ready=True` | Project an eligible draw pool into production-rule probabilities and exposure diagnostics. |
+| [build_selection_health.coverage](../songranker/reports/health.py#L319) | `label, count` | Describe one eligibility count relative to the full catalogue with coverage health. |
 
 ## songranker/reports/stats_activity.py
 
@@ -1860,6 +1860,7 @@ Voting recency, per-track visibility balance and saved-history routing.
 | [VotingHistoryTests.test_fallback_uses_effective_saved_results_and_both_modes](../tests/test_voting_selection.py#L132) | `self` | Verify fallback uses effective saved results and both modes. |
 | [VotingHistoryTests.test_preview_eligibility_balance_inputs_and_reads_do_not_change_data](../tests/test_voting_selection.py#L139) | `self` | Verify preview eligibility balance inputs and reads do not change data. |
 | [VotingHistoryTests.test_production_history_horizon_grows_with_eligible_collection](../tests/test_voting_selection.py#L149) | `self` | The production reader scales its horizon and respects preview eligibility. |
+| [VotingHistoryTests.test_diagnostics_match_production_anchor_weights_without_writes](../tests/test_voting_selection.py#L160) | `self` | Selection health uses the same recency and own-mode balance rules. |
 
 ## tests/test_waitress_shutdown.py
 
@@ -1919,4 +1920,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1306 Python definitions**.
+Total: **1307 Python definitions**.

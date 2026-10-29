@@ -5,7 +5,6 @@ from statistics import fmean, pstdev
 from songranker.modes import selection as S
 from songranker.modes.selection import with_catalogue_age
 from songranker.modes.selection import mode_counts
-from songranker.modes.selection import previous_preference
 from songranker.modes.selection import previous_guess
 from songranker.modes.selection import shelf_history
 from songranker.modes.challenge_rules import guess_target
@@ -162,6 +161,8 @@ def build_selection_health(conn, context=None):
         *,
         previous=(),
         rule="base",
+        recent=(),
+        other_counts=None,
         unit="tracks",
         kind="song",
         ready=True
@@ -178,7 +179,8 @@ def build_selection_health(conn, context=None):
         if rule == "pair":
             if n - len(excluded & {s["id"] for s in rows}) < 2:
                 excluded.clear()
-            weights = [0 if s["id"] in excluded else w for s, w in zip(rows, base)]
+            adjusted = S.voting_weights(rows, counts, other_counts, recent)
+            weights = [0 if s["id"] in excluded else w for s, w in zip(rows, adjusted)]
         elif rule == "single" and n > 1:
             weights = [0 if s["id"] in excluded else w for s, w in zip(rows, base)]
         elif rule == "guess":
@@ -251,12 +253,17 @@ def build_selection_health(conn, context=None):
 
     for key, label in [("standard", "Non-blind voting"), ("blind", "Blind voting")]:
         rows = [s for s in valid if key == "standard" or s["id"] in preview_ids]
+        recent = S.recent_preferences(conn, context.get("preference_owner"),
+                                      limit=max(8, math.ceil(4 * math.sqrt(len(rows)))))
+        other = mode_counts(conn, "blind" if key == "standard" else "standard")
         pool(
             key,
             label,
             rows,
             mode_counts(conn, key),
-            previous=previous_preference(conn, key, context.get("preference_owner")),
+            previous=recent[0] if recent else (),
+            recent=recent,
+            other_counts={s["id"]: other.get(s["id"], 0) for s in rows if s["id"] in preview_ids},
             rule="pair",
             ready=len(rows) >= 2,
         )

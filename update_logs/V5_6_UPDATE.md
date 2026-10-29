@@ -18,6 +18,7 @@ Validation: structure and function documentation checks, focused Python regressi
 - A smooth recency penalty discourages tracks seen several matches ago, with a recovery timescale relative to eligible pool size. The existing immediate-pair avoidance remains when alternatives exist; small collections recover faster.
 - Preview-ready songs compare their Blind and Non-blind exposures against their own history. The overplayed mode is strongly discouraged, even when it is below the collection average; underplayed visibility gains support until the gap narrows. There is no fixed play quota or multi-match lockout.
 - Non-blind songs without previews are exempt from visibility balancing. Saved weighted evidence, correction handling, Elo closeness, opponent diversity, Vibe preferences and frozen open offers are preserved.
+- Selection diagnostics use the same recency and per-song balance weights as live voting.
 - No database migration or changes to saved results.
 
-Validation: 68 focused selection, preference, adaptive-Elo and Vibe/Shelves regression tests pass, including seeded repeated-play comparisons, balance recovery, tiny pools, owner history, preview eligibility and read-only checks. Structure and generated function documentation checks pass.
+Validation: 69 focused selection, preference, adaptive-Elo and Vibe/Shelves regression tests pass, including seeded repeated-play comparisons, balance recovery, tiny pools, owner history, preview eligibility and read-only checks. Structure and generated function documentation checks pass.

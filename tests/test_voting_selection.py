@@ -156,3 +156,24 @@ class VotingHistoryTests(unittest.TestCase):
             self.assertEqual(history.call_args.kwargs['limit'], 128)
             S.preference_pair(self.conn, 'blind', 'browser')
             self.assertEqual(history.call_args.kwargs['limit'], 8)
+
+    def test_diagnostics_match_production_anchor_weights_without_writes(self):
+        """Selection health uses the same recency and own-mode balance rules."""
+        from songranker.reports.health import build_selection_health
+        self.conn.execute('BEGIN')
+        record_preference(self.conn, 1, 2, 'standard', {sid:dict(id=sid) for sid in (1, 2)})
+        self.conn.commit()
+        self.offer(1)
+        self.conn.execute("UPDATE preference_offers SET song1_id=3,song2_id=4")
+        self.conn.commit()
+        before = capture(self.conn)
+        report = build_selection_health(self.conn, dict(preference_owner='browser'))
+        standard = next(p for p in report['pools'] if p['key'] == 'standard')
+        rows = S.with_catalogue_age(self.conn, self.conn.execute('SELECT * FROM songs ORDER BY id'))
+        other = {i:0 for i in range(1, 5)}
+        weights = S.voting_weights(rows, S.mode_counts(self.conn, 'standard'), other, [(3, 4)])
+        weights[2] = weights[3] = 0
+        total = sum(weights)
+        for row in standard['rows']:
+            self.assertAlmostEqual(row['probability'], weights[row['id'] - 1] / total)
+        self.assertEqual(capture(self.conn), before)
