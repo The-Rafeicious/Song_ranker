@@ -163,12 +163,40 @@ def counts_for(songs, counts, fallback):
     ]
 
 
-def choose_match(songs, rng=random, *, counts=None, previous=(), pair_counts=None):
-    """Exposure-fair Elo neighbours with bounded saved-opponent repeat avoidance."""
+def voting_weights(songs, counts=None, other_counts=None, recent=()):
+    """Apply pool-sized recency and each track's own visibility balance to exposure.
+
+    Recent pairs are newest first. Recency fades over sqrt(pool size)/2 matches;
+    the newest occurrence controls a track, and small pools recover sooner.
+    Visibility pressure uses the signed count gap in units of sqrt(1+lower count),
+    independent of the pool mean. Only entries present in other_counts can play
+    both modes. Every weight remains positive: these are preferences, not quotas.
+    """
+    current = counts_for(songs, counts, "matches_played")
+    weights = pool_probabilities(songs, counts, "matches_played")
+    recovery = max(1.0, math.sqrt(len(songs)) / 2)
+    last_seen = {}
+    for age, pair in enumerate(recent):
+        for sid in pair:
+            last_seen.setdefault(sid, age)
+    for i, (song, count) in enumerate(zip(songs, current)):
+        sid = song["id"]
+        if sid in last_seen:
+            weights[i] *= (-math.expm1(-(last_seen[sid] + 1) / recovery)) ** 3
+        if other_counts is not None and sid in other_counts:
+            count, other = nonnegative(count), nonnegative(other_counts[sid])
+            gap = (count - other) / math.sqrt(1 + min(count, other))
+            weights[i] *= 2 / (1 + math.exp(max(-50, min(50, gap))))
+    return weights
+
+
+def choose_match(songs, rng=random, *, counts=None, previous=(), pair_counts=None,
+                 other_counts=None, recent=()):
+    """Exposure-fair Elo neighbours with soft recency and per-track mode balance."""
     songs = rated_pool([dict(s) for s in songs])
     if len(songs) < 2:
         return None, None
-    base = pool_probabilities(songs, counts, "matches_played")
+    base = voting_weights(songs, counts, other_counts, recent)
     excluded = set(previous) & {s["id"] for s in songs}
     if len(songs) - len(excluded) < 2:
         excluded.clear()
@@ -529,15 +557,25 @@ def preference_pair(conn, mode, owner=None, rng=random):
 
     if mode not in ("standard", "blind"):
         raise ValueError("Choose standard or blind voting.")
-    previous = previous_preference(conn, mode, owner)
     where = " WHERE TRIM(COALESCE(audio_url,''))!=''" if mode == "blind" else ""
     pool = [
         dict(s)
-        for s in conn.execute("SELECT id,elo_score FROM songs" + where + " ORDER BY id")
+        for s in conn.execute("SELECT id,elo_score,audio_url FROM songs" + where + " ORDER BY id")
     ]
     pool = with_catalogue_age(conn, pool)
+    # Retain about eight recovery timescales; the read horizon grows with the
+    # eligible collection instead of becoming a fixed lifetime tuning limit.
+    horizon = max(8, math.ceil(4 * math.sqrt(len(rated_pool(pool)))))
+    recent = recent_preferences(conn, owner, limit=horizon)
+    previous = recent[0] if recent else previous_preference(conn, mode, owner)
     pair_counts, _ = preference_evidence(conn)
-    pair = choose_match(pool, rng, counts=mode_counts(conn, mode), previous=previous, pair_counts=pair_counts)
+    other = mode_counts(conn, "blind" if mode == "standard" else "standard")
+    # A track without a preview cannot catch up in Blind, so its Non-blind
+    # selection must not be suppressed by an impossible balance target.
+    other = {s["id"]: other.get(s["id"], 0) for s in pool
+             if str(s.get("audio_url") or "").strip()}
+    pair = choose_match(pool, rng, counts=mode_counts(conn, mode), previous=previous,
+                        pair_counts=pair_counts, other_counts=other, recent=recent)
     if pair[0] is None:
         return pair
     # Hydrate two songs after the draw rather than all catalogue metadata.
@@ -587,6 +625,32 @@ def album_vibe_groups(conn, album_ids):
     for song in with_vibe_maps(conn, rows):
         groups[song["album_id"]].append(song)
     return groups
+
+
+def recent_preferences(conn, owner=None, limit=128):
+    """Read a bounded newest-first song history across both voting visibilities.
+
+    Use the browser's answered ordinary offers when available, including seen
+    identities after corrections. Fall back to effective saved results for old
+    sessions/imports. Merely preparing an offer does not create played history.
+    """
+    from songranker.modes.preferences import owner_hash
+    from songranker.catalog import source_sql
+
+    rows = []
+    if owner:
+        rows = conn.execute(
+            """SELECT song1_id,song2_id FROM preference_offers
+            WHERE owner_hash=? AND origin='ordinary' AND status='answered'
+            ORDER BY closed_at DESC,rowid DESC LIMIT ?""",
+            (owner_hash(owner), limit),
+        ).fetchall()
+    if not rows:
+        rows = conn.execute(
+            "SELECT winner_id,loser_id FROM " + source_sql(conn) +
+            " ORDER BY id DESC LIMIT ?", (limit,),
+        ).fetchall()
+    return [tuple(row) for row in rows]
 
 
 def previous_preference(conn, mode, owner=None):

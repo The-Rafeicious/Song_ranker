@@ -6,7 +6,7 @@ Substantial families keep their own file; small patches stay as sections.
 
 | Family | Overall change |
 | --- | --- |
-| [V5.6](V5_6_UPDATE.md) | Scalable statistics and collection participation milestones. |
+| [V5.6](V5_6_UPDATE.md) | Scalable statistics, participation milestones and adaptive voting selection. |
 | [V5.5](V5_5_UPDATE.md) | Tournament scope Elo policy, visual bracket maps/replays and refreshed stats. |
 | [V5.4](V5_4_UPDATE.md) | Adaptive Elo scale, archived one-time startup history replay and consistent future votes. |
 | [V5.3](V5_3_UPDATE.md) | Repository consolidation, current styling contract and generated function ownership. |

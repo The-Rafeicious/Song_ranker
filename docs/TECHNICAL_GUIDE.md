@@ -294,8 +294,8 @@ See [complete API/statistics](VIBE_MAP.md) and [Dev/cleanup commands](VIBE_MAP_D
 
 ## Stage-aware selection
 
-All policy functions live in `modes/selection.py`; `selection_data.py` supplies
-canonical exposure and recency projections. Pools are filtered for actual mode
+All policy functions and canonical exposure/recency adapters live in
+`modes/selection.py`. Pools are filtered for actual mode
 eligibility before computing their mean. Ordinary exposures combine with
 first-round preference weight only in the appropriate visibility mode.
 
@@ -312,11 +312,31 @@ probability(c) = 0.08/N + 0.92 * weight(c) / sum(weights)
 Imported tracks have `added_at=0`, so none gets a recent-addition advantage at
 competition start. Future catalogue inserts are timestamped by the schema
 trigger. “New” refers to catalogue addition, not a newer release date. Every
-eligible entry retains a uniform exploration floor; a preview-quality flag does
+eligible entry starts with a uniform exploration floor before voting recency and
+per-track visibility adjustments; a preview-quality flag does
 not alter eligibility or the calculation. Equal counts/ages remain uniform.
 
-Standard/Blind anchor draws avoid the previous pair when a complete alternative
-exists. The opponent combines the same exposure support with Elo closeness:
+Standard/Blind draws read `max(8,ceil(4*sqrt(eligible pool size)))` answered pairs
+across both visibilities from the owning browser, falling back to effective saved
+results when none exist. This retains about eight recovery timescales and grows
+with the collection (about 127 pairs for 1,000 eligible tracks).
+The most recent pair is avoided when a complete alternative exists. Older tracks
+receive a smooth factor `(1-exp(-(age+1)/recovery))^3`, where age is matches since
+the latest appearance and `recovery=max(1,sqrt(eligible pool size)/2)`. Small pools
+recover sooner; there is no fixed multi-match ban.
+
+Each preview-ready track also compares its current-mode exposure to its own
+other-mode exposure. With `gap=(current-other)/sqrt(1+min(current,other))`, multiply
+by `2/(1+exp(gap))` (the exponent is bounded to ±50 for numerical stability).
+An overplayed visibility is strongly discouraged even below the pool mean;
+underplayed visibility gets up to twice the support, and balance pressure eases
+as the track catches up. Missing previews exempt Non-blind tracks from this
+comparison. These positive factors apply to both anchor and opponent after the
+exposure floor; they are recomputed on every fresh offer. Counts retain the same
+weighted tournament evidence and correction semantics as before. Existing open
+offers remain frozen.
+
+The opponent combines the same exposure support with Elo closeness:
 `floor = 0.20 − 0.05*t`, closeness weight `1−floor`, and spread bandwidth
 `1−0.15*t`. Closeness is `1/(1+(gap/scale)**2)`. Scale uses the current rating
 IQR, then 10–90% span, then the median adjacent distinct-rating gap. This tightens
