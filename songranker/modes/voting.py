@@ -140,7 +140,7 @@ def build_elo_replay(conn, song_id=None):
     from bisect import bisect_left, insort
     from songranker.catalog import source_sql
 
-    songs = {r["id"]: dict(r) for r in conn.execute("SELECT id,title,album_id,elo_score FROM songs")}
+    songs = {r["id"]: dict(r) for r in conn.execute("SELECT id,title,album_id,elo_score,audio_url FROM songs")}
     albums = {r["id"]: dict(r) for r in conn.execute("SELECT id,title,cover_url FROM albums")}
     artists = defaultdict(list)
     for row in conn.execute("SELECT sa.song_id,a.id,a.name FROM song_artists sa JOIN artists a ON a.id=sa.artist_id ORDER BY a.name,a.id"):
@@ -148,7 +148,7 @@ def build_elo_replay(conn, song_id=None):
     metadata = {}
     for sid, song in songs.items():
         album = albums.get(song["album_id"], {})
-        metadata[sid] = dict(id=sid, title=song["title"], cover_url=album.get("cover_url") or "",
+        metadata[sid] = dict(id=sid, title=song["title"], audio_url=song.get("audio_url") or "", cover_url=album.get("cover_url") or "",
                              artist_links=artists[sid], album_link=dict(title=album["title"]) if proper_album(album) else None)
     settings = conn.execute("SELECT * FROM preference_replay_state WHERE id=1").fetchone()
     cutoff = settings["cutoff_event_id"] if settings else 0
@@ -175,18 +175,25 @@ def build_elo_replay(conn, song_id=None):
         ratings[sid] = value
         insort(ordered, key(sid))
     def snapshot(kind, event=None, changes=(), ordinal=0):
-        """Capture five leaders and the optional focused song's public standing."""
+        """Capture five leaders or two neighbours on each side of the centred song."""
         frame = dict(kind=kind, board=[dict(id=row[2], elo=ratings[row[2]]) for row in ordered[:5]],
                      changes=list(changes), ordinal=ordinal, event_id=event.get("id") if event else None,
                      time=(saved_date(event.get("created_at")) or {}).get("iso") if event else None,
                      mode=event.get("mode") if event else None, origin=event.get("origin") if event else None)
         if song_id in ratings:
+            position = bisect_left(ordered, key(song_id))
             frame["focus"] = dict(id=song_id, elo=ratings[song_id],
                                   rank=bisect_left(ordered, (-ratings[song_id], "", -1)) + 1)
+            frame["board"] = [dict(id=ordered[i][2], elo=ratings[ordered[i][2]],
+                                   rank=bisect_left(ordered, (-ratings[ordered[i][2]], "", -1)) + 1,
+                                   slot=2 + i - position)
+                              for i in range(max(0, position - 2), min(len(ordered), position + 3))]
+        elif song_id is not None:
+            frame["board"] = []
         return frame
     def visible(frame):
-        """Ignore quiet votes while retaining score, membership and focus-rank moves."""
-        return frame.get("focus") if song_id is not None else [(r["id"], r["elo"]) for r in frame["board"]]
+        """Keep only changes to the leaders or the focused song and its nearby standings."""
+        return (frame.get("focus"), frame["board"]) if song_id is not None else [(r["id"], r["elo"]) for r in frame["board"]]
     frames = [snapshot("start")]
     omitted = 0
     overrides = [dict(r) for r in conn.execute("SELECT * FROM preference_rating_overrides WHERE after_event_id>=? ORDER BY after_event_id,id", (cutoff,))]

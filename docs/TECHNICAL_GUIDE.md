@@ -954,10 +954,13 @@ recorded dates are shown in UTC and unavailable dates stay unavailable. Voided
 votes are absent; corrected votes use the current effective projection. Weighted
 first-round tournament preferences are included once through the shared source.
 
-The payload contains compact top-five frames, per-event score changes, referenced
-song identities, and an optional focused track's competition rank/Elo. A sorted
+The payload contains compact top-five frames, per-event score changes and referenced
+song identities including preview URLs. Focused frames instead contain the selected
+track and up to two neighbours on either side, with absolute ranks and explicit
+0–4 slots that keep the selected track at slot 2. A sorted
 rating index updates only affected entries. Votes with no visible top-five change
-are skipped; focus replays also retain that track's matches and rank changes.
+are skipped; focus replays retain that track's own matches and changes to its immediate
+neighbourhood, omitting distant votes. Missing boundary neighbours leave empty slots.
 Seed/legacy discontinuities and manual adjustments have their own frame kinds.
 An unmatched current endpoint is labelled as current saved ratings rather than
 fabricated historical evidence. This is the current collection's saved-rating
@@ -968,3 +971,13 @@ restart, seek and pace, and cancels timers/fetches on removal or page exit. Song
 pages mount the same player. The default dwell is 2 seconds per visible frame;
 reduced-motion users get immediate position and number updates. No replay action
 writes preferences, ratings, exposure or playback settings.
+
+In v5.6.4.1 the report replay plays the leading track through PreviewPlayback and
+its saved master volume, with looped previews and shared ready-only crossfades.
+Each player owns only its own clips; mute, pause, tab hiding and disposal cancel
+pending playback, including late native-play completion. The final frame gets a
+full dwell before audio stops. Missing previews or blocked autoplay leave visual
+playback running and expose an enable-sound control when necessary. Song journeys
+have no automatic leader audio. The latest-gain card is derived only from positive
+saved changes to board participants; it identifies the donating opponent and the
+receiving track rather than attributing rank-only moves to new points.

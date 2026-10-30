@@ -453,11 +453,14 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.goto(base+'/voting_stats');await page.locator('[data-replay-play]').waitFor();
   assert.equal(await page.locator('.elo-replay-row').count(),0,'Replay stays lazy until Play');
   await page.locator('[data-replay-play]').click();await page.locator('.elo-replay-row').first().waitFor();
-  await page.locator('[data-replay-speed]').selectOption('1000');
+  await page.locator('[data-elo-replay] .game-select-trigger').click();await page.locator('[data-elo-replay] [data-game-option="1000"]').click();
   await page.waitForFunction(()=>Number(document.querySelector('[data-replay-seek]').value)>0);
+  await page.locator('[data-replay-opponent] .elo-replay-opponent-art').waitFor({timeout:15000});
   if(await page.locator('[data-replay-play]').textContent()==='Pause')await page.locator('[data-replay-play]').click();
   await page.waitForTimeout(550);
   assert.equal(await page.locator('.elo-replay-row').count(),5);
+  assert.ok(await page.locator('[data-replay-sound]').count(),'Leader audio has an explicit sound control');
+  assert.equal(await page.locator('[data-replay-seek]').evaluate(el=>el.parentElement.previousElementSibling.className),'elo-replay-clock');
   assert.match(await page.locator('[data-replay-time]').textContent(),/UTC/);
   for(const width of [390,768,1365]){
    await page.setViewportSize({width,height:1050});await bounded(page,width,'elo-replay',folder);
@@ -467,11 +470,14 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   }
   await page.goto(base+'/song/1');await page.locator('[data-elo-replay][data-song-id="1"]').waitFor();
   await page.emulateMedia({reducedMotion:'reduce'});await page.locator('[data-replay-play]').click();
-  await page.locator('[data-replay-focus]').waitFor({state:'visible'});
-  await page.locator('[data-replay-speed]').selectOption('1000');
+  await page.locator('.is-focus-track').waitFor({state:'visible'});
+  assert.equal(await page.locator('[data-replay-focus],[data-replay-opponent]').count(),0,'Song journey replaces global top five with a centred neighbourhood');
+  await page.locator('[data-elo-replay] .game-select-trigger').click();await page.locator('[data-elo-replay] [data-game-option="1000"]').click();
   await page.waitForFunction(()=>Number(document.querySelector('[data-replay-seek]').value)>0);
   assert.equal(await page.locator('[data-elo-replay]').evaluate(root=>root.getAnimations({subtree:true}).length),0,'Reduced motion skips replay animation');
-  await bounded(page,1365,'song-elo-replay',folder);
+  assert.ok(await page.locator('.is-focus-track').evaluate(row=>Math.abs(row.getBoundingClientRect().top-row.parentElement.getBoundingClientRect().top-2*parseFloat(getComputedStyle(row.parentElement).getPropertyValue('--replay-row-height')))<2),'Selected song stays in the middle lane');
+  for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'song-elo-replay',folder);}
+
   await page.locator('.elo-replay-panel').screenshot({path:folder+'/song-elo-replay.png'});
   await page.emulateMedia({reducedMotion:'no-preference'});
   assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');

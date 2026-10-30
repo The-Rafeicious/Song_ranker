@@ -291,12 +291,19 @@ Participation bars show the first unfinished whole-appearance milestone across
 the current eligible pool, recalculated each report. Existing once-tested totals
 remain explicit. Vibe coverage measures retained map selections, not repeat plays.
 
-Elo replay is one shared player (`elo_replay.js`) on Voting Stats and song pages.
-It loads saved public projections only on Play, retains fixed-height top-five
-lanes, and moves keyed artwork/name/score rows with a short reveal animation.
-Use a UTC event clock, quiet opponent/delta cues, Play/Pause, Restart, a seek
-slider and a three-pace selector (2 seconds per visible change by default).
-Skip quiet votes, retain focused-song rank/Elo outside the five, and pause when
-the document is hidden. Reduced motion skips movement and number tweening.
-Current-collection scope, legacy anchors and unavailable snapshots stay explicit;
-manual adjustments must never be labelled as points earned from an opponent.
+Elo replay uses `elo_replay.js` on Voting Stats and song pages. Larger fixed-height
+lanes keep rank moves legible. Voting Stats emphasises the leader, plays its
+looping preview through the shared preview/volume manager, and shows the opponent
+behind the latest genuine Elo gain in a right-hand artwork/title/artist card
+(stacked below on narrow screens). Sound, pause, hidden-page and exit states stop
+owned audio; missing or blocked previews never block the visual replay.
+
+Song replays replace the global top five with two tracks above and two below the
+selected song. It stays in centre lane three, with empty edge slots where needed.
+Keep only its own matches and changes to its immediate neighbourhood. Highlight
+that centred row rather than adding a duplicate focus summary or leader audio.
+
+Both players retain Play/Pause, Restart, seeking and the shared styled Pace
+listbox. Place the UTC clock immediately above the timeline. Reduced motion skips
+rank/number animation. Current-collection scope, anchors and unavailable snapshots
+remain explicit; saved manual adjustments never become opponent-earned points.
