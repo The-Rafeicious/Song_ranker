@@ -241,12 +241,19 @@ def build_elo_replay(conn, song_id=None):
         frames.append(final)
     else:
         frames[-1]["current"] = True
+    has_song_votes = song_id is None
+    if song_id is not None:
+        first_vote = next((i for i, frame in enumerate(frames)
+                           if frame["kind"] == "vote" and any(c["id"] == song_id for c in frame["changes"])), None)
+        has_song_votes = first_vote is not None
+        # Begin at the actual first available vote, not other songs' earlier moves.
+        frames = frames[first_vote:] if has_song_votes else [final]
     used = {r["id"] for f in frames for r in f["board"]}
     used.update(c["id"] for f in frames for c in f["changes"])
     if song_id in metadata:
         used.add(song_id)
     return dict(frames=frames, songs={sid:metadata[sid] for sid in used}, total_matches=len(events),
-                omitted=omitted, focus_id=song_id, focus_available=song_id is None or song_id in ratings, anchored=bool(cutoff or (settings and settings["baseline_kind"] == "legacy_anchor")), reconciled=reconciled)
+                omitted=omitted, focus_id=song_id, has_song_votes=has_song_votes, focus_available=song_id is None or song_id in ratings, anchored=bool(cutoff or (settings and settings["baseline_kind"] == "legacy_anchor")), reconciled=reconciled)
 
 
 def finite(value):

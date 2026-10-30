@@ -453,7 +453,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.goto(base+'/voting_stats');await page.locator('[data-replay-play]').waitFor();
   assert.equal(await page.locator('.elo-replay-row').count(),0,'Replay stays lazy until Play');
   await page.locator('[data-replay-play]').click();await page.locator('.elo-replay-row').first().waitFor();
-  await page.locator('[data-elo-replay] .game-select-trigger').click();await page.locator('[data-elo-replay] [data-game-option="1000"]').click();
+  await page.locator('[data-elo-replay] .game-select-trigger').click();await page.locator('[data-elo-replay] [data-game-option="2000"]').click();
   await page.waitForFunction(()=>Number(document.querySelector('[data-replay-seek]').value)>0);
   await page.locator('[data-replay-opponent] .elo-replay-opponent-art').waitFor({timeout:15000});
   if(await page.locator('[data-replay-play]').textContent()==='Pause')await page.locator('[data-replay-play]').click();
@@ -472,7 +472,15 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.emulateMedia({reducedMotion:'reduce'});await page.locator('[data-replay-play]').click();
   await page.locator('.is-focus-track').waitFor({state:'visible'});
   assert.equal(await page.locator('[data-replay-focus],[data-replay-opponent]').count(),0,'Song journey replaces global top five with a centred neighbourhood');
-  await page.locator('[data-elo-replay] .game-select-trigger').click();await page.locator('[data-elo-replay] [data-game-option="1000"]').click();
+  assert.equal(await page.locator('[data-replay-speed]').inputValue(),'3200','Normal uses the old relaxed pace');
+  assert.equal(await page.locator('[data-replay-seek]').inputValue(),'0','Song replay begins immediately at its first vote');
+  if(await page.locator('#song-audio').getAttribute('src')){
+   await page.waitForFunction(()=>!document.getElementById('song-audio').paused);
+   assert.equal(await page.locator('[data-audio="song-audio"]').getAttribute('aria-pressed'),'true','Replay reuses the cover-art player');
+   await page.locator('[data-audio="song-audio"]').click();
+   assert.ok(await page.locator('#song-audio').evaluate(a=>a.paused),'Existing cover button stops the song');
+  }
+  await page.locator('[data-elo-replay] .game-select-trigger').click();await page.locator('[data-elo-replay] [data-game-option="2000"]').click();
   await page.waitForFunction(()=>Number(document.querySelector('[data-replay-seek]').value)>0);
   assert.equal(await page.locator('[data-elo-replay]').evaluate(root=>root.getAnimations({subtree:true}).length),0,'Reduced motion skips replay animation');
   assert.ok(await page.locator('.is-focus-track').evaluate(row=>Math.abs(row.getBoundingClientRect().top-row.parentElement.getBoundingClientRect().top-2*parseFloat(getComputedStyle(row.parentElement).getPropertyValue('--replay-row-height')))<2),'Selected song stays in the middle lane');

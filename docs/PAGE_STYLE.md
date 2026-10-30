@@ -300,10 +300,15 @@ owned audio; missing or blocked previews never block the visual replay.
 
 Song replays replace the global top five with two tracks above and two below the
 selected song. It stays in centre lane three, with empty edge slots where needed.
-Keep only its own matches and changes to its immediate neighbourhood. Highlight
-that centred row rather than adding a duplicate focus summary or leader audio.
+Start at its first available vote and keep only its own matches and changes to
+its immediate neighbourhood. Highlight the centred row without a duplicate focus
+summary. Replay playback uses the existing cover-art player above, including its
+normal start/stop controls; do not create a second audio element for the song.
 
 Both players retain Play/Pause, Restart, seeking and the shared styled Pace
-listbox. Place the UTC clock immediately above the timeline. Reduced motion skips
+listbox: Quick 2 seconds, Normal 3.2 seconds and Relaxed 4.8 seconds. Changed
+top-five rows get one brief gain/loss colour pulse, skipped in reduced motion.
+The points card uses the match visibility colour, plus tournament pink for a
+first-round tournament gain, with explicit labels. Place the UTC clock immediately above the timeline. Reduced motion skips
 rank/number animation. Current-collection scope, anchors and unavailable snapshots
 remain explicit; saved manual adjustments never become opponent-earned points.

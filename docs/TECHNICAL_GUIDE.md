@@ -968,7 +968,7 @@ journey, not a reconstruction of deleted or not-yet-added catalogue membership.
 
 `elo_replay.js` lazily fetches on Play, renders keyed rank lanes, handles pause,
 restart, seek and pace, and cancels timers/fetches on removal or page exit. Song
-pages mount the same player. The default dwell is 2 seconds per visible frame;
+pages mount the same player. The default dwell is 3.2 seconds per visible frame;
 reduced-motion users get immediate position and number updates. No replay action
 writes preferences, ratings, exposure or playback settings.
 
@@ -978,6 +978,18 @@ Each player owns only its own clips; mute, pause, tab hiding and disposal cancel
 pending playback, including late native-play completion. The final frame gets a
 full dwell before audio stops. Missing previews or blocked autoplay leave visual
 playback running and expose an enable-sound control when necessary. Song journeys
-have no automatic leader audio. The latest-gain card is derived only from positive
+have no automatic global-leader audio. The latest-gain card is derived only from positive
 saved changes to board participants; it identifies the donating opponent and the
 receiving track rather than attributing rank-only moves to new points.
+
+V5.6.4.2 trims a focused timeline to its first usable own vote; unvoted songs have
+no invented prelude. The `has_song_votes` field makes that state explicit. Replay
+start/resume uses the existing `#song-audio` cover player; pause, hiding and exit
+stop only owned hero clips, including detached loop replacements and late native
+play completion. Cover-art controls remain the normal source of playback UI.
+
+Paces are Quick=2000ms, Normal=3200ms and Relaxed=4800ms. Changed top-five rows use
+one short directional colour pulse. Latest-gain cards retain the source vote's
+visibility and origin: standard orange or blind teal, with a tournament pink edge
+and first-round label when applicable. Quiet frames retain that latest gain's
+source rather than relabelling it with a later unrelated match.
