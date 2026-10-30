@@ -68,6 +68,7 @@ V5.3 has one current owner per responsibility. Use the [function index](FUNCTION
 | `static/css/developer.css`, `dev_catalog.css`, `dev_tags.css` | Shared Dev controls and system/record/Vibe, catalogue and tag compositions |
 | Remaining feature CSS | Home, search, rankings, history, gameplay and Vibe play layouts |
 | `static/js/ui.js` | Shared presentation and text policies |
+| `static/js/elo_replay.js` | Lazy public Elo replay for Voting Stats and focused song journeys |
 | `static/js/preview.js`, `gameplay.js` | Audio/volume and shared game geometry/round lifecycle |
 | `songranker/developer/navigation.json`, `templates/dev.html`, `static/js/dev_workspace.js` | Single Dev destination registry, focused shell, navigation/discard lifecycle and guide reader |
 | `static/js/site.js` | Catalogue page assembly and shared navigation/editor orchestration |

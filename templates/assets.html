@@ -37,6 +37,7 @@
 {{ js('ui') }}
 {% if game or path in ['/tournament_stats','/tournament_local_stats'] or path.endswith('/bracket') %}{{ js('gameplay') }}{% endif %}
 {{ js('preview') }}
+{% if path == '/voting_stats' or page|default('') == 'song' %}{{ js('elo_replay') }}{% endif %}
 {% if path in ['/','/game','/elo_guesser','/album_shelves'] or ranked or dev %}{{ js('special_modes') }}{% endif %}
 {% if path in ['/','/global_stats','/overall_rankings'] or profile or dev %}{{ js('overall') }}{% endif %}
 {% if page|default('') == 'search' %}{{ js('search') }}{% endif %}

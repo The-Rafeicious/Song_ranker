@@ -3478,3 +3478,48 @@ body.site-style-baseline #main .pulse-scale {
 .global-stats-page .glow-voting { --section-color:var(--voting); --surface-accent:var(--voting); }
 
 .voting-history-filter .pill.all.active { color:var(--voting); border-color:var(--voting); background:color-mix(in srgb,var(--voting) 10%,var(--panel)); }
+
+/* Shared Elo replay: fixed-height lanes make rank moves legible without layout jumps. */
+.elo-replay-panel { --section-color: var(--voting); --surface-accent: var(--voting); }
+.elo-replay-clock { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 18px; margin:18px 0; font-variant-numeric:tabular-nums; }
+.elo-replay-clock time { font-size:22px; font-weight:800; color:var(--voting); }
+.elo-replay-clock > span { color:var(--muted, #aaa); font-size:14px; }
+.elo-replay-controls { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; }
+.elo-replay-controls label { display:flex; align-items:center; gap:8px; }
+.elo-replay-controls select { width:auto; min-height:44px; }
+.elo-replay-seek { display:flex; align-items:center; gap:12px; margin:18px 0; }
+.elo-replay-seek input { min-width:0; flex:1; accent-color:var(--voting); min-height:44px; padding:0; }
+.elo-replay-stage { --replay-row-height:88px; position:relative; height:calc(5 * var(--replay-row-height)); isolation:isolate; margin-top:12px; }
+.elo-replay-row { position:absolute; top:0; left:0; width:100%; height:calc(var(--replay-row-height) - 8px); display:grid; grid-template-columns:28px 56px minmax(0,1fr) auto; gap:12px; align-items:center; padding:10px 14px; border-radius:16px; background:var(--raised, #242424); border:1px solid #ffffff12; box-sizing:border-box; }
+.elo-replay-rank { font-size:22px; font-weight:900; text-align:center; color:var(--voting); }
+.elo-replay-art { width:56px; height:56px; display:grid; place-items:center; border-radius:12px; background:#181818; color:var(--song); overflow:hidden; }
+.elo-replay-art img { width:100%; height:100%; object-fit:cover; }
+.elo-replay-copy { min-width:0; }
+.elo-replay-copy > a { display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:18px; }
+.elo-replay-meta { color:#aaa; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:5px; }
+.elo-replay-value { text-align:right; font-variant-numeric:tabular-nums; }
+.elo-replay-value strong { display:block; font-size:26px; color:var(--voting); }
+.elo-replay-delta { display:block; min-height:18px; font-size:14px; color:#aaa; }
+.elo-replay-row.is-gain .elo-replay-delta { color:var(--song); }
+.elo-replay-row.is-loss .elo-replay-delta { color:var(--danger); }
+.elo-replay-cue { height:80px; box-sizing:border-box; overflow:hidden; padding:12px 0 0; line-height:1.4; overflow-wrap:anywhere; }
+.elo-replay-cue .loss { color:var(--danger); }
+.elo-replay-focus { display:grid; grid-template-columns:minmax(0,1fr) auto auto; align-items:center; gap:20px; background:#ffffff06; border:1px solid #9cdb9130; padding:14px; border-radius:16px; margin-top:8px; }
+.elo-replay-focus[hidden] { display:none; }
+.elo-replay-focus small, .elo-replay-focus strong { display:block; text-align:right; }
+.elo-replay-focus strong { font-size:24px; font-variant-numeric:tabular-nums; color:var(--voting); }
+.elo-replay-note { margin-top:8px; }
+@media(max-width:520px) {
+  .elo-replay-clock time { font-size:18px; }
+  .elo-replay-row { grid-template-columns:20px 44px minmax(0,1fr) auto; gap:8px; padding:10px 8px; }
+  .elo-replay-art { width:44px; height:44px; border-radius:10px; }
+  .elo-replay-copy > a { font-size:16px; }
+  .elo-replay-meta { font-size:12px; }
+  .elo-replay-value strong { font-size:20px; }
+  .elo-replay-focus { gap:10px; padding:12px; }
+  .elo-replay-focus strong { font-size:20px; }
+}
+@media(prefers-reduced-motion:reduce) { .elo-replay-panel *, .elo-replay-panel *::before { animation:none!important; transition:none!important; } }
+
+.elo-replay-stage[hidden] { display:none; }
+.elo-replay-stage.is-empty { height:auto; min-height:64px; }

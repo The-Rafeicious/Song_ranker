@@ -307,6 +307,20 @@ def run_vibe():
                 songs = [dict(row) for row in conn.execute("SELECT id,album_id,disc_number,track_number FROM songs WHERE album_id IN (1,2)")]
             return {"songs": songs}
 
+        @application.app.post("/elo-replay-test-enable")
+        def enable_elo_replay():
+            """Create timestamped public votes only in the disposable browser fixture."""
+            from songranker.modes.preferences import record_preference
+            with sqlite3.connect(os.environ["SONG_RANKER_DB"]) as conn:
+                conn.row_factory = sqlite3.Row
+                conn.execute("BEGIN IMMEDIATE")
+                for index, (winner, loser) in enumerate(((1, 2), (3, 1), (2, 3), (1, 3))):
+                    event = record_preference(conn, winner, loser, "blind" if index % 2 else "standard",
+                                              {sid:dict(id=sid, title="Replay track " + str(sid)) for sid in (winner, loser)})
+                    conn.execute("UPDATE preference_events SET created_at=? WHERE id=?",
+                                 ("2026-10-30 12:0" + str(index) + ":00", event))
+            return {"song_id": 1}
+
         server = make_server("127.0.0.1", 0, application.app, threaded=True)
         thread = Thread(target=server.serve_forever, daemon=True)
         thread.start()

@@ -943,3 +943,28 @@ Library and tag tournament results have competition weight 1, and artist/album b
 `/tournament_stats` contains only library/tag brackets, including its activity counts and archives. Old selected-local-bracket links redirect to `/tournament_local_stats`, filtered by saved scope. Direct bracket workspaces remain valid for every scope and link back to the appropriate report.
 
 `/tournament_local_stats` accepts `scope=artist|album` and optional `scope_id`, or the form's `view=all|artist|album|artist:<id>|album:<id>`. All comparisons use completed local brackets only, before aggregation. Track favourites sort observed titles, win rate and match evidence, showing repeated entries, title rate, points and podiums. Artist/album comparisons pool those track facts; head-to-head scores count each valid pairing once. These are within-selection results, not cross-library strength estimates. Track, collection and pairing lists show up to 50, 25 and 20 rows; the full bracket archive pages by 20. Unfinished Blind participant identities never appear in comparisons. Compact artist/album profile panels link to their filtered report and latest replay.
+
+## Public Elo replay
+
+`GET /api/voting-replay` (optional positive `song_id`) builds a read-only snapshot
+from current catalogue identities, saved rating seeds, effective public events,
+their stored rating projections, cutoff state and explicit rating overrides.
+It never runs the current Elo formula over old votes. Events follow saved ID order;
+recorded dates are shown in UTC and unavailable dates stay unavailable. Voided
+votes are absent; corrected votes use the current effective projection. Weighted
+first-round tournament preferences are included once through the shared source.
+
+The payload contains compact top-five frames, per-event score changes, referenced
+song identities, and an optional focused track's competition rank/Elo. A sorted
+rating index updates only affected entries. Votes with no visible top-five change
+are skipped; focus replays also retain that track's matches and rank changes.
+Seed/legacy discontinuities and manual adjustments have their own frame kinds.
+An unmatched current endpoint is labelled as current saved ratings rather than
+fabricated historical evidence. This is the current collection's saved-rating
+journey, not a reconstruction of deleted or not-yet-added catalogue membership.
+
+`elo_replay.js` lazily fetches on Play, renders keyed rank lanes, handles pause,
+restart, seek and pace, and cancels timers/fetches on removal or page exit. Song
+pages mount the same player. The default dwell is 2 seconds per visible frame;
+reduced-motion users get immediate position and number updates. No replay action
+writes preferences, ratings, exposure or playback settings.

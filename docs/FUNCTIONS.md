@@ -685,15 +685,21 @@ Standard/blind voting operations, history page and detailed Voting Stats.
 | [api_matchup](../songranker/modes/voting.py#L47) | `` | Serve matchup; GET /api/matchup. |
 | [history](../songranker/modes/voting.py#L72) | `` | History; GET /history. |
 | [voting_stats](../songranker/modes/voting.py#L91) | `` | Voting stats; GET /voting_stats. |
-| [finite](../songranker/modes/voting.py#L114) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
-| [percent](../songranker/modes/voting.py#L122) | `n, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [average](../songranker/modes/voting.py#L126) | `values` | Return a rounded mean for report values, preserving unavailable for an empty sample. |
-| [saved_date](../songranker/modes/voting.py#L134) | `value` | Parse a saved result date for report display and ordering. |
-| [build_voting_stats](../songranker/modes/voting.py#L150) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
-| [build_voting_stats.identity](../songranker/modes/voting.py#L191) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
-| [build_voting_stats.result_totals](../songranker/modes/voting.py#L280) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
-| [build_voting_stats.top](../songranker/modes/voting.py#L513) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
-| [build_voting_stats.category](../songranker/modes/voting.py#L527) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
+| [voting_replay](../songranker/modes/voting.py#L115) | `` | Return a read-only public-Elo timeline, optionally focused on one track. |
+| [build_elo_replay](../songranker/modes/voting.py#L131) | `conn, song_id=None` | Build compact visible changes from saved public projections in event order. |
+| [build_elo_replay.key](../songranker/modes/voting.py#L167) | `sid` | Deterministic score/title/ID ordering for tied leaderboard positions. |
+| [build_elo_replay.change](../songranker/modes/voting.py#L171) | `sid, value` | Replace one saved rating without re-sorting the entire collection. |
+| [build_elo_replay.snapshot](../songranker/modes/voting.py#L177) | `kind, event=None, changes=(), ordinal=0` | Capture five leaders and the optional focused song's public standing. |
+| [build_elo_replay.visible](../songranker/modes/voting.py#L187) | `frame` | Ignore quiet votes while retaining score, membership and focus-rank moves. |
+| [finite](../songranker/modes/voting.py#L245) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
+| [percent](../songranker/modes/voting.py#L253) | `n, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [average](../songranker/modes/voting.py#L257) | `values` | Return a rounded mean for report values, preserving unavailable for an empty sample. |
+| [saved_date](../songranker/modes/voting.py#L265) | `value` | Parse a saved result date for report display and ordering. |
+| [build_voting_stats](../songranker/modes/voting.py#L281) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
+| [build_voting_stats.identity](../songranker/modes/voting.py#L322) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
+| [build_voting_stats.result_totals](../songranker/modes/voting.py#L411) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
+| [build_voting_stats.top](../songranker/modes/voting.py#L644) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
+| [build_voting_stats.category](../songranker/modes/voting.py#L658) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
 
 ## songranker/overall.py
 
@@ -1089,8 +1095,8 @@ Preserve public routes, asset order and profile reads across module consolidatio
 | [Assets.handle_starttag](../tests/test_architecture.py#L28) | `self, tag, attrs` | Handle starttag. |
 | [ArchitectureTests.register](../tests/test_architecture.py#L40) | `self` | Register the launcher's actual feature owners without running startup sync. |
 | [ArchitectureTests.test_all_previous_urls_methods_and_endpoint_names_are_preserved](../tests/test_architecture.py#L45) | `self` | Verify all previous urls methods and endpoint names are preserved. |
-| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L71) | `self` | Verify pages use one asset registry and last shared baseline. |
-| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L122) | `self` | Verify collection profiles share identity payloads and are read only. |
+| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L72) | `self` | Verify pages use one asset registry and last shared baseline. |
+| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L123) | `self` | Verify collection profiles share identity payloads and are read only. |
 
 ## tests/test_bulk_source_review.py
 
@@ -1283,6 +1289,24 @@ Vibe maintenance validation, stale writes and result resets.
 | [DevVibeTests.test_authenticated_edit_averages_preserves_catalogue_and_clears_rounds](../tests/test_dev_vibe.py#L29) | `self` | Verify authenticated edit averages preserves catalogue and clears rounds. |
 | [DevVibeTests.test_invalid_values_and_stale_drafts_never_partially_write](../tests/test_dev_vibe.py#L48) | `self` | Verify invalid values and stale drafts never partially write. |
 | [DevVibeTests.test_clear_map_song_and_mode_retain_four_slots_and_other_modes](../tests/test_dev_vibe.py#L62) | `self` | Verify clear map song and mode retain four slots and other modes. |
+
+## tests/test_elo_replay.py
+
+Read-only visual Elo history follows the persisted public rating projection.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [EloReplayTests.setUp](../tests/test_elo_replay.py#L16) | `self` | Create isolated disposable state and register cleanup for this test. |
+| [EloReplayTests.vote](../tests/test_elo_replay.py#L31) | `self, winner, loser, mode='standard'` | Persist a production preference and its actual projected Elo snapshots. |
+| [EloReplayTests.test_replay_uses_saved_projection_dates_metadata_and_current_endpoint_without_writes](../tests/test_elo_replay.py#L37) | `self` | Verify replay uses saved projection dates metadata and current endpoint without writes. |
+| [EloReplayTests.test_focus_retains_matches_outside_top_five_and_competition_rank](../tests/test_elo_replay.py#L56) | `self` | Verify focus retains matches outside top five and competition rank. |
+| [EloReplayTests.test_manual_adjustments_are_separate_from_opponent_points](../tests/test_elo_replay.py#L65) | `self` | Verify manual adjustments are separate from opponent points. |
+| [EloReplayTests.test_missing_snapshot_and_legacy_anchor_never_invent_a_vote](../tests/test_elo_replay.py#L77) | `self` | Verify missing snapshot and legacy anchor never invent a vote. |
+| [EloReplayTests.test_inactive_corrected_results_are_not_replayed_as_votes](../tests/test_elo_replay.py#L91) | `self` | Verify inactive corrected results are not replayed as votes. |
+| [EloReplayTests.test_api_validates_song_ids_and_does_not_hydrate_collection](../tests/test_elo_replay.py#L99) | `self` | Verify api validates song ids and does not hydrate collection. |
+| [EloReplayTests.test_focus_skips_unrelated_leader_changes_when_its_rank_is_unchanged](../tests/test_elo_replay.py#L112) | `self` | Verify focus skips unrelated leader changes when its rank is unchanged. |
+| [EloReplayTests.test_tournament_public_projections_are_included_once](../tests/test_elo_replay.py#L121) | `self` | Verify tournament public projections are included once. |
+| [EloReplayTests.test_unavailable_focused_rating_is_not_fabricated](../tests/test_elo_replay.py#L136) | `self` | Verify unavailable focused rating is not fabricated. |
 
 ## tests/test_git_database.py
 
@@ -1899,14 +1923,15 @@ Disposable served-page and Chromium integration fixtures.
 | [run_dev](../tools/browser_check.py#L19) | `` | Run served Dev DOM checks against a disposable local fixture server. |
 | [serve_dev](../tools/browser_check.py#L58) | `database, port` | Serve dev; reads songs; writes albums, artists, genres, song_artists, song_genres, songs. |
 | [serve_dev.lookup](../tools/browser_check.py#L118) | `url` | Return deterministic Apple track offers for served import/review checks. |
-| [run_vibe](../tools/browser_check.py#L146) | `` | Run vibe; reads songs, tournament_entries, tournament_matches; writes albums, artists, genres, song_artists, song_genres, song_vibe_positions, songs, tournament_entries. |
+| [run_vibe](../tools/browser_check.py#L146) | `` | Run vibe; reads songs, tournament_entries, tournament_matches; writes albums, artists, genres, preference_events, song_artists, song_genres, song_vibe_positions, songs. |
 | [run_vibe.cover](../tools/browser_check.py#L222) | `` | Serve local artwork so browser screenshots do not depend on external images. |
 | [run_vibe.tag_audio_enable](../tools/browser_check.py#L231) | `` | Tag audio enable; POST /tag-test-enable. |
 | [run_vibe.tag_audio](../tools/browser_check.py#L239) | `` | Serve silence or bounded test tones without Apple transport. |
 | [run_vibe.enable_voting_report](../tools/browser_check.py#L257) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
 | [run_vibe.enable_tournament_map](../tools/browser_check.py#L271) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
 | [run_vibe.enable_discs](../tools/browser_check.py#L299) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
-| [main](../tools/browser_check.py#L328) | `` | Run the requested disposable integration fixture. |
+| [run_vibe.enable_elo_replay](../tools/browser_check.py#L311) | `` | Create timestamped public votes only in the disposable browser fixture. |
+| [main](../tools/browser_check.py#L342) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 
@@ -1927,4 +1952,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1314 Python definitions**.
+Total: **1332 Python definitions**.

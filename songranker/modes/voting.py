@@ -111,6 +111,137 @@ HISTORY_SIZE = 10
 MODES = ("standard", "blind")
 
 
+@app.route("/api/voting-replay")
+def voting_replay():
+    """Return a read-only public-Elo timeline, optionally focused on one track."""
+    raw = request.args.get("song_id")
+    song_id = request.args.get("song_id", type=int)
+    if raw is not None and (song_id is None or song_id < 1):
+        return jsonify(error="Choose a valid song."), 400
+    conn = get_db_connection()
+    try:
+        conn.execute("BEGIN")
+        if song_id is not None and not conn.execute("SELECT 1 FROM songs WHERE id=?", (song_id,)).fetchone():
+            return jsonify(error="Song not found."), 404
+        return jsonify(build_elo_replay(conn, song_id))
+    finally:
+        conn.close()
+
+
+def build_elo_replay(conn, song_id=None):
+    """Build compact visible changes from saved public projections in event order.
+
+    Replay the current collection from persisted seeds/legacy anchors, respecting
+    cutoff, effective corrections and manual overrides. Never recalculate ratings
+    with today's Elo rules. Missing snapshots are omitted explicitly; an unmatched
+    endpoint is labelled as current saved ratings, never an opponent's points.
+    The sorted index updates only affected tracks; quiet matches emit no frame.
+    """
+    from bisect import bisect_left, insort
+    from songranker.catalog import source_sql
+
+    songs = {r["id"]: dict(r) for r in conn.execute("SELECT id,title,album_id,elo_score FROM songs")}
+    albums = {r["id"]: dict(r) for r in conn.execute("SELECT id,title,cover_url FROM albums")}
+    artists = defaultdict(list)
+    for row in conn.execute("SELECT sa.song_id,a.id,a.name FROM song_artists sa JOIN artists a ON a.id=sa.artist_id ORDER BY a.name,a.id"):
+        artists[row["song_id"]].append(dict(id=row["id"], name=row["name"]))
+    metadata = {}
+    for sid, song in songs.items():
+        album = albums.get(song["album_id"], {})
+        metadata[sid] = dict(id=sid, title=song["title"], cover_url=album.get("cover_url") or "",
+                             artist_links=artists[sid], album_link=dict(title=album["title"]) if proper_album(album) else None)
+    settings = conn.execute("SELECT * FROM preference_replay_state WHERE id=1").fetchone()
+    cutoff = settings["cutoff_event_id"] if settings else 0
+    seeds = {r["song_id"]: finite(r["elo"]) for r in conn.execute("SELECT song_id,elo FROM preference_rating_seeds")}
+    events = [dict(row) for row in conn.execute("SELECT * FROM " + source_sql(conn) + " WHERE id>? ORDER BY id", (cutoff,))]
+    # Seeds normally cover every track. Old imported records can instead retain
+    # their first known before-value; unplayed records retain their saved value.
+    first = {}
+    for event in events:
+        for role in ("winner", "loser"):
+            value = finite(event.get(role + "_before"))
+            if value is not None:
+                first.setdefault(event[role + "_id"], value)
+    ratings = {sid: seeds.get(sid) if seeds.get(sid) is not None else first.get(sid, finite(song["elo_score"])) for sid, song in songs.items()}
+    ratings = {sid: value for sid, value in ratings.items() if value is not None and finite(songs[sid]["elo_score"]) is not None}
+    def key(sid):
+        """Deterministic score/title/ID ordering for tied leaderboard positions."""
+        return (-ratings[sid], songs[sid]["title"].casefold(), sid)
+    ordered = sorted(key(sid) for sid in ratings)
+    def change(sid, value):
+        """Replace one saved rating without re-sorting the entire collection."""
+        if sid in ratings:
+            ordered.pop(bisect_left(ordered, key(sid)))
+        ratings[sid] = value
+        insort(ordered, key(sid))
+    def snapshot(kind, event=None, changes=(), ordinal=0):
+        """Capture five leaders and the optional focused song's public standing."""
+        frame = dict(kind=kind, board=[dict(id=row[2], elo=ratings[row[2]]) for row in ordered[:5]],
+                     changes=list(changes), ordinal=ordinal, event_id=event.get("id") if event else None,
+                     time=(saved_date(event.get("created_at")) or {}).get("iso") if event else None,
+                     mode=event.get("mode") if event else None, origin=event.get("origin") if event else None)
+        if song_id in ratings:
+            frame["focus"] = dict(id=song_id, elo=ratings[song_id],
+                                  rank=bisect_left(ordered, (-ratings[song_id], "", -1)) + 1)
+        return frame
+    def visible(frame):
+        """Ignore quiet votes while retaining score, membership and focus-rank moves."""
+        return frame.get("focus") if song_id is not None else [(r["id"], r["elo"]) for r in frame["board"]]
+    frames = [snapshot("start")]
+    omitted = 0
+    overrides = [dict(r) for r in conn.execute("SELECT * FROM preference_rating_overrides WHERE after_event_id>=? ORDER BY after_event_id,id", (cutoff,))]
+    steps = [(e["id"], 0, e) for e in events] + [(o["after_event_id"], 1, o) for o in overrides]
+    ordinal = 0
+    for _, adjustment, event in sorted(steps, key=lambda item: (item[0], item[1], item[2]["id"])):
+        changes = []
+        if adjustment:
+            sid, value = event["song_id"], finite(event["new_elo"])
+            if sid not in ratings or value is None:
+                continue
+            changes = [dict(id=sid, before=ratings[sid], after=value)]
+            change(sid, value)
+            frame = snapshot("adjustment", event, changes, ordinal)
+        else:
+            ordinal += 1
+            w, l = event["winner_id"], event["loser_id"]
+            values = [finite(event.get(k)) for k in ("winner_before", "winner_after", "loser_before", "loser_after")]
+            if w == l or w not in ratings or l not in ratings or any(v is None for v in values):
+                omitted += 1
+                continue
+            wb, wa, lb, la = values
+            # Surface discontinuities as anchors, without assigning them to a vote.
+            if abs(ratings[w] - wb) > 1e-7 or abs(ratings[l] - lb) > 1e-7:
+                change(w, wb)
+                change(l, lb)
+                anchor = snapshot("anchor", event, ordinal=ordinal - 1)
+                if visible(anchor) != visible(frames[-1]):
+                    frames.append(anchor)
+            change(w, wa)
+            change(l, la)
+            changes = [dict(id=w, before=wb, after=wa, opponent_id=l), dict(id=l, before=lb, after=la, opponent_id=w)]
+            frame = snapshot("vote", event, changes, ordinal)
+        focus_change = song_id is not None and any(c["id"] == song_id for c in changes)
+        if visible(frame) != visible(frames[-1]) or focus_change:
+            frames.append(frame)
+    reconciled = False
+    for sid, song in songs.items():
+        value = finite(song["elo_score"])
+        if value is not None and (sid not in ratings or abs(ratings[sid] - value) > 1e-7):
+            change(sid, value)
+            reconciled = True
+    final = snapshot("current", events[-1] if events else None, ordinal=ordinal)
+    if visible(final) != visible(frames[-1]) or frames[-1]["ordinal"] != ordinal:
+        frames.append(final)
+    else:
+        frames[-1]["current"] = True
+    used = {r["id"] for f in frames for r in f["board"]}
+    used.update(c["id"] for f in frames for c in f["changes"])
+    if song_id in metadata:
+        used.add(song_id)
+    return dict(frames=frames, songs={sid:metadata[sid] for sid in used}, total_matches=len(events),
+                omitted=omitted, focus_id=song_id, focus_available=song_id is None or song_id in ratings, anchored=bool(cutoff or (settings and settings["baseline_kind"] == "legacy_anchor")), reconciled=reconciled)
+
+
 def finite(value):
     try:
         value = float(value)
