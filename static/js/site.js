@@ -772,8 +772,9 @@
           "standard",
         ],
       ],
-    )}<div class="song-sections">${window.ProfileUI.stats([track])}<section class="panel profile-mode-panel dashboard-surface voting" id="history" style="--section-color:var(--voting)"><div class="section-head"><h2 class="voting">Recent Matches</h2><a class="voting" href="/history">History ↗</a></div><div class="profile-history-body"><div class="pill-nav" aria-label="Match filter"><button class="pill" data-history="all">All</button><button class="pill" data-history="blind">Blind</button><button class="pill" data-history="standard">Non-blind</button></div><div class="pill-nav" aria-label="Match source"><button class="pill" data-history-origin="all">All Elo matches</button><button class="pill" data-history-origin="ordinary">Voting</button><button class="pill tournament" data-history-origin="tournament">Tournament first rounds</button></div><div id="song-history"></div></div></section></div>`;
+    )}<div class="song-sections">${window.ProfileUI.stats([track])}${window.EloReplay?.panel(songId) || ""}<section class="panel profile-mode-panel dashboard-surface voting" id="history" style="--section-color:var(--voting)"><div class="section-head"><h2 class="voting">Recent Matches</h2><a class="voting" href="/history">History ↗</a></div><div class="profile-history-body"><div class="pill-nav" aria-label="Match filter"><button class="pill" data-history="all">All</button><button class="pill" data-history="blind">Blind</button><button class="pill" data-history="standard">Non-blind</button></div><div class="pill-nav" aria-label="Match source"><button class="pill" data-history-origin="all">All Elo matches</button><button class="pill" data-history-origin="ordinary">Voting</button><button class="pill tournament" data-history-origin="tournament">Tournament first rounds</button></div><div id="song-history"></div></div></section></div>`;
     renderSongHistory();
+    window.EloReplay?.mountAll(main);
     attachPlayers();
   }
   function renderSongHistory() {

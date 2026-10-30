@@ -290,3 +290,13 @@ positions and raw tables. Numeric slots use tabular figures and responsive size.
 Participation bars show the first unfinished whole-appearance milestone across
 the current eligible pool, recalculated each report. Existing once-tested totals
 remain explicit. Vibe coverage measures retained map selections, not repeat plays.
+
+Elo replay is one shared player (`elo_replay.js`) on Voting Stats and song pages.
+It loads saved public projections only on Play, retains fixed-height top-five
+lanes, and moves keyed artwork/name/score rows with a short reveal animation.
+Use a UTC event clock, quiet opponent/delta cues, Play/Pause, Restart, a seek
+slider and a three-pace selector (2 seconds per visible change by default).
+Skip quiet votes, retain focused-song rank/Elo outside the five, and pause when
+the document is hidden. Reduced motion skips movement and number tweening.
+Current-collection scope, legacy anchors and unavailable snapshots stay explicit;
+manual adjustments must never be labelled as points earned from an opponent.

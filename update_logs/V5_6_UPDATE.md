@@ -32,3 +32,14 @@ Validation: 69 focused selection, preference, adaptive-Elo and Vibe/Shelves regr
 - No schema migration or saved-result rewrite.
 
 Validation: 51 focused selection, bracket-route, tournament policy/credit, Vibe and Shelves tests pass, including entry-count semantics, both visibilities, recent scoped history, unique/full-pool draws and diagnostic parity. Full regression checks were also invoked.
+
+## V5.6.4 — Top-five and song Elo replays
+
+- Voting Stats gains an on-demand top-five replay from saved starting ratings to the current leaderboard, with a UTC vote clock, animated rank lanes, Elo changes and brief opponent cues.
+- Play/Pause, Restart, timeline seeking and Relaxed/Normal/Quick pace keep the replay readable. Normal uses two seconds per visible change; quiet votes are skipped.
+- Song pages use the same player with a persistent track rank/Elo card and its match journey, including movement outside the top five.
+- Read stored effective public projections, seeds, cutoffs and rating overrides; include first-round tournament Elo without recalculating historical votes. Current catalogue scope, unavailable snapshots and legacy anchors are explicit. Manual adjustments are not attributed to opponents.
+- Preserve semantic artwork/artist/album links, keyboard controls, reduced motion and cancellation when hidden or leaving the page. Loading and retry states remain in the player.
+- No database migration or changes to saved ratings/results.
+
+Validation: all 468 Python regressions pass, along with replay interaction/cancellation tests, existing profile and independent-shell tests, 58 served developer-page checks, structure and generated documentation checks. A saved 1,128-track/506-vote backup produced 48 visible frames with no unavailable projections and an exact current top-five endpoint. Chromium replay/screenshot coverage is included in the disposable CI fixture; a local browser was unavailable. Full repository checks were invoked.
