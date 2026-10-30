@@ -62,3 +62,11 @@ Validation: all 469 Python regressions pass, as do the JavaScript/DOM suites and
 - Slow the paces to Quick 2 seconds, Normal 3.2 seconds and Relaxed 4.8 seconds per moment. No vote or rating data changes.
 
 Validation: focused Python replay/route/statistics tests and the JavaScript/DOM suites pass, including flash/mode attribution, all three slower paces, late first votes, unvoted/single-vote songs, cover-player reuse and detached clip cleanup. Served-page checks pass (58, no errors). Full checks were invoked; updated browser coverage runs in CI because local Chromium is unavailable.
+
+## V5.6.4.3 — Quicker song journeys and steady change glows
+
+- Automatically fast-forward song replay moments where unrelated votes only move the window's absolute ranks. Keep the selected pace for the song's matches, its neighbours' matches, neighbour replacements and saved adjustments. Consecutive external shifts take at most 800 ms together; every moment remains seekable and the cover player continues uninterrupted.
+- Replace the top-five colour flash with a small, steady gain/loss glow until the next leaderboard change. Keep it stationary with reduced motion and reconstruct it consistently when seeking or resizing.
+- Continue the replay patch sequence after v5.6.4.2 (the requested v5.6.3 number already belongs to the earlier selection update). No saved vote, rating or database changes.
+
+Validation: focused replay interaction tests cover external run timing, local-vote pacing, uninterrupted hero audio, glow lifetime/clearing and reduced-motion behaviour. Full repository checks invoked before opening the PR.

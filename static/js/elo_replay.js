@@ -27,7 +27,7 @@ window.EloReplay = (() => {
     const $ = selector => root.querySelector(selector);
     const play = $("[data-replay-play]"), restart = $("[data-replay-restart]"), speed = $("[data-replay-speed]"), seek = $("[data-replay-seek]");
     const stage = $("[data-replay-stage]"), clock = $("[data-replay-time]"), step = $("[data-replay-step]"), cue = $("[data-replay-cue]"), layout = $("[data-replay-layout]"), opponent = $("[data-replay-opponent]"), soundButton = $("[data-replay-sound]"), audioStatus = $("[data-replay-audio-status]");
-    let data, index = 0, playing = false, timer, loading, request, disposed = false, generation = 0;
+    let fastDwells = [], data, index = 0, playing = false, timer, loading, request, disposed = false, generation = 0;
     let sound = true, audio = null, leaderId = null, audioSerial = 0, leaderPending = null, causes = [], shownCause, heroOwned = false, heroSerial = 0;
     const tails = new Set(), failedAudio = new Set(), heroClips = new Set();
     const rows = new Map(), animations = new Set();
@@ -175,7 +175,7 @@ window.EloReplay = (() => {
         if (!row) {
           const node = document.createElement("article");
           node.className = "elo-replay-row";
-          node.innerHTML = `<span class="elo-replay-rank"></span><a class="elo-replay-art" href="/song/${song.id}" aria-label="${esc(song.title)}">${song.cover_url ? `<img src="${esc(song.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(song)}<div class="elo-replay-value"><strong></strong><span class="elo-replay-delta"></span></div><span class="elo-replay-flash" aria-hidden="true"></span>`;
+          node.innerHTML = `<span class="elo-replay-rank"></span><a class="elo-replay-art" href="/song/${song.id}" aria-label="${esc(song.title)}">${song.cover_url ? `<img src="${esc(song.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(song)}<div class="elo-replay-value"><strong></strong><span class="elo-replay-delta"></span></div><span class="elo-replay-glow" aria-hidden="true"></span>`;
           const image = node.querySelector("img");
           if (image) image.addEventListener("error", () => { image.hidden = true; });
           row = {node, position, value: entry.elo}; rows.set(entry.id, row); stage.append(node);
@@ -193,11 +193,14 @@ window.EloReplay = (() => {
         row.node.querySelector("strong").title = String(entry.elo);
         score(row.node.querySelector("strong"), change?.before ?? row.value, entry.elo, motion, token);
         if (motion) animate(row.node, entering ? [{opacity:0, transform:`translateY(${position * height + 12}px)`}, {opacity:1, transform:`translateY(${position * height}px)`}] : [{transform:`translateY(${row.position * height}px)`}, {transform:`translateY(${position * height}px)`}]);
-        if (!songId && motion && (change || entering || row.position !== position)) {
-          const flash = row.node.querySelector(".elo-replay-flash");
-          flash.style.background = delta < 0 || (!delta && row.position < position) ? "var(--danger)" : "var(--song)";
-          animate(flash, [{opacity:.28}, {opacity:0}]);
-        }
+        const previous = data.frames[index - 1]?.board;
+        const previousPosition = previous?.findIndex(item => item.id === entry.id);
+        const previousEntry = previous?.[previousPosition];
+        const direction = change ? delta : previousEntry ? entry.elo - previousEntry.elo : 0;
+        const changed = previous && (change || previousPosition !== offset || previousEntry?.elo !== entry.elo);
+        const glow = row.node.querySelector(".elo-replay-glow");
+        glow.hidden = !!songId || !changed;
+        glow.style.color = direction < 0 || (!direction && previousPosition >= 0 && previousPosition < offset) ? "var(--danger)" : "var(--song)";
         row.position = position; row.value = entry.elo;
       });
       // Keep visual and keyboard/assistive reading order aligned after a move.
@@ -235,9 +238,9 @@ window.EloReplay = (() => {
       timer = setTimeout(() => {
         if (disposed || !root.isConnected || document.hidden) { pause(); return; }
         if (index >= data.frames.length - 1) { pause(); return; }
-        index++; render(true);
+        index++; render(!fastDwells[index]);
         schedule();
-      }, Number(speed.value));
+      }, fastDwells[index] || Number(speed.value));
     }
     async function start() {
       if (loading) return loading;
@@ -260,9 +263,28 @@ window.EloReplay = (() => {
               if (gain) cause = {...gain, mode:frame.mode, origin:frame.origin};
               previous = kept; return cause;
             });
+            // Only absolute rank moved: no vote touched the song or either
+            // adjacent window. Cap each consecutive external run at 800 ms.
+            fastDwells = data.frames.map((frame, i) => {
+              const previous = data.frames[i - 1];
+              if (!songId || !previous || frame.kind !== "vote") return 0;
+              const nearby = new Set([...previous.board, ...frame.board].map(row => row.id));
+              const sameWindow = previous.board.length === frame.board.length && frame.board.every((row, slot) => {
+                const before = previous.board[slot];
+                return before.id === row.id && before.elo === row.elo && before.slot === row.slot;
+              });
+              return sameWindow && !frame.changes.some(change => nearby.has(change.id)) ? 250 : 0;
+            });
+            for (let begin = 0; begin < fastDwells.length;) {
+              if (!fastDwells[begin]) { begin++; continue; }
+              let end = begin;
+              while (fastDwells[end]) end++;
+              const dwell = Math.min(250, 800 / (end - begin));
+              fastDwells.fill(dwell, begin, end); begin = end;
+            }
             seek.max = Math.max(0, data.frames.length - 1); seek.disabled = data.frames.length < 2;
             restart.disabled = data.frames.length < 2;
-            $("[data-replay-note]").textContent = `Current collection · Quiet votes skipped · UTC${songId ? " · Audio uses the cover player above" : ""}${data.anchored ? " · History starts at a saved anchor" : ""}${data.omitted ? ` · ${data.omitted} votes lack usable saved ratings` : ""}${data.reconciled ? " · Current endpoint includes saved rating adjustments" : ""}`;
+            $("[data-replay-note]").textContent = `Current collection · Quiet votes skipped · UTC${songId ? " · External rank shifts fast-forward · Audio uses the cover player above" : ""}${data.anchored ? " · History starts at a saved anchor" : ""}${data.omitted ? ` · ${data.omitted} votes lack usable saved ratings` : ""}${data.reconciled ? " · Current endpoint includes saved rating adjustments" : ""}`;
             render();
           } catch (error) {
             if (disposed || error.name === "AbortError") return;
