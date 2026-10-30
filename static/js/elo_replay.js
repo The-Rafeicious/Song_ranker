@@ -16,7 +16,7 @@ window.EloReplay = (() => {
     const paceId = `elo-replay-pace-${++instance}`;
     root.classList.toggle("elo-replay-is-song", !!songId);
     root.innerHTML = `<div class="section-head"><h2 class="voting">${songId ? "Elo journey" : "Top five replay"}</h2></div>
-      <div class="elo-replay-controls"><button class="btn voting" data-replay-play aria-pressed="false">Play replay</button><button class="btn" data-replay-restart disabled>Restart</button>${window.GameplayUI.select(paceId, "Pace", [{value:"3200",label:"Relaxed"},{value:"2000",label:"Normal"},{value:"1000",label:"Quick"}], "2000")}${songId ? "" : '<button class="btn" data-replay-sound aria-pressed="true">Sound on</button>'}</div>
+      <div class="elo-replay-controls"><button class="btn voting" data-replay-play aria-pressed="false">Play replay</button><button class="btn" data-replay-restart disabled>Restart</button>${window.GameplayUI.select(paceId, "Pace", [{value:"4800",label:"Relaxed"},{value:"3200",label:"Normal"},{value:"2000",label:"Quick"}], "3200")}${songId ? "" : '<button class="btn" data-replay-sound aria-pressed="true">Sound on</button>'}</div>
       ${songId ? "" : '<p class="elo-replay-audio-status" data-replay-audio-status role="status"></p>'}
       <div class="elo-replay-clock"><time data-replay-time>Starting ratings → current</time><span data-replay-step>Saved public Elo</span></div>
       <label class="elo-replay-seek">Timeline <input data-replay-seek type="range" min="0" max="0" value="0" disabled aria-label="Replay position"></label>
@@ -28,14 +28,15 @@ window.EloReplay = (() => {
     const play = $("[data-replay-play]"), restart = $("[data-replay-restart]"), speed = $("[data-replay-speed]"), seek = $("[data-replay-seek]");
     const stage = $("[data-replay-stage]"), clock = $("[data-replay-time]"), step = $("[data-replay-step]"), cue = $("[data-replay-cue]"), layout = $("[data-replay-layout]"), opponent = $("[data-replay-opponent]"), soundButton = $("[data-replay-sound]"), audioStatus = $("[data-replay-audio-status]");
     let data, index = 0, playing = false, timer, loading, request, disposed = false, generation = 0;
-    let sound = true, audio = null, leaderId = null, audioSerial = 0, leaderPending = null, causes = [], shownCause;
-    const tails = new Set(), failedAudio = new Set();
+    let sound = true, audio = null, leaderId = null, audioSerial = 0, leaderPending = null, causes = [], shownCause, heroOwned = false, heroSerial = 0;
+    const tails = new Set(), failedAudio = new Set(), heroClips = new Set();
     const rows = new Map(), animations = new Set();
     const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     function pause() {
       playing = false;
       clearTimeout(timer);
       stopAudio(false);
+      pauseHero();
       if (audioStatus && audio && sound) audioStatus.textContent = "Preview paused";
       play.textContent = data && index === data.frames.length - 1 ? "Replay again" : data ? "Play" : "Play replay";
       play.setAttribute("aria-pressed", "false");
@@ -64,6 +65,38 @@ window.EloReplay = (() => {
       const artists = song.artist_links.map(a => `<a class="artist" href="/artist/${encodeURIComponent(a.name)}" title="${esc(a.name)}">${esc(a.name)}</a>`).join(" · ");
       const album = song.album_link ? `<a class="album" href="/album/${encodeURIComponent(song.album_link.title)}" title="${esc(song.album_link.title)}">${esc(song.album_link.title)}</a>` : "";
       return `<div class="elo-replay-copy">${songLink(song)}<div class="elo-replay-meta">${artists}${album ? " · " + album : ""}</div></div>`;
+    }
+    function pauseHero() {
+      heroSerial++;
+      if (!heroOwned) return;
+      heroOwned = false;
+      const current = document.getElementById("song-audio");
+      if (current && Number(current.dataset.songId) === songId) current.dataset.replayHeroOwner = paceId;
+      // Loop replacements clone this marker, so pending tails are stopped too.
+      for (const clip of new Set([...heroClips, ...document.querySelectorAll("audio")])) {
+        if (!heroClips.has(clip) && clip.dataset.replayHeroOwner !== paceId) continue;
+        window.PreviewPlayback?.abandon?.(clip); clip.pause();
+        delete clip.dataset.replayHeroOwner;
+        if (clip.dataset.previewRetired || !clip.isConnected) window.PreviewPlayback?.release?.(clip);
+      }
+      heroClips.clear();
+    }
+    function captureHeroPlay(event) {
+      const clip = event.target;
+      if (heroOwned && clip.id === "song-audio" && Number(clip.dataset.songId) === songId) { clip.dataset.replayHeroOwner = paceId; heroClips.add(clip); }
+    }
+    document.addEventListener("play", captureHeroPlay, true);
+    function playHero() {
+      if (!songId || !playing || disposed || document.hidden) return;
+      const clip = document.getElementById("song-audio");
+      if (!clip?.getAttribute("src")) return;
+      heroOwned = true; clip.dataset.replayHeroOwner = paceId; heroClips.add(clip);
+      const token = ++heroSerial;
+      Promise.resolve(window.PreviewPlayback ? window.PreviewPlayback.play(clip) : clip.play()).then(() => {
+        if (disposed || !playing || !heroOwned) clip.pause();
+        // A later resume on the same cover player owns its own play request.
+        else if (token !== heroSerial && document.getElementById("song-audio") !== clip) clip.pause();
+      }).catch(() => { /* The shared cover player owns preview error/gesture feedback. */ });
     }
     function releaseClip(clip) {
       if (!clip) return;
@@ -119,9 +152,11 @@ window.EloReplay = (() => {
     function pointsCard() {
       if (!opponent || shownCause === causes[index]) return;
       shownCause = causes[index];
-      if (!shownCause) { opponent.innerHTML = '<h3>Latest gain</h3><p class="mode-stats-caption">The opponent behind a leaderboard gain will appear here.</p>'; return; }
+      if (!shownCause) { delete opponent.dataset.mode; delete opponent.dataset.origin; opponent.innerHTML = '<h3>Latest gain</h3><p class="mode-stats-caption">The opponent behind a leaderboard gain will appear here.</p>'; return; }
       const track = data.songs[shownCause.opponent_id], receiver = data.songs[shownCause.id];
-      opponent.innerHTML = `<h3>Latest gain</h3><a class="elo-replay-opponent-art" href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(track)}<p class="elo-replay-transfer"><b class="song">${signed(shownCause.after - shownCause.before)} Elo</b> for ${songLink(receiver)}</p>`;
+      const mode = shownCause.mode === "blind" ? "blind" : "standard", tournament = shownCause.origin === "tournament";
+      opponent.dataset.mode = mode; opponent.dataset.origin = tournament ? "tournament" : "ordinary";
+      opponent.innerHTML = `<h3>Latest gain</h3><p class="elo-replay-card-mode"><span class="${mode}">${mode === "blind" ? "Blind" : "Non-blind"}</span>${tournament ? ' · <span class="tournament">Tournament · first round</span>' : ""}</p><a class="elo-replay-opponent-art" href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(track)}<p class="elo-replay-transfer"><b class="song">${signed(shownCause.after - shownCause.before)} Elo</b> for ${songLink(receiver)}</p>`;
       opponent.querySelector("img")?.addEventListener("error", event => { event.target.hidden = true; });
     }
     function render(motion = false) {
@@ -140,7 +175,7 @@ window.EloReplay = (() => {
         if (!row) {
           const node = document.createElement("article");
           node.className = "elo-replay-row";
-          node.innerHTML = `<span class="elo-replay-rank"></span><a class="elo-replay-art" href="/song/${song.id}" aria-label="${esc(song.title)}">${song.cover_url ? `<img src="${esc(song.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(song)}<div class="elo-replay-value"><strong></strong><span class="elo-replay-delta"></span></div>`;
+          node.innerHTML = `<span class="elo-replay-rank"></span><a class="elo-replay-art" href="/song/${song.id}" aria-label="${esc(song.title)}">${song.cover_url ? `<img src="${esc(song.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(song)}<div class="elo-replay-value"><strong></strong><span class="elo-replay-delta"></span></div><span class="elo-replay-flash" aria-hidden="true"></span>`;
           const image = node.querySelector("img");
           if (image) image.addEventListener("error", () => { image.hidden = true; });
           row = {node, position, value: entry.elo}; rows.set(entry.id, row); stage.append(node);
@@ -158,6 +193,11 @@ window.EloReplay = (() => {
         row.node.querySelector("strong").title = String(entry.elo);
         score(row.node.querySelector("strong"), change?.before ?? row.value, entry.elo, motion, token);
         if (motion) animate(row.node, entering ? [{opacity:0, transform:`translateY(${position * height + 12}px)`}, {opacity:1, transform:`translateY(${position * height}px)`}] : [{transform:`translateY(${row.position * height}px)`}, {transform:`translateY(${position * height}px)`}]);
+        if (!songId && motion && (change || entering || row.position !== position)) {
+          const flash = row.node.querySelector(".elo-replay-flash");
+          flash.style.background = delta < 0 || (!delta && row.position < position) ? "var(--danger)" : "var(--song)";
+          animate(flash, [{opacity:.28}, {opacity:0}]);
+        }
         row.position = position; row.value = entry.elo;
       });
       // Keep visual and keyboard/assistive reading order aligned after a move.
@@ -217,12 +257,12 @@ window.EloReplay = (() => {
             causes = data.frames.map(frame => {
               const kept = new Set(frame.board.map(row => row.id));
               const gain = frame.kind === "vote" && (frame.changes.find(c => c.opponent_id && c.after > c.before && kept.has(c.id) && !previous.has(c.id)) || frame.changes.find(c => c.opponent_id && c.after > c.before && kept.has(c.id)));
-              if (gain) cause = gain;
+              if (gain) cause = {...gain, mode:frame.mode, origin:frame.origin};
               previous = kept; return cause;
             });
             seek.max = Math.max(0, data.frames.length - 1); seek.disabled = data.frames.length < 2;
             restart.disabled = data.frames.length < 2;
-            $("[data-replay-note]").textContent = `Current collection · Quiet votes skipped · UTC${data.anchored ? " · History starts at a saved anchor" : ""}${data.omitted ? ` · ${data.omitted} votes lack usable saved ratings` : ""}${data.reconciled ? " · Current endpoint includes saved rating adjustments" : ""}`;
+            $("[data-replay-note]").textContent = `Current collection · Quiet votes skipped · UTC${songId ? " · Audio uses the cover player above" : ""}${data.anchored ? " · History starts at a saved anchor" : ""}${data.omitted ? ` · ${data.omitted} votes lack usable saved ratings` : ""}${data.reconciled ? " · Current endpoint includes saved rating adjustments" : ""}`;
             render();
           } catch (error) {
             if (disposed || error.name === "AbortError") return;
@@ -238,9 +278,13 @@ window.EloReplay = (() => {
         play.textContent = "No saved Elo"; play.disabled = true;
         restart.disabled = true; seek.disabled = true; return;
       }
-      if (data.frames.length < 2) { play.textContent = "No changes yet"; play.disabled = true; return; }
+      if (songId && data.has_song_votes === false) {
+        cue.textContent = "This song has no saved votes to replay.";
+        play.textContent = "No votes yet"; play.disabled = true; restart.disabled = true; seek.disabled = true; return;
+      }
+      if (data.frames.length < 2 && !songId) { play.textContent = "No changes yet"; play.disabled = true; return; }
       if (index === data.frames.length - 1) { index = 0; render(); }
-      playing = true; play.textContent = "Pause"; play.setAttribute("aria-pressed", "true"); playLeader(); schedule();
+      playing = true; play.textContent = "Pause"; play.setAttribute("aria-pressed", "true"); playLeader(); playHero(); schedule();
     }
     play.addEventListener("click", () => playing ? pause() : start());
     restart.addEventListener("click", () => { pause(); index = 0; render(); });
@@ -256,7 +300,7 @@ window.EloReplay = (() => {
     document.addEventListener("visibilitychange", visibility);
     const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => { if (data && !disposed) render(); }) : null;
     observer?.observe(stage);
-    const controller = {pause, destroy() { disposed = true; generation++; pause(); stopAudio(); request?.abort(); observer?.disconnect(); document.removeEventListener("visibilitychange", visibility); for (const animation of animations) animation.cancel(); controllers.delete(root); }};
+    const controller = {pause, destroy() { disposed = true; generation++; pause(); stopAudio(); request?.abort(); observer?.disconnect(); document.removeEventListener("visibilitychange", visibility); document.removeEventListener("play", captureHeroPlay, true); for (const animation of animations) animation.cancel(); controllers.delete(root); }};
     controllers.set(root, controller); return controller;
   }
   function mountAll(container = document) {

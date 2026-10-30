@@ -116,15 +116,16 @@ class EloReplayTests(unittest.TestCase):
             self.conn.execute('UPDATE songs SET elo_score=? WHERE id=?', (value,sid))
             self.conn.execute('INSERT INTO preference_rating_seeds VALUES(?,?,0,?,9999)',(sid,value,value))
         self.conn.commit()
+        self.vote(8, 7)
         for _ in range(3):
             self.vote(1, 2)
         self.vote(6, 7)
         data = build_elo_replay(self.conn, 8)
         votes = [f for f in data['frames'] if f['kind']=='vote']
-        self.assertEqual([f['ordinal'] for f in votes], [4])
+        self.assertEqual([f['ordinal'] for f in votes], [1, 5])
         self.assertEqual(data['frames'][-1]['focus']['rank'], 8)
         self.assertTrue(all(next(r for r in f['board'] if r['id']==8)['slot']==2 for f in data['frames']))
-        self.assertTrue(all({r['id'] for r in f['board']} == {6,7,8} for f in data['frames']))
+        self.assertTrue(all({r['id'] for r in f['board']} <= {5,6,7,8} for f in data['frames']))
 
     def test_focus_window_keeps_two_above_two_below_and_centres_at_edges(self):
         self.vote(1, 2)
@@ -159,3 +160,17 @@ class EloReplayTests(unittest.TestCase):
         self.assertFalse(data['focus_available'])
         self.assertFalse(any('focus' in f for f in data['frames']))
         self.assertFalse(any(r['id']==8 for f in data['frames'] for r in f['board']))
+
+    def test_song_replay_begins_at_its_first_available_vote(self):
+        for _ in range(6):
+            self.vote(1, 2)
+        self.vote(8, 7)
+        data = build_elo_replay(self.conn, 8)
+        self.assertTrue(data['has_song_votes'])
+        self.assertEqual(data['frames'][0]['kind'], 'vote')
+        self.assertEqual(data['frames'][0]['ordinal'], 7)
+        self.assertTrue(any(c['id']==8 for c in data['frames'][0]['changes']))
+        self.assertTrue(all(f['ordinal']>=7 for f in data['frames']))
+        no_votes = build_elo_replay(self.conn, 6)
+        self.assertFalse(no_votes['has_song_votes'])
+        self.assertEqual(len(no_votes['frames']), 1)

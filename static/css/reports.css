@@ -3547,3 +3547,17 @@ body.site-style-baseline #main .elo-replay-panel .game-select-menu { background:
 body.site-style-baseline #main .elo-replay-panel .game-select-check { color:var(--voting); }
 body.site-style-baseline #main .elo-replay-panel .game-select-menu button:is(:hover,:focus-visible,[aria-selected="true"]) { background:#9cdb9117; border-color:#9cdb9150; }
 .elo-replay-controls .game-control-label { display:block; color:#aaa; font-size:14px; margin-bottom:6px; }
+
+/* One short, low-opacity pulse highlights a changed top-five row. */
+.elo-replay-flash { position:absolute; inset:0; border-radius:inherit; pointer-events:none; opacity:0; }
+.elo-replay-opponent[data-mode="blind"] { --replay-mode:var(--blind); }
+.elo-replay-opponent[data-mode="standard"] { --replay-mode:var(--standard); }
+.elo-replay-opponent[data-origin="ordinary"] { --replay-origin:var(--replay-mode); }
+.elo-replay-opponent[data-origin="tournament"] { --replay-origin:var(--tournament); }
+.elo-replay-opponent[data-mode] { border-color:var(--replay-mode); box-shadow:inset 4px 0 0 var(--replay-origin),inset -4px 0 0 var(--replay-mode); background:linear-gradient(135deg,color-mix(in srgb,var(--replay-origin) 8%,#242424),color-mix(in srgb,var(--replay-mode) 8%,#242424)); }
+.elo-replay-opponent[data-mode] h3 { color:var(--replay-origin); }
+.elo-replay-card-mode { font-size:14px; line-height:1.4; margin:0 0 14px; }
+@media(max-width:1000px) {
+  .elo-replay-card-mode { grid-column:1/-1; margin:0; }
+  .elo-replay-opponent[data-mode] .elo-replay-opponent-art { grid-row:3/5; }
+}

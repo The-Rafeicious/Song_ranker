@@ -53,3 +53,12 @@ Validation: all 468 Python regressions pass, along with replay interaction/cance
 - Preserve saved public Elo, reduced motion, seeking, read-only data and existing rating/anchor semantics. No database migration or vote rewrite.
 
 Validation: all 469 Python regressions pass, as do the JavaScript/DOM suites and 58 served-page checks. Focused coverage verifies middle-slot boundaries, near/far event filtering, opponent attribution, styled pace selection, actual shared master volume, leader changes, mute/pause/end handling and late playback cancellation. Chromium layout/audio coverage is updated for CI; a local browser remains unavailable.
+
+## V5.6.4.2 — Clearer changes and slower replay pacing
+
+- Briefly flash changed top-five rows with gain/loss colour; reduced motion skips the pulse.
+- Colour the Latest gain card by the saved match mode. First-round tournament gains combine tournament pink with Blind teal or Non-blind orange and explicit labels.
+- Begin song journeys at their first available own vote. Start/resume the existing cover-art audio player with replay playback and stop owned playback on pause, hiding, completion or exit, including loop replacements. Keep its regular cover controls.
+- Slow the paces to Quick 2 seconds, Normal 3.2 seconds and Relaxed 4.8 seconds per moment. No vote or rating data changes.
+
+Validation: focused Python replay/route/statistics tests and the JavaScript/DOM suites pass, including flash/mode attribution, all three slower paces, late first votes, unvoted/single-vote songs, cover-player reuse and detached clip cleanup. Served-page checks pass (58, no errors). Full checks were invoked; updated browser coverage runs in CI because local Chromium is unavailable.

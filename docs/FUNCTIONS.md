@@ -691,15 +691,15 @@ Standard/blind voting operations, history page and detailed Voting Stats.
 | [build_elo_replay.change](../songranker/modes/voting.py#L171) | `sid, value` | Replace one saved rating without re-sorting the entire collection. |
 | [build_elo_replay.snapshot](../songranker/modes/voting.py#L177) | `kind, event=None, changes=(), ordinal=0` | Capture five leaders or two neighbours on each side of the centred song. |
 | [build_elo_replay.visible](../songranker/modes/voting.py#L194) | `frame` | Keep only changes to the leaders or the focused song and its nearby standings. |
-| [finite](../songranker/modes/voting.py#L252) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
-| [percent](../songranker/modes/voting.py#L260) | `n, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [average](../songranker/modes/voting.py#L264) | `values` | Return a rounded mean for report values, preserving unavailable for an empty sample. |
-| [saved_date](../songranker/modes/voting.py#L272) | `value` | Parse a saved result date for report display and ordering. |
-| [build_voting_stats](../songranker/modes/voting.py#L288) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
-| [build_voting_stats.identity](../songranker/modes/voting.py#L329) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
-| [build_voting_stats.result_totals](../songranker/modes/voting.py#L418) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
-| [build_voting_stats.top](../songranker/modes/voting.py#L651) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
-| [build_voting_stats.category](../songranker/modes/voting.py#L665) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
+| [finite](../songranker/modes/voting.py#L259) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
+| [percent](../songranker/modes/voting.py#L267) | `n, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [average](../songranker/modes/voting.py#L271) | `values` | Return a rounded mean for report values, preserving unavailable for an empty sample. |
+| [saved_date](../songranker/modes/voting.py#L279) | `value` | Parse a saved result date for report display and ordering. |
+| [build_voting_stats](../songranker/modes/voting.py#L295) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
+| [build_voting_stats.identity](../songranker/modes/voting.py#L336) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
+| [build_voting_stats.result_totals](../songranker/modes/voting.py#L425) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
+| [build_voting_stats.top](../songranker/modes/voting.py#L658) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
+| [build_voting_stats.category](../songranker/modes/voting.py#L672) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
 
 ## songranker/overall.py
 
@@ -1305,9 +1305,10 @@ Read-only visual Elo history follows the persisted public rating projection.
 | [EloReplayTests.test_inactive_corrected_results_are_not_replayed_as_votes](../tests/test_elo_replay.py#L92) | `self` | Verify inactive corrected results are not replayed as votes. |
 | [EloReplayTests.test_api_validates_song_ids_and_does_not_hydrate_collection](../tests/test_elo_replay.py#L100) | `self` | Verify api validates song ids and does not hydrate collection. |
 | [EloReplayTests.test_focus_skips_distant_votes_but_retains_neighbour_changes](../tests/test_elo_replay.py#L113) | `self` | Verify focus skips distant votes but retains neighbour changes. |
-| [EloReplayTests.test_focus_window_keeps_two_above_two_below_and_centres_at_edges](../tests/test_elo_replay.py#L129) | `self` | Verify focus window keeps two above two below and centres at edges. |
-| [EloReplayTests.test_tournament_public_projections_are_included_once](../tests/test_elo_replay.py#L140) | `self` | Verify tournament public projections are included once. |
-| [EloReplayTests.test_unavailable_focused_rating_is_not_fabricated](../tests/test_elo_replay.py#L155) | `self` | Verify unavailable focused rating is not fabricated. |
+| [EloReplayTests.test_focus_window_keeps_two_above_two_below_and_centres_at_edges](../tests/test_elo_replay.py#L130) | `self` | Verify focus window keeps two above two below and centres at edges. |
+| [EloReplayTests.test_tournament_public_projections_are_included_once](../tests/test_elo_replay.py#L141) | `self` | Verify tournament public projections are included once. |
+| [EloReplayTests.test_unavailable_focused_rating_is_not_fabricated](../tests/test_elo_replay.py#L156) | `self` | Verify unavailable focused rating is not fabricated. |
+| [EloReplayTests.test_song_replay_begins_at_its_first_available_vote](../tests/test_elo_replay.py#L164) | `self` | Verify song replay begins at its first available vote. |
 
 ## tests/test_git_database.py
 
@@ -1953,4 +1954,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1333 Python definitions**.
+Total: **1334 Python definitions**.
