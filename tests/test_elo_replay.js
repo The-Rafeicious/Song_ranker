@@ -64,8 +64,9 @@ function harness(focus=false,motion=false){
  h.close();
  const moving=harness(false,true);
  moving.$('[data-replay-play]').click();await flush();assert.deepEqual(moving.audioCalls,[['play',1]]);
- moving.tick();await flush();assert.ok(moving.audioCalls.some(c=>c[0]==='retire'&&c[1]===1));assert.ok(moving.audioCalls.some(c=>c[0]==='play'&&c[1]===2));
- assert.ok(moving.animations.some(a=>a.frames[0].opacity===.28&&a.frames[1].opacity===0),'changed rows receive one brief colour pulse');
+ assert.equal([...moving.timers.values()][0].delay,3200,'global leaderboard keeps selected pace');moving.tick();await flush();assert.ok(moving.audioCalls.some(c=>c[0]==='retire'&&c[1]===1));assert.ok(moving.audioCalls.some(c=>c[0]==='play'&&c[1]===2));
+ assert.equal(moving.$('.is-featured .elo-replay-glow').hidden,false,'changed rows keep a steady glow');
+ assert.equal(moving.animations.some(a=>a.frames[0].opacity===.28),false,'no colour flash animation');
  assert.ok(moving.animations.some(a=>a.frames[0].transform==='translateY(112px)'&&a.frames[1].transform==='translateY(0px)'));
  assert.match(moving.$('[data-replay-opponent]').textContent,/\+16 Elo for Track 2/);
  assert.match(moving.$('[data-replay-opponent]').textContent,/Artist & One/);
@@ -77,7 +78,8 @@ function harness(focus=false,motion=false){
  moving.$('[data-replay-play]').click();assert.ok([...moving.root.querySelectorAll('audio')].every(a=>a.paused));
  moving.$('[data-replay-play]').click();await flush();moving.tick();await flush();
  assert.ok(moving.audioCalls.some(c=>c[0]==='play'&&c[1]===3),'leader changes follow the board');
- moving.tick();assert.ok([...moving.root.querySelectorAll('audio')].every(a=>a.paused),'audio stops after the final dwell');
+ assert.equal(moving.$('[aria-label^="Rank 2"] .elo-replay-glow').style.color,'var(--danger)','falling rank keeps the loss glow');
+ moving.tick();assert.equal(moving.$('.is-featured .elo-replay-glow').hidden,false,'final glow persists after completion');assert.ok([...moving.root.querySelectorAll('audio')].every(a=>a.paused),'audio stops after the final dwell');
  assert.equal(h.animations.length,0);moving.close();
  const tournament=harness();tournament.w.fetch=async()=>{const d=structuredClone(data);d.frames[1].origin='tournament';return{ok:true,json:async()=>d};};
  tournament.$('[data-replay-play]').click();await flush();tournament.tick();
@@ -87,6 +89,17 @@ function harness(focus=false,motion=false){
  single.$('[data-replay-play]').click();await flush();assert.equal(single.$('[data-replay-play]').textContent,'Pause');assert.equal(single.w.document.getElementById('song-audio').paused,false);single.tick();assert.equal(single.w.document.getElementById('song-audio').paused,true);single.close();
  const detached=harness(true);detached.$('[data-replay-play]').click();await flush();const oldHero=detached.w.document.getElementById('song-audio');oldHero.remove();detached.root.remove();detached.w.EloReplay.mountAll();assert.ok(oldHero.paused,'detached cover-player clips are stopped when the song panel is replaced');detached.close();
  const unvoted=harness(true);unvoted.w.fetch=async()=>{const d=focused();d.has_song_votes=false;d.frames=[d.frames[0]];return{ok:true,json:async()=>d};};unvoted.$('[data-replay-play]').click();await flush();assert.equal(unvoted.$('[data-replay-play]').textContent,'No votes yet');assert.equal(unvoted.audioCalls.length,0);unvoted.close();
+ const external=harness(true);
+ external.w.fetch=async()=>{const d=focused(),first=d.frames[1];d.frames=[first];
+  for(let i=0;i<8;i++){const frame=structuredClone(first);frame.ordinal=i+2;frame.changes=[{id:4,before:1200+i,after:1201+i,opponent_id:5}];frame.board.forEach(row=>row.rank+=i+1);d.frames.push(frame);}
+  const local=structuredClone(d.frames.at(-1));local.changes=[{id:2,before:1216,after:1217,opponent_id:5}];local.board[0].elo=1217;d.frames.push(local);const replacement=structuredClone(local);replacement.board[0].id=4;replacement.changes=[{id:4,before:1200,after:1217,opponent_id:5}];d.frames.push(replacement);const adjustment=structuredClone(replacement);adjustment.kind='adjustment';adjustment.changes=[];d.frames.push(adjustment);return{ok:true,json:async()=>d};};
+ external.$('[data-replay-play]').click();await flush();assert.equal([...external.timers.values()][0].delay,3200,'own vote keeps selected pace');
+ let externalTime=0;for(let i=0;i<8;i++){external.tick();externalTime += [...external.timers.values()][0].delay;}
+ assert.equal(externalTime,800,'long external-only runs have a bounded fast-forward duration');
+ external.$('[data-replay-speed]').value='4800';external.$('[data-replay-speed]').dispatchEvent(new external.w.Event('change'));assert.equal([...external.timers.values()][0].delay,100,'pace changes preserve fast-forward');
+ external.tick();assert.equal([...external.timers.values()][0].delay,4800,'neighbour match returns to selected pace');assert.equal(external.audioCalls.filter(c=>c[0]==='play').length,1,'external ranks do not restart hero audio');external.tick();assert.equal([...external.timers.values()][0].delay,4800,'new neighbour is shown at selected pace');external.tick();assert.equal([...external.timers.values()][0].delay,4800,'saved adjustments retain selected pace');
+ external.$('[data-replay-seek]').value=4;external.$('[data-replay-seek]').dispatchEvent(new external.w.Event('input'));assert.equal(external.$('[data-replay-seek]').value,'4','external moments remain seekable');external.close();
+ const steady=harness();steady.w.fetch=async()=>{const d=structuredClone(data);d.frames.push(structuredClone(d.frames.at(-1)));return{ok:true,json:async()=>d};};steady.$('[data-replay-play]').click();await flush();steady.tick();assert.equal(steady.$('.is-featured .elo-replay-glow').hidden,false,'reduced motion retains a stationary glow');steady.tick();steady.tick();assert.ok([...steady.root.querySelectorAll('.elo-replay-glow')].every(node=>node.hidden),'unchanged rows clear their previous glow');steady.$('[data-replay-seek]').value=0;steady.$('[data-replay-seek]').dispatchEvent(new steady.w.Event('input'));assert.ok([...steady.root.querySelectorAll('.elo-replay-glow')].every(node=>node.hidden),'seek clears future glows');steady.close();
  const integrated=harness();
  integrated.w.localStorage.setItem('siteVolume','0.31');
  Object.defineProperty(integrated.w.HTMLMediaElement.prototype,'readyState',{get(){return 4;},configurable:true});

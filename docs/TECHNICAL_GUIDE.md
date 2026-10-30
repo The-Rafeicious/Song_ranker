@@ -989,7 +989,13 @@ stop only owned hero clips, including detached loop replacements and late native
 play completion. Cover-art controls remain the normal source of playback UI.
 
 Paces are Quick=2000ms, Normal=3200ms and Relaxed=4800ms. Changed top-five rows use
-one short directional colour pulse. Latest-gain cards retain the source vote's
+a subtle stationary directional glow until the next frame. Latest-gain cards retain the source vote's
 visibility and origin: standard orange or blind teal, with a tournament pink edge
 and first-round label when applicable. Quiet frames retain that latest gain's
 source rather than relabelling it with a later unrelated match.
+
+Song replay external-only vote frames (same five identities, slots and Elo, with
+no changed participant in the previous/current window) dwell for at most 250 ms,
+with each consecutive run capped at 800 ms. Local votes, neighbour replacements,
+anchors and adjustments retain the selected pace. Seeking keeps every frame;
+fast-forward does not restart the existing song audio.

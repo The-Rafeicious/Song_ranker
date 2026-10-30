@@ -307,7 +307,9 @@ normal start/stop controls; do not create a second audio element for the song.
 
 Both players retain Play/Pause, Restart, seeking and the shared styled Pace
 listbox: Quick 2 seconds, Normal 3.2 seconds and Relaxed 4.8 seconds. Changed
-top-five rows get one brief gain/loss colour pulse, skipped in reduced motion.
+top-five rows keep a subtle stationary gain/loss glow until the next change,
+including in reduced motion. Song journeys fast-forward external-only rank shifts,
+with at most 800 ms per consecutive run; local matches keep the selected pace.
 The points card uses the match visibility colour, plus tournament pink for a
 first-round tournament gain, with explicit labels. Place the UTC clock immediately above the timeline. Reduced motion skips
 rank/number animation. Current-collection scope, anchors and unavailable snapshots
