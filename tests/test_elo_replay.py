@@ -24,7 +24,7 @@ class EloReplayTests(unittest.TestCase):
         self.conn.execute("INSERT INTO albums(id,title,cover_url) VALUES(1,'Album','cover')")
         self.conn.execute("INSERT INTO artists(id,name) VALUES(1,'Artist <unsafe>')")
         for sid in range(1, 9):
-            self.conn.execute('INSERT INTO songs(id,title,album_id) VALUES(?,?,1)', (sid, f'Song {sid}'))
+            self.conn.execute('INSERT INTO songs(id,title,album_id,audio_url) VALUES(?,?,1,?)', (sid, f'Song {sid}', f'preview-{sid}'))
             self.conn.execute('INSERT INTO song_artists VALUES(?,1)', (sid,))
         self.conn.commit()
 
@@ -51,6 +51,7 @@ class EloReplayTests(unittest.TestCase):
         self.assertEqual(data['frames'][-1]['board'], [dict(id=r['id'],elo=r['elo_score']) for r in current])
         self.assertEqual(data['songs'][7]['artist_links'][0]['name'], 'Artist <unsafe>')
         self.assertEqual(data['songs'][7]['album_link']['title'], 'Album')
+        self.assertEqual(data['songs'][7]['audio_url'], 'preview-7')
         self.assertEqual(capture(self.conn), before)
 
     def test_focus_retains_matches_outside_top_five_and_competition_rank(self):
@@ -109,14 +110,32 @@ class EloReplayTests(unittest.TestCase):
             self.assertIn('data-elo-replay', page)
             self.assertEqual(page.count('/js/elo_replay.js?'), 1)
 
-    def test_focus_skips_unrelated_leader_changes_when_its_rank_is_unchanged(self):
+    def test_focus_skips_distant_votes_but_retains_neighbour_changes(self):
+        for sid in range(1,9):
+            value = 1800 - sid * 50
+            self.conn.execute('UPDATE songs SET elo_score=? WHERE id=?', (value,sid))
+            self.conn.execute('INSERT INTO preference_rating_seeds VALUES(?,?,0,?,9999)',(sid,value,value))
+        self.conn.commit()
         for _ in range(3):
             self.vote(1, 2)
+        self.vote(6, 7)
         data = build_elo_replay(self.conn, 8)
         votes = [f for f in data['frames'] if f['kind']=='vote']
-        self.assertEqual([f['ordinal'] for f in votes], [1])
-        self.assertEqual(data['frames'][-1]['ordinal'], 3)
-        self.assertEqual(data['frames'][-1]['focus']['rank'], 2)
+        self.assertEqual([f['ordinal'] for f in votes], [4])
+        self.assertEqual(data['frames'][-1]['focus']['rank'], 8)
+        self.assertTrue(all(next(r for r in f['board'] if r['id']==8)['slot']==2 for f in data['frames']))
+        self.assertTrue(all({r['id'] for r in f['board']} == {6,7,8} for f in data['frames']))
+
+    def test_focus_window_keeps_two_above_two_below_and_centres_at_edges(self):
+        self.vote(1, 2)
+        for sid in range(1,9):
+            data = build_elo_replay(self.conn, sid)
+            for frame in data['frames']:
+                own = next(r for r in frame['board'] if r['id']==sid)
+                self.assertEqual(own['slot'], 2)
+                self.assertLessEqual(sum(r['slot']<2 for r in frame['board']), 2)
+                self.assertLessEqual(sum(r['slot']>2 for r in frame['board']), 2)
+                self.assertEqual(frame['focus']['elo'], own['elo'])
 
     def test_tournament_public_projections_are_included_once(self):
         from songranker.modes.preferences import save_tournament_preference

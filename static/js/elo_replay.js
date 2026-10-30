@@ -3,6 +3,7 @@ window.EloReplay = (() => {
   "use strict";
   const {esc} = window.SongRankerUI;
   const controllers = new Map();
+  let instance = 0;
   const number = value => Number(value).toLocaleString(undefined, {maximumFractionDigits: 1});
   const signed = value => `${value >= 0 ? "+" : "−"}${Math.abs(value) > 0 && Math.abs(value) < .01 ? "<0.01" : Math.abs(value).toLocaleString(undefined, {maximumFractionDigits: 2})}`;
   const songLink = song => `<a class="song" href="/song/${song.id}" title="${esc(song.title)}">${esc(song.title)}</a>`;
@@ -12,22 +13,30 @@ window.EloReplay = (() => {
   function mount(root) {
     if (controllers.has(root)) return controllers.get(root);
     const songId = Number(root.dataset.songId) || null;
+    const paceId = `elo-replay-pace-${++instance}`;
+    root.classList.toggle("elo-replay-is-song", !!songId);
     root.innerHTML = `<div class="section-head"><h2 class="voting">${songId ? "Elo journey" : "Top five replay"}</h2></div>
+      <div class="elo-replay-controls"><button class="btn voting" data-replay-play aria-pressed="false">Play replay</button><button class="btn" data-replay-restart disabled>Restart</button>${window.GameplayUI.select(paceId, "Pace", [{value:"3200",label:"Relaxed"},{value:"2000",label:"Normal"},{value:"1000",label:"Quick"}], "2000")}${songId ? "" : '<button class="btn" data-replay-sound aria-pressed="true">Sound on</button>'}</div>
+      ${songId ? "" : '<p class="elo-replay-audio-status" data-replay-audio-status role="status"></p>'}
       <div class="elo-replay-clock"><time data-replay-time>Starting ratings → current</time><span data-replay-step>Saved public Elo</span></div>
-      <div class="elo-replay-controls"><button class="btn voting" data-replay-play aria-pressed="false">Play replay</button><button class="btn" data-replay-restart disabled>Restart</button><label>Pace <select data-replay-speed aria-label="Replay pace"><option value="3200">Relaxed</option><option value="2000" selected>Normal</option><option value="1000">Quick</option></select></label></div>
       <label class="elo-replay-seek">Timeline <input data-replay-seek type="range" min="0" max="0" value="0" disabled aria-label="Replay position"></label>
-      <div class="elo-replay-focus" data-replay-focus hidden></div><div class="elo-replay-stage" data-replay-stage hidden aria-label="Five highest public Elo ratings"></div>
-      <div class="elo-replay-cue" data-replay-cue aria-live="polite" aria-atomic="true">${songId ? "Follow this song’s matches, Elo and rank." : "Watch the five leaders change with the saved votes."}</div>
+      <div class="elo-replay-layout" data-replay-layout hidden><div class="elo-replay-stage" data-replay-stage aria-label="${songId ? "Two tracks above and two below the selected song" : "Five highest public Elo ratings"}"></div>${songId ? "" : '<aside class="elo-replay-opponent" data-replay-opponent aria-label="Latest leaderboard points gain"></aside>'}</div>
+      <div class="elo-replay-cue" data-replay-cue aria-live="polite" aria-atomic="true">${songId ? "Follow this song and the tracks immediately around it." : "Watch the leaders change and hear the current top track."}</div>
       <p class="mode-stats-caption elo-replay-note" data-replay-note>Current collection · Quiet votes are skipped · Date/time shown in UTC</p>`;
+    root.querySelector(`#${paceId}`).setAttribute("data-replay-speed", "");
     const $ = selector => root.querySelector(selector);
     const play = $("[data-replay-play]"), restart = $("[data-replay-restart]"), speed = $("[data-replay-speed]"), seek = $("[data-replay-seek]");
-    const stage = $("[data-replay-stage]"), clock = $("[data-replay-time]"), step = $("[data-replay-step]"), cue = $("[data-replay-cue]"), focus = $("[data-replay-focus]");
-    let data, index = 0, playing = false, timer, loading, request, disposed = false, generation = 0, focusValue;
+    const stage = $("[data-replay-stage]"), clock = $("[data-replay-time]"), step = $("[data-replay-step]"), cue = $("[data-replay-cue]"), layout = $("[data-replay-layout]"), opponent = $("[data-replay-opponent]"), soundButton = $("[data-replay-sound]"), audioStatus = $("[data-replay-audio-status]");
+    let data, index = 0, playing = false, timer, loading, request, disposed = false, generation = 0;
+    let sound = true, audio = null, leaderId = null, audioSerial = 0, leaderPending = null, causes = [], shownCause;
+    const tails = new Set(), failedAudio = new Set();
     const rows = new Map(), animations = new Set();
     const reduced = () => window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     function pause() {
       playing = false;
       clearTimeout(timer);
+      stopAudio(false);
+      if (audioStatus && audio && sound) audioStatus.textContent = "Preview paused";
       play.textContent = data && index === data.frames.length - 1 ? "Replay again" : data ? "Play" : "Play replay";
       play.setAttribute("aria-pressed", "false");
     }
@@ -56,16 +65,76 @@ window.EloReplay = (() => {
       const album = song.album_link ? `<a class="album" href="/album/${encodeURIComponent(song.album_link.title)}" title="${esc(song.album_link.title)}">${esc(song.album_link.title)}</a>` : "";
       return `<div class="elo-replay-copy">${songLink(song)}<div class="elo-replay-meta">${artists}${album ? " · " + album : ""}</div></div>`;
     }
+    function releaseClip(clip) {
+      if (!clip) return;
+      window.PreviewPlayback?.abandon?.(clip);
+      clip.pause();
+      if (window.PreviewPlayback?.release) window.PreviewPlayback.release(clip);
+      else clip.remove();
+    }
+    function stopAudio(dispose = true) {
+      audioSerial++; leaderPending = null;
+      if (audio) {
+        if (dispose) releaseClip(audio);
+        else { window.PreviewPlayback?.abandon?.(audio); audio.pause(); }
+      }
+      if (dispose) { audio = null; leaderId = null; }
+      tails.forEach(releaseClip); tails.clear();
+    }
+    function playLeader() {
+      if (songId || !playing || !sound || disposed || document.hidden) return;
+      const id = data.frames[index].board[0]?.id, track = data.songs[id];
+      if (!track?.audio_url || failedAudio.has(id)) {
+        stopAudio(); audioStatus.textContent = "Leader preview unavailable"; return;
+      }
+      if (id === leaderId && audio && (!audio.paused || leaderPending === audio)) return;
+      tails.forEach(releaseClip); tails.clear();
+      if (id !== leaderId || !audio) {
+        if (audio) {
+          if (!audio.paused) { tails.add(audio); window.PreviewPlayback?.retire?.(audio); }
+          else releaseClip(audio);
+        }
+        audio = document.createElement("audio");
+        audio.preload = "none"; audio.loop = true;
+        audio.dataset.songId = id; audio.dataset.replayAudio = "true";
+        audio.src = window.PreviewPlayback?.source(id, track.audio_url) || track.audio_url;
+        root.append(audio); leaderId = id;
+      }
+      const clip = audio, token = ++audioSerial;
+      leaderPending = clip;
+      audioStatus.textContent = "Loading leader preview…";
+      Promise.resolve(window.PreviewPlayback ? window.PreviewPlayback.play(clip) : clip.play()).then(() => {
+        if (leaderPending === clip && token === audioSerial) leaderPending = null;
+        if (disposed || audio !== clip || !playing || !sound) { clip.pause(); return; }
+        if (token === audioSerial) audioStatus.textContent = "Playing current leader";
+      }).catch(error => {
+        if (leaderPending === clip && token === audioSerial) leaderPending = null;
+        if (disposed || token !== audioSerial || error.name === "AbortError") return;
+        if (error.name !== "NotAllowedError") failedAudio.add(id);
+        stopAudio();
+        audioStatus.textContent = error.name === "NotAllowedError" ? "Press Sound to enable the leader preview" : "Leader preview unavailable";
+        if (error.name === "NotAllowedError") { sound = false; soundButton.textContent = "Enable sound"; soundButton.setAttribute("aria-pressed", "false"); }
+      });
+    }
+    function pointsCard() {
+      if (!opponent || shownCause === causes[index]) return;
+      shownCause = causes[index];
+      if (!shownCause) { opponent.innerHTML = '<h3>Latest gain</h3><p class="mode-stats-caption">The opponent behind a leaderboard gain will appear here.</p>'; return; }
+      const track = data.songs[shownCause.opponent_id], receiver = data.songs[shownCause.id];
+      opponent.innerHTML = `<h3>Latest gain</h3><a class="elo-replay-opponent-art" href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(track)}<p class="elo-replay-transfer"><b class="song">${signed(shownCause.after - shownCause.before)} Elo</b> for ${songLink(receiver)}</p>`;
+      opponent.querySelector("img")?.addEventListener("error", event => { event.target.hidden = true; });
+    }
     function render(motion = false) {
       const frame = data.frames[index], token = ++generation;
-      stage.hidden = false;
+      layout.hidden = false;
       stage.classList.toggle("is-empty", !frame.board.length);
       for (const animation of animations) animation.cancel();
       animations.clear();
-      const height = parseFloat(getComputedStyle(stage).getPropertyValue("--replay-row-height")) || 88;
+      const height = parseFloat(getComputedStyle(stage).getPropertyValue("--replay-row-height")) || 112;
       const kept = new Set(frame.board.map(row => row.id));
       for (const [id, row] of rows) if (!kept.has(id)) { row.node.remove(); rows.delete(id); }
-      frame.board.forEach((entry, position) => {
+      frame.board.forEach((entry, offset) => {
+        const position = entry.slot ?? offset, standing = entry.rank ?? offset + 1;
         const song = data.songs[entry.id];
         let row = rows.get(entry.id), entering = !row;
         if (!row) {
@@ -77,8 +146,10 @@ window.EloReplay = (() => {
           row = {node, position, value: entry.elo}; rows.set(entry.id, row); stage.append(node);
         }
         const change = frame.changes.find(c => c.id === entry.id), delta = change ? change.after - change.before : 0;
-        row.node.querySelector(".elo-replay-rank").textContent = position + 1;
-        row.node.setAttribute("aria-label", `Rank ${position + 1}: ${song.title}, ${number(entry.elo)} Elo`);
+        row.node.querySelector(".elo-replay-rank").textContent = standing;
+        row.node.classList.toggle("is-featured", songId ? entry.id === songId : offset === 0);
+        row.node.classList.toggle("is-focus-track", entry.id === songId);
+        row.node.setAttribute("aria-label", `Rank ${standing}: ${song.title}, ${number(entry.elo)} Elo`);
         row.node.style.transform = `translateY(${position * height}px)`;
         row.node.classList.toggle("is-gain", delta > 0); row.node.classList.toggle("is-loss", delta < 0);
         const deltaNode = row.node.querySelector(".elo-replay-delta");
@@ -97,15 +168,18 @@ window.EloReplay = (() => {
       step.textContent = `${index + 1} / ${data.frames.length} moments · ${frame.ordinal} / ${data.total_matches} votes`;
       seek.value = index;
       seek.setAttribute("aria-valuetext", `${index + 1} of ${data.frames.length}: ${clock.textContent}`);
-      if (frame.focus) {
-        focus.hidden = false;
-        if (!focus.firstElementChild) focus.innerHTML = `${identity(data.songs[frame.focus.id])}<div><small>Rank</small><strong data-focus-rank></strong></div><div><small>Elo</small><strong data-focus-elo></strong></div>`;
-        focus.querySelector("[data-focus-rank]").textContent = `#${frame.focus.rank}`;
-        const ownChange = frame.changes.find(c => c.id === frame.focus.id);
-        score(focus.querySelector("[data-focus-elo]"), ownChange?.before ?? focusValue, frame.focus.elo, motion, token);
-        focus.querySelector("[data-focus-elo]").title = String(frame.focus.elo);
-        focusValue = frame.focus.elo;
+      stage.querySelectorAll(".elo-replay-gap").forEach(node => node.remove());
+      if (songId && frame.focus) {
+        const occupied = new Set(frame.board.map(row => row.slot));
+        for (let slot = 0; slot < 5; slot++) if (!occupied.has(slot)) {
+          const gap = document.createElement("div"); gap.className = "elo-replay-gap";
+          gap.style.transform = `translateY(${slot * height}px)`;
+          gap.textContent = slot < 2 ? "No higher track" : "No lower track";
+          gap.setAttribute("aria-hidden", "true"); stage.append(gap);
+        }
       }
+      pointsCard();
+      playLeader();
       const change = songId ? frame.changes.find(c => c.id === songId) : frame.changes.find(c => kept.has(c.id));
       if (frame.kind === "vote" && change) {
         const delta = change.after - change.before, opponent = data.songs[change.opponent_id];
@@ -122,7 +196,7 @@ window.EloReplay = (() => {
         if (disposed || !root.isConnected || document.hidden) { pause(); return; }
         if (index >= data.frames.length - 1) { pause(); return; }
         index++; render(true);
-        if (index === data.frames.length - 1) pause(); else schedule();
+        schedule();
       }, Number(speed.value));
     }
     async function start() {
@@ -138,7 +212,15 @@ window.EloReplay = (() => {
             const payload = await response.json();
             if (!Array.isArray(payload.frames) || !payload.frames.length || !payload.songs) throw Error("Invalid replay response");
             if (disposed || !root.isConnected) return;
-            data = payload; seek.max = Math.max(0, data.frames.length - 1); seek.disabled = data.frames.length < 2;
+            data = payload;
+            let cause = null, previous = new Set();
+            causes = data.frames.map(frame => {
+              const kept = new Set(frame.board.map(row => row.id));
+              const gain = frame.kind === "vote" && (frame.changes.find(c => c.opponent_id && c.after > c.before && kept.has(c.id) && !previous.has(c.id)) || frame.changes.find(c => c.opponent_id && c.after > c.before && kept.has(c.id)));
+              if (gain) cause = gain;
+              previous = kept; return cause;
+            });
+            seek.max = Math.max(0, data.frames.length - 1); seek.disabled = data.frames.length < 2;
             restart.disabled = data.frames.length < 2;
             $("[data-replay-note]").textContent = `Current collection · Quiet votes skipped · UTC${data.anchored ? " · History starts at a saved anchor" : ""}${data.omitted ? ` · ${data.omitted} votes lack usable saved ratings` : ""}${data.reconciled ? " · Current endpoint includes saved rating adjustments" : ""}`;
             render();
@@ -151,24 +233,30 @@ window.EloReplay = (() => {
       }
       if (!data || disposed) return;
       if (songId && data.focus_available === false) {
-        stage.hidden = true; focus.hidden = true;
+        layout.hidden = true;
         cue.textContent = "This song has no saved Elo to replay.";
         play.textContent = "No saved Elo"; play.disabled = true;
         restart.disabled = true; seek.disabled = true; return;
       }
       if (data.frames.length < 2) { play.textContent = "No changes yet"; play.disabled = true; return; }
       if (index === data.frames.length - 1) { index = 0; render(); }
-      playing = true; play.textContent = "Pause"; play.setAttribute("aria-pressed", "true"); schedule();
+      playing = true; play.textContent = "Pause"; play.setAttribute("aria-pressed", "true"); playLeader(); schedule();
     }
     play.addEventListener("click", () => playing ? pause() : start());
     restart.addEventListener("click", () => { pause(); index = 0; render(); });
     seek.addEventListener("input", () => { pause(); index = Number(seek.value); render(); });
     speed.addEventListener("change", () => { if (playing) schedule(); });
+    soundButton?.addEventListener("click", () => {
+      sound = !sound; soundButton.textContent = sound ? "Sound on" : "Sound off";
+      soundButton.setAttribute("aria-pressed", String(sound));
+      if (sound) { failedAudio.clear(); playLeader(); }
+      else { stopAudio(); audioStatus.textContent = ""; }
+    });
     const visibility = () => { if (document.hidden) pause(); };
     document.addEventListener("visibilitychange", visibility);
     const observer = typeof ResizeObserver !== "undefined" ? new ResizeObserver(() => { if (data && !disposed) render(); }) : null;
     observer?.observe(stage);
-    const controller = {pause, destroy() { disposed = true; generation++; pause(); request?.abort(); observer?.disconnect(); document.removeEventListener("visibilitychange", visibility); for (const animation of animations) animation.cancel(); controllers.delete(root); }};
+    const controller = {pause, destroy() { disposed = true; generation++; pause(); stopAudio(); request?.abort(); observer?.disconnect(); document.removeEventListener("visibilitychange", visibility); for (const animation of animations) animation.cancel(); controllers.delete(root); }};
     controllers.set(root, controller); return controller;
   }
   function mountAll(container = document) {

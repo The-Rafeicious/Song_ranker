@@ -43,3 +43,13 @@ Validation: 51 focused selection, bracket-route, tournament policy/credit, Vibe 
 - No database migration or changes to saved ratings/results.
 
 Validation: all 468 Python regressions pass, along with replay interaction/cancellation tests, existing profile and independent-shell tests, 58 served developer-page checks, structure and generated documentation checks. A saved 1,128-track/506-vote backup produced 48 visible frames with no unavailable projections and an exact current top-five endpoint. Chromium replay/screenshot coverage is included in the disposable CI fixture; a local browser was unavailable. Full repository checks were invoked.
+
+## V5.6.4.1 — More visible and focused Elo replays
+
+- Enlarge both replay boards and artwork; emphasise the current leader or centred selected song. Move the UTC date/time directly above the timeline and reuse the site's styled Pace listbox.
+- Voting Stats plays the current leader's looping preview with the shared master volume and crossfade system. Add Sound control, missing/blocked-preview handling and cancellation on pause, mute, hiding or leaving. Let the final frame dwell before stopping.
+- A right-hand card shows the cover, song title and artist of the opponent behind the latest leaderboard gain, plus its points recipient. It stacks below the board on phones.
+- Song journeys replace the global top five with a fixed middle song, two neighbours above and two below. Show only that song's matches and changes within its neighbourhood; leave empty slots at collection boundaries.
+- Preserve saved public Elo, reduced motion, seeking, read-only data and existing rating/anchor semantics. No database migration or vote rewrite.
+
+Validation: all 469 Python regressions pass, as do the JavaScript/DOM suites and 58 served-page checks. Focused coverage verifies middle-slot boundaries, near/far event filtering, opponent attribution, styled pace selection, actual shared master volume, leader changes, mute/pause/end handling and late playback cancellation. Chromium layout/audio coverage is updated for CI; a local browser remains unavailable.

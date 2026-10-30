@@ -21,7 +21,7 @@
 {% if page|default('') == 'search' %}{{ css('search') }}{% endif %}
 {% if ranked %}{{ css('standard_rankings') }}{% endif %}
 {% if profile %}{{ css('profiles') }}{% endif %}
-{% if game or path == '/tournament_local_stats' %}{{ css('gameplay') }}{% endif %}
+{% if game or path in ['/tournament_local_stats','/voting_stats'] or page|default('') == 'song' %}{{ css('gameplay') }}{% endif %}
 {% if path == '/vibe-map' %}{{ css('vibe_map') }}{% endif %}
 {% if path == '/history' %}{{ css('history') }}{% endif %}
 {% if report or profile or vibe or dev %}{{ css('reports') }}{% endif %}
@@ -35,7 +35,7 @@
 
 {% macro scripts() %}
 {{ js('ui') }}
-{% if game or path in ['/tournament_stats','/tournament_local_stats'] or path.endswith('/bracket') %}{{ js('gameplay') }}{% endif %}
+{% if game or path in ['/tournament_stats','/tournament_local_stats','/voting_stats'] or page|default('') == 'song' or path.endswith('/bracket') %}{{ js('gameplay') }}{% endif %}
 {{ js('preview') }}
 {% if path == '/voting_stats' or page|default('') == 'song' %}{{ js('elo_replay') }}{% endif %}
 {% if path in ['/','/game','/elo_guesser','/album_shelves'] or ranked or dev %}{{ js('special_modes') }}{% endif %}
