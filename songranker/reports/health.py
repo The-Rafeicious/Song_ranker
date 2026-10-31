@@ -281,7 +281,7 @@ def build_selection_health(conn, context=None):
     for key, label, blind in [("tournament", "Tournament · non-blind", False),
                               ("tournament_blind", "Tournament · blind", True)]:
         rows = [s for s in valid if not blind or s["id"] in preview_ids]
-        evidence = S.tournament_selection_evidence(conn, rows, blind)
+        evidence = S.tournament_selection_evidence(conn, rows, blind, scope="global")
         pool(key, label, rows, rule="entries", ready=len(rows) >= 8, **evidence)
     pool(
         "guesser",

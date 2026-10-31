@@ -178,10 +178,10 @@ class VotingHistoryTests(unittest.TestCase):
             self.assertAlmostEqual(row['probability'], weights[row['id'] - 1] / total)
         self.assertEqual(capture(self.conn), before)
 
-    def bracket(self, tid, ids, blind=False, status='in_progress'):
+    def bracket(self, tid, ids, blind=False, status='in_progress', scope='global', scope_id=None):
         """Save a bracket's unique entrants without manufacturing match results."""
-        self.conn.execute("INSERT INTO tournaments(id,size,is_blind,status,scope_type) VALUES(?,8,?,?,'global')",
-                          (tid, blind, status))
+        self.conn.execute("INSERT INTO tournaments(id,size,is_blind,status,scope_type,scope_id) VALUES(?,8,?,?,?,?)",
+                          (tid, blind, status, scope, scope_id))
         self.conn.executemany('INSERT INTO tournament_entries(tournament_id,song_id,seed) VALUES(?,?,?)',
                               [(tid, sid, seed) for seed, sid in enumerate(ids, 1)])
 
@@ -259,3 +259,80 @@ class VotingHistoryTests(unittest.TestCase):
             tid = result.json['tournament_id']
             self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM tournament_entries WHERE tournament_id=?',
                                                (tid,)).fetchone()[0], 8)
+
+    def test_local_entries_and_results_leave_competition_weights_and_draws_unchanged(self):
+        self.conn.executemany('INSERT INTO songs(id,title,audio_url) VALUES(?,?,?)',[(i,f'Track {i}','preview') for i in range(9,17)])
+        self.conn.execute('UPDATE song_details SET added_at=0')
+        self.bracket(1,[5,6],scope='global')
+        self.bracket(2,[3,4],blind=True,scope='tag',scope_id=1)
+        rows=list(map(dict,self.conn.execute('SELECT * FROM songs ORDER BY id')))
+        baseline={}
+        for scope in ('global','tag'):
+            for blind in (False,True):
+                e=S.tournament_selection_evidence(self.conn,rows,blind,scope=scope,scope_id=1 if scope=='tag' else None)
+                baseline[scope,blind]=e
+                self.assertEqual(e['recent'],[(3,4),(5,6)])
+        from songranker.reports.health import build_selection_health
+        health=build_selection_health(self.conn)
+        probabilities={p['key']:p['rows'] for p in health['pools'] if p['key'] in ('tournament','tournament_blind')}
+        self.bracket(3,[1,2,3,4],blind=True,status='completed',scope='artist',scope_id=1)
+        self.bracket(4,[1,2,3,4],blind=True,scope='album',scope_id=1)
+        self.conn.execute("INSERT INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id,winner_id,loser_id,status) VALUES(3,1,1,1,2,1,2,'completed')")
+        self.assertTrue(S.preference_evidence(self.conn)[1],'local results remain available to local seeding')
+        before=capture(self.conn)
+        for (scope,blind),expected in baseline.items():
+            actual=S.tournament_selection_evidence(self.conn,rows,blind,scope=scope,scope_id=1 if scope=='tag' else None)
+            self.assertEqual(actual,expected)
+            self.assertEqual(S.voting_weights(rows,**actual),S.voting_weights(rows,**expected))
+            for seed in range(10):
+                a=S.tournament_tracks(rows,8,random.Random(seed),**actual)
+                b=S.tournament_tracks(rows,8,random.Random(seed),**expected)
+                self.assertEqual([s['id'] for s in a],[s['id'] for s in b])
+        after=build_selection_health(self.conn)
+        self.assertEqual(probabilities,{p['key']:p['rows'] for p in after['pools'] if p['key'] in probabilities})
+        self.assertEqual(capture(self.conn),before)
+
+    def test_local_visibility_and_recency_use_only_the_selected_collection(self):
+        self.bracket(1,[1,2],blind=True,scope='artist',scope_id=1)
+        self.bracket(2,[3,4],scope='album',scope_id=1)
+        self.bracket(3,[1,3],scope='artist',scope_id=2)
+        self.bracket(4,[1,2],scope='global')
+        self.bracket(5,[1,2],blind=True,scope='tag',scope_id=1)
+        rows=list(map(dict,self.conn.execute('SELECT * FROM songs ORDER BY id')))
+        a=S.tournament_selection_evidence(self.conn,rows,True,scope='artist',scope_id=1)
+        self.assertEqual(a['counts'],{1:1,2:1})
+        self.assertEqual(a['other_counts'],{1:0,2:0,3:0,4:0})
+        self.assertEqual(a['recent'],[(1,2)])
+        b=S.tournament_selection_evidence(self.conn,rows,False,scope='album',scope_id=1)
+        self.assertEqual(b['counts'],{3:1,4:1})
+        self.assertEqual(b['recent'],[(3,4)])
+        c=S.tournament_selection_evidence(self.conn,rows,False,scope='artist',scope_id=2)
+        self.assertEqual(c['counts'],{1:1,3:1})
+        with self.assertRaises(ValueError):
+            S.tournament_selection_evidence(self.conn,rows,False,scope='artist')
+
+    def test_route_never_uses_local_seed_results_for_library_or_tag(self):
+        from songranker import services
+        from songranker.modes import tournament
+        self.conn.execute("INSERT INTO albums(id,title) VALUES(1,'Album')")
+        self.conn.execute("INSERT INTO artists(id,name) VALUES(1,'Artist')")
+        self.conn.execute("INSERT INTO genres(id,name) VALUES(1,'Tag')")
+        self.conn.execute('UPDATE songs SET album_id=1')
+        self.conn.execute('INSERT INTO song_artists SELECT id,1 FROM songs')
+        self.conn.execute('INSERT INTO song_genres SELECT id,1 FROM songs')
+        self.conn.commit()
+        path=self.conn.execute('PRAGMA database_list').fetchone()[2]
+        local={1:1,2:-1}
+        with patch.object(services,'DB_NAME',path),patch.object(S,'preference_evidence',return_value=({},local)) as evidence,patch.object(tournament,'tournament_tracks',wraps=S.tournament_tracks) as draw:
+            client=services.app.test_client()
+            for scope in ('global','tag'):
+                result=client.get('/api/generate_bracket',query_string=dict(size=8,scope=scope,scope_id=1),content_type='application/json')
+                self.assertEqual(result.status_code,200,result.json)
+                self.assertIsNone(draw.call_args.kwargs['local_strength'])
+            evidence.assert_not_called()
+            for scope in ('artist','album'):
+                result=client.get('/api/generate_bracket',query_string=dict(size=8,scope=scope,scope_id=1),content_type='application/json')
+                self.assertEqual(result.status_code,200,result.json)
+                self.assertEqual(draw.call_args.kwargs['local_strength'],local)
+                self.assertEqual(draw.call_args.kwargs['counts'],{})
+            self.assertEqual(evidence.call_count,2)

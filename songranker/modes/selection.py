@@ -398,20 +398,26 @@ def tournament_tracks(pool, size, rng=random, *, counts=None, local_strength=Non
     return chosen
 
 
-def tournament_selection_evidence(conn, pool, is_blind):
+def tournament_selection_evidence(conn, pool, is_blind, *, scope="global", scope_id=None):
     """Read entry-based visibility counts and pool-relative recent bracket groups.
 
-    Each saved entry counts once, including unfinished brackets; advancement and
-    repeated matches never inflate it. Counts span scopes, while recency retains
-    only eligible tracks so unrelated brackets do not erase a scoped pool's
-    memory. Retain eight recovery timescales in pair-equivalent appearances.
+    Each saved entry counts once, including unfinished brackets. Library/tag
+    counts and recency share competition history only. Local artist/album draws
+    read their own exact scope and identity, so local play cannot suppress
+    competition entries or age its memory. Retain the same pool-sized soft rules.
     """
+    if scope in ("global", "tag"):
+        where, params = "t.scope_type IN ('global','tag')", ()
+    elif scope in ("artist", "album") and scope_id is not None:
+        where, params = "t.scope_type=? AND t.scope_id=?", (scope, scope_id)
+    else:
+        raise ValueError("A supported tournament scope and local identity are required.")
     pool = rated_pool([dict(song) for song in pool])
     ids = {song["id"] for song in pool}
     counts, other = {}, {}
-    for row in conn.execute("""SELECT e.song_id,t.is_blind,COUNT(*)
+    for row in conn.execute(f"""SELECT e.song_id,t.is_blind,COUNT(*)
         FROM tournament_entries e JOIN tournaments t ON t.id=e.tournament_id
-        GROUP BY e.song_id,t.is_blind"""):
+        WHERE {where} GROUP BY e.song_id,t.is_blind""", params):
         target = counts if bool(row[1]) == bool(is_blind) else other
         target[row[0]] = target.get(row[0], 0) + row[2]
     other = {song["id"]: other.get(song["id"], 0) for song in pool
@@ -419,8 +425,9 @@ def tournament_selection_evidence(conn, pool, is_blind):
     recent, units = [], 0
     horizon = max(8, math.ceil(4 * math.sqrt(len(pool))))
     if ids:
-        rows = conn.execute("""SELECT tournament_id,song_id FROM tournament_entries
-            ORDER BY tournament_id DESC,seed""")
+        rows = conn.execute(f"""SELECT e.tournament_id,e.song_id FROM tournament_entries e
+            JOIN tournaments t ON t.id=e.tournament_id WHERE {where}
+            ORDER BY e.tournament_id DESC,e.seed""", params)
         for _, entries in groupby(rows, key=lambda row: row[0]):
             group = tuple(row[1] for row in entries if row[1] in ids)
             if group:
