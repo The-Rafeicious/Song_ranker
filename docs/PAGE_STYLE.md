@@ -314,3 +314,12 @@ The points card uses the match visibility colour, plus tournament pink for a
 first-round tournament gain, with explicit labels. Place the UTC clock immediately above the timeline. Reduced motion skips
 rank/number animation. Current-collection scope, anchors and unavailable snapshots
 remain explicit; saved manual adjustments never become opponent-earned points.
+
+Song pages retain the shared hero, key metrics, Vibe/Overall cards and mode-panel
+order. Extra per-song evidence sits inside its existing mode record: compact
+joined counts, shared rate bars and closed native disclosures for recent results
+or opponents. Preserve covers and artist/album links on named opponents. Explain
+raw completed results versus competition credit and unavailable history. Mode
+Elo ranks use the full rated song cohort with competition ties. Background detail
+loading, retry and timeout must preserve the hero player and replay. Collection
+profiles keep their existing summaries.

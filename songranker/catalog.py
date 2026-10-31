@@ -696,3 +696,26 @@ def tournament_appearances(conn):
             counts[row["mode"]] += row["appearances"]
             counts["public"] += row["appearances"]
     return result
+
+
+@app.route('/api/song/<int:song_id>/stats')
+def song_stats(song_id):
+    """Build bounded per-mode song details in one read-only database snapshot."""
+    from songranker.modes.voting import song_voting_details
+    from songranker.modes.trivia import song_trivia_details
+    from songranker.modes.tournament import song_tournament_details
+    from songranker.modes.guesser import song_guesser_details
+    from songranker.modes.shelves import song_shelves_details
+    conn = get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        if not conn.execute('SELECT 1 FROM songs WHERE id=?',(song_id,)).fetchone():
+            return jsonify(message='Song not found.'),404
+        data = dict(song_id=song_id, voting=song_voting_details(conn,song_id), trivia=song_trivia_details(conn,song_id),
+                    tournament=song_tournament_details(conn,song_id),guesser=song_guesser_details(conn,song_id),shelves=song_shelves_details(conn,song_id))
+        ids = {r['id'] for r in data['voting']['opponents_list']}
+        ids.update(r['opponent_id'] for r in data['guesser']['recent'])
+        data['songs'] = {sid:display_song(conn,sid) for sid in ids if sid is not None}
+        return jsonify(data)
+    finally:
+        conn.close()
