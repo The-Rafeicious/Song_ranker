@@ -149,6 +149,13 @@ async function bounded(page,width,phase,folder){
    if(kind==='song'){
     assert.equal(await page.locator('#profile-vibe .vibe-song-matches .mode-stats-row').count(),2);
     assert.equal(await page.locator('#profile-vibe .vibe-song-identity').count(),0,'No repeated profile identity');
+    await page.waitForFunction(()=>document.querySelectorAll('[data-song-details]').length>0&&!document.querySelector('[data-song-details][aria-busy]'));
+    assert.equal(await page.locator('[data-song-details-retry]').count(),0,'Per-song evidence loads from the real API');
+    assert.equal(await page.locator('.profile-song-disclosure').count(),5,'Each mode keeps a bounded evidence disclosure');
+    assert.equal(await page.locator('.profile-song-disclosure[open]').count(),0,'Long histories start collapsed');
+    await page.locator('#voting-record').screenshot({path:folder+'/song-voting-details-desktop.png'});
+    await page.locator('.profile-song-disclosure').evaluateAll(nodes=>nodes.forEach(node=>node.open=true));
+
    }else{
     assert.equal(await page.locator('#profile-vibe .vibe-mini-dot').count(),count);
     assert.equal(await page.locator('#profile-vibe .vibe-mini-map').count(),4);
@@ -165,6 +172,7 @@ async function bounded(page,width,phase,folder){
      assert.ok(Math.max(...plotOffsets)-Math.min(...plotOffsets)<2,'Aligned map captions at '+width);
     }
    }
+   if(kind==='song'){await page.setViewportSize({width:390,height:844});await page.locator('#voting-record').screenshot({path:folder+'/song-voting-details-phone.png'});}
    await page.setViewportSize({width:390,height:844});await page.locator('#profile-vibe').screenshot({path:folder+'/profile-'+kind+'-phone.png'});
   }
   for(const path of ['/song/7','/album/Unmapped%20album','/artist/Unmapped%20artist','/tag/Unmapped%20tag']){

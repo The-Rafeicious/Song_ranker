@@ -492,3 +492,61 @@ body.profile-page #main #history .pill-nav {
 
 .local-leader { margin:16px 0; }
 .local-leader h3 { margin:0 0 10px; }
+
+/* Extra song evidence stays within the existing mode-record composition. */
+body.profile-page #main .profile-song-details {
+  border-top: 1px solid color-mix(in srgb, var(--section-color) 22%, transparent);
+  margin-top: 20px;
+  padding-top: 20px;
+  min-width: 0;
+}
+body.profile-page #main .profile-detail-note {
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+body.profile-page #main .profile-song-disclosure { margin-top: 18px; }
+body.profile-page #main .profile-song-disclosure summary {
+  min-height: 44px;
+  padding: 10px 0;
+  cursor: pointer;
+  color: var(--section-color);
+}
+body.profile-page #main .profile-song-disclosure summary:focus-visible {
+  outline: 2px solid var(--section-color);
+  outline-offset: 3px;
+}
+body.profile-page #main .profile-result-list { list-style: none; padding: 0; margin: 0; }
+body.profile-page #main .profile-result-list > li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(80px, auto);
+  align-items: center;
+  gap: 8px 16px;
+  padding: 14px 0;
+  border-top: 1px solid #ffffff12;
+  overflow-wrap: anywhere;
+}
+body.profile-page #main .profile-result-list > li > strong {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+body.profile-page #main .profile-result-list small {
+  display: block;
+  color: var(--muted);
+  font-size: 14px;
+  margin-top: 5px;
+  line-height: 1.5;
+}
+body.profile-page #main .profile-opponent { display: flex; align-items: center; gap: 12px; min-width: 0; }
+body.profile-page #main .profile-opponent > a { flex: 0 0 52px; }
+body.profile-page #main .profile-opponent :is(img, .profile-detail-art) {
+  display: grid; place-items: center; width: 52px; height: 52px;
+  border-radius: 10px; object-fit: cover; background: #242424;
+}
+body.profile-page #main .profile-opponent-copy { min-width: 0; }
+body.profile-page #main .profile-opponent-copy > a {
+  display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+body.profile-page #main .profile-opponent-copy .metadata { font-size: 14px; }
+body.profile-page #main .profile-result-context { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 14px; }

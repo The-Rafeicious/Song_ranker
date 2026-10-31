@@ -1311,3 +1311,25 @@ def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
     return dict(depth=depth,distributions=distributions,activity=activity,scope=scope,scope_id=scope_id,view=f'{scope}:{scope_id}' if scope_id is not None else scope,choices=choices,
                 summary=dict(brackets=len(brackets),completed=len(finished),matches=len(decided),tracks=len(track_rows),points=sum(number(m.get('points_awarded')) or 0 for m in decided)),
                 tracks=track_rows,groups=groups,pairs=head_to_head,archive=brackets[(page-1)*20:page*20],page=page,pages=pages)
+
+
+def song_tournament_details(conn, song_id):
+    """Expose raw finished appearances separately from scope-weighted credit."""
+    brackets = {r['id']:dict(r) for r in conn.execute("SELECT t.* FROM tournaments t WHERE t.status='completed' AND (EXISTS (SELECT 1 FROM tournament_entries e WHERE e.tournament_id=t.id AND e.song_id=?) OR EXISTS (SELECT 1 FROM tournament_matches m WHERE m.tournament_id=t.id AND (? IN (m.song1_id,m.song2_id,m.winner_id,m.loser_id))) OR ? IN (t.champion_id,t.runner_up_id,t.third_place_id,t.fourth_place_id))", (song_id,song_id,song_id))}
+    matches = defaultdict(list)
+    for raw in conn.execute("SELECT m.* FROM tournament_matches m JOIN tournaments t ON t.id=m.tournament_id WHERE t.status='completed' AND (? IN (m.song1_id,m.song2_id,m.winner_id,m.loser_id))", (song_id,)):
+        m = dict(raw)
+        if recorded_result(m):
+            matches[m['tournament_id']].append(m)
+    rows = []
+    for tid,t in brackets.items():
+        played = matches[tid]
+        losses = [m for m in played if m['loser_id']==song_id and m['match_type']=='bracket']
+        finish = next((name for key,name in [('champion_id','1st'),('runner_up_id','2nd'),('third_place_id','3rd'),('fourth_place_id','4th')] if t[key]==song_id), None)
+        exit_match = min(losses,key=lambda m:m['round_number']) if losses else None
+        rows.append(dict(id=tid,date=saved_time(t['completed_at'] or t['timestamp']),scope=t['scope_type'],mode='blind' if t['is_blind'] else 'standard',size=t['size'],
+                         finish=finish or ('Out in '+stage_name(t['size'],exit_match['round_number']) if exit_match else 'Finish unavailable'),
+                         wins=sum(m['winner_id']==song_id for m in played),losses=sum(m['loser_id']==song_id for m in played),first_exit=bool(exit_match and exit_match['round_number']==1)))
+    rows.sort(key=lambda r:((r['date'] or {}).get('seconds',float('-inf')),r['id']), reverse=True)
+    return dict(completed=len(rows),first_exits=sum(r['first_exit'] for r in rows),
+                groups=[dict(key=key,entries=sum(r['scope'] in scopes for r in rows),wins=sum(r['wins'] for r in rows if r['scope'] in scopes),losses=sum(r['losses'] for r in rows if r['scope'] in scopes)) for key,scopes in [('competition',('global','tag')),('local',('artist','album'))]], recent=rows[:5])

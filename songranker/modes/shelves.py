@@ -878,3 +878,20 @@ def build_shelves_stats(conn, now=None, history_page=1, album_page=1, selected=N
         "shelves",
         now=now,
     )
+
+
+def song_shelves_details(conn, song_id):
+    """Grade complete eligible rounds before selecting this song's saved item."""
+    groups = defaultdict(list)
+    for raw in conn.execute(f"SELECT i.*,r.completed_at,r.rules_version FROM album_shelf_items i JOIN album_shelf_rounds r ON r.id=i.round_id WHERE {shelf_report_filter(conn)} AND EXISTS (SELECT 1 FROM album_shelf_items own WHERE own.round_id=r.id AND own.song_id=?) ORDER BY r.completed_at DESC,r.id DESC,i.item_slot", (song_id,)):
+        groups[raw['round_id']].append(dict(raw))
+    rows = []
+    for rid,items in groups.items():
+        valid = can_grade(items, items[0]['rules_version'])
+        item = next(i for i in items if i['song_id']==song_id)
+        grade = next((g for g in grade_shelf(items)['items'] if g['item_slot']==item['item_slot']), None) if valid else None
+        rows.append(dict(id=rid,date=saved_date(items[0]['completed_at']),grade=grade))
+    graded = [r['grade'] for r in rows if r['grade'] is not None]
+    return dict(rounds=len(rows),graded=len(graded),unknown=len(rows)-len(graded),
+                perfect=sum(g['points']==g['available'] for g in graded),wrong_album=sum(not g['album_correct'] for g in graded),
+                recent=rows[:5])
