@@ -161,6 +161,15 @@ async function bounded(page,width,phase,folder){
     assert.equal(await page.locator('#profile-vibe .vibe-mini-map').count(),4);
     assert.equal(await page.locator('#profile-vibe .vibe-mini-dot').first().evaluate(e=>e.getBoundingClientRect().width),11);
    }
+   if(['artist','album'].includes(kind)){
+    await page.waitForFunction(()=>document.querySelectorAll('[data-song-details]').length>0&&!document.querySelector('[data-song-details][aria-busy]'));
+    assert.equal(await page.locator('[data-song-details-retry]').count(),0,kind+' mode evidence loads');
+    assert.equal(await page.locator('.profile-song-disclosure').count(),5,kind+' has expanded mode records');
+    assert.match(await page.locator('[data-song-details="voting"]').textContent(),/Within-collection matches/);
+    assert.equal(await page.locator('.profile-song-disclosure[open]').count(),0,kind+' histories start collapsed');
+    await page.locator('.profile-song-disclosure').evaluateAll(nodes=>nodes.forEach(node=>node.open=true));
+    await page.locator('#voting-record').screenshot({path:folder+'/'+kind+'-voting-details-desktop.png'});
+   }
    await page.locator('#profile-vibe').screenshot({path:folder+'/profile-'+kind+'-desktop.png'});
    for(const width of [320,390,768,1365]){
     await page.setViewportSize({width,height:900});await bounded(page,width,'profile-'+kind,folder);
@@ -172,6 +181,7 @@ async function bounded(page,width,phase,folder){
      assert.ok(Math.max(...plotOffsets)-Math.min(...plotOffsets)<2,'Aligned map captions at '+width);
     }
    }
+   if(['artist','album'].includes(kind)){await page.setViewportSize({width:390,height:844});await page.locator('#voting-record').screenshot({path:folder+'/'+kind+'-voting-details-phone.png'});}
    if(kind==='song'){await page.setViewportSize({width:390,height:844});await page.locator('#voting-record').screenshot({path:folder+'/song-voting-details-phone.png'});}
    await page.setViewportSize({width:390,height:844});await page.locator('#profile-vibe').screenshot({path:folder+'/profile-'+kind+'-phone.png'});
   }

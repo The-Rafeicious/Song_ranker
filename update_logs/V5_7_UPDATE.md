@@ -20,3 +20,13 @@ Validation: all 476 Python regressions, the JavaScript suites (including 180 pro
 - No saved-result, rating or database changes.
 
 Validation: focused backend/API and profile regressions cover knockout stages and opponent links, podium/playoff separation, unavailable opponents and unchanged player behaviour. Full repository checks invoked before the PR.
+
+## V5.7.2 — Expanded artist and album mode records
+
+- Bring the richer song-page mode panels to artist and album profiles, keeping the existing wide layout, semantic styling, Vibe/Overall cards, local-tournament box, track paging and preview queue.
+- Add voting form, recorded Elo movement and frequent external opponents; recall trends and timing; tournament entries, finishes and linked knockout opponents; frozen-Elo Guesser difficulty/choice records; and recent Shelves results. Recent rows identify the collection song with artwork and metadata links. Longer lists start collapsed.
+- Pool full-history counts and timing samples across distinct current tracks. Keep internal matches explicit: voting track appearances may count both sides, Guesser comparisons count once, and tournament/Shelves track results remain distinct from brackets/rounds. Use the latest ten distinct voting events before pooling appearances.
+- Reuse mode-owned builders and one snapshot per profile, with bounded display metadata and no per-track requests. Support empty collections and catalogues beyond 1,000 tracks. Loading/retry/cancellation preserve the preview player. Tags retain their existing summaries.
+- No saved-result, rating, rule or database changes.
+
+Validation: all 481 Python regressions, JavaScript suites (including 200 profile assertions), 58 served developer-page checks, structure and generated function documentation pass. Focused checks cover artist/album scope, internal pairs, field-weighted recall, source-song identities, knockout attribution, full-round grading, empty/missing profiles, 1,302-track cohorts and uninterrupted preview queues. Saved-backup checks also verify 199-track artist and 31-track album aggregates. Full checks reached Chromium integration; responsive layout/screenshots run in CI because local Chromium is unavailable.
