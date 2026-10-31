@@ -715,6 +715,7 @@ def song_stats(song_id):
                     tournament=song_tournament_details(conn,song_id),guesser=song_guesser_details(conn,song_id),shelves=song_shelves_details(conn,song_id))
         ids = {r['id'] for r in data['voting']['opponents_list']}
         ids.update(r['opponent_id'] for r in data['guesser']['recent'])
+        ids.update(r['exit']['opponent_id'] for r in data['tournament']['recent'] if r['exit'])
         data['songs'] = {sid:display_song(conn,sid) for sid in ids if sid is not None}
         return jsonify(data)
     finally:

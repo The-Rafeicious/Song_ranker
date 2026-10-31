@@ -12,3 +12,11 @@
 - No database migration or changes to saved rounds, ratings, rules or backups.
 
 Validation: all 476 Python regressions, the JavaScript suites (including 180 profile assertions), 58 served developer-page checks, structure and generated function documentation checks pass. Focused coverage verifies full-history aggregation, corrections, field eligibility, frozen Elo, finished/local brackets, whole-round Shelves exclusions, middle-ranked songs, metadata escaping, retry/stale responses and uninterrupted hero playback. A saved 1,128-song backup also passed scoped detail reads. Full checks reached Chromium integration; browser layout/screenshots run in CI because local Chromium is unavailable.
+
+## V5.7.1 — Tournament knockout opponents
+
+- Recent tournament finishes on song pages show who knocked the song out and the round, such as Quarter-finals or Round of 16. Include opponent artwork and linked song, artist and album metadata within the existing finish row.
+- Preserve final placement and bracket links. Third-place playoffs do not replace the semi-final knockout opponent; winners have no invented exit. Missing opponent identities remain unavailable and unfinished brackets stay hidden.
+- No saved-result, rating or database changes.
+
+Validation: focused backend/API and profile regressions cover knockout stages and opponent links, podium/playoff separation, unavailable opponents and unchanged player behaviour. Full repository checks invoked before the PR.
