@@ -346,13 +346,14 @@ Trivia excludes the previous track when alternatives exist. Guesser retains its
 previous-pair multiplier 0.25 and the relative gap-target kernel (0.05 floor,
 0.95 target weight, width 0.10). Tournament draws entries without replacement using the same soft recency and
 own-track visibility adjustment as voting. Exposure is one entry per bracket,
-split by Blind/Non-blind across scopes, including unfinished brackets. Advancement
+split by Blind/Non-blind within competition history or an exact local collection,
+including unfinished brackets. Advancement
 and round counts do not inflate exposure. Recency groups contain eligible tracks
 from recent brackets; group size advances the clock in pair-equivalent units,
 and unrelated scoped brackets do not erase a collection's recent history. The
 history horizon grows with the eligible pool. Non-preview tracks remain exempt
 from visibility balancing. A full-pool bracket can still select every entry.
-Diagnostics use these same initial entry weights. Tournament then uses the retained relative noisy seeding/champion spread. Shelves chooses
+Diagnostics use the same competition-only initial entry weights. Tournament retains relative noisy Elo seeding; local result adjustments apply only to local artist/album brackets. Shelves chooses
 albums by exposure and recency with capacity lookahead, then distributes ten
 tracks and draws within each album by exposure. All prepared questions remain
 frozen even when the pool changes later.
@@ -1063,3 +1064,19 @@ remain capped at five and include current source-song metadata; history totals
 are uncapped. ProfileUI reuses the song detail composition in the existing artist
 and album mode panels; queue playback, Vibe/Overall and local-bracket panels stay
 in their established owners. No collection replay or new asset is introduced.
+
+## Tournament selection isolation (V5.7.3)
+
+Library and tag tournament draws share only library/tag entry history. Local
+artist/album entries, whether finished or unfinished, do not affect competition
+exposure support, Blind/Non-blind balance, recency penalties or the age of that
+recency memory. Local draws use their own exact scope type and collection ID.
+`tournament_selection_evidence` takes explicit scope context and filters both
+entry-count and recent-group queries before applying the unchanged soft weights.
+Selection health shows the same competition-only probabilities.
+
+The generation route also omits local-strength evidence from library/tag seed
+ordering. Local result evidence remains available for seeding local brackets;
+public Elo exchange policy and ordinary voting behaviour are unchanged. Current
+queries exclude historical local entries immediately, with no result deletion,
+reset or migration. Existing library/tag play still affects its own selection.

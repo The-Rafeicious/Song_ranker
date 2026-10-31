@@ -30,3 +30,12 @@ Validation: focused backend/API and profile regressions cover knockout stages an
 - No saved-result, rating, rule or database changes.
 
 Validation: all 481 Python regressions, JavaScript suites (including 200 profile assertions), 58 served developer-page checks, structure and generated function documentation pass. Focused checks cover artist/album scope, internal pairs, field-weighted recall, source-song identities, knockout attribution, full-round grading, empty/missing profiles, 1,302-track cohorts and uninterrupted preview queues. Saved-backup checks also verify 199-track artist and 31-track album aggregates. Full checks reached Chromium integration; responsive layout/screenshots run in CI because local Chromium is unavailable.
+
+## V5.7.3 — Isolate local tournament selection history
+
+- Fix local artist/album tournament entries leaking into library/tag exposure support, visibility balance and recent-bracket penalties. Library and tag draws now use competition history only, including when reading older local brackets.
+- Local artist and album draws keep adaptive selection based on their own exact collection and scope. Retain the same pool-sized memory, positive soft weights, unique entries and small/full-pool behaviour.
+- Local match results no longer adjust library/tag seed ordering. Keep that result-based adjustment for local brackets. Selection diagnostics match the corrected competition evidence.
+- Existing saved brackets, results, ratings and Elo policy stay intact. No reset, hard quota, song-specific boost or database migration is needed.
+
+Validation: all 484 Python regressions, JavaScript suites, 58 served developer-page checks, structure and generated function documentation pass. The 45 focused selection/scope/credit/Vibe checks include unchanged library/tag weights, diagnostics and seeded draws after local entries/results, exact local collection isolation, visibility balance and production seed routing. Full checks reached Chromium integration; browser validation runs in CI because local Chromium is unavailable.
