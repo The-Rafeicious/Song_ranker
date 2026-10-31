@@ -58,7 +58,10 @@ Shared catalogue projections, cross-mode results and Elo history queries.
 | [summary](../songranker/catalog.py#L626) | `conn` | Count effective preference matches by mode and origin for the history summary. |
 | [page](../songranker/catalog.py#L644) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
 | [tournament_appearances](../songranker/catalog.py#L680) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
-| [song_stats](../songranker/catalog.py#L702) | `song_id` | Build bounded per-mode song details in one read-only database snapshot. |
+| [profile_selection](../songranker/catalog.py#L702) | `song_ids` | Bind a distinct cohort as one JSON parameter, avoiding SQL variable limits. |
+| [profile_details](../songranker/catalog.py#L709) | `conn, song_ids, kind, entity_id` | Assemble bounded display identities from mode-owned, full-cohort aggregates. |
+| [song_stats](../songranker/catalog.py#L732) | `song_id` | Build mode detail for one existing song in a read-only snapshot. |
+| [collection_stats](../songranker/catalog.py#L745) | `kind, entity_id` | Read all current artist/album tracks once; missing and empty differ. |
 
 ## songranker/developer/catalog_sources.py
 
@@ -434,7 +437,7 @@ Elo Guesser rounds, frozen-answer results and detailed Guesser Stats.
 | [build_guesser_stats](../songranker/modes/guesser.py#L293) | `conn, now=None, history_page=1` | One caller-owned SELECT snapshot; aggregate all history, page only its display. |
 | [build_guesser_stats.identity](../songranker/modes/guesser.py#L323) | `sid` | Resolve a report song identity with a safe placeholder when the track has been removed. |
 | [build_guesser_stats.category](../songranker/modes/guesser.py#L474) | `kind, title, identities, links` | Aggregate Guesser attempts and accuracy into artist, album or tag report leaders. |
-| [song_guesser_details](../songranker/modes/guesser.py#L606) | `conn, song_id` | Grade completed song comparisons using frozen Elo, never current ratings. |
+| [profile_guesser_details](../songranker/modes/guesser.py#L606) | `conn, song_ids` | Count unique frozen-Elo pairs; separate internal from external choices. |
 
 ## songranker/modes/preferences.py
 
@@ -538,7 +541,7 @@ Album Shelves eligibility, ordering/grading and detailed Shelves Stats.
 | [build_shelves_stats](../songranker/modes/shelves.py#L461) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
 | [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L492) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
 | [build_shelves_stats.records](../songranker/modes/shelves.py#L768) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
-| [song_shelves_details](../songranker/modes/shelves.py#L883) | `conn, song_id` | Grade complete eligible rounds before selecting this song's saved item. |
+| [profile_shelves_details](../songranker/modes/shelves.py#L883) | `conn, song_ids` | Grade each full eligible round once, then pool distinct cohort items. |
 
 ## songranker/modes/tournament.py
 
@@ -571,7 +574,7 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | [local_tournament_stats_page](../songranker/modes/tournament.py#L1198) | `` | Compare artist/album-only brackets without contributing to competition. |
 | [build_local_tournament_stats](../songranker/modes/tournament.py#L1235) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
 | [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1275) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
-| [song_tournament_details](../songranker/modes/tournament.py#L1316) | `conn, song_id` | Expose raw finished appearances separately from scope-weighted credit. |
+| [profile_tournament_details](../songranker/modes/tournament.py#L1316) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
 
 ## songranker/modes/trivia.py
 
@@ -605,8 +608,8 @@ Timed field recognition, answer grading/corrections and detailed Trivia Stats.
 | [build_recognition_stats.category](../songranker/modes/trivia.py#L750) | `kind, title, note, source, identities` | Build stable recognition accuracy/struggle leaders for one collection category. |
 | [trivia_stats](../songranker/modes/trivia.py#L893) | `` | Trivia stats; GET /trivia_stats. |
 | [saved_date](../songranker/modes/trivia.py#L904) | `value` | Format a finite saved recall time without inventing an unavailable date. |
-| [song_trivia_details](../songranker/modes/trivia.py#L915) | `conn, song_id` | Read completed saved recall rounds independently of edited lifetime totals. |
-| [song_trivia_details.window](../songranker/modes/trivia.py#L931) | `rows` | Pool eligible field counts in a disjoint recent round window. |
+| [profile_trivia_details](../songranker/modes/trivia.py#L915) | `conn, song_ids` | Pool full completed recall evidence before selecting recent cohort rounds. |
+| [profile_trivia_details.window](../songranker/modes/trivia.py#L933) | `rows` | Pool eligible field counts in a disjoint recent round window. |
 
 ## songranker/modes/vibe_map.py
 
@@ -707,7 +710,7 @@ Standard/blind voting operations, history page and detailed Voting Stats.
 | [build_voting_stats.result_totals](../songranker/modes/voting.py#L425) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
 | [build_voting_stats.top](../songranker/modes/voting.py#L658) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
 | [build_voting_stats.category](../songranker/modes/voting.py#L672) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
-| [song_voting_details](../songranker/modes/voting.py#L837) | `conn, song_id` | Summarise all effective song votes; bound opponent display, not totals. |
+| [profile_voting_details](../songranker/modes/voting.py#L837) | `conn, song_ids` | Pool track appearances, counting internal votes twice but each event once. |
 
 ## songranker/overall.py
 
@@ -1103,8 +1106,8 @@ Preserve public routes, asset order and profile reads across module consolidatio
 | [Assets.handle_starttag](../tests/test_architecture.py#L28) | `self, tag, attrs` | Handle starttag. |
 | [ArchitectureTests.register](../tests/test_architecture.py#L40) | `self` | Register the launcher's actual feature owners without running startup sync. |
 | [ArchitectureTests.test_all_previous_urls_methods_and_endpoint_names_are_preserved](../tests/test_architecture.py#L45) | `self` | Verify all previous urls methods and endpoint names are preserved. |
-| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L73) | `self` | Verify pages use one asset registry and last shared baseline. |
-| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L124) | `self` | Verify collection profiles share identity payloads and are read only. |
+| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L74) | `self` | Verify pages use one asset registry and last shared baseline. |
+| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L125) | `self` | Verify collection profiles share identity payloads and are read only. |
 
 ## tests/test_bulk_source_review.py
 
@@ -1587,6 +1590,11 @@ Per-song mode detail reads use complete, effective, public evidence only.
 | [SongDetailTests.test_completed_tournaments_separate_local_results_and_hide_pending](../tests/test_song_details.py#L73) | `self` | Verify completed tournaments separate local results and hide pending. |
 | [SongDetailTests.test_exit_opponent_and_round_survive_podium_playoff_and_hydrate_in_api](../tests/test_song_details.py#L85) | `self` | Verify exit opponent and round survive podium playoff and hydrate in api. |
 | [SongDetailTests.test_shelves_grades_full_round_and_excluded_album_hides_whole_result](../tests/test_song_details.py#L109) | `self` | Verify shelves grades full round and excluded album hides whole result. |
+| [SongDetailTests.cohort](../tests/test_song_details.py#L126) | `self` | Create matching artist/album cohorts with two distinct shared tracks. |
+| [SongDetailTests.test_collection_votes_and_guesser_distinguish_events_and_appearances](../tests/test_song_details.py#L134) | `self` | Verify collection votes and guesser distinguish events and appearances. |
+| [SongDetailTests.test_collection_recall_pools_fields_and_uses_global_disjoint_windows](../tests/test_song_details.py#L151) | `self` | Verify collection recall pools fields and uses global disjoint windows. |
+| [SongDetailTests.test_collection_tournament_entries_and_shelves_items_keep_own_song](../tests/test_song_details.py#L164) | `self` | Verify collection tournament entries and shelves items keep own song. |
+| [SongDetailTests.test_collection_api_resolves_cohort_empty_missing_and_large_catalogues](../tests/test_song_details.py#L186) | `self` | Verify collection api resolves cohort empty missing and large catalogues. |
 
 ## tests/test_source_reads.py
 
@@ -1976,4 +1984,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1349 Python definitions**.
+Total: **1357 Python definitions**.

@@ -68,6 +68,7 @@ class ArchitectureTests(unittest.TestCase):
         added.append(dict(path='/tournament_local_stats',endpoint='local_tournament_stats_page',methods=['GET']))
         added.append(dict(path='/api/voting-replay',endpoint='voting_replay',methods=['GET']))
         added.append(dict(path='/api/song/<int:song_id>/stats',endpoint='song_stats',methods=['GET']))
+        added.append(dict(path='/api/profile/<kind>/<int:entity_id>/stats',endpoint='collection_stats',methods=['GET']))
         self.assertEqual(expected, [r for r in actual if r not in added])
 
     def test_pages_use_one_asset_registry_and_last_shared_baseline(self):

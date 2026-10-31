@@ -322,4 +322,9 @@ or opponents. Preserve covers and artist/album links on named opponents. Explain
 raw completed results versus competition credit and unavailable history. Mode
 Elo ranks use the full rated song cohort with competition ties. Background detail
 loading, retry and timeout must preserve the hero player and replay. Collection
-profiles keep their existing summaries.
+profiles for artists and albums use the same expanded mode evidence and native
+disclosures. Tag summaries keep their existing composition. Collection recent
+rows identify the source track with artwork and artist/album links, then any
+opponent. Explain internal pairs and track appearances separately from distinct
+matches, brackets and Shelves rounds; do not show a pooled collection win streak.
+Collection detail loads must preserve the hero preview queue and paging controls.

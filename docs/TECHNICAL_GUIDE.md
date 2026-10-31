@@ -1004,7 +1004,7 @@ fast-forward does not restart the existing song audio.
 
 `GET /api/song/<song_id>/stats` is a read-only, song-scoped endpoint in catalog.py.
 It validates the current song (404 if absent) and calls each mode's
-`song_*_details` helper inside one SELECT transaction. Helpers aggregate all
+`profile_*_details` helper inside one SELECT transaction. Helpers aggregate all
 eligible history; only returned opponent and recent-result lists are capped at
 five. It does not hydrate the full collection or return tokens, answers from
 pending rounds, saved text guesses or unfinished tournament participants.
@@ -1035,3 +1035,31 @@ stage and winning opponent. Ignore third-place playoffs when identifying the
 knockout; podium placements remain separate. The song-details response includes
 current opponent metadata for the five visible finished brackets. Removed tracks
 show unavailable without a broken song link; pending brackets remain private.
+
+## Artist and album mode evidence
+
+`GET /api/profile/<kind>/<entity_id>/stats` accepts `artists` or `albums`. Resolve
+the existing identity and its distinct current tracks inside one read snapshot;
+a missing identity returns 404 while an empty collection returns empty evidence.
+Use the same mode-owned profile detail builders as the existing song endpoint.
+Cohorts bind as one JSON-array SQL parameter rather than per-track requests or
+unbounded placeholder lists; shared artist links never duplicate a song.
+
+Voting totals count track appearances: an internal pair contributes one win and
+one loss, while different-match and internal-match counts count each event once.
+The recent voting window is ten distinct events before pooling appearances. Only
+external opponents enter its opponent list; collection streaks are not meaningful
+and are replaced by match-context counts. Guesser accuracy counts unique pairs;
+its picked-side counts use external pairs only, with internal pairs explicit.
+Trivia pools field counts and timing samples, not per-track percentages or means;
+latest/previous windows are disjoint across the collection's finished rounds.
+
+Tournament details retain each distinct song/bracket appearance and its own exit,
+with a separate distinct-bracket count. Internal results can contribute a win and
+a loss to track records. Completed-only privacy and competition/local separation
+are unchanged. Shelves grades a full eligible saved round once, then aggregates
+its cohort items; track results and distinct sessions are separate. Recent lists
+remain capped at five and include current source-song metadata; history totals
+are uncapped. ProfileUI reuses the song detail composition in the existing artist
+and album mode panels; queue playback, Vibe/Overall and local-bracket panels stay
+in their established owners. No collection replay or new asset is introduced.

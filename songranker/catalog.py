@@ -698,25 +698,62 @@ def tournament_appearances(conn):
     return result
 
 
+
+def profile_selection(song_ids):
+    """Bind a distinct cohort as one JSON parameter, avoiding SQL variable limits."""
+    import json
+    ids = {song_ids} if isinstance(song_ids,int) else set(song_ids)
+    return ids,json.dumps(sorted(ids))
+
+
+def profile_details(conn, song_ids, kind, entity_id):
+    """Assemble bounded display identities from mode-owned, full-cohort aggregates."""
+    from songranker.modes.voting import profile_voting_details
+    from songranker.modes.trivia import profile_trivia_details
+    from songranker.modes.tournament import profile_tournament_details
+    from songranker.modes.guesser import profile_guesser_details
+    from songranker.modes.shelves import profile_shelves_details
+    ids,_ = profile_selection(song_ids)
+    data = dict(context=dict(kind=kind,id=entity_id,track_count=len(ids)),
+                voting=profile_voting_details(conn,ids),trivia=profile_trivia_details(conn,ids),
+                tournament=profile_tournament_details(conn,ids),guesser=profile_guesser_details(conn,ids),shelves=profile_shelves_details(conn,ids))
+    if kind=='songs':
+        data['song_id']=entity_id
+    display_ids = {r['id'] for r in data['voting']['opponents_list']}
+    display_ids.update(r['opponent_id'] for r in data['guesser']['recent'])
+    display_ids.update(r['exit']['opponent_id'] for r in data['tournament']['recent'] if r['exit'])
+    for key in ('trivia','tournament','guesser','shelves'):
+        display_ids.update(r['song_id'] for r in data[key]['recent'])
+    data['songs'] = {sid:display_song(conn,sid) for sid in display_ids if sid is not None}
+    return data
+
+
 @app.route('/api/song/<int:song_id>/stats')
 def song_stats(song_id):
-    """Build bounded per-mode song details in one read-only database snapshot."""
-    from songranker.modes.voting import song_voting_details
-    from songranker.modes.trivia import song_trivia_details
-    from songranker.modes.tournament import song_tournament_details
-    from songranker.modes.guesser import song_guesser_details
-    from songranker.modes.shelves import song_shelves_details
-    conn = get_db_connection()
+    """Build mode detail for one existing song in a read-only snapshot."""
+    conn=get_db_connection()
     try:
         conn.execute('BEGIN')
         if not conn.execute('SELECT 1 FROM songs WHERE id=?',(song_id,)).fetchone():
             return jsonify(message='Song not found.'),404
-        data = dict(song_id=song_id, voting=song_voting_details(conn,song_id), trivia=song_trivia_details(conn,song_id),
-                    tournament=song_tournament_details(conn,song_id),guesser=song_guesser_details(conn,song_id),shelves=song_shelves_details(conn,song_id))
-        ids = {r['id'] for r in data['voting']['opponents_list']}
-        ids.update(r['opponent_id'] for r in data['guesser']['recent'])
-        ids.update(r['exit']['opponent_id'] for r in data['tournament']['recent'] if r['exit'])
-        data['songs'] = {sid:display_song(conn,sid) for sid in ids if sid is not None}
-        return jsonify(data)
+        return jsonify(profile_details(conn,{song_id},'songs',song_id))
+    finally:
+        conn.close()
+
+
+@app.route('/api/profile/<kind>/<int:entity_id>/stats')
+def collection_stats(kind, entity_id):
+    """Read all current artist/album tracks once; missing and empty differ."""
+    if kind not in ('artists','albums'):
+        return jsonify(message='Profile type not found.'),404
+    conn=get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        if not conn.execute(f'SELECT 1 FROM {kind} WHERE id=?',(entity_id,)).fetchone():
+            return jsonify(message='Profile not found.'),404
+        query = ('SELECT DISTINCT s.id FROM songs s JOIN song_artists a ON a.song_id=s.id WHERE a.artist_id=?'
+                 if kind=='artists' else 'SELECT id FROM songs WHERE album_id=?')
+        ids={r[0] for r in conn.execute(query,(entity_id,))}
+        return jsonify(profile_details(conn,ids,kind,entity_id))
     finally:
         conn.close()

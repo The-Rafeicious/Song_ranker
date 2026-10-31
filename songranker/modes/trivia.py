@@ -912,11 +912,13 @@ def saved_date(value):
         return None
 
 
-def song_trivia_details(conn, song_id):
-    """Read completed saved recall rounds independently of edited lifetime totals."""
+def profile_trivia_details(conn, song_ids):
+    """Pool full completed recall evidence before selecting recent cohort rounds."""
+    from songranker.catalog import profile_selection
+    _, selected = profile_selection(song_ids)
     rounds = []
     timings = {key: [] for key in FIELDS}
-    for raw in conn.execute("SELECT * FROM trivia_rounds WHERE song_id=? AND completed_at IS NOT NULL ORDER BY completed_at DESC,id DESC", (song_id,)):
+    for raw in conn.execute("SELECT * FROM trivia_rounds WHERE song_id IN (SELECT value FROM json_each(?)) AND completed_at IS NOT NULL ORDER BY completed_at DESC,id DESC", (selected,)):
         row = dict(raw)
         eligible = [key for key in FIELDS if key != 'album' or row['album_available']]
         valid = all(row[key+'_correct'] in (0,1) for key in eligible)
@@ -924,7 +926,7 @@ def song_trivia_details(conn, song_id):
             seconds = finite(row[key+'_seconds'])
             if row[key+'_correct'] == 1 and seconds is not None and 0 <= seconds <= 30:
                 timings[key].append(seconds)
-        rounds.append(dict(id=row['id'], date=saved_date(row['completed_at']),
+        rounds.append(dict(id=row['id'], song_id=row['song_id'], date=saved_date(row['completed_at']),
                            correct=sum(row[key+'_correct']==1 for key in eligible) if valid else None,
                            available=len(eligible), fields={key:row[key+'_correct'] for key in eligible}))
     graded = [r for r in rounds if r['correct'] is not None]

@@ -32,11 +32,20 @@ async function harness(page,width=1280,size=75,eligible=true,detailState={}){
  const playing=new WeakSet();w.HTMLMediaElement.prototype.play=function(){playing.add(this);this.dispatchEvent(new w.Event('play'));return Promise.resolve()};w.HTMLMediaElement.prototype.pause=function(){playing.delete(this);this.dispatchEvent(new w.Event('pause'))};w.HTMLMediaElement.prototype.load=function(){};
  Object.defineProperty(w.HTMLMediaElement.prototype,'paused',{get(){return !playing.has(this)}});
  w.fetch=async url=>({ok:true,json:async()=>{
-  if(/^\/api\/song\/\d+\/stats$/.test(url)){
+  if(/^\/api\/song\/\d+\/stats$/.test(url) || /^\/api\/profile\/(artists|albums)\/\d+\/stats$/.test(url)){
    detailState.calls=(detailState.calls||0)+1;
    if(detailState.pending)await new Promise(resolve=>{(detailState.resolvers ||= []).push(resolve)});
    if(detailState.fail)throw Error('Unavailable');
-   return detailState.payload || songDetails();
+   const payload=detailState.payload || songDetails();
+   if(url.startsWith('/api/profile/')){
+    payload.context={kind:kind,id:1,track_count:size};
+    payload.voting.events=12;payload.voting.internal=2;payload.voting.recent_events=10;
+    payload.guesser.external_graded=5;payload.guesser.internal=2;
+    payload.tournament.brackets=3;payload.shelves.sessions=4;
+    payload.songs[1]={id:1,title:'Collection source <unsafe>',cover_url:'/cover-1',artists:[{id:1,name:'Artist'}],album:'Album 1',album_id:1};
+    for(const mode of ['trivia','guesser','tournament','shelves'])payload[mode].recent.forEach(row=>row.song_id=1);
+   }
+   return payload;
   }
   if(url==='/api/collection')return structuredClone(data);
   if(url==='/api/overall')return {entities:Object.fromEntries(['songs','artists','albums','tags'].map(type=>[type,[{id:1,name:'Entity',score:50,evidence:25,group_confidence:50,mode_count:1,tested_tracks:1,track_count:size,contributions:[{key:'standard',label:'Non-blind',score:50,weight:100,points:50,evidence:25}]}]]))};
@@ -58,7 +67,7 @@ async function harness(page,width=1280,size=75,eligible=true,detailState={}){
   const h=await harness(type,width),{d}=h;
   check(d.body.classList.contains('profile-page'),type+' profile class '+width);
   check(JSON.stringify([...d.querySelectorAll('[data-profile-panel]')].map(n=>n.dataset.profilePanel))===JSON.stringify(expected),type+' uses the five shared records');
-  check(d.querySelectorAll('.song-sections details').length===(type==='song'?5:0),type+' bounded song detail disclosures only');
+  check(d.querySelectorAll('.song-sections details').length===(['song','artist','album'].includes(type)?5:0),type+' bounded song detail disclosures only');
   check(d.querySelectorAll('#overall-profile details').length===1,type+' keeps Overall dropdown');
   check(!d.querySelector('#overall-profile .overall-balance-copy,#overall-profile .overall-mode-context'),type+' removes Overall explanation');
   check(d.querySelectorAll('#recognition > .profile-field-grid > .profile-inset').length===3,type+' fields shown inline');
@@ -95,6 +104,20 @@ async function harness(page,width=1280,size=75,eligible=true,detailState={}){
   check(!h.d.querySelector('[data-profile-more="tracks"]'),'no redundant button at '+size+' tracks');
   check(!h.d.querySelector('[data-profile-more="albums"]'),'no album button below threshold');
   check(!h.d.querySelector('.song-sections').textContent.includes('NaN'),'empty/boundary stats stay valid');h.dom.window.close();
+ }
+ for(const type of ['artist','album']){
+  const collection=await harness(type,390),{d}=collection;
+  check(d.querySelector('[data-song-details="voting"]').textContent.includes('Within-collection matches'),type+' separates internal voting');
+  check(d.querySelector('[data-song-details="guesser"]').textContent.includes('unique comparisons'),type+' counts Guesser pairs once');
+  check(d.querySelector('[data-song-details="tournament"] .profile-opponent a.song[href="/song/1"]'),type+' finish identifies its collection track');
+  check(d.querySelector('[data-song-details="tournament"] .profile-opponent a.song[href="/song/2"]'),type+' finish retains knockout opponent');
+  check(d.querySelector('[data-song-details="trivia"] .profile-opponent a.song'),type+' recall identifies source song');
+  check(d.querySelector('[data-song-details="shelves"] .profile-opponent a.song'),type+' Shelves identifies source song');
+  check(!d.querySelector('.song-sections').textContent.includes('NaN'),type+' pooled detail has finite values');
+  collection.dom.window.close();
+  const loading={pending:true},player=await harness(type,390,75,true,loading),audio=player.d.querySelector('#album-audio');
+  await player.click('[data-album-play]');loading.resolvers[0]();await flush();
+  check(player.d.querySelector('#album-audio')===audio&&!audio.paused,type+' background detail preserves queue playback');player.dom.window.close();
  }
  const detail=await harness('song');
  check(detail.d.querySelector('[data-song-details="voting"]').textContent.includes('Different opponents'),'song shows opponents away from leaderboards');

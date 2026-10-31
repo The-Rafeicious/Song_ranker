@@ -603,18 +603,21 @@ def build_guesser_stats(conn, now=None, history_page=1):
     )
 
 
-def song_guesser_details(conn, song_id):
-    """Grade completed song comparisons using frozen Elo, never current ratings."""
+def profile_guesser_details(conn, song_ids):
+    """Count unique frozen-Elo pairs; separate internal from external choices."""
+    from songranker.catalog import profile_selection
+    ids, selected = profile_selection(song_ids)
     rounds = []
-    for raw in conn.execute("SELECT id,song1_id,song2_id,elo1,elo2,chosen_slot,completed_at FROM elo_guess_rounds WHERE completed_at IS NOT NULL AND (song1_id=? OR song2_id=?) ORDER BY completed_at DESC,id DESC", (song_id, song_id)):
+    for raw in conn.execute("SELECT id,song1_id,song2_id,elo1,elo2,chosen_slot,completed_at FROM elo_guess_rounds WHERE completed_at IS NOT NULL AND (song1_id IN (SELECT value FROM json_each(?)) OR song2_id IN (SELECT value FROM json_each(?))) ORDER BY completed_at DESC,id DESC", (selected,selected)):
         r = dict(raw)
         a,b = finite(r['elo1']),finite(r['elo2'])
         gap = abs(a-b) if a is not None and b is not None else None
-        valid = gap is not None and isfinite(gap) and gap > 0 and r['chosen_slot'] in (1,2) and r['song1_id'] != r['song2_id']
-        slot = 1 if r['song1_id']==song_id else 2
-        rounds.append(dict(id=r['id'],date=saved_date(r['completed_at']),opponent_id=r['song2_id'] if slot==1 else r['song1_id'],
-                           correct=int((r['chosen_slot']==1)==(a>b)) if valid else None,
-                           selected=r['chosen_slot']==slot, gap=gap if valid else None))
+        valid = gap is not None and isfinite(gap) and gap>0 and r['chosen_slot'] in (1,2) and r['song1_id']!=r['song2_id']
+        slot = 1 if r['song1_id'] in ids else 2
+        rounds.append(dict(id=r['id'],date=saved_date(r['completed_at']),song_id=r['song1_id'] if slot==1 else r['song2_id'],
+                           opponent_id=r['song2_id'] if slot==1 else r['song1_id'],internal=r['song1_id'] in ids and r['song2_id'] in ids,
+                           correct=int((r['chosen_slot']==1)==(a>b)) if valid else None,selected=r['chosen_slot']==slot,gap=gap if valid else None))
     graded = [r for r in rounds if r['correct'] is not None]
-    return dict(rounds=len(rounds), unknown=len(rounds)-len(graded), selected=sum(r['selected'] for r in graded), graded=len(graded),
-                bands=[dict(label=label, **totals(r for r in graded if (r['gap']<50)==close)) for label,close in [('Under 50 Elo apart',True),('50+ Elo apart',False)]], recent=rounds[:5])
+    external = [r for r in graded if not r['internal']]
+    return dict(rounds=len(rounds),unknown=len(rounds)-len(graded),selected=sum(r['selected'] for r in external),graded=len(graded),external_graded=len(external),internal=sum(r['internal'] for r in rounds),
+                bands=[dict(label=label,**totals(r for r in graded if (r['gap']<50)==close)) for label,close in [('Under 50 Elo apart',True),('50+ Elo apart',False)]],recent=rounds[:5])
