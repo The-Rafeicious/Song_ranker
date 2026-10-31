@@ -1585,7 +1585,8 @@ Per-song mode detail reads use complete, effective, public evidence only.
 | [SongDetailTests.test_trivia_full_history_field_eligibility_and_disjoint_windows](../tests/test_song_details.py#L50) | `self` | Verify trivia full history field eligibility and disjoint windows. |
 | [SongDetailTests.test_guesser_uses_frozen_gap_and_slot_in_both_positions](../tests/test_song_details.py#L63) | `self` | Verify guesser uses frozen gap and slot in both positions. |
 | [SongDetailTests.test_completed_tournaments_separate_local_results_and_hide_pending](../tests/test_song_details.py#L73) | `self` | Verify completed tournaments separate local results and hide pending. |
-| [SongDetailTests.test_shelves_grades_full_round_and_excluded_album_hides_whole_result](../tests/test_song_details.py#L84) | `self` | Verify shelves grades full round and excluded album hides whole result. |
+| [SongDetailTests.test_exit_opponent_and_round_survive_podium_playoff_and_hydrate_in_api](../tests/test_song_details.py#L85) | `self` | Verify exit opponent and round survive podium playoff and hydrate in api. |
+| [SongDetailTests.test_shelves_grades_full_round_and_excluded_album_hides_whole_result](../tests/test_song_details.py#L109) | `self` | Verify shelves grades full round and excluded album hides whole result. |
 
 ## tests/test_source_reads.py
 
@@ -1975,4 +1976,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1348 Python definitions**.
+Total: **1349 Python definitions**.

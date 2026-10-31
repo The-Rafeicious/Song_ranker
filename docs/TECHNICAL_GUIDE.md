@@ -1029,3 +1029,9 @@ disclosure. The hero and other cards are never replaced by detail loads. Retry,
 15-second timeout, abort on replacement/exit and stale-response guards keep
 playback stable. Blind/Non-blind mode standings use all currently rated songs,
 not a leaderboard limit. No new asset, migration or result write is required.
+
+Song tournament finishes include an optional `exit` with the saved bracket-loss
+stage and winning opponent. Ignore third-place playoffs when identifying the
+knockout; podium placements remain separate. The song-details response includes
+current opponent metadata for the five visible finished brackets. Removed tracks
+show unavailable without a broken song link; pending brackets remain private.

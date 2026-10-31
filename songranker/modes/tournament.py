@@ -1329,6 +1329,7 @@ def song_tournament_details(conn, song_id):
         exit_match = min(losses,key=lambda m:m['round_number']) if losses else None
         rows.append(dict(id=tid,date=saved_time(t['completed_at'] or t['timestamp']),scope=t['scope_type'],mode='blind' if t['is_blind'] else 'standard',size=t['size'],
                          finish=finish or ('Out in '+stage_name(t['size'],exit_match['round_number']) if exit_match else 'Finish unavailable'),
+                         exit=dict(round=stage_name(t['size'],exit_match['round_number']),opponent_id=exit_match['winner_id']) if exit_match else None,
                          wins=sum(m['winner_id']==song_id for m in played),losses=sum(m['loser_id']==song_id for m in played),first_exit=bool(exit_match and exit_match['round_number']==1)))
     rows.sort(key=lambda r:((r['date'] or {}).get('seconds',float('-inf')),r['id']), reverse=True)
     return dict(completed=len(rows),first_exits=sum(r['first_exit'] for r in rows),

@@ -80,6 +80,31 @@ class SongDetailTests(unittest.TestCase):
         self.assertEqual([(g['entries'],g['losses']) for g in d['groups']],[(1,1),(1,1)])
         self.assertTrue(all(r['mode']=='blind' and r['finish']=='Out in Quarter-finals' for r in d['recent']))
         self.assertNotIn(3,[r['id'] for r in d['recent']])
+        self.assertTrue(all(r['exit']==dict(round='Quarter-finals',opponent_id=7) for r in d['recent']))
+
+    def test_exit_opponent_and_round_survive_podium_playoff_and_hydrate_in_api(self):
+        for tid,size,round_no,opponent in [(1,16,1,7),(2,32,1,6),(3,8,2,7)]:
+            self.conn.execute("INSERT INTO tournaments(id,size,scope_type,status,completed_at) VALUES(?,?,'global','completed','2026-10-31')",(tid,size))
+            self.conn.execute("INSERT INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id,winner_id,loser_id,status) VALUES(?,?,1,8,?,?,8,'completed')",(tid,round_no,opponent,opponent))
+        self.conn.execute("UPDATE tournaments SET fourth_place_id=8 WHERE id=3")
+        self.conn.execute("UPDATE tournaments SET champion_id=7 WHERE id=1")
+        self.conn.execute("INSERT INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id,winner_id,loser_id,status,match_type) VALUES(3,3,1,8,6,6,8,'completed','third_place')")
+        self.conn.commit()
+        rows={r['id']:r for r in song_tournament_details(self.conn,8)['recent']}
+        self.assertEqual(rows[1]['exit'],dict(round='Round of 16',opponent_id=7))
+        self.assertEqual(rows[2]['exit'],dict(round='Round of 32',opponent_id=6))
+        self.assertEqual((rows[3]['finish'],rows[3]['exit']),('4th',dict(round='Semi-finals',opponent_id=7)))
+        champion=next(r for r in song_tournament_details(self.conn,7)['recent'] if r['id']==1)
+        self.assertIsNone(champion['exit'])
+        with patch.object(services,'DB_NAME',str(self.path)):
+            response=services.app.test_client().get('/api/song/8/stats')
+            self.assertEqual(response.status_code,200)
+            self.assertEqual(response.json['songs']['7']['title'],'Song 7')
+        self.conn.execute('DELETE FROM songs WHERE id=7')
+        self.conn.commit()
+        with patch.object(services,'DB_NAME',str(self.path)):
+            response=services.app.test_client().get('/api/song/8/stats')
+            self.assertIsNone(response.json['songs']['7'])
 
     def test_shelves_grades_full_round_and_excluded_album_hides_whole_result(self):
         self.conn.execute("INSERT INTO albums(id,title) VALUES(2,'Other')")
