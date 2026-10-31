@@ -832,3 +832,34 @@ def build_voting_stats(
         "voting",
         now=now,
     )
+
+
+def song_voting_details(conn, song_id):
+    """Summarise all effective song votes; bound opponent display, not totals."""
+    from songranker.catalog import source_sql
+    rows = []
+    opponents = {}
+    streak = best = 0
+    net = 0.0
+    snapshots = 0
+    for raw in conn.execute(f"SELECT * FROM {source_sql(conn)} WHERE winner_id=? OR loser_id=? ORDER BY id", (song_id, song_id)):
+        r = dict(raw)
+        if r['winner_id'] is None or r['loser_id'] is None or r['winner_id'] == r['loser_id']:
+            continue
+        won = r['winner_id'] == song_id
+        other = r['loser_id'] if won else r['winner_id']
+        record = opponents.setdefault(other, dict(id=other, wins=0, losses=0))
+        record['wins' if won else 'losses'] += 1
+        streak = streak + 1 if won else 0
+        best = max(best, streak)
+        wb,wa,lb,la = [finite(r.get(key)) for key in ('winner_before','winner_after','loser_before','loser_after')]
+        if all(value is not None for value in (wb,wa,lb,la)) and wa >= wb and la <= lb and isfinite(wa-wb) and isfinite(la-lb):
+            net += wa-wb if won else la-lb
+            snapshots += 1
+        rows.append(dict(won=won, mode=r['mode'], origin=r.get('origin', 'ordinary')))
+    recent = rows[-10:]
+    return dict(matches=len(rows), opponents=len(opponents), best_run=best, current_run=streak,
+                net=round(net, 2) if snapshots else None, snapshots=snapshots,
+                recent_wins=sum(r['won'] for r in recent), recent_matches=len(recent),
+                sources=[dict(key=origin, matches=sum(r['origin']==origin for r in rows), wins=sum(r['won'] and r['origin']==origin for r in rows)) for origin in ('ordinary','tournament')],
+                opponents_list=sorted(opponents.values(), key=lambda r: (-(r['wins']+r['losses']),r['id']))[:5])

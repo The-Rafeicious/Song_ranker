@@ -12,10 +12,17 @@ function fixture(size=75){
   shelves_eligible:true,guess_attempts:2,guess_correct:1,shelf_attempts:1,shelf_album_correct:1,shelf_order_right:2,shelf_order_pairs:3,shelf_points:.8,shelf_available:1,
   tournament_points:1.25,tournament_wins:1,tournament_losses:1,championships:i===0?1:0,podiums:i===0?1:0,
   voting:{standard_wins:1,standard_losses:0,blind_wins:0,blind_losses:1,raw:{standard_wins:1,standard_losses:0,blind_wins:0,blind_losses:1}},
-  mode_ratings:{standard:{elo:1210,matches:1},blind:{elo:1190,matches:1}},listening:{samples:1,seconds:12}}));
+  mode_ratings:{standard:{elo:1210+i,matches:1},blind:{elo:1190+i,matches:1}},listening:{samples:1,seconds:12}}));
  return {songs,albums,artists:[{id:1,name:'Artist'}],tags:[{id:1,name:'Tag',description:'Tag notes'}],history:[],elo_history:[],tournaments:[{id:1,size:8,status:'completed'},{id:2,size:8,status:'completed',scope_type:'artist',scope_id:1,champion_id:1},{id:3,size:8,status:'in_progress',scope_type:'album',scope_id:1}],tournament_matches:[],tournament_entries:songs.map(s=>({song_id:s.id,tournament_id:1})),global_stats:{}};
 }
-async function harness(page,width=1280,size=75,eligible=true){
+function songDetails(){return {song_id:1,
+ voting:{opponents:1,best_run:8,current_run:2,net:23.2,snapshots:12,matches:13,recent_wins:7,recent_matches:10,sources:[{key:'ordinary',wins:8,matches:10},{key:'tournament',wins:2,matches:3}],opponents_list:[{id:2,wins:6,losses:2}]},
+ trivia:{rounds:12,graded:12,perfect:3,missed:2,latest:{rounds:5,correct:8,available:10},previous:{rounds:5,correct:3,available:10},timing:[{key:'title',samples:8,mean:4.2,fastest:2}],recent:[{date:{iso:'2026-10-31T10:00:00Z'},correct:2,available:2,fields:{title:1,artist:1}}]},
+ tournament:{completed:3,first_exits:1,groups:[{key:'competition',wins:2,losses:1,entries:2},{key:'local',wins:0,losses:1,entries:1}],recent:[{id:9,date:{iso:'2026-10-31T10:00:00Z'},size:8,mode:'blind',scope:'tag',finish:'2nd',wins:2,losses:1}]},
+ guesser:{selected:3,graded:5,unknown:0,bands:[{label:'Under 50 Elo apart',correct:2,graded:3},{label:'50+ Elo apart',correct:1,graded:2}],recent:[{opponent_id:2,correct:0,selected:true,gap:31,date:null}]},
+ shelves:{graded:4,perfect:2,wrong_album:1,unknown:0,recent:[{date:null,grade:{album_correct:1,order_right:2,order_pairs:3,points:2.17,available:3}}]},
+ songs:{2:{id:2,title:'Opponent <img src=x onerror=bad()>',cover_url:'/cover-2',artists:[{id:1,name:'Artist & One'}],album:'Album <Two>',album_id:2}}};}
+async function harness(page,width=1280,size=75,eligible=true,detailState={}){
  const data=fixture(size),kind={artist:'artists',album:'albums',tag:'tags'}[page],name=page==='album'?'Album 1':page==='artist'?'Artist':'Tag';
  if(!eligible)data.songs.forEach(s=>s.shelves_eligible=false);
  const html=`<body class="site-style-baseline" data-page="${page}" data-entity="1"><main id="main"><div id="loading"></div></main>${kind?`<script id="profile-data" type="application/json">${JSON.stringify({kind,name})}</script>`:''}<input id="volume-range" value=".5"><span id="volume-value"></span><button id="volume-btn"></button><div id="volume-panel" hidden></div><dialog id="editor"><form id="editor-form"><h2 id="editor-title"></h2><div id="editor-fields"></div><button id="editor-submit"></button></form></dialog><div id="toast"></div></body>`;
@@ -25,6 +32,12 @@ async function harness(page,width=1280,size=75,eligible=true){
  const playing=new WeakSet();w.HTMLMediaElement.prototype.play=function(){playing.add(this);this.dispatchEvent(new w.Event('play'));return Promise.resolve()};w.HTMLMediaElement.prototype.pause=function(){playing.delete(this);this.dispatchEvent(new w.Event('pause'))};w.HTMLMediaElement.prototype.load=function(){};
  Object.defineProperty(w.HTMLMediaElement.prototype,'paused',{get(){return !playing.has(this)}});
  w.fetch=async url=>({ok:true,json:async()=>{
+  if(/^\/api\/song\/\d+\/stats$/.test(url)){
+   detailState.calls=(detailState.calls||0)+1;
+   if(detailState.pending)await new Promise(resolve=>{(detailState.resolvers ||= []).push(resolve)});
+   if(detailState.fail)throw Error('Unavailable');
+   return songDetails();
+  }
   if(url==='/api/collection')return structuredClone(data);
   if(url==='/api/overall')return {entities:Object.fromEntries(['songs','artists','albums','tags'].map(type=>[type,[{id:1,name:'Entity',score:50,evidence:25,group_confidence:50,mode_count:1,tested_tracks:1,track_count:size,contributions:[{key:'standard',label:'Non-blind',score:50,weight:100,points:50,evidence:25}]}]]))};
   throw Error('Unexpected '+url);
@@ -45,10 +58,10 @@ async function harness(page,width=1280,size=75,eligible=true){
   const h=await harness(type,width),{d}=h;
   check(d.body.classList.contains('profile-page'),type+' profile class '+width);
   check(JSON.stringify([...d.querySelectorAll('[data-profile-panel]')].map(n=>n.dataset.profilePanel))===JSON.stringify(expected),type+' uses the five shared records');
-  check(d.querySelectorAll('.song-sections details').length===0,type+' local summary has no nested bracket list');
+  check(d.querySelectorAll('.song-sections details').length===(type==='song'?5:0),type+' bounded song detail disclosures only');
   check(d.querySelectorAll('#overall-profile details').length===1,type+' keeps Overall dropdown');
   check(!d.querySelector('#overall-profile .overall-balance-copy,#overall-profile .overall-mode-context'),type+' removes Overall explanation');
-  check(d.querySelectorAll('#recognition .profile-inset').length===3,type+' fields shown inline');
+  check(d.querySelectorAll('#recognition > .profile-field-grid > .profile-inset').length===3,type+' fields shown inline');
   check(d.querySelectorAll('[data-profile-panel="shelves"] .profile-inset').length===2,type+' placement and points inline');
   check(!d.querySelector('.profile-listening,.profile-extra,.profile-bracket'),type+' has no extra diagnostic/nested panels');
   check(d.querySelectorAll('[data-profile-panel] > .joined-metrics').length===5,type+' summaries share one structure');
@@ -83,6 +96,32 @@ async function harness(page,width=1280,size=75,eligible=true){
   check(!h.d.querySelector('[data-profile-more="albums"]'),'no album button below threshold');
   check(!h.d.querySelector('.song-sections').textContent.includes('NaN'),'empty/boundary stats stay valid');h.dom.window.close();
  }
+ const detail=await harness('song');
+ check(detail.d.querySelector('[data-song-details="voting"]').textContent.includes('Different opponents'),'song shows opponents away from leaderboards');
+ check(detail.d.querySelector('.profile-vote-mode').textContent.includes('of 75 rated tracks'),'mode standings use all rated songs');
+ const middle=detail.d.createElement('div');middle.innerHTML=detail.w.ProfileUI.stats([detail.data.songs[37]]);
+ check(middle.querySelector('.profile-vote-mode').textContent.includes('Rank #38 of 75 rated tracks'),'middle-ranked songs use the whole cohort rather than a top/bottom slice');
+ check(detail.d.querySelector('[data-song-details="trivia"]').textContent.includes('Previous · 5 rounds'),'recall comparison windows are explicit');
+ check(detail.d.querySelector('[data-song-details="tournament"] a[href="/tournament/9/bracket"]'),'saved finishes link directly to bracket');
+ check(detail.d.querySelector('.profile-opponent a.artist')?.getAttribute('href').includes('Artist'),'opponent has linked artists');
+ check(detail.d.querySelector('.profile-opponent a.album')?.getAttribute('href').includes('Album'),'opponent has linked album');
+ check(detail.d.querySelectorAll('.profile-opponent img').length===2,'only artwork is markup; hostile song title stays escaped');
+ check(!detail.d.querySelector('[data-song-details][aria-busy]'),'loading state is cleared');
+ detail.dom.window.close();
+ const state={fail:true},failed=await harness('song',390,75,true,state);
+ check(failed.d.querySelector('[data-song-details-retry]'),'request failure has retry');
+ const failedHero=failed.d.querySelector('#song-audio');await failed.click('[data-audio="song-audio"]');state.fail=false;await failed.click('[data-song-details-retry]');
+ check(state.calls===2&&!failed.d.querySelector('[data-song-details-retry]'),'retry fills existing panels');
+ check(failed.d.querySelector('#song-audio')===failedHero&&!failedHero.paused,'retry preserves hero and playback');failed.dom.window.close();
+ const pendingState={pending:true},pending=await harness('song',1280,75,true,pendingState);
+ const hero=pending.d.querySelector('#song-audio');await pending.click('[data-audio="song-audio"]');
+ pending.w.ProfileUI.loadSongDetails(1,pending.d.querySelector('main'));await flush();
+ pendingState.resolvers[1]();await flush();
+ check(pending.d.querySelector('[data-song-details="voting"]').textContent.includes('Different opponents'),'newer detail response renders');
+ const rendered=pending.d.querySelector('[data-song-details="voting"]').innerHTML;
+ pendingState.fail=true;pendingState.resolvers[0]();await flush();
+ check(pending.d.querySelector('[data-song-details="voting"]').innerHTML===rendered,'stale failure cannot replace newer details');
+ check(pending.d.querySelector('#song-audio')===hero&&!hero.paused,'background details leave cover player stable');pending.dom.window.close();
  const css=read('static/css/profiles.css').replace(/\s+/g,'');
  check(css.includes('.profile-artist.profile-media{--profile-cover-radius:50%;}'),'artist owns circular cover radius');
  check(css.includes(':is(.album-cover-player,.cover-button,.art-wrap,.art-fallback,.play-overlay){border-radius:var(--profile-cover-radius);}'),'artwork and audio layers share one radius');

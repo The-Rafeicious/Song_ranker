@@ -899,3 +899,38 @@ def trivia_stats():
     finally:
         conn.close()
     return render_template("trivia_stats.html", **data)
+
+
+def saved_date(value):
+    """Format a finite saved recall time without inventing an unavailable date."""
+    stamp = finite(value)
+    if stamp is None:
+        return None
+    try:
+        return dict(seconds=stamp, iso=datetime.fromtimestamp(stamp, timezone.utc).isoformat())
+    except (ValueError, OverflowError, OSError):
+        return None
+
+
+def song_trivia_details(conn, song_id):
+    """Read completed saved recall rounds independently of edited lifetime totals."""
+    rounds = []
+    timings = {key: [] for key in FIELDS}
+    for raw in conn.execute("SELECT * FROM trivia_rounds WHERE song_id=? AND completed_at IS NOT NULL ORDER BY completed_at DESC,id DESC", (song_id,)):
+        row = dict(raw)
+        eligible = [key for key in FIELDS if key != 'album' or row['album_available']]
+        valid = all(row[key+'_correct'] in (0,1) for key in eligible)
+        for key in eligible:
+            seconds = finite(row[key+'_seconds'])
+            if row[key+'_correct'] == 1 and seconds is not None and 0 <= seconds <= 30:
+                timings[key].append(seconds)
+        rounds.append(dict(id=row['id'], date=saved_date(row['completed_at']),
+                           correct=sum(row[key+'_correct']==1 for key in eligible) if valid else None,
+                           available=len(eligible), fields={key:row[key+'_correct'] for key in eligible}))
+    graded = [r for r in rounds if r['correct'] is not None]
+    def window(rows):
+        """Pool eligible field counts in a disjoint recent round window."""
+        return dict(rounds=len(rows), correct=sum(r['correct'] for r in rows), available=sum(r['available'] for r in rows))
+    return dict(rounds=len(rounds), graded=len(graded), missed=sum(r['correct']==0 for r in graded), perfect=sum(r['correct']==r['available'] for r in graded),
+                recent=rounds[:5], latest=window(graded[:5]), previous=window(graded[5:10]),
+                timing=[dict(key=key, samples=len(values), mean=round(sum(values)/len(values),1) if values else None, fastest=min(values) if values else None) for key,values in timings.items()])

@@ -999,3 +999,33 @@ no changed participant in the previous/current window) dwell for at most 250 ms,
 with each consecutive run capped at 800 ms. Local votes, neighbour replacements,
 anchors and adjustments retain the selected pace. Seeking keeps every frame;
 fast-forward does not restart the existing song audio.
+
+## Per-song mode details
+
+`GET /api/song/<song_id>/stats` is a read-only, song-scoped endpoint in catalog.py.
+It validates the current song (404 if absent) and calls each mode's
+`song_*_details` helper inside one SELECT transaction. Helpers aggregate all
+eligible history; only returned opponent and recent-result lists are capped at
+five. It does not hydrate the full collection or return tokens, answers from
+pending rounds, saved text guesses or unfinished tournament participants.
+
+Voting uses effective corrected results and saved public rating snapshots. Its
+last-ten form, distinct opponents and win runs use raw matches, not Elo weights;
+net change is only the sum of usable saved match snapshots, excluding manual
+adjustments. Trivia uses completed round evidence, with historical album-field
+eligibility, disjoint latest/previous five graded-round windows and timings only
+for correct fields with valid 0–30-second saved times. Those facts are separate
+from editable lifetime totals already on the page.
+
+Tournament details show actual completed appearances and outcomes, separating
+library/tag from artist/album results; they do not alter scope-weighted credit.
+Guesser grades against frozen offered Elo and separates pairs below 50 Elo from
+pairs at least 50 apart. Shelves grades the full saved round before selecting
+the song's result, reusing can_grade and the whole-round album-exclusion filter.
+Unknown historical evidence stays unknown.
+
+ProfileUI fills existing mode panels asynchronously; each long list is a native
+disclosure. The hero and other cards are never replaced by detail loads. Retry,
+15-second timeout, abort on replacement/exit and stale-response guards keep
+playback stable. Blind/Non-blind mode standings use all currently rated songs,
+not a leaderboard limit. No new asset, migration or result write is required.

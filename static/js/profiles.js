@@ -71,6 +71,8 @@ window.ProfileUI = (() => {
   });
   function stats(tracks, type = "songs", identity = null) {
     tracks = [...new Map(tracks.map((s) => [s.id, s])).values()];
+    const record = (tone, title, body, links) => panel(tone, title, body +
+      (type === "songs" && tracks.length === 1 ? `<div class="profile-song-details" data-song-details="${({standard:"voting",recognition:"trivia",tournament:"tournament",guesser:"guesser",shelves:"shelves"})[tone]}" aria-busy="true"><p class="muted">Loading song details…</p></div>` : ""), links);
     const sums = sumFields(tracks, [
       "attempts",
       "correct",
@@ -112,6 +114,9 @@ window.ProfileUI = (() => {
               0,
             ) / cohort.length
           : null;
+        const peers = (U.data().songs || []).filter(s => s.mode_ratings?.[mode]?.matches > 0 && Number.isFinite(s.mode_ratings[mode].elo));
+        const standing = type === "songs" && tracks.length === 1 && rated && elo !== null
+          ? `<p class="profile-detail-note">Rank <b>#${1 + peers.filter(s=>s.mode_ratings[mode].elo > elo).length}</b> of ${peers.length} rated tracks</p>` : "";
         return `<div class="profile-vote-mode profile-inset ${mode}" style="--section-color:var(--${mode})"><h3>${mode === "standard" ? "Non-blind" : "Blind"}</h3>${joined(
           [
             [
@@ -123,11 +128,11 @@ window.ProfileUI = (() => {
               "Appearances",
             ],
           ],
-        )}${rate("Win rate", votes[prefix + "wins"], votes[prefix + "matches"])}</div>`;
+        )}${rate("Win rate", votes[prefix + "wins"], votes[prefix + "matches"])}${standing}</div>`;
       })
       .join("");
     const outcomes = `<div class="mini-stats joined-metrics profile-vote-totals" data-columns="3">${count(number(votes.wins), "Win weight").replace("<div>", '<div class="vote-win">')}${count(number(votes.losses), "Loss weight").replace("<div>", '<div class="vote-loss">')}${count(votes.raw?.matches ?? votes.matches, type === "songs" ? "Matches" : "Track appearances")}</div>`;
-    const voting = panel(
+    const voting = record(
       "standard",
       "Voting Record",
       outcomes +
@@ -159,7 +164,7 @@ window.ProfileUI = (() => {
         return `<div class="profile-inset">${rate(label + " fields", correct, offered)}</div>`;
       })
       .join("");
-    const recognition = panel(
+    const recognition = record(
       "recognition",
       "Recognisability",
       joined([
@@ -188,7 +193,7 @@ window.ProfileUI = (() => {
     });
     const localLeader=localCandidates[0],leadingLocal=localLeader?[localLeader.id,localTitles.get(localLeader.id)||0]:null;
     const localHistory=localBrackets.length?`<section id="local-tournaments" class="panel profile-mode-panel dashboard-surface tournament" style="--section-color:var(--tournament);--surface-accent:var(--tournament)"><div class="section-head"><h2 class="tournament">${localKind==='artist'?'Artist':'Album'}-only tournaments</h2><a class="tournament" href="/tournament_local_stats?scope=${localKind}&scope_id=${identity.id}">Stats & comparisons ↗</a></div>${joined([[completedLocal.length,'Completed brackets'],[localMatches.length,'Matches']])}${localLeader?`<div class="profile-inset local-leader"><h3>Leading track</h3><a class="compact-track" href="/song/${localLeader.id}"><span class="compact-copy"><strong class="song" title="${esc(localLeader.title)}">${esc(localLeader.title)}</strong></span><span class="compact-score"><b>${leadingLocal[1]}</b><small>Titles</small></span></a></div>`:''}<a class="tournament" href="/tournament/${localBrackets[0].id}/bracket">Latest bracket ↗</a></section>`:'';
-    const tournament = panel(
+    const tournament = record(
       "tournament",
       "Tournament Record",
       joined([
@@ -209,7 +214,7 @@ window.ProfileUI = (() => {
       ranking("tournament", "tournament") +
         link("tournament", "/tournament_stats", "Stats"),
     );
-    const guesser = panel(
+    const guesser = record(
       "guesser",
       "Elo Guesser",
       joined([
@@ -220,7 +225,7 @@ window.ProfileUI = (() => {
       ranking("guesser", "guesser") +
         link("guesser", "/elo_guesser_stats", "Stats"),
     );
-    const shelves = tracks.some(s => s.shelves_eligible) ? panel(
+    const shelves = tracks.some(s => s.shelves_eligible) ? record(
       "shelves",
       "Album Shelves",
       joined([
@@ -239,7 +244,77 @@ window.ProfileUI = (() => {
     ) : "";
     return voting + recognition + tournament + localHistory + guesser + shelves;
   }
+  let songRequest = null;
+  const detailNumber = value => value == null ? "—" : Number(value).toLocaleString(undefined, {maximumFractionDigits:2});
+  function detailDate(value) {
+    const date = value?.iso && new Date(value.iso);
+    return date && Number.isFinite(date.getTime()) ? `<time datetime="${esc(value.iso)}" title="${esc(date.toLocaleString())}">${esc(date.toLocaleDateString(undefined,{day:"numeric",month:"short",year:"numeric"}))}</time>` : "Date unavailable";
+  }
+  function detailList(title, rows) {
+    return `<details class="profile-song-disclosure"><summary>${esc(title)}</summary><ul class="profile-result-list">${rows.join("") || '<li class="muted">No saved results yet.</li>'}</ul></details>`;
+  }
+  function detailTrack(track, label) {
+    if (!track) return `<span class="muted">Track unavailable</span><span>${esc(label)}</span>`;
+    return `<div class="profile-opponent"><a href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span class="profile-detail-art" aria-hidden="true">♫</span>'}</a><div class="profile-opponent-copy"><a class="song" href="/song/${track.id}" title="${esc(track.title)}">${esc(track.title)}</a><div class="metadata">${(track.artists || []).map(a=>`<a class="artist" href="${U.urlFor("artists",a)}">${esc(a.name)}</a>`).join(", ")}${track.album && track.album.toLowerCase() !== "unknown album" && !/ - single$/i.test(track.album) ? ` · <a class="album" href="${U.urlFor("albums",{id:track.album_id,name:track.album,title:track.album})}">${esc(track.album)}</a>` : ""}</div></div></div><strong>${esc(label)}</strong>`;
+  }
+  function songDetailBodies(data) {
+    const {voting:v, trivia:t, tournament:b, guesser:g, shelves:s} = data;
+    const metrics = fields => joined(fields.map(([value,label])=>[value == null ? "—" : value,label]));
+    const windowRate = (name, window) => `<div class="profile-inset">${rate(`${name} · ${window.rounds} rounds`,window.correct,window.available)}</div>`;
+    return {
+      voting: metrics([[v.opponents,"Different opponents"],[v.best_run,"Best win run"],[v.current_run,"Current win run"]]) +
+        rate("Last 10 matches · raw wins",v.recent_wins,v.recent_matches) +
+        `<p class="profile-detail-note">Recorded Elo change <b>${v.net == null ? "—" : (v.net > 0 ? "+" : "") + detailNumber(v.net)}</b> · usable snapshots in ${v.snapshots} / ${v.matches} matches.</p>` +
+        `<div class="profile-detail-grid">${v.sources.map(r=>`<div class="profile-inset" style="--section-color:var(--${r.key === "tournament" ? "tournament" : "voting"})">${rate(r.key === "tournament" ? "Tournament first-round · raw wins" : "Ordinary voting · raw wins",r.wins,r.matches)}</div>`).join("")}</div>` +
+        detailList("Most frequent opponents",v.opponents_list.map(r=>`<li>${detailTrack(data.songs[r.id],`${r.wins}W · ${r.losses}L`)}</li>`)),
+      trivia: metrics([[t.rounds,"Saved rounds"],[t.perfect,"Perfect recall rounds"],[t.missed,"Missed all fields"]]) +
+        `<div class="profile-detail-grid">${windowRate("Latest",t.latest)}${windowRate("Previous",t.previous)}</div>` +
+        `<p class="profile-detail-note">Field accuracy from completed saved rounds; edited lifetime totals above may differ.${t.rounds > t.graded ? ` ${t.rounds-t.graded} saved rounds lack complete grading.` : ""}</p>` +
+        detailList("Recall timing & recent rounds",[
+          ...t.timing.map(r=>`<li><span>${esc(({title:"Song",artist:"Artist",album:"Album"})[r.key])} · correct-answer time<small>${r.samples} timed answers</small></span><strong>${r.mean == null ? "—" : detailNumber(r.mean)+"s average"}<small>${r.fastest == null ? "No timing saved" : detailNumber(r.fastest)+"s fastest"}</small></strong></li>`),
+          ...t.recent.map(r=>`<li><span>${detailDate(r.date)}<small>${Object.entries(r.fields).map(([key,value])=>esc(({title:"Song",artist:"Artist",album:"Album"})[key])+": "+(value==null?"Unavailable":value?"Correct":"Missed")).join(" · ")}</small></span><strong>${r.correct == null ? "Unavailable" : `${r.correct} / ${r.available} fields`}</strong></li>`)
+        ]),
+      tournament: metrics([[b.completed,"Completed appearances"],[b.first_exits,"First-round exits"]]) +
+        `<div class="profile-detail-grid">${b.groups.map(r=>`<div class="profile-inset">${rate(r.key === "local" ? "Artist / album match wins" : "Library / tag match wins",r.wins,r.wins+r.losses)}<p class="profile-detail-note">${r.entries} completed bracket entries</p></div>`).join("")}</div>` +
+        `<p class="profile-detail-note">Actual completed results here; competition credit remains in the summary above.</p>` +
+        detailList("Recent tournament finishes",b.recent.map(r=>`<li><span><a class="tournament" href="/tournament/${r.id}/bracket">${esc(r.finish)} · ${r.size}-track bracket ↗</a><small><span class="${r.mode}">${r.mode === "blind" ? "Blind" : "Non-blind"}</span> · ${esc(({global:"Library",tag:"Tag",artist:"Artist",album:"Album"})[r.scope] || "Other scope")} · ${detailDate(r.date)}</small></span><strong>${r.wins}W · ${r.losses}L</strong></li>`)),
+      guesser: metrics([[g.selected,"Picked this song"],[g.graded-g.selected,"Picked its opponent"],[g.rounds,"Saved comparisons"]]) +
+        `<div class="profile-detail-grid">${g.bands.map(r=>`<div class="profile-inset">${rate(r.label,r.correct,r.graded)}</div>`).join("")}</div>` +
+        `<p class="profile-detail-note">Difficulty uses the Elo gap saved when the pair was offered.${g.unknown ? ` ${g.unknown} comparisons lack usable grading.` : ""}</p>` +
+        detailList("Recent comparisons",g.recent.map(r=>`<li>${detailTrack(data.songs[r.opponent_id],r.correct == null ? "Unavailable" : r.correct ? "Correct" : "Wrong")}<p class="profile-result-context">${detailDate(r.date)} · ${r.selected ? "Picked this song" : "Picked opponent"} · ${detailNumber(r.gap)} Elo apart</p></li>`)),
+      shelves: metrics([[s.perfect,"Perfect track results"],[s.wrong_album,"Wrong-album placements"],[s.graded,"Graded track results"]]) +
+        `<p class="profile-detail-note">Perfect means all available points for this track; other tracks in the round may still be wrong.${s.unknown ? ` ${s.unknown} saved rounds cannot be graded.` : ""}</p>` +
+        detailList("Recent track placements",s.recent.map(r=>`<li><span>${detailDate(r.date)}<small>${r.grade ? (r.grade.album_correct ? "Correct album" : "Wrong album") + ` · ${r.grade.order_right} / ${r.grade.order_pairs} order comparisons` : "Saved round cannot be graded"}</small></span><strong>${r.grade ? `${detailNumber(r.grade.points)} / ${detailNumber(r.grade.available)} pts` : "Unavailable"}</strong></li>`))
+    };
+  }
+  async function loadSongDetails(songId, container = document) {
+    songRequest?.abort();
+    const request = new AbortController(); songRequest = request;
+    const slots = [...container.querySelectorAll("[data-song-details]")];
+    if (!slots.length) return;
+    slots.forEach(node => { node.setAttribute("aria-busy","true"); node.innerHTML = '<p class="muted">Loading song details…</p>'; });
+    const timeout = setTimeout(()=>request.abort(),15000);
+    try {
+      const response = await fetch(`/api/song/${songId}/stats`,{signal:request.signal,cache:"no-store"});
+      if (!response.ok) throw Error("Song details could not load.");
+      const data = await response.json();
+      if (songRequest !== request || !slots[0].isConnected) return;
+      if (request.signal.aborted) throw Error("Song details timed out.");
+      if (data.song_id !== songId) throw Error("Unexpected song details.");
+      const bodies = songDetailBodies(data);
+      slots.forEach(node => { node.innerHTML=bodies[node.dataset.songDetails] || ""; });
+    } catch (error) {
+      if (songRequest !== request || !slots[0].isConnected) return;
+      slots.forEach((node,i) => { node.innerHTML=i ? "" : '<p class="muted" role="alert">Additional song details could not load. Your summary and player are still available.</p><button class="btn" data-song-details-retry>Retry details</button>'; });
+      slots[0].querySelector("button").addEventListener("click",()=>loadSongDetails(songId,container));
+    } finally {
+      clearTimeout(timeout);
+      if (songRequest === request) slots.forEach(node=>node.removeAttribute("aria-busy"));
+    }
+  }
+  window.addEventListener("pagehide",()=>{songRequest?.abort();songRequest=null;});
   return {
+    loadSongDetails,
     bindUI: (ui) => (U = ui),
     keyStats,
     queueInfo,
