@@ -48,20 +48,20 @@ Shared catalogue projections, cross-mode results and Elo history queries.
 | [voting_records](../songranker/catalog.py#L154) | `conn` | Combined public preference results, retaining origin and mode breakdowns. |
 | [summarize_votes](../songranker/catalog.py#L191) | `records` | Summarise combined preference records by standard/blind mode and ordinary/tournament origin. |
 | [summarize_votes.project](../songranker/catalog.py#L198) | `rows` | Aggregate wins, losses, match counts and win rates for one subset of preference records. |
-| [collection](../songranker/catalog.py#L223) | `include_overall_sources=False` | Collection; reads competition_state, global_stats, song_artists, song_details, song_genres, songs, sqlite_master, trivia_rounds. |
-| [ranked](../songranker/catalog.py#L340) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
-| [special_records](../songranker/catalog.py#L422) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, elo_guess_rounds, songs. |
-| [display_song](../songranker/catalog.py#L537) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
-| [special_stats](../songranker/catalog.py#L561) | `` | Special stats; GET /api/special-modes/stats. |
-| [source_sql](../songranker/catalog.py#L602) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
-| [filters](../songranker/catalog.py#L619) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
-| [summary](../songranker/catalog.py#L626) | `conn` | Count effective preference matches by mode and origin for the history summary. |
-| [page](../songranker/catalog.py#L644) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
-| [tournament_appearances](../songranker/catalog.py#L680) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
-| [profile_selection](../songranker/catalog.py#L702) | `song_ids` | Bind a distinct cohort as one JSON parameter, avoiding SQL variable limits. |
-| [profile_details](../songranker/catalog.py#L709) | `conn, song_ids, kind, entity_id` | Assemble bounded display identities from mode-owned, full-cohort aggregates. |
-| [song_stats](../songranker/catalog.py#L732) | `song_id` | Build mode detail for one existing song in a read-only snapshot. |
-| [collection_stats](../songranker/catalog.py#L745) | `kind, entity_id` | Read all current artist/album tracks once; missing and empty differ. |
+| [collection](../songranker/catalog.py#L223) | `include_overall_sources=False, include_query_sources=False` | Collection; reads competition_state, global_stats, song_artists, song_details, song_genres, songs, sqlite_master, trivia_rounds. |
+| [ranked](../songranker/catalog.py#L343) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
+| [special_records](../songranker/catalog.py#L425) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, elo_guess_rounds, songs. |
+| [display_song](../songranker/catalog.py#L540) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
+| [special_stats](../songranker/catalog.py#L564) | `` | Special stats; GET /api/special-modes/stats. |
+| [source_sql](../songranker/catalog.py#L605) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
+| [filters](../songranker/catalog.py#L622) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
+| [summary](../songranker/catalog.py#L629) | `conn` | Count effective preference matches by mode and origin for the history summary. |
+| [page](../songranker/catalog.py#L647) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
+| [tournament_appearances](../songranker/catalog.py#L683) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
+| [profile_selection](../songranker/catalog.py#L705) | `song_ids` | Bind a distinct cohort as one JSON parameter, avoiding SQL variable limits. |
+| [profile_details](../songranker/catalog.py#L712) | `conn, song_ids, kind, entity_id` | Assemble bounded display identities from mode-owned, full-cohort aggregates. |
+| [song_stats](../songranker/catalog.py#L735) | `song_id` | Build mode detail for one existing song in a read-only snapshot. |
+| [collection_stats](../songranker/catalog.py#L748) | `kind, entity_id` | Read all current artist/album tracks once; missing and empty differ. |
 
 ## songranker/developer/catalog_sources.py
 
@@ -766,6 +766,8 @@ Home, catalogue/search/rankings, shared collection profiles and Global Stats rou
 | [tag_page](../songranker/pages.py#L137) | `tag_name` | Resolve the collection identity; the shared profile reads its data once. |
 | [special_rankings](../songranker/pages.py#L143) | `mode` | Special rankings; GET /mode_rankings/<mode>. |
 | [collection_profile](../songranker/pages.py#L149) | `kind, table, column, name` | Resolve one named collection for the shared profile template. |
+| [mode_query_page](../songranker/pages.py#L175) | `` | Cross-mode query workspace without eager client catalogue hydration. |
+| [mode_query_api](../songranker/pages.py#L181) | `` | Validate public filters and return bounded results from a single read snapshot. |
 
 ## songranker/reports/global_stats_data.py
 
@@ -809,6 +811,23 @@ Read-only opponent graph, bounded breadth exploration and deduplicated match his
 | [search_network_songs](../songranker/reports/match_network.py#L72) | `conn, query` | Search the full current catalogue, including disconnected or capped-out songs. |
 | [search_network_songs.normal](../songranker/reports/match_network.py#L75) | `value` | Ignore accents/case in public title and artist lookup. |
 | [build_match_network](../songranker/reports/match_network.py#L85) | `conn, song_id=None, depth=4, branches=4, mode='all', source='all', include_local=False, through=None, pair=None, page=1` | Aggregate first, then bound drawing; pair histories retain all filtered results. |
+
+## songranker/reports/query.py
+
+Read-only cross-mode filtering, pooled metrics, stable sorting and bounded paging.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [metric](../songranker/reports/query.py#L11) | `key, label, family, unit='count'` | Metric. |
+| [normal](../songranker/reports/query.py#L40) | `text` | Normal. |
+| [validate](../songranker/reports/query.py#L44) | `spec` | Validate bounded public input before reading the catalogue; never execute SQL from it. |
+| [rate](../songranker/reports/query.py#L86) | `n, d` | Rate. |
+| [facts](../songranker/reports/query.py#L90) | `songs, competition, local, song=False` | Pool numerators/denominators, counting each current track once per entity. |
+| [facts.total](../songranker/reports/query.py#L92) | `key` | Total. |
+| [facts.mean](../songranker/reports/query.py#L93) | `rows, key` | Mean. |
+| [identities](../songranker/reports/query.py#L124) | `data` | Public identity projection excludes preview URLs and private source metadata. |
+| [execute](../songranker/reports/query.py#L141) | `data, spec` | Filter and stably sort a full snapshot, returning exactly twenty rows per page. |
+| [execute.compare](../songranker/reports/query.py#L176) | `a, b` | Compare. |
 
 ## songranker/reports/stats_activity.py
 
@@ -1121,8 +1140,8 @@ Preserve public routes, asset order and profile reads across module consolidatio
 | [Assets.handle_starttag](../tests/test_architecture.py#L28) | `self, tag, attrs` | Handle starttag. |
 | [ArchitectureTests.register](../tests/test_architecture.py#L40) | `self` | Register the launcher's actual feature owners without running startup sync. |
 | [ArchitectureTests.test_all_previous_urls_methods_and_endpoint_names_are_preserved](../tests/test_architecture.py#L45) | `self` | Verify all previous urls methods and endpoint names are preserved. |
-| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L76) | `self` | Verify pages use one asset registry and last shared baseline. |
-| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L128) | `self` | Verify collection profiles share identity payloads and are read only. |
+| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L78) | `self` | Verify pages use one asset registry and last shared baseline. |
+| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L131) | `self` | Verify collection profiles share identity payloads and are read only. |
 
 ## tests/test_bulk_source_review.py
 
@@ -1570,6 +1589,24 @@ Preview request budgeting and completed-cache reuse without real CDN traffic.
 | [PreviewDeliveryTests.test_cached_replay_and_ranges_bypass_upstream_even_during_cooldown](../tests/test_preview_delivery.py#L26) | `self` | Verify cached replay and ranges bypass upstream even during cooldown. |
 | [PreviewDeliveryTests.test_cache_holds_a_full_round_and_expires_without_disk_storage](../tests/test_preview_delivery.py#L59) | `self` | Verify cache holds a full round and expires without disk storage. |
 
+## tests/test_query.py
+
+Cross-mode queries preserve pooled evidence, relation semantics and stable pages.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [QueryTests.data](../tests/test_query.py#L14) | `self, matches=False` | Data. |
+| [QueryTests.connect](../tests/test_query.py#L18) | `self` | Open the fixture database with the row/connection settings needed by this test. |
+| [QueryTests.query](../tests/test_query.py#L23) | `self, **kw` | Query. |
+| [QueryTests.test_pooled_rates_missing_evidence_and_current_links](../tests/test_query.py#L26) | `self` | Verify pooled rates missing evidence and current links. |
+| [QueryTests.test_inclusive_elo_and_three_level_null_last_sort](../tests/test_query.py#L38) | `self` | Verify inclusive elo and three level null last sort. |
+| [QueryTests.test_relationships_visibility_and_readonly](../tests/test_query.py#L47) | `self` | Verify relationships visibility and readonly. |
+| [QueryTests.test_twenty_per_page_clamping_and_empty](../tests/test_query.py#L57) | `self` | Verify twenty per page clamping and empty. |
+| [QueryTests.test_local_tournaments_are_separate_and_incomplete_results_are_hidden](../tests/test_query.py#L66) | `self` | Verify local tournaments are separate and incomplete results are hidden. |
+| [QueryTests.test_collection_rates_pool_unequal_denominators_and_unrated_elo_is_missing](../tests/test_query.py#L77) | `self` | Verify collection rates pool unequal denominators and unrated elo is missing. |
+| [QueryTests.test_invalid_combinations](../tests/test_query.py#L87) | `self` | Verify invalid combinations. |
+| [QueryTests.test_api_schema_errors_and_page_assets](../tests/test_query.py#L91) | `self` | Verify api schema errors and page assets. |
+
 ## tests/test_retired_listening.py
 
 Schema-20 telemetry retirement with a complete old backup and exact game retention.
@@ -2006,17 +2043,17 @@ Source/asset checks, generated function ownership and unified test commands.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [sources](../tools/check.py#L92) | `` | Enumerate maintained Python files, excluding generated caches and dependencies. |
-| [definitions](../tools/check.py#L106) | `tree, parents=()` | Yield every function/method, including nested closures, with a qualified name. |
-| [routes](../tools/check.py#L116) | `node` | Read literal Flask decorators without importing route modules. |
-| [purpose](../tools/check.py#L139) | `name, node` | Describe a definition from its contract, route, validation name and SQL access. |
-| [markdown](../tools/check.py#L220) | `value` | Escape content that is embedded in a Markdown table cell. |
-| [function_index](../tools/check.py#L225) | `` | Generate a deterministic, source-linked index of every Python definition. |
-| [documentation](../tools/check.py#L270) | `write=False` | Write the function index, or fail when source changes made it stale. |
-| [structure](../tools/check.py#L285) | `` | Check imports, duplicate definitions, template references and asset ownership. |
-| [structure.scopes](../tools/check.py#L296) | `node, path` | Report repeated definitions within each lexical Python scope. |
-| [run](../tools/check.py#L368) | `command` | Run one validation command from the repository root and propagate failures. |
-| [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
-| [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
+| [sources](../tools/check.py#L93) | `` | Enumerate maintained Python files, excluding generated caches and dependencies. |
+| [definitions](../tools/check.py#L107) | `tree, parents=()` | Yield every function/method, including nested closures, with a qualified name. |
+| [routes](../tools/check.py#L117) | `node` | Read literal Flask decorators without importing route modules. |
+| [purpose](../tools/check.py#L140) | `name, node` | Describe a definition from its contract, route, validation name and SQL access. |
+| [markdown](../tools/check.py#L221) | `value` | Escape content that is embedded in a Markdown table cell. |
+| [function_index](../tools/check.py#L226) | `` | Generate a deterministic, source-linked index of every Python definition. |
+| [documentation](../tools/check.py#L271) | `write=False` | Write the function index, or fail when source changes made it stale. |
+| [structure](../tools/check.py#L286) | `` | Check imports, duplicate definitions, template references and asset ownership. |
+| [structure.scopes](../tools/check.py#L297) | `node, path` | Report repeated definitions within each lexical Python scope. |
+| [run](../tools/check.py#L369) | `command` | Run one validation command from the repository root and propagate failures. |
+| [javascript](../tools/check.py#L375) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
+| [main](../tools/check.py#L385) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1378 Python definitions**.
+Total: **1401 Python definitions**.

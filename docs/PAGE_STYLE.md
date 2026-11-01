@@ -351,3 +351,12 @@ including across components. Start large networks at a readable hub-centred zoom
 Fit map remains the overview. Keep focused hop rings unchanged. Arrowheads sit
 outside covers and retain source/visibility colours; aggregated pairs must never
 show a single inferred winner based only on the majority of results.
+
+Query lives under Mode Rankings. `query.js` owns a bounded server-backed builder;
+`query.css` owns its responsive filters, compact expandable records and paging.
+Reuse the shared styled selectors. Numeric conditions are inclusive, match-only
+controls appear only for opponent filters, sort keys stay unique, and removing a
+secondary sort clears the third. Show missing evidence as unavailable. Results
+are twenty per page with current/final page inputs and first/last navigation.
+Expanded records retain linked artwork and concise mode summaries, without
+repeating profile histories or starting audio. Never fetch the full client catalogue.

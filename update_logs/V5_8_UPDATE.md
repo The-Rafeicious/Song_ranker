@@ -20,3 +20,27 @@ Validation: all 491 Python regressions, JavaScript/DOM suites, 58 served develop
 - No match, rating, result or database changes.
 
 Validation: all 491 Python tests, JavaScript suites, 58 served developer-page checks, structure and generated documentation pass. Network regressions cover both arrow directions, split/empty results, rendered arrowheads, non-overlapping label slots in 1,200-song and dense layouts, readable initial zoom and Fit overview. Full checks reached Chromium integration; responsive whole-map screenshots run in CI because local Chromium is unavailable.
+
+## V5.8.1 — Cross-mode query workspace
+
+- Add Query under Mode Rankings for songs, artists, albums and tags. Combine up
+  to eight numeric, missing-evidence, membership or won-against/lost-to filters.
+  Inclusive Elo ranges, recognition rounds/field accuracy, voting visibility,
+  tournament/local results, Guesser, Shelves, descriptive Vibe and Overall evidence
+  can be compared in one result list.
+- Choose primary, secondary and third sort keys with independent directions;
+  duplicate keys are removed from choices and unavailable values always sort last.
+  Relationship filters expose only relevant source/visibility controls.
+- Common presets include most played, highest recognised, recognition by rounds,
+  Blind versus Non-blind, tournament leaders, unplayed recognition and Vibe coverage.
+- Choose up to six visible metrics. Expand artwork-backed records for compact mode
+  figures and linked tracks/artists/albums/tags; titles open the full profile.
+  Results use twenty rows per page, direct page input and first/previous/next/last.
+  Queries can be shared through the URL and restored through browser history.
+- Pool collection rates from their underlying counts and use rated-track mean Elo.
+  Keep completed local brackets separate, deduplicate first-round opponent evidence,
+  and distinguish unavailable evidence from zero. No rating or saved-result changes.
+
+Validation: focused query engine/API and DOM regressions cover pooling, nulls,
+relationships, sorting, paging, input validation, linked identities, escaping,
+retry and reset. Responsive browser coverage is included in CI.

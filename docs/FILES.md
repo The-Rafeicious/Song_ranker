@@ -95,3 +95,8 @@ Do not create compatibility copies of moved modules. Historical migrations remai
 `static/js/match_network.js` and `static/css/match_network.css` own the interactive
 opponent workspace and its lazy song-page view. `templates/match_network.html`
 provides the independent page shell; templates/assets.html remains the registry.
+
+- `songranker/reports/query.py`: pure cross-mode query validation, pooled evidence,
+  relation filters, stable three-level sorting and twenty-row pagination.
+- `templates/query.html`, `static/js/query.js`, `static/css/query.css`: public Query
+  workspace, shared styled controls and compact linked result disclosures.

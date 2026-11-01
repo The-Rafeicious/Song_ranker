@@ -220,7 +220,7 @@ def summarize_votes(records):
     return totals
 
 
-def collection(include_overall_sources=False):
+def collection(include_overall_sources=False, include_query_sources=False):
     conn = get_db_connection()
     try:
         conn.execute(
@@ -332,6 +332,9 @@ def collection(include_overall_sources=False):
             ).fetchone()
             or {}
         )
+        if include_query_sources:
+            from songranker.reports.match_network import network_records
+            data['query_matches'] = network_records(conn, {s['id']:s for s in data['songs']}, include_local=True)[0]
         return data
     finally:
         conn.close()
