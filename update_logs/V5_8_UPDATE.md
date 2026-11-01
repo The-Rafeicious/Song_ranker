@@ -44,3 +44,13 @@ Validation: all 491 Python tests, JavaScript suites, 58 served developer-page ch
 Validation: focused query engine/API and DOM regressions cover pooling, nulls,
 relationships, sorting, paging, input validation, linked identities, escaping,
 retry and reset. Responsive browser coverage is included in CI.
+
+
+## V5.8.1.0.1 — Query heading and category layout
+
+- Give Query a larger green/blue/purple title using the banner wordmark palette,
+  with matching multicolour background glows instead of the default green wash.
+- Move Songs, Artists, Albums and Tags into a centred category row directly below
+  the title, above the query builder, matching the rankings navigation pattern.
+- Remove the introductory and evidence-explanation paragraphs around the builder.
+- Preserve filters, sorting, expandable records, shared query URLs and pagination.

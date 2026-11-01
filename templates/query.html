@@ -3,10 +3,8 @@
 {% block page_kind %}mode_query{% endblock %}
 {% block content %}
 <section data-mode-query class="query-page">
-<h1>Query</h1>
-<p>Explore your library across modes. Combine filters and order the results your way.</p>
+<header class="query-header"><h1 class="wordmark">Query</h1><nav class="query-entities" data-query-entity aria-label="Query category"></nav></header>
 <form data-query-form class="panel"><div data-query-controls></div><p data-query-error role="alert"></p><div class="query-actions"><button type="submit">Apply query</button><button type="button" data-query-reset>Reset</button></div></form>
-<p class="metadata">All filters must match. Percentages pool their underlying counts; — means no evidence. Collection Elo uses rated tracks. Tournament statistics use completed brackets; local results stay separate. Collection match counts count track appearances.</p>
 <div data-query-results aria-live="polite"><p>Loading query options…</p></div>
 <noscript>This query workspace needs JavaScript. <a href="/leaderboard">Browse song rankings</a>.</noscript>
 </section>

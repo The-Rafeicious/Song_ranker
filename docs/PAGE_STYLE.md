@@ -360,3 +360,5 @@ secondary sort clears the third. Show missing evidence as unavailable. Results
 are twenty per page with current/final page inputs and first/last navigation.
 Expanded records retain linked artwork and concise mode summaries, without
 repeating profile histories or starting audio. Never fetch the full client catalogue.
+
+Query uses a larger Song Ranker wordmark gradient heading and matching green/blue/purple background glows. Its entity choices form a centred row below the title, above the builder, using the catalogue colours and explicit pressed states. Keep the introductory and evidence-explanation paragraphs out of this workspace.
