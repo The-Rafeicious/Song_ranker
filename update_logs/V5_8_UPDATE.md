@@ -54,3 +54,13 @@ retry and reset. Responsive browser coverage is included in CI.
   the title, above the query builder, matching the rankings navigation pattern.
 - Remove the introductory and evidence-explanation paragraphs around the builder.
 - Preserve filters, sorting, expandable records, shared query URLs and pagination.
+
+
+## V5.8.1.0.2 — Query button styling
+
+- Replace native grey action boxes with rounded, padded controls: a multicolour
+  Apply query action, green Add filter, purple Reset, blue navigation and quiet
+  red Remove controls. Add restrained hover glows and visible keyboard focus.
+- Give category selections tinted pill states and dropdowns a subtle blue/purple
+  surface. Keep disabled paging visibly inactive and artwork results rounded.
+- Preserve query behaviour, reduced-motion support and high-contrast controls.
