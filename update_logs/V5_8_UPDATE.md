@@ -11,12 +11,3 @@
 - No migration, rating/formula changes or saved-result writes.
 
 Validation: all 491 Python regressions, JavaScript/DOM suites, 58 served developer-page checks, structure and generated documentation pass. Focused coverage verifies corrections, first-round deduplication, pending/local privacy, timeline prefixes, breadth/depth/cycles, dense/large caps, uncapped search/pair paging, camera gestures, filters, retry/stale cancellation and hero ownership. A saved 1,128-song backup produced a 693-node/594-connection full graph and 44/59-node focused views; graph reads took about 12–27 ms. Full repository checks were invoked; browser layout, gestures and screenshots run in CI because local Chromium is unavailable.
-
-## V5.8.0.1 — Directed match connections and clearer spacing
-
-- Add arrows from loser to winner. A pair with wins on both sides shows arrowheads at both ends, preserving the existing exact W/L history and visibility/tournament colours. Heads stay outside song covers.
-- Spread out the whole-network layout and reserve separate cover/title/Elo space after placement, including between components. Bound drawn title width so long names cannot collide.
-- Open large whole maps at a readable zoom around a connected hub; Fit map gives the full overview. Keep focused song rings, filters and history behaviour.
-- No match, rating, result or database changes.
-
-Validation: all 491 Python tests, JavaScript suites, 58 served developer-page checks, structure and generated documentation pass. Network regressions cover both arrow directions, split/empty results, rendered arrowheads, non-overlapping label slots in 1,200-song and dense layouts, readable initial zoom and Fit overview. Full checks reached Chromium integration; responsive whole-map screenshots run in CI because local Chromium is unavailable.

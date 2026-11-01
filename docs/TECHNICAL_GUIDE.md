@@ -1100,7 +1100,7 @@ preventing double counting. Other rounds remain points-only unless a real public
 snapshot exists. Corrections/voids use the effective projection. Removed or invalid
 participants are omitted explicitly; dates/snapshots are never fabricated.
 
-Each opponent pair becomes one aggregated connection with both participants'
+Each opponent pair becomes one undirected connection with both participants'
 win counts, source/visibility mix and local count. Current catalogue Elo/rank are
 always labelled current. Layout represents connections, not historical Elo.
 The timeline selects a prefix of the filtered match history; it does not invent
@@ -1124,11 +1124,3 @@ and match-inspector reads have stale-response guards, timeout/retry and exit
 cleanup. Node selection exposes accessible opponent buttons; a native visible
 song list provides keyboard access to the diagram. Camera and network requests
 do not replace the song hero or interfere with existing preview/replay ownership.
-
-V5.8.0.1 draws a loser-to-winner head at each endpoint with at least one saved
-win in the selected history. Split results have two heads, rather than implying
-a majority winner; the existing inspector retains exact W/L counts. The full
-layout expands its force spacing and then assigns cover/label-sized vacant cells
-with deterministic small offsets, preventing overlaps even in crowded components.
-Large full maps open at a readable hub-centred zoom, while Fit map shows the
-complete overview. Focused hop-ring layout and match data are unchanged.

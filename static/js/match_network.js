@@ -36,52 +36,29 @@ window.MatchNetwork = (() => {
       groups.push(group);
     }
     groups.sort((a,b)=>b.length-a.length);
-    let x=0,y=0,rowHeight=0;const width=Math.max(3200,Math.sqrt(nodes.length)*260);
+    let x=0,y=0,rowHeight=0;const width=Math.max(2400,Math.sqrt(nodes.length)*150);
     for(const group of groups){
-      const radius=Math.max(180,Math.sqrt(group.length)*125),size=radius*2+240;
+      const radius=Math.max(100,Math.sqrt(group.length)*65),size=radius*2+180;
       if(x && x+size>width){x=0;y+=rowHeight;rowHeight=0;}
-      group.forEach((n,i)=>{const angle=i*2.3999632297,r=88*Math.sqrt(i);n.x=x+size/2+Math.cos(angle)*r;n.y=y+size/2+Math.sin(angle)*r;n.cx=x+size/2;n.cy=y+size/2;});
+      group.forEach((n,i)=>{const angle=i*2.3999632297,r=42*Math.sqrt(i);n.x=x+size/2+Math.cos(angle)*r;n.y=y+size/2+Math.sin(angle)*r;n.cx=x+size/2;n.cy=y+size/2;});
       x+=size;rowHeight=Math.max(rowHeight,size);
     }
     // Spatial repulsion keeps each pass proportional to local density, not N².
     for(let iteration=0;iteration<60;iteration++){
       const grid=new Map();
-      for(const n of points.values()){n.dx=0;n.dy=0;const key=`${Math.floor(n.x/220)},${Math.floor(n.y/220)}`;const bucket=grid.get(key)||[];bucket.push(n);grid.set(key,bucket);}
+      for(const n of points.values()){n.dx=0;n.dy=0;const key=`${Math.floor(n.x/140)},${Math.floor(n.y/140)}`;const bucket=grid.get(key)||[];bucket.push(n);grid.set(key,bucket);}
       for(const n of points.values()){
-        const gx=Math.floor(n.x/220),gy=Math.floor(n.y/220);
+        const gx=Math.floor(n.x/140),gy=Math.floor(n.y/140);
         for(let i=-1;i<=1;i++)for(let j=-1;j<=1;j++)for(const other of grid.get(`${gx+i},${gy+j}`)||[]){
           if(n.id===other.id)continue;const dx=n.x-other.x,dy=n.y-other.y,d=Math.max(1,Math.hypot(dx,dy));
-          if(d<200){const push=(200-d)*.14/d;n.dx+=dx*push;n.dy+=dy*push;}
+          if(d<135){const push=(135-d)*.14/d;n.dx+=dx*push;n.dy+=dy*push;}
         }
         n.dx+=(n.cx-n.x)*.002;n.dy+=(n.cy-n.y)*.002;
       }
-      for(const e of edges){const a=points.get(e.a),b=points.get(e.b);if(!a||!b)continue;const dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1,Math.hypot(dx,dy)),force=(d-270)*.012/d;a.dx+=dx*force;a.dy+=dy*force;b.dx-=dx*force;b.dy-=dy*force;}
+      for(const e of edges){const a=points.get(e.a),b=points.get(e.b);if(!a||!b)continue;const dx=b.x-a.x,dy=b.y-a.y,d=Math.max(1,Math.hypot(dx,dy)),force=(d-170)*.012/d;a.dx+=dx*force;a.dy+=dy*force;b.dx-=dx*force;b.dy-=dy*force;}
       for(const n of points.values()){n.x+=Math.max(-15,Math.min(15,n.dx));n.y+=Math.max(-15,Math.min(15,n.dy));}
     }
-    // Reserve cover/label-sized cells after the force pass. Crowded hubs cannot
-    // pull labels back onto one another, including across component boundaries.
-    const occupied=new Set();
-    for(const n of points.values()){
-      const col=Math.round(n.x/240),row=Math.round(n.y/160);let cell=null;
-      for(let ring=0;!cell;ring++){
-        let distance=Infinity;
-        for(let y=-ring;y<=ring;y++)for(let x=-ring;x<=ring;x++){
-          if(Math.max(Math.abs(x),Math.abs(y))!==ring)continue;
-          const c=col+x,r=row+y,key=`${c},${r}`;
-          if(occupied.has(key))continue;
-          const d=(c*240-n.x)**2+(r*160-n.y)**2;
-          if(d<distance){distance=d;cell={c,r,key};}
-        }
-      }
-      occupied.add(cell.key);n.x=cell.c*240+(n.id%13-6);n.y=cell.r*160+(n.id%11-5);
-    }
     return points;
-  }
-  function directions(edge){
-    const result=[];
-    if(edge.a_wins>0)result.push({from:edge.b,to:edge.a,wins:edge.a_wins});
-    if(edge.b_wins>0)result.push({from:edge.a,to:edge.b,wins:edge.b_wins});
-    return result;
   }
   function mount(root) {
     if(controllers.has(root))return controllers.get(root);
@@ -95,9 +72,9 @@ window.MatchNetwork = (() => {
       root.innerHTML=`<div class="network-controls"><div class="network-search" role="search"><label for="network-${instance}-search">Find a song</label><input id="network-${instance}-search" type="search" autocomplete="off" placeholder="Song or artist…" maxlength="100"><ul class="network-search-results" hidden></ul></div>${select('mode','Visibility',[['all','Both modes'],['standard','Non-blind'],['blind','Blind']],'all')}${select('source','Matches',[['all','All matches'],['voting','Voting'],['first_round','Tournament first rounds'],['tournament','Later tournament rounds']],'all')}${select('depth','Layers',[['1','1 layer'],['2','2 layers'],['3','3 layers'],['4','4 layers'],['5','5 layers']],'4')}${select('branches','Branches per song',[['3','3 branches'],['4','4 branches'],['5','5 branches']],'4')}<label class="network-local"><input type="checkbox" data-network-local> Include local artist/album tournaments</label><button class="btn" data-network-action="all">Whole network</button></div>
         <div class="network-toolbar"><p>Drag to pan · Ctrl/⌘ + wheel or +/− to zoom · Arrow keys to pan · Home to fit</p><div><button class="btn" data-network-action="in" aria-label="Zoom in">+</button><button class="btn" data-network-action="out" aria-label="Zoom out">−</button><button class="btn" data-network-action="fit">Fit map</button><button class="btn" data-network-action="fullscreen">Full screen</button></div></div>
         <p class="network-status" role="status" aria-live="polite"></p><div class="network-timeline"><label for="network-${instance}-through">Matches through <time data-network-time>All saved matches</time></label><input type="range" id="network-${instance}-through" min="0" max="0" value="0" disabled aria-label="Matches through this point"><button class="btn" data-network-action="latest">Latest</button></div>
-        <div class="network-legend"><span class="standard">● Non-blind</span><span class="blind">● Blind</span><span class="voting">● Mixed visibility</span><span class="tournament">Pink rim: tournament evidence</span><span>Arrows point loser → winner. Heads at both ends mean both songs have wins. Select a connection for its record. Layout shows connections, not Elo rank.</span></div>
+        <div class="network-legend"><span class="standard">● Non-blind</span><span class="blind">● Blind</span><span class="voting">● Mixed visibility</span><span class="tournament">Pink rim: tournament evidence</span><span>Connections join opponents; select one for winners and losses. Layout shows connections, not Elo rank.</span></div>
         <div class="network-layout"><div class="network-viewport" tabindex="0" aria-label="Interactive match network. Use the song search or visible-song list to select songs with a keyboard."><canvas role="img" aria-label="Opponent network"></canvas><p class="network-empty" hidden>No matches in this view.</p></div><aside class="network-details" tabindex="-1" aria-label="Selected song or connection" hidden></aside></div>
-        <details class="network-song-list"><summary>Visible songs</summary><div data-network-list></div><button class="btn" data-network-action="more">Show more songs</button></details><p class="network-note">Current collection and current Elo. Whole maps start at a readable zoom; Fit map shows the overview. Timeline filters saved matches, not historical rankings. Points-only rounds have no Elo change. Songs without matching connections are still searchable. Local tournaments are separate from competition.</p>`;
+        <details class="network-song-list"><summary>Visible songs</summary><div data-network-list></div><button class="btn" data-network-action="more">Show more songs</button></details><p class="network-note">Current collection and current Elo. Timeline filters saved matches, not historical rankings. Points-only rounds have no Elo change. Songs without matching connections are still searchable. Local tournaments are separate from competition.</p>`;
       const $=s=>root.querySelector(s);
       viewport=$('.network-viewport');canvas=$('canvas');ctx=canvas.getContext('2d');details=$('.network-details');status=$('.network-status');range=$('input[type=range]');clock=$('[data-network-time]');search=$('input[type=search]');results=$('.network-search-results');
       mode=$(`#network-${instance}-mode`);source=$(`#network-${instance}-source`);depth=$(`#network-${instance}-depth`);branches=$(`#network-${instance}-branches`);local=$('[data-network-local]');
@@ -139,7 +116,7 @@ window.MatchNetwork = (() => {
         range.setAttribute('aria-valuetext',clock.textContent);
         status.textContent=`${data.nodes.length} songs · ${data.edges.length} connections · ${data.totals.shown_matches??data.edges.reduce((n,e)=>n+e.count,0)} matches shown · ${data.totals.matches} in filtered history${focus ? ` · ${data.depth} layers, up to ${data.branches} new branches per song` : ` · ${data.totals.connected} connected songs in the collection`}${data.limits.limited||data.limits.edges_limited?' · Drawing limit reached; focus a song or narrow the filters.':''}${data.omitted?` · ${data.omitted} results have unavailable participants.`:''}`;
         root.querySelector('.network-empty').textContent='No matches in this view.';root.querySelector('.network-empty').hidden=data.nodes.length>0;
-        if(focus!=null && points.has(focus)){const centre=points.get(focus),ring=Math.max(0,...[...points.values()].filter(n=>n.level===1).map(n=>Math.hypot(n.x-centre.x,n.y-centre.y))),k=ring?Math.max(.06,Math.min(1,viewport.clientWidth/(2*(ring+70)),viewport.clientHeight/(2*(ring+70)))):1;camera={x:viewport.clientWidth/2-centre.x*k,y:viewport.clientHeight/2-centre.y*k,k};}else{fit();if(camera.k<.85&&points.size){const hub=[...points.values()].sort((a,b)=>b.opponents-a.opponents||b.matches-a.matches||a.id-b.id)[0];camera={x:viewport.clientWidth/2-hub.x,y:viewport.clientHeight/2-hub.y,k:1};}}
+        if(focus!=null && points.has(focus)){const centre=points.get(focus),ring=Math.max(0,...[...points.values()].filter(n=>n.level===1).map(n=>Math.hypot(n.x-centre.x,n.y-centre.y))),k=ring?Math.max(.06,Math.min(1,viewport.clientWidth/(2*(ring+70)),viewport.clientHeight/(2*(ring+70)))):1;camera={x:viewport.clientWidth/2-centre.x*k,y:viewport.clientHeight/2-centre.y*k,k};}else fit();
         list();draw();if(focus!=null && points.has(focus))inspectNode(focus,false);
       }catch(error){if(disposed||own!==request||error.name==='AbortError')return;status.textContent='Network could not load. ';const retry=document.createElement('button');retry.className='btn';retry.textContent='Retry network';retry.dataset.networkAction='retry';status.append(retry);data=null;points.clear();root.querySelector('[data-network-list]').replaceChildren();range.disabled=true;clock.textContent='Network unavailable';root.querySelector('.network-empty').textContent='Network unavailable. Retry above.';root.querySelector('.network-empty').hidden=false;draw();}
       finally{if(own===request){loadingGraph=false;root.removeAttribute('aria-busy');}}
@@ -150,37 +127,26 @@ window.MatchNetwork = (() => {
       try{const payload=await read('/api/match-network?search='+encodeURIComponent(query),own,10000);if(disposed||own!==searchRequest||own.signal.aborted||!root.isConnected)return;searchRows=payload.songs;results.innerHTML=searchRows.map(s=>`<li><button type="button" data-network-find="${s.id}">${esc(s.title)}<small>${esc(s.artist_links.map(a=>a.name).join(', '))} · ${num(s.elo)} Elo</small></button></li>`).join('')||'<li>No matching songs.</li>';}catch(e){if(e.name!=='AbortError' && own===searchRequest && !disposed && root.isConnected)results.innerHTML='<li>Search could not load. Type again to retry.</li>';}
     }
     function choose(id){focus=Number(id);results.hidden=true;search.value='';load(data?.timeline.position??null);}
-    function fit(){if(!points.size)return;const values=[...points.values()],xs=values.map(n=>n.x),ys=values.map(n=>n.y),minX=Math.min(...xs)-90,maxX=Math.max(...xs)+90,minY=Math.min(...ys)-90,maxY=Math.max(...ys)+90;const k=Math.max(.01,Math.min(1.25,(viewport.clientWidth||640)/(maxX-minX),(viewport.clientHeight||500)/(maxY-minY)));camera={k,x:(viewport.clientWidth||640)/2-(minX+maxX)*k/2,y:(viewport.clientHeight||500)/2-(minY+maxY)*k/2};draw();}
+    function fit(){if(!points.size)return;const values=[...points.values()],xs=values.map(n=>n.x),ys=values.map(n=>n.y),minX=Math.min(...xs)-90,maxX=Math.max(...xs)+90,minY=Math.min(...ys)-90,maxY=Math.max(...ys)+90;const k=Math.max(.06,Math.min(1.25,(viewport.clientWidth||640)/(maxX-minX),(viewport.clientHeight||500)/(maxY-minY)));camera={k,x:(viewport.clientWidth||640)/2-(minX+maxX)*k/2,y:(viewport.clientHeight||500)/2-(minY+maxY)*k/2};draw();}
     function resize(){if(!canvas)return;const ratio=Math.min(2,window.devicePixelRatio||1),width=viewport.clientWidth||640,height=viewport.clientHeight||500;if(data&&lastWidth){camera.x+=(width-lastWidth)/2;camera.y+=(height-lastHeight)/2;}lastWidth=width;lastHeight=height;canvas.width=width*ratio;canvas.height=height*ratio;draw();}
     function draw(){
       if(!ctx||!canvas||disposed)return;const ratio=Math.min(2,window.devicePixelRatio||1),w=canvas.width/ratio,h=canvas.height/ratio;
       ctx.setTransform(ratio,0,0,ratio,0,0);ctx.clearRect(0,0,w,h);if(!data)return;
       const css=getComputedStyle(root),colour=key=>css.getPropertyValue('--'+key).trim()||({blind:'#55d6c2',standard:'#f0a35b',tournament:'#ff78a6',voting:'#9cdb91',song:'#1db954'})[key];
       ctx.save();ctx.translate(camera.x,camera.y);ctx.scale(camera.k,camera.k);
-      for(const edge of data.edges){const a=points.get(edge.a),b=points.get(edge.b);if(!a||!b)continue;const ax=a.x*camera.k+camera.x,bx=b.x*camera.k+camera.x,ay=a.y*camera.k+camera.y,by=b.y*camera.k+camera.y;if(Math.max(ax,bx)<-30||Math.min(ax,bx)>w+30||Math.max(ay,by)<-30||Math.min(ay,by)>h+30)continue;const active=selectedPair===edge.id,near=selected===edge.a||selected===edge.b;ctx.globalAlpha=selected!=null&&!near&&!active ? .14 : .55;ctx.setLineDash(edge.modes.blind&&!edge.modes.standard?[7,5]:[]);const path=()=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();};if(edge.sources.first_round||edge.sources.tournament){ctx.strokeStyle=colour('tournament');ctx.lineWidth=(active?7:4)/Math.max(.5,camera.k);path();}ctx.strokeStyle=active?colour('song'):edge.modes.blind&&edge.modes.standard?colour('voting'):colour(edge.modes.blind?'blind':'standard');ctx.lineWidth=(active?3:1.3)/Math.max(.5,camera.k);path();
-        // Each endpoint gets a head only if that song has recorded a win.
-        ctx.setLineDash([]);
-        for(const direction of directions(edge)){
-          const loser=points.get(direction.from),winner=points.get(direction.to),dx=winner.x-loser.x,dy=winner.y-loser.y,d=Math.hypot(dx,dy);
-          if(!d)continue;const ux=dx/d,uy=dy/d,radius=camera.k<.3?10:25,gap=Math.min(radius+4/camera.k,d*.3),length=Math.min(12/camera.k,d*.18),half=length*.5;
-          if(d<2*radius+length)continue;
-          const x=winner.x-ux*gap,y=winner.y-uy*gap;
-          ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x-ux*length-uy*half,y-uy*length+ux*half);ctx.lineTo(x-ux*length+uy*half,y-uy*length-ux*half);ctx.closePath();ctx.fillStyle=ctx.strokeStyle;ctx.fill();
-          if(edge.sources.first_round||edge.sources.tournament){const core=ctx.strokeStyle;ctx.strokeStyle=colour('tournament');ctx.lineWidth=1/Math.max(.5,camera.k);ctx.stroke();ctx.strokeStyle=core;}
-        }
-      }
+      for(const edge of data.edges){const a=points.get(edge.a),b=points.get(edge.b);if(!a||!b)continue;const active=selectedPair===edge.id,near=selected===edge.a||selected===edge.b;ctx.globalAlpha=selected!=null&&!near&&!active ? .14 : .55;ctx.setLineDash(edge.modes.blind&&!edge.modes.standard?[7,5]:[]);const path=()=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.stroke();};if(edge.sources.first_round||edge.sources.tournament){ctx.strokeStyle=colour('tournament');ctx.lineWidth=(active?7:4)/Math.max(.5,camera.k);path();}ctx.strokeStyle=active?colour('song'):edge.modes.blind&&edge.modes.standard?colour('voting'):colour(edge.modes.blind?'blind':'standard');ctx.lineWidth=(active?3:1.3)/Math.max(.5,camera.k);path();}
       ctx.setLineDash([]);ctx.globalAlpha=1;const coverBudget=new Set();
       for(const n of points.values()){
         const sx=n.x*camera.k+camera.x,sy=n.y*camera.k+camera.y;if(sx<-100||sy<-90||sx>w+100||sy>h+100)continue;
         const radius=camera.k<.3?10:25;ctx.beginPath();ctx.arc(n.x,n.y,radius,0,Math.PI*2);ctx.fillStyle=n.id===selected?'#263d2e':'#242424';ctx.fill();
         if(camera.k>=.45 && n.cover_url && (coverBudget.has(n.cover_url)||coverBudget.size<96)){coverBudget.add(n.cover_url);let img=images.get(n.cover_url);if(!img){if(images.size>=96){const first=[...images.keys()].find(key=>!coverBudget.has(key));if(first!=null){images.get(first).onload=null;images.delete(first);}}img=new Image();images.set(n.cover_url,img);img.onload=()=>{if(!disposed&&images.get(n.cover_url)===img)draw();};img.src=n.cover_url;}if(img.complete&&img.naturalWidth){ctx.save();ctx.beginPath();ctx.arc(n.x,n.y,23,0,Math.PI*2);ctx.clip();ctx.drawImage(img,n.x-23,n.y-23,46,46);ctx.restore();}}
         ctx.beginPath();ctx.arc(n.x,n.y,radius,0,Math.PI*2);ctx.strokeStyle=colour(n.id===selected||n.id===data.focus_id?'song':'voting');ctx.lineWidth=n.id===selected?4:1.5;ctx.stroke();
-        if(camera.k>=.42){ctx.fillStyle='#f4f4f4';ctx.font='bold 13px Arial';ctx.textAlign='center';let title=n.title.slice(0,40);while(title.length>1&&((ctx.measureText(title+(title.length<n.title.length?'…':''))?.width)??title.length*7)>180)title=title.slice(0,-1);if(title.length<n.title.length)title+='…';ctx.fillText(title,n.x,n.y+43);ctx.fillStyle='#bbb';ctx.font='12px Arial';ctx.fillText(num(n.elo)+' Elo'+(n.level!=null?' · layer '+n.level:''),n.x,n.y+60);}
+        if(camera.k>=.42){ctx.fillStyle='#f4f4f4';ctx.font='bold 13px Arial';ctx.textAlign='center';const title=n.title.length>24?n.title.slice(0,22)+'…':n.title;ctx.fillText(title,n.x,n.y+43);ctx.fillStyle='#bbb';ctx.font='12px Arial';ctx.fillText(num(n.elo)+' Elo'+(n.level!=null?' · layer '+n.level:''),n.x,n.y+60);}
       }
       ctx.restore();
-      canvas.setAttribute('aria-label',`${data.nodes.length} songs and ${data.edges.length} opponent connections with loser-to-winner arrows. Current Elo; use the visible-song list for keyboard selection.`);
+      canvas.setAttribute('aria-label',`${data.nodes.length} songs and ${data.edges.length} opponent connections. Current Elo; use the visible-song list for keyboard selection.`);
     }
-    function zoom(factor,x=viewport.clientWidth/2,y=viewport.clientHeight/2){const k=Math.max(.01,Math.min(3,camera.k*factor)),scale=k/camera.k;camera={k,x:x-(x-camera.x)*scale,y:y-(y-camera.y)*scale};draw();}
+    function zoom(factor,x=viewport.clientWidth/2,y=viewport.clientHeight/2){const k=Math.max(.04,Math.min(3,camera.k*factor)),scale=k/camera.k;camera={k,x:x-(x-camera.x)*scale,y:y-(y-camera.y)*scale};draw();}
     function list(){if(!data)return;const rows=[...data.nodes].sort((a,b)=>b.matches-a.matches||a.title.localeCompare(b.title));root.querySelector('[data-network-list]').innerHTML=rows.slice(0,listLimit).map(n=>`<button class="network-list-song" data-network-node="${n.id}">${esc(n.title)}<small>${num(n.elo)} current Elo · ${n.opponents} opponents</small></button>`).join('');root.querySelector('.network-song-list summary').textContent=`Visible songs · ${rows.length}`;root.querySelector('[data-network-action=more]').hidden=listLimit>=rows.length;}
     function open(){details.hidden=false;root.classList.add('has-network-details');}
     function close(focusBack=true){inspection?.abort();inspection=null;selected=null;selectedPair=null;if(details)details.hidden=true;root.classList.remove('has-network-details');draw();if(focusBack)viewport?.focus({preventScroll:true});}
@@ -226,5 +192,5 @@ window.MatchNetwork = (() => {
   function mountAll(container=document){for(const [root,controller] of controllers)if(!root.isConnected)controller.destroy();container.querySelectorAll('[data-match-network]').forEach(mount);}
   document.addEventListener('DOMContentLoaded',()=>mountAll());
   window.addEventListener('pagehide',()=>{for(const controller of [...controllers.values()])controller.destroy();});
-  return Object.freeze({panel,mount,mountAll,layout,directions});
+  return Object.freeze({panel,mount,mountAll,layout});
 })();
