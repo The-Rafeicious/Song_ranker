@@ -308,11 +308,11 @@ body.gameplay-page #main .game-choice input:focus-visible + span {
 body.gameplay-page #main .game-choice:hover > span {
   border-color: var(--tournament);
 }
-:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"]) #main .game-select {
+:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"], body[data-page="match_network"]) #main .game-select {
   position: relative;
   min-width: 0;
 }
-:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"]) #main .game-select-trigger {
+:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"], body[data-page="match_network"]) #main .game-select-trigger {
   display: flex;
   justify-content: space-between;
   gap: 16px;
@@ -327,7 +327,7 @@ body.gameplay-page #main .game-choice:hover > span {
   text-align: left;
   font-weight: 800;
 }
-:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"]) #main .game-select-menu {
+:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"], body[data-page="match_network"]) #main .game-select-menu {
   position: absolute;
   inset: calc(100% + 8px) 0 auto;
   overflow-y: auto;
@@ -339,10 +339,10 @@ body.gameplay-page #main .game-choice:hover > span {
   box-shadow: 0 12px 28px #000b;
   z-index: 35;
 }
-:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"]) #main .game-select.opens-up .game-select-menu {
+:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"], body[data-page="match_network"]) #main .game-select.opens-up .game-select-menu {
   top: auto;
 }
-:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"]) #main .game-select-menu button {
+:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"], body[data-page="match_network"]) #main .game-select-menu button {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -356,22 +356,22 @@ body.gameplay-page #main .game-choice:hover > span {
   color: #eee;
   text-align: left;
 }
-:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"]) #main .game-select-menu button small {
+:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"], body[data-page="match_network"]) #main .game-select-menu button small {
   display: block;
   margin-top: 2px;
   font-size: 14px;
 }
-:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"]) #main
+:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"], body[data-page="match_network"]) #main
   .game-select-menu
   button:is(:hover, :focus-visible, [aria-selected="true"]) {
   background: #ff78a617;
   border-color: #ff78a650;
 }
-:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"]) #main .game-select-check {
+:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"], body[data-page="match_network"]) #main .game-select-check {
   color: var(--tournament);
   visibility: hidden;
 }
-:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"]) #main [aria-selected="true"] .game-select-check {
+:is(body.gameplay-page, body[data-page="tournament_local_stats"], body[data-page="voting_stats"], body[data-page="song"], body[data-page="match_network"]) #main [aria-selected="true"] .game-select-check {
   visibility: visible;
 }
 body.gameplay-page #main #t-scope-picker {

@@ -871,3 +871,58 @@ def profile_voting_details(conn, song_ids):
                 recent_wins=sum(r['won'] for r in recent),recent_matches=len(recent),recent_events=len(rows[-10:]),
                 sources=[dict(key=origin,matches=sum(r['origin']==origin for r in appearances),wins=sum(r['won'] and r['origin']==origin for r in appearances)) for origin in ('ordinary','tournament')],
                 opponents_list=sorted(opponents.values(),key=lambda r:(-(r['wins']+r['losses']),r['id']))[:5])
+
+
+@app.route('/match-network')
+def match_network_page():
+    """Open the wide opponent workspace without hydrating the catalogue."""
+    return render_template('match_network.html', focus=request.args.get('song_id',type=int))
+
+
+@app.route('/api/match-network')
+def match_network_api():
+    """Validate graph controls, search or pair-history reads in one snapshot."""
+    from songranker.reports.match_network import build_match_network, search_network_songs
+    def integer(key, default, low, high):
+        """Reject malformed graph ranges instead of silently changing the request."""
+        value = request.args.get(key,str(default))
+        result = int(value)
+        if not low <= result <= high:
+            raise ValueError('Invalid range.')
+        return result
+    try:
+        mode=request.args.get('mode','all'); source=request.args.get('source','all')
+        if mode not in ('all','standard','blind') or source not in ('all','voting','first_round','tournament'):
+            raise ValueError('Invalid filter.')
+        local=request.args.get('local','0')
+        if local not in ('0','1'):
+            raise ValueError('Invalid scope.')
+        depth=integer('depth',4,1,5); branches=integer('branches',4,3,5)
+        through=integer('through',0,0,10**9) if 'through' in request.args else None
+        focus=integer('song_id',0,1,2**63-1) if 'song_id' in request.args else None
+        pair=None
+        if 'pair' in request.args:
+            values=request.args['pair'].split(',')
+            if len(values)!=2:
+                raise ValueError('Choose two songs.')
+            pair=tuple(int(v) for v in values)
+            if pair[0]==pair[1] or any(v<1 or v>2**63-1 for v in pair):
+                raise ValueError('Choose two different songs.')
+        page=integer('page',1,1,10**9)
+        query=request.args.get('search')
+        if query is not None and len(query)>100:
+            raise ValueError('Search is too long.')
+    except (TypeError,ValueError,OverflowError):
+        return jsonify(error='Choose valid network filters, songs and ranges.'),400
+    conn=get_db_connection()
+    try:
+        conn.execute('BEGIN')
+        for sid in set(pair or ()) | ({focus} if focus is not None else set()):
+            if not conn.execute('SELECT 1 FROM songs WHERE id=?',(sid,)).fetchone():
+                return jsonify(error='Song not found.'),404
+        data=(search_network_songs(conn,query) if query is not None else
+              build_match_network(conn,focus,depth,branches,mode,source,local=='1',through,pair,page))
+        response=jsonify(data); response.headers['Cache-Control']='no-store'
+        return response
+    finally:
+        conn.close()

@@ -69,6 +69,8 @@ class ArchitectureTests(unittest.TestCase):
         added.append(dict(path='/api/voting-replay',endpoint='voting_replay',methods=['GET']))
         added.append(dict(path='/api/song/<int:song_id>/stats',endpoint='song_stats',methods=['GET']))
         added.append(dict(path='/api/profile/<kind>/<int:entity_id>/stats',endpoint='collection_stats',methods=['GET']))
+        added.append(dict(path='/match-network',endpoint='match_network_page',methods=['GET']))
+        added.append(dict(path='/api/match-network',endpoint='match_network_api',methods=['GET']))
         self.assertEqual(expected, [r for r in actual if r not in added])
 
     def test_pages_use_one_asset_registry_and_last_shared_baseline(self):
@@ -91,6 +93,7 @@ class ArchitectureTests(unittest.TestCase):
             "/vibe-map",
             "/global_stats",
             "/voting_stats",
+            "/match-network",
             "/history",
             "/trivia_stats",
             "/tournament_stats",

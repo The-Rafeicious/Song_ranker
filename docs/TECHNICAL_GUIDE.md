@@ -1080,3 +1080,47 @@ ordering. Local result evidence remains available for seeding local brackets;
 public Elo exchange policy and ordinary voting behaviour are unchanged. Current
 queries exclude historical local entries immediately, with no result deletion,
 reset or migration. Existing library/tag play still affects its own selection.
+
+## Opponent match network (V5.8.0)
+
+`/match-network` is a dedicated Voting Stats workspace; `song_id` opens it focused
+on a current song. Song profiles lazily mount the same controller after Explore
+matches. Assets are registered once in templates/assets.html; the independent
+workspace does not hydrate /api/collection. Frontend and scoped CSS live in
+match_network.js/css, with read-only graph operations in reports/match_network.py
+and routes in modes/voting.py. There is no graph audio or database migration.
+
+`GET /api/match-network` accepts optional song_id, depth=1..5 (default 4),
+branches=3..5 (default 4), mode=all|standard|blind,
+source=all|voting|first_round|tournament, local=0|1 and through (a zero-based count
+of included chronological matches). Local means artist/album tournaments; it
+defaults off. Only finished tournament brackets and decided valid matches appear.
+Effective public first-round events replace their raw tournament counterpart,
+preventing double counting. Other rounds remain points-only unless a real public
+snapshot exists. Corrections/voids use the effective projection. Removed or invalid
+participants are omitted explicitly; dates/snapshots are never fabricated.
+
+Each opponent pair becomes one undirected connection with both participants'
+win counts, source/visibility mix and local count. Current catalogue Elo/rank are
+always labelled current. Layout represents connections, not historical Elo.
+The timeline selects a prefix of the filtered match history; it does not invent
+intermediate ratings or expose pending rounds. Positions are deterministic: a
+spatially indexed bounded layout for the full graph and rings for focused hops.
+
+Focused breadth exploration adds at most the selected number of new opponents
+per expanded song for the requested layers (strongest/recent connections first),
+retains cross-links and recomputes visible hop distances. Limit the focused map
+to 180 nodes; full drawing to 1,400 connected nodes and 6,000 connections. Totals
+and drawing-limit notices are separate from the visible subset. Unplayed and
+capped-out songs remain searchable. `search` returns at most 25 current songs by
+accent-insensitive title/artist match. `pair=a,b&page=1` returns all filtered pair
+history in newest-first pages of twenty, independently of drawing caps. All reads
+use a single caller-owned transaction; graph controls validate ranges and IDs.
+
+Canvas uses capped device-pixel ratio, viewport culling, album-image reuse and a
+96-image cache. Pan/zoom, resize-centre preservation and shared controls are local;
+filters/selected history fetch bounded graph summaries. Separate abortable search
+and match-inspector reads have stale-response guards, timeout/retry and exit
+cleanup. Node selection exposes accessible opponent buttons; a native visible
+song list provides keyboard access to the diagram. Camera and network requests
+do not replace the song hero or interfere with existing preview/replay ownership.

@@ -36,6 +36,7 @@ V5.3 has one current owner per responsibility. Use the [function index](FUNCTION
 | [songranker/overall.py](../songranker/overall.py) | Derived, calibrated Overall scores and their rankings/details APIs. |
 | [songranker/pages.py](../songranker/pages.py) | Home, catalogue/search/rankings, shared collection profiles and Global Stats routes. |
 | [songranker/paths.py](../songranker/paths.py) | One resolved project root for data, templates, assets and documentation. |
+| [songranker/reports/match_network.py](../songranker/reports/match_network.py) | Read-only opponent graph, bounded breadth exploration and deduplicated pair history. |
 | [songranker/reports/global_stats_data.py](../songranker/reports/global_stats_data.py) | Read-only cross-mode Global Stats from one SQLite snapshot. |
 | [songranker/reports/health.py](../songranker/reports/health.py) | Shared exposure/coverage health and diagnostics using production selectors. |
 | [songranker/reports/stats_activity.py](../songranker/reports/stats_activity.py) | Shared dated activity, comparison charts and report attachments. |
@@ -90,3 +91,7 @@ V5.3 has one current owner per responsibility. Use the [function index](FUNCTION
 | `package.json`, `package-lock.json` | Pinned Node test dependencies and convenient check commands |
 
 Do not create compatibility copies of moved modules. Historical migrations remain because old exports and databases must still restore. One-time release cleanup tools, prototype selectors, IDE metadata and tracked bytecode were removed; active data and backups are preserved.
+
+`static/js/match_network.js` and `static/css/match_network.css` own the interactive
+opponent workspace and its lazy song-page view. `templates/match_network.html`
+provides the independent page shell; templates/assets.html remains the registry.

@@ -32,6 +32,7 @@ OWNERS = {
     "songranker/modes/challenges.py": "Browser-owned persisted challenge runs and public pure-rule exports.",
     "songranker/modes/challenge_rules.py": "Pure streak/difficulty rules, reusable without Flask or a database.",
     "songranker/modes/vibe_similarity.py": "Pure coordinate similarity and coverage-aware selector affinity.",
+    "songranker/reports/match_network.py": "Read-only opponent graph, bounded breadth exploration and deduplicated match history.",
     "songranker/reports/global_stats_data.py": "Read-only cross-mode Global Stats from one SQLite snapshot.",
     "songranker/reports/stats_activity.py": "Shared dated activity, comparison charts and report attachments.",
     "songranker/reports/health.py": "Shared exposure/coverage health and diagnostics using production selectors.",
