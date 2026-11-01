@@ -549,6 +549,25 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.emulateMedia({reducedMotion:'reduce'});
   assert.equal(await page.locator('[data-match-network]').evaluate(root=>root.getAnimations({subtree:true}).length),0);
   await page.emulateMedia({reducedMotion:'no-preference'});
+  await page.goto(base+'/query');
+  await page.locator('.query-result').first().waitFor();
+  assert.ok(await page.locator('.query-result').count()<=20);
+  await page.locator('.query-result summary').first().click();
+  assert.ok(await page.locator('.query-expanded h2 a').first().getAttribute('href'));
+  await page.locator('[data-add]').click();
+  await page.locator('[data-game-select="field-0"] .game-select-trigger').click();
+  await page.locator('[data-game-select="field-0"] [data-game-option="trivia_rounds"]').click();
+  await page.locator('[data-number="0"]').fill('0');
+  await page.locator('[data-query-form] button[type="submit"]').click();
+  await page.waitForFunction(()=>!document.querySelector('[data-query-results][aria-busy]'));
+  for(const width of [390,768,1365]){
+   await page.setViewportSize({width,height:1000});await bounded(page,width,'query',folder);
+   await page.locator('[data-mode-query]').screenshot({path:folder+'/query-'+width+'.png'});
+  }
+  await page.locator('[data-game-select="query-preset"] .game-select-trigger').click();
+  await page.locator('[data-game-select="query-preset"] [data-game-option="Recognition by rounds"]').click();
+  await page.waitForFunction(()=>!document.querySelector('[data-query-results][aria-busy]'));
+  assert.equal(await page.locator('[data-query-error]').textContent(),'');
   assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

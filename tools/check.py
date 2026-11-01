@@ -15,6 +15,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 OWNERS = {
+    "songranker/reports/query.py": "Read-only cross-mode filtering, pooled metrics, stable sorting and bounded paging.",
     "songranker/apple_access.py": "Apple request gates, bounded lookup/preview caches and streaming diagnostics.",
     "songranker/catalog.py": "Shared catalogue projections, cross-mode results and Elo history queries.",
     "songranker/services.py": "Flask configuration, managed connections, song hydration and catalogue writes.",
