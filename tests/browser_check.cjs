@@ -506,6 +506,42 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
 
   await page.locator('.elo-replay-panel').screenshot({path:folder+'/song-elo-replay.png'});
   await page.emulateMedia({reducedMotion:'no-preference'});
+  // Opponent networks use real saved votes, a lazy song panel and bounded canvas.
+  await page.goto(base+'/song/1');await page.locator('[data-network-start]').waitFor();
+  assert.equal(await page.locator('[data-match-network] canvas').count(),0,'Song network remains lazy');
+  await page.locator('[data-network-start]').click();await page.waitForFunction(()=>document.querySelector('[data-match-network] .network-status')?.textContent.includes('connections'));
+  assert.ok(await page.locator('[data-match-network] .network-viewport canvas').isVisible());
+  assert.equal(await page.locator('[data-match-network] audio').count(),0,'Network never creates audio');
+  await page.goto(base+'/match-network?song_id=1');
+  await page.waitForFunction(()=>document.querySelector('[data-match-network] .network-status')?.textContent.includes('connections'));
+  const networkSource=page.locator('[data-match-network] [data-game-select$="-source"]');
+  await networkSource.locator('.game-select-trigger').click();assert.ok(await networkSource.locator('.game-select-menu').isVisible());
+  assert.equal(await networkSource.locator('.game-select-menu').evaluate(e=>getComputedStyle(e).position),'absolute');
+  assert.equal(await networkSource.locator('.game-select-trigger').evaluate(e=>getComputedStyle(e).color),'rgb(156, 219, 145)');
+  await networkSource.locator('[data-game-option="all"]').click();await page.waitForFunction(()=>!document.querySelector('[data-match-network][aria-busy]'));
+  await page.locator('.network-song-list summary').click();
+  await page.locator('[data-network-node="1"]').click();
+  await page.locator('[data-network-pair]').first().click();
+  await page.locator('.network-match-list li').first().waitFor();
+  assert.match(await page.locator('.network-details').textContent(),/Won:|Lost:/);
+  assert.match(await page.locator('.network-details').textContent(),/Current Elo/);
+  const initial=await page.locator('.network-viewport canvas').screenshot();
+  await page.locator('[data-network-action="in"]').click();
+  const zoomed=await page.locator('.network-viewport canvas').screenshot();assert.ok(!initial.equals(zoomed),'Canvas zoom changes the drawing');
+  await page.locator('.network-viewport').focus();await page.keyboard.press('ArrowRight');await page.keyboard.press('Home');
+  for(const width of [390,768,1365]){
+   await page.setViewportSize({width,height:1000});await bounded(page,width,'match-network',folder);
+   await page.locator('[data-match-network]').screenshot({path:folder+'/match-network-'+width+'.png'});
+  }
+  await page.locator('[data-network-action="close"]').click();
+  await page.locator('[data-match-network] input[type="search"]').fill('Bracket track');
+  await page.locator('[data-network-find]').first().waitFor();
+  await page.locator('[data-network-find]').first().click();
+  await page.waitForFunction(()=>!document.querySelector('[data-match-network][aria-busy]'));
+  assert.ok(await page.locator('.network-details .network-identity').count());
+  await page.emulateMedia({reducedMotion:'reduce'});
+  assert.equal(await page.locator('[data-match-network]').evaluate(root=>root.getAnimations({subtree:true}).length),0);
+  await page.emulateMedia({reducedMotion:'no-preference'});
   assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

@@ -711,6 +711,9 @@ Standard/blind voting operations, history page and detailed Voting Stats.
 | [build_voting_stats.top](../songranker/modes/voting.py#L658) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
 | [build_voting_stats.category](../songranker/modes/voting.py#L672) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
 | [profile_voting_details](../songranker/modes/voting.py#L837) | `conn, song_ids` | Pool track appearances, counting internal votes twice but each event once. |
+| [match_network_page](../songranker/modes/voting.py#L877) | `` | Open the wide opponent workspace without hydrating the catalogue. |
+| [match_network_api](../songranker/modes/voting.py#L883) | `` | Validate graph controls, search or pair-history reads in one snapshot. |
+| [match_network_api.integer](../songranker/modes/voting.py#L886) | `key, default, low, high` | Reject malformed graph ranges instead of silently changing the request. |
 
 ## songranker/overall.py
 
@@ -794,6 +797,18 @@ Shared exposure/coverage health and diagnostics using production selectors.
 | [build_selection_health](../songranker/reports/health.py#L98) | `conn, context=None` | Build selection health; reads albums, challenge_runs, genres, shelf_album_exposures, song_details, song_genres, songs, sqlite_master. |
 | [build_selection_health.pool](../songranker/reports/health.py#L156) | `key, label, rows, counts, *, previous=(), rule='base', recent=(), other_counts=None, unit='tracks', kind='song', ready=True` | Project an eligible draw pool into production-rule probabilities and exposure diagnostics. |
 | [build_selection_health.coverage](../songranker/reports/health.py#L311) | `label, count` | Describe one eligibility count relative to the full catalogue with coverage health. |
+
+## songranker/reports/match_network.py
+
+Read-only opponent graph, bounded breadth exploration and deduplicated match history.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [network_songs](../songranker/reports/match_network.py#L6) | `conn` | Read current public identities once; no preview/private or pending state. |
+| [network_records](../songranker/reports/match_network.py#L28) | `conn, songs, mode='all', source='all', include_local=False` | Deduplicate public first-round projections; show points-only rounds honestly. |
+| [search_network_songs](../songranker/reports/match_network.py#L72) | `conn, query` | Search the full current catalogue, including disconnected or capped-out songs. |
+| [search_network_songs.normal](../songranker/reports/match_network.py#L75) | `value` | Ignore accents/case in public title and artist lookup. |
+| [build_match_network](../songranker/reports/match_network.py#L85) | `conn, song_id=None, depth=4, branches=4, mode='all', source='all', include_local=False, through=None, pair=None, page=1` | Aggregate first, then bound drawing; pair histories retain all filtered results. |
 
 ## songranker/reports/stats_activity.py
 
@@ -1106,8 +1121,8 @@ Preserve public routes, asset order and profile reads across module consolidatio
 | [Assets.handle_starttag](../tests/test_architecture.py#L28) | `self, tag, attrs` | Handle starttag. |
 | [ArchitectureTests.register](../tests/test_architecture.py#L40) | `self` | Register the launcher's actual feature owners without running startup sync. |
 | [ArchitectureTests.test_all_previous_urls_methods_and_endpoint_names_are_preserved](../tests/test_architecture.py#L45) | `self` | Verify all previous urls methods and endpoint names are preserved. |
-| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L74) | `self` | Verify pages use one asset registry and last shared baseline. |
-| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L125) | `self` | Verify collection profiles share identity payloads and are read only. |
+| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L76) | `self` | Verify pages use one asset registry and last shared baseline. |
+| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L128) | `self` | Verify collection profiles share identity payloads and are read only. |
 
 ## tests/test_bulk_source_review.py
 
@@ -1451,6 +1466,23 @@ Impact evidence, shrinkage and browser/server parity.
 | [ImpactTests.test_tested_only_distinct_evidence_and_lighter_prior](../tests/test_impact.py#L10) | `self` | Verify tested only distinct evidence and lighter prior. |
 | [ImpactTests.test_empty_flat_and_broad_catalogues_remain_finite](../tests/test_impact.py#L22) | `self` | Verify empty flat and broad catalogues remain finite. |
 | [ImpactTests.test_javascript_matches_python_for_sparse_and_wide_ratings](../tests/test_impact.py#L31) | `self` | Verify javascript matches python for sparse and wide ratings. |
+
+## tests/test_match_network.py
+
+Opponent graph topology, deduplication, privacy and bounded display reads.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [MatchNetworkTests.bracket](../tests/test_match_network.py#L15) | `self, tid, scope='global', status='completed', blind=False` | Store a finished or private bracket with explicit scope/visibility. |
+| [MatchNetworkTests.match](../tests/test_match_network.py#L19) | `self, tid, winner, loser, round_no=1` | Store a decided match; Elo can be attached separately for first-round dedup. |
+| [MatchNetworkTests.raw_votes](../tests/test_match_network.py#L24) | `self, pairs` | Seed large legacy-style effective history without recalculating Elo. |
+| [MatchNetworkTests.test_first_round_is_once_later_round_has_no_invented_elo_and_local_is_explicit](../tests/test_match_network.py#L28) | `self` | Verify first round is once later round has no invented elo and local is explicit. |
+| [MatchNetworkTests.test_breadth_depth_cycles_and_disconnected_focus](../tests/test_match_network.py#L54) | `self` | Verify breadth depth cycles and disconnected focus. |
+| [MatchNetworkTests.test_timeline_changes_connections_but_current_elo_and_pair_paging_remain_honest](../tests/test_match_network.py#L69) | `self` | Verify timeline changes connections but current elo and pair paging remain honest. |
+| [MatchNetworkTests.test_effective_voids_and_unavailable_participants_are_not_resurrected](../tests/test_match_network.py#L82) | `self` | Verify effective voids and unavailable participants are not resurrected. |
+| [MatchNetworkTests.test_drawing_caps_do_not_limit_song_search_or_pair_history](../tests/test_match_network.py#L91) | `self` | Verify drawing caps do not limit song search or pair history. |
+| [MatchNetworkTests.test_dense_network_caps_edges_without_changing_full_counts](../tests/test_match_network.py#L103) | `self` | Verify dense network caps edges without changing full counts. |
+| [MatchNetworkTests.test_api_validation_asset_registry_and_accent_insensitive_catalogue_lookup](../tests/test_match_network.py#L111) | `self` | Verify api validation asset registry and accent insensitive catalogue lookup. |
 
 ## tests/test_metadata_fill.py
 
@@ -1974,17 +2006,17 @@ Source/asset checks, generated function ownership and unified test commands.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [sources](../tools/check.py#L91) | `` | Enumerate maintained Python files, excluding generated caches and dependencies. |
-| [definitions](../tools/check.py#L105) | `tree, parents=()` | Yield every function/method, including nested closures, with a qualified name. |
-| [routes](../tools/check.py#L115) | `node` | Read literal Flask decorators without importing route modules. |
-| [purpose](../tools/check.py#L138) | `name, node` | Describe a definition from its contract, route, validation name and SQL access. |
-| [markdown](../tools/check.py#L219) | `value` | Escape content that is embedded in a Markdown table cell. |
-| [function_index](../tools/check.py#L224) | `` | Generate a deterministic, source-linked index of every Python definition. |
-| [documentation](../tools/check.py#L269) | `write=False` | Write the function index, or fail when source changes made it stale. |
-| [structure](../tools/check.py#L284) | `` | Check imports, duplicate definitions, template references and asset ownership. |
-| [structure.scopes](../tools/check.py#L295) | `node, path` | Report repeated definitions within each lexical Python scope. |
-| [run](../tools/check.py#L367) | `command` | Run one validation command from the repository root and propagate failures. |
-| [javascript](../tools/check.py#L373) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
-| [main](../tools/check.py#L383) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
+| [sources](../tools/check.py#L92) | `` | Enumerate maintained Python files, excluding generated caches and dependencies. |
+| [definitions](../tools/check.py#L106) | `tree, parents=()` | Yield every function/method, including nested closures, with a qualified name. |
+| [routes](../tools/check.py#L116) | `node` | Read literal Flask decorators without importing route modules. |
+| [purpose](../tools/check.py#L139) | `name, node` | Describe a definition from its contract, route, validation name and SQL access. |
+| [markdown](../tools/check.py#L220) | `value` | Escape content that is embedded in a Markdown table cell. |
+| [function_index](../tools/check.py#L225) | `` | Generate a deterministic, source-linked index of every Python definition. |
+| [documentation](../tools/check.py#L270) | `write=False` | Write the function index, or fail when source changes made it stale. |
+| [structure](../tools/check.py#L285) | `` | Check imports, duplicate definitions, template references and asset ownership. |
+| [structure.scopes](../tools/check.py#L296) | `node, path` | Report repeated definitions within each lexical Python scope. |
+| [run](../tools/check.py#L368) | `command` | Run one validation command from the repository root and propagate failures. |
+| [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
+| [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1360 Python definitions**.
+Total: **1378 Python definitions**.

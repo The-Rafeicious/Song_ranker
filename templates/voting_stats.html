@@ -51,7 +51,7 @@
 
 {% block content %}
 <div class="voting-stats-page mode-stats-page">
-  <div class="page-head"><h1 class="voting">Voting Stats</h1><a class="btn voting" href="{{url_for('index')}}">Play Standard Vote →</a></div>
+  <div class="page-head"><h1 class="voting">Voting Stats</h1><a class="btn voting" href="{{url_for('index')}}">Play Standard Vote →</a><a class="btn voting" href="{{url_for('match_network_page')}}">Explore match network →</a></div>
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-overview">
     <div class="section-head"><h2 class="voting" id="vote-overview">Voting overview</h2></div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Elo matches',summary.matches)}}{{figure('Effective votes',number(summary.effective_matches))}}{{figure('Different matchups',unique_pairs)}}{{figure('Tracks voted',coverage.voted)}}</dl>

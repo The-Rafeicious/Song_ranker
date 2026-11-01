@@ -79,6 +79,7 @@ version-named sheet or second developer asset list. All asset URLs use the singl
 | `style.css` | Palette, navigation, core controls, layout primitives and shared mode/Overall surfaces |
 | `components.css` | Joined metrics, dashboard glows, paired records and the shared stop button |
 | `site_baseline.css` | Approved type, spacing, corners, headers and main ranking geometry |
+| `match_network.css` | Bounded opponent canvas, camera controls, accessible song lists and match inspector |
 | `reports.css` | Shared report/dashboard geometry, visualisations and scoped mode report compositions |
 | `profiles.css` | Song/collection heroes, album queues and paged track/release lists |
 | `vibe.css` | Shared descriptive radar, profile and library summary presentation |
@@ -328,3 +329,19 @@ rows identify the source track with artwork and artist/album links, then any
 opponent. Explain internal pairs and track appearances separately from distinct
 matches, brackets and Shelves rounds; do not show a pooled collection win streak.
 Collection detail loads must preserve the hero preview queue and paging controls.
+
+The Match network is a dedicated wide workspace linked from Voting Stats, with
+a lazy bounded panel on song pages. `match_network.js` owns camera, canvas, search,
+filters, timeline and selection; it never owns audio. Use the shared styled mode
+selectors, semantic visibility colours and a tournament pink rim. Connections
+represent opponents, not a winner direction or historical rank. Nodes show current
+Elo; inspection names winners/losers and only real saved Elo changes. The timeline
+filters matches, not Elo rankings. Local artist/album evidence is an explicit opt-in.
+
+Keep drag/pinch inside the viewport, normal page scrolling outside, explicit zoom/
+fit/fullscreen controls and arrow/Home keyboard controls. A native visible-song
+list and search provide keyboard selection alongside the canvas. Inspector lists
+page match history and preserve linked artwork/artist/album metadata. Recentring
+keeps the selected history point. Cap drawing with an explicit notice; full song
+search and pair history remain available beyond caps. Small screens put details
+below the viewport. Reduced motion has no automatic map animation.

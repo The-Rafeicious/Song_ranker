@@ -1,0 +1,11 @@
+{% extends 'base.html' %}
+{% block title %}Match network · Song Ranker{% endblock %}
+{% block page_kind %}match_network{% endblock %}
+{% block content %}
+<div class="network-page">
+  <div class="page-head"><h1 class="voting">Match network</h1><a class="btn voting" href="{{url_for('voting_stats')}}">← Voting Stats</a></div>
+  <p class="mode-stats-caption">Follow opponents through voting and completed tournaments. Select a song or connection to see wins, losses and saved Elo changes.</p>
+  <div data-match-network data-network-full{% if focus %} data-song-id="{{focus}}"{% endif %}></div>
+  <noscript><p>This interactive network needs JavaScript. <a href="{{url_for('history')}}">Read match history</a> instead.</p></noscript>
+</div>
+{% endblock %}

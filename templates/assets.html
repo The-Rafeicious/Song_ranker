@@ -4,7 +4,7 @@
 {% set profile = page|default('') in ['song','artist','album','tag'] %}
 {% set dev = page|default('') == 'dev' %}
 {% set game = path in ['/game','/trivia','/tournament','/elo_guesser','/album_shelves'] %}
-{% set report = path.endswith('/bracket') or path in ['/global_stats','/voting_stats','/trivia_stats','/tournament_stats','/tournament_local_stats','/elo_guesser_stats','/album_shelves_stats','/vibe_map_stats','/history'] %}
+{% set report = path.endswith('/bracket') or path in ['/match-network','/global_stats','/voting_stats','/trivia_stats','/tournament_stats','/tournament_local_stats','/elo_guesser_stats','/album_shelves_stats','/vibe_map_stats','/history'] %}
 {% set vibe = profile or path in ['/','/global_stats','/mode_rankings/vibe','/vibe_map_stats','/vibe-map'] %}
 {% set ranked = path in ['/leaderboard','/artists','/albums','/tags','/overall_rankings','/artist_stats','/album_stats'] or path.startswith('/mode_rankings/') %}
 
@@ -21,9 +21,10 @@
 {% if page|default('') == 'search' %}{{ css('search') }}{% endif %}
 {% if ranked %}{{ css('standard_rankings') }}{% endif %}
 {% if profile %}{{ css('profiles') }}{% endif %}
-{% if game or path in ['/tournament_local_stats','/voting_stats'] or page|default('') == 'song' %}{{ css('gameplay') }}{% endif %}
+{% if game or path in ['/match-network','/tournament_local_stats','/voting_stats'] or page|default('') == 'song' %}{{ css('gameplay') }}{% endif %}
 {% if path == '/vibe-map' %}{{ css('vibe_map') }}{% endif %}
 {% if path == '/history' %}{{ css('history') }}{% endif %}
+{% if path == '/match-network' or page|default('') == 'song' %}{{ css('match_network') }}{% endif %}
 {% if report or profile or vibe or dev %}{{ css('reports') }}{% endif %}
 {% if vibe %}{{ css('vibe') }}{% endif %}
 {% if dev %}
@@ -35,8 +36,9 @@
 
 {% macro scripts() %}
 {{ js('ui') }}
-{% if game or path in ['/tournament_stats','/tournament_local_stats','/voting_stats'] or page|default('') == 'song' or path.endswith('/bracket') %}{{ js('gameplay') }}{% endif %}
+{% if game or path in ['/match-network','/tournament_stats','/tournament_local_stats','/voting_stats'] or page|default('') == 'song' or path.endswith('/bracket') %}{{ js('gameplay') }}{% endif %}
 {{ js('preview') }}
+{% if path == '/match-network' or page|default('') == 'song' %}{{ js('match_network') }}{% endif %}
 {% if path == '/voting_stats' or page|default('') == 'song' %}{{ js('elo_replay') }}{% endif %}
 {% if path in ['/','/game','/elo_guesser','/album_shelves'] or ranked or dev %}{{ js('special_modes') }}{% endif %}
 {% if path in ['/','/global_stats','/overall_rankings'] or profile or dev %}{{ js('overall') }}{% endif %}
