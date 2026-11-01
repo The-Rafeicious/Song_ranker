@@ -1,7 +1,7 @@
 /* Exercise the actual builder, custom selectors, compact records and paging. */
 const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert/strict');
 (async()=>{
- const dom=new JSDOM('<main><section data-mode-query><form><div data-query-controls></div><p data-query-error></p><button type="submit">Apply</button><button type="button" data-query-reset>Reset</button></form><div data-query-results></div></section></main>',{url:'https://example.test/query',runScripts:'outside-only'}),w=dom.window;
+ const dom=new JSDOM('<main><section data-mode-query><nav data-query-entity></nav><form><div data-query-controls></div><p data-query-error></p><button type="submit">Apply</button><button type="button" data-query-reset>Reset</button></form><div data-query-results></div></section></main>',{url:'https://example.test/query',runScripts:'outside-only'}),w=dom.window;
  w.structuredClone=structuredClone;
  const metrics=['elo','matches','win_rate','trivia_rounds','trivia_accuracy'].map(key=>({key,label:key,family:'Voting',unit:key==='win_rate'?'percent':'count'}));
  let calls=[],fail=false;
