@@ -333,8 +333,8 @@ Collection detail loads must preserve the hero preview queue and paging controls
 The Match network is a dedicated wide workspace linked from Voting Stats, with
 a lazy bounded panel on song pages. `match_network.js` owns camera, canvas, search,
 filters, timeline and selection; it never owns audio. Use the shared styled mode
-selectors, semantic visibility colours and a tournament pink rim. Connections
-represent opponents, not a winner direction or historical rank. Nodes show current
+selectors, semantic visibility colours and a tournament pink rim. Connections show loser-to-winner arrowheads, with heads at both ends when each
+song has wins. They do not represent historical rank. Nodes show current
 Elo; inspection names winners/losers and only real saved Elo changes. The timeline
 filters matches, not Elo rankings. Local artist/album evidence is an explicit opt-in.
 
@@ -345,3 +345,9 @@ page match history and preserve linked artwork/artist/album metadata. Recentring
 keeps the selected history point. Cap drawing with an explicit notice; full song
 search and pair history remain available beyond caps. Small screens put details
 below the viewport. Reduced motion has no automatic map animation.
+
+Whole-network layout reserves separate cover/title/Elo cells after force placement,
+including across components. Start large networks at a readable hub-centred zoom;
+Fit map remains the overview. Keep focused hop rings unchanged. Arrowheads sit
+outside covers and retain source/visibility colours; aggregated pairs must never
+show a single inferred winner based only on the majority of results.
