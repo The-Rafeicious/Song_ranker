@@ -539,6 +539,13 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('[data-network-find]').first().click();
   await page.waitForFunction(()=>!document.querySelector('[data-match-network][aria-busy]'));
   assert.ok(await page.locator('.network-details .network-identity').count());
+  await page.locator('[data-network-action="all"]').click();await page.waitForFunction(()=>!document.querySelector('[data-match-network][aria-busy]'));
+  assert.match(await page.locator('.network-legend').textContent(),/loser → winner/);
+  assert.match(await page.locator('.network-viewport canvas').getAttribute('aria-label'),/loser-to-winner/);
+  for(const width of [390,1365]){
+   await page.setViewportSize({width,height:1000});await bounded(page,width,'whole-match-network',folder);
+   await page.locator('[data-match-network]').screenshot({path:folder+'/whole-match-network-'+width+'.png'});
+  }
   await page.emulateMedia({reducedMotion:'reduce'});
   assert.equal(await page.locator('[data-match-network]').evaluate(root=>root.getAnimations({subtree:true}).length),0);
   await page.emulateMedia({reducedMotion:'no-preference'});
