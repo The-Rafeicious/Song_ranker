@@ -112,3 +112,5 @@ body.site-style-baseline #main .query-page [data-query-controls]>h2{display:flex
 @media(max-width:520px){body.site-style-baseline #main .query-page form[data-query-form]{padding:20px}.query-page .query-filter-picker>summary,.query-page .query-columns>summary{padding:16px;font-size:17px}.query-page .query-picker-body,.query-page .query-column-body{padding:4px 12px 16px}}
 
 .query-category-columns{columns:var(--query-column-width,280px);column-gap:20px}.query-filter-choices{--query-column-width:260px}
+
+.query-page [data-query-controls]>.query-grid>div>.game-select+.game-select{margin-top:18px}
