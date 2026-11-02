@@ -64,3 +64,18 @@ retry and reset. Responsive browser coverage is included in CI.
 - Give category selections tinted pill states and dropdowns a subtle blue/purple
   surface. Keep disabled paging visibly inactive and artwork results rounded.
 - Preserve query behaviour, reduced-motion support and high-contrast controls.
+
+
+## V5.8.1.0.3 — Query search and statistics chooser
+
+- Restore underlined Songs / Artists / Albums / Tags navigation without pill fills.
+- Give search fields inset surfaces, clear actions and visible focus. Library name
+  search updates after a short typing pause; Enter still applies immediately.
+  Match all accent-insensitive search words across names and linked metadata.
+- Rank record suggestions by exact name, prefix and then metadata matches; show
+  artwork and linked names, loading/no-results/retry states, and support arrows,
+  Enter and Escape. Clear stale requests when a search changes or closes.
+- Group Statistics to show by mode with a local search, mode filter, selected chips,
+  readable checkbox rows and a live six-field count. Keep sorting fields visibly
+  selected and required; disable additional choices at the limit.
+- Preserve the current query, paging, URL sharing and underlying statistics.

@@ -560,6 +560,10 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('[data-number="0"]').fill('0');
   await page.locator('[data-query-form] button[type="submit"]').click();
   await page.waitForFunction(()=>!document.querySelector('[data-query-results][aria-busy]'));
+  await page.locator('.query-columns>summary').click();
+  await page.locator('[data-column-search]').fill('accuracy');
+  assert.ok(await page.locator('[data-column-option]:visible').count()>0);
+  assert.ok(await page.locator('[data-column="elo"]').isDisabled());
   for(const width of [390,768,1365]){
    await page.setViewportSize({width,height:1000});await bounded(page,width,'query',folder);
    await page.locator('[data-mode-query]').screenshot({path:folder+'/query-'+width+'.png'});

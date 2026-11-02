@@ -820,14 +820,17 @@ Read-only cross-mode filtering, pooled metrics, stable sorting and bounded pagin
 | --- | --- | --- |
 | [metric](../songranker/reports/query.py#L11) | `key, label, family, unit='count'` | Metric. |
 | [normal](../songranker/reports/query.py#L40) | `text` | Normal. |
-| [validate](../songranker/reports/query.py#L44) | `spec` | Validate bounded public input before reading the catalogue; never execute SQL from it. |
-| [rate](../songranker/reports/query.py#L86) | `n, d` | Rate. |
-| [facts](../songranker/reports/query.py#L90) | `songs, competition, local, song=False` | Pool numerators/denominators, counting each current track once per entity. |
-| [facts.total](../songranker/reports/query.py#L92) | `key` | Total. |
-| [facts.mean](../songranker/reports/query.py#L93) | `rows, key` | Mean. |
-| [identities](../songranker/reports/query.py#L124) | `data` | Public identity projection excludes preview URLs and private source metadata. |
-| [execute](../songranker/reports/query.py#L141) | `data, spec` | Filter and stably sort a full snapshot, returning exactly twenty rows per page. |
-| [execute.compare](../songranker/reports/query.py#L176) | `a, b` | Compare. |
+| [search_matches](../songranker/reports/query.py#L44) | `query, text` | Match all accent-insensitive words, regardless of their order in metadata. |
+| [search_identities](../songranker/reports/query.py#L50) | `rows, query` | Rank bounded lookup candidates by exact name, prefix, then linked metadata. |
+| [search_identities.priority](../songranker/reports/query.py#L54) | `row` | Priority. |
+| [validate](../songranker/reports/query.py#L61) | `spec` | Validate bounded public input before reading the catalogue; never execute SQL from it. |
+| [rate](../songranker/reports/query.py#L103) | `n, d` | Rate. |
+| [facts](../songranker/reports/query.py#L107) | `songs, competition, local, song=False` | Pool numerators/denominators, counting each current track once per entity. |
+| [facts.total](../songranker/reports/query.py#L109) | `key` | Total. |
+| [facts.mean](../songranker/reports/query.py#L110) | `rows, key` | Mean. |
+| [identities](../songranker/reports/query.py#L141) | `data` | Public identity projection excludes preview URLs and private source metadata. |
+| [execute](../songranker/reports/query.py#L161) | `data, spec` | Filter and stably sort a full snapshot, returning exactly twenty rows per page. |
+| [execute.compare](../songranker/reports/query.py#L196) | `a, b` | Compare. |
 
 ## songranker/reports/stats_activity.py
 
@@ -1604,8 +1607,9 @@ Cross-mode queries preserve pooled evidence, relation semantics and stable pages
 | [QueryTests.test_twenty_per_page_clamping_and_empty](../tests/test_query.py#L57) | `self` | Verify twenty per page clamping and empty. |
 | [QueryTests.test_local_tournaments_are_separate_and_incomplete_results_are_hidden](../tests/test_query.py#L66) | `self` | Verify local tournaments are separate and incomplete results are hidden. |
 | [QueryTests.test_collection_rates_pool_unequal_denominators_and_unrated_elo_is_missing](../tests/test_query.py#L77) | `self` | Verify collection rates pool unequal denominators and unrated elo is missing. |
-| [QueryTests.test_invalid_combinations](../tests/test_query.py#L87) | `self` | Verify invalid combinations. |
-| [QueryTests.test_api_schema_errors_and_page_assets](../tests/test_query.py#L91) | `self` | Verify api schema errors and page assets. |
+| [QueryTests.test_word_search_accents_metadata_and_lookup_priority](../tests/test_query.py#L87) | `self` | Verify word search accents metadata and lookup priority. |
+| [QueryTests.test_invalid_combinations](../tests/test_query.py#L100) | `self` | Verify invalid combinations. |
+| [QueryTests.test_api_schema_errors_and_page_assets](../tests/test_query.py#L104) | `self` | Verify api schema errors and page assets. |
 
 ## tests/test_retired_listening.py
 
@@ -2056,4 +2060,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L375) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L385) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1401 Python definitions**.
+Total: **1405 Python definitions**.
