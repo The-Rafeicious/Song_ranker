@@ -374,3 +374,8 @@ the inset search-field surfaces and tabular values. Add filter opens a searchabl
 category picker with common shortcuts. Metric names stay short and prominent;
 mode, scope and evidence details sit on a quieter secondary line, retaining full
 labels for search and accessible descriptions.
+
+The Query builder has a subtle multicolour surface, larger control gaps and
+accented section headings. Both option pickers order categories by option count
+(largest first, alphabetical ties) and use compact, unbroken category columns
+instead of stretching every group to the height of its tallest row neighbour.

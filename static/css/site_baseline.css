@@ -168,7 +168,7 @@ body.site-style-baseline
   #main
   .panel:not(.song-profile):not(.special-panel):not(.overall-panel):not(
     #global-activity
-  ) {
+  ):not([data-query-form]) {
   background: var(--panel);
 }
 body.site-style-baseline
