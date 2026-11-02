@@ -568,6 +568,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('.query-filter-picker>summary').click();
   await page.locator('[data-filter-search]').fill('blind');
   assert.ok(await page.locator('[data-filter-choice]:visible').count()>0);
+  await page.locator('[data-search]').focus();
   for(const width of [390,768,1365]){
    await page.setViewportSize({width,height:1000});await bounded(page,width,'query',folder);
    await page.locator('[data-mode-query]').screenshot({path:folder+'/query-'+width+'.png'});
@@ -576,6 +577,17 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('[data-game-select="query-preset"] [data-game-option="Recognition by rounds"]').click();
   await page.waitForFunction(()=>!document.querySelector('[data-query-results][aria-busy]'));
   assert.equal(await page.locator('[data-query-error]').textContent(),'');
+  await page.locator('[data-query-kind="tags"]').click();
+  await page.waitForFunction(()=>!document.querySelector('[data-query-results][aria-busy]'));
+  assert.ok(await page.locator('.query-result summary .tag-cover').count()>0);
+  assert.equal(await page.locator('.query-result summary img').count(),0);
+  await page.locator('[data-mode-query]').screenshot({path:folder+'/query-tags.png'});
+  await page.locator('[data-query-kind="albums"]').click();
+  await page.waitForFunction(()=>!document.querySelector('[data-query-results][aria-busy]'));
+  const queryAlbums=await page.locator('.query-result .query-name>b').allTextContents();
+  assert.ok(queryAlbums.length>0);assert.ok(queryAlbums.every(name=>!name.toLowerCase().endsWith(' - single')&&name.toLowerCase()!=='unknown album'));
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1000});await bounded(page,width,'query-albums',folder);}
+  await page.locator('[data-mode-query]').screenshot({path:folder+'/query-albums.png'});
   assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

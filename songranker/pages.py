@@ -190,7 +190,9 @@ def mode_query_api():
             if kind not in KINDS: raise ValueError('Invalid lookup.')
             data=collection()
             q=request.args.get('q','')[:200].strip()
-            rows=search_identities(identities(data)[kind].values(),q) if q else []
+            candidates=identities(data)[kind].values()
+            if kind=='albums': candidates=[r for r in candidates if r['proper_album']]
+            rows=search_identities(candidates,q) if q else []
             return jsonify(items=rows[:25],total=len(rows))
         raw=request.args.get('spec','{}')
         if len(raw)>12000: raise ValueError('Query is too large.')

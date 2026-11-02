@@ -379,3 +379,9 @@ The Query builder has a subtle multicolour surface, larger control gaps and
 accented section headings. Both option pickers order categories by option count
 (largest first, alphabetical ties) and use compact, unbroken category columns
 instead of stretching every group to the height of its tallest row neighbour.
+
+Query results use entity-coloured surfaces and identity metadata matching the chosen
+category. Song lookup suggestions show only artwork, title, artists and a proper
+album. Album results/lookups exclude Single and unknown placeholders through the
+shared catalogue rule. Tags always use the shared gold # artwork. Search focus
+belongs to the rounded blue field wrapper, without a second inner input outline.

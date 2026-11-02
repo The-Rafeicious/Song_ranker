@@ -103,3 +103,17 @@ retry and reset. Responsive browser coverage is included in CI.
   alphabetical ties. Pack whole categories into responsive columns to remove
   large gaps left by unequal grid-row heights.
 - Preserve filtering, selection, keyboard navigation and all query calculations.
+
+
+## V5.8.1.1 — Query identity cards and proper albums
+
+- Keep won-against/lost-to suggestions to cover, song title, artists and the album
+  only when it is a proper album; omit tags and Single/unknown release labels.
+- Exclude singles and unknown placeholders from album results and album lookups
+  using the same proper-album rule as rankings. Retain their songs and cover art.
+- Colour result cards by entity and show useful linked metadata beneath the title:
+  artists/albums for songs, artists for albums, and catalogue counts for collections.
+- Use the shared gold # tile for tags, including related records and search results,
+  instead of borrowing a song cover. Keep complete accessible labels and links.
+- Remove the green rectangular input outline; show one rounded blue focus ring
+  around the whole search field. Preserve forced-colour keyboard focus.
