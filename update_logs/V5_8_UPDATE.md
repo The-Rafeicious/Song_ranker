@@ -117,3 +117,14 @@ retry and reset. Responsive browser coverage is included in CI.
   instead of borrowing a song cover. Keep complete accessible labels and links.
 - Remove the green rectangular input outline; show one rounded blue focus ring
   around the whole search field. Preserve forced-colour keyboard focus.
+
+
+### V5.8.1.1 — Result statistics presentation refinement
+
+- Give the statistics beside result identities clearer label/value hierarchy,
+  aligned responsive columns, more spacing and quieter mode captions.
+- Colour values and slim dividers by their evidence mode: voting green, Non-blind
+  orange, Blind teal, tournament pink, recognition yellow, Guesser coral, Shelves
+  purple, Vibe red and Overall cream. Keep unavailable values muted.
+- Apply matching value colours inside expanded statistics. Preserve entity card
+  colours, exact-value accessibility and all query calculations.
