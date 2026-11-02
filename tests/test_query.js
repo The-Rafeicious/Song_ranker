@@ -5,12 +5,15 @@ const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert
  w.structuredClone=structuredClone;
  const metrics=['elo','matches','win_rate','trivia_rounds','trivia_accuracy','guess_accuracy','vibe_maps'].map(key=>({key,label:key,family:key.startsWith('guess')?'Elo Guesser':key.startsWith('vibe')?'Vibe':'Voting',unit:key==='win_rate'?'percent':'count'}));
  let calls=[],fail=false;
- w.fetch=async url=>{calls.push(url);if(url.includes('schema'))return {ok:true,json:async()=>({metrics})};if(url.includes('lookup='))return {ok:true,json:async()=>({items:[{id:2,name:'Chosen <song>',kind:'songs',cover:'/cover',related:[{name:'Artist A'}]}],total:1})};if(fail)return {ok:false,json:async()=>({error:'Try again'})};const spec=JSON.parse(new URL(url,'https://example.test').searchParams.get('spec'));return {ok:true,json:async()=>({spec,total:21,pages:2,page:spec.page,items:[{id:1,name:'<img src=x onerror=bad()>',kind:'songs',url:'/song/1',cover:'/cover',values:{elo:1234,matches:1001},related:[{id:2,name:'Artist & A',kind:'artists',url:'/artist/A',cover:'/artist'}]}]})};};
+ w.fetch=async url=>{calls.push(url);if(url.includes('schema'))return {ok:true,json:async()=>({metrics})};if(url.includes('lookup='))return {ok:true,json:async()=>({items:[{id:2,name:'Chosen <song>',kind:'songs',cover:'/cover',artists:[{id:8,name:'Artist A',kind:'artists',url:'/artist/A'}],album:{id:9,name:'Full album',kind:'albums',proper_album:true,url:'/album/Full'},related:[{kind:'tags',name:'Hidden lookup tag'}]}],total:1})};if(fail)return {ok:false,json:async()=>({error:'Try again'})};const spec=JSON.parse(new URL(url,'https://example.test').searchParams.get('spec'));return {ok:true,json:async()=>({spec,total:21,pages:2,page:spec.page,items:[{id:1,name:'<img src=x onerror=bad()>',kind:spec.entity,url:'/song/1',cover:'/cover',track_count:1,artist_count:1,album_count:1,values:{elo:1234,matches:1001},artists:[{id:2,name:'Artist & A',kind:'artists',url:'/artist/A'}],album:{id:3,name:'Album One',kind:'albums',proper_album:true,url:'/album/One'},related:[{id:2,name:'Artist & A',kind:'artists',url:'/artist/A',cover:'/artist'}]}]})};};
  for(const name of ['ui','gameplay','query'])w.eval(fs.readFileSync('static/js/'+name+'.js','utf8'));
  w.document.dispatchEvent(new w.Event('DOMContentLoaded'));await new Promise(r=>setTimeout(r,30));
  const root=w.document.querySelector('[data-mode-query]');const change=(id,value)=>{const el=w.document.getElementById(id);el.value=value;el.dispatchEvent(new w.Event('change',{bubbles:true}));};
- assert.equal(root.querySelectorAll('.query-result').length,1);assert.equal(root.querySelector('.query-name b').textContent,'<img src=x onerror=bad()>');assert.equal(root.querySelectorAll('[onerror]').length,0);
+ assert.equal(root.querySelectorAll('.query-result').length,1);assert.equal(root.querySelector('.query-name b').textContent,'<img src=x onerror=bad()>');assert.equal(root.querySelectorAll('[onerror]').length,0);assert.equal(root.querySelector('.query-result').dataset.queryResultKind,'songs');assert.match(root.querySelector('.query-metadata').textContent,/Artist & A.*Album One/);
  root.querySelector('.query-result summary').click();assert.equal(root.querySelector('.query-expanded h2 a').getAttribute('href'),'/song/1');
+ root.querySelector('[data-query-kind="tags"]').click();await new Promise(r=>setTimeout(r,20));
+ assert.equal(root.querySelector('.query-result .tag-cover').textContent,'#');assert.equal(root.querySelector('.query-result summary img'),null);
+ root.querySelector('[data-query-kind="songs"]').click();await new Promise(r=>setTimeout(r,20));
  root.querySelector('[data-add]').click();change('field-0','won_against');assert.ok(w.document.getElementById('source-0'));assert.equal(w.document.getElementById('op-0'),null);
  change('field-0','elo');change('op-0','missing');assert.equal(root.querySelector('[data-number]'),null);assert.equal(w.document.getElementById('source-0'),null);
  change('sort-1','matches');assert.ok(![...w.document.getElementById('sort-2').options].some(o=>o.value==='matches'));
@@ -48,7 +51,7 @@ const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert
  // Suggestions expose identities and support arrow/Enter selection and clearing.
  root.querySelector('[data-add]').click();change('field-0','won_against');
  input=root.querySelector('[data-target-search]');input.value='Chosen';input.dispatchEvent(new w.Event('input',{bubbles:true}));
- await new Promise(r=>setTimeout(r,290));assert.equal(root.querySelector('[data-target] b').textContent,'Chosen <song>');
+ await new Promise(r=>setTimeout(r,290));assert.equal(root.querySelector('[data-target] b').textContent,'Chosen <song>');assert.match(root.querySelector('[data-target] small').textContent,/Artist A.*Full album/);assert.ok(!root.querySelector('[data-target]').textContent.includes('Hidden lookup tag'));
  input.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));assert.ok(w.document.activeElement.matches('[data-target]'));
  w.document.activeElement.click();assert.equal(root.querySelector('[data-target-search]').value,'Chosen <song>');
  root.querySelector('[data-target-clear]').click();assert.equal(root.querySelector('[data-target-search]').value,'');

@@ -97,6 +97,30 @@ class QueryTests(unittest.TestCase):
             self.assertEqual(client.get('/api/query?lookup=songs&q=').json['total'],0)
             self.assertEqual(client.get('/api/query?lookup=songs&q=Artist%20Song%202').json['items'][0]['id'],2)
 
+    def test_album_queries_exclude_placeholders_and_tags_never_borrow_covers(self):
+        self.conn.execute("INSERT INTO albums(id,title,cover_url) VALUES(2,'A Song - Single','single-cover'),(3,'Unknown Album','unknown-cover'),(4,'Full Album','full-cover')")
+        self.conn.execute('UPDATE songs SET album_id=2 WHERE id=1')
+        self.conn.execute('UPDATE songs SET album_id=3 WHERE id=2')
+        self.conn.execute('UPDATE songs SET album_id=4 WHERE id=3')
+        self.conn.execute("INSERT INTO genres(id,name) VALUES(7,'Pop')")
+        self.conn.execute('INSERT INTO song_genres(song_id,genre_id) VALUES(1,7)')
+        self.conn.commit()
+        data=self.data(); public=identities(data)
+        self.assertEqual(public['songs'][1]['cover'],'single-cover')
+        self.assertIsNone(public['songs'][1]['album'])
+        self.assertIsNone(public['songs'][2]['album'])
+        self.assertEqual(public['songs'][3]['album']['name'],'Full Album')
+        self.assertEqual(public['songs'][1]['artists'][0]['name'],'Artist <unsafe>')
+        self.assertFalse(any(r['kind']=='albums' for r in public['songs'][1]['related']))
+        self.assertEqual(public['tags'][7]['cover'],'')
+        self.assertEqual({r['id'] for r in execute(data,dict(entity='albums'))['items']},{1,4})
+        tag=execute(data,dict(entity='tags'))['items'][0]
+        self.assertEqual((tag['track_count'],tag['artist_count'],tag['album_count']),(1,1,0))
+        with patch('songranker.pages.collection',lambda **kw:self.data()):
+            client=services.app.test_client()
+            self.assertEqual(client.get('/api/query?lookup=albums&q=Single').json['total'],0)
+            self.assertEqual(client.get('/api/query?lookup=albums&q=Full').json['items'][0]['id'],4)
+
     def test_invalid_combinations(self):
         for spec in [dict(filters=[dict(field='elo',op='between',value=1300,max=1200)]),dict(filters=[dict(field='win_rate',value=101)]),dict(sort=[dict(field='elo',direction='desc')]*2),dict(filters=[dict(field='won_against',target_id=1,mode='trivia')]),dict(columns=['not-a-stat'])]:
             with self.assertRaises((ValueError,TypeError)):validate(spec)

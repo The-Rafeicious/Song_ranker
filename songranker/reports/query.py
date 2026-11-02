@@ -2,7 +2,7 @@
 import math
 import unicodedata
 from functools import cmp_to_key
-from songranker.catalog import summarize_votes, song_performance
+from songranker.catalog import summarize_votes, song_performance, proper_album
 from urllib.parse import quote
 
 KINDS = ('songs', 'artists', 'albums', 'tags')
@@ -144,14 +144,23 @@ def identities(data):
     for kind in KINDS:
         result[kind]={r['id']:dict(id=r['id'],name=r.get('name',r.get('title','')),kind=kind,
             cover=r.get('image_url',r.get('cover_url','')) or '',url='/'+{'songs':'song','artists':'artist','albums':'album','tags':'tag'}[kind]+'/'+(str(r['id']) if kind=='songs' else quote(r.get('name',r.get('title','')),safe=''))) for r in data[kind]}
+    for album in data['albums']:
+        result['albums'][album['id']]['proper_album']=proper_album(album)
+    for tag in result['tags'].values():
+        tag['cover']=''
     for s in data['songs']:
         r=result['songs'][s['id']]
         r['cover']=result['albums'].get(s.get('album_id'),{}).get('cover','')
         r['related']=[result[k][i] for k,ids in [('artists',s.get('artist_ids',[])),('albums',[s.get('album_id')]),('tags',s.get('tag_ids',[]))] for i in ids if i in result[k]]
+        r['artists']=[result['artists'][aid] for aid in s.get('artist_ids',[]) if aid in result['artists']]
+        album=result['albums'].get(s.get('album_id'))
+        r['album']=album if album and album['proper_album'] else None
+        r['related']=[item for item in r['related'] if item['kind']!='albums' or item['proper_album']]
     for album in result['albums'].values():
         artist_ids={aid for song in data['songs'] if song.get('album_id')==album['id'] for aid in song.get('artist_ids',[])}
+        album['artists']=[result['artists'][aid] for aid in sorted(artist_ids) if aid in result['artists']]
         album['subtitle']=', '.join(sorted(result['artists'][aid]['name'] for aid in artist_ids if aid in result['artists']))
-    for kind in ('artists','albums','tags'):
+    for kind in ('artists','albums'):
         for r in result[kind].values():
             if not r['cover']:
                 r['cover']=next((result['songs'][s['id']]['cover'] for s in data['songs'] if (r['id'] in s.get('artist_ids',[]) if kind=='artists' else s.get('album_id')==r['id'] if kind=='albums' else r['id'] in s.get('tag_ids',[]))), '')
@@ -167,13 +176,14 @@ def execute(data,spec):
         if 'target_id' in f:
             target_kind={'artist':'artists','album':'albums','tag':'tags'}.get(f['field'],'songs')
             target=ids[target_kind].get(f['target_id'])
-            if not target: raise ValueError('The selected relationship target no longer exists.')
+            if not target or (target_kind=='albums' and not target['proper_album']): raise ValueError('The selected relationship target is unavailable.')
             f['target_name']=target['name']
     completed={**data,'tournaments':[t for t in data['tournaments'] if t.get('status')=='completed']}
     competition=song_performance(completed)
     local=song_performance({**completed,'tournaments':[t for t in completed['tournaments'] if t.get('scope_type') in ('artist','album')]},competitive=False)
     rows=[]
     for identity in ids[kind].values():
+        if kind=='albums' and not identity['proper_album']: continue
         group=[s for s in data['songs'] if (s['id']==identity['id'] if kind=='songs' else identity['id'] in s.get('artist_ids',[]) if kind=='artists' else s.get('album_id')==identity['id'] if kind=='albums' else identity['id'] in s.get('tag_ids',[]))]
         values=facts(group,competition,local,kind=='songs')
         score=overall.get(identity['id'],{})
@@ -192,7 +202,7 @@ def execute(data,spec):
                 value=values.get(field); op=f['op']
                 keep=(value is None) if op=='missing' else (value is not None) if op=='has' else value is not None and (value>=f['value'] if op=='min' else value<=f['value'] if op=='max' else value==f['value'] if op=='eq' else f['value']<=value<=f['max'])
             if not keep: break
-        if keep: rows.append({**identity,'values':values,'related':identity.get('related',[]) if kind=='songs' else [ids['songs'][s['id']] for s in group[:5]]})
+        if keep: rows.append({**identity,'values':values,'track_count':len(group),'artist_count':len({aid for song in group for aid in song.get('artist_ids',[])}),'album_count':len({song['album_id'] for song in group if song.get('album_id') in ids['albums'] and ids['albums'][song['album_id']]['proper_album']}),'related':identity.get('related',[]) if kind=='songs' else [ids['songs'][s['id']] for s in group[:5]]})
     def compare(a,b):
         for sort in spec['sort']:
             key=sort['field']; x=normal(a['name']) if key=='name' else a['values'].get(key); y=normal(b['name']) if key=='name' else b['values'].get(key)
