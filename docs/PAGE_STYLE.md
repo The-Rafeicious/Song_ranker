@@ -385,3 +385,9 @@ category. Song lookup suggestions show only artwork, title, artists and a proper
 album. Album results/lookups exclude Single and unknown placeholders through the
 shared catalogue rule. Tags always use the shared gold # artwork. Search focus
 belongs to the rounded blue field wrapper, without a second inner input outline.
+
+Expanded Query results use mode-tinted evidence panels with explicit headings and
+profile-style linked tag badges below them. Keep catalogue metadata links in the
+summary; the expanded title is the only repeated profile link, without a second
+Open full page action or related-record list. Navbar Query text uses the shared
+wordmark gradient on all routes.
