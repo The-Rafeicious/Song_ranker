@@ -140,3 +140,17 @@ retry and reset. Responsive browser coverage is included in CI.
 - Keep the result title as the profile link and remove the extra link underneath.
 - Give Query's navigation label the page's green/blue/purple gradient everywhere.
 - Preserve the compact result metadata, calculations, filters and saved data.
+
+
+## V5.8.2 — Consistent ranking headers and navigation
+
+- Share the heading, category tabs and top/bottom controls across catalogue,
+  mode, Overall and Vibe rankings, with Query using the same heading/tab geometry.
+  Preserve entity/mode colours and Query's multicolour title.
+- Standardise type, spacing, touch targets and responsive sizes. Give title text
+  enough line height and padding for descenders, including Query's final y.
+- Remove the explanatory text directly below Overall Rankings.
+- Consolidate header/navigation rendering in ui.js and its styles in
+  standard_rankings.css; remove superseded Query and core ranking overrides.
+- Make navbar link/summary hover decoration consistent, retaining visible keyboard
+  focus and existing semantic colours. No ranking or query calculation changes.

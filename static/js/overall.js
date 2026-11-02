@@ -172,7 +172,7 @@ window.Overall = (() => {
       };
     }
     U.main.innerHTML =
-      '<div class="page-head"><h1 class="overall">Overall Rankings</h1></div><div class="empty" role="status">Calculating…</div>';
+      window.SongRankerUI.rankingHeading('Overall Rankings','overall')+'<div class="empty" role="status">Calculating…</div>';
     try {
       await load();
       if (id === requestId) drawRankings();
@@ -196,7 +196,7 @@ window.Overall = (() => {
         ? []
         : [`${row.tested_tracks} / ${row.track_count} tracks tested`]),
     ];
-    U.main.innerHTML = `<div class="page-head"><h1 class="overall">Overall Rankings</h1></div><p class="overall-score-note">Overall combines mode results on a 0–100 scale. Rank shows category standing.</p>${window.SongRankerUI.modeRankingControls("/overall_rankings", type, ranking.bottom, "overall", types)}<div class="leaderboard overall-leaderboard">${rows.map((row, i) => window.SongRankerUI.modeRankingRow(U, row, type, i, all.length, ranking.bottom, "overall", pct(row.score), "Overall", facts(row), row.rank)).join("") || '<div class="empty">No tested records yet</div>'}</div>`;
+    U.main.innerHTML = `${window.SongRankerUI.rankingHeading("Overall Rankings","overall")}${window.SongRankerUI.modeRankingControls("/overall_rankings", type, ranking.bottom, "overall", types)}<div class="leaderboard overall-leaderboard">${rows.map((row, i) => window.SongRankerUI.modeRankingRow(U, row, type, i, all.length, ranking.bottom, "overall", pct(row.score), "Overall", facts(row), row.rank)).join("") || '<div class="empty">No tested records yet</div>'}</div>`;
 
     history.replaceState(
       {},

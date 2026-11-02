@@ -144,7 +144,7 @@ window.VibeLibrary = (() => {
       `/mode_rankings/vibe?entity=${ranking.entity}&view=${ranking.view}`,
     );
     U.main.innerHTML =
-      '<div class="page-head"><h1 class="vibe">Vibe Map Rankings</h1></div>' +
+      window.SongRankerUI.rankingHeading('Vibe Map Rankings','vibe') +
       modeRankingControls(
         "/mode_rankings/vibe",
         ranking.entity,

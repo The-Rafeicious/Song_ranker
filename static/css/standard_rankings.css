@@ -67,15 +67,6 @@ body.standard-rankings-page .leaderboard .leader-score small {
   }
 }
 /* Mode boards share standard rows; their context counts must wrap on phones. */
-body.mode-rankings-page .rank-links {
-  flex-wrap: wrap;
-  gap: 8px 22px;
-}
-body.mode-rankings-page .rank-links a {
-  min-height: 44px;
-  display: inline-flex;
-  align-items: center;
-}
 body.mode-rankings-page .leader-votes span {
   white-space: normal;
   max-width: 100%;
@@ -96,16 +87,20 @@ body.mode-rankings-page .leader-score {
     white-space: normal;
   }
 }
-/* Category selection follows the entity; row scores/glows retain the mode hue. */
-body.mode-rankings-page .rank-links a.active {
-  color: var(--category-color);
-  border-bottom-color: var(--category-color);
-  text-shadow: 0 0 14px
-    color-mix(in srgb, var(--category-color) 65%, transparent);
-  box-shadow: 0 9px 14px -11px var(--category-color);
-}
-body.mode-rankings-page .rank-links a:hover,
-body.mode-rankings-page .rank-links a:focus-visible {
-  color: var(--category-color);
-  outline-color: var(--category-color);
-}
+
+/* Shared top composition for catalogue, mode, Overall, Vibe and Query pages. */
+.ranking-heading{--ranking-title-size:44px;display:flex;justify-content:center;text-align:center;margin:4px 0 14px;min-width:0;overflow:visible}
+body.site-style-baseline #main .ranking-heading .ranking-title{font-size:var(--ranking-title-size);line-height:1.3;font-weight:900;letter-spacing:-.7px;margin:0;padding:0;max-width:100%;overflow:visible;color:var(--page-color);text-wrap:balance}
+.ranking-title>span{display:inline-block;max-width:100%;padding:.08em .06em .18em;line-height:1.35;overflow-wrap:anywhere}
+.ranking-title-query>span{background:linear-gradient(90deg,var(--song),var(--artist),var(--album));background-clip:text;-webkit-background-clip:text;color:transparent}
+.rank-links{--ranking-tab-size:18px;display:flex;justify-content:center;align-items:center;flex-wrap:wrap;gap:8px 20px;margin:0 0 24px;padding:0}
+body.site-style-baseline #main .rank-links :is(a,button){display:inline-flex;align-items:center;justify-content:center;min-height:48px;padding:8px 10px;border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;box-shadow:none;color:var(--category-color);font-size:var(--ranking-tab-size);font-weight:800;line-height:1.4;letter-spacing:0;text-decoration:none;opacity:.8;cursor:pointer}
+body.site-style-baseline #main .rank-links :is(a,button):is(.active,[aria-pressed="true"]){border-bottom-color:var(--category-color);opacity:1}
+body.site-style-baseline #main .rank-links :is(a,button):is(:hover,:focus-visible){border-bottom-color:var(--category-color);opacity:1;outline-color:var(--category-color);text-decoration:none}
+.ranking-switch{display:flex;justify-content:center;flex-wrap:wrap;gap:10px;margin:0 0 30px}
+body.site-style-baseline #main .ranking-switch .pill{min-height:44px;padding:10px 18px;font-size:16px;font-weight:800;border-radius:999px}
+.ranking-switch .pill.active{color:var(--rank-color,var(--page-color));border-color:var(--rank-color,var(--page-color));background:color-mix(in srgb,var(--rank-color,var(--page-color)) 12%,var(--panel));box-shadow:none}
+.ranking-switch .pill:focus-visible{outline-color:var(--rank-color,var(--page-color))}
+@media(max-width:760px){.ranking-heading{--ranking-title-size:36px}}
+@media(max-width:520px){.ranking-heading{--ranking-title-size:32px}.rank-links{--ranking-tab-size:16px;gap:6px 8px;margin-bottom:22px}.ranking-heading{margin-bottom:10px}}
+@media(forced-colors:active){.ranking-title-query>span{background:none;color:CanvasText}body.site-style-baseline #main .rank-links :is(a,button):is(.active,[aria-pressed="true"]){border-bottom-color:Highlight}}

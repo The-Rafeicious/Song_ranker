@@ -79,6 +79,7 @@ version-named sheet or second developer asset list. All asset URLs use the singl
 | `style.css` | Palette, navigation, core controls, layout primitives and shared mode/Overall surfaces |
 | `components.css` | Joined metrics, dashboard glows, paired records and the shared stop button |
 | `site_baseline.css` | Approved type, spacing, corners, headers and main ranking geometry |
+| `standard_rankings.css` | Shared ranking headings, category/range controls and row details, including Query headers |
 | `match_network.css` | Bounded opponent canvas, camera controls, accessible song lists and match inspector |
 | `reports.css` | Shared report/dashboard geometry, visualisations and scoped mode report compositions |
 | `profiles.css` | Song/collection heroes, album queues and paged track/release lists |
@@ -361,7 +362,7 @@ are twenty per page with current/final page inputs and first/last navigation.
 Expanded records retain linked artwork and concise mode summaries, without
 repeating profile histories or starting audio. Never fetch the full client catalogue.
 
-Query uses a larger Song Ranker wordmark gradient heading and matching green/blue/purple background glows. Its entity choices form a centred row below the title, above the builder, using the catalogue colours and explicit pressed states. Keep the introductory and evidence-explanation paragraphs out of this workspace.
+Query uses the shared ranking heading size with a Song Ranker wordmark gradient and matching green/blue/purple background glows. Its entity choices form a centred row below the title, above the builder, using the catalogue colours and explicit pressed states. Keep the introductory and evidence-explanation paragraphs out of this workspace.
 
 Query categories use underlined text tabs. Search fields use shared dark surfaces,
 blue focus and clear actions; suggestions keep artwork and full wrapping metadata.
@@ -391,3 +392,13 @@ profile-style linked tag badges below them. Keep catalogue metadata links in the
 summary; the expanded title is the only repeated profile link, without a second
 Open full page action or related-record list. Navbar Query text uses the shared
 wordmark gradient on all routes.
+
+
+Ranking tops share `ui.js` heading/category/range renderers and
+`standard_rankings.css` geometry, including Query. Titles use the shared 44 / 36 /
+32 px responsive page sizes with sufficient line height and descender space.
+Category links and Query buttons share underlined entity-coloured tabs; range
+controls retain the board mode colour. Feature files own data and events, not
+header sizing. Overall has no explanatory paragraph below its title. Navbar
+hover/focus decoration is consistently free of text underlines; visible focus
+outlines, colour and existing hover surfaces remain available.

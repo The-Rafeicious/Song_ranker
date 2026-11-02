@@ -100,3 +100,7 @@ provides the independent page shell; templates/assets.html remains the registry.
   relation filters, stable three-level sorting and twenty-row pagination.
 - `templates/query.html`, `static/js/query.js`, `static/css/query.css`: public Query
   workspace, shared styled controls and compact linked result disclosures.
+
+Ranking header/category/range HTML is shared in `static/js/ui.js`; its layout and
+responsive typography live in `static/css/standard_rankings.css`, also loaded by
+Query. Feature controllers retain routing, ranking data and event ownership.

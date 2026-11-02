@@ -1089,24 +1089,6 @@ p {
   letter-spacing: 1px;
   color: #999;
 }
-.rank-links {
-  display: flex;
-  gap: 22px;
-  margin: 0 0 34px;
-  font-size: 16px;
-  font-weight: 800;
-}
-.rank-links a {
-  padding-bottom: 8px;
-  border-bottom: 2px solid transparent;
-}
-.rank-links a.active {
-  color: var(--rank-color);
-  border-bottom-color: var(--rank-color);
-}
-.rank-links a:hover {
-  color: var(--rank-color);
-}
 .search-form {
   display: flex;
   background: #1e1e1e;
@@ -1987,10 +1969,6 @@ dialog h2 {
     font-size: 8px;
     letter-spacing: 0.3px;
   }
-  .rank-links {
-    gap: 23px;
-    font-size: 14px;
-  }
   .search-toolbar {
     align-items: flex-start;
     flex-direction: column;
@@ -2204,13 +2182,6 @@ dialog h2 {
   line-height: 1.35;
   padding: 0 0 0.12em;
   overflow: visible;
-}
-.rankings-page .page-head {
-  justify-content: center;
-  text-align: center;
-}
-.rank-links {
-  justify-content: center;
 }
 .ellipsis {
   display: block;
@@ -3186,19 +3157,6 @@ body[data-page="tournament_play"] select:focus-visible {
   overflow-wrap: anywhere;
 }
 /* tag profiles and bounded rankings. */
-.ranking-switch {
-  justify-content: center;
-  margin: -8px 0 32px;
-}
-.ranking-switch .pill.active {
-  color: var(--rank-color);
-  border-color: var(--rank-color);
-  background: color-mix(in srgb, var(--rank-color) 12%, var(--panel));
-  box-shadow: none;
-}
-.ranking-switch .pill:focus-visible {
-  outline-color: var(--rank-color);
-}
 .tag-cover {
   display: grid;
   place-items: center;
@@ -3776,9 +3734,6 @@ body[data-page="tournament_play"] select:focus-visible {
   font-size: 14px;
   font-weight: 750;
   white-space: nowrap;
-}
-.nav-left > a:hover {
-  text-decoration: underline;
 }
 .nav-left details:last-child summary:hover {
   color: var(--recognition);
@@ -7302,13 +7257,6 @@ body[data-page="shelves"] .shelf-next:not(:disabled):hover {
   display: block;
   margin-top: 6px;
 }
-.overall-score-note {
-  text-align: center;
-  color: var(--muted);
-  font-size: 16px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
 .overall-balance-copy {
   font-size: 15px;
   line-height: 1.6;
@@ -7793,3 +7741,6 @@ body:is([data-page="tournament_bracket"],:has(#tournament-replay)) .footer { wid
 /* Query navigation shares the page's catalogue gradient on every route. */
 .navbar .nav-query .wordmark{font-size:inherit;letter-spacing:0}
 @media(forced-colors:active){.navbar .nav-query .wordmark{background:none;color:LinkText}}
+
+/* Navbar interaction policy lives here, independent of the active page. */
+.navbar :is(a,summary):is(:hover,:focus-visible){text-decoration:none}
