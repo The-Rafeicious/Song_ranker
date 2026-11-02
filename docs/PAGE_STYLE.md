@@ -368,3 +368,9 @@ blue focus and clear actions; suggestions keep artwork and full wrapping metadat
 Library search is debounced; record picks retain explicit selection and keyboard
 navigation. The in-flow statistics chooser groups options by mode with local search,
 selected chips and a six-field count; sorting fields remain visibly required.
+
+Query field captions use compact accented labels; numeric filters and paging share
+the inset search-field surfaces and tabular values. Add filter opens a searchable
+category picker with common shortcuts. Metric names stay short and prominent;
+mode, scope and evidence details sit on a quieter secondary line, retaining full
+labels for search and accessible descriptions.
