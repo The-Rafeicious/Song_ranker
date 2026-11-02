@@ -92,3 +92,14 @@ retry and reset. Responsive browser coverage is included in CI.
 - Shorten displayed metric and comparison names. Show mode/scope details quietly
   below the main name, retaining full wording for search and accessible context.
 - Keep query calculations, evidence definitions, sorting and saved data unchanged.
+
+
+## V5.8.1.0.4.1 — Roomier Query panel and compact categories
+
+- Give the builder more padding, control spacing and separation between sections,
+  with a quiet blue/purple/green surface, coloured border and soft glow.
+- Strengthen section titles and picker headings with clearer weight and accents.
+- Order filter and statistics categories by option count, largest first, with
+  alphabetical ties. Pack whole categories into responsive columns to remove
+  large gaps left by unequal grid-row heights.
+- Preserve filtering, selection, keyboard navigation and all query calculations.
