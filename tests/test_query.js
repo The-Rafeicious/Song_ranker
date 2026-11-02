@@ -19,6 +19,16 @@ const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert
  fail=true;root.querySelector('form').dispatchEvent(new w.Event('submit',{cancelable:true,bubbles:true}));await new Promise(r=>setTimeout(r,20));assert.equal(root.querySelector('[data-query-error]').textContent,'Try again');fail=false;
  root.querySelector('[data-query-reset]').click();await new Promise(r=>setTimeout(r,20));assert.equal(root.querySelector('[data-page-input]').value,'1');
 
+ // Filter discovery searches descriptions and Enter adds a matching relationship.
+ root.querySelector('.query-filter-picker').open=true;
+ let filterFind=root.querySelector('[data-filter-search]');filterFind.value='opponent';filterFind.dispatchEvent(new w.Event('input',{bubbles:true}));
+ assert.equal(root.querySelectorAll('[data-filter-choice]:not([hidden])').length,2);
+ filterFind.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Enter',bubbles:true,cancelable:true}));
+ assert.ok(root.querySelector('[data-target-search="0"]'));assert.ok(w.document.activeElement.matches('[data-target-search="0"]'),w.document.activeElement.outerHTML);
+ root.querySelector('[data-remove="0"]').click();
+ root.querySelector('[data-add-field="elo"]').click();
+ assert.equal(root.querySelector('[data-number="0"]').value,'1200');assert.equal(root.querySelector('[data-max="0"]').value,'1250');
+ root.querySelector('[data-remove="0"]').click();
  // Search updates without submitting, preserves the active field, and can be cleared.
  let input=root.querySelector('[data-search]');input.focus();input.value='Artist One';input.dispatchEvent(new w.Event('input',{bubbles:true}));
  await new Promise(r=>setTimeout(r,420));

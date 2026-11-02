@@ -554,6 +554,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.ok(await page.locator('.query-result').count()<=20);
   await page.locator('.query-result summary').first().click();
   assert.ok(await page.locator('.query-expanded h2 a').first().getAttribute('href'));
+  await page.locator('.query-filter-picker>summary').click();
   await page.locator('[data-add]').click();
   await page.locator('[data-game-select="field-0"] .game-select-trigger').click();
   await page.locator('[data-game-select="field-0"] [data-game-option="trivia_rounds"]').click();
@@ -564,6 +565,9 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('[data-column-search]').fill('accuracy');
   assert.ok(await page.locator('[data-column-option]:visible').count()>0);
   assert.ok(await page.locator('[data-column="elo"]').isDisabled());
+  await page.locator('.query-filter-picker>summary').click();
+  await page.locator('[data-filter-search]').fill('blind');
+  assert.ok(await page.locator('[data-filter-choice]:visible').count()>0);
   for(const width of [390,768,1365]){
    await page.setViewportSize({width,height:1000});await bounded(page,width,'query',folder);
    await page.locator('[data-mode-query]').screenshot({path:folder+'/query-'+width+'.png'});

@@ -79,3 +79,16 @@ retry and reset. Responsive browser coverage is included in CI.
   readable checkbox rows and a live six-field count. Keep sorting fields visibly
   selected and required; disable additional choices at the limit.
 - Preserve the current query, paging, URL sharing and underlying statistics.
+
+
+## V5.8.1.0.4 — Query labels, numeric fields and filter discovery
+
+- Style selector captions with compact accent rules, stronger weight and consistent
+  spacing. Replace plain grey number boxes with inset, rounded fields, tabular
+  values and clear focus states, including paging inputs.
+- Add a searchable filter picker grouped by category, with common shortcuts for
+  Elo, matches, win rate, recognition and opponent relationships. Show the eight-
+  filter limit, focus newly added controls and support Enter to choose a result.
+- Shorten displayed metric and comparison names. Show mode/scope details quietly
+  below the main name, retaining full wording for search and accessible context.
+- Keep query calculations, evidence definitions, sorting and saved data unchanged.
