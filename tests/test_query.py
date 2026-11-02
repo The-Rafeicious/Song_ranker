@@ -121,6 +121,16 @@ class QueryTests(unittest.TestCase):
             self.assertEqual(client.get('/api/query?lookup=albums&q=Single').json['total'],0)
             self.assertEqual(client.get('/api/query?lookup=albums&q=Full').json['items'][0]['id'],4)
 
+    def test_collection_tag_badges_cover_all_tracks_and_exclude_own_tag(self):
+        self.conn.execute("INSERT INTO genres(id,name) VALUES(17,'Pop'),(18,'Quiet')")
+        self.conn.executemany('INSERT INTO song_genres(song_id,genre_id) VALUES(?,?)',[(8,17),(1,17),(1,18)])
+        self.conn.commit()
+        artist=self.query(entity='artists')['items'][0]
+        self.assertEqual([(t['id'],t['track_count']) for t in artist['tags']],[(17,2),(18,1)])
+        self.assertNotIn(8,[s['id'] for s in artist['related']])
+        tag=next(r for r in self.query(entity='tags')['items'] if r['id']==17)
+        self.assertEqual([(t['id'],t['track_count']) for t in tag['tags']],[(18,1)])
+
     def test_invalid_combinations(self):
         for spec in [dict(filters=[dict(field='elo',op='between',value=1300,max=1200)]),dict(filters=[dict(field='win_rate',value=101)]),dict(sort=[dict(field='elo',direction='desc')]*2),dict(filters=[dict(field='won_against',target_id=1,mode='trivia')]),dict(columns=['not-a-stat'])]:
             with self.assertRaises((ValueError,TypeError)):validate(spec)

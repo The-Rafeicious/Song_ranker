@@ -128,3 +128,15 @@ retry and reset. Responsive browser coverage is included in CI.
   purple, Vibe red and Overall cream. Keep unavailable values muted.
 - Apply matching value colours inside expanded statistics. Preserve entity card
   colours, exact-value accessibility and all query calculations.
+
+
+## V5.8.1.2 — Expanded Query mode panels and tag badges
+
+- Give expanded result mode boxes matching coloured borders, subtle surfaces and
+  clear headings; avoid repeating the mode name below every figure.
+- Replace repeated artist/album/track links with profile-style gold tag badges
+  below the statistics. Collection tag counts use the whole current cohort, not
+  just the limited related-song preview; tag results show co-occurring tags.
+- Keep the result title as the profile link and remove the extra link underneath.
+- Give Query's navigation label the page's green/blue/purple gradient everywhere.
+- Preserve the compact result metadata, calculations, filters and saved data.

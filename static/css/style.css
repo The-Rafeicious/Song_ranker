@@ -7789,3 +7789,7 @@ body:is([data-page="tournament_bracket"],:has(#tournament-replay)) .footer { wid
 .mode-card.voting { --surface-accent:var(--voting); border-color:color-mix(in srgb,var(--voting) 45%,transparent); background:linear-gradient(145deg,#9cdb911a,#1e1e1e); }
 .mode-card.voting h2 { color:var(--voting); }
 .stat.voting { --stat-color:var(--voting); }
+
+/* Query navigation shares the page's catalogue gradient on every route. */
+.navbar .nav-query .wordmark{font-size:inherit;letter-spacing:0}
+@media(forced-colors:active){.navbar .nav-query .wordmark{background:none;color:LinkText}}

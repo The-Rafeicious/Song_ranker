@@ -830,7 +830,7 @@ Read-only cross-mode filtering, pooled metrics, stable sorting and bounded pagin
 | [facts.mean](../songranker/reports/query.py#L110) | `rows, key` | Mean. |
 | [identities](../songranker/reports/query.py#L141) | `data` | Public identity projection excludes preview URLs and private source metadata. |
 | [execute](../songranker/reports/query.py#L170) | `data, spec` | Filter and stably sort a full snapshot, returning exactly twenty rows per page. |
-| [execute.compare](../songranker/reports/query.py#L206) | `a, b` | Compare. |
+| [execute.compare](../songranker/reports/query.py#L213) | `a, b` | Compare. |
 
 ## songranker/reports/stats_activity.py
 
@@ -1609,8 +1609,9 @@ Cross-mode queries preserve pooled evidence, relation semantics and stable pages
 | [QueryTests.test_collection_rates_pool_unequal_denominators_and_unrated_elo_is_missing](../tests/test_query.py#L77) | `self` | Verify collection rates pool unequal denominators and unrated elo is missing. |
 | [QueryTests.test_word_search_accents_metadata_and_lookup_priority](../tests/test_query.py#L87) | `self` | Verify word search accents metadata and lookup priority. |
 | [QueryTests.test_album_queries_exclude_placeholders_and_tags_never_borrow_covers](../tests/test_query.py#L100) | `self` | Verify album queries exclude placeholders and tags never borrow covers. |
-| [QueryTests.test_invalid_combinations](../tests/test_query.py#L124) | `self` | Verify invalid combinations. |
-| [QueryTests.test_api_schema_errors_and_page_assets](../tests/test_query.py#L128) | `self` | Verify api schema errors and page assets. |
+| [QueryTests.test_collection_tag_badges_cover_all_tracks_and_exclude_own_tag](../tests/test_query.py#L124) | `self` | Verify collection tag badges cover all tracks and exclude own tag. |
+| [QueryTests.test_invalid_combinations](../tests/test_query.py#L134) | `self` | Verify invalid combinations. |
+| [QueryTests.test_api_schema_errors_and_page_assets](../tests/test_query.py#L138) | `self` | Verify api schema errors and page assets. |
 
 ## tests/test_retired_listening.py
 
@@ -2061,4 +2062,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L375) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L385) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1406 Python definitions**.
+Total: **1407 Python definitions**.

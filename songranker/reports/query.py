@@ -202,7 +202,14 @@ def execute(data,spec):
                 value=values.get(field); op=f['op']
                 keep=(value is None) if op=='missing' else (value is not None) if op=='has' else value is not None and (value>=f['value'] if op=='min' else value<=f['value'] if op=='max' else value==f['value'] if op=='eq' else f['value']<=value<=f['max'])
             if not keep: break
-        if keep: rows.append({**identity,'values':values,'track_count':len(group),'artist_count':len({aid for song in group for aid in song.get('artist_ids',[])}),'album_count':len({song['album_id'] for song in group if song.get('album_id') in ids['albums'] and ids['albums'][song['album_id']]['proper_album']}),'related':identity.get('related',[]) if kind=='songs' else [ids['songs'][s['id']] for s in group[:5]]})
+        tag_counts={}
+        if keep:
+            for song in group:
+                for tid in set(song.get('tag_ids',[])):
+                    if tid in ids['tags'] and not (kind=='tags' and tid==identity['id']):
+                        tag_counts[tid]=tag_counts.get(tid,0)+1
+        tags=[{**ids['tags'][tid],'track_count':count} for tid,count in sorted(tag_counts.items(),key=lambda item:(-item[1],normal(ids['tags'][item[0]]['name']),item[0]))]
+        if keep: rows.append({**identity,'tags':tags,'values':values,'track_count':len(group),'artist_count':len({aid for song in group for aid in song.get('artist_ids',[])}),'album_count':len({song['album_id'] for song in group if song.get('album_id') in ids['albums'] and ids['albums'][song['album_id']]['proper_album']}),'related':identity.get('related',[]) if kind=='songs' else [ids['songs'][s['id']] for s in group[:5]]})
     def compare(a,b):
         for sort in spec['sort']:
             key=sort['field']; x=normal(a['name']) if key=='name' else a['values'].get(key); y=normal(b['name']) if key=='name' else b['values'].get(key)
