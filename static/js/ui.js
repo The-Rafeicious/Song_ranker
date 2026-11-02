@@ -140,6 +140,19 @@ window.SongRankerUI = (() => {
       },
     };
   }
+  // Shared ranking headers and navigation; feature owners retain data and actions.
+  function rankingHeading(title,tone){
+    return `<header class="ranking-heading"><h1 class="ranking-title ${tone==='query'?'ranking-title-query':esc(tone)}"><span>${esc(title)}</span></h1></header>`;
+  }
+  function rankingCategories(type,items,action=''){
+    return `<nav class="rank-links" aria-label="Ranking category">${items.map(item=>{
+      const colour=entityColour(item.entity),active=item.entity===type,body=esc(item.entity[0].toUpperCase()+item.entity.slice(1));
+      return action?`<button type="button" style="--category-color:var(--${colour})" class="${active?'active':''}" data-${esc(action)}="${esc(item.entity)}" aria-pressed="${active}">${body}</button>`:`<a style="--category-color:var(--${colour})" class="${active?'active':''}" ${active?'aria-current="page"':''} href="${esc(item.href)}">${body}</a>`;
+    }).join('')}</nav>`;
+  }
+  function rankingRange(bottom,action){
+    return `<div class="ranking-switch pill-nav" aria-label="Ranking range"><button class="pill ${bottom?'':'active'}" data-${action}-view="top" aria-pressed="${!bottom}">Top twenty</button><button class="pill ${bottom?'active':''}" data-${action}-view="bottom" aria-pressed="${bottom}">Bottom twenty</button></div>`;
+  }
   // One navigation and row renderer for the five mode boards.
   function modeRankingControls(
     path,
@@ -150,7 +163,7 @@ window.SongRankerUI = (() => {
   ) {
     const query = (entity) =>
       `${path}?entity=${entity}&view=${bottom ? "bottom" : "top"}`;
-    return `<nav class="rank-links" aria-label="Ranking category">${categories.map((entity) => `<a style="--category-color:var(--${entityColour(entity)})" class="${entity === type ? "active" : ""}" ${entity === type ? 'aria-current="page"' : ""} href="${query(entity)}">${entity[0].toUpperCase() + entity.slice(1)}</a>`).join("")}</nav><div class="ranking-switch pill-nav" aria-label="Ranking range"><button class="pill ${bottom ? "" : "active"}" data-${action}-view="top" aria-pressed="${!bottom}">Top twenty</button><button class="pill ${bottom ? "active" : ""}" data-${action}-view="bottom" aria-pressed="${bottom}">Bottom twenty</button></div>`;
+    return rankingCategories(type,categories.map(entity=>({entity,href:query(entity)})))+rankingRange(bottom,action);
   }
   function modeRankingRow(
     U,
@@ -208,6 +221,9 @@ window.SongRankerUI = (() => {
     entityLabels,
     entityColour,
     shelfHead,
+    rankingHeading,
+    rankingCategories,
+    rankingRange,
     modeRankingControls,
     modeRankingRow,
   });

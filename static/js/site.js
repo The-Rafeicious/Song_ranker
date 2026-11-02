@@ -1091,7 +1091,7 @@
       ["albums", "/albums", "Albums"],
       ["tags", "/tags", "Tags"],
     ];
-    main.innerHTML = `<div class="page-head"><h1 style="color:var(--${color})">${bottom ? "Bottom" : "Top"} ${names[type]}</h1></div><nav class="rank-links" aria-label="Other rankings">${links.map(([key, path, name]) => `<a class="${type === key ? "active" : ""}" href="${path}${rankingView === "bottom" ? "?view=bottom" : ""}">${name}</a>`).join("")}</nav>${`<div class="ranking-switch pill-nav" aria-label="Ranking range"><button class="pill ${bottom ? "" : "active"}" data-ranking-view="top" aria-pressed="${!bottom}">Top twenty</button><button class="pill ${bottom ? "active" : ""}" data-ranking-view="bottom" aria-pressed="${bottom}">Bottom twenty</button></div>`}<div class="leaderboard">${
+    main.innerHTML = `${window.SongRankerUI.rankingHeading(`${bottom ? "Bottom" : "Top"} ${names[type]}`,color)}${window.SongRankerUI.rankingCategories(type,links.map(([entity,path])=>({entity,href:path+(bottom?'?view=bottom':'')})))}${window.SongRankerUI.rankingRange(bottom,'ranking')}<div class="leaderboard">${
       rows
         .map((r, i) => {
           const info = rankingMetadata(r, type);

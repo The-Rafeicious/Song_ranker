@@ -19,7 +19,7 @@
 {{ css('style') }}
 {% if path == '/' %}{{ css('home') }}{% endif %}
 {% if page|default('') == 'search' %}{{ css('search') }}{% endif %}
-{% if ranked %}{{ css('standard_rankings') }}{% endif %}
+{% if ranked or path == '/query' %}{{ css('standard_rankings') }}{% endif %}
 {% if profile %}{{ css('profiles') }}{% endif %}
 {% if game or path in ['/query','/match-network','/tournament_local_stats','/voting_stats'] or page|default('') == 'song' %}{{ css('gameplay') }}{% endif %}
 {% if path == '/vibe-map' %}{{ css('vibe_map') }}{% endif %}

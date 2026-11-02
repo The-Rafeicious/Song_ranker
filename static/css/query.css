@@ -17,14 +17,6 @@
 
 /* Query spans the catalogue, so the heading and page glow share the wordmark palette. */
 body[data-page="mode_query"]::before{background:radial-gradient(ellipse at -15% 40%,color-mix(in srgb,var(--song) 16%,transparent),transparent 50%),radial-gradient(ellipse at 50% 5%,color-mix(in srgb,var(--artist) 10%,transparent),transparent 55%),radial-gradient(ellipse at 115% 65%,color-mix(in srgb,var(--album) 16%,transparent),transparent 50%)}
-.query-header{text-align:center;margin-bottom:24px}
-body.site-style-baseline #main .query-header h1{display:inline-block;font-size:64px;line-height:1.15;margin:0 0 20px;white-space:normal}
-.query-entities{display:flex;justify-content:center;flex-wrap:wrap;gap:8px 24px}
-.query-entities button{background:transparent;border:0;border-bottom:3px solid transparent;border-radius:0;padding:10px 6px;font-size:20px;font-weight:800}
-.query-entities button[aria-pressed="true"]{border-bottom-color:currentColor;background:transparent;box-shadow:none}
-.query-entities button:hover,.query-entities button:focus-visible{background:transparent;border-bottom-color:currentColor}
-@media(max-width:520px){body.site-style-baseline #main .query-header h1{font-size:44px}.query-entities{gap:6px}.query-entities button{font-size:16px;padding:10px 12px}}
-@media(forced-colors:active){body.site-style-baseline #main .query-header h1{background:none;color:CanvasText}.query-entities button[aria-pressed="true"]{border-bottom-color:Highlight}}
 
 body.site-style-baseline #main [data-mode-query] .game-select-trigger:hover{border-color:var(--artist);box-shadow:0 0 14px #5b9bff1c}
 body.site-style-baseline #main [data-mode-query] [data-game-option]:is(:hover,:focus-visible,[aria-selected="true"]){background:color-mix(in srgb,var(--artist) 15%,#242424);color:var(--text)}

@@ -591,6 +591,23 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.ok(queryAlbums.length>0);assert.ok(queryAlbums.every(name=>!name.toLowerCase().endsWith(' - single')&&name.toLowerCase()!=='unknown album'));
   for(const width of [390,1365]){await page.setViewportSize({width,height:1000});await bounded(page,width,'query-albums',folder);}
   await page.locator('[data-mode-query]').screenshot({path:folder+'/query-albums.png'});
+  const rankingRoutes=['/leaderboard','/artists','/albums','/tags','/mode_rankings/trivia','/mode_rankings/tournament','/mode_rankings/guesser','/mode_rankings/shelves','/mode_rankings/vibe','/overall_rankings','/query'];
+  for(const width of [390,768,1365]){
+   let titleSize=null,tabSize=null;
+   await page.setViewportSize({width,height:1000});
+   for(const route of rankingRoutes){
+    await page.goto(base+route);await page.locator('.ranking-heading h1').waitFor();await page.locator('#main .rank-links').waitFor();
+    const sizes=await page.evaluate(()=>[getComputedStyle(document.querySelector('.ranking-heading h1')).fontSize,getComputedStyle(document.querySelector('#main .rank-links a,#main .rank-links button')).fontSize]);
+    if(titleSize===null){[titleSize,tabSize]=sizes;}else assert.deepEqual(sizes,[titleSize,tabSize],'Shared ranking header sizes: '+route+' at '+width);
+    await bounded(page,width,'ranking-header-'+route.replace(/\W+/g,'-'),folder);
+    if(width!==768)await page.screenshot({path:folder+'/ranking-header-'+route.replace(/\W+/g,'-')+'-'+width+'.png'});
+    if(route==='/overall_rankings')assert.equal(await page.locator('.overall-score-note').count(),0);
+   }
+  }
+  await page.goto(base+'/leaderboard');await page.locator('[data-ranking-view="bottom"]').click();
+  assert.equal(await page.locator('[data-ranking-view="bottom"]').getAttribute('aria-pressed'),'true');
+  await page.locator('.rank-links a[href="/artists?view=bottom"]').click();await page.locator('.ranking-heading h1').waitFor();
+  assert.match(await page.locator('.ranking-heading h1').textContent(),/Bottom Artists/);
   assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

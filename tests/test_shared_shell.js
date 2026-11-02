@@ -22,6 +22,15 @@ const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert
  assert.equal(w.SongRankerUI.trackPosition({disc_number:2,track_number:1},true), 'Disc 2 · Track 1');
  assert.equal(w.SongRankerUI.searchText(' Beyoncé '),'beyonce');
  assert.equal(w.SongRankerUI.identityText('  A   TAG  '),'a tag');
+ const header=w.document.createElement('div'),UI=w.SongRankerUI;
+ header.innerHTML=UI.rankingHeading('Query <safe>','query')+UI.modeRankingControls('/mode_rankings/trivia','artists',true,'special');
+ assert.equal(header.querySelector('h1').textContent,'Query <safe>');assert.equal(header.querySelector('safe'),null);
+ assert.equal(header.querySelectorAll('.rank-links a').length,4);
+ assert.equal(header.querySelector('.rank-links [aria-current="page"]').textContent,'Artists');
+ assert.equal(header.querySelector('.rank-links [aria-current="page"]').getAttribute('href'),'/mode_rankings/trivia?entity=artists&view=bottom');
+ assert.equal(header.querySelector('[data-special-view="bottom"]').getAttribute('aria-pressed'),'true');
+ header.innerHTML=UI.rankingCategories('tags',UI.entityTypes.map(entity=>({entity})),'query-kind');
+ assert.equal(header.querySelector('[aria-pressed="true"]').dataset.queryKind,'tags');assert.equal(header.querySelectorAll('button').length,4);
  w.dispatchEvent(new w.Event('pagehide'));w.close();
  console.log('Shared shell: independent report loading, persistent volume and common search/tag policies passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});
