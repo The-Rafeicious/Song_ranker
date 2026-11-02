@@ -181,7 +181,7 @@ def mode_query_page():
 def mode_query_api():
     """Validate public filters and return bounded results from a single read snapshot."""
     import json
-    from songranker.reports.query import METRICS, KINDS, validate, execute, identities, normal
+    from songranker.reports.query import METRICS, KINDS, validate, execute, identities, search_identities
     if request.args.get('schema') == '1':
         return jsonify(metrics=list(METRICS.values()), entities=KINDS)
     try:
@@ -189,9 +189,9 @@ def mode_query_api():
             kind=request.args['lookup']
             if kind not in KINDS: raise ValueError('Invalid lookup.')
             data=collection()
-            q=normal(request.args.get('q','')[:200])
-            rows=[r for r in identities(data)[kind].values() if q in normal(r['name']+' '+' '.join(x['name'] for x in r.get('related',[])))]
-            return jsonify(items=sorted(rows,key=lambda r:normal(r['name']))[:25],total=len(rows))
+            q=request.args.get('q','')[:200].strip()
+            rows=search_identities(identities(data)[kind].values(),q) if q else []
+            return jsonify(items=rows[:25],total=len(rows))
         raw=request.args.get('spec','{}')
         if len(raw)>12000: raise ValueError('Query is too large.')
         spec=validate(json.loads(raw))

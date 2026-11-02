@@ -41,6 +41,23 @@ def normal(text):
     return ''.join(c for c in unicodedata.normalize('NFKD', str(text)).casefold() if not unicodedata.combining(c))
 
 
+def search_matches(query, text):
+    """Match all accent-insensitive words, regardless of their order in metadata."""
+    haystack=normal(text)
+    return all(term in haystack for term in normal(query).split())
+
+
+def search_identities(rows, query):
+    """Rank bounded lookup candidates by exact name, prefix, then linked metadata."""
+    rows=list(rows)
+    term=' '.join(normal(query).split())
+    def priority(row):
+        name=normal(row['name'])
+        tier=0 if name==term else 1 if name.startswith(term) else 2 if search_matches(query,name) else 3
+        return tier,name,row['id']
+    return sorted((r for r in rows if search_matches(query,r['name']+' '+r.get('subtitle','')+' '+' '.join(x['name'] for x in r.get('related',[])))),key=priority)
+
+
 def validate(spec):
     """Validate bounded public input before reading the catalogue; never execute SQL from it."""
     if not isinstance(spec,dict): raise ValueError('Query must be an object.')
@@ -131,6 +148,9 @@ def identities(data):
         r=result['songs'][s['id']]
         r['cover']=result['albums'].get(s.get('album_id'),{}).get('cover','')
         r['related']=[result[k][i] for k,ids in [('artists',s.get('artist_ids',[])),('albums',[s.get('album_id')]),('tags',s.get('tag_ids',[]))] for i in ids if i in result[k]]
+    for album in result['albums'].values():
+        artist_ids={aid for song in data['songs'] if song.get('album_id')==album['id'] for aid in song.get('artist_ids',[])}
+        album['subtitle']=', '.join(sorted(result['artists'][aid]['name'] for aid in artist_ids if aid in result['artists']))
     for kind in ('artists','albums','tags'):
         for r in result[kind].values():
             if not r['cover']:
@@ -159,7 +179,7 @@ def execute(data,spec):
         score=overall.get(identity['id'],{})
         values.update(overall_score=score.get('score'),overall_evidence=score.get('evidence',0),overall_modes=score.get('mode_count',0))
         song_ids={s['id'] for s in group}
-        if spec['q'] and normal(spec['q']) not in normal(' '.join([identity['name']]+[ids['songs'][s['id']]['name'] for s in group]+[r['name'] for s in group for r in ids['songs'][s['id']]['related']])): continue
+        if spec['q'] and not search_matches(spec['q'],' '.join([identity['name']]+[ids['songs'][s['id']]['name'] for s in group]+[r['name'] for s in group for r in ids['songs'][s['id']]['related']])): continue
         keep=True
         for f in spec['filters']:
             field=f['field']

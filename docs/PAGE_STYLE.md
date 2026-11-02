@@ -362,3 +362,9 @@ Expanded records retain linked artwork and concise mode summaries, without
 repeating profile histories or starting audio. Never fetch the full client catalogue.
 
 Query uses a larger Song Ranker wordmark gradient heading and matching green/blue/purple background glows. Its entity choices form a centred row below the title, above the builder, using the catalogue colours and explicit pressed states. Keep the introductory and evidence-explanation paragraphs out of this workspace.
+
+Query categories use underlined text tabs. Search fields use shared dark surfaces,
+blue focus and clear actions; suggestions keep artwork and full wrapping metadata.
+Library search is debounced; record picks retain explicit selection and keyboard
+navigation. The in-flow statistics chooser groups options by mode with local search,
+selected chips and a six-field count; sorting fields remain visibly required.

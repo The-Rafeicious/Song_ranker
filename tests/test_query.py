@@ -4,7 +4,7 @@ from unittest.mock import patch
 import test_elo_replay as fixture
 from songranker import services
 from songranker.catalog import collection
-from songranker.reports.query import execute, validate, identities
+from songranker.reports.query import execute, validate, identities, search_identities, search_matches
 from songranker.storage.database_io import capture
 
 class QueryTests(unittest.TestCase):
@@ -83,6 +83,19 @@ class QueryTests(unittest.TestCase):
         row=execute(data,dict(entity='artists'))['items'][0]
         self.assertEqual(row['values']['trivia_accuracy'],10)
         self.assertIsNone(row['values']['elo'])
+
+    def test_word_search_accents_metadata_and_lookup_priority(self):
+        self.assertTrue(search_matches('rapp cafe', 'Café by Reneé Rapp'))
+        self.assertFalse(search_matches('rapp missing', 'Café by Reneé Rapp'))
+        rows=[dict(id=3,name='Z track',related=[dict(name='Café')]),dict(id=2,name='Café remix'),dict(id=1,name='Cafe')]
+        self.assertEqual([r['id'] for r in search_identities(rows,'cafe')],[1,2,3])
+        result=self.query(q='Artist Song 2')
+        self.assertEqual([r['id'] for r in result['items']],[2])
+        from songranker import pages
+        with patch('songranker.pages.collection',lambda **kw:self.data()):
+            client=services.app.test_client()
+            self.assertEqual(client.get('/api/query?lookup=songs&q=').json['total'],0)
+            self.assertEqual(client.get('/api/query?lookup=songs&q=Artist%20Song%202').json['items'][0]['id'],2)
 
     def test_invalid_combinations(self):
         for spec in [dict(filters=[dict(field='elo',op='between',value=1300,max=1200)]),dict(filters=[dict(field='win_rate',value=101)]),dict(sort=[dict(field='elo',direction='desc')]*2),dict(filters=[dict(field='won_against',target_id=1,mode='trivia')]),dict(columns=['not-a-stat'])]:
