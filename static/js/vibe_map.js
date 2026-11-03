@@ -41,7 +41,7 @@
   const allDone = () => round?.status === "complete";
   const image = (song, cls = "") =>
     song.cover_url
-      ? `<img class="${cls}" src="${esc(song.cover_url)}" alt="">`
+      ? `<img data-cover class="${cls}" src="${esc(song.cover_url)}" alt="">`
       : '<span class="vibe-art-fallback" aria-hidden="true">♫</span>';
   async function api(path, body) {
     const response = await fetch("/api/vibe-map/" + path, {

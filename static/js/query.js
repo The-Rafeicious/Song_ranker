@@ -129,7 +129,7 @@ window.ModeQuery = (() => {
       finally{clearTimeout(timeout);}
     }
     function format(key,value){if(value==null)return '—';const m=metrics.find(m=>m.key===key);if(m?.unit==='count')return U.countText(Number(value));return Number(value).toLocaleString(undefined,{maximumFractionDigits:1})+(m?.unit==='percent'?'%':'');}
-    function art(r){if(r.kind==='tags')return '<span class="query-art tag-cover" aria-hidden="true">#</span>';return r.cover?`<img class="query-art ${esc(r.kind)}" src="${esc(r.cover)}" alt="" loading="lazy">`:'<span class="query-art" aria-hidden="true">♫</span>';}
+    function art(r){if(r.kind==='tags')return '<span class="query-art tag-cover" aria-hidden="true">#</span>';return r.cover?`<img data-cover class="query-art ${esc(r.kind)}" src="${esc(r.cover)}" alt="" loading="lazy">`:'<span class="query-art" aria-hidden="true">♫</span>';}
     function link(r){return `<a class="${esc(r.kind.slice(0,-1))}" href="${esc(r.url)}">${esc(r.name)}</a>`;}
     function metadata(r,linked=true){
       const artists=r.artists||(r.related||[]).filter(x=>x.kind==='artists');

@@ -425,7 +425,7 @@ p {
   z-index: 1;
   display: block;
 }
-.art-wrap img.failed {
+img[data-cover].failed {
   visibility: hidden;
 }
 .art-fallback {

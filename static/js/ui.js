@@ -205,6 +205,66 @@ window.SongRankerUI = (() => {
           : index + 1;
     return `<article class="leader-row ${!bottom && standing <= 3 ? "top-three" : ""}" style="${U.rankGlow(rank == null || bottom ? index : standing - 1, bottom, tone)}"><span class="leader-rank" aria-label="Rank ${standing}">${bottom ? standing : ["🥇", "🥈", "🥉"][standing - 1] || standing}</span><a href="${U.urlFor(type, row)}" aria-label="${esc(row.name)}">${U.artwork(record, type)}</a><div class="special-rank-copy"><a class="leader-title ${U.colour(type)}" title="${esc(row.name)}" href="${U.urlFor(type, row)}">${esc(row.name)}</a><div class="leader-meta" title="${esc(info.text)}">${info.html}</div><div class="leader-votes ${tone}" aria-label="Ranking context">${facts.map((f) => `<span>${esc(f)}</span>`).join("")}</div></div><div class="leader-score ${tone}">${esc(score)}<small>${esc(label)}</small></div></article>`;
   }
+  // Retry only covers that actually failed. Keep URL identity and layout intact.
+  function manageCoverImages(root=document,{delays=[800,2400],setTimer=setTimeout,clearTimer=clearTimeout}={}){
+    const doc=root.ownerDocument||root,view=doc.defaultView||window;
+    const states=new WeakMap(),pending=new Map();let suspended=false,disposed=false;
+    const source=image=>image.getAttribute('src')||'';
+    const eligible=image=>image?.tagName==='IMG'&&image.hasAttribute('data-cover');
+    function allowed(){return !disposed&&!suspended&&!doc.hidden&&view.navigator.onLine!==false;}
+    function forget(image){
+      for(const [url,batch] of pending){batch.images.delete(image);if(!batch.images.size){if(batch.timer!=null)clearTimer(batch.timer);pending.delete(url);}}
+    }
+    function arm(url,batch){
+      if(batch.timer!=null||!allowed())return;
+      const attempts=Math.max(0,...[...batch.images].map(image=>states.get(image)?.attempts||0));
+      batch.timer=setTimer(()=>{
+        if(pending.get(url)!==batch)return;
+        batch.timer=null;
+        if(!allowed())return;
+        pending.delete(url);
+        for(const image of batch.images){
+          const state=states.get(image);
+          if(!image.isConnected||!state||source(image)!==state.source||state.url!==url||state.attempts>=delays.length)continue;
+          state.attempts++;
+          // A failed lazy image must request again even while its placeholder shows.
+          image.loading='eager';
+          image.removeAttribute('src');image.setAttribute('src',state.source);
+        }
+      },delays[Math.min(attempts,delays.length-1)]);
+    }
+    function failed(event){
+      const image=event.target;if(disposed||!eligible(image)||!source(image))return;
+      image.classList.add('failed');
+      const raw=source(image);let url;
+      try{url=new URL(raw,doc.baseURI);if(!['http:','https:'].includes(url.protocol))return;}catch{return;}
+      let state=states.get(image);
+      if(!state||state.source!==raw){forget(image);state={source:raw,url:url.href,attempts:0,loading:image.getAttribute('loading')};states.set(image,state);}
+      if(state.attempts>=delays.length||!delays.length)return;
+      let batch=pending.get(state.url);
+      if(!batch){batch={images:new Set(),timer:null};pending.set(state.url,batch);}
+      batch.images.add(image);arm(state.url,batch);
+    }
+    function loaded(event){
+      const image=event.target;if(!eligible(image)||!image.naturalWidth)return;
+      image.classList.remove('failed');forget(image);
+      const state=states.get(image);
+      if(state&&source(image)===state.source){if(state.loading==null)image.removeAttribute('loading');else image.setAttribute('loading',state.loading);}
+      states.delete(image);
+      // Never change `hidden`: game owners decide when blind identities reveal.
+    }
+    function scan(){root.querySelectorAll('img[data-cover][src]').forEach(image=>{if(image.complete){if(image.naturalWidth)loaded({target:image});else failed({target:image});}});}
+    function resume(){if(disposed)return;for(const [url,batch] of pending)arm(url,batch);}
+    function hide(){suspended=true;for(const batch of pending.values()){if(batch.timer!=null)clearTimer(batch.timer);batch.timer=null;}}
+    function show(){suspended=false;scan();resume();}
+    function dispose(){disposed=true;for(const batch of pending.values())if(batch.timer!=null)clearTimer(batch.timer);pending.clear();root.removeEventListener('error',failed,true);root.removeEventListener('load',loaded,true);doc.removeEventListener('DOMContentLoaded',scan);doc.removeEventListener('visibilitychange',resume);view.removeEventListener('online',resume);view.removeEventListener('pagehide',hide);view.removeEventListener('pageshow',show);}
+    root.addEventListener('error',failed,true);root.addEventListener('load',loaded,true);
+    doc.addEventListener('DOMContentLoaded',scan);doc.addEventListener('visibilitychange',resume);
+    view.addEventListener('online',resume);view.addEventListener('pagehide',hide);view.addEventListener('pageshow',show);
+    if(doc.readyState!=='loading')scan();
+    return Object.freeze({scan,dispose});
+  }
+  const coverRecovery=typeof document==='undefined'?null:manageCoverImages();
   return Object.freeze({
     $,
     $$,
@@ -217,6 +277,8 @@ window.SongRankerUI = (() => {
     countText,
     sumFields,
     trackPosition,
+    manageCoverImages,
+    coverRecovery,
     entityTypes,
     entityLabels,
     entityColour,

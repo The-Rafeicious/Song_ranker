@@ -244,7 +244,7 @@
       return '<div class="art-wrap tag-cover" aria-hidden="true">#</div>';
     const title = r.name || r.title || "",
       letters = (r.artist || title).slice(0, 2).toUpperCase();
-    return `<div class="art-wrap ${type === "artists" ? "circle" : ""}"><div class="art-fallback"><b>${esc(letters)}</b><small>ARTWORK UNAVAILABLE</small></div>${r.cover_url ? `<img src="${esc(r.cover_url)}" alt="" loading="lazy" onerror="this.classList.add('failed')">` : ""}</div>`;
+    return `<div class="art-wrap ${type === "artists" ? "circle" : ""}"><div class="art-fallback"><b>${esc(letters)}</b><small>ARTWORK UNAVAILABLE</small></div>${r.cover_url ? `<img data-cover src="${esc(r.cover_url)}" alt="" loading="lazy">` : ""}</div>`;
   }
   function tagLinks(s) {
     return s.tag_ids
@@ -2127,7 +2127,7 @@
     (a.disc_number || 1) - (b.disc_number || 1) ||
     (a.track_number || Infinity) - (b.track_number || Infinity) || a.id - b.id;
   function compactArt(s, type = "songs") {
-    return `<span class="small-art ${type === "artists" ? "circle" : ""}" aria-hidden="true">♫${s.cover_url ? `<img src="${esc(s.cover_url)}" alt="" loading="lazy" onerror="this.hidden=true">` : ""}</span>`;
+    return `<span class="small-art ${type === "artists" ? "circle" : ""}" aria-hidden="true">♫${s.cover_url ? `<img data-cover src="${esc(s.cover_url)}" alt="" loading="lazy">` : ""}</span>`;
   }
   function renderProfile() {
     const info = JSON.parse($("#profile-data").textContent),
