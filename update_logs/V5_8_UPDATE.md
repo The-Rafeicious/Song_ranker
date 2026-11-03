@@ -154,3 +154,17 @@ retry and reset. Responsive browser coverage is included in CI.
   standard_rankings.css; remove superseded Query and core ranking overrides.
 - Make navbar link/summary hover decoration consistent, retaining visible keyboard
   focus and existing semantic colours. No ranking or query calculation changes.
+
+
+## V5.8.3 — Recover transient cover loading failures
+
+- Fix the permanent first-error artwork state: share bounded image recovery in
+  ui.js across Query, rankings, profiles, report rows, menus, reveals and replays.
+- Retry an actually failed cover twice with backoff, preserving the exact URL and
+  browser caching. Share retry timers for duplicate covers; skip detached nodes
+  or changed sources and wait while offline or the page is hidden.
+- Clear failed styling after a successful load, including already-completed images
+  that failed before deferred scripts attached. Keep permanent/missing fallbacks,
+  image dimensions, lazy initial loading and game-owned reveal visibility intact.
+- Remove conflicting one-shot inline/error handlers. No database/URL rewrites,
+  replacement art, audio changes or full-library preloading.

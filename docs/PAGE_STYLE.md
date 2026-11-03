@@ -402,3 +402,9 @@ controls retain the board mode colour. Feature files own data and events, not
 header sizing. Overall has no explanatory paragraph below its title. Navbar
 hover/focus decoration is consistently free of text underlines; visible focus
 outlines, colour and existing hover surfaces remain available.
+
+Shared artwork recovery lives in ui.js and applies only to data-cover images. A
+transient error gets two delayed retries of the exact saved URL; retry batches
+share a timer per URL and skip removed/replaced nodes. Successful loads clear the
+failed state. Preserve dimensions, lazy initial loading, fallbacks and game-owned
+hidden/reveal state. Never rewrite saved artwork URLs or retry missing artwork.

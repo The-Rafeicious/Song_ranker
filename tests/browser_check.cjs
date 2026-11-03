@@ -608,6 +608,29 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.equal(await page.locator('[data-ranking-view="bottom"]').getAttribute('aria-pressed'),'true');
   await page.locator('.rank-links a[href="/artists?view=bottom"]').click();await page.locator('.ranking-heading h1').waitFor();
   assert.match(await page.locator('.ranking-heading h1').textContent(),/Bottom Artists/);
+  // Reproduce a transient artwork failure and recover without navigating/reloading.
+  let transientCoverRequests=0,permanentCoverRequests=0,lazyCoverRequests=0;
+  const coverPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGOQ3RkCRAwQCgAfygSpU2iFkQAAAABJRU5ErkJggg==','base64');
+  await page.route('**/qa-cover-transient.png?token=kept',route=>{
+   transientCoverRequests++;
+   return transientCoverRequests===1?route.fulfill({status:503,headers:{'cache-control':'no-store'},body:'Temporary failure'}):route.fulfill({status:200,contentType:'image/png',headers:{'cache-control':'no-store'},body:coverPng});
+  });
+  await page.route('**/qa-cover-lazy.png',route=>{lazyCoverRequests++;return route.fulfill({status:200,contentType:'image/png',body:coverPng});});
+  await page.route('**/qa-cover-permanent.png',route=>{permanentCoverRequests++;return route.fulfill({status:404,headers:{'cache-control':'no-store'},body:'Missing'});});
+  await page.evaluate(()=>{
+   const host=document.createElement('div');host.id='qa-cover-recovery';
+   host.innerHTML='<div class="art-wrap" style="width:80px;height:80px"><div class="art-fallback">Fallback</div><img data-cover src="/qa-cover-transient.png?token=kept" alt=""></div><div class="art-wrap" style="width:80px;height:80px"><div class="art-fallback">Fallback</div><img data-cover src="/qa-cover-permanent.png" alt=""></div><img data-cover loading="lazy" src="/qa-cover-lazy.png" alt="" style="position:absolute;top:100000px;width:64px;height:64px">';
+   document.querySelector('#main').prepend(host);window.SongRankerUI.coverRecovery.scan();
+  });
+  await page.waitForFunction(()=>{const image=document.querySelector('#qa-cover-recovery img');return image.naturalWidth>0&&!image.classList.contains('failed');});
+  assert.equal(lazyCoverRequests,0,'Recovery does not eagerly fetch offscreen lazy covers');
+  assert.equal(transientCoverRequests,2,'Failed cover retries the original URL once and recovers');
+  await page.waitForFunction(()=>document.querySelectorAll('#qa-cover-recovery img')[1].classList.contains('failed'));
+  await page.waitForTimeout(4000);
+  assert.equal(permanentCoverRequests,3,'Permanent cover failures stop after two retries');
+  assert.equal(await page.locator('#qa-cover-recovery img').first().getAttribute('src'),'/qa-cover-transient.png?token=kept');
+  await page.locator('#qa-cover-recovery').screenshot({path:folder+'/cover-recovery.png'});
+  await page.evaluate(()=>document.querySelector('#qa-cover-recovery').remove());
   assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

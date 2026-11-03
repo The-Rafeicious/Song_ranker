@@ -156,8 +156,7 @@ window.EloReplay = (() => {
       const track = data.songs[shownCause.opponent_id], receiver = data.songs[shownCause.id];
       const mode = shownCause.mode === "blind" ? "blind" : "standard", tournament = shownCause.origin === "tournament";
       opponent.dataset.mode = mode; opponent.dataset.origin = tournament ? "tournament" : "ordinary";
-      opponent.innerHTML = `<h3>Latest gain</h3><p class="elo-replay-card-mode"><span class="${mode}">${mode === "blind" ? "Blind" : "Non-blind"}</span>${tournament ? ' · <span class="tournament">Tournament · first round</span>' : ""}</p><a class="elo-replay-opponent-art" href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(track)}<p class="elo-replay-transfer"><b class="song">${signed(shownCause.after - shownCause.before)} Elo</b> for ${songLink(receiver)}</p>`;
-      opponent.querySelector("img")?.addEventListener("error", event => { event.target.hidden = true; });
+      opponent.innerHTML = `<h3>Latest gain</h3><p class="elo-replay-card-mode"><span class="${mode}">${mode === "blind" ? "Blind" : "Non-blind"}</span>${tournament ? ' · <span class="tournament">Tournament · first round</span>' : ""}</p><a class="elo-replay-opponent-art" href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img data-cover src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(track)}<p class="elo-replay-transfer"><b class="song">${signed(shownCause.after - shownCause.before)} Elo</b> for ${songLink(receiver)}</p>`;
     }
     function render(motion = false) {
       const frame = data.frames[index], token = ++generation;
@@ -175,9 +174,7 @@ window.EloReplay = (() => {
         if (!row) {
           const node = document.createElement("article");
           node.className = "elo-replay-row";
-          node.innerHTML = `<span class="elo-replay-rank"></span><a class="elo-replay-art" href="/song/${song.id}" aria-label="${esc(song.title)}">${song.cover_url ? `<img src="${esc(song.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(song)}<div class="elo-replay-value"><strong></strong><span class="elo-replay-delta"></span></div><span class="elo-replay-glow" aria-hidden="true"></span>`;
-          const image = node.querySelector("img");
-          if (image) image.addEventListener("error", () => { image.hidden = true; });
+          node.innerHTML = `<span class="elo-replay-rank"></span><a class="elo-replay-art" href="/song/${song.id}" aria-label="${esc(song.title)}">${song.cover_url ? `<img data-cover src="${esc(song.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(song)}<div class="elo-replay-value"><strong></strong><span class="elo-replay-delta"></span></div><span class="elo-replay-glow" aria-hidden="true"></span>`;
           row = {node, position, value: entry.elo}; rows.set(entry.id, row); stage.append(node);
         }
         const change = frame.changes.find(c => c.id === entry.id), delta = change ? change.after - change.before : 0;
