@@ -264,7 +264,7 @@ window.SongRankerUI = (() => {
     if(doc.readyState!=='loading')scan();
     return Object.freeze({scan,dispose});
   }
-  const coverRecovery=manageCoverImages();
+  const coverRecovery=typeof document==='undefined'?null:manageCoverImages();
   return Object.freeze({
     $,
     $$,
