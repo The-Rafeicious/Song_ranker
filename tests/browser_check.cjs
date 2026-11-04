@@ -411,7 +411,8 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.equal(await page.locator('.shelf-column-head h2 a').count(),2,'Revealed album titles are linked');
   assert.equal(await page.locator('.shelf-album-link').count(),2,'Revealed album covers are linked');
   assert.ok(await page.locator('#shelf-perfect').isVisible(),'Perfect round gets a finished result panel');
-  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-result',folder);await page.screenshot({path:folder+'/shelves-discs-result-'+width+'.png',fullPage:true});}
+  assert.equal(await page.locator('#shelf-perfect').evaluate(e=>getComputedStyle(e).opacity),'1','Celebration remains readable throughout its entrance');
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-result',folder);await page.screenshot({path:folder+'/shelves-discs-result-'+width+'.png',fullPage:true,animations:'disabled'});}
   const revealedAlbumPath=await page.locator('.shelf-album-link').first().getAttribute('href');
   await Promise.all([page.waitForURL(base+revealedAlbumPath),page.locator('.shelf-album-link').first().click()]);
   // Actual grading: one adjacent swap is a near miss; the other album is reversed.

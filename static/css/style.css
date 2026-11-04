@@ -6864,8 +6864,8 @@ body[data-tone="shelves"] .btn.primary:hover {
 .shelf-perfect-score b {display: block; color: var(--tag); font-size: 32px; line-height: 1.2;}
 .shelf-perfect-score span {font-size: 16px; color: var(--text);}
 @keyframes shelfPerfect {
-  from {opacity: 0; transform: translateY(8px) scale(.98);}
-  to {opacity: 1; transform: none;}
+  from {transform: translateY(8px) scale(.98); box-shadow: 0 0 44px #ffb83344;}
+  to {transform: none; box-shadow: 0 0 30px #ffb83318;}
 }
 @media (prefers-reduced-motion: reduce) {
   .shelf-perfect {animation: none;}
@@ -7088,7 +7088,7 @@ body[data-page="shelves"]
 }
 .shelf-results-ready > [data-shelf-check] > span {
   grid-column: 1/-1;
-  color: #c8b4d4;
+  color: #291d30;
   font-size: 16px;
   font-weight: 750;
   letter-spacing: 0.03em;
@@ -7104,7 +7104,7 @@ body[data-page="shelves"]
 .shelf-results-ready > [data-shelf-check] > small {
   align-self: end;
   padding-bottom: 3px;
-  color: #c8b4d4;
+  color: #291d30;
   font-size: 16px;
 }
 body[data-page="shelves"] .shelf-next:not(:disabled):hover {
