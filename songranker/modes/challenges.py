@@ -4,10 +4,10 @@ import secrets
 import sqlite3
 import time
 from flask import session
-from songranker.modes.challenge_rules import RULES_VERSION as RULES_VERSION, TRIVIA_LABELS as TRIVIA_LABELS, trivia_rule as trivia_rule, trivia_passed as trivia_passed, guess_target as guess_target
+from songranker.modes.challenge_rules import RULES_VERSION as RULES_VERSION, TRIVIA_LABELS as TRIVIA_LABELS, trivia_rule as trivia_rule, trivia_passed as trivia_passed
 
 
-TABLES = {'trivia': 'trivia_rounds', 'guesser': 'elo_guess_rounds'}
+TABLES = {'trivia': 'trivia_rounds'}
 
 def browser_owner():
     """Create or reuse the session identity that owns persisted challenge runs."""
@@ -20,6 +20,8 @@ def browser_owner():
 
 def active_run(conn, mode):
     """Caller holds BEGIN IMMEDIATE; one active run per browser and mode."""
+    if mode not in TABLES:
+        raise ValueError("Unsupported challenge mode")
     owner = browser_owner()
     run = conn.execute('SELECT * FROM challenge_runs WHERE owner=? AND mode=? AND ended_at IS NULL',
                        (owner, mode)).fetchone()

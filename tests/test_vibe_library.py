@@ -1,7 +1,7 @@
 """Library Vibe summaries, consistency boards and top-twenty boundaries."""
 import unittest
 from songranker import pages
-from songranker.modes import guesser, shelves
+from songranker.modes import shelves
 from songranker.modes import vibe_map
 from songranker.modes.vibe_map import build_library_vibe
 from songranker.modes.vibe_map import build_vibe_rankings

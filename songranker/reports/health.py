@@ -5,9 +5,7 @@ from statistics import fmean, pstdev
 from songranker.modes import selection as S
 from songranker.modes.selection import with_catalogue_age
 from songranker.modes.selection import mode_counts
-from songranker.modes.selection import previous_guess
 from songranker.modes.selection import shelf_history
-from songranker.modes.challenge_rules import guess_target
 
 
 def label(text, level):
@@ -120,17 +118,6 @@ def build_selection_health(conn, context=None):
         r["album_id"]: r["appearances"]
         for r in conn.execute("SELECT * FROM shelf_album_exposures")
     }
-    run = None
-    if context.get("challenge_owner"):
-        run = conn.execute(
-            "SELECT * FROM challenge_runs WHERE owner=? AND mode='guesser' AND ended_at IS NULL ORDER BY id DESC LIMIT 1",
-            (context["challenge_owner"],),
-        ).fetchone()
-    streak = 0
-    if run:
-        from songranker.modes.challenges import progress
-
-        streak = progress(conn, run["id"], "guesser")["streak"]
     last_trivia = None
     if context.get("challenge_owner"):
         active = conn.execute(
@@ -147,7 +134,6 @@ def build_selection_health(conn, context=None):
             "SELECT song_id FROM trivia_rounds WHERE token=?",
             (context["trivia_round_token"],),
         ).fetchone()
-    last_guess = set(previous_guess(conn, context.get("guess_token")))
     from songranker.catalog import tournament_appearances
 
     first_rounds = tournament_appearances(conn)
@@ -185,11 +171,6 @@ def build_selection_health(conn, context=None):
             weights = S.voting_weights(rows, counts, other_counts, recent, fallback="tournament_entries")
         elif rule == "single" and n > 1:
             weights = [0 if s["id"] in excluded else w for s, w in zip(rows, base)]
-        elif rule == "guess":
-            weights = [
-                w * (S.GUESS_PREVIOUS if s["id"] in excluded else 1)
-                for s, w in zip(rows, base)
-            ]
         probabilities = normalize(weights) if ready else [0.0] * n
         mean = fmean(values) if n else None
         entries = [
@@ -284,15 +265,6 @@ def build_selection_health(conn, context=None):
         evidence = S.tournament_selection_evidence(conn, rows, blind, scope="global")
         pool(key, label, rows, rule="entries", ready=len(rows) >= 8, **evidence)
     pool(
-        "guesser",
-        "Elo Guesser",
-        valid,
-        mode_counts(conn, "guesser"),
-        previous=last_guess,
-        rule="guess",
-        ready=len({s["elo_score"] for s in valid}) >= 2,
-    )
-    pool(
         "shelves",
         "Album Shelves · albums",
         [dict(id=aid, title=albums[aid]["title"]) for aid in groups],
@@ -345,18 +317,6 @@ def build_selection_health(conn, context=None):
             shortfall=1 - S.EXPLORATION,
             match_floor=S.MATCH_FLOOR,
             match_close=S.MATCH_CLOSENESS,
-            guess_floor=S.GUESS_FLOOR,
-            guess_target=S.GUESS_TARGET_WEIGHT,
-            guess_width=S.GUESS_WIDTH,
-            previous=S.GUESS_PREVIOUS,
-        ),
-        challenge=dict(
-            current_run=bool(run),
-            streak=streak,
-            target=guess_target(streak),
-            samples=[
-                dict(streak=n, target=guess_target(n)) for n in (0, 10, 25, 50, 100)
-            ],
         ),
         shelves=dict(
             albums=len(groups),

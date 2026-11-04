@@ -42,9 +42,6 @@ body[data-page="home"]
   > [data-home-mode="tournament"] {
   --section-color: var(--tournament);
 }
-body[data-page="home"] #main .home-record-stats > [data-home-mode="guesser"] {
-  --section-color: var(--guesser);
-}
 body[data-page="home"] #main .home-record-stats > [data-home-mode="shelves"] {
   --section-color: var(--shelves);
 }
@@ -208,12 +205,12 @@ body[data-page="home"] #main .home-bar-details {
     font-size: 14px;
   }
 }
-/* Six modes, in reading order: three across on desktop. */
+/* Five equally sized choices, with a centred final row. */
 body[data-page="home"] #main .modes {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(6, minmax(0, 1fr));
 }
 body[data-page="home"] #main .modes > .mode-card {
-  grid-column: auto;
+  grid-column: span 2;
   min-width: 0;
   max-width: none;
   width: auto;
@@ -237,4 +234,11 @@ body[data-page="home"] #main .mode-card.vibe h2 {
   body[data-page="home"] #main .modes {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+
+@media (min-width: 761px) {
+  body[data-page="home"] #main .modes > .mode-card:nth-child(4) { grid-column: 2 / span 2; }
+}
+@media (max-width: 760px) {
+  body[data-page="home"] #main .modes > .mode-card { grid-column: auto; }
 }

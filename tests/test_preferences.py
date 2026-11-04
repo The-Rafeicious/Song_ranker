@@ -299,7 +299,7 @@ class PreferenceTests(unittest.TestCase):
                 c.execute('INSERT INTO album_shelf_items(round_id,item_slot,song_id,album_id,album_slot,track_number,answer_slot,answer_position) VALUES(?,?,?,?,?,?,?,?)',(round_id,sid,sid,album,album,pos,album,pos))
         c.commit()
         totals=exposure_totals(c)
-        self.assertEqual([totals[1][key] for key in ('trivia','guesser','tournament','shelves')],[1,1,1,1])
+        self.assertEqual([totals[1][key] for key in ('trivia','tournament','shelves')],[1,1,1])
         self.assertEqual(c.execute('SELECT appearances FROM shelf_album_exposures WHERE album_id=1').fetchone()[0],1)
 
     def test_schema9_upgrade_verifies_history_or_keeps_an_honest_anchor(self):
@@ -339,10 +339,11 @@ class PreferenceTests(unittest.TestCase):
         self.conn.execute("INSERT INTO elo_guess_rounds(token,song1_id,song2_id,elo1,elo2,started_at,completed_at,chosen_slot) VALUES('frozen',1,2,1300,1200,1,2,1)")
         self.conn.commit()
         from songranker.catalog import special_records
-        before=special_records(self.conn)[1]['guesser']
+        before=list(self.conn.execute('SELECT * FROM elo_guess_rounds'))
         event_id=self.vote()['event_id']
         correct_vote(self.conn,event_id,self.correction(event_id,'replace',winner_id=2,mode='blind'))
-        self.assertEqual(special_records(self.conn)[1]['guesser'],before)
+        self.assertEqual(list(self.conn.execute('SELECT * FROM elo_guess_rounds')),before)
+        self.assertNotIn('guesser',special_records(self.conn)[1])
 
     def test_http_receipts_owner_binding_and_admin_permissions(self):
         client=services.app.test_client();other=services.app.test_client()

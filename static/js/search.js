@@ -18,8 +18,6 @@ window.SearchPage = (() => {
     "third_places",
     "correct",
     "available_points",
-    "guess_correct",
-    "guess_attempts",
     "shelf_order_right",
     "shelf_order_pairs",
   ];
@@ -55,11 +53,10 @@ window.SearchPage = (() => {
           mode,
           `${label} ${ratio(right, total)}`,
           right === total ? 95 : 80,
-          `${right} / ${total} ${mode === "recognition" ? "eligible fields correct" : mode === "guesser" ? "correct track appearances" : "relative-order comparisons correct"}`,
+          `${right} / ${total} ${mode === "recognition" ? "eligible fields correct" : "relative-order comparisons correct"}`,
         );
     };
     rate("recognition", sums.correct, sums.available_points, 2, 0.9, "Trivia");
-    rate("guesser", sums.guess_correct, sums.guess_attempts, 2, 0.9, "Guesser");
     rate(
       "shelves",
       sums.shelf_order_right,

@@ -519,20 +519,6 @@
     ]
   },
   {
-    "path": "/api/elo-guesser/answer",
-    "endpoint": "guess_answer",
-    "methods": [
-      "POST"
-    ]
-  },
-  {
-    "path": "/api/elo-guesser/round",
-    "endpoint": "guess_round",
-    "methods": [
-      "POST"
-    ]
-  },
-  {
     "path": "/api/generate_bracket",
     "endpoint": "api_generate_bracket",
     "methods": [
@@ -802,20 +788,6 @@
   {
     "path": "/dev/logout",
     "endpoint": "dev_logout",
-    "methods": [
-      "GET"
-    ]
-  },
-  {
-    "path": "/elo_guesser",
-    "endpoint": "elo_guesser",
-    "methods": [
-      "GET"
-    ]
-  },
-  {
-    "path": "/elo_guesser_stats",
-    "endpoint": "guesser_stats",
     "methods": [
       "GET"
     ]

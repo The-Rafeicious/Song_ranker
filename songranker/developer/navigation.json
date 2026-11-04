@@ -1,7 +1,15 @@
 {
   "areas": [
-    ["library", "Library", "Manage songs, artists, releases and tags."],
-    ["modes", "Mode edits", "Review saved results and correct mode data."],
+    [
+      "library",
+      "Library",
+      "Manage songs, artists, releases and tags."
+    ],
+    [
+      "modes",
+      "Mode edits",
+      "Review saved results and correct mode data."
+    ],
     [
       "tools",
       "Tools & systems",
@@ -101,13 +109,6 @@
       "Review brackets, matches and saved placements."
     ],
     [
-      "guesser_records",
-      "modes",
-      "elo-guesser",
-      "Elo Guesser",
-      "Review and edit saved Guesser records."
-    ],
-    [
       "shelves_records",
       "modes",
       "album-shelves",
@@ -197,7 +198,6 @@
     "history",
     "trivia",
     "tournaments",
-    "guesser_records",
     "shelves_records",
     "overall",
     "duplicates"

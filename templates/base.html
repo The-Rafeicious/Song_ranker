@@ -9,7 +9,7 @@
   {{ assets.styles() }}
   {% block extra_css %}{% endblock %}
 </head>
-<body class="site-style-baseline{% if request.path in ['/game','/trivia','/tournament','/elo_guesser','/album_shelves'] %} gameplay-page{% endif %}" data-page="{% block page_kind %}legacy{% endblock %}" data-entity="{{entity_id|default('')}}">
+<body class="site-style-baseline{% if request.path in ['/game','/trivia','/tournament','/album_shelves'] %} gameplay-page{% endif %}" data-page="{% block page_kind %}legacy{% endblock %}" data-entity="{{entity_id|default('')}}">
 <a class="skip" href="#main">Skip to content</a>{% if page is defined and page == 'dev' %}{% include 'dev_nav.html' %}{% else %}<header class="navbar">
 <div class="nav-inner">
 <nav class="nav-left" aria-label="Site navigation">
@@ -19,7 +19,6 @@
 <a class="voting" href="/game">🔥 Standard Vote</a>
 <a class="recognition" href="/trivia">🧠 Trivia</a>
 <a class="tournament" href="/tournament">🏆 Tournament</a>
-<a class="guesser" href="/elo_guesser">🎯 Elo Guesser</a>
 <a class="shelves" href="/album_shelves">🗂️ Album Shelves</a>
 <a class="vibe" href="/vibe-map">📍 Vibe Map</a></div>
 </details>
@@ -31,7 +30,6 @@
 <a class="voting" href="/history">📜 Match History</a>
 <a class="recognition" href="/trivia_stats">🎯 Recognisability</a>
 <a class="tournament" href="/tournament_stats">🏆 Tournament Stats</a>
-<a class="guesser" href="/elo_guesser_stats">🎯 Elo Guesser Stats</a>
 <a class="shelves" href="/album_shelves_stats">🗂️ Album Shelves Stats</a>
 <a class="vibe" href="/vibe_map_stats">📍 Vibe Map Stats</a></div>
 </details>
@@ -42,7 +40,6 @@
 <a class="overall" href="/overall_rankings">Overall</a>
 <a class="recognition" href="/mode_rankings/trivia">Recognisability</a>
 <a class="tournament" href="/mode_rankings/tournament">Tournament</a>
-<a class="guesser" href="/mode_rankings/guesser">Elo Guesser</a>
 <a class="shelves" href="/mode_rankings/shelves">Album Shelves</a>
 <a class="vibe" href="/mode_rankings/vibe">Vibe Map</a></div>
 </details>
@@ -54,7 +51,7 @@
 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
 <path d="M12 3v9M6.3 5.8a9 9 0 1 0 11.4 0"/>
 </svg>
-</button>{% if request.path in ['/game','/trivia','/tournament','/elo_guesser','/album_shelves'] %}<details class="game-settings">
+</button>{% if request.path in ['/game','/trivia','/tournament','/album_shelves'] %}<details class="game-settings">
 <summary class="icon-btn" aria-label="Result settings" title="Result speed: Standard">
 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
 <circle cx="12" cy="13" r="8"/>

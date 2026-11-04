@@ -90,7 +90,7 @@ class AlbumShelvesTests(unittest.TestCase):
         self.assertTrue(all(not s['shelves_eligible'] for s in data['songs'] if s['album_id']==1))
         self.assertTrue(all(s['shelves_eligible'] for s in data['songs'] if s['album_id']==2))
         self.assertTrue(all(s['mode_appearances']['shelves']==0 for s in features(data).values()))
-        self.assertEqual(special_records(self.conn)[3],[])
+        self.assertEqual(special_records(self.conn)[2],[])
         self.assertEqual(client.get('/api/special-modes/stats').json['participating_albums'],[])
         report=build_shelves_stats(self.conn)
         self.assertEqual(report['summary']['rounds'],0)

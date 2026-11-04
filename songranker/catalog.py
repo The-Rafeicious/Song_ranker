@@ -279,7 +279,7 @@ def collection(include_overall_sources=False, include_query_sources=False):
         ]
         data["tournaments"].sort(key=lambda r: r["id"], reverse=True)
 
-        special, summary, _, _ = special_records(conn)
+        special, summary, _ = special_records(conn)
         data["special_modes"] = summary
         performance = song_performance(data)
         voting = voting_records(conn)
@@ -429,8 +429,6 @@ def special_records(conn):
 
     """Derive song figures and global mode records from answered rounds only."""
     keys = (
-        "guess_attempts",
-        "guess_correct",
         "shelf_attempts",
         "shelf_album_correct",
         "shelf_order_right",
@@ -441,34 +439,6 @@ def special_records(conn):
     songs = {
         r["id"]: {key: 0 for key in keys} for r in conn.execute("SELECT id FROM songs")
     }
-    guess_rows = [
-        dict(r)
-        for r in conn.execute(
-            "SELECT * FROM elo_guess_rounds WHERE completed_at IS NOT NULL ORDER BY completed_at,id"
-        )
-    ]
-    streak = best = correct = 0
-    for row in guess_rows:
-        row["correct"] = int((row["chosen_slot"] == 1) == (row["elo1"] > row["elo2"]))
-        correct += row["correct"]
-        if row.get("rules_version", 1) == 1:
-            streak = streak + 1 if row["correct"] else 0
-            best = max(best, streak)
-            row["streak"] = streak
-            from songranker.storage.schema_compat import (
-                CHALLENGE_ADDITIONS as ADDITIONS,
-            )
-
-            for column, _ in ADDITIONS["elo_guess_rounds"]:
-                row.pop(
-                    column, None
-                )  # Stable classic reporting before/after a schema rebuild.
-        else:
-            row["streak"] = row["streak_after"]
-        for sid in (row["song1_id"], row["song2_id"]):
-            if sid in songs:
-                songs[sid]["guess_attempts"] += 1
-                songs[sid]["guess_correct"] += row["correct"]
     shelf_items = defaultdict(list)
     for row in conn.execute(
         f"""SELECT i.* FROM album_shelf_items i JOIN album_shelf_rounds r ON r.id=i.round_id
@@ -508,16 +478,6 @@ def special_records(conn):
     points = sum(r["points"] for r in shelf_rows)
     available = sum(r["available"] for r in shelf_rows)
     summary = dict(
-        guesser=dict(
-            rounds=len(guess_rows),
-            correct=correct,
-            points=correct,
-            accuracy=100 * correct / len(guess_rows) if guess_rows else None,
-            streak=streak,
-            best_streak=best,
-            classic=dict(streak=streak, best_streak=best),
-            challenge=challenges.records(conn, "guesser"),
-        ),
         shelves=dict(
             rounds=len(shelf_rows),
             points=points,
@@ -536,7 +496,7 @@ def special_records(conn):
             ).fetchone()[0],
         ),
     )
-    return songs, summary, guess_rows[-30:][::-1], shelf_rows[-30:][::-1]
+    return songs, summary, shelf_rows[-30:][::-1]
 
 
 def display_song(conn, sid, include_album=True):
@@ -568,9 +528,7 @@ def special_stats():
 
     conn = get_db_connection()
     try:
-        songs, summary, guesses, shelves = special_records(conn)
-        for row in guesses:
-            row.pop("token", None)
+        songs, summary, shelves = special_records(conn)
         albums = [dict(row) for row in conn.execute(f"""
             SELECT a.id,a.title,a.cover_url,COUNT(DISTINCT r.id) AS rounds,
                 COUNT(*) AS attempts,SUM(i.answer_slot=i.album_slot) AS correct
@@ -593,7 +551,6 @@ def special_stats():
         return jsonify(
             summary=summary,
             songs=songs,
-            guess_history=guesses,
             shelf_history=shelves,
             participating_albums=albums,
         )
@@ -716,18 +673,16 @@ def profile_details(conn, song_ids, kind, entity_id):
     from songranker.modes.voting import profile_voting_details
     from songranker.modes.trivia import profile_trivia_details
     from songranker.modes.tournament import profile_tournament_details
-    from songranker.modes.guesser import profile_guesser_details
     from songranker.modes.shelves import profile_shelves_details
     ids,_ = profile_selection(song_ids)
     data = dict(context=dict(kind=kind,id=entity_id,track_count=len(ids)),
                 voting=profile_voting_details(conn,ids),trivia=profile_trivia_details(conn,ids),
-                tournament=profile_tournament_details(conn,ids),guesser=profile_guesser_details(conn,ids),shelves=profile_shelves_details(conn,ids))
+                tournament=profile_tournament_details(conn,ids),shelves=profile_shelves_details(conn,ids))
     if kind=='songs':
         data['song_id']=entity_id
     display_ids = {r['id'] for r in data['voting']['opponents_list']}
-    display_ids.update(r['opponent_id'] for r in data['guesser']['recent'])
     display_ids.update(r['exit']['opponent_id'] for r in data['tournament']['recent'] if r['exit'])
-    for key in ('trivia','tournament','guesser','shelves'):
+    for key in ('trivia','tournament','shelves'):
         display_ids.update(r['song_id'] for r in data[key]['recent'])
     data['songs'] = {sid:display_song(conn,sid) for sid in display_ids if sid is not None}
     return data

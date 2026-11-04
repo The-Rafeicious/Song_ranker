@@ -69,7 +69,7 @@ async function bounded(page,width,phase,folder){
   await page.waitForFunction(()=>document.querySelector('.vibe-song h2').textContent.endsWith('2'));
   assert.ok(await page.locator('#vibe-finish').isDisabled());
   await page.setViewportSize({width:1365,height:1050});await page.goto(base+'/');await page.locator('.mode-card.vibe').waitFor();
-  assert.equal(await page.locator('.mode-card').count(),6);
+  assert.equal(await page.locator('.mode-card').count(),5);
   await page.locator('#home-vibe[aria-busy="false"]').waitFor();await page.locator('#home-vibe-banner').waitFor();
   assert.equal(await page.locator('#overall-highlights + #home-vibe').count(),1);
   assert.equal(await page.locator('#home-vibe .vibe-mini-dot').count(),24);
@@ -89,11 +89,11 @@ async function bounded(page,width,phase,folder){
 
   const rows=await page.locator('.mode-card').evaluateAll(nodes=>nodes.map(e=>e.offsetTop));
   assert.deepEqual(rows.slice(0,3),[rows[0],rows[0],rows[0]]);
-  assert.deepEqual(rows.slice(3),[rows[3],rows[3],rows[3]]);assert.ok(rows[3]>rows[0]);
+  assert.deepEqual(rows.slice(3),[rows[3],rows[3]]);assert.ok(rows[3]>rows[0]);
   await page.screenshot({path:folder+'/home-desktop.png',fullPage:true});
   await page.setViewportSize({width:430,height:844});
   const widths=await page.locator('.mode-card').evaluateAll(nodes=>nodes.map(e=>Math.round(e.getBoundingClientRect().width)));
-  assert.ok(widths.every(w=>w===widths[0]),'All six phone cards have equal width');
+  assert.ok(widths.every(w=>w===widths[0]),'All five phone cards have equal width');
   await page.setViewportSize({width:1365,height:1050});await page.goto(base+'/vibe_map_stats');
   await page.locator('[data-vibe-chart]').first().waitFor();
   assert.equal(await page.locator('[data-vibe-chart]').count(),4);
@@ -151,7 +151,7 @@ async function bounded(page,width,phase,folder){
     assert.equal(await page.locator('#profile-vibe .vibe-song-identity').count(),0,'No repeated profile identity');
     await page.waitForFunction(()=>document.querySelectorAll('[data-song-details]').length>0&&!document.querySelector('[data-song-details][aria-busy]'));
     assert.equal(await page.locator('[data-song-details-retry]').count(),0,'Per-song evidence loads from the real API');
-    assert.equal(await page.locator('.profile-song-disclosure').count(),5,'Each mode keeps a bounded evidence disclosure');
+    assert.equal(await page.locator('.profile-song-disclosure').count(),4,'Each mode keeps a bounded evidence disclosure');
     assert.equal(await page.locator('.profile-song-disclosure[open]').count(),0,'Long histories start collapsed');
     await page.locator('#voting-record').screenshot({path:folder+'/song-voting-details-desktop.png'});
     await page.locator('.profile-song-disclosure').evaluateAll(nodes=>nodes.forEach(node=>node.open=true));
@@ -164,7 +164,7 @@ async function bounded(page,width,phase,folder){
    if(['artist','album'].includes(kind)){
     await page.waitForFunction(()=>document.querySelectorAll('[data-song-details]').length>0&&!document.querySelector('[data-song-details][aria-busy]'));
     assert.equal(await page.locator('[data-song-details-retry]').count(),0,kind+' mode evidence loads');
-    assert.equal(await page.locator('.profile-song-disclosure').count(),5,kind+' has expanded mode records');
+    assert.equal(await page.locator('.profile-song-disclosure').count(),4,kind+' has expanded mode records');
     assert.match(await page.locator('[data-song-details="voting"]').textContent(),/Within-collection matches/);
     assert.equal(await page.locator('.profile-song-disclosure[open]').count(),0,kind+' histories start collapsed');
     await page.locator('.profile-song-disclosure').evaluateAll(nodes=>nodes.forEach(node=>node.open=true));
@@ -194,7 +194,7 @@ async function bounded(page,width,phase,folder){
   assert.equal(await page.locator('body').getAttribute('data-tone'),'mixed');
   const globalTheme=await page.evaluate(()=>({title:getComputedStyle(document.querySelector('.global-theme-title')).backgroundImage,back:getComputedStyle(document.body,'::before').backgroundImage}));
   assert.match(globalTheme.title,/linear-gradient/);assert.match(globalTheme.back,/radial-gradient/);
-  for(const [id,colour] of [['global-voting','rgb(156, 219, 145)'],['global-recognition','rgb(242, 211, 79)'],['global-tournaments','rgb(255, 120, 166)'],['global-guesser','rgb(237, 120, 99)'],['global-shelves','rgb(175, 137, 189)']]){
+  for(const [id,colour] of [['global-voting','rgb(156, 219, 145)'],['global-recognition','rgb(242, 211, 79)'],['global-tournaments','rgb(255, 120, 166)'],['global-shelves','rgb(175, 137, 189)']]){
    assert.equal(await page.locator('#'+id+' h2').evaluate(e=>getComputedStyle(e).color),colour,'Global summary keeps its mode colour: '+id);
   }
   for(const [mode,colour] of [['standard','#f0a35b'],['blind','#55d6c2']])assert.equal(await page.locator('#global-voting .vote-column.'+mode).evaluate(e=>getComputedStyle(e).getPropertyValue('--section-color').trim()),colour,'Voting sub-card keeps its own accent');
@@ -296,7 +296,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.equal(await page.locator('[data-system-download]').count(),0);
   await page.goto(base+'/dev/dashboard');await page.locator('.dev-home-areas').waitFor();
   assert.equal(await page.locator('.dev-navbar').count(),1);assert.equal(await page.locator('.nav-matches,.dev-sidebar,.dev-taskbar,.dev-category').count(),0);
-  assert.equal(await page.locator('#dev-page-menu > a').count(),4);assert.equal(await page.locator('.dev-home-status > section').count(),3);assert.equal(await page.locator('.dev-home-areas [data-dev]').count(),27);
+  assert.equal(await page.locator('#dev-page-menu > a').count(),4);assert.equal(await page.locator('.dev-home-status > section').count(),3);assert.equal(await page.locator('.dev-home-areas [data-dev]').count(),26);
   for(const width of [390,768,1365,1800]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-home',folder);if(width>1100){const sizes=await page.locator('.dev-home-status > section').evaluateAll(nodes=>nodes.map(e=>({y:e.getBoundingClientRect().y,h:e.getBoundingClientRect().height})));assert.ok(sizes.every(s=>Math.abs(s.y-sizes[0].y)<2&&Math.abs(s.h-sizes[0].h)<2),'Aligned equal service cards');const bottoms=await page.locator('.dev-home-status > section').evaluateAll(nodes=>nodes.map(node=>(node.querySelector('.system-actions')||node.querySelector(':scope > .btn')).getBoundingClientRect().bottom));assert.ok(bottoms.every(y=>Math.abs(y-bottoms[0])<2),'Home status actions align');assert.ok(await page.locator('.dev-home-areas h2 a').evaluateAll(nodes=>nodes.every(node=>parseFloat(getComputedStyle(node).fontSize)>=26)),'Home section headings follow shared typography');}await page.screenshot({path:folder+'/dev-home-'+width+'.png',fullPage:true});}
   for(const area of ['library','modes','tools']) {
     await page.locator('#dev-page-menu [data-dev="'+area+'"]').click();await page.locator('.dev-destinations').waitFor();
@@ -426,7 +426,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-stats',folder);await page.screenshot({path:folder+'/shelves-discs-stats-'+width+'.png',fullPage:true});}
   // Saved visual brackets and the real final -> replay -> podium handoff.
   await page.request.post(base+'/tournament-test-enable');
-  for(const [mode,path] of [['vote','/game'],['guesser','/elo_guesser'],['tournament','/tournament?tournament=77']]){
+  for(const [mode,path] of [['vote','/game'],['tournament','/tournament?tournament=77']]){
    await page.goto(base+path);await page.locator('.matchup .match-cover .cover-button').first().waitFor();
    const covers=page.locator('.matchup .match-cover');
    assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::before').animationName),'none','Idle cover stays soft');
@@ -566,7 +566,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.ok(queryAlbums.length>0);assert.ok(queryAlbums.every(name=>!name.toLowerCase().endsWith(' - single')&&name.toLowerCase()!=='unknown album'));
   for(const width of [390,1365]){await page.setViewportSize({width,height:1000});await bounded(page,width,'query-albums',folder);}
   await page.locator('[data-mode-query]').screenshot({path:folder+'/query-albums.png'});
-  const rankingRoutes=['/leaderboard','/artists','/albums','/tags','/mode_rankings/trivia','/mode_rankings/tournament','/mode_rankings/guesser','/mode_rankings/shelves','/mode_rankings/vibe','/overall_rankings','/query'];
+  const rankingRoutes=['/leaderboard','/artists','/albums','/tags','/mode_rankings/trivia','/mode_rankings/tournament','/mode_rankings/shelves','/mode_rankings/vibe','/overall_rankings','/query'];
   for(const width of [390,768,1365]){
    let titleSize=null,tabSize=null;
    await page.setViewportSize({width,height:1000});
@@ -584,7 +584,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('.rank-links a[href="/artists?view=bottom"]').click();await page.locator('.ranking-heading h1').waitFor();
   assert.match(await page.locator('.ranking-heading h1').textContent(),/Bottom Artists/);
   // Audit every public profile/report composition, including expanded histories.
-  const reportRoutes=[['global','/global_stats'],['voting','/voting_stats'],['trivia','/trivia_stats'],['tournament','/tournament_stats'],['local-tournaments','/tournament_local_stats'],['guesser','/elo_guesser_stats'],['shelves','/album_shelves_stats'],['vibe','/vibe_map_stats'],['history','/history'],['song','/song/2'],['artist','/artist/Artist%20with%20a%20longer%20name'],['album','/album/A%20long%20album%20title%20for%20responsive%20testing'],['tag','/tag/Melancholy']];
+  const reportRoutes=[['global','/global_stats'],['voting','/voting_stats'],['trivia','/trivia_stats'],['tournament','/tournament_stats'],['local-tournaments','/tournament_local_stats'],['shelves','/album_shelves_stats'],['vibe','/vibe_map_stats'],['history','/history'],['song','/song/2'],['artist','/artist/Artist%20with%20a%20longer%20name'],['album','/album/A%20long%20album%20title%20for%20responsive%20testing'],['tag','/tag/Melancholy']];
   for(const [name,route] of reportRoutes){
    await page.goto(base+route);await page.locator('#main .panel').first().waitFor();
    if(['song','artist','album','tag'].includes(name)){
@@ -644,6 +644,6 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.equal(await page.locator('#qa-cover-recovery img').first().getAttribute('src'),'/qa-cover-transient.png?token=kept');
   await page.locator('#qa-cover-recovery').screenshot({path:folder+'/cover-recovery.png'});
   await page.evaluate(()=>document.querySelector('#qa-cover-recovery').remove());
-  assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+3 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
+  assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+2 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

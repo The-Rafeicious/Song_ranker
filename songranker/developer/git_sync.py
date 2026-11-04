@@ -892,7 +892,7 @@ class GitSync:
                                 ("Vibe song records", "song_vibe_progress"),
                                 ("Trivia rounds", "trivia_rounds"),
                                 ("Tournaments", "tournaments"),
-                                ("Elo guesses", "elo_guess_rounds"),
+                                ("Archived Elo Guesser rounds", "elo_guess_rounds"),
                                 ("Shelves rounds", "album_shelf_rounds"),
                             ]
                         }

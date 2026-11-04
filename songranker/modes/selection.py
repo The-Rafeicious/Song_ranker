@@ -4,17 +4,12 @@ import math
 from itertools import groupby
 import random
 import statistics
-import sys
 import time
 from songranker.modes.vibe_similarity import SongVibeBias, AlbumVibeBias
 
 EXPLORATION = 0.08
 MATCH_FLOOR = 0.20
 MATCH_CLOSENESS = 0.80
-GUESS_FLOOR = 0.05
-GUESS_TARGET_WEIGHT = 0.95
-GUESS_WIDTH = 0.10
-GUESS_PREVIOUS = 0.25
 VIBE_FIRST_PASS = 0.95
 VIBE_LATER_PASS = 0.75
 VIBE_PREVIOUS = 0.25
@@ -292,65 +287,8 @@ def choose_vibe_song(songs, rng=random, *, counts=None, previous=None):
     return pool[weighted_index(weights, rng)]
 
 
-def gap_positions(values, tolerance=0.0):
-    """Assign normalised midpoint ranks, treating values within tolerance as tied."""
-    order = sorted(range(len(values)), key=values.__getitem__)
-    result = [0.0] * len(values)
-    position = 0
-    while position < len(order):
-        end = position + 1
-        while (
-            end < len(order)
-            and abs(values[order[end]] - values[order[position]]) <= tolerance
-        ):
-            end += 1
-        rank = (position + end - 1) / 2 / max(1, len(order) - 1)
-        for i in order[position:end]:
-            result[i] = rank
-        position = end
-    return result
 
 
-def choose_guess_pair(songs, rng=random, *, counts=None, previous=(), target=0.60):
-    """Relative gap kernel; the caller freezes the versioned run target at offer time."""
-    songs = rated_pool([dict(s) for s in songs])
-    if len({s["elo_score"] for s in songs}) < 2:
-        return None, None
-    if not 0 <= target <= 1:
-        raise ValueError("Gap target must be between zero and one.")
-    base = pool_probabilities(songs, counts, "guess_attempts")
-    previous = set(previous)
-    first = weighted_index(
-        [
-            w * (GUESS_PREVIOUS if s["id"] in previous else 1)
-            for s, w in zip(songs, base)
-        ],
-        rng,
-    )
-    candidates = [
-        i for i, s in enumerate(songs) if s["elo_score"] != songs[first]["elo_score"]
-    ]
-    gaps = [abs(songs[i]["elo_score"] - songs[first]["elo_score"]) for i in candidates]
-    tolerance = (
-        16 * sys.float_info.epsilon * max(1.0, max(abs(s["elo_score"]) for s in songs))
-    )
-    positions = gap_positions(gaps, tolerance)
-    weights = [
-        base[i]
-        * (
-            GUESS_FLOOR
-            + GUESS_TARGET_WEIGHT * math.exp(-0.5 * ((p - target) / GUESS_WIDTH) ** 2)
-        )
-        * (GUESS_PREVIOUS if songs[i]["id"] in previous else 1)
-        for i, p in zip(candidates, positions)
-    ]
-    vibe = SongVibeBias(songs)
-    weights = [
-        w * vibe.multiplier(songs[first]["id"], songs[i]["id"])
-        for w, i in zip(weights, candidates)
-    ]
-    second = candidates[weighted_index(weights, rng)]
-    return songs[first], songs[second]
 
 
 def draw_entries(pool, size, rng=random, *, counts=None, other_counts=None, recent=()):
@@ -723,21 +661,6 @@ def previous_preference(conn, mode, owner=None):
     return tuple(previous) if previous else ()
 
 
-def previous_guess(conn, token=None):
-    """Read a completed Guesser pair from the supplied round or latest result to
-    avoid an immediate repeat.
-    """
-    row = conn.execute(
-        """SELECT song1_id,song2_id FROM elo_guess_rounds
-        WHERE token=? AND completed_at IS NOT NULL""",
-        (token,),
-    ).fetchone()
-    if row is None:
-        row = conn.execute(
-            """SELECT song1_id,song2_id FROM elo_guess_rounds
-            WHERE completed_at IS NOT NULL ORDER BY completed_at DESC,id DESC LIMIT 1"""
-        ).fetchone()
-    return tuple(row) if row else ()
 
 
 def shelf_history(conn):

@@ -35,7 +35,7 @@ and historical changes in [release notes](../update_logs/README.md).
 | Concern | User surface | Implementation owner |
 | --- | --- | --- |
 | Voting and tournament Elo | Vote, bracket, histories, visibility comparisons | `modes/voting.py`, `modes/tournament.py`, `modes/preferences.py`, `catalog.py` |
-| Trivia and Guesser challenges | Timed fields, streaks, frozen difficulty/answers | `modes/trivia.py`, `challenges.py`, `challenge_rules.py`, `guesser.py` |
+| Trivia challenges | Timed fields, streaks, frozen difficulty/answers | `modes/trivia.py`, `challenges.py`, `challenge_rules.py` |
 | Album Shelves | Album assignment, track ordering, staged reveal | `modes/shelves.py`, shared game/round flow assets |
 | Vibe Map | Continuous placement, averages, radar, similar tracks | `modes/vibe_map.py`, `vibe_similarity.py`, `vibe_maps.py`, `static/js/vibe_map.js` |
 | Vibe reporting | Stats, profiles, Home/Global and collection rankings | `modes/vibe_map.py`, `vibe_charts.js`, `vibe_library.js` |
@@ -238,7 +238,6 @@ bracket points are not reduced by this preference-evidence policy.
 | Trivia | A 30-second answer clock, paused explicitly. Song/artist/eligible-album field weights are 0.5/0.2/0.3, renormalised by 0.7 without an album. A correct field earns its weight × `(0.75 + 0.25 × (1 − seconds/30))`; points round to four decimals. Field accuracy pools correct available fields, independently of timing. |
 | Trivia challenge | Below 10 streak: any correct available field; 10–24: song or album when eligible; 25+: song and album. Without an eligible album, song is required from streak 10 onward. The offered rule is frozen with the round. |
 | Tournament | Round wins earn their round number (1, 2, 3, 4, 5), so 8/16/32-track champions earn 6/10/15 points. Bronze earns half the semifinal round value (1/1.5/2). Overall uses bracket advancement and size-weighted top-four credit, including fourth place; a bronze loss does not deduct progress or points. Placement requires a completed bracket. |
-| Elo Guesser | Choose the higher frozen offered rating. One correct point and a progressive streak. Target relative gap rank is `0.60/(1 + streak/10)`; frozen ratings are never replaced by current Elo when grading. |
 | Vibe Map | Four continuous descriptions saved as compact means/counts; radar, similarity and consistency are descriptive, without a performance score. |
 | Album Shelves | Ten tracks across two or three proper albums. Correct album placement earns 0.5; correct relative-order comparisons earn up to 2.5 per track. Relative-order percentage is the primary accuracy; points retain their own saved denominator. |
 
@@ -270,7 +269,7 @@ No map may be skipped by navigation. Missing points stay absent from comparisons
 Similarity is descriptive; coverage and Gaussian coordinate distance are distinct.
 
 The coverage-first selector prioritises never-mapped songs. A bounded similarity
-factor softly biases voting, tournament, Guesser and album-hotspot selection;
+factor softly biases voting, tournament and album-hotspot selection;
 coverage adapts its strength, while positive random support prevents isolated
 pockets. It does not rewrite Elo, quality scores or preferences.
 
@@ -342,9 +341,7 @@ The opponent combines the same exposure support with Elo closeness:
 IQR, then 10–90% span, then the median adjacent distinct-rating gap. This tightens
 pairings modestly as evidence grows and remains relative to the live database.
 
-Trivia excludes the previous track when alternatives exist. Guesser retains its
-previous-pair multiplier 0.25 and the relative gap-target kernel (0.05 floor,
-0.95 target weight, width 0.10). Tournament draws entries without replacement using the same soft recency and
+Trivia excludes the previous track when alternatives exist. Tournament draws entries without replacement using the same soft recency and
 own-track visibility adjustment as voting. Exposure is one entry per bracket,
 split by Blind/Non-blind within competition history or an exact local collection,
 including unfinished brackets. Advancement
@@ -370,11 +367,14 @@ impact = tested_library_mean + support * (tested_collection_mean - tested_librar
 
 The lighter prior avoids pulling typical collections halfway back to baseline, while still tempering tiny samples. Collections without tested songs have no Impact/rank; proper albums alone participate in album peer calibration. Values display to one decimal and sort at full precision. Catalogue song counts remain unchanged. This is a read-only calculation: song Elo, match history and Overall are unchanged.
 
-Overall retains five equally based game families: voting, Trivia, Tournament,
-Guesser and Shelves. Voting's correlated Elo/Non-blind/Blind views split its 20
-base points as 8/6/6. Only applicable tested evidence contributes. Current/peak
+Overall retains four equally based game families: Voting, Trivia, Tournament
+and Shelves. Voting's correlated Elo/Non-blind/Blind views split its 25
+base points as 10/7.5/7.5. `FAMILY_CAP_HEADROOM` remains configurable: an
+active-family cap is `min(1, 1 / active_families + headroom)`. At the default
+0.10 headroom, four active families are capped at 35%; sparse or ineligible
+family sets use the same formula so their total can still reach 100%. Only applicable tested evidence contributes. Current/peak
 Elo split 85/15 within Elo; mode win rates, Trivia fields/perfect rounds, bracket
-advancement/top-four achievement/depth points and quiz/order accuracies provide the other metrics.
+advancement/top-four achievement/depth points and album/order accuracies provide the other metrics.
 
 Relative evidence is 50% at the current mean sample count and 100% at its robust
 high reference (90th percentile, with a fallback when flat). Rate calibration
@@ -555,7 +555,7 @@ admin requirements. See [Dev guide](DEV_GUIDE.md).
 | Preferences | `/api/matchup`, `/api/vote`; offers are browser-owned and answers are validated/idempotent. |
 | Trivia | `/api/trivia/round`, `/api/trivia/<token>/start`, `/pause`, `/field`, `/finish`. |
 | Tournament | `/api/generate_bracket`, `/api/tournament_vote`, `/api/tournaments`, `/api/tournaments/<id>`, completion/stats routes. |
-| Guesser/Shelves | `/api/elo-guesser/round`, `/answer`, `/api/album-shelves/round`, `/answer`; saved server questions own grading. |
+| Shelves | `/api/album-shelves/round`, `/answer`; saved server questions own grading. |
 | Vibe play | `/api/vibe-map/state`, `/round`, `/draft`, `/advance`, `/cancel`, `/profile/<song_id>`, `/similar/<song_id>`, `/heatmap`. Exact methods/bodies: [mode reference](VIBE_MAP.md#flow-and-endpoints). |
 | Vibe reports | `/api/vibe-map/stats`, `/inspect/<song_id>`, `/entity`, `/library`, `/rankings`; page `/vibe_map_stats` and board `/mode_rankings/vibe`. |
 | Vibe Dev | `/api/dev/vibe` search, `/api/dev/vibe/<song_id>` GET/POST/DELETE, `/api/dev/reset-history/vibe`; [maintenance contract](VIBE_MAP_DEV.md#api). |
@@ -1026,8 +1026,7 @@ from editable lifetime totals already on the page.
 
 Tournament details show actual completed appearances and outcomes, separating
 library/tag from artist/album results; they do not alter scope-weighted credit.
-Guesser grades against frozen offered Elo and separates pairs below 50 Elo from
-pairs at least 50 apart. Shelves grades the full saved round before selecting
+Shelves grades the full saved round before selecting
 the song's result, reusing can_grade and the whole-round album-exclusion filter.
 Unknown historical evidence stays unknown.
 
@@ -1056,8 +1055,7 @@ Voting totals count track appearances: an internal pair contributes one win and
 one loss, while different-match and internal-match counts count each event once.
 The recent voting window is ten distinct events before pooling appearances. Only
 external opponents enter its opponent list; collection streaks are not meaningful
-and are replaced by match-context counts. Guesser accuracy counts unique pairs;
-its picked-side counts use external pairs only, with internal pairs explicit.
+and are replaced by match-context counts.
 Trivia pools field counts and timing samples, not per-track percentages or means;
 latest/previous windows are disjoint across the collection's finished rounds.
 
@@ -1100,7 +1098,7 @@ current-policy points. Unsupported legacy bracket sizes retain their saved point
 | 16 | 1, 2, 3, 4 | 10 | 6 | 4.5 | 3 | 1.5 |
 | 32 | 1, 2, 3, 4, 5 | 15 | 10 | 8 | 6 | 2 |
 
-Overall's Tournament family keeps its existing 20% family allocation and its
+Overall's Tournament family uses its 25% base family allocation and its
 30/45/25 internal mix. Its inputs are now advancement / 5, top-four achievement,
 and points / 15 per completed competition entry. Top-four base credits are
 1, .75, .55 and .4, multiplied by bracket depth / 5 (3/5, 4/5 or 1).
@@ -1144,8 +1142,7 @@ Public pages show measurements and availability, with calculation rules here:
   Internal collection matches contribute one win and one loss; opponent counts
   name external songs. Recorded net Elo uses only usable before/after snapshots.
   Recall details use completed saved rounds; edited lifetime totals can differ.
-  Guesser difficulty uses the gap saved when the pair was offered; unique pair
-  counts avoid counting both collection tracks twice. A perfect Shelves track
+  A perfect Shelves track
   earns all its available points, even if other tracks in that round are wrong.
 - Tournament seeds are saved starting positions, rather than current standings.
   The draw blends Elo and randomness with champion priority. Top/bottom halves

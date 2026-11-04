@@ -27,8 +27,3 @@ def trivia_passed(row):
     return {'any': title or artist or bool(row['album_available']) and album,
             'title_or_album': title or album, 'title_and_album': title and album,
             'title': title}[row['streak_rule']]
-
-
-def guess_target(streak):
-    """Lower the target rating-gap quantile as a Guesser challenge streak grows."""
-    return .60 / (1 + max(0, streak) / 10)

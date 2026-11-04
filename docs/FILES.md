@@ -24,7 +24,6 @@ V5.3 has one current owner per responsibility. Use the [function index](FUNCTION
 | [songranker/lan_security.py](../songranker/lan_security.py) | Private-LAN addresses/hosts, session secret, origin and local-write policy. |
 | [songranker/modes/challenge_rules.py](../songranker/modes/challenge_rules.py) | Pure streak/difficulty rules, reusable without Flask or a database. |
 | [songranker/modes/challenges.py](../songranker/modes/challenges.py) | Browser-owned persisted challenge runs and public pure-rule exports. |
-| [songranker/modes/guesser.py](../songranker/modes/guesser.py) | Elo Guesser rounds, frozen-answer results and detailed Guesser Stats. |
 | [songranker/modes/preferences.py](../songranker/modes/preferences.py) | Preference offers, idempotent writes, corrections/replay and rating projections. |
 | [songranker/modes/selection.py](../songranker/modes/selection.py) | Adaptive draw algorithms plus the shared SQL exposure/recency adapters. |
 | [songranker/modes/shelves.py](../songranker/modes/shelves.py) | Album Shelves eligibility, ordering/grading and detailed Shelves Stats. |

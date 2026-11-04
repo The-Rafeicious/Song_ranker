@@ -25,7 +25,6 @@
     blind: ["--blind", "Blind Audition"],
     recognition: ["--recognition", "Trivia"],
     tournament: ["--tournament", "Tournament"],
-    guesser: ["--guesser", "Elo Guesser"],
     shelves: ["--shelves", "Album Shelves"],
     vibe: ["--vibe", "Vibe Map"],
   };

@@ -6,7 +6,6 @@ from songranker.catalog import song_stats, profile_details, collection_stats
 from songranker.modes.voting import profile_voting_details
 from songranker.modes.trivia import profile_trivia_details
 from songranker.modes.tournament import profile_tournament_details
-from songranker.modes.guesser import profile_guesser_details
 from songranker.modes.shelves import profile_shelves_details
 from songranker.storage.database_io import capture
 import test_elo_replay as replay_fixture
@@ -30,7 +29,7 @@ class SongDetailTests(unittest.TestCase):
             self.assertEqual(data['voting']['matches'],1)
             self.assertEqual(data['songs']['7']['artists'][0]['name'],'Artist <unsafe>')
             self.assertEqual(data['trivia']['timing'][0]['mean'],None)
-            self.assertEqual(data['guesser']['recent'],[])
+            self.assertNotIn('guesser',data)
             self.assertNotIn('token',response.get_data(as_text=True))
         self.assertEqual(capture(self.conn),before)
 
@@ -60,15 +59,6 @@ class SongDetailTests(unittest.TestCase):
         self.assertEqual(d['timing'][2]['samples'],0)
         self.assertEqual(len(d['recent']),5)
 
-    def test_guesser_uses_frozen_gap_and_slot_in_both_positions(self):
-        for i,(a,b,x,y,chosen) in enumerate([(8,7,1250,1240,1),(7,8,1400,1200,2),(8,7,1200,1230,2)]):
-            self.conn.execute('INSERT INTO elo_guess_rounds(token,song1_id,song2_id,elo1,elo2,started_at,completed_at,chosen_slot) VALUES(?,?,?,?,?,0,?,?)',(f'g{i}',a,b,x,y,i+1,chosen))
-        self.conn.execute("INSERT INTO elo_guess_rounds(token,song1_id,song2_id,elo1,elo2,started_at) VALUES('pending',8,7,9999,1,0)")
-        self.conn.execute('UPDATE songs SET elo_score=9999 WHERE id=8')
-        d = profile_guesser_details(self.conn,8)
-        self.assertEqual((d['graded'],d['selected']),(3,2))
-        self.assertEqual([r['gap'] for r in d['recent']],[30,200,10])
-        self.assertEqual([(r['correct'],r['graded']) for r in d['bands']],[(2,2),(0,1)])
 
     def test_completed_tournaments_separate_local_results_and_hide_pending(self):
         for tid,scope,status in [(1,'global','completed'),(2,'artist','completed'),(3,'tag','in_progress')]:
@@ -139,13 +129,10 @@ class SongDetailTests(unittest.TestCase):
             self.conn.execute('INSERT INTO elo_guess_rounds(token,song1_id,song2_id,elo1,elo2,started_at,completed_at,chosen_slot) VALUES(?,?,?,1400,1200,0,?,?)',(f'c{i}',a,b,i+1,chosen))
         before=capture(self.conn)
         d=profile_details(self.conn,{7,8,7},'artists',2)
-        v=d['voting'];g=d['guesser']
+        v=d['voting'];self.assertNotIn('guesser',d)
         self.assertEqual((v['events'],v['matches'],v['internal']),(3,4,1))
         self.assertEqual((v['recent_wins'],v['recent_matches'],v['recent_events']),(2,4,3))
         self.assertEqual({r['id'] for r in v['opponents_list']},{5,6})
-        self.assertEqual((g['rounds'],g['graded'],g['internal'],g['external_graded'],g['selected']),(3,3,1,2,2))
-        self.assertEqual(sum(b['graded'] for b in g['bands']),3)
-        self.assertEqual({r['song_id'] for r in g['recent']},{7,8})
         self.assertEqual(capture(self.conn),before)
 
     def test_collection_recall_pools_fields_and_uses_global_disjoint_windows(self):
@@ -197,7 +184,7 @@ class SongDetailTests(unittest.TestCase):
             empty=client.get('/api/profile/artists/3/stats').json
             self.assertEqual(empty['context']['track_count'],0)
             self.assertEqual(empty['voting']['events'],0)
-            self.assertTrue(all(not empty[k]['recent'] for k in ('trivia','guesser','tournament','shelves')))
+            self.assertTrue(all(not empty[k]['recent'] for k in ('trivia','tournament','shelves')))
             self.conn.executemany('INSERT INTO songs(id,title,album_id) VALUES(?,?,2)',[(sid,f'Large {sid}') for sid in range(100,1400)])
             self.conn.execute('INSERT INTO song_artists SELECT id,2 FROM songs WHERE id>=100')
             self.conn.commit()

@@ -320,7 +320,7 @@ def area(name, kind):
     ):
         return "Vibe Map"
     if name == "elo_guess_rounds":
-        return "Elo Guesser"
+        return "Archived Elo Guesser"
     if name in ("challenge_runs", "global_stats"):
         return "Runs and records"
     if name in (
@@ -443,7 +443,7 @@ def counts(db):
         ("Tags", "genres"),
         ("Preferences", "preference_events"),
         ("Trivia rounds", "trivia_rounds"),
-        ("Guesser rounds", "elo_guess_rounds"),
+        ("Archived Elo Guesser rounds", "elo_guess_rounds"),
         ("Shelf rounds", "album_shelf_rounds"),
         ("Tournaments", "tournaments"),
     ]:

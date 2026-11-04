@@ -7,7 +7,7 @@ from songranker.storage.database import initialize_database
 from songranker.storage.database_io import capture,readonly,reconcile,sql_dump
 from songranker.storage.database_schema import SCHEMA_VERSION
 from songranker import services
-from songranker.modes import guesser, shelves
+from songranker.modes import shelves
 from songranker.modes import trivia
 from songranker.modes import vibe_map
 
@@ -53,7 +53,7 @@ class RetireListeningTests(unittest.TestCase):
         from songranker import pages,catalog
         self.assertTrue(all('listening' not in song for song in catalog.collection()['songs']))
         with services.app.test_client() as client:
-            for path in ['/global_stats','/voting_stats','/trivia_stats','/tournament_stats','/elo_guesser_stats','/album_shelves_stats','/game','/trivia','/elo_guesser','/album_shelves']:
+            for path in ['/global_stats','/voting_stats','/trivia_stats','/tournament_stats','/album_shelves_stats','/game','/trivia','/album_shelves']:
                 response=client.get(path);self.assertEqual(response.status_code,200,path)
                 self.assertNotIn('listening-panel',response.get_data(as_text=True));self.assertNotIn('js/listening.js',response.get_data(as_text=True))
 

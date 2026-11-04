@@ -3,7 +3,7 @@ const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert
 (async()=>{
  const dom=new JSDOM('<main><section data-mode-query><div data-query-entity></div><form><div data-query-controls></div><p data-query-error></p><button type="submit">Apply</button><button type="button" data-query-reset>Reset</button></form><div data-query-results></div></section></main>',{url:'https://example.test/query',runScripts:'outside-only'}),w=dom.window;
  w.structuredClone=structuredClone;
- const metrics=['elo','matches','win_rate','trivia_rounds','trivia_accuracy','guess_accuracy','vibe_maps'].map(key=>({key,label:key,family:key.startsWith('guess')?'Elo Guesser':key.startsWith('vibe')?'Vibe':'Voting',unit:key==='win_rate'?'percent':'count'}));
+ const metrics=['elo','matches','win_rate','trivia_rounds','trivia_accuracy','shelf_accuracy','vibe_maps'].map(key=>({key,label:key,family:key.startsWith('shelf')?'Album Shelves':key.startsWith('vibe')?'Vibe':'Voting',unit:key==='win_rate'?'percent':'count'}));
  let calls=[],fail=false;
  w.fetch=async url=>{calls.push(url);if(url.includes('schema'))return {ok:true,json:async()=>({metrics})};if(url.includes('lookup='))return {ok:true,json:async()=>({items:[{id:2,name:'Chosen <song>',kind:'songs',cover:'/cover',artists:[{id:8,name:'Artist A',kind:'artists',url:'/artist/A'}],album:{id:9,name:'Full album',kind:'albums',proper_album:true,url:'/album/Full'},related:[{kind:'tags',name:'Hidden lookup tag'}]}],total:1})};if(fail)return {ok:false,json:async()=>({error:'Try again'})};const spec=JSON.parse(new URL(url,'https://example.test').searchParams.get('spec'));return {ok:true,json:async()=>({spec,total:21,pages:2,page:spec.page,items:[{id:1,name:'<img src=x onerror=bad()>',kind:spec.entity,url:'/song/1',cover:'/cover',track_count:1,artist_count:1,album_count:1,values:{elo:1234,matches:1001},tags:[{id:7,name:'Pop & More',url:'/tag/Pop',track_count:1}],artists:[{id:2,name:'Artist & A',kind:'artists',url:'/artist/A'}],album:{id:3,name:'Album One',kind:'albums',proper_album:true,url:'/album/One'},related:[{id:2,name:'Artist & A',kind:'artists',url:'/artist/A',cover:'/artist'}]}]})};};
  for(const name of ['ui','gameplay','query'])w.eval(fs.readFileSync('static/js/'+name+'.js','utf8'));
@@ -41,10 +41,10 @@ const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert
  // Six includes mandatory sort fields, and search/filter only change the local chooser.
  const chooser=root.querySelector('.query-columns');chooser.open=true;
  const required=root.querySelector('[data-column="elo"]');assert.ok(required.checked&&required.disabled);
- let check=root.querySelector('[data-column="guess_accuracy"]');check.checked=true;check.dispatchEvent(new w.Event('change',{bubbles:true}));
+ let check=root.querySelector('[data-column="shelf_accuracy"]');check.checked=true;check.dispatchEvent(new w.Event('change',{bubbles:true}));
  assert.equal(root.querySelector('[data-column-count]').textContent,'6 / 6');assert.ok(root.querySelector('[data-column="vibe_maps"]').disabled);
- root.querySelector('[data-column-remove="guess_accuracy"]').click();assert.ok(!root.querySelector('[data-column="vibe_maps"]').disabled);
- const beforeSearch=calls.length,find=root.querySelector('[data-column-search]');find.value='guesser';find.dispatchEvent(new w.Event('input',{bubbles:true}));
+ root.querySelector('[data-column-remove="shelf_accuracy"]').click();assert.ok(!root.querySelector('[data-column="vibe_maps"]').disabled);
+ const beforeSearch=calls.length,find=root.querySelector('[data-column-search]');find.value='shelves';find.dispatchEvent(new w.Event('input',{bubbles:true}));
  assert.equal(root.querySelectorAll('[data-column-option]:not([hidden])').length,1);assert.equal(calls.length,beforeSearch);
  change('query-column-family','Vibe');assert.match(root.querySelector('[data-column-status]').textContent,/No statistics/);
  find.value='';find.dispatchEvent(new w.Event('input',{bubbles:true}));assert.equal(root.querySelectorAll('[data-column-option]:not([hidden])').length,1);

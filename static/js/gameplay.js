@@ -155,7 +155,6 @@ window.RoundFlow = (() => {
     tournamentPoints: [2800, 1600],
     tournamentFirst: [7500, 4400],
     triviaResult: [5500, 2800],
-    guessClip: [2800, 1700],
     shelfClose: [420, 160],
     shelfTrack: [2600, 1000],
     shelfTransfer: [1250, 450],

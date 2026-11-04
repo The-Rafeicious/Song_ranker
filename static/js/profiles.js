@@ -72,7 +72,7 @@ window.ProfileUI = (() => {
   function stats(tracks, type = "songs", identity = null) {
     tracks = [...new Map(tracks.map((s) => [s.id, s])).values()];
     const record = (tone, title, body, links) => panel(tone, title, body +
-      ((type === "songs" && tracks.length === 1 || ["artists","albums"].includes(type) && identity) ? `<div class="profile-song-details" data-song-details="${({standard:"voting",recognition:"trivia",tournament:"tournament",guesser:"guesser",shelves:"shelves"})[tone]}" aria-busy="true"><p class="muted">Loading mode details…</p></div>` : ""), links);
+      ((type === "songs" && tracks.length === 1 || ["artists","albums"].includes(type) && identity) ? `<div class="profile-song-details" data-song-details="${({standard:"voting",recognition:"trivia",tournament:"tournament",shelves:"shelves"})[tone]}" aria-busy="true"><p class="muted">Loading mode details…</p></div>` : ""), links);
     const sums = sumFields(tracks, [
       "attempts",
       "correct",
@@ -83,8 +83,6 @@ window.ProfileUI = (() => {
       "tournament_wins",
       "tournament_losses",
       "tournament_points",
-      "guess_attempts",
-      "guess_correct",
       "shelf_attempts",
       "shelf_album_correct",
       "shelf_order_right",
@@ -214,17 +212,6 @@ window.ProfileUI = (() => {
       ranking("tournament", "tournament") +
         link("tournament", "/tournament_stats", "Stats"),
     );
-    const guesser = record(
-      "guesser",
-      "Elo Guesser",
-      joined([
-        [sums.guess_correct, "Correct"],
-        [sums.guess_attempts - sums.guess_correct, "Wrong"],
-        [sums.guess_attempts, "Track appearances"],
-      ]) + rate("Correct picks", sums.guess_correct, sums.guess_attempts),
-      ranking("guesser", "guesser") +
-        link("guesser", "/elo_guesser_stats", "Stats"),
-    );
     const shelves = tracks.some(s => s.shelves_eligible) ? record(
       "shelves",
       "Album Shelves",
@@ -242,7 +229,7 @@ window.ProfileUI = (() => {
       ranking("shelves", "shelves") +
         link("shelves", "/album_shelves_stats", "Stats"),
     ) : "";
-    return voting + recognition + tournament + localHistory + guesser + shelves;
+    return voting + recognition + tournament + localHistory + shelves;
   }
   let songRequest = null;
   const detailNumber = value => value == null ? "—" : Number(value).toLocaleString(undefined, {maximumFractionDigits:2});
@@ -258,7 +245,7 @@ window.ProfileUI = (() => {
     return `<div class="profile-opponent"><a href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img data-cover src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span class="profile-detail-art" aria-hidden="true">♫</span>'}</a><div class="profile-opponent-copy"><a class="song" href="/song/${track.id}" title="${esc(track.title)}">${esc(track.title)}</a><div class="metadata">${(track.artists || []).map(a=>`<a class="artist" href="${U.urlFor("artists",a)}">${esc(a.name)}</a>`).join(", ")}${track.album && track.album.toLowerCase() !== "unknown album" && !/ - single$/i.test(track.album) ? ` · <a class="album" href="${U.urlFor("albums",{id:track.album_id,name:track.album,title:track.album})}">${esc(track.album)}</a>` : ""}</div></div></div>${label ? `<strong>${esc(label)}</strong>` : ""}`;
   }
   function songDetailBodies(data) {
-    const {voting:v, trivia:t, tournament:b, guesser:g, shelves:s} = data;
+    const {voting:v, trivia:t, tournament:b, shelves:s} = data;
     const collection = data.context && data.context.kind !== "songs";
     const source = row => collection ? `<div class="profile-result-context"><p>Collection track</p>${detailTrack(data.songs[row.song_id])}</div>` : "";
     const metrics = fields => joined(fields.map(([value,label])=>[value == null ? "—" : value,label]));
@@ -279,10 +266,6 @@ window.ProfileUI = (() => {
       tournament: metrics(collection ? [[b.completed,"Track entries"],[b.brackets,"Different brackets"],[b.first_exits,"First-round exits"]] : [[b.completed,"Completed appearances"],[b.first_exits,"First-round exits"]]) +
         `<div class="profile-detail-grid">${b.groups.map(r=>`<div class="profile-inset">${rate(r.key === "local" ? "Artist / album match wins" : "Library / tag match wins",r.wins,r.wins+r.losses)}${metrics([[r.entries, "Completed entries"]])}</div>`).join("")}</div>` +
         detailList("Recent tournament finishes",b.recent.map(r=>`<li><span><a class="tournament" href="/tournament/${r.id}/bracket">${esc(r.finish)} · ${r.size}-track bracket ↗</a><span class="report-meta"><span class="${r.mode}">${r.mode === "blind" ? "Blind" : "Non-blind"}</span> · ${esc(({global:"Library",tag:"Tag",artist:"Artist",album:"Album"})[r.scope] || "Other scope")} · ${detailDate(r.date)}</span></span><strong>${r.wins}W · ${r.losses}L</strong>${source(r)}${r.exit ? `<div class="profile-result-context"><p>${r.finish.startsWith("Out in ") ? "Lost to" : `Lost in ${esc(r.exit.round)} to`}</p>${detailTrack(data.songs[r.exit.opponent_id])}</div>` : ""}</li>`)),
-      guesser: metrics(collection ? [[g.selected,"Picked collection track"],[g.external_graded-g.selected,"Picked external track"],[g.internal,"Within-collection pairs"]] : [[g.selected,"Picked this song"],[g.graded-g.selected,"Picked its opponent"],[g.rounds,"Saved comparisons"]]) +
-        `<div class="profile-detail-grid">${g.bands.map(r=>`<div class="profile-inset">${rate(r.label,r.correct,r.graded)}</div>`).join("")}</div>` +
-        (collection || g.unknown ? metrics([...(collection ? [[g.rounds,"Different comparisons"]] : []),...(g.unknown ? [[g.unknown,"Ungraded comparisons"]] : [])]) : "") +
-        detailList("Recent comparisons",g.recent.map(r=>`<li>${detailTrack(data.songs[r.opponent_id],r.correct == null ? "Unavailable" : r.correct ? "Correct" : "Wrong")}<p class="profile-result-context">${detailDate(r.date)} · ${r.internal && collection ? "Within collection · " : ""}${r.selected ? (collection ? "Picked collection track below" : "Picked this song") : "Picked opponent above"} · ${detailNumber(r.gap)} Elo apart</p>${source(r)}</li>`)),
       shelves: metrics([[s.perfect,"Perfect track results"],[s.wrong_album,"Wrong-album placements"],[s.graded,"Graded track results"]]) +
         (collection || s.unknown ? metrics([...(collection ? [[s.sessions,"Completed rounds"]] : []),...(s.unknown ? [[s.unknown,"Ungraded rounds"]] : [])]) : "") +
         detailList("Recent track placements",s.recent.map(r=>`<li><span>${detailDate(r.date)}<span class="report-meta">${r.grade ? (r.grade.album_correct ? "Correct album" : "Wrong album") + ` · ${r.grade.order_right} / ${r.grade.order_pairs} order comparisons` : "Saved round cannot be graded"}</span></span><strong>${r.grade ? `${detailNumber(r.grade.points)} / ${detailNumber(r.grade.available)} pts` : "Unavailable"}</strong>${source(r)}</li>`))

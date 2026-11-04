@@ -26,7 +26,7 @@ from songranker.services import (app, init_db, activate_elo_policy)
 from songranker import apple_access  # Registers streamed preview diagnostics and request safeguards.
 from songranker import pages  # Registers page and library routes.
 from songranker.modes import trivia  # Registers field-by-field trivia routes.
-from songranker.modes import guesser, shelves
+from songranker.modes import shelves
 from songranker.modes import vibe_map  # Registers continuous Vibe Map round APIs and play page.
 from songranker import overall  # Registers derived, calibrated Overall scores; no stored counters.
 from songranker.modes import voting, tournament

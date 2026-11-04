@@ -29,7 +29,6 @@ so the index explains their work rather than merely repeating their names.
 | Standard/blind voting and history | `modes/voting.py` |
 | Tournament | `modes/tournament.py` |
 | Trivia | `modes/trivia.py` |
-| Elo Guesser | `modes/guesser.py` |
 | Album Shelves | `modes/shelves.py` |
 | Vibe rounds, detailed stats and profile/library reports | `modes/vibe_map.py` |
 | Shared catalogue/cross-mode/history queries | `catalog.py` |

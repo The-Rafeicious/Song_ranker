@@ -512,7 +512,7 @@ def api_dev_reset_preview():
         'song_artist_links':'SELECT COUNT(*) FROM song_artists','song_genre_links':'SELECT COUNT(*) FROM song_genres'}.items()}
     clear={k:conn.execute(q).fetchone()[0] for k,q in {
         'votes_and_history':'SELECT COUNT(*) FROM history','trivia_stats':'SELECT COUNT(*) FROM trivia_stats','tournaments':'SELECT COUNT(*) FROM tournaments',
-        'tournament_matches':'SELECT COUNT(*) FROM tournament_matches','trivia_rounds':'SELECT COUNT(*) FROM trivia_rounds','elo_guesses':'SELECT COUNT(*) FROM elo_guess_rounds WHERE completed_at IS NOT NULL','vibe_songs':"SELECT COUNT(DISTINCT song_id) FROM song_vibe_positions WHERE status!='unmapped'",'shelf_rounds':'SELECT COUNT(*) FROM album_shelf_rounds WHERE completed_at IS NOT NULL'}.items()}
+        'tournament_matches':'SELECT COUNT(*) FROM tournament_matches','trivia_rounds':'SELECT COUNT(*) FROM trivia_rounds','vibe_songs':"SELECT COUNT(DISTINCT song_id) FROM song_vibe_positions WHERE status!='unmapped'",'shelf_rounds':'SELECT COUNT(*) FROM album_shelf_rounds WHERE completed_at IS NOT NULL'}.items()}
     conn.close(); return jsonify({'keep':keep,'clear':clear})
 
 
@@ -528,9 +528,8 @@ def reset_competition_data(scope):
         if scope in ('all','trivia'):
             for key in ('trivia_score','trivia_streak','trivia_round_token','trivia_scoring_version'):
                 session.pop(key,None)
-        if scope in ('all','guesser'):session.pop('guess_token',None)
         if scope in ('all','shelves'):session.pop('shelf_token',None)
-        labels={'vibe':'Vibe Map selections','guesser':'Elo Guesser history','shelves':'Album Shelves history','all':'All competition data','matches':'Elo and match history','trivia':'Trivia history and records','tournaments':'Tournament history and records'}
+        labels={'vibe':'Vibe Map selections','shelves':'Album Shelves history','all':'All competition data','matches':'Elo and match history','trivia':'Trivia history and records','tournaments':'Tournament history and records'}
         return jsonify(status='success',message=labels[scope]+' reset. Music library kept.',backup=None)
     except Exception:
         if conn:conn.rollback()
@@ -543,9 +542,9 @@ def reset_competition_data(scope):
 @app.route('/api/dev/reset-history/<scope>',methods=['POST'])
 @admin_required
 def api_dev_reset_history(scope):
-    if scope not in ('matches','trivia','tournaments','guesser','shelves','vibe'):
-        return jsonify(message='Choose match, trivia, tournament, Elo Guesser, Album Shelves or Vibe Map data.'),400
-    phrases={'vibe':'RESET VIBE','guesser':'RESET GUESSER','shelves':'RESET SHELVES','matches':'RESET MATCHES','trivia':'RESET TRIVIA','tournaments':'RESET TOURNAMENTS'}
+    if scope not in ('matches','trivia','tournaments','shelves','vibe'):
+        return jsonify(message='Choose match, trivia, tournament, Album Shelves or Vibe Map data.'),400
+    phrases={'vibe':'RESET VIBE','shelves':'RESET SHELVES','matches':'RESET MATCHES','trivia':'RESET TRIVIA','tournaments':'RESET TOURNAMENTS'}
     if json_fields().get('confirmation')!=phrases[scope]:
         return jsonify(message='Type '+phrases[scope]+' to confirm.'),400
     return reset_competition_data(scope)
@@ -554,13 +553,11 @@ def api_dev_reset_history(scope):
 @app.route('/api/dev/special-round/<mode>/<int:round_id>',methods=['POST'])
 @admin_required
 def delete_special_round(mode,round_id):
-    table={'guesser':'elo_guess_rounds','shelves':'album_shelf_rounds'}.get(mode)
+    table={'shelves':'album_shelf_rounds'}.get(mode)
     if not table:return jsonify(message='Unknown mode.'),400
     conn=get_db_connection()
     try:
         conn.execute('BEGIN IMMEDIATE')
-        if mode=='guesser' and conn.execute('SELECT 1 FROM elo_guess_rounds WHERE id=? AND run_id IS NOT NULL',(round_id,)).fetchone():
-            return jsonify(message='This answer belongs to a challenge run. Reset Elo Guesser history to remove challenge runs.'),409
         deleted=conn.execute(f'DELETE FROM {table} WHERE id=?',(round_id,)).rowcount
         if not deleted:return jsonify(message='Round not found.'),404
         conn.commit()

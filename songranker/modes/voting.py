@@ -12,8 +12,6 @@ from songranker.catalog import proper_album, versus_metadata
 
 @app.route("/game")
 def index():
-    if request.args.get("mode") == "guesser":
-        return redirect("/elo_guesser")
     return render_template("app_page.html", page="standard")
 
 

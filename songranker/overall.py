@@ -18,13 +18,20 @@ from songranker.services import app, admin_required
 from songranker.catalog import collection, proper_album, tournament_weights
 
 
-VERSION=10
-# Five equally based game families. Voting's three correlated views share 20%.
-MODE_SPECS=[('elo','Elo',8),('standard','Non-blind voting',6),('blind','Blind voting',6),
-            ('trivia','Recognisability',20),('tournament','Tournament',20),
-            ('guesser','Elo Guesser',20),('shelves','Album Shelves',20)]
+VERSION=11
+# Four equally based families; Voting's correlated views share one allocation.
+MODE_SPECS=[('elo','Elo',10),('standard','Non-blind voting',7.5),('blind','Blind voting',7.5),
+            ('trivia','Recognisability',25),('tournament','Tournament',25),('shelves','Album Shelves',25)]
 FAMILIES={'voting':('elo','standard','blind'),'trivia':('trivia',),
-          'tournament':('tournament',),'guesser':('guesser',),'shelves':('shelves',)}
+          'tournament':('tournament',),'shelves':('shelves',)}
+# Editable cap headroom above an equal share: four active families => 35%.
+FAMILY_CAP_HEADROOM=.10
+
+
+def family_cap(count):
+    """Adaptive, configurable cap; fewer eligible families can still fill 100%."""
+    return min(1, 1/count + FAMILY_CAP_HEADROOM) if count else 1
+
 # Within-mode policy weights. Derived duplicate totals are explained in Dev.
 METRICS=[('elo_current','elo','Current Elo',.85,'elo'),('elo_peak','elo','Peak Elo',.15,'elo'),
  ('standard_wins','standard','Win rate',1,'rate'),('blind_wins','blind','Win rate',1,'rate'),
@@ -33,7 +40,6 @@ METRICS=[('elo_current','elo','Current Elo',.85,'elo'),('elo_peak','elo','Peak E
  ('tournament_wins','tournament','Bracket advancement',.30,'rate'),
  ('tournament_podium','tournament','Size-weighted top-four achievement',.45,'rate'),
  ('tournament_points','tournament','Depth points per entry / 15',.25,'rate'),
- ('guess_accuracy','guesser','Correct comparisons',1,'rate'),
  ('shelf_order','shelves','Relative track order',5/6,'rate'),
  ('shelf_album','shelves','Album placement',1/6,'rate')]
 NEUTRAL=50.0
@@ -120,14 +126,13 @@ def features(data):
           'tournament_wins':ratio(advanced,MAX_ROUNDS*completed_weight,evidence=completed_weight),
           'tournament_podium':ratio(podium,completed_weight),
           'tournament_points':ratio(points,MAX_POINTS*completed_weight,evidence=completed_weight),
-          'guess_accuracy':ratio(song.get('guess_correct'),song.get('guess_attempts')),
           'shelf_order':ratio(song.get('shelf_order_right'),song.get('shelf_order_pairs'),evidence=song.get('shelf_attempts',0),applicable=sid in shelf_ids),
           'shelf_album':ratio(song.get('shelf_album_correct'),song.get('shelf_attempts'),applicable=sid in shelf_ids),
         }
         result[sid]['mode_appearances']=dict(elo=elo_n,standard=number(v.get('standard_matches')),
             blind=number(v.get('blind_matches')),trivia=max(title_n,perfect[sid][1]),
             tournament=sum(weights.get((sid,tid),0) for tid in entries[sid]),
-            guesser=number(song.get('guess_attempts')),shelves=number(song.get('shelf_attempts')))
+            shelves=number(song.get('shelf_attempts')))
     return result
 
 def quantile(values,fraction):
@@ -222,9 +227,10 @@ def calibrate(facts,data,force=False):
         average=mode['average_appearances']
         mode['depth_factor']=average/(average+depth_reference) if average else 0
         mode['support']=math.sqrt(mode['participation'])*mode['depth_factor']
-    family_strengths={family:sum(m['base_weight']*m['support'] for m in modes if m['key'] in members)/20 for family,members in FAMILIES.items()}
+    family_bases={family:sum(m['base_weight'] for m in modes if m['key'] in members) for family,members in FAMILIES.items()}
+    family_strengths={family:sum(m['base_weight']*m['support'] for m in modes if m['key'] in members)/family_bases[family] for family,members in FAMILIES.items()}
     active_families=sum(value>0 for value in family_strengths.values())
-    cap=min(1,1/active_families+.1) if active_families else 1
+    cap=family_cap(active_families)
     shares=capped_shares(family_strengths,cap)
     for mode in modes:
         members=[m for m in modes if m['family']==mode['family']]
@@ -235,14 +241,14 @@ def calibrate(facts,data,force=False):
             if metric['mode']==mode['key']:
                 metric['mode_share']=metric['policy_share']/metric_total if metric['active'] and metric_total else 0
                 metric['overall_weight']=mode['weight']*metric['mode_share']
-    families=[dict(key=family,base_weight=20,weight=100*shares.get(family,0),support=strength,active=strength>0)
+    families=[dict(key=family,base_weight=family_bases[family],weight=100*shares.get(family,0),support=strength,active=strength>0)
               for family,strength in family_strengths.items()]
     identity=hashlib.sha256(json.dumps([VERSION,RATE_MIX,observed,modes,shape],sort_keys=True).encode()).hexdigest()[:16]
     with _lock:
         previous=_models.get(key)
         if previous and previous['id']==identity and not force:return previous
         model=dict(id=identity,version=VERSION,generated_at=time.time(),topology=shape,modes=modes,metrics=observed,
-                   families=families,rate_mix=RATE_MIX,group_prior_songs=2,neutral_score=NEUTRAL,
+                   families=families,family_cap_headroom=FAMILY_CAP_HEADROOM,rate_mix=RATE_MIX,group_prior_songs=2,neutral_score=NEUTRAL,
                    depth_reference=depth_reference,family_cap=100*cap,score_scale='composite percentage',
                    refresh_after_seconds=0,refresh_threshold='every change to saved results or eligibility')
         _models[key]=model;_models.move_to_end(key)
@@ -276,7 +282,7 @@ def song_score(fact,model,details=False):
     family_totals={family:sum(mode['weight'] for mode in eligible_modes if mode['family']==family)
                    for family in FAMILIES}
     family_count=sum(total>0 for total in family_totals.values())
-    shares=capped_shares(family_totals,min(1,1/family_count+.1)) if family_count else {}
+    shares=capped_shares(family_totals,family_cap(family_count)) if family_count else {}
     for mode in eligible_modes:
         mode_weight=100*shares[mode['family']]*mode['weight']/family_totals[mode['family']]
         metrics=[m for m in model['metrics'].values() if m['mode']==mode['key'] and m['active'] and fact[m['key']]['applicable']]

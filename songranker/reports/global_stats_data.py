@@ -142,15 +142,7 @@ def build_global_stats(conn):
     tournament=dict(total=len(brackets),unfinished=len(brackets)-len(finished),sizes=Counter(t['size'] for t in brackets),
         matches=len(bracket_matches),points=round(sum(r['points_awarded'] or 0 for r in bracket_matches),2),
         podium=podium,latest_id=latest['id'] if latest else None,champions=champions)
-    special,summary,_,recent_shelves=special_records(conn);guess=summary['guesser'];shelf=summary['shelves']
-    guess.update(wrong=guess['rounds']-guess['correct'],tested=sum(r['guess_attempts']>0 for r in special.values()))
-    def special_leader(key):
-        """Choose the positive special-mode metric leader, using Elo to break ties."""
-        eligible=[dict(songs[sid],value=r[key]) for sid,r in special.items() if r[key]>0]
-        return max(eligible,key=lambda s:(s['value'],s['elo_score'] if s['elo_score'] is not None else float('-inf')),default=None)
-    guess['most_tested']=special_leader('guess_attempts')
-    missed_guesses=[dict(songs[sid],value=r['guess_attempts']-r['guess_correct']) for sid,r in special.items() if r['guess_attempts']>r['guess_correct']]
-    guess['most_missed']=max(missed_guesses,key=lambda s:(s['value'],s['elo_score'] if s['elo_score'] is not None else float('-inf')),default=None)
+    special,summary,recent_shelves=special_records(conn);shelf=summary['shelves']
     from songranker.modes.shelves import shelf_report_filter
     shelf_albums=[dict(r) for r in conn.execute(f'''SELECT a.*,COUNT(DISTINCT i.round_id) rounds,
         COUNT(*) placements,SUM(i.answer_slot!=i.album_slot) misses FROM album_shelf_items i
@@ -204,13 +196,6 @@ def build_global_stats(conn):
             for key,label in [('title','Song'),('artist','Artist'),('album','Album')] if key!='album' or r['album_available']]
         event('recognition',r['id'],r['completed_at'],'Trivia',f'{right} / {denom} fields correct','/trivia_stats',
               [saved_song(r['song_id'])],[metric(f'{right} / {denom}','fields correct'),*fields])
-    for r in conn.execute('SELECT * FROM elo_guess_rounds WHERE completed_at IS NOT NULL ORDER BY completed_at DESC,id DESC LIMIT 10'):
-        correct=(r['chosen_slot']==1)==(r['elo1']>r['elo2'])
-        participants=[dict(saved_song(r[f'song{i}_id']),role='Your pick' if r['chosen_slot']==i else 'Other track',
-            saved_elo=round(r[f'elo{i}']),higher=r[f'elo{i}']>r[f'elo{3-i}']) for i in (1,2)]
-        event('guesser',r['id'],r['completed_at'],'Elo Guesser','Correct pick' if correct else 'Wrong pick','/elo_guesser_stats',
-              participants,[metric('Correct pick' if correct else 'Wrong pick','result','correct' if correct else 'missed')],
-              artwork=participants[r['chosen_slot']-1]['cover_url'])
     points_by_bracket=Counter();matches_by_bracket=Counter()
     for match in bracket_matches:
         matches_by_bracket[match['tournament_id']]+=1;points_by_bracket[match['tournament_id']]+=match['points_awarded'] or 0
@@ -249,12 +234,12 @@ def build_global_stats(conn):
     activity.sort(key=lambda e:(-e['timestamp'],e['kind'],-e['id']))
     return attach_reports(conn, dict(elo_summary=elo_summary(conn),total_songs=len(songs),total_artists=len(artists),total_albums=len(proper),total_matches=elo_summary(conn)['total'],
         mode_totals=[dict(label='Trivia rounds',value=trivia_total,kind='recognition'),dict(label='Tournaments',value=tournament['total'],kind='tournament'),
-            dict(label='Elo Guesser rounds',value=guess['rounds'],kind='guesser'),dict(label='Shelves rounds',value=shelf['rounds'],kind='shelves')],
+            dict(label='Shelves rounds',value=shelf['rounds'],kind='shelves')],
         collection_records=[r for r in records if r],voting=voting,voting_leaders=leaders,matchups=matchups,expand_matchups=expandable,
         elo_distribution=elo,elo_cohort=distribution,average_elo=round(mean_elo(rated_rows)) if rated_rows else None,
         unplayed=sum(not votes[sid]['matches'] for sid in songs),audio_previews=sum(bool(str(s['audio_url'] or '').strip()) for s in songs.values()),
         week_votes=sum(timestamp(h['created_at'])>=datetime.now(timezone.utc).timestamp()-7*86400 for h in history),
-        recognition=recognition,tournament=tournament,guess=guess,shelf=shelf,
+        recognition=recognition,tournament=tournament,shelf=shelf,
         top_artists=sorted([a for a in artist_rows if a['avg_elo'] is not None],key=lambda a:(-a['avg_elo'],-a['songs'],a['name'].casefold()))[:5],
         top_albums=sorted([a for a in album_rows if a['avg_elo'] is not None],key=lambda a:(-a['avg_elo'],-a['songs'],a['title'].casefold()))[:5],
         top_tags=tag_rows[:10],tag_count=len(tags),recent_activity=activity[:10]), 'global')
