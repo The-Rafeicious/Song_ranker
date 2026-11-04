@@ -55,12 +55,12 @@
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-patterns">
     <div class="section-head"><h2 class="vibe" id="vibe-patterns">Common combinations</h2></div>
-    <div class="vibe-pattern-grid">{% for row in patterns %}<div class="mode-stats-inset vibe-pattern"><h3>{{row.label}}</h3><strong>{{row.count}} <small>tracks</small></strong>{{progress(row.label,row.share)}}<span>{{row.count}} / {{row.total}} tracks · {{rate(row.share)}}</span></div>{% else %}<p class="empty">Place tracks away from the centre to see common combinations.</p>{% endfor %}</div>
+    <div class="vibe-pattern-grid">{% for row in patterns %}<div class="mode-stats-inset vibe-pattern"><h3>{{row.label}}</h3><strong>{{row.count}} <span class="report-meta">tracks</span></strong>{{progress(row.label,row.share)}}<span>{{row.count}} / {{row.total}} tracks · {{rate(row.share)}}</span></div>{% else %}<p class="empty">Place tracks away from the centre to see common combinations.</p>{% endfor %}</div>
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-balance">
     <div class="section-head"><h2 class="vibe" id="vibe-balance">Vibe balance</h2></div>
-    <div class="vibe-balances">{% for row in balances %}<div class="vibe-balance-row"><div class="vibe-balance-poles"><span>{{row.low}} <b>{{row.low_count}}</b></span><span>{{row.high}} <b>{{row.high_count}}</b></span></div><div class="vibe-balance-bar" role="img" aria-label="{{row.low}} {{row.low_count}}, {{row.centre}} {{row.middle_count}}, {{row.high}} {{row.high_count}}"><span class="vibe-low" style="width:{{row.low_share}}%"></span><span class="vibe-middle" style="width:{{row.middle_share}}%"></span><span class="vibe-high" style="width:{{row.high_share}}%"></span></div><small>{{row.centre}} {{row.middle_count}} · {{row.total}} mapped</small></div>{% endfor %}</div>
+    <div class="vibe-balances">{% for row in balances %}<div class="vibe-balance-row"><div class="vibe-balance-poles"><span>{{row.low}} <b>{{row.low_count}}</b></span><span>{{row.high}} <b>{{row.high_count}}</b></span></div><div class="vibe-balance-bar" role="img" aria-label="{{row.low}} {{row.low_count}}, {{row.centre}} {{row.middle_count}}, {{row.high}} {{row.high_count}}"><span class="vibe-low" style="width:{{row.low_share}}%"></span><span class="vibe-middle" style="width:{{row.middle_share}}%"></span><span class="vibe-high" style="width:{{row.high_share}}%"></span></div><span class="report-meta">{{row.centre}} {{row.middle_count}} · {{row.total}} mapped</span></div>{% endfor %}</div>
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vibe-pairs"><div class="section-head"><h2 class="vibe" id="vibe-pairs">Closest matches</h2></div>{{pair_list(closest,'Fully map two songs to reveal a pair.')}}</section>

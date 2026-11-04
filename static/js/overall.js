@@ -56,11 +56,12 @@ window.Overall = (() => {
       });
     const pointText = (value) =>
       value == null ? "—" : rounded(value) + " pts";
-    return `<details class="overall-breakdown"><summary>Mode balance</summary>${compact ? "" : `<p class="overall-balance-copy">Adjusted score × effective weight ÷ 100 gives the contribution in Overall points. Unrounded contributions add to Overall.${collection ? " Weights include collection confidence; the remaining share stays at a neutral 50%." : ""}</p><p class="overall-balance-copy">Relative evidence compares plays with current typical and high exposure; it is separate from performance.${known ? "" : " No Overall score is assigned until there are measured, eligible results."}</p>`}<div class="overall-mode-grid">${
+    return `<details class="overall-breakdown"><summary>Mode balance</summary><div class="overall-mode-grid">${
       modes
         .map(
           (c) =>
-            `<div data-overall-mode="${esc(c.key)}" style="--section-color:var(--${tones[c.key] || "overall"})"><h3 class="overall-mode-title">${esc(c.label)}</h3>${compact ? "" : `<p class="overall-mode-context">${c.key === "neutral" ? "Keeps sparse collections near neutral" : collection ? `${c.applicable_tracks || 0} / ${row.track_count || 0} tracks eligible` : c.relative === 0 ? "Unplayed · neutral input" : "Evidence-adjusted input"}</p>`}<dl class="overall-mode-facts">${[
+            `<div data-overall-mode="${esc(c.key)}" style="--section-color:var(--${tones[c.key] || "overall"})"><h3 class="overall-mode-title">${esc(c.label)}</h3><dl class="overall-mode-facts">${[
+              ...(collection ? [[`${c.applicable_tracks || 0} / ${row.track_count || 0}`, "Eligible tracks"]] : []),
               [pct(c.adjusted), "Adjusted score"],
               [pct(c.allocated), "Effective weight"],
               [pointText(known ? c.contribution : null), "Contribution"],

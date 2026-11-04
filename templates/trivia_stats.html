@@ -50,7 +50,7 @@
     </ul>
   </div>
   <div class="mode-stats-result">
-    <strong>{{ '+'+('%g'|format(row.points)) if row.points is not none else '—' }}<small> points</small></strong>
+    <strong>{{ '+'+('%g'|format(row.points)) if row.points is not none else '—' }}<span class="report-meta"> points</span></strong>
     <span>{{ ('%g'|format(row.user_score_after)) if row.user_score_after is not none else '—' }} score · {{ row.streak_after if row.streak_after is not none else '—' }} streak</span>
     <span>{{ 'Challenge' if row.rules_version==2 else 'Classic' }}{% if row.rules_version==2 and row.streak_passed==0 %} · streak finished{% endif %}</span>
     {% if row.date %}<time datetime="{{ row.date }}" data-timestamp="{{ row.completed_at }}">{{ row.date[:10] }} · {{ row.date[11:16] }} UTC</time>{% else %}<span>Date unavailable</span>{% endif %}
@@ -72,7 +72,7 @@
       {{ figure('Completed rounds',summary.rounds) }}
       {{ figure('Tested tracks',summary.tested) }}
     </dl>
-    
+
     <div class="mode-stats-inset mode-stats-rate">
       <h3>Overall field accuracy</h3><strong class="mode-stats-primary">{{ rate(summary.accuracy) }}</strong>
       {{ progress('Overall field accuracy',summary.accuracy) }}
@@ -85,7 +85,7 @@
         {{ progress(field.name+' accuracy',field.accuracy) }}
         <dl class="joined-metrics mode-stats-small-metrics" data-columns="2">{{ figure('Correct',field.correct) }}{{ figure('Missed',field.missed) }}</dl>
         <p>{{ field.attempts }} available fields</p>
-        <div class="rec-timing"><strong>{{ ('%g'|format(field.seconds))+' s' if field.seconds is not none else '—' }}</strong><span>Average correct-answer time</span><small>{{ field.timed_answers }} timed {{ 'answer' if field.timed_answers==1 else 'answers' }}</small></div>
+        <div class="rec-timing"><strong>{{ ('%g'|format(field.seconds))+' s' if field.seconds is not none else '—' }}</strong><span>Average correct-answer time</span><span class="report-meta">{{ field.timed_answers }} timed {{ 'answer' if field.timed_answers==1 else 'answers' }}</span></div>
       </div>
     {% endfor %}
     </div>
@@ -106,14 +106,14 @@
       {{ figure('Points earned',('%g'|format(summary.points)) if summary.points is not none else '—') }}{{ figure('Points per round',('%g'|format(summary.average_points)) if summary.average_points is not none else '—') }}
       {{ figure('Rounds · last 7 days',summary.week) }}{{ figure('Rounds · last 30 days',summary.month) }}
     </dl>
-    {% if summary.scored_rounds!=summary.rounds %}<p class="mode-stats-caption">Points cover {{ summary.scored_rounds }} rounds with complete results and timings.</p>{% endif %}
+    {% if summary.scored_rounds!=summary.rounds %}<p class="report-facts">Points cover {{ summary.scored_rounds }} rounds with complete results and timings.</p>{% endif %}
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-coverage">
     <div class="section-head"><h2 id="recognition-coverage" class="recognition">Collection coverage</h2></div>
     <dl class="joined-metrics mode-stats-metrics">{{ figure('Tracks with previews',coverage.playable) }}{{ figure('Already tested',coverage.tested) }}{{ figure('Still to try',coverage.untested) }}</dl>
     {{ milestone(coverage.milestone, 'Preview-ready tracks') }}
-    {% if coverage.without_preview %}<p class="mode-stats-caption">{{ coverage.without_preview }} other tested {{ 'track has' if coverage.without_preview==1 else 'tracks have' }} no current preview.</p>{% endif %}
+    {% if coverage.without_preview %}<p class="report-facts">{{ coverage.without_preview }} other tested {{ 'track has' if coverage.without_preview==1 else 'tracks have' }} no current preview.</p>{% endif %}
   </section>
 
   {% for heading,rows in [('Most recognised tracks',top_stats),('Least recognised tracks',bottom_stats)] %}
@@ -128,7 +128,7 @@
   {% for group in categories %}
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-category-{{ group.kind }}">
     <div class="section-head"><h2 class="recognition" id="recognition-category-{{ group.kind }}">{{ group.title }}</h2></div>
-    <p class="mode-stats-caption">{{ group.note }}</p>
+
     <div class="mode-stats-comparisons">
       <div class="mode-stats-inset"><h3>Highest accuracy</h3>{{ category_list(group.best,group.kind) }}</div>
       <div class="mode-stats-inset"><h3>Most missed</h3>{{ category_list(group.missed,group.kind,true) }}</div>
@@ -137,7 +137,7 @@
   {% endfor %}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-recent">
-    <div class="section-head"><h2 id="recognition-recent" class="recognition">Recent Trivia</h2><span class="mode-stats-caption">Latest {{ recent|length }} {{ 'round' if recent|length==1 else 'rounds' }}</span></div>
+    <div class="section-head"><h2 id="recognition-recent" class="recognition">Recent Trivia</h2><span class="report-facts">Latest {{ recent|length }} {{ 'round' if recent|length==1 else 'rounds' }}</span></div>
     {{ recent_list(recent[:10]) }}
     {% if recent|length>10 %}<details class="mode-stats-more"><summary>Show {{ recent|length-10 }} earlier rounds</summary>{{ recent_list(recent[10:]) }}</details>{% endif %}
     {% if not recent %}<div class="empty">No completed rounds yet.</div>{% endif %}

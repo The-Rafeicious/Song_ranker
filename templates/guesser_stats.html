@@ -50,10 +50,10 @@
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-overview">
     <div class="section-head"><h2 class="guesser" id="guesser-overview">Elo Guesser overview</h2></div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{ figure('Completed guesses',summary.rounds) }}{{ figure('Correct picks',summary.correct) }}{{ figure('Wrong guesses',summary.wrong) }}{{ figure('Challenge best streak',summary.challenge.best_streak) }}</dl>
-    
+
     <div class="mode-stats-inset mode-stats-rate"><h3>Overall accuracy</h3><strong class="mode-stats-primary">{{ rate(summary.accuracy) }}</strong>{{ progress('Overall guess accuracy',summary.accuracy) }}<p>{{ summary.correct }} correct / {{ summary.graded }} guesses</p></div>
-    {% if summary.unknown %}<p class="mode-stats-caption">{{ summary.unknown }} saved {{ 'result has' if summary.unknown==1 else 'results have' }} incomplete comparison data.</p>{% endif %}
-    {% if summary.undated %}<p class="mode-stats-caption">{{ summary.undated }} {{ 'result has' if summary.undated==1 else 'results have' }} no usable date; streaks cover dated results.</p>{% endif %}
+    {% if summary.unknown %}<p class="report-facts">{{ summary.unknown }} saved {{ 'result has' if summary.unknown==1 else 'results have' }} incomplete comparison data.</p>{% endif %}
+    {% if summary.undated %}<p class="report-facts">{{ summary.undated }} {{ 'result has' if summary.undated==1 else 'results have' }} no usable date; streaks cover dated results.</p>{% endif %}
   </section>
   {{pulse(pulse_data)}}
 
@@ -67,13 +67,13 @@
     <div class="section-head"><h2 class="guesser" id="guesser-coverage">Collection coverage</h2></div>
     <dl class="joined-metrics mode-stats-metrics">{{ figure('Eligible tracks',coverage.eligible) }}{{ figure('Already tested',coverage.tested) }}{{ figure('Still to try',coverage.untested) }}</dl>
     {{ milestone(coverage.milestone, 'Eligible tracks') }}
-    {% if coverage.other_tested %}<p class="mode-stats-caption">{{ coverage.other_tested }} other tested {{ 'track is' if coverage.other_tested==1 else 'tracks are' }} outside the current eligible pool.</p>{% endif %}
-    {% if not coverage.eligible %}<p class="mode-stats-caption">The mode needs at least two tracks with different finite Elo ratings. Previews are optional.</p>{% endif %}
+    {% if coverage.other_tested %}<p class="report-facts">{{ coverage.other_tested }} other tested {{ 'track is' if coverage.other_tested==1 else 'tracks are' }} outside the current eligible pool.</p>{% endif %}
+
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="guesser-gaps">
     <div class="section-head"><h2 class="guesser" id="guesser-gaps">Accuracy by Elo gap</h2></div>
-    <div class="guess-gap-list">{% for band in gaps %}<div class="mode-stats-inset guess-gap" data-gap-low="{{ band.low }}"><h3>{{ band.label }} <small>Elo apart</small></h3><div class="guess-gap-rate"><strong>{{ rate(band.accuracy) }}</strong>{{ progress(band.label+' Elo gap accuracy',band.accuracy) }}</div><p>{{ band.correct }} correct / {{ band.rounds }} guesses<br>{{ band.wrong }} wrong</p></div>{% endfor %}</div>
+    <div class="guess-gap-list">{% for band in gaps %}<div class="mode-stats-inset guess-gap" data-gap-low="{{ band.low }}"><h3>{{ band.label }} <span class="report-meta">Elo apart</span></h3><div class="guess-gap-rate"><strong>{{ rate(band.accuracy) }}</strong>{{ progress(band.label+' Elo gap accuracy',band.accuracy) }}</div><p>{{ band.correct }} correct / {{ band.rounds }} guesses<br>{{ band.wrong }} wrong</p></div>{% endfor %}</div>
     <dl class="joined-metrics mode-stats-small-metrics" data-columns="4">{{ figure('Average gap · correct',number(gap_summary.correct_average)) }}{{ figure('Average gap · wrong',number(gap_summary.wrong_average)) }}{{ figure('Closest correct pick',number(gap_summary.closest_correct)) }}{{ figure('Widest wrong pick',number(gap_summary.widest_wrong)) }}</dl>
   </section>
 

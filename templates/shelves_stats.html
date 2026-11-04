@@ -40,7 +40,7 @@
     <div class="section-head"><h2 class="shelves" id="shelves-overview">Shelves overview</h2></div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{ figure('Completed rounds',summary.rounds) }}{{ figure('Track appearances',summary.tracks) }}{{ figure('Albums played',summary.albums_played) }}{{ figure('Perfect rounds',summary.perfect) }}</dl>
     <div class="mode-stats-inset mode-stats-rate"><h3>Relative track order</h3><strong class="mode-stats-primary">{{ rate(summary.order_accuracy) }}</strong>{{ progress('Overall relative track order',summary.order_accuracy) }}<p>{{ summary.order_right }} correct / {{ summary.order_pairs }} eligible track comparisons</p></div>
-    {% if summary.unknown %}<p class="mode-stats-caption">{{ summary.unknown }} completed {{ 'round has' if summary.unknown==1 else 'rounds have' }} incomplete saved answers; score and order totals cover {{ summary.scored_rounds }} rounds.</p>{% endif %}
+    {% if summary.unknown %}<p class="report-facts">{{ summary.unknown }} completed {{ 'round has' if summary.unknown==1 else 'rounds have' }} incomplete saved answers; score and order totals cover {{ summary.scored_rounds }} rounds.</p>{% endif %}
   </section>
   {{pulse(pulse_data)}}
 
@@ -56,21 +56,21 @@
     <div class="section-head"><h2 class="shelves" id="shelves-form">Recent form</h2></div>
     <dl class="joined-metrics mode-stats-metrics">{{ figure('Current perfect streak',summary.current_streak if summary.current_streak is not none else '—') }}{{ figure('Best perfect streak',summary.best_streak) }}{{ figure('Active days',summary.active_days) }}</dl>
     <div class="shelf-windows">{% for row in windows %}{{ form_card(row) }}{% endfor %}</div>
-    {% if summary.undated %}<p class="mode-stats-caption">{{ summary.undated }} {{ 'round has' if summary.undated==1 else 'rounds have' }} no usable completion date; streaks cover dated rounds.</p>{% endif %}
+    {% if summary.undated %}<p class="report-facts">{{ summary.undated }} {{ 'round has' if summary.undated==1 else 'rounds have' }} no usable completion date; streaks cover dated rounds.</p>{% endif %}
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="shelves-formats">
     <div class="section-head"><h2 class="shelves" id="shelves-formats">Round formats</h2></div>
     <div class="shelf-formats" data-columns="{{ formats|length }}">{% for row in formats %}<div class="mode-stats-inset mode-stats-rate"><h3>{{ row.label }}</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Rounds',row.rounds) }}{{ figure('Perfect',row.perfect) }}{{ figure('Track appearances',row.tracks) }}</dl><strong class="mode-stats-primary">{{ rate(row.order_accuracy) }}</strong>{{ progress(row.label+' track order',row.order_accuracy) }}<p>{{ row.order_right }} / {{ row.order_pairs }} correct comparisons</p></div>{% endfor %}</div>
-    {% if summary.legacy_sizes %}<p class="mode-stats-caption">{{ summary.legacy_sizes }} saved {{ 'round has' if summary.legacy_sizes==1 else 'rounds have' }} a track count other than ten.</p>{% endif %}
+    {% if summary.legacy_sizes %}<p class="report-facts">{{ summary.legacy_sizes }} saved {{ 'round has' if summary.legacy_sizes==1 else 'rounds have' }} a track count other than ten.</p>{% endif %}
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="shelves-coverage">
     <div class="section-head"><h2 class="shelves" id="shelves-coverage">Collection coverage</h2></div>
     <div class="mode-stats-inset mode-stats-rate"><h3>Eligible albums played</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Eligible albums',coverage.albums) }}{{ figure('Already tested',coverage.albums_tested) }}{{ figure('Still to try',coverage.albums_untested) }}</dl>{{ milestone(coverage.album_milestone, 'Eligible albums') }}</div>
     <div class="mode-stats-inset mode-stats-rate"><h3>Eligible tracks tested</h3><dl class="joined-metrics mode-stats-small-metrics">{{ figure('Eligible tracks',coverage.tracks) }}{{ figure('Already tested',coverage.tracks_tested) }}{{ figure('Still to try',coverage.tracks_untested) }}</dl>{{ milestone(coverage.track_milestone, 'Eligible tracks') }}</div>
-    {% if coverage.other_albums or coverage.other_tracks %}<p class="mode-stats-caption">{{ coverage.other_albums }} other played albums and {{ coverage.other_tracks }} other tested tracks are outside the current eligible pool.</p>{% endif %}
-    {% if not coverage.albums %}<p class="mode-stats-caption">A round needs ten uniquely numbered tracks across two or three proper albums, with at least two tracks per album.</p>{% endif %}
+    {% if coverage.other_albums or coverage.other_tracks %}<p class="report-facts">{{ coverage.other_albums }} other played albums and {{ coverage.other_tracks }} other tested tracks are outside the current eligible pool.</p>{% endif %}
+
   </section>
 
   {% for heading,rows in [('Top tracks',top_tracks),('Tracks to practise',practice_tracks)] %}
@@ -87,7 +87,7 @@
     <details class="mode-stats-more shelf-all-albums"{% if album_records.page>1 or show_albums %} open{% endif %}><summary>All albums played · {{ album_records.total }}</summary>{{ record_list(album_records.rows,'album') }}
       <nav class="shelf-pagination" aria-label="Played album pages">{% if album_records.page>1 %}<a class="btn shelves" rel="prev" href="{{ url_for('shelf_stats',album_page=album_records.page-1,history_page=history_page) }}#shelves-albums">← Previous</a>{% endif %}<span>Page {{ album_records.page }} / {{ album_records.pages }}</span>{% if album_records.page<album_records.pages %}<a class="btn shelves" rel="next" href="{{ url_for('shelf_stats',album_page=album_records.page+1,history_page=history_page) }}#shelves-albums">Next →</a>{% endif %}</nav>
     </details>
-    {% if summary.missing_album_slots %}<p class="mode-stats-caption">{{ summary.missing_album_slots }} saved shelf appearances have no current album identity. Their results remain in round history.</p>{% endif %}
+    {% if summary.missing_album_slots %}<p class="report-facts">{{ summary.missing_album_slots }} saved shelf appearances have no current album identity. Their results remain in round history.</p>{% endif %}
   </section>
 
   {% for group in categories %}
@@ -104,7 +104,7 @@
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="shelves-history">
     <div class="section-head"><h2 class="shelves" id="shelves-history">Round history</h2></div>
-    {% if selection_missing %}<p class="mode-stats-caption">That completed round is unavailable.</p>{% endif %}
+    {% if selection_missing %}<p class="report-facts">That completed round is unavailable.</p>{% endif %}
     {% for row in history %}<details class="mode-stats-inset shelf-history-item{% if row.id==selected_round %} shelf-selected{% endif %}" id="shelf-round-{{ row.id }}" data-shelf-round="{{ row.id }}"{% if row.id==selected_round or (not selected_round and loop.first) %} open{% endif %}>
       <summary><span class="shelf-summary"><span class="shelf-summary-copy"><strong>Round #{{ row.id }} · {{ row.album_count }} shelves</strong><span>{{ row.tracks }} tracks · {{ saved_date(row.date) }}</span></span><span class="shelf-summary-score"><strong>{{ rate(row.order_accuracy) }} track order</strong><span class="shelf-outcome-label shelf-result-{{ row.outcome }}">{{ 'Perfect' if row.outcome=='perfect' else 'Partial credit' if row.outcome=='partial' else 'No points' if row.outcome=='zero' else 'Result unavailable' }}</span><span>{{ score(row.points) if row.graded else '—' }} / {{ score(row.available) if row.graded else '—' }} points</span></span></span></summary>
       <div class="shelf-history-body" data-columns="{{ row.groups|length }}">{% for group in row.groups %}<div class="mode-stats-inset shelf-history-group">
@@ -116,7 +116,7 @@
           <span class="shelf-submission" title="Your shelf: {{ item.answer_album.title }} ({{ item.answer_slot if item.answer_slot is not none else '?' }}), position {{ item.answer_position if item.answer_position is not none else '?' }}">Your shelf: {{ item.answer_album.title }} ({{ item.answer_slot if item.answer_slot is not none else '?' }}) · position {{ item.answer_position if item.answer_position is not none else '?' }}</span></div>
           <div class="shelf-track-result"><strong class="shelf-result-{{ item.outcome }}">{{ 'Correct' if item.outcome=='correct' else 'Wrong album' if item.outcome=='wrong_album' else 'Order affected' if item.outcome=='order_affected' else 'Unavailable' }}</strong><span>{{ score(item.points|round(2)) if item.points is not none else '—' }} / {{ score(item.available) }} points</span></div>
         </li>{% endfor %}</ol>
-      </div>{% else %}<p class="mode-stats-caption">No saved track details for this round.</p>{% endfor %}</div>
+      </div>{% else %}<p class="report-facts">No saved track details for this round.</p>{% endfor %}</div>
     </details>{% else %}<div class="empty">No completed Shelves rounds yet.</div>{% endfor %}
     <nav class="shelf-pagination" aria-label="Shelf history pages">{% if history_page>1 %}<a class="btn shelves" rel="prev" href="{{ url_for('shelf_stats',history_page=history_page-1,album_page=album_records.page if show_albums else none) }}#shelves-history">← Newer</a>{% endif %}<span>Page {{ history_page }} / {{ history_pages }}{% if summary.rounds %} · {{ history_start }}–{{ history_end }} of {{ summary.rounds }}{% endif %}</span>{% if history_page<history_pages %}<a class="btn shelves" rel="next" href="{{ url_for('shelf_stats',history_page=history_page+1,album_page=album_records.page if show_albums else none) }}#shelves-history">Older →</a>{% endif %}</nav>
   </section>

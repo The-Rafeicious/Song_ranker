@@ -238,13 +238,13 @@
   line-height: 1.2;
   font-weight: 900;
 }
-.mode-stats-result > strong small {
+.mode-stats-result > strong :is(small, .report-meta) {
   font-size: 16px;
   font-weight: 700;
 }
 .mode-stats-result > span,
 .mode-stats-result > time {
-  font-size: 15px;
+  font-size: 16px;
   margin-top: 5px;
   line-height: 1.4;
 }
@@ -283,14 +283,14 @@
 .mode-stats-dense .mode-stats-copy > span {
   color: var(--section-color);
   display: block;
-  font-size: 15px;
+  font-size: 16px;
   margin-top: 6px;
 }
 .mode-stats-dense .mode-stats-result > strong {
   font-size: 28px;
 }
 .mode-stats-dense .mode-stats-result > span {
-  font-size: 14px;
+  font-size: 16px;
 }
 .mode-stats-page a:not(.btn):hover,
 .mode-stats-page a:not(.btn):focus-visible,
@@ -378,7 +378,7 @@
     font-size: 21px;
   }
   .mode-stats-meta {
-    font-size: 15px;
+    font-size: 16px;
     gap: 5px 10px;
   }
   .mode-stats-metrics dd,
@@ -481,7 +481,7 @@
   line-height: 1.2;
   color: var(--overall);
 }
-.global-stats-page .overall-global-summary small {
+.global-stats-page .overall-global-summary :is(small, .report-meta) {
   font-size: 17px;
 }
 .global-stats-page #overall-global-leaders {
@@ -505,9 +505,9 @@
   border: 1px solid #ffffff0d;
   border-radius: 12px;
 }
-.global-stats-page .collection-record > small {
+.global-stats-page .collection-record > :is(small, .report-meta) {
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   margin-bottom: 12px;
 }
 .global-stats-page .record-identity {
@@ -560,8 +560,8 @@
   line-height: 1.2;
   margin-top: 6px;
 }
-.global-stats-page .record-identity strong small {
-  font-size: 13px;
+.global-stats-page .record-identity strong :is(small, .report-meta) {
+  font-size: 16px;
   margin-left: 5px;
   color: inherit;
   font-weight: 500;
@@ -582,9 +582,9 @@
   margin-top: 7px;
   color: var(--section-color);
 }
-.global-stats-page .global-metric > small {
+.global-stats-page .global-metric > :is(small, .report-meta) {
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   margin-top: 4px;
 }
 .global-stats-page .global-secondary {
@@ -631,14 +631,14 @@
   line-height: 1.2;
   margin: 8px 0;
 }
-.global-stats-page .vote-total small {
-  font-size: 15px;
+.global-stats-page .vote-total :is(small, .report-meta) {
+  font-size: 16px;
   margin-left: 8px;
   color: inherit;
   font-weight: 500;
 }
 .global-stats-page .sub-label {
-  font-size: 14px;
+  font-size: 16px;
   margin-bottom: 8px;
 }
 .global-stats-page .vote-leader {
@@ -658,9 +658,9 @@
 .global-stats-page .vote-leader .stats-name {
   font-size: 19px;
 }
-.global-stats-page .vote-leader small {
+.global-stats-page .vote-leader :is(small, .report-meta) {
   display: block;
-  font-size: 13px;
+  font-size: 16px;
   margin-top: 4px;
 }
 .global-stats-page .vote-leader > b {
@@ -685,7 +685,7 @@
   font-size: 22px;
 }
 .global-stats-page .stats-check {
-  font-size: 15px;
+  font-size: 16px;
   display: flex;
   gap: 9px;
   align-items: center;
@@ -697,9 +697,9 @@
   height: 18px;
   accent-color: var(--standard);
 }
-.global-stats-page strong > small {
+.global-stats-page strong > :is(small, .report-meta) {
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: var(--muted);
 }
@@ -733,8 +733,8 @@
   font-size: 32px;
   margin: 8px 0 3px;
 }
-.global-stats-page .field-accuracy-grid small {
-  font-size: 15px;
+.global-stats-page .field-accuracy-grid :is(small, .report-meta) {
+  font-size: 16px;
   display: block;
 }
 .global-stats-page .stats-progress {
@@ -768,9 +768,9 @@
   border-top: 1px solid #ffffff12;
   min-width: 0;
 }
-.global-stats-page .stats-feature small {
+.global-stats-page .stats-feature :is(small, .report-meta) {
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   margin-bottom: 5px;
 }
 .global-stats-page .stats-feature .feature-value {
@@ -794,9 +794,9 @@
 .global-stats-page .stats-list-row > div {
   min-width: 0;
 }
-.global-stats-page .stats-list-row small {
+.global-stats-page .stats-list-row :is(small, .report-meta) {
   display: block;
-  font-size: 14px;
+  font-size: 16px;
   margin-top: 4px;
 }
 .global-stats-page .stats-list-row > strong,
@@ -872,7 +872,7 @@
   margin-top: 10px;
   font-size: 28px;
 }
-.global-stats-page .stats-tag > strong small {
+.global-stats-page .stats-tag > strong :is(small, .report-meta) {
   display: inline;
   margin-left: 6px;
   color: inherit;
@@ -902,11 +902,11 @@
 .global-stats-page .activity-copy {
   min-width: 0;
 }
-.global-stats-page .activity-copy > small {
-  font-size: 14px;
+.global-stats-page .activity-copy > :is(small, .report-meta) {
+  font-size: 16px;
 }
 .global-stats-page time {
-  font-size: 14px;
+  font-size: 16px;
   color: var(--muted);
   white-space: nowrap;
 }
@@ -940,8 +940,8 @@
     font-size: 29px;
   }
   .global-stats-page .global-metric > span,
-  .global-stats-page .overall-global-summary small {
-    font-size: 14px;
+  .global-stats-page .overall-global-summary :is(small, .report-meta) {
+    font-size: 16px;
   }
   .global-stats-page .voting-columns,
   .global-stats-page .missed-groups,
@@ -973,7 +973,7 @@
   }
   .global-stats-page .unfinished {
     display: block;
-    font-size: 14px;
+    font-size: 16px;
   }
 }
 @media (max-width: 480px) {
@@ -994,7 +994,7 @@
     font-size: 32px;
   }
   .global-stats-page .global-stat-grid .stat-label {
-    font-size: 15px;
+    font-size: 16px;
   }
   .global-stats-page .collection-record-grid {
     gap: 12px;
@@ -1013,14 +1013,14 @@
     margin: 0;
     font-size: 27px;
   }
-  .global-stats-page .field-accuracy-grid small,
+  .global-stats-page .field-accuracy-grid :is(small, .report-meta),
   .global-stats-page .field-accuracy-grid .stats-progress {
     grid-column: 1/-1;
     margin-top: 0;
   }
   .global-stats-page .distribution-row {
     grid-template-columns: 88px minmax(0, 1fr) 30px;
-    font-size: 14px;
+    font-size: 16px;
     gap: 9px;
   }
   .global-stats-page .small-art {
@@ -1287,7 +1287,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 3px 6px;
-  font-size: 14px;
+  font-size: 16px;
   margin-top: 3px;
 }
 .global-stats-page .activity-entities .match-loser {
@@ -1300,7 +1300,7 @@
   min-width: 0;
   margin: 8px 0;
 }
-.global-stats-page .activity-scope > small {
+.global-stats-page .activity-scope > :is(small, .report-meta) {
   flex: none;
 }
 .global-stats-page .activity-metrics {
@@ -1318,15 +1318,15 @@
   border-radius: 7px;
   padding: 5px 8px;
   background: #ffffff03;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--activity-row-color);
 }
 .global-stats-page .activity-metric b {
   font-size: 16px;
   white-space: nowrap;
 }
-.global-stats-page .activity-metric small {
-  font-size: 14px;
+.global-stats-page .activity-metric :is(small, .report-meta) {
+  font-size: 16px;
   color: var(--muted);
   white-space: nowrap;
 }
@@ -1419,13 +1419,13 @@
   font-weight: 900;
 }
 .voting-mini-pair span,
-.voting-mini-pair small {
+.voting-mini-pair :is(small, .report-meta) {
   display: block;
   margin-top: 6px;
 }
-.voting-mini-pair small {
+.voting-mini-pair :is(small, .report-meta) {
   color: var(--muted);
-  font-size: 14px;
+  font-size: 16px;
 }
 .voting-day-list,
 .voting-bands {
@@ -1472,7 +1472,7 @@
   font-size: 22px;
   text-align: left;
 }
-.voting-gap h3 small {
+.voting-gap h3 :is(small, .report-meta) {
   display: block;
   margin-top: 5px;
   font-size: 16px;
@@ -1502,7 +1502,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   color: var(--blind);
 }
 .voting-match-mode {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 800;
 }
 .voting-stats-page .btn,
@@ -1583,21 +1583,21 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
     gap: 12px;
   }
   .voting-bands {
-    font-size: 15px;
+    font-size: 16px;
   }
   .voting-day-list li {
     grid-template-columns: 50px minmax(0, 1fr) 30px;
     gap: 10px;
-    font-size: 14px;
+    font-size: 16px;
   }
   .voting-stats-page .versus-copy-left .mode-stats-meta {
     justify-content: flex-start;
   }
   .voting-stats-page .versus-date {
-    font-size: 12px;
+    font-size: 16px;
   }
   .voting-pagination {
-    font-size: 15px;
+    font-size: 16px;
   }
   /* Compact comparisons stack inside narrow insets. */
   body.site-style-baseline #main .voting-stats-page .versus-row {
@@ -1679,8 +1679,8 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-size: 16px;
   margin-top: 4px;
 }
-.rec-timing > small {
-  font-size: 14px;
+.rec-timing > :is(small, .report-meta) {
+  font-size: 16px;
   color: var(--muted);
   margin-top: 4px;
 }
@@ -1708,7 +1708,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   border: 1px solid currentColor;
   border-radius: 99px;
   padding: 4px 10px;
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 700;
 }
 .rec-field-results .yes {
@@ -1733,7 +1733,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
     gap: 6px;
   }
   .rec-field-results li {
-    font-size: 14px;
+    font-size: 16px;
     padding: 3px 8px;
   }
 }
@@ -1788,8 +1788,8 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   justify-content: center;
   font-size: 16px;
 }
-.ts-podium-place .mode-stats-primary small,
-.ts-record .mode-stats-primary small {
+.ts-podium-place .mode-stats-primary :is(small, .report-meta),
+.ts-record .mode-stats-primary :is(small, .report-meta) {
   font-size: 16px;
   font-weight: 700;
 }
@@ -1844,7 +1844,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-size: 24px;
   font-weight: 900;
 }
-.ts-stages small {
+.ts-stages :is(small, .report-meta) {
   font-size: 16px;
   font-weight: 700;
 }
@@ -1873,7 +1873,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-size: 22px;
 }
 .ts-record-track .mode-stats-meta {
-  font-size: 15px;
+  font-size: 16px;
   gap: 4px 10px;
 }
 .ts-seed-record .ts-record-track {
@@ -1933,10 +1933,10 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
 .ts-bracket-champion .mode-stats-name {
   font-size: 24px;
 }
-.ts-bracket-champion .mode-stats-copy > small {
+.ts-bracket-champion .mode-stats-copy > :is(small, .report-meta) {
   display: block;
   color: var(--tournament);
-  font-size: 15px;
+  font-size: 16px;
   margin-bottom: 5px;
 }
 .ts-round {
@@ -1989,7 +1989,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-size: 20px;
 }
 .ts-match-side .mode-stats-meta {
-  font-size: 14px;
+  font-size: 16px;
   gap: 4px 8px;
 }
 .ts-match-side.ts-loser .song {
@@ -2006,7 +2006,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
 }
 .ts-match-result span,
 .ts-match-result time {
-  font-size: 14px;
+  font-size: 16px;
 }
 .ts-pagination {
   display: flex;
@@ -2129,14 +2129,14 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
     --mode-stats-art-size: 44px;
   }
   .ts-match-side .mode-stats-meta {
-    font-size: 13px;
+    font-size: 16px;
   }
   .ts-match-result strong {
     font-size: 16px;
   }
   .ts-match-result span,
   .ts-match-result time {
-    font-size: 13px;
+    font-size: 16px;
   }
 }
 /* Elo Guesser composition; shared mode_stats.css owns dashboard geometry. */
@@ -2169,7 +2169,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   text-align: left;
   font-size: 22px;
 }
-.guess-gap h3 small {
+.guess-gap h3 :is(small, .report-meta) {
   display: block;
   color: var(--guesser);
   font-size: 16px;
@@ -2248,7 +2248,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   border: 1px solid currentColor;
   border-radius: 99px;
   color: var(--guesser);
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 700;
 }
 .guess-versus {
@@ -2267,7 +2267,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-size: 28px;
 }
 .guess-versus > span {
-  font-size: 15px;
+  font-size: 16px;
 }
 .guess-history-item {
   scroll-margin-top: 20px;
@@ -2299,7 +2299,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
 }
 .guess-summary-copy > span {
   display: block;
-  font-size: 15px;
+  font-size: 16px;
   margin-top: 5px;
 }
 .guess-outcome {
@@ -2408,7 +2408,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
     font-size: 22px;
   }
   .guess-side .mode-stats-meta {
-    font-size: 15px;
+    font-size: 16px;
   }
 }
 @media (max-width: 520px) {
@@ -2424,7 +2424,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
     font-size: 20px;
   }
   .guess-gap p {
-    font-size: 15px;
+    font-size: 16px;
   }
   .guess-summary {
     grid-template-columns: minmax(0, 1fr);
@@ -2434,7 +2434,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
     font-size: 19px;
   }
   .guess-summary-copy > span {
-    font-size: 14px;
+    font-size: 16px;
   }
   .guess-outcome {
     font-size: 17px;
@@ -2443,7 +2443,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
     font-size: 16px;
   }
   .guess-pagination {
-    font-size: 15px;
+    font-size: 16px;
   }
 }
 /* Shelves-specific report composition; mode_stats.css owns shared geometry. */
@@ -2552,7 +2552,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
 }
 .shelves-stats-page .shelf-summary-copy > span {
   display: block;
-  font-size: 15px;
+  font-size: 16px;
   margin-top: 6px;
 }
 .shelves-stats-page .shelf-summary-score {
@@ -2565,7 +2565,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-weight: 900;
 }
 .shelves-stats-page .shelf-summary-score > span {
-  font-size: 15px;
+  font-size: 16px;
 }
 .shelves-stats-page .shelf-history-body {
   display: grid;
@@ -2595,12 +2595,12 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-size: 23px;
 }
 .shelves-stats-page .shelf-album-head .mode-stats-meta {
-  font-size: 15px;
+  font-size: 16px;
 }
 .shelves-stats-page .shelf-history-context {
   display: block;
   margin-top: 8px;
-  font-size: 15px;
+  font-size: 16px;
   color: var(--shelves);
 }
 .shelves-stats-page .shelf-history-group-score {
@@ -2616,7 +2616,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-weight: 900;
 }
 .shelves-stats-page .shelf-history-group-score > span {
-  font-size: 15px;
+  font-size: 16px;
 }
 .shelves-stats-page .shelf-history-tracks {
   list-style: none;
@@ -2645,7 +2645,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-size: 20px;
 }
 .shelves-stats-page .shelf-history-track .mode-stats-meta {
-  font-size: 15px;
+  font-size: 16px;
   gap: 4px 10px;
 }
 .shelves-stats-page .shelf-submission {
@@ -2654,7 +2654,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 14px;
+  font-size: 16px;
   color: var(--shelves);
   margin-top: 8px;
 }
@@ -2665,7 +2665,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   align-items: baseline;
   gap: 5px 12px;
   color: var(--shelves);
-  font-size: 15px;
+  font-size: 16px;
 }
 .shelves-stats-page .shelf-result-correct,
 .shelves-stats-page .shelf-result-perfect {
@@ -2747,7 +2747,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   }
   .shelves-stats-page .shelf-summary-copy > span,
   .shelves-stats-page .shelf-summary-score > span {
-    font-size: 14px;
+    font-size: 16px;
   }
   .shelves-stats-page .shelf-history-body {
     gap: 14px;
@@ -2756,7 +2756,7 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
     font-size: 19px;
   }
   .shelves-stats-page .shelf-pagination {
-    font-size: 15px;
+    font-size: 16px;
   }
 }
 /* Vibe Map dashboard composition; mode_stats.css owns shared rows and metrics. */
@@ -2788,7 +2788,7 @@ body[data-page="vibe_stats"] {
   display: block;
   margin-top: 8px;
   color: #c7adb5;
-  font-size: 15px;
+  font-size: 16px;
 }
 .vibe-density-key {
   display: flex;
@@ -2796,7 +2796,7 @@ body[data-page="vibe_stats"] {
   align-items: center;
   gap: 12px;
   color: #c8adb5;
-  font-size: 14px;
+  font-size: 16px;
 }
 .vibe-density-key i {
   width: 100px;
@@ -2822,7 +2822,7 @@ body[data-page="vibe_stats"] {
   margin: 0;
 }
 .vibe-chart-head > span {
-  font-size: 15px;
+  font-size: 16px;
 }
 .vibe-density-map {
   width: 100%;
@@ -2872,7 +2872,7 @@ body[data-page="vibe_stats"] {
   gap: 8px;
   margin: 16px 0 0;
   color: #ccb4bb;
-  font-size: 14px;
+  font-size: 16px;
 }
 .vibe-chart-selection {
   min-width: 0;
@@ -2914,12 +2914,12 @@ body[data-page="vibe_stats"] {
   color: var(--vibe);
   font-size: 32px;
 }
-.vibe-pattern > strong small {
-  font-size: 15px;
+.vibe-pattern > strong :is(small, .report-meta) {
+  font-size: 16px;
 }
 .vibe-pattern > span {
   display: block;
-  font-size: 13px;
+  font-size: 16px;
   color: #cbb0b9;
 }
 .vibe-balances {
@@ -2958,9 +2958,9 @@ body[data-page="vibe_stats"] {
 .vibe-high {
   background: #ef8895;
 }
-.vibe-balance-row > small {
+.vibe-balance-row > :is(small, .report-meta) {
   color: #bdabb2;
-  font-size: 14px;
+  font-size: 16px;
 }
 .vibe-stats-pairs {
   display: grid;
@@ -2978,7 +2978,7 @@ body[data-page="vibe_stats"] {
   font-size: 23px;
 }
 .vibe-pair-track .mode-stats-meta {
-  font-size: 15px;
+  font-size: 16px;
 }
 .vibe-pair-score {
   display: flex;
@@ -2996,7 +2996,7 @@ body[data-page="vibe_stats"] {
   font-weight: 900;
 }
 .vibe-pair-score > span {
-  font-size: 15px;
+  font-size: 16px;
 }
 .vibe-stats-page h3.tag {
   color: var(--tag);
@@ -3038,7 +3038,7 @@ body[data-page="vibe_stats"] {
   }
   .vibe-density-key {
     gap: 8px;
-    font-size: 12px;
+    font-size: 16px;
   }
   .vibe-density-key i {
     width: 65px;
@@ -3101,7 +3101,7 @@ body.site-style-baseline #main .pulse-head > span {
   grid-column: 3;
   justify-self: end;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 16px;
 }
 body.site-style-baseline #main .pulse-metrics {
   margin: 0;
@@ -3114,7 +3114,7 @@ body.site-style-baseline #main .pulse-metrics b {
 }
 body.site-style-baseline #main .pulse-metrics span {
   display: block;
-  font-size: 15px;
+  font-size: 16px;
 }
 body.site-style-baseline #main .pulse-charts {
   display: grid;
@@ -3171,10 +3171,10 @@ body.site-style-baseline #main .pulse-bar i {
   display: block;
   width: 100%;
 }
-body.site-style-baseline #main .pulse-day > small {
+body.site-style-baseline #main .pulse-day > :is(small, .report-meta) {
   position: absolute;
   top: -18px;
-  font-size: 11px;
+  font-size: 16px;
   color: var(--muted);
 }
 body.site-style-baseline #main .pulse-tip {
@@ -3188,7 +3188,7 @@ body.site-style-baseline #main .pulse-tip {
   background: #111;
   border: 1px solid var(--line);
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 16px;
   z-index: 4;
 }
 body.site-style-baseline
@@ -3206,7 +3206,7 @@ body.site-style-baseline #main .pulse-axis {
   justify-content: space-between;
   gap: 10px;
   margin-top: 8px;
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted);
 }
 body.site-style-baseline #main .pulse-chart svg {
@@ -3233,7 +3233,7 @@ body.site-style-baseline #main .pulse-ratio,
 body.site-style-baseline #main .pulse-empty {
   color: var(--muted);
   text-align: center;
-  font-size: 15px;
+  font-size: 16px;
   margin: 8px 0 0;
 }
 body.site-style-baseline #main .pulse-legend {
@@ -3249,7 +3249,7 @@ body.site-style-baseline #main .pulse-legend li {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 16px;
 }
 body.site-style-baseline #main .pulse-legend i {
   display: block;
@@ -3258,7 +3258,7 @@ body.site-style-baseline #main .pulse-legend i {
   border-radius: 50%;
 }
 body.site-style-baseline #main .stats-notes {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--muted);
 }
 body.site-style-baseline #main .stats-notes summary {
@@ -3278,14 +3278,14 @@ body.site-style-baseline #main .stats-notes[open] summary::before {
   content: "▾";
 }
 body.site-style-baseline #main .stats-notes p {
-  font-size: 15px;
+  font-size: 16px;
   color: var(--muted);
   line-height: 1.5;
 }
 body.site-style-baseline #main .pulse-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 16px;
 }
 body.site-style-baseline #main .pulse-table :is(th, td) {
   text-align: left;
@@ -3294,7 +3294,7 @@ body.site-style-baseline #main .pulse-table :is(th, td) {
   white-space: nowrap;
 }
 body.site-style-baseline #main .versus-origin {
-  font-size: 14px;
+  font-size: 16px;
   overflow-wrap: anywhere;
 }
 body.site-style-baseline #main .history-overview {
@@ -3401,7 +3401,7 @@ body.site-style-baseline
   }
 }
 @media (max-width: 520px) {
-  body.site-style-baseline #main .pulse-day > small {
+  body.site-style-baseline #main .pulse-day > :is(small, .report-meta) {
     display: none;
   }
   body.site-style-baseline #main .pulse-head h2,
@@ -3409,7 +3409,7 @@ body.site-style-baseline
     font-size: 25px;
   }
   body.site-style-baseline #main .pulse-metrics span {
-    font-size: 13px;
+    font-size: 16px;
   }
   body.site-style-baseline #main .pulse-chart {
     padding: 14px;
@@ -3483,10 +3483,10 @@ body.site-style-baseline #main .pulse-scale {
 .elo-replay-panel { --section-color:var(--voting); --surface-accent:var(--voting); }
 .elo-replay-controls { display:flex; flex-wrap:wrap; align-items:end; justify-content:center; gap:12px; }
 .elo-replay-controls .game-select { width:170px; min-width:0; text-align:left; }
-.elo-replay-audio-status { min-height:20px; margin:8px 0 0; text-align:center; color:#aaa; font-size:14px; }
+.elo-replay-audio-status { min-height:20px; margin:8px 0 0; text-align:center; color:#aaa; font-size:16px; }
 .elo-replay-clock { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 18px; margin:20px 0 0; font-variant-numeric:tabular-nums; }
 .elo-replay-clock time { font-size:24px; font-weight:800; color:var(--voting); }
-.elo-replay-clock > span { color:var(--muted,#aaa); font-size:14px; }
+.elo-replay-clock > span { color:var(--muted,#aaa); font-size:16px; }
 .elo-replay-seek { display:flex; align-items:center; gap:12px; margin:0 0 16px; }
 .elo-replay-seek input { min-width:0; flex:1; accent-color:var(--voting); min-height:44px; padding:0; }
 .elo-replay-layout { display:grid; grid-template-columns:minmax(0,1fr) 250px; align-items:start; gap:24px; }
@@ -3508,7 +3508,7 @@ body.site-style-baseline #main .pulse-scale {
 .elo-replay-delta { display:block; min-height:20px; font-size:16px; color:#aaa; }
 .elo-replay-row.is-gain .elo-replay-delta { color:var(--song); }
 .elo-replay-row.is-loss .elo-replay-delta { color:var(--danger); }
-.elo-replay-gap { position:absolute; left:0; top:0; width:100%; height:calc(var(--replay-row-height) - 10px); display:grid; place-items:center; border:1px dashed #ffffff12; border-radius:18px; color:#888; font-size:14px; box-sizing:border-box; }
+.elo-replay-gap { position:absolute; left:0; top:0; width:100%; height:calc(var(--replay-row-height) - 10px); display:grid; place-items:center; border:1px dashed #ffffff12; border-radius:18px; color:#888; font-size:16px; box-sizing:border-box; }
 .elo-replay-opponent { min-width:0; padding:18px; background:#ffffff04; border:1px solid #9cdb9128; border-radius:18px; }
 .elo-replay-opponent h3 { color:var(--voting); font-size:18px; margin:0 0 16px; }
 .elo-replay-opponent-art { display:grid; place-items:center; width:100%; aspect-ratio:1; background:#181818; border-radius:16px; overflow:hidden; margin-bottom:18px; color:var(--song); font-size:44px; }
@@ -3534,9 +3534,9 @@ body.site-style-baseline #main .pulse-scale {
   .elo-replay-art { width:52px; height:52px; border-radius:12px; }
   .elo-replay-rank { font-size:18px; }
   .elo-replay-copy > a { font-size:18px; }
-  .elo-replay-meta { font-size:13px; }
+  .elo-replay-meta { font-size:16px; }
   .elo-replay-value strong { font-size:22px; }
-  .elo-replay-delta { font-size:14px; }
+  .elo-replay-delta { font-size:16px; }
   .elo-replay-opponent { padding:14px; }
   .elo-replay-controls .game-select { width:150px; }
 }
@@ -3546,7 +3546,7 @@ body.site-style-baseline #main .elo-replay-panel :is(.game-select-trigger,.game-
 body.site-style-baseline #main .elo-replay-panel .game-select-menu { background:#242424; }
 body.site-style-baseline #main .elo-replay-panel .game-select-check { color:var(--voting); }
 body.site-style-baseline #main .elo-replay-panel .game-select-menu button:is(:hover,:focus-visible,[aria-selected="true"]) { background:#9cdb9117; border-color:#9cdb9150; }
-.elo-replay-controls .game-control-label { display:block; color:#aaa; font-size:14px; margin-bottom:6px; }
+.elo-replay-controls .game-control-label { display:block; color:#aaa; font-size:16px; margin-bottom:6px; }
 
 /* A quiet stationary glow lasts until the next leaderboard change. */
 .elo-replay-glow { position:absolute; inset:0; border-radius:inherit; pointer-events:none; box-shadow:inset 0 0 18px -7px currentColor; background:color-mix(in srgb,currentColor 5%,transparent); }
@@ -3557,8 +3557,30 @@ body.site-style-baseline #main .elo-replay-panel .game-select-menu button:is(:ho
 .elo-replay-opponent[data-origin="tournament"] { --replay-origin:var(--tournament); }
 .elo-replay-opponent[data-mode] { border-color:var(--replay-mode); box-shadow:inset 4px 0 0 var(--replay-origin),inset -4px 0 0 var(--replay-mode); background:linear-gradient(135deg,color-mix(in srgb,var(--replay-origin) 8%,#242424),color-mix(in srgb,var(--replay-mode) 8%,#242424)); }
 .elo-replay-opponent[data-mode] h3 { color:var(--replay-origin); }
-.elo-replay-card-mode { font-size:14px; line-height:1.4; margin:0 0 14px; }
+.elo-replay-card-mode { font-size:16px; line-height:1.4; margin:0 0 14px; }
 @media(max-width:1000px) {
   .elo-replay-card-mode { grid-column:1/-1; margin:0; }
   .elo-replay-opponent[data-mode] .elo-replay-opponent-art { grid-row:3/5; }
 }
+
+/* Shared evidence presentation: methodology lives in the guides. */
+.report-facts {
+  min-width: 0;
+  padding: 14px 18px;
+  border: 1px solid color-mix(in srgb, var(--section-color, var(--page-color)) 26%, var(--line));
+  border-radius: var(--site-inner-radius);
+  background: var(--raised);
+  color: var(--section-color, var(--page-color));
+  font-size: 16px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.report-facts[hidden] { display: none; }
+.section-head > .report-facts { padding: 8px 12px; }
+.report-meta { font-size: 16px; line-height: 1.45; }
+.mode-stats-page :is(.mode-stats-row, .mode-stats-result, .mode-stats-copy, .mode-stats-inset, .guess-summary-copy, .shelf-history-group-score) { min-width: 0; }
+.mode-stats-page :is(.mode-stats-result, .mode-stats-primary, .joined-metrics, .vibe-balance-poles) { font-variant-numeric: tabular-nums; }
+.mode-stats-result { max-width: 100%; overflow-wrap: anywhere; }
+.mode-stats-panel .section-head :is(h2,h3) { overflow-wrap: anywhere; }
+
+.report-facts.tournament { --section-color: var(--tournament); }

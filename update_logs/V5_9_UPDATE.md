@@ -1,6 +1,24 @@
 # V5.9 updates
 
 
+## V5.9.2 — Profile and statistics presentation cleanup
+
+- Review song/artist/album/tag profiles, Global Stats and each mode report. Move
+  calculation explanations into the technical guide and remove recalculation
+  notices from public match/replay views without changing saved scoring or Elo.
+- Promote useful evidence, mode ranks, saved rating changes, sample sizes and
+  ungraded-result counts into labelled metrics and shared coloured fact panels.
+  Give secondary metadata readable type instead of tiny footnotes.
+- Fit exact counts to their real slot before abbreviating. Preserve score/rating
+  precision and restore full counts when a wider layout has enough room.
+- Put match mode, origin, date/time and gap into a full-width footer so the VS
+  column cannot grow into a tall explanation stack. Retain linked identities,
+  covers, outcomes, filters and page-bound histories.
+- Collapse empty activity plots into a compact state while preserving counts and
+  expandable daily figures.
+- Align shared responsive spacing, numeric wrapping and metadata across reports
+  while preserving each page's distinctive statistics and semantic colours.
+
 ## V5.9.1 — Retire the match network and streamline Git/backups
 
 - Remove the whole match network workspace, song-page boxes, links, assets and
