@@ -71,14 +71,6 @@
     {% if tournament.podium %}<div class="stats-subsection"><div class="subsection-head"><h3 class="tournament">Latest Podium</h3><a class="tournament" href="/tournament/{{ tournament.latest_id }}/bracket">Bracket #{{ tournament.latest_id }} ↗</a></div><div class="global-podium">{% for row in tournament.podium %}<article><b class="tournament">{{ ['🥇','🥈','🥉'][row.place-1] }}</b>{{ art(row.cover_url) }}{{ entity_link(row) }}</article>{% endfor %}</div></div>{% endif %}
     <div class="stats-subsection"><h3 class="tournament">Recent Champions</h3>{% for row in tournament.champions %}<div class="stats-list-row">{{ art(row.cover_url) }}<div>{{ entity_link(row) }}<span class="report-meta artist stats-ellipsis" title="{{ row.artist }}">{{ row.artist }}</span></div><a class="tournament bracket-link" href="/tournament/{{ row.bracket_id }}/bracket">#{{ row.bracket_id }}<span class="report-meta">{{ row.size }} tracks</span></a></div>{% else %}<div class="empty">No completed tournaments yet</div>{% endfor %}</div>
   </section>
-  <section id="global-guesser" class="panel mode-stats-panel special-panel guesser" data-global-section="guesser">
-    <div class="section-head"><h2 class="guesser">Elo Guesser</h2><a class="guesser" href="/elo_guesser_stats">View stats ↗</a></div>
-    <div class="global-metrics joined-metrics" data-columns="4">{{ metric('Accuracy',pct(guess.accuracy),'guesser') }}{{ metric('Correct picks',guess.correct,'guesser') }}{{ metric('Wrong picks',guess.wrong,'guesser') }}{{ metric('Challenge best streak',guess.challenge.best_streak,'guesser') }}</div>
-    <div class="global-metrics two global-secondary joined-metrics" data-columns="2">{{ metric('Latest challenge streak',guess.challenge.streak,'guesser') }}{{ metric('Tracks tested',guess.tested,'guesser') }}</div>
-    
-    <div class="record-pair">{{ feature(guess.most_tested,'Most tested track',guess.most_tested.value if guess.most_tested else '',unit='appearances') }}{{ feature(guess.most_missed,'Most missed track',guess.most_missed.value if guess.most_missed else '',unit='misses') }}</div>
-    {% if not guess.rounds %}<div class="empty">Play an Elo Guesser round to start these records.</div>{% endif %}
-  </section>
   <section id="global-shelves" class="panel mode-stats-panel special-panel shelves" data-global-section="shelves">
     <div class="section-head"><h2 class="shelves">Album Shelves</h2><a class="shelves" href="/album_shelves_stats">View stats ↗</a></div>
     <div class="global-metrics joined-metrics" data-columns="4">{{ metric('Points accuracy',pct(shelf.accuracy),'shelves') }}{{ metric('Rounds',shelf.rounds,'shelves') }}{{ metric('Perfect rounds',shelf.perfect,'shelves') }}{{ metric('Track placements',shelf.tracks,'shelves') }}</div>

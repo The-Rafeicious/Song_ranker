@@ -5,7 +5,7 @@ from datetime import datetime, timezone, timedelta
 from math import isfinite
 
 COLORS = {'standard':'Non-blind', 'blind':'Blind', 'recognition':'Trivia',
-          'tournament':'Tournament', 'guesser':'Elo Guesser', 'shelves':'Album Shelves', 'vibe':'Vibe Map'}
+          'tournament':'Tournament', 'shelves':'Album Shelves', 'vibe':'Vibe Map'}
 
 
 def coverage_milestone(counts):
@@ -94,12 +94,7 @@ def build_activity(conn, mode, now=None, tournament_ids=None):
             if tournament_ids is not None and row['id'] not in tournament_ids:continue
             if row.get('status')=='completed':
                 add(row.get('completed_at') or row.get('timestamp') or row.get('created_at'),'tournament')
-    if mode in ('global','guesser'):
-        for row in rows('elo_guess_rounds'):
-            if row.get('completed_at') is None:continue
-            a,b=row.get('elo1'),row.get('elo2');slot=row.get('chosen_slot')
-            valid=slot in (1,2) and all(isinstance(x,(float,int)) and isfinite(x) for x in (a,b)) and a!=b
-            add(row['completed_at'],'guesser',int((slot==1)==(a>b)) if valid else 0,int(valid))
+
     if mode in ('global','shelves'):
         from songranker.modes.shelves import can_grade
         from songranker.modes.shelves import grade_shelf, shelf_report_filter
@@ -129,7 +124,7 @@ def build_activity(conn, mode, now=None, tournament_ids=None):
     numerator=sum(d['right'] for d in result);denominator=sum(d['denominator'] for d in result)
     kinds={b['kind'] for day in result for b in day['bars']}
     rate_label={'voting':'Lower-rated wins','history':'Lower-rated wins','recognition':'Field accuracy',
-                'guesser':'Pick accuracy','shelves':'Track order'}.get(mode)
+                'shelves':'Track order'}.get(mode)
     return dict(mode=mode,days=result,segments=[' '.join(s) for s in segments],total=sum(d['count'] for d in result),
         current=sum(d['count'] for d in result[7:]),previous=sum(d['count'] for d in result[:7]),
         active=sum(d['count']>0 for d in result),rate=100*numerator/denominator if denominator else None,

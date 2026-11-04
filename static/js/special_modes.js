@@ -2,10 +2,6 @@
 window.SpecialModes = (() => {
   "use strict";
   let U,
-    guess = null,
-    guessBusy = false,
-    guessLoading = false,
-    guessRequest = 0,
     shelf = null,
     shelfBusy = false,
     dragged = null,
@@ -20,8 +16,6 @@ window.SpecialModes = (() => {
   const pct = window.SongRankerUI.ratio,
     num = (n) => Number(n || 0).toFixed(2);
   const metricKeys = [
-    "guess_attempts",
-    "guess_correct",
     "shelf_attempts",
     "shelf_album_correct",
     "shelf_order_right",
@@ -66,69 +60,6 @@ window.SpecialModes = (() => {
       reveal.timers.set(timer, resolve);
     });
   }
-  function snippet(song, ms, generation) {
-    reveal.audio?.pause();
-    reveal.audio?.remove();
-    reveal.audio = null;
-    if (
-      !song?.audio_url ||
-      generation !== reveal.generation ||
-      reveal.closed ||
-      window.PreviewPlayback?.blocked()
-    )
-      return;
-    const audio = document.createElement("audio");
-    audio.id = "answer-snippet";
-    audio.preload = "none";
-    audio.dataset.song = String(song.id);
-    audio.volume = Number($("#volume-range")?.value ?? 0.5);
-    audio.src =
-      window.PreviewPlayback?.source(song.id, song.audio_url) || song.audio_url;
-    U.main.append(audio);
-    reveal.audio = audio;
-    let timer = null;
-    const pause = () => {
-      clearTimeout(timer);
-      audio.pause();
-    };
-    audio.addEventListener("playing", () => {
-      clearTimeout(timer);
-      timer = setTimeout(
-        () =>
-          window.PreviewPlayback
-            ? window.PreviewPlayback.fadeOut(audio, 600)
-            : pause(),
-        Math.max(0, ms - 600),
-      );
-    });
-    audio.addEventListener("timeupdate", () => {
-      if (audio.currentTime >= ms / 1000) pause();
-    });
-    audio.addEventListener("pause", () => clearTimeout(timer));
-    const playing = window.PreviewPlayback
-      ? window.PreviewPlayback.play(audio)
-      : audio.play();
-    playing
-      .then(() => {
-        if (
-          generation !== reveal.generation ||
-          reveal.closed ||
-          !audio.isConnected
-        )
-          pause();
-      })
-      .catch((error) => {
-        pause();
-        if (generation !== reveal.generation || !audio.isConnected) return;
-        const note = $("#reveal-audio-note");
-        if (note)
-          note.textContent =
-            error.name === "PreviewBlockedError"
-              ? "Audio paused by preview limits"
-              : "Preview unavailable";
-      });
-  }
-  // Answer media starts only when its card is revealed; never load ahead.
   const shelfClips = { current: null, outgoing: new Set() };
   function discardClip(audio) {
     if (!audio) return;
@@ -227,31 +158,14 @@ window.SpecialModes = (() => {
     }
   }
 
-  const guessLink = "/mode_rankings/guesser",
-    shelfLink = "/mode_rankings/shelves";
-  function panels(tracks, type = "songs") {
-    const t = totals(tracks);
-    return `<div class="special-profile-panels"><section class="panel special-panel guesser"><div class="section-head"><h2 class="guesser">Elo Guesser</h2><a class="guesser" href="${guessLink}?entity=${["songs", "artists", "albums"].includes(type) ? type : "songs"}">Rankings ↗</a></div><div class="mini-stats"><div><b class="guesser">${pct(t.guess_correct, t.guess_attempts)}</b><small>Correct picks</small></div><div><b class="guesser">${t.guess_correct} / ${t.guess_attempts}</b><small>Track appearances</small></div></div></section><section class="panel special-panel shelves"><div class="section-head"><h2 class="shelves">Album Shelves</h2><a class="shelves" href="${shelfLink}?entity=${["songs", "artists", "albums"].includes(type) ? type : "songs"}">Rankings ↗</a></div><div class="mini-stats"><div><b class="shelves">${pct(t.shelf_points, t.shelf_available)}</b><small>Points earned</small></div><div><b class="shelves">${pct(t.shelf_order_right, t.shelf_order_pairs)}</b><small>Track order</small></div></div></section></div>`;
-  }
   function homeSummary() {
     const s = U.data().special_modes || {},
-      g = s.guesser || {},
       a = s.shelves || {};
-    return `<section class="panel special-panel guesser" data-home-mode="guesser"><div class="section-head"><h2 class="guesser">Elo Guesser</h2><a class="guesser" href="/elo_guesser_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="guesser">${g.correct || 0}</b><small>Correct picks</small></div><div><b class="guesser">${g.challenge?.best_streak || 0} 🔥</b><small>Challenge best streak</small></div><div><b class="guesser">${Math.max(0, Number(g.rounds || 0) - Number(g.correct || 0))}</b><small>Wrong guesses</small></div></div>${U.homeRateBar("guesser", "Correct guesses", g.correct, g.rounds, "No completed guesses yet", "guesses")}</section><section class="panel special-panel shelves" data-home-mode="shelves"><div class="section-head"><h2 class="shelves">Album Shelves</h2><a class="shelves" href="/album_shelves_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="shelves">${a.rounds || 0}</b><small>Rounds</small></div><div><b class="shelves">${Number(a.albums_played || 0)}</b><small title="Distinct albums in completed Shelves rounds">Albums played</small></div><div><b class="shelves">${a.perfect || 0}</b><small>Perfect shelves</small></div></div>${U.homeRateBar("shelves", "Relative track order", a.order_right, a.order_pairs, "No eligible track comparisons yet", "order comparisons")}</section>`;
+    return `<section class="panel special-panel shelves" data-home-mode="shelves"><div class="section-head"><h2 class="shelves">Album Shelves</h2><a class="shelves" href="/album_shelves_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="shelves">${a.rounds || 0}</b><small>Rounds</small></div><div><b class="shelves">${Number(a.albums_played || 0)}</b><small title="Distinct albums in completed Shelves rounds">Albums played</small></div><div><b class="shelves">${a.perfect || 0}</b><small>Perfect shelves</small></div></div>${U.homeRateBar("shelves", "Relative track order", a.order_right, a.order_pairs, "No eligible track comparisons yet", "order comparisons")}</section>`;
   }
   function homeBanners() {
     const limit = U.homeBannerLimit ?? 10;
-    const songs = U.records("songs"),
-      guesses = songs
-        .filter((s) => s.guess_attempts > 0)
-        .sort(
-          (a, b) =>
-            b.guess_correct / b.guess_attempts -
-              a.guess_correct / a.guess_attempts ||
-            b.guess_attempts - a.guess_attempts ||
-            a.title.localeCompare(b.title),
-        )
-        .slice(0, limit);
+    const songs = U.records("songs");
     const albums = U.records("albums")
       .filter(U.properAlbum)
       .map((a) => ({
@@ -270,169 +184,11 @@ window.SpecialModes = (() => {
     const head = (title, key, path) =>
       window.SongRankerUI.shelfHead(title, key, path, "Stats");
     const banner = (rows, key, title, type) =>
-      `<section class="shelf-section ${key} home-records" id="home-${key}">${head(title, key, key === "guesser" ? "/elo_guesser_stats" : "/album_shelves_stats")}<div class="scroller" id="shelf-${key}" tabindex="0" aria-label="${title}">${rows.map((r, i) => `<a class="shelf-card ${key}" data-home-record="${key}" href="${U.urlFor(type, r)}"><span class="shelf-rank">${i + 1}</span><div class="shelf-art">${U.artwork(r, type)}</div><div class="shelf-info"><h3 class="${type === "songs" ? "song" : "album"}" title="${esc(r.name)}">${esc(r.name)}</h3><p class="artist" title="${esc(r.artist)}">${esc(r.artist)}</p><strong class="${key}">${key === "guesser" ? pct(r.guess_correct, r.guess_attempts) + " correct" : pct(r.shelf_order_right, r.shelf_order_pairs) + " track order"}</strong><small>${key === "guesser" ? r.guess_correct + " / " + r.guess_attempts + " guesses" : r.shelf_attempts + " track appearances"}</small></div></a>`).join("") || `<div class="empty">${key === "guesser" ? "No Elo guesses yet" : "No shelf placements yet"}</div>`}</div></section>`;
+      `<section class="shelf-section ${key} home-records" id="home-${key}">${head(title, key, "/album_shelves_stats")}<div class="scroller" id="shelf-${key}" tabindex="0" aria-label="${title}">${rows.map((r, i) => `<a class="shelf-card ${key}" data-home-record="${key}" href="${U.urlFor(type, r)}"><span class="shelf-rank">${i + 1}</span><div class="shelf-art">${U.artwork(r, type)}</div><div class="shelf-info"><h3 class="${type === "songs" ? "song" : "album"}" title="${esc(r.name)}">${esc(r.name)}</h3><p class="artist" title="${esc(r.artist)}">${esc(r.artist)}</p><strong class="${key}">${pct(r.shelf_order_right, r.shelf_order_pairs) + " track order"}</strong><small>${r.shelf_attempts + " track appearances"}</small></div></a>`).join("") || `<div class="empty">${"No shelf placements yet"}</div>`}</div></section>`;
     return (
-      banner(guesses, "guesser", "Elo Guesser", "songs") +
       banner(albums, "shelves", "Album Shelves", "albums")
     );
   }
-  function gameTabs() {
-    return '<div class="game-head"><h1 class="guesser">Elo Guesser</h1></div>';
-  }
-  function guessCounters(records) {
-    return `<div class="stats guess-records">${U.stat("Correct picks", records.correct || 0, "guesser")}${U.stat("Accuracy", pct(records.correct, records.rounds), "guesser")}${U.stat(records.rules_version === 1 ? "Classic streak" : "Challenge streak", (records.streak || 0) + " 🔥", "guesser")}${U.stat(records.rules_version === 1 ? "Classic best" : "Challenge best", (records.best_streak || 0) + " 🔥", "guesser")}</div>`;
-  }
-  function artistLinks(s) {
-    return (s.artists || [])
-      .map(
-        (a) =>
-          `<a class="artist" href="/artist/${encodeURIComponent(a.name)}" title="${esc(a.name)}">${esc(a.name)}</a>`,
-      )
-      .join('<span class="muted">, </span>');
-  }
-  async function loadGuess() {
-    if (guessLoading || reveal.closed) return;
-    guessLoading = true;
-    cancelReveal();
-    const requestId = ++guessRequest;
-    guessBusy = true;
-    U.cancelTransition();
-    U.stopAudio();
-    U.pageTone("guesser");
-    document.body.classList.add("game-page");
-    const release = U.holdHeight(),
-      oldPair = $$("audio[data-preview-pair]");
-    window.PreviewPlayback?.forgetPair(oldPair)?.catch(() => {});
-    U.main.setAttribute("aria-busy", "true");
-    if (!guess)
-      U.main.innerHTML =
-        gameTabs() + '<div class="empty" role="status">Loading pair…</div>';
-    $$("[data-guess-pick],[data-guess-next]").forEach(
-      (b) => (b.disabled = true),
-    );
-    if ($("[data-guess-next]"))
-      $("[data-guess-next]").textContent = "Loading next pair…";
-    $("#guess-load-error")?.remove();
-    try {
-      const load = (signal) =>
-        U.api("/api/elo-guesser/round", {}, undefined, { signal });
-      const result = await (flow ? flow.take("guesser", load) : load());
-      if (
-        requestId !== guessRequest ||
-        reveal.closed ||
-        document.body.dataset.tone !== "guesser"
-      )
-        return;
-      guess = { ...result, answered: false };
-      renderGuess();
-    } catch (error) {
-      if (
-        requestId === guessRequest &&
-        !reveal.closed &&
-        document.body.dataset.tone === "guesser"
-      ) {
-        U.main.insertAdjacentHTML(
-          "beforeend",
-          `<p id="guess-load-error" class="error" role="alert">${esc(error.message)}</p>`,
-        );
-        if (!$("[data-guess-next]"))
-          U.main.insertAdjacentHTML(
-            "beforeend",
-            '<div class="next-area"><button class="btn" data-guess-next>Retry pair</button></div>',
-          );
-        else $("[data-guess-next]").textContent = "Retry pair";
-      }
-    } finally {
-      if (requestId === guessRequest) {
-        guessBusy = false;
-        guessLoading = false;
-        U.main.removeAttribute("aria-busy");
-        $$("[data-guess-next]").forEach((b) => (b.disabled = false));
-      }
-      release();
-    }
-  }
-
-  function renderGuess() {
-    const release = U.holdHeight();
-    U.main.innerHTML =
-      gameTabs() +
-      guessCounters(guess.records) +
-      `${guess.rules_version === 1 ? '<div class="challenge-note guesser"><strong>Classic question</strong></div>' : ""}<div class="matchup">${guess.songs
-        .map((song, i) => {
-          const high =
-              guess.answered &&
-              guess.result.ratings[i] > guess.result.ratings[1 - i],
-            chosen = guess.chosen === song.id;
-          const overlay = guess.answered
-            ? `<div class="score-reveal guess-elo ${high ? "score-win" : "score-loss"}"><small>${high ? "Higher Elo" : "Lower Elo"}</small><strong>${Math.round(guess.result.ratings[i])}</strong><b>${high ? "✓ Correct answer" : chosen ? "✕ Your pick" : ""}</b></div>`
-            : "";
-          const cover = U.mediaButton(
-            {
-              ...song,
-              name: song.title,
-              artist: song.artists.map((a) => a.name).join(", "),
-            },
-            "guess-audio-" + i,
-            false,
-            !guess.answered,
-          );
-          return `${i ? '<span class="vs-circle">VS</span>' : ""}<article class="game-card dashboard-surface ${guess.answered ? (high ? "guess-right-card" : "guess-wrong-card") : ""}"><div class="match-cover">${cover}${overlay}</div><h2><a class="song" title="${esc(song.title)}" href="/song/${song.id}">${esc(song.title)}</a></h2><div class="game-meta"><div class="game-artists">${artistLinks(song)}</div>${song.album && song.album.trim().toLowerCase() !== "unknown album" && !/\s-\s*single\s*$/i.test(song.album) ? `<a class="album" title="${esc(song.album)}" href="/album/${encodeURIComponent(song.album)}">${esc(song.album)}</a>` : ""}</div><button class="btn primary vote-btn" data-guess-pick="${song.id}" ${guess.answered ? "disabled" : ""}>${guess.answered ? (chosen ? (guess.result.correct ? "✓ Correct · +1" : "✕ Wrong pick") : high ? "✓ Correct answer" : "Lower Elo") : "Higher Elo"}</button></article>`;
-        })
-        .join(
-          "",
-        )}</div>${guess.answered ? `<section class="panel guess-feedback dashboard-surface ${guess.result.correct ? "guess-success" : "guess-failure"}"><strong role="status">${guess.result.correct ? "✓ Correct · +1 point" : "✕ Incorrect · +0 points · streak reset"}</strong><span>Next pair automatically…</span><button class="btn" data-guess-next>Next pair →</button><small id="reveal-audio-note"></small></section>` : ""}`;
-    U.attachPlayers();
-    window.PreviewPlayback?.preloadPair([
-      $("#guess-audio-0"),
-      $("#guess-audio-1"),
-    ]);
-    if (guess.answered)
-      $$(".match-cover .cover-button").forEach((b) => (b.disabled = true));
-    release();
-  }
-
-  async function answerGuess(id) {
-    if (guessBusy || !guess || guess.answered) return;
-    guessBusy = true;
-    $$("[data-guess-pick]").forEach((b) => (b.disabled = true));
-    let saved = false;
-    const current = guess,
-      requestGeneration = reveal.generation;
-    try {
-      const result = await U.api("/api/elo-guesser/answer", {
-        token: current.token,
-        song_id: id,
-      });
-      saved = true;
-      if (
-        guess !== current ||
-        reveal.closed ||
-        requestGeneration !== reveal.generation
-      )
-        return;
-      window.PreviewPlayback?.hold();
-      cancelReveal();
-      guess.answered = true;
-      guess.chosen = id;
-      guess.result = result;
-      guess.records = result.records;
-      renderGuess();
-      const generation = reveal.generation,
-        correct = guess.songs[result.ratings[0] > result.ratings[1] ? 0 : 1];
-      snippet(correct, wait("guessClip", 2800), generation);
-      flow?.prepare("guesser", (signal) =>
-        U.api("/api/elo-guesser/round", {}, undefined, { signal }),
-      );
-      if (await revealDelay(wait("pairResult", 4500), generation)) loadGuess();
-    } catch (error) {
-      U.toast(error.message);
-      if (!saved) $$("[data-guess-pick]").forEach((b) => (b.disabled = false));
-    } finally {
-      guessBusy = false;
-    }
-  }
-
   let shelfPlayback = null;
   function stopShelf(keepAudio = false) {
     previewGeneration++;
@@ -907,15 +663,7 @@ window.SpecialModes = (() => {
   // Keep a single meaningful ordering per mode; detailed breakdowns live in Stats.
   function metrics(mode) {
     return [
-      mode === "guesser"
-        ? [
-            "accuracy",
-            "Accuracy",
-            "guess_correct",
-            "guess_attempts",
-            "percentage",
-          ]
-        : mode === "shelves"
+      mode === "shelves"
           ? [
               "order",
               "Track order",
@@ -991,7 +739,7 @@ window.SpecialModes = (() => {
       : Number(row[m[2]] || 0);
   }
   let rankingState = null,
-    devRecordMode = "guesser";
+    devRecordMode = "shelves";
   function renderModeRanking(mode, init = false) {
     if (init) {
       const p = new URLSearchParams(location.search),
@@ -1023,9 +771,7 @@ window.SpecialModes = (() => {
     document.body.style.setProperty("--rank-color", `var(--${tone})`);
     const eligible = entityRows(mode, r.type)
       .filter((row) =>
-        mode === "guesser"
-          ? row.guess_attempts
-          : mode === "shelves"
+        mode === "shelves"
             ? row.shelf_attempts
             : mode === "trivia"
               ? row.recognition_score
@@ -1045,18 +791,12 @@ window.SpecialModes = (() => {
     );
     const rows = (r.bottom ? [...eligible].reverse() : eligible).slice(0, 20),
       titles = {
-        guesser: "Elo Guesser",
         shelves: "Album Shelves",
         trivia: "Recognisability",
         tournament: "Tournament",
       };
     const facts = (row) =>
-      mode === "guesser"
-        ? [
-            `${row.guess_correct} correct · ${row.guess_attempts - row.guess_correct} wrong`,
-            `${row.guess_attempts} appearances`,
-          ]
-        : mode === "shelves"
+      mode === "shelves"
           ? [
               `${row.shelf_order_right} / ${row.shelf_order_pairs} order comparisons`,
               `${row.shelf_attempts} track appearances`,
@@ -1076,7 +816,7 @@ window.SpecialModes = (() => {
       `/mode_rankings/${mode}?entity=${r.type}&view=${r.bottom ? "bottom" : "top"}`,
     );
   }
-  async function renderDevRecords(mode = "guesser") {
+  async function renderDevRecords(mode = "shelves") {
     devRecordMode = mode;
     const node = $("#dev-main");
     if (!node) return;
@@ -1093,32 +833,24 @@ window.SpecialModes = (() => {
       )
         return;
       const section = (mode, rows) =>
-        `<section class="panel special-panel ${mode} mode-records"><div class="section-head"><h2 class="${mode}">${mode === "guesser" ? "Elo Guesser" : "Album Shelves"}</h2><button class="btn small danger" data-tool="Reset ${mode === "guesser" ? "Elo Guesser" : "Album Shelves"} history">Reset history</button></div><div class="mode-record-search"><input type="search" data-mode-history-search="${mode}" placeholder="Find round ID or song…" aria-label="Find ${mode} round"></div><div class="data-scroll"><table class="mode-record-table"><thead><tr><th>Round</th><th>Completed</th><th>Result / tracks</th><th>Actions</th></tr></thead><tbody>${
+        `<section class="panel special-panel ${mode} mode-records"><div class="section-head"><h2 class="${mode}">${"Album Shelves"}</h2><button class="btn small danger" data-tool="Reset ${"Album Shelves"} history">Reset history</button></div><div class="mode-record-search"><input type="search" data-mode-history-search="${mode}" placeholder="Find round ID or song…" aria-label="Find ${mode} round"></div><div class="data-scroll"><table class="mode-record-table"><thead><tr><th>Round</th><th>Completed</th><th>Result / tracks</th><th>Actions</th></tr></thead><tbody>${
           rows
             .map((r) => {
               const labels =
-                mode === "guesser"
-                  ? [r.song1_id, r.song2_id]
-                      .map(
-                        (id) =>
-                          U.records("songs").find((s) => s.id === id)?.title ||
-                          "Deleted track",
-                      )
-                      .join(" vs ")
-                  : (r.song_ids || [])
+                (r.song_ids || [])
                       .map(
                         (id) =>
                           U.records("songs").find((s) => s.id === id)?.title ||
                           "Deleted track",
                       )
                       .join(", ");
-              return `<tr data-special-history="${mode}" data-history-query="${esc((r.id + " " + labels).toLowerCase())}"><td>#${r.id}</td><td><small>${new Date(r.completed_at * 1000).toLocaleString()}</small></td><td><b class="${mode}">${mode === "guesser" ? (r.correct ? "Correct +1" : "Incorrect +0") : num(r.points) + " / " + r.available}</b><small class="record-track-names" title="${esc(labels)}">${esc(labels)}</small></td><td><button class="btn small danger" data-remove-special="${mode}" data-round="${r.id}">Delete round</button></td></tr>`;
+              return `<tr data-special-history="${mode}" data-history-query="${esc((r.id + " " + labels).toLowerCase())}"><td>#${r.id}</td><td><small>${new Date(r.completed_at * 1000).toLocaleString()}</small></td><td><b class="${mode}">${num(r.points) + " / " + r.available}</b><small class="record-track-names" title="${esc(labels)}">${esc(labels)}</small></td><td><button class="btn small danger" data-remove-special="${mode}" data-round="${r.id}">Delete round</button></td></tr>`;
             })
             .join("") || '<tr><td colspan="4">No completed rounds</td></tr>'
         }</tbody></table></div></section>`;
       node.innerHTML =
-        `<div class="page-head"><h2 class="${mode}">${mode === "guesser" ? "Elo Guesser" : "Album Shelves"} Records</h2><small>Latest 30</small></div>` +
-        section(mode, mode === "guesser" ? d.guess_history : d.shelf_history);
+        `<div class="page-head"><h2 class="${mode}">${"Album Shelves"} Records</h2><small>Latest 30</small></div>` +
+        section(mode, d.shelf_history);
     } catch (error) {
       node.innerHTML = `<div class="empty error">${esc(error.message)}</div>`;
     }
@@ -1130,8 +862,6 @@ window.SpecialModes = (() => {
     if (!U) return;
     const b = e.target.closest("button");
     if (!b || b.disabled) return;
-    if (b.dataset.guessPick) await answerGuess(Number(b.dataset.guessPick));
-    if (b.hasAttribute("data-guess-next")) await loadGuess();
     if (b.hasAttribute("data-shelf-play")) {
       if (loopRequested) stopShelf();
       else playShelf(selectedSlot);
@@ -1290,7 +1020,7 @@ window.SpecialModes = (() => {
     if (
       document.hidden &&
       U &&
-      ["guesser", "shelves"].includes(document.body.dataset.page)
+      document.body.dataset.page === "shelves"
     ) {
       U.stopAudio();
       stopShelf();
@@ -1304,10 +1034,7 @@ window.SpecialModes = (() => {
   window.addEventListener("pageshow", (e) => {
     if (e.persisted && U) {
       reveal.closed = false;
-      guessBusy = false;
-      guessLoading = false;
       shelfBusy = false;
-      if (document.body.dataset.page === "guesser") loadGuess();
       if (document.body.dataset.page === "shelves") {
         if (shelf?.answered) {
           if (!shelf.revealComplete) {
@@ -1322,17 +1049,11 @@ window.SpecialModes = (() => {
   });
   return {
     bindUI: (ui) => (U = ui),
-    panels,
     homeSummary,
     homeBanners,
-    loadGuess,
     loadShelf,
     renderModeRanking,
     renderDevRecords,
-    cancelGuess: () => {
-      guessRequest++;
-      guessBusy = false;
-    },
     totals,
   };
 })();

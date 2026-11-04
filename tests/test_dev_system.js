@@ -45,7 +45,7 @@ async function entryAndShortcuts(){
  check(!h.requests.some(r=>r.url==='/api/collection'||r.url==='/api/dev/song-sources'),'Home does not download catalogue or source history');
  check(!h.d.querySelector('.dev-category'),'no category dropdown menus');
  check(h.d.querySelectorAll('.dev-home-status > section').length===3,'three aligned status summaries');
- check(h.d.querySelectorAll('.dev-home-areas [data-dev]').length===27,'Home reaches every task and section');
+ check(h.d.querySelectorAll('.dev-home-areas [data-dev]').length===26,'Home reaches every task and section');
  for(const kind of ['songs','artists','albums','tags']){h.w.testDev.setView('overview');await flush();h.click('.dev-library-link[data-dev="'+kind+'"]');await flush();check(h.w.location.pathname===h.w.DevWorkspace.href(kind),'library count opens canonical '+kind)}
  h.w.testDev.setView('overview');await flush();h.click('.dev-home-areas [data-dev="tag_workbench"]');await flush();check(h.w.location.pathname==='/dev/library/tag-workshop'&&!!h.d.querySelector('.tag-single'),'Home opens Tag Workshop');
  h.w.testDev.setView('overview');await flush();h.click('[data-dev="backups"]');await flush();check(!!h.d.querySelector('#system-backups'),'backup shortcut opens recovery');

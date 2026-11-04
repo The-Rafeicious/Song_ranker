@@ -1,5 +1,16 @@
 # V5.9 updates
 
+## V5.9.4 — Retire Elo Guesser and rebalance Overall
+
+- Remove the unused game and its navigation, Home cards, Global/profile summaries,
+  stats report, mode rankings, Query fields and dedicated developer controls.
+- Rebalance Overall around four equally based families: Voting, Trivia, Tournament
+  and Album Shelves. Voting retains one shared family across Elo/Non-blind/Blind.
+- Keep adaptive participation/depth weights and configurable caps: the default
+  full-pool family cap is now 35%, with eligible subsets scaling automatically.
+- Preserve archived Guesser rounds and historical challenge rows in database
+  exports, backups and the raw inspector. They contribute no active statistics.
+
 
 ## V5.9.3 — Mixed-mode Global Stats theme and aligned summaries
 

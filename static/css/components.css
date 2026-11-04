@@ -46,9 +46,6 @@
 :where(.mode-card, .shelf-card, .spotlight, .dashboard-surface).tournament {
   --surface-accent: var(--tournament);
 }
-:where(.special-panel, .mode-card, .shelf-card, .dashboard-surface).guesser {
-  --surface-accent: var(--guesser);
-}
 :where(
   .special-panel,
   .mode-card,

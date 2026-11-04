@@ -37,7 +37,6 @@ The app reports `5.5.10.4`; Vibe Map retains its internal mode version `1.1`.
 | 🔥 Standard Vote | Choose between two tracks; Non-blind shows identities, Blind reveals them afterwards. | Public Elo, separate visibility Elo, wins/losses and comparisons. Blind needs previews. |
 | 🧠 Trivia | Identify the song, artist and eligible album from a preview. | Field accuracy, timed points, challenge streaks and records. Needs preview audio. |
 | 🏆 Tournament | Play 8/16/32-track brackets across the library or an artist, album or tag. | Points, placements and first-round Elo; later rounds and bronze award bracket points. |
-| 🎯 Elo Guesser | Pick the track with the higher saved Elo. | Correct picks and progressively harder challenge streaks. Play voting/tournaments first to create different ratings. |
 | 🗂️ Album Shelves | Place ten tracks into two or three albums and arrange their relative order. | Album placement, order accuracy and points. Needs proper albums, valid track positions and enough eligible tracks. |
 | 📍 Vibe Map | Place each track on four continuous graphs. | Descriptive averages, radar, similarities, density maps and collection consistency. No performance score or Overall contribution. |
 
@@ -64,7 +63,7 @@ opens the eight-spoke radar and two similar tracks, then becomes **Next song**.
 The preview stays with the song throughout. Repeated passes update compact
 averages rather than adding a permanent row for every attempt.
 
-Mapped similarity gently influences voting, tournament, Guesser and Shelves
+Mapped similarity gently influences voting, tournament and Shelves
 draws, adapting to available coverage while retaining randomness and every
 eligible pairing. The Vibe selector strongly favours unmapped songs. Full
 [mode, API and statistics reference](docs/VIBE_MAP.md).
@@ -112,7 +111,7 @@ catalogue maintenance without editing stored game facts unintentionally.
 | --- | --- |
 | Library | Explorer plus Songs, Artists, Albums and Tags tables; edit/delete, track placement, source details, preview quality and Vibe shortcuts. |
 | Editing | Apple song/album import, reviewed source changes, Singles moves, bulk album/source work, tag/preview workbench and missing-information scan → review → apply. |
-| Records | Saved-vote review/correction and Elo overrides; Trivia totals; tournament view/delete/podium edits; Guesser/Shelves records; Vibe map/count edits, map clear, song delete and mode reset. |
+| Records | Saved-vote review/correction and Elo overrides; Trivia totals; tournament view/delete/podium edits; Shelves records; Vibe map/count edits, map clear, song delete and mode reset. |
 | System | Tasks & health, Overall diagnostics, selection health and analysis downloads, inventory, backups, reviewed restore, lossless export/rebuild, Git check/upload, reviewed keep-local choice and controlled Stop app. |
 
 Each song has at most **eight tags**, including imported genres. Add/Replace

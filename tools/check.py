@@ -26,7 +26,6 @@ OWNERS = {
     "songranker/modes/voting.py": "Standard/blind voting operations, history page and detailed Voting Stats.",
     "songranker/modes/tournament.py": "Bracket generation, tournament voting/results and detailed Tournament Stats.",
     "songranker/modes/trivia.py": "Timed field recognition, answer grading/corrections and detailed Trivia Stats.",
-    "songranker/modes/guesser.py": "Elo Guesser rounds, frozen-answer results and detailed Guesser Stats.",
     "songranker/modes/shelves.py": "Album Shelves eligibility, ordering/grading and detailed Shelves Stats.",
     "songranker/modes/vibe_map.py": "Vibe round state, saving, similarity, stats, profile/library queries and APIs.",
     "songranker/modes/preferences.py": "Preference offers, idempotent writes, corrections/replay and rating projections.",

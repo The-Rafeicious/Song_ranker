@@ -51,3 +51,11 @@ cleanup command for an installed copy of the app.
 - **Expired in v5.1.2:** `songranker/listening.py`, `static/js/listening.js`,
   listening panels and the `listening_observations` table. Backed-up schema-20
   migration replaces their storage lifecycle; no replacement tracker is needed.
+
+- **Retired in v5.9.4:** Elo Guesser gameplay, stats, profiles, rankings, Query
+  fields and developer mode controls. `/elo_guesser`, `/elo_guesser_stats`,
+  `/api/elo-guesser/round`, `/api/elo-guesser/answer` and
+  `/mode_rankings/guesser` intentionally return 404. `/game?mode=guesser`
+  opens ordinary Voting. Raw `elo_guess_rounds` and historical challenge rows
+  remain archival storage for lossless export/restore and database inspection;
+  they never affect active mode evidence or Overall. No migration deletes data.

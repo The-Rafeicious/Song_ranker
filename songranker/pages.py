@@ -141,7 +141,7 @@ def tag_page(tag_name):
 
 @app.route("/mode_rankings/<mode>")
 def special_rankings(mode):
-    if mode not in ("trivia", "tournament", "guesser", "shelves", "vibe"):
+    if mode not in ("trivia", "tournament", "shelves", "vibe"):
         return "Unknown mode", 404
     return render_template("app_page.html", page="mode_rankings_" + mode)
 

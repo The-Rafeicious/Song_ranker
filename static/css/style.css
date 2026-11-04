@@ -15,18 +15,11 @@
   --voting: #9cdb91;
   --standard: #f0a35b;
   --danger: #ff6675;
-  --guesser: #ed7863;
   --shelves: #af89bd;
   --shelves-deep: #592862;
   --overall: #f5ead8;
   --vibe: #ed6573;
-  --mode-spectrum: linear-gradient(105deg, var(--standard), var(--blind), var(--recognition), var(--tournament), var(--guesser), var(--shelves), var(--vibe));
-}
-/* Mode/entity palette and page-tone variables are defined here once. */
-:root:has(body[data-tone="guesser"]),
-body[data-tone="guesser"] {
-  --page-color: var(--guesser);
-  --page-rgb: 237, 120, 99;
+  --mode-spectrum: linear-gradient(105deg, var(--standard), var(--blind), var(--recognition), var(--tournament), var(--shelves), var(--vibe));
 }
 :root:has(body[data-tone="shelves"]),
 body[data-tone="shelves"] {
@@ -5548,10 +5541,6 @@ a.result-card:hover {
     flex-wrap: wrap;
   }
 }
-/* Shared special-mode surfaces. Shelves uses deep aubergine with readable mauve text. */
-.guesser {
-  color: var(--guesser);
-}
 .shelves {
   color: var(--shelves);
 }
@@ -5578,7 +5567,6 @@ a.result-card:hover {
 body[data-tone="shelves"] .btn.primary:hover {
   box-shadow: 0 8px 28px #71387f4a;
 }
-body[data-tone="guesser"] .pill.active,
 body[data-tone="shelves"] .pill.active {
   box-shadow: 0 0 16px rgba(var(--page-rgb), 0.1);
 }
@@ -5586,40 +5574,17 @@ body[data-tone="shelves"] .pill.active {
 .preview-track:hover {
   border-color: var(--shelves);
 }
-.stat.guesser {
-  --stat-color: var(--guesser);
-  border-color: #ed786366;
-  background: linear-gradient(140deg, #ed78631a, #1e1e1e 75%);
-}
 .stat.shelves {
   --stat-color: var(--shelves);
 }
-.stat.guesser .stat-value {
-  color: var(--guesser);
-}
 .stat.shelves .stat-value {
   color: var(--shelves);
-}
-.special-panel.guesser {
-  background: linear-gradient(135deg, #ed786316, #1e1e1e 75%);
-  border-color: #ed78634a;
-  box-shadow:
-    0 0 28px #ed78630b,
-    0 8px 24px #0005;
-}
-.mode-card.guesser {
-  border-color: #ed786380;
-  background: linear-gradient(135deg, #ed786318, #1e1e1e 75%);
-}
-.mode-card.guesser:hover {
-  box-shadow: 0 10px 32px #ed786322;
 }
 .nav-left .nav-performance {
   background: linear-gradient(
     90deg,
     var(--recognition),
     var(--tournament),
-    var(--guesser),
     var(--shelves)
   );
   background-clip: text;
@@ -5631,7 +5596,6 @@ body[data-tone="shelves"] .pill.active {
     90deg,
     var(--standard),
     var(--blind),
-    var(--guesser),
     var(--tournament),
     var(--shelves)
   );
@@ -5641,7 +5605,6 @@ body[data-tone="shelves"] .pill.active {
     90deg,
     var(--recognition),
     var(--tournament),
-    var(--guesser),
     var(--shelves)
   );
 }
@@ -6056,9 +6019,6 @@ body[data-tone="shelves"] .btn.primary:hover {
   background: #211627;
   border-color: #7f598e;
 }
-.special-panel.guesser .mini-stats b {
-  color: var(--guesser);
-}
 .special-panel.shelves .mini-stats b {
   color: var(--shelves);
 }
@@ -6108,10 +6068,6 @@ body[data-tone="shelves"] .btn.primary:hover {
   --shelf-accent: var(--tournament);
   --shelf-rgb: 255, 120, 166;
 }
-.shelf-section.guesser {
-  --shelf-accent: var(--guesser);
-  --shelf-rgb: 237, 120, 99;
-}
 .shelf-section.shelves {
   --shelf-accent: var(--shelves);
   --shelf-rgb: 113, 56, 127;
@@ -6147,9 +6103,6 @@ body[data-tone="shelves"] .btn.primary:hover {
   box-shadow:
     0 0 24px #71387f44,
     0 6px 15px #0006;
-}
-.home-records.guesser .shelf-rank {
-  color: var(--guesser);
 }
 .home-records.shelves .shelf-rank {
   color: var(--shelves);
@@ -7185,7 +7138,6 @@ body[data-page="shelves"] .shelf-next:not(:disabled):hover {
     var(--blind),
     var(--recognition),
     var(--tournament),
-    var(--guesser),
     var(--shelves)
   );
   opacity: 0.85;
@@ -7233,7 +7185,6 @@ body[data-page="shelves"] .shelf-next:not(:disabled):hover {
     var(--blind),
     var(--recognition),
     var(--tournament),
-    var(--guesser),
     var(--shelves)
   );
 }

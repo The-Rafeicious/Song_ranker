@@ -69,7 +69,7 @@ class VibeSimilarityTests(unittest.TestCase):
         rows=[song(i) for i in range(1,13)]
         plain=[{k:v for k,v in row.items() if k!='vibe_maps'} for row in rows]
         for seed in range(20):
-            for fn in (S.choose_match,S.choose_guess_pair):
+            for fn in (S.choose_match,):
                 self.assertEqual([s['id'] for s in fn(rows,random.Random(seed))],
                                  [s['id'] for s in fn(plain,random.Random(seed))])
             self.assertEqual([s['id'] for s in S.tournament_tracks(rows,8,random.Random(seed))],
@@ -88,7 +88,6 @@ class VibeSimilarityTests(unittest.TestCase):
         rows=[song(i,-1 if i%2 else 1,-1 if i%2 else 1) for i in range(1,13)]
         plain=[{k:v for k,v in row.items() if k!='vibe_maps'} for row in rows]
         for fn in (lambda p:S.choose_match(p,random.Random(1)),
-                   lambda p:S.choose_guess_pair(p,random.Random(1)),
                    lambda p:S.draw_entries(p,8,random.Random(1))):
             base=self.captured(fn,plain);adjusted=self.captured(fn,rows)
             self.assertEqual(base[0],adjusted[0])
@@ -129,7 +128,7 @@ class VibeSimilarityTests(unittest.TestCase):
 
     def test_selection_does_not_change_input_profiles(self):
         rows=[song(i,0,0) for i in range(12)];before=deepcopy(rows)
-        S.choose_match(rows,random.Random(1));S.choose_guess_pair(rows,random.Random(2))
+        S.choose_match(rows,random.Random(1))
         S.tournament_tracks(rows,8,random.Random(3))
         self.assertEqual(rows,before)
 

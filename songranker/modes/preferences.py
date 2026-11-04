@@ -19,7 +19,6 @@ EXPOSURE_MODES = (
     "standard",
     "blind",
     "trivia",
-    "guesser",
     "tournament",
     "shelves",
 )
@@ -696,7 +695,8 @@ def exposure_totals(conn):
         for r in conn.execute("SELECT id FROM songs")
     }
     for row in conn.execute("SELECT * FROM mode_exposures"):
-        totals[row["song_id"]][row["mode"]] = row["appearances"]
+        if row["mode"] in EXPOSURE_MODES:
+            totals[row["song_id"]][row["mode"]] = row["appearances"]
     return totals
 
 

@@ -14,7 +14,7 @@ Old `/dev/dashboard?view=...` bookmarks still work.
 | --- | --- |
 | Home | Site health, library counts, cached Git state, latest backup and attention counts; direct links to all tools. |
 | Library | Catalogue tables, Tag Workshop, Apple imports, bulk edits and missing metadata. |
-| Mode edits | Voting, Trivia/Elo, tournaments, Guesser, Shelves and Vibe data. |
+| Mode edits | Voting, Trivia/Elo, tournaments, Shelves and Vibe data. |
 | Tools & systems | Overall, selection, database inspection, backups/restore, Git, resets, duplicates, exports and guides. |
 | Guides | This operator guide or the technical reference, with a table of contents and plain-text download. |
 | Lock Dev | End the Dev session and return to the main site. |
@@ -73,7 +73,7 @@ reports partial success.
 
 Voting exposes saved effective results and corrections. Trivia & Elo provides song
 recognition maintenance, reviewed manual Elo correction and saved-vote review.
-Tournaments retain bracket/match/placement review. Guesser and Shelves retain saved
+Tournaments retain bracket/match/placement review. Shelves retains saved
 record editing. Vibe Map places its bounded song queue beside the editor. Four map selectors
 show one coordinate group at a time while retaining changes to every map. Save
 submits all map values together with sample counts and completed passes; clearing one map resets its compatible pass state. Saved rules and frozen

@@ -130,7 +130,6 @@ body.site-style-baseline #main .query-page .query-search-field input:focus,body.
 :is(.query-stat[data-stat-mode="blind"],.query-mode-panel[data-panel-mode="blind"]){--query-stat-colour:var(--blind)}
 :is(.query-stat[data-stat-mode="tournament"],.query-mode-panel[data-panel-mode="tournament"]){--query-stat-colour:var(--tournament)}
 :is(.query-stat[data-stat-mode="recognition"],.query-mode-panel[data-panel-mode="recognition"]){--query-stat-colour:var(--recognition)}
-:is(.query-stat[data-stat-mode="guesser"],.query-mode-panel[data-panel-mode="guesser"]){--query-stat-colour:var(--guesser)}
 :is(.query-stat[data-stat-mode="shelves"],.query-mode-panel[data-panel-mode="shelves"]){--query-stat-colour:var(--shelves)}
 :is(.query-stat[data-stat-mode="vibe"],.query-mode-panel[data-panel-mode="vibe"]){--query-stat-colour:var(--vibe)}
 :is(.query-stat[data-stat-mode="overall"],.query-mode-panel[data-panel-mode="overall"]){--query-stat-colour:var(--overall)}

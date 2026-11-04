@@ -10,7 +10,6 @@
       "album",
       "tag",
       "standard",
-      "guesser",
       "shelves",
       "tournament_play",
       "overall_rankings",
@@ -528,7 +527,6 @@
       tournament_stats: "tournament",
       tournament_local_stats: "tournament",
       tournament_bracket: "tournament",
-      guesser_stats: "guesser",
       shelves_stats: "shelves",
       dev: "mixed",
     }[page] ||
@@ -638,7 +636,7 @@
       entered = homeTournamentEntries(completed, DB.tournament_entries);
     const triviaSummary = `<section class="panel recognition-panel stats-glow glow-recognition" data-home-mode="recognition"><div class="section-head"><h2 class="recognition">Trivia Records</h2><a class="recognition" href="/trivia_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="recognition">${Number(DB.challenge_records?.trivia?.best_score || 0).toFixed(2)}</b><small>Challenge best score</small></div><div><b class="recognition">${Number(DB.challenge_records?.trivia?.best_streak || 0)} 🔥</b><small>Challenge best streak</small></div><div><b class="recognition">${songs.filter((s) => s.attempts > 0).length}</b><small>Tested tracks</small></div></div>${homeRateBar("recognition", "Fields correct", recognition.correct, recognition.available, "No tested fields yet", "fields")}</section>`;
     const tournamentSummary = `<section class="panel tournament-panel stats-glow glow-tournament" data-home-mode="tournament"><div class="section-head"><h2 class="tournament">Tournament Records</h2><a class="tournament" href="/tournament_stats">Stats ↗</a></div><div class="mini-stats joined-metrics"><div><b class="tournament">${completed.length}</b><small>Completed</small></div><div><b class="tournament">${entered ?? "—"}</b><small title="Entry slots in completed brackets; repeat appearances count each time">Tracks entered</small></div><div><b class="tournament">${Number(songs.reduce((n, s) => n + Number(s.podiums || 0), 0).toFixed(2))}</b><small>Podium credit</small></div></div>${homeBracketBar(completed)}</section>`;
-    main.innerHTML = `<section class="hero"><h1>Song Ranker</h1></section><section class="mode-section" id="play"><div class="section-head"><h2>Ways to Play</h2></div><div class="modes"><a class="mode-card voting" href="/game"><span class="mode-icon">🔥</span><h2>Standard Vote</h2></a><a class="mode-card recognition" href="/trivia"><span class="mode-icon">🧠</span><h2>Trivia</h2></a><a class="mode-card tournament" href="/tournament"><span class="mode-icon">🏆</span><h2>Tournament</h2></a><a class="mode-card guesser" href="/elo_guesser"><span class="mode-icon">🎯</span><h2>Elo Guesser</h2></a><a class="mode-card shelves" href="/album_shelves"><span class="mode-icon">🗂️</span><h2>Album Shelves</h2></a><a class="mode-card vibe" href="/vibe-map"><span class="mode-icon">📍</span><h2>Vibe Map</h2></a></div></section><div class="stats home-collection-totals" role="group" aria-label="Collection totals">${stat("Songs", songs.length)}${stat("Artists", artists.length, "artist")}${stat("Albums", albums.filter(properAlbum).length, "album")}</div><div class="spotlights home-record-stats" role="group" aria-label="Mode records">${triviaSummary}${tournamentSummary}${window.SpecialModes.homeSummary()}</div>${shelf("songs", "Top Tracks", songs, "/leaderboard")}${shelf("artists", "Top Artists", artists, "/artists")}${shelf("albums", "Top Albums", albums.filter(properAlbum), "/albums")}${homeRecords(recognized, champions)}${window.SpecialModes.homeBanners()}`;
+    main.innerHTML = `<section class="hero"><h1>Song Ranker</h1></section><section class="mode-section" id="play"><div class="section-head"><h2>Ways to Play</h2></div><div class="modes"><a class="mode-card voting" href="/game"><span class="mode-icon">🔥</span><h2>Standard Vote</h2></a><a class="mode-card recognition" href="/trivia"><span class="mode-icon">🧠</span><h2>Trivia</h2></a><a class="mode-card tournament" href="/tournament"><span class="mode-icon">🏆</span><h2>Tournament</h2></a><a class="mode-card shelves" href="/album_shelves"><span class="mode-icon">🗂️</span><h2>Album Shelves</h2></a><a class="mode-card vibe" href="/vibe-map"><span class="mode-icon">📍</span><h2>Vibe Map</h2></a></div></section><div class="stats home-collection-totals" role="group" aria-label="Collection totals">${stat("Songs", songs.length)}${stat("Artists", artists.length, "artist")}${stat("Albums", albums.filter(properAlbum).length, "album")}</div><div class="spotlights home-record-stats" role="group" aria-label="Mode records">${triviaSummary}${tournamentSummary}${window.SpecialModes.homeSummary()}</div>${shelf("songs", "Top Tracks", songs, "/leaderboard")}${shelf("artists", "Top Artists", artists, "/artists")}${shelf("albums", "Top Albums", albums.filter(properAlbum), "/albums")}${homeRecords(recognized, champions)}${window.SpecialModes.homeBanners()}`;
     attachShelves();
   }
   const shelfState = new Map();
@@ -1701,9 +1699,8 @@
         ]);
       return;
     }
-    if (["guesser_records", "shelves_records"].includes(devView)) {
+    if (devView === "shelves_records") {
       window.SpecialModes.renderDevRecords(
-        devView === "shelves_records" ? "shelves" : "guesser",
       );
       return;
     }
@@ -1924,13 +1921,12 @@
               matches: "votes_and_history",
               trivia: "trivia_rounds",
               tournaments: "tournaments",
-              guesser: "elo_guesses",
               shelves: "shelf_rounds",
             }[scope]
           ];
         openDialog(
           name,
-          `<div class="health-row"><span>${{ vibe: "Tracks with Vibe selections", matches: "Saved matches", trivia: "Saved trivia rounds", tournaments: "Saved tournaments", guesser: "Saved Elo guesses", shelves: "Saved shelf rounds" }[scope]}</span><strong>${count}</strong></div>` +
+          `<div class="health-row"><span>${{ vibe: "Tracks with Vibe selections", matches: "Saved matches", trivia: "Saved trivia rounds", tournaments: "Saved tournaments", shelves: "Saved shelf rounds" }[scope]}</span><strong>${count}</strong></div>` +
             field("confirmation", "Type " + phrase, ""),
           "Reset",
         );
@@ -3179,7 +3175,6 @@
       if (b.dataset.mode && !voting && !revealed && !matchLoading) {
         stopAudio();
         flow?.clear();
-        window.SpecialModes?.cancelGuess();
         gameMode = b.dataset.mode;
         blind = gameMode === "blind";
         history.replaceState(
@@ -3539,7 +3534,6 @@
   });
   const historyResets = {
     "Reset Vibe Map": ["vibe", "RESET VIBE"],
-    "Reset Elo Guesser history": ["guesser", "RESET GUESSER"],
     "Reset Album Shelves history": ["shelves", "RESET SHELVES"],
     "Reset match history": ["matches", "RESET MATCHES"],
     "Reset trivia history": ["trivia", "RESET TRIVIA"],
@@ -4019,7 +4013,6 @@
   });
   volumeApply(volume);
   attachPlayers();
-  if (page === "guesser") await window.SpecialModes.loadGuess();
   if (page === "shelves") await window.SpecialModes.loadShelf();
   if (page === "mode_rankings_vibe") window.VibeLibrary?.mountRankings();
   else if (page.startsWith("mode_rankings_"))

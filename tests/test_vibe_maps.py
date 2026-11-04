@@ -135,10 +135,10 @@ class VibeMapTests(unittest.TestCase):
 
     def test_unmapped_metadata_does_not_change_existing_match_selectors(self):
         import random
-        from songranker.modes.selection import choose_match, choose_guess_pair
+        from songranker.modes.selection import choose_match
         songs = [dict(id=i,elo_score=1100+i*25,matches_played=i) for i in range(1,11)]
         annotated = with_vibe_maps(self.conn,songs)
-        for selector in (choose_match,choose_guess_pair):
+        for selector in (choose_match,):
             for seed in range(20):
                 original = selector(songs,random.Random(seed))
                 projected = selector(annotated,random.Random(seed))

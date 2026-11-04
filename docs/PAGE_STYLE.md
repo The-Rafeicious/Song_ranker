@@ -51,7 +51,6 @@ inside a mode card retains the song colour.
 | Non-blind / Blind | `--standard` / `--blind` | `#f0a35b` / `#55d6c2` |
 | Trivia | `--recognition` | `#f2d34f` |
 | Tournament | `--tournament` | `#ff78a6` |
-| Elo Guesser | `--guesser` | `#ed7863` |
 | Album Shelves | `--shelves` / `--shelves-deep` | `#af89bd` / `#592862` |
 | Vibe Map | `--vibe` | `#ed6573` |
 | Overall | `--overall` | `#f5ead8` |
@@ -100,7 +99,7 @@ cards and galleries are not joined metric rows.
 
 ## Page composition
 
-Home uses six clear mode choices, joined catalogue totals, Overall leaders,
+Home uses five clear mode choices, joined catalogue totals, Overall leaders,
 compact Vibe summaries and bounded record shelves. Record shelves have the shared
 centred heading and labelled scroll actions. Keep counts/data distinct from
 navigation and avoid repeating the same metric in adjacent panels.
@@ -267,7 +266,7 @@ Shelves profile panels require at least one currently eligible track. An exclude
 
 Bracket viewports support mouse/pen drag panning with a grab cursor and a movement threshold that preserves track clicks; touch retains native scrolling. Replay sound defaults on, uses the four semi-finalists and the shared preview crossfade. Natural completion fades before the podium; cancellation remains immediate.
 
-Paired Standard Vote, Tournament and Elo Guesser covers use one playback halo in gameplay.css: a quiet stationary rim at rest, a brighter orbit and small outward wave during confirmed playback. Buffering/paused/error states return to the quiet rim. The halo follows the mode accent, stays outside artwork without blocking input, and becomes stationary in reduced motion. It does not apply to podiums, profiles or Shelves.
+Paired Standard Vote and Tournament covers use one playback halo in gameplay.css: a quiet stationary rim at rest, a brighter orbit and small outward wave during confirmed playback. Buffering/paused/error states return to the quiet rim. The halo follows the mode accent, stays outside artwork without blocking input, and becomes stationary in reduced motion. It does not apply to podiums, profiles or Shelves.
 
 Preview audio uses the native recording level and the shared master volume. There is no automatic loudness balancing or compression. Tournament replay completes each quarter before its semi-final, with the quarter's semi-finalist playing continuously. Semi-finals, third place and the final use the match winner's preview. Whole previews loop naturally, with shared ready-only crossfades between different songs.
 
