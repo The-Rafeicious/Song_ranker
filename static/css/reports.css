@@ -1135,6 +1135,9 @@
   background: color-mix(in srgb, var(--section-color) 4%, #1b1b1b);
   padding: 16px;
 }
+.global-stats-page .vote-column.standard {
+  --section-color: var(--standard);
+}
 .global-stats-page .vote-column.blind {
   --section-color: var(--blind);
 }
