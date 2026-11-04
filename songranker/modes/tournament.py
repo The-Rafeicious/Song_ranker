@@ -1,3 +1,4 @@
+from songranker.modes.tournament_scoring import round_points, scored_match, scored_matches
 from flask import render_template, request, jsonify, abort, redirect, url_for
 from songranker.modes.selection import tournament_tracks
 from songranker.services import app, get_db_connection
@@ -150,15 +151,14 @@ def _tournament_matches(conn, tournament_id):
         ORDER BY round_number, match_number""",
         (tournament_id,),
     ).fetchall()
-    return [dict(row) for row in rows]
+    bracket=dict(conn.execute("SELECT size FROM tournaments WHERE id=?",(tournament_id,)).fetchone() or {})
+    return [scored_match(dict(row),bracket) for row in rows]
 
 
 def _round_points(size, round_number):
-    # Normalize the maximum points for a champion to 7 across bracket sizes.
-    """Scale round points so a champion's maximum totals seven across supported
-    bracket sizes.
-    """
-    return round(7 * (2 ** (round_number - 1)) / (size - 1), 4)
+    """Current-policy knockout win points; preference Elo is owned separately."""
+    current=round_points(size,round_number)
+    return current if current is not None else round(7*(2**(round_number-1))/(size-1),4)
 
 
 @app.route("/api/tournament_vote", methods=["POST"])
@@ -216,7 +216,7 @@ def api_tournament_vote():
 
             return jsonify(
                 success=True,
-                points_awarded=match["points_awarded"],
+                points_awarded=scored_match(dict(match),dict(tournament))["points_awarded"],
                 preference_event_id=event["id"] if event else None,
                 elo_result=receipt(event) if event else None,
                 matches=_tournament_matches(conn, tournament_id),
@@ -681,6 +681,7 @@ def build_tournament_stats(conn, now=None, selected=None, archive_page=1, compet
         for r in conn.execute("SELECT * FROM tournament_matches")
         if r["tournament_id"] in brackets
     ]
+    matches=scored_matches(matches,brackets)
     entries_by, matches_by, appearances = (
         defaultdict(list),
         defaultdict(list),
@@ -1252,7 +1253,7 @@ def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
     if scope_id is not None and scope_id not in (artists if scope=='artist' else albums) and not any(t['scope_type']==scope and t['scope_id']==scope_id for t in brackets):abort(404)
     brackets=[t for t in brackets if (scope=='all' or t['scope_type']==scope) and (scope_id is None or t['scope_id']==scope_id)]
     by_id={t['id']:t for t in brackets}
-    matches=[dict(r) for r in conn.execute('SELECT * FROM tournament_matches') if r['tournament_id'] in by_id]
+    matches=scored_matches([dict(r) for r in conn.execute('SELECT * FROM tournament_matches') if r['tournament_id'] in by_id],by_id)
     entries=[dict(r) for r in conn.execute('SELECT * FROM tournament_entries') if r['tournament_id'] in by_id]
     finished={t['id'] for t in brackets if t['status']=='completed'}
     decided=[m for m in matches if m['tournament_id'] in finished and recorded_result(m)]
@@ -1334,7 +1335,7 @@ def profile_tournament_details(conn, song_ids):
         finishes = [('champion_id','1st'),('runner_up_id','2nd'),('third_place_id','3rd'),('fourth_place_id','4th')]
         own = participants[t['id']] | ids.intersection(t[key] for key,_ in finishes)
         for sid in sorted(own):
-            played = [m for m in matches[t['id']] if sid in (m['winner_id'],m['loser_id'])]
+            played = [scored_match(m,t) for m in matches[t['id']] if sid in (m['winner_id'],m['loser_id'])]
             losses = [m for m in played if m['loser_id']==sid and m['match_type']=='bracket']
             finish = next((name for key,name in finishes if t[key]==sid),None)
             exit_match = min(losses,key=lambda m:m['round_number']) if losses else None

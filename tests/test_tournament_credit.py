@@ -19,7 +19,7 @@ class TournamentCreditTests(unittest.TestCase):
                 self.assertAlmostEqual(sum(weights[1,t['id']] for t in data['tournaments'] if t['scope_type']==scope),0)
             stats=song_performance(data)[1];expected=2
             self.assertAlmostEqual(stats['championships'],expected)
-            self.assertAlmostEqual(stats['tournament_points'],7*expected)
+            self.assertAlmostEqual(stats['tournament_points'],3*expected)
             self.assertAlmostEqual(stats['tournament_wins'],expected)
             self.assertAlmostEqual(stats['tournament_appearances'],expected)
             self.assertEqual(song_performance(data,competitive=False)[1]['championships'],2+2*repeats)

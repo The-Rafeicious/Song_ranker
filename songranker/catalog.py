@@ -5,6 +5,7 @@ from songranker.services import app, get_db_connection
 from flask import jsonify
 from songranker.modes import challenges
 from math import ceil
+from songranker.modes.tournament_scoring import scored_match, scored_matches
 
 
 def proper_album(album):
@@ -109,7 +110,7 @@ def song_performance(data, competitive=True):
             continue
         result[winner]["tournament_wins"] += credit(winner,t["id"])
         result[loser]["tournament_losses"] += credit(loser,t["id"])
-        result[winner]["tournament_points"] += float(match.get("points_awarded") or 0)*credit(winner,t["id"])
+        result[winner]["tournament_points"] += float(scored_match(match,t).get("points_awarded") or 0)*credit(winner,t["id"])
         if t.get("status") == "completed":
             size = int(t.get("size") or 0)
             if size >= 2 and size & (size - 1) == 0:
@@ -244,6 +245,7 @@ def collection(include_overall_sources=False, include_query_sources=False):
             ("tournament_matches", "tournament_matches"),
         ]:
             data[key] = [dict(r) for r in conn.execute(f"SELECT * FROM {table}")]
+        data["tournament_matches"] = scored_matches(data["tournament_matches"],data["tournaments"])
         from songranker.vibe_maps import map_definitions, with_vibe_maps
 
         data["vibe_map_definitions"] = map_definitions(conn)

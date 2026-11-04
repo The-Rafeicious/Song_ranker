@@ -40,28 +40,28 @@ Shared catalogue projections, cross-mode results and Elo history queries.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [proper_album](../songranker/catalog.py#L10) | `album` | Distinguish named full releases from unknown-album and Single placeholders. |
-| [versus_metadata](../songranker/catalog.py#L16) | `album, linked_artists` | Shared display links for paired song rows; preserve whole artist names. |
-| [tournament_weights](../songranker/catalog.py#L44) | `data` | Per-song competition credit: library and tags 1, artist/album zero. Missing legacy scope is global; unknown scopes receive no credit. |
-| [song_performance](../songranker/catalog.py#L66) | `data, competitive=True` | Project scope-weighted competition achievements, or full raw achievements when competitive=False. Final placements require completion. |
-| [aggregate_performance](../songranker/catalog.py#L135) | `songs` | Pool recognition attempts and total distinct linked songs' achievements. |
-| [voting_records](../songranker/catalog.py#L154) | `conn` | Combined public preference results, retaining origin and mode breakdowns. |
-| [summarize_votes](../songranker/catalog.py#L191) | `records` | Summarise combined preference records by standard/blind mode and ordinary/tournament origin. |
-| [summarize_votes.project](../songranker/catalog.py#L198) | `rows` | Aggregate wins, losses, match counts and win rates for one subset of preference records. |
-| [collection](../songranker/catalog.py#L223) | `include_overall_sources=False, include_query_sources=False` | Collection; reads competition_state, global_stats, song_artists, song_details, song_genres, songs, sqlite_master, trivia_rounds. |
-| [ranked](../songranker/catalog.py#L343) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
-| [special_records](../songranker/catalog.py#L425) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, elo_guess_rounds, songs. |
-| [display_song](../songranker/catalog.py#L540) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
-| [special_stats](../songranker/catalog.py#L564) | `` | Special stats; GET /api/special-modes/stats. |
-| [source_sql](../songranker/catalog.py#L605) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
-| [filters](../songranker/catalog.py#L622) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
-| [summary](../songranker/catalog.py#L629) | `conn` | Count effective preference matches by mode and origin for the history summary. |
-| [page](../songranker/catalog.py#L647) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
-| [tournament_appearances](../songranker/catalog.py#L683) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
-| [profile_selection](../songranker/catalog.py#L705) | `song_ids` | Bind a distinct cohort as one JSON parameter, avoiding SQL variable limits. |
-| [profile_details](../songranker/catalog.py#L712) | `conn, song_ids, kind, entity_id` | Assemble bounded display identities from mode-owned, full-cohort aggregates. |
-| [song_stats](../songranker/catalog.py#L735) | `song_id` | Build mode detail for one existing song in a read-only snapshot. |
-| [collection_stats](../songranker/catalog.py#L748) | `kind, entity_id` | Read all current artist/album tracks once; missing and empty differ. |
+| [proper_album](../songranker/catalog.py#L11) | `album` | Distinguish named full releases from unknown-album and Single placeholders. |
+| [versus_metadata](../songranker/catalog.py#L17) | `album, linked_artists` | Shared display links for paired song rows; preserve whole artist names. |
+| [tournament_weights](../songranker/catalog.py#L45) | `data` | Per-song competition credit: library and tags 1, artist/album zero. Missing legacy scope is global; unknown scopes receive no credit. |
+| [song_performance](../songranker/catalog.py#L67) | `data, competitive=True` | Project scope-weighted competition achievements, or full raw achievements when competitive=False. Final placements require completion. |
+| [aggregate_performance](../songranker/catalog.py#L136) | `songs` | Pool recognition attempts and total distinct linked songs' achievements. |
+| [voting_records](../songranker/catalog.py#L155) | `conn` | Combined public preference results, retaining origin and mode breakdowns. |
+| [summarize_votes](../songranker/catalog.py#L192) | `records` | Summarise combined preference records by standard/blind mode and ordinary/tournament origin. |
+| [summarize_votes.project](../songranker/catalog.py#L199) | `rows` | Aggregate wins, losses, match counts and win rates for one subset of preference records. |
+| [collection](../songranker/catalog.py#L224) | `include_overall_sources=False, include_query_sources=False` | Collection; reads competition_state, global_stats, song_artists, song_details, song_genres, songs, sqlite_master, trivia_rounds. |
+| [ranked](../songranker/catalog.py#L345) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
+| [special_records](../songranker/catalog.py#L427) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, elo_guess_rounds, songs. |
+| [display_song](../songranker/catalog.py#L542) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
+| [special_stats](../songranker/catalog.py#L566) | `` | Special stats; GET /api/special-modes/stats. |
+| [source_sql](../songranker/catalog.py#L607) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
+| [filters](../songranker/catalog.py#L624) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
+| [summary](../songranker/catalog.py#L631) | `conn` | Count effective preference matches by mode and origin for the history summary. |
+| [page](../songranker/catalog.py#L649) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
+| [tournament_appearances](../songranker/catalog.py#L685) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
+| [profile_selection](../songranker/catalog.py#L707) | `song_ids` | Bind a distinct cohort as one JSON parameter, avoiding SQL variable limits. |
+| [profile_details](../songranker/catalog.py#L714) | `conn, song_ids, kind, entity_id` | Assemble bounded display identities from mode-owned, full-cohort aggregates. |
+| [song_stats](../songranker/catalog.py#L737) | `song_id` | Build mode detail for one existing song in a read-only snapshot. |
+| [collection_stats](../songranker/catalog.py#L750) | `kind, entity_id` | Read all current artist/album tracks once; missing and empty differ. |
 
 ## songranker/developer/catalog_sources.py
 
@@ -549,11 +549,11 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [tournament](../songranker/modes/tournament.py#L13) | `` | Use the shared application shell; catalogue scopes load with the collection. |
-| [api_generate_bracket](../songranker/modes/tournament.py#L21) | `` | Serve generate bracket; GET /api/generate_bracket. |
-| [_tournament_seed_order](../songranker/modes/tournament.py#L131) | `size` | Return zero-based track indexes in the same bracket seeding order as tournament.html. |
-| [_tournament_matches](../songranker/modes/tournament.py#L144) | `conn, tournament_id` | Read one bracket's saved matches in round and match order. |
-| [_round_points](../songranker/modes/tournament.py#L156) | `size, round_number` | Scale round points so a champion's maximum totals seven across supported bracket sizes. |
+| [tournament](../songranker/modes/tournament.py#L14) | `` | Use the shared application shell; catalogue scopes load with the collection. |
+| [api_generate_bracket](../songranker/modes/tournament.py#L22) | `` | Serve generate bracket; GET /api/generate_bracket. |
+| [_tournament_seed_order](../songranker/modes/tournament.py#L132) | `size` | Return zero-based track indexes in the same bracket seeding order as tournament.html. |
+| [_tournament_matches](../songranker/modes/tournament.py#L145) | `conn, tournament_id` | Read one bracket's saved matches in round and match order. |
+| [_round_points](../songranker/modes/tournament.py#L158) | `size, round_number` | Current-policy knockout win points; preference Elo is owned separately. |
 | [api_tournament_vote](../songranker/modes/tournament.py#L165) | `` | Serve tournament vote; POST /api/tournament_vote. |
 | [api_tournaments_list](../songranker/modes/tournament.py#L350) | `` | Serve tournaments list; GET /api/tournaments. |
 | [api_tournament_detail](../songranker/modes/tournament.py#L365) | `tournament_id` | Serve tournament detail; GET /api/tournaments/<int:tournament_id>. |
@@ -567,14 +567,27 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | [recorded_result](../songranker/modes/tournament.py#L611) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
 | [podium_points](../songranker/modes/tournament.py#L627) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
 | [build_tournament_stats](../songranker/modes/tournament.py#L645) | `conn, now=None, selected=None, archive_page=1, competition_only=False` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
-| [build_tournament_stats.identity](../songranker/modes/tournament.py#L757) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
-| [build_tournament_stats.scope](../songranker/modes/tournament.py#L769) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
-| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L927) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
-| [build_tournament_stats.category](../songranker/modes/tournament.py#L1001) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
-| [local_tournament_stats_page](../songranker/modes/tournament.py#L1199) | `` | Compare artist/album-only brackets without contributing to competition. |
-| [build_local_tournament_stats](../songranker/modes/tournament.py#L1236) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
-| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1276) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
-| [profile_tournament_details](../songranker/modes/tournament.py#L1317) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
+| [build_tournament_stats.identity](../songranker/modes/tournament.py#L758) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
+| [build_tournament_stats.scope](../songranker/modes/tournament.py#L770) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
+| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L928) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
+| [build_tournament_stats.category](../songranker/modes/tournament.py#L1002) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
+| [local_tournament_stats_page](../songranker/modes/tournament.py#L1200) | `` | Compare artist/album-only brackets without contributing to competition. |
+| [build_local_tournament_stats](../songranker/modes/tournament.py#L1237) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
+| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1277) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
+| [profile_tournament_details](../songranker/modes/tournament.py#L1318) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
+
+## songranker/modes/tournament_scoring.py
+
+Pure depth-based tournament points, stage advancement and size-weighted top-four achievement policy.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [rounds](../songranker/modes/tournament_scoring.py#L9) | `size` | Return knockout depth for supported public bracket sizes, or no policy. |
+| [round_points](../songranker/modes/tournament_scoring.py#L14) | `size, stage, kind='bracket'` | Award 1,2,... points by round; bronze earns half a semi-final win. |
+| [scored_match](../songranker/modes/tournament_scoring.py#L26) | `match, bracket` | Project historical and new decided matches through one points policy. |
+| [scored_matches](../songranker/modes/tournament_scoring.py#L44) | `matches, brackets` | Return new display records; accept a bracket mapping or list. |
+| [entry_results](../songranker/modes/tournament_scoring.py#L50) | `data` | One outcome per song/completed bracket, with no consolation-loss penalty. |
+| [entry_results.ensure](../songranker/modes/tournament_scoring.py#L62) | `sid, tid` | Ensure. |
 
 ## songranker/modes/trivia.py
 
@@ -721,27 +734,27 @@ Derived, calibrated Overall scores and their rankings/details APIs.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [number](../songranker/overall.py#L43) | `value, default=0` | Coerce a finite numeric value, returning the requested default for invalid input. |
-| [feature](../songranker/overall.py#L52) | `value, n, applicable=True` | Represent one Overall metric with its measured value, evidence count and eligibility flag. |
-| [ratio](../songranker/overall.py#L59) | `right, total, evidence=None, applicable=True` | Build a bounded success-rate feature with explicit evidence and eligibility. |
-| [shelf_eligible_ids](../songranker/overall.py#L65) | `data` | Match the game's per-track pool: real album, unique slot, >=2 tracks. |
-| [features](../songranker/overall.py#L80) | `data` | Derive per-song Overall metric values and mode appearances from saved catalogue/result facts. |
-| [quantile](../songranker/overall.py#L143) | `values, fraction` | Interpolate a population quantile, returning zero for an empty distribution. |
-| [exposure_reference](../songranker/overall.py#L151) | `values` | Average = 50% evidence; robust high (90th percentile) = 100%. |
-| [relative_evidence](../songranker/overall.py#L160) | `n, reference` | Scale a song's appearances against the population average and high-exposure reference. |
-| [population](../songranker/overall.py#L170) | `facts` | Build metric calibration statistics from eligible songs with measured evidence. |
-| [topology](../songranker/overall.py#L188) | `data` | Hash catalogue eligibility and membership so Overall calibration detects structural changes. |
-| [capped_shares](../songranker/overall.py#L197) | `strengths, cap` | Proportional shares with a family cap; release excess to other families. |
-| [calibrate](../songranker/overall.py#L210) | `facts, data, force=False` | Build and cache current Overall metric/mode calibration from result evidence and catalogue eligibility. |
-| [metric_score](../songranker/overall.py#L263) | `value, calibration` | Normalise an observed metric against its population and shrink it toward neutral by evidence. |
-| [song_score](../songranker/overall.py#L278) | `fact, model, details=False` | Combine eligible mode contributions into a song's Overall score and evidence diagnostics. |
-| [entity_score](../songranker/overall.py#L309) | `ids, scores, details=False` | Aggregate member-song scores into an evidence-adjusted collection score with a neutral prior. |
-| [apply_display_scores](../songranker/overall.py#L346) | `rows` | Preserve raw distances/endpoints; category standing never rescales a score. |
-| [evaluate](../songranker/overall.py#L363) | `data, force=False, details=False` | Compute and rank Overall songs, artists, albums and tags with calibration and summary diagnostics. |
-| [overall_rankings](../songranker/overall.py#L405) | `` | Overall rankings; GET /overall_rankings. |
-| [overall_api](../songranker/overall.py#L408) | `` | Overall api; GET /api/overall. |
-| [overall_details](../songranker/overall.py#L412) | `` | Overall details; GET /api/overall/details. |
-| [recalibrate_overall](../songranker/overall.py#L424) | `` | Recalibrate overall; POST /api/dev/overall/recalibrate. |
+| [number](../songranker/overall.py#L44) | `value, default=0` | Coerce a finite numeric value, returning the requested default for invalid input. |
+| [feature](../songranker/overall.py#L53) | `value, n, applicable=True` | Represent one Overall metric with its measured value, evidence count and eligibility flag. |
+| [ratio](../songranker/overall.py#L60) | `right, total, evidence=None, applicable=True` | Build a bounded success-rate feature with explicit evidence and eligibility. |
+| [shelf_eligible_ids](../songranker/overall.py#L66) | `data` | Match the game's per-track pool: real album, unique slot, >=2 tracks. |
+| [features](../songranker/overall.py#L81) | `data` | Derive per-song Overall metric values and mode appearances from saved catalogue/result facts. |
+| [quantile](../songranker/overall.py#L133) | `values, fraction` | Interpolate a population quantile, returning zero for an empty distribution. |
+| [exposure_reference](../songranker/overall.py#L141) | `values` | Average = 50% evidence; robust high (90th percentile) = 100%. |
+| [relative_evidence](../songranker/overall.py#L150) | `n, reference` | Scale a song's appearances against the population average and high-exposure reference. |
+| [population](../songranker/overall.py#L160) | `facts` | Build metric calibration statistics from eligible songs with measured evidence. |
+| [topology](../songranker/overall.py#L178) | `data` | Hash catalogue eligibility and membership so Overall calibration detects structural changes. |
+| [capped_shares](../songranker/overall.py#L187) | `strengths, cap` | Proportional shares with a family cap; release excess to other families. |
+| [calibrate](../songranker/overall.py#L200) | `facts, data, force=False` | Build and cache current Overall metric/mode calibration from result evidence and catalogue eligibility. |
+| [metric_score](../songranker/overall.py#L253) | `value, calibration` | Normalise an observed metric against its population and shrink it toward neutral by evidence. |
+| [song_score](../songranker/overall.py#L268) | `fact, model, details=False` | Combine eligible mode contributions into a song's Overall score and evidence diagnostics. |
+| [entity_score](../songranker/overall.py#L299) | `ids, scores, details=False` | Aggregate member-song scores into an evidence-adjusted collection score with a neutral prior. |
+| [apply_display_scores](../songranker/overall.py#L336) | `rows` | Preserve raw distances/endpoints; category standing never rescales a score. |
+| [evaluate](../songranker/overall.py#L353) | `data, force=False, details=False` | Compute and rank Overall songs, artists, albums and tags with calibration and summary diagnostics. |
+| [overall_rankings](../songranker/overall.py#L395) | `` | Overall rankings; GET /overall_rankings. |
+| [overall_api](../songranker/overall.py#L398) | `` | Overall api; GET /api/overall. |
+| [overall_details](../songranker/overall.py#L402) | `` | Overall details; GET /api/overall/details. |
+| [recalibrate_overall](../songranker/overall.py#L414) | `` | Recalibrate overall; POST /api/dev/overall/recalibrate. |
 
 ## songranker/pages.py
 
@@ -775,16 +788,16 @@ Read-only cross-mode Global Stats from one SQLite snapshot.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [timestamp](../songranker/reports/global_stats_data.py#L11) | `value` | Convert saved numeric or ISO times to UTC epoch seconds, returning zero when unavailable. |
-| [percent](../songranker/reports/global_stats_data.py#L23) | `correct, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [build_global_stats](../songranker/reports/global_stats_data.py#L27) | `conn` | Build global stats; reads album_shelf_items, album_shelf_rounds, albums, artists, elo_guess_rounds, genres, global_stats, song_artists. |
-| [build_global_stats.record](../songranker/reports/global_stats_data.py#L72) | `label, row, kind, key, unit=''` | Build a labelled Global Stats record with formatted value, identity and optional song link. |
-| [build_global_stats.misses](../songranker/reports/global_stats_data.py#L104) | `counter, attempts, rows` | Choose the three largest nonzero recognition miss totals with their attempt counts. |
-| [build_global_stats.saved_song](../songranker/reports/global_stats_data.py#L124) | `sid` | Resolve an activity song identity with a safe placeholder for removed tracks. |
-| [build_global_stats.special_leader](../songranker/reports/global_stats_data.py#L138) | `key` | Choose the positive special-mode metric leader, using Elo to break ties. |
-| [build_global_stats.event](../songranker/reports/global_stats_data.py#L158) | `kind, id, when, title, details, href, related, metrics=None, artwork=None, scope=None` | Append a uniform dated activity entry with identities, metrics, scope and artwork. |
-| [build_global_stats.metric](../songranker/reports/global_stats_data.py#L168) | `value, label, state=''` | Represent one activity metric with its display label and semantic state. |
-| [build_global_stats.vote_participant](../songranker/reports/global_stats_data.py#L171) | `h, role` | Build a saved vote participant with winner/loser role and known Elo change. |
+| [timestamp](../songranker/reports/global_stats_data.py#L12) | `value` | Convert saved numeric or ISO times to UTC epoch seconds, returning zero when unavailable. |
+| [percent](../songranker/reports/global_stats_data.py#L24) | `correct, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [build_global_stats](../songranker/reports/global_stats_data.py#L28) | `conn` | Build global stats; reads album_shelf_items, album_shelf_rounds, albums, artists, elo_guess_rounds, genres, global_stats, song_artists. |
+| [build_global_stats.record](../songranker/reports/global_stats_data.py#L73) | `label, row, kind, key, unit=''` | Build a labelled Global Stats record with formatted value, identity and optional song link. |
+| [build_global_stats.misses](../songranker/reports/global_stats_data.py#L105) | `counter, attempts, rows` | Choose the three largest nonzero recognition miss totals with their attempt counts. |
+| [build_global_stats.saved_song](../songranker/reports/global_stats_data.py#L126) | `sid` | Resolve an activity song identity with a safe placeholder for removed tracks. |
+| [build_global_stats.special_leader](../songranker/reports/global_stats_data.py#L140) | `key` | Choose the positive special-mode metric leader, using Elo to break ties. |
+| [build_global_stats.event](../songranker/reports/global_stats_data.py#L160) | `kind, id, when, title, details, href, related, metrics=None, artwork=None, scope=None` | Append a uniform dated activity entry with identities, metrics, scope and artwork. |
+| [build_global_stats.metric](../songranker/reports/global_stats_data.py#L170) | `value, label, state=''` | Represent one activity metric with its display label and semantic state. |
+| [build_global_stats.vote_participant](../songranker/reports/global_stats_data.py#L173) | `h, role` | Build a saved vote participant with winner/loser role and known Elo change. |
 
 ## songranker/reports/health.py
 
@@ -806,11 +819,11 @@ Read-only opponent graph, bounded breadth exploration and deduplicated match his
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [network_songs](../songranker/reports/match_network.py#L6) | `conn` | Read current public identities once; no preview/private or pending state. |
-| [network_records](../songranker/reports/match_network.py#L28) | `conn, songs, mode='all', source='all', include_local=False` | Deduplicate public first-round projections; show points-only rounds honestly. |
-| [search_network_songs](../songranker/reports/match_network.py#L72) | `conn, query` | Search the full current catalogue, including disconnected or capped-out songs. |
-| [search_network_songs.normal](../songranker/reports/match_network.py#L75) | `value` | Ignore accents/case in public title and artist lookup. |
-| [build_match_network](../songranker/reports/match_network.py#L85) | `conn, song_id=None, depth=4, branches=4, mode='all', source='all', include_local=False, through=None, pair=None, page=1` | Aggregate first, then bound drawing; pair histories retain all filtered results. |
+| [network_songs](../songranker/reports/match_network.py#L7) | `conn` | Read current public identities once; no preview/private or pending state. |
+| [network_records](../songranker/reports/match_network.py#L29) | `conn, songs, mode='all', source='all', include_local=False` | Deduplicate public first-round projections; show points-only rounds honestly. |
+| [search_network_songs](../songranker/reports/match_network.py#L73) | `conn, query` | Search the full current catalogue, including disconnected or capped-out songs. |
+| [search_network_songs.normal](../songranker/reports/match_network.py#L76) | `value` | Ignore accents/case in public title and artist lookup. |
+| [build_match_network](../songranker/reports/match_network.py#L86) | `conn, song_id=None, depth=4, branches=4, mode='all', source='all', include_local=False, through=None, pair=None, page=1` | Aggregate first, then bound drawing; pair histories retain all filtered results. |
 
 ## songranker/reports/query.py
 
@@ -1794,6 +1807,22 @@ Tournament scope policy and backed-up removal of historical selective Elo.
 | [TournamentPolicyTests.test_local_comparisons_filter_finished_results_and_keep_raw_counts](../tests/test_tournament_policy.py#L105) | `self` | Verify local comparisons filter finished results and keep raw counts. |
 | [TournamentPolicyTests.test_unfinished_blind_comparisons_hide_identities](../tests/test_tournament_policy.py#L144) | `self` | Verify unfinished blind comparisons hide identities. |
 
+## tests/test_tournament_scoring.py
+
+Bracket depth rewards must not turn a bronze-playoff loss into an early-exit advantage.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [bracket_data](../tests/test_tournament_scoring.py#L9) | `size=32, scope='global'` | Bracket data. |
+| [TournamentScoringTests.test_size_and_finish_points_hierarchy](../tests/test_tournament_scoring.py#L26) | `self` | Verify size and finish points hierarchy. |
+| [TournamentScoringTests.test_fourth_beats_quarter_exit_in_all_overall_components_and_score](../tests/test_tournament_scoring.py#L35) | `self` | Verify fourth beats quarter exit in all overall components and score. |
+| [TournamentScoringTests.test_bronze_loss_never_deducts_progress_or_points](../tests/test_tournament_scoring.py#L45) | `self` | Verify bronze loss never deducts progress or points. |
+| [TournamentScoringTests.test_titles_and_fourth_place_gain_significance_in_larger_brackets](../tests/test_tournament_scoring.py#L53) | `self` | Verify titles and fourth place gain significance in larger brackets. |
+| [TournamentScoringTests.test_local_and_pending_brackets_do_not_affect_overall](../tests/test_tournament_scoring.py#L61) | `self` | Verify local and pending brackets do not affect overall. |
+| [TournamentScoringTests.test_missing_finish_metadata_is_recovered_from_saved_final_and_bronze](../tests/test_tournament_scoring.py#L68) | `self` | Verify missing finish metadata is recovered from saved final and bronze. |
+| [TournamentScoringTests.test_bad_and_unsupported_archives_keep_saved_points](../tests/test_tournament_scoring.py#L75) | `self` | Verify bad and unsupported archives keep saved points. |
+| [TournamentPointsAPITests.test_first_round_elo_and_archival_facts_are_preserved](../tests/test_tournament_scoring.py#L90) | `self` | Verify first round elo and archival facts are preserved. |
+
 ## tests/test_vibe_entities.py
 
 Regression fixtures and assertions for vibe entities.
@@ -2049,17 +2078,17 @@ Source/asset checks, generated function ownership and unified test commands.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [sources](../tools/check.py#L93) | `` | Enumerate maintained Python files, excluding generated caches and dependencies. |
-| [definitions](../tools/check.py#L107) | `tree, parents=()` | Yield every function/method, including nested closures, with a qualified name. |
-| [routes](../tools/check.py#L117) | `node` | Read literal Flask decorators without importing route modules. |
-| [purpose](../tools/check.py#L140) | `name, node` | Describe a definition from its contract, route, validation name and SQL access. |
-| [markdown](../tools/check.py#L221) | `value` | Escape content that is embedded in a Markdown table cell. |
-| [function_index](../tools/check.py#L226) | `` | Generate a deterministic, source-linked index of every Python definition. |
-| [documentation](../tools/check.py#L271) | `write=False` | Write the function index, or fail when source changes made it stale. |
-| [structure](../tools/check.py#L286) | `` | Check imports, duplicate definitions, template references and asset ownership. |
-| [structure.scopes](../tools/check.py#L297) | `node, path` | Report repeated definitions within each lexical Python scope. |
-| [run](../tools/check.py#L369) | `command` | Run one validation command from the repository root and propagate failures. |
-| [javascript](../tools/check.py#L375) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
-| [main](../tools/check.py#L385) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
+| [sources](../tools/check.py#L94) | `` | Enumerate maintained Python files, excluding generated caches and dependencies. |
+| [definitions](../tools/check.py#L108) | `tree, parents=()` | Yield every function/method, including nested closures, with a qualified name. |
+| [routes](../tools/check.py#L118) | `node` | Read literal Flask decorators without importing route modules. |
+| [purpose](../tools/check.py#L141) | `name, node` | Describe a definition from its contract, route, validation name and SQL access. |
+| [markdown](../tools/check.py#L222) | `value` | Escape content that is embedded in a Markdown table cell. |
+| [function_index](../tools/check.py#L227) | `` | Generate a deterministic, source-linked index of every Python definition. |
+| [documentation](../tools/check.py#L272) | `write=False` | Write the function index, or fail when source changes made it stale. |
+| [structure](../tools/check.py#L287) | `` | Check imports, duplicate definitions, template references and asset ownership. |
+| [structure.scopes](../tools/check.py#L298) | `node, path` | Report repeated definitions within each lexical Python scope. |
+| [run](../tools/check.py#L370) | `command` | Run one validation command from the repository root and propagate failures. |
+| [javascript](../tools/check.py#L376) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
+| [main](../tools/check.py#L386) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1407 Python definitions**.
+Total: **1422 Python definitions**.

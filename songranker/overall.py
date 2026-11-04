@@ -3,6 +3,7 @@
 Display the existing composite directly, with category rank kept separate.
 Participation adapts weights/evidence on each snapshot; ineligible inputs never count.
 """
+from songranker.modes.tournament_scoring import entry_results, MAX_ROUNDS, MAX_POINTS
 
 from collections import defaultdict, OrderedDict
 import hashlib
@@ -14,10 +15,10 @@ import time
 from flask import abort, jsonify, render_template, request, session, has_request_context
 from songranker import services
 from songranker.services import app, admin_required
-from songranker.catalog import collection, proper_album, tournament_weights, song_performance
+from songranker.catalog import collection, proper_album, tournament_weights
 
 
-VERSION=9
+VERSION=10
 # Five equally based game families. Voting's three correlated views share 20%.
 MODE_SPECS=[('elo','Elo',8),('standard','Non-blind voting',6),('blind','Blind voting',6),
             ('trivia','Recognisability',20),('tournament','Tournament',20),
@@ -29,9 +30,9 @@ METRICS=[('elo_current','elo','Current Elo',.85,'elo'),('elo_peak','elo','Peak E
  ('standard_wins','standard','Win rate',1,'rate'),('blind_wins','blind','Win rate',1,'rate'),
  ('trivia_title','trivia','Song recognition',.45,'rate'),('trivia_artist','trivia','Artist recognition',.15,'rate'),
  ('trivia_album','trivia','Album recognition',.25,'rate'),('trivia_perfect','trivia','Perfect rounds',.15,'rate'),
- ('tournament_wins','tournament','Match win rate',.30,'rate'),
- ('tournament_podium','tournament','Podium achievement',.45,'rate'),
- ('tournament_points','tournament','Points per completed entry / 7',.25,'rate'),
+ ('tournament_wins','tournament','Bracket advancement',.30,'rate'),
+ ('tournament_podium','tournament','Size-weighted top-four achievement',.45,'rate'),
+ ('tournament_points','tournament','Depth points per entry / 15',.25,'rate'),
  ('guess_accuracy','guesser','Correct comparisons',1,'rate'),
  ('shelf_order','shelves','Relative track order',5/6,'rate'),
  ('shelf_album','shelves','Album placement',1/6,'rate')]
@@ -89,33 +90,22 @@ def features(data):
         sid=row['song_id'];perfect[sid][1]+=1
         perfect[sid][0]+=int(bool(row['title_correct']) and bool(row['artist_correct']) and
                              (not row['album_available'] or bool(row['album_correct'])))
-    weights=tournament_weights(data);performance=song_performance(data)
-    brackets={t['id']:t for t in data.get('tournaments',[])}
+    weights=tournament_weights(data)
     entries=defaultdict(set)
     for row in data.get('tournament_entries',[]):entries[row['song_id']].add(row['tournament_id'])
-    tournament_points=defaultdict(float)
-    for row in data.get('tournament_matches',[]):
-        if row.get('status')!='completed':continue
-        for sid in (row.get('song1_id'),row.get('song2_id')):
-            if sid:entries[sid].add(row['tournament_id'])
-        if brackets.get(row['tournament_id'],{}).get('status')=='completed':
-            tournament_points[row.get('winner_id')]+=number(row.get('points_awarded'))*weights.get((row.get('winner_id'),row['tournament_id']),0)
-    # Legacy completed brackets can lack entry rows but still contain placements.
-    for t in brackets.values():
-        if t.get('status')=='completed':
-            for key in ('champion_id','runner_up_id','third_place_id'):
-                if t.get(key):entries[t[key]].add(t['id'])
+    outcomes=entry_results(data)
+    for sid,tid in outcomes:entries[sid].add(tid)
+    by_song=defaultdict(list)
+    for song_id,tid in outcomes:by_song[song_id].append(tid)
     result={}
     for song in data.get('songs',[]):
         sid=song['id'];v=song.get('voting',{});t=trivia.get(sid,song)
         elo_n=max(number(song.get('matches_played')),number(v.get('matches')))
-        completed=[brackets[id] for id in entries[sid] if brackets.get(id,{}).get('status')=='completed']
-        completed_weight=sum(weights.get((sid,b["id"]),0) for b in completed)
-        podium=0
-        for b in completed:
-            credit=1 if b.get('champion_id')==sid else .65 if b.get('runner_up_id')==sid else .35 if b.get('third_place_id')==sid else 0
-            difficulty=math.log2(max(2,number(b.get('size'),8)))/3
-            podium+=(1-(1-credit)**difficulty)*weights.get((sid,b["id"]),0)
+        completed=by_song[sid]
+        completed_weight=sum(weights.get((sid,tid),0) for tid in completed)
+        advanced=sum(outcomes[sid,tid]['advanced']*weights.get((sid,tid),0) for tid in completed)
+        podium=sum(outcomes[sid,tid]['achievement']*weights.get((sid,tid),0) for tid in completed)
+        points=sum(outcomes[sid,tid]['points']*weights.get((sid,tid),0) for tid in completed)
         title_n=max(0,number(t.get('new_attempts')))
         audio_available=bool(str(song.get('audio_url') or '').strip())
         result[sid]={
@@ -127,9 +117,9 @@ def features(data):
           'trivia_artist':ratio(t.get('artist_correct'),title_n,applicable=audio_available),
           'trivia_album':ratio(t.get('album_correct'),t.get('album_attempts'),applicable=audio_available and proper_album(albums.get(song.get('album_id'),{})) and not albums.get(song.get('album_id'),{}).get('shelves_excluded',0)),
           'trivia_perfect':ratio(*perfect[sid],applicable=audio_available),
-          'tournament_wins':ratio(performance[sid]['tournament_wins'],performance[sid]['tournament_wins']+performance[sid]['tournament_losses']),
+          'tournament_wins':ratio(advanced,MAX_ROUNDS*completed_weight,evidence=completed_weight),
           'tournament_podium':ratio(podium,completed_weight),
-          'tournament_points':ratio(tournament_points[sid],7*completed_weight,evidence=completed_weight),
+          'tournament_points':ratio(points,MAX_POINTS*completed_weight,evidence=completed_weight),
           'guess_accuracy':ratio(song.get('guess_correct'),song.get('guess_attempts')),
           'shelf_order':ratio(song.get('shelf_order_right'),song.get('shelf_order_pairs'),evidence=song.get('shelf_attempts',0),applicable=sid in shelf_ids),
           'shelf_album':ratio(song.get('shelf_album_correct'),song.get('shelf_attempts'),applicable=sid in shelf_ids),

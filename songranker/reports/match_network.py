@@ -1,4 +1,5 @@
 """Read-only opponent networks from effective votes and decided tournament matches."""
+from songranker.modes.tournament_scoring import scored_match
 from collections import defaultdict
 from songranker.catalog import source_sql, versus_metadata
 
@@ -58,7 +59,7 @@ def network_records(conn, songs, mode='all', source='all', include_local=False):
             continue
         if not recorded_result(r) or r['winner_id'] not in songs or r['loser_id'] not in songs:
             omitted += 1; continue
-        t = brackets[r['tournament_id']]; date = saved_date(r.get('played_at'))
+        t = brackets[r['tournament_id']]; r=scored_match(r,t); date = saved_date(r.get('played_at'))
         rows.append(dict(key='t'+str(r['id']),winner_id=r['winner_id'],loser_id=r['loser_id'],mode='blind' if t['is_blind'] else 'standard',
                          source='first_round' if r['round_number']==1 and r['match_type']=='bracket' else 'tournament',scope=t['scope_type'],
                          tournament_id=t['id'],stage=stage_name(t['size'],r['round_number'],r['match_type']),time=date['iso'] if date else None,

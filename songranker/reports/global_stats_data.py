@@ -1,4 +1,5 @@
 """Read-only Global Stats projections from one SQLite snapshot."""
+from songranker.modes.tournament_scoring import scored_matches
 
 from songranker.reports.stats_activity import attach_reports, latest_vibe_saves
 from collections import Counter, defaultdict
@@ -121,6 +122,7 @@ def build_global_stats(conn):
     brackets=[dict(r) for r in conn.execute("SELECT * FROM tournaments WHERE scope_type IN ('global','tag')")]
     finished=sorted((t for t in brackets if t['status']=='completed'),key=lambda t:(timestamp(t['completed_at'] or t['created_at']),t['id']),reverse=True)
     bracket_matches=[dict(r) for r in conn.execute("SELECT m.* FROM tournament_matches m JOIN tournaments t ON t.id=m.tournament_id WHERE m.status='completed' AND t.scope_type IN ('global','tag')")]
+    bracket_matches=scored_matches(bracket_matches,brackets)
     def saved_song(sid):
         """Resolve an activity song identity with a safe placeholder for removed
         tracks.
