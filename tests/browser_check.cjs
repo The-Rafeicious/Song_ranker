@@ -408,7 +408,17 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.ok(await page.locator('#shelf-perfect').isVisible(),'Perfect round gets compact feedback after reveal');
   await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('#shelf-perfect').evaluate(e=>getComputedStyle(e).animationName),'none');await page.emulateMedia({reducedMotion:'no-preference'});
   assert.ok((await page.locator('.shelf-position-actual').allTextContents()).some(t=>t.includes('2·')));
-  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-result',folder);await page.screenshot({path:folder+'/shelves-discs-result-'+width+'.png',fullPage:true});}
+  assert.equal(await page.locator('.shelf-column-head h2 a').count(),2,'Revealed album titles are linked');
+  assert.equal(await page.locator('.shelf-album-link').count(),2,'Revealed album covers are linked');
+  assert.ok(await page.locator('#shelf-perfect').isVisible(),'Perfect round gets a finished result panel');
+  assert.equal(await page.locator('#shelf-perfect').evaluate(e=>getComputedStyle(e).opacity),'1','Celebration remains readable throughout its entrance');
+  await page.locator('#shelf-perfect').evaluate(async e=>{await Promise.all(e.getAnimations().map(a=>a.finished.catch(()=>{})))});
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});
+   assert.ok(await page.locator('.shelf-column-head h2').evaluateAll(nodes=>nodes.every(e=>e.scrollWidth<=e.clientWidth+1)),'Album headings fit their containers at '+width);
+   assert.ok(await page.locator('.shelf-track-title').evaluateAll(nodes=>nodes.every(e=>getComputedStyle(e.parentElement).transformStyle==='flat')),'Settled reveal cards keep a flat readable text layer');
+   await bounded(page,width,'shelves-discs-result',folder);await page.screenshot({path:folder+'/shelves-discs-result-'+width+'.png',fullPage:true});}
+  const revealedAlbumPath=await page.locator('.shelf-album-link').first().getAttribute('href');
+  await Promise.all([page.waitForURL(base+revealedAlbumPath),page.locator('.shelf-album-link').first().click()]);
   // Actual grading: one adjacent swap is a near miss; the other album is reversed.
   await page.route('**/api/album-shelves/round',async route=>{const response=await route.fetch(),data=await response.json();data.songs.forEach(s=>s.audio_url='');await route.fulfill({response,json:data})});
   const partialRequest=page.waitForResponse(r=>r.url().endsWith('/api/album-shelves/round')&&r.request().method()==='POST');await page.goto(base+'/album_shelves');const partial=await(await partialRequest).json();await page.locator('.shelf-track').first().waitFor();

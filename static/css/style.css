@@ -6304,9 +6304,6 @@ body[data-tone="shelves"] .btn.primary:hover {
   margin-top: 10px;
   color: var(--shelves);
 }
-.shelf-track {
-  transform-style: preserve-3d;
-}
 .shelf-track.reveal-pending.reveal-track {
   border-color: #5d5265;
   box-shadow: none;
@@ -6829,7 +6826,7 @@ body[data-tone="shelves"] .btn.primary:hover {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
-  max-width: 690px;
+  max-width: 960px;
   align-items: stretch;
 }
 .shelf-results-ready > .btn {
@@ -6846,20 +6843,26 @@ body[data-tone="shelves"] .btn.primary:hover {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
-  padding: 12px 18px;
-  border: 1px solid var(--song);
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--song) 10%, var(--panel));
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid color-mix(in srgb, var(--tag) 65%, var(--shelves));
+  border-radius: 24px;
+  background: linear-gradient(120deg, #59286270, #44361e75, var(--panel));
+  box-shadow: 0 0 30px #ffb83318;
   text-align: left;
-  animation: shelfPerfect 1.4s ease-out 1;
+  animation: shelfPerfect 1.2s ease-out 1;
 }
-.shelf-perfect > span {color: var(--song); font-size: 28px;}
-.shelf-perfect strong {display: block; color: var(--song); font-size: 18px;}
-.shelf-perfect small {display: block; color: var(--muted); font-size: 14px;}
+.shelf-perfect-icon {color: var(--tag); font-size: 52px; line-height: 1;}
+.shelf-perfect-copy {flex: 1 1 200px; min-width: 0;}
+.shelf-perfect-copy strong {display: block; color: var(--tag); font-size: clamp(24px, 3vw, 32px); line-height: 1.3;}
+.shelf-perfect-copy > span {display: block; color: var(--text); font-size: 17px; line-height: 1.5; margin-top: 5px;}
+.shelf-perfect-score {padding: 12px 20px; border-radius: 16px; background: #ffb83312; text-align: center;}
+.shelf-perfect-score b {display: block; color: var(--tag); font-size: 32px; line-height: 1.2;}
+.shelf-perfect-score span {font-size: 16px; color: var(--text);}
 @keyframes shelfPerfect {
-  0%, 100% {box-shadow: 0 0 0 transparent;}
-  40% {box-shadow: 0 0 26px color-mix(in srgb, var(--song) 35%, transparent);}
+  from {transform: translateY(8px) scale(.98); box-shadow: 0 0 44px #ffb83344;}
+  to {transform: none; box-shadow: 0 0 30px #ffb83318;}
 }
 @media (prefers-reduced-motion: reduce) {
   .shelf-perfect {animation: none;}
@@ -6880,7 +6883,7 @@ body[data-tone="shelves"] .btn.primary:hover {
   display: none;
 }
 .shelf-order-score small {
-  font-size: 11px;
+  font-size: 16px;
   font-weight: 750;
   letter-spacing: 0.03em;
   color: #c8b4d4;
@@ -7082,8 +7085,8 @@ body[data-page="shelves"]
 }
 .shelf-results-ready > [data-shelf-check] > span {
   grid-column: 1/-1;
-  color: #c8b4d4;
-  font-size: 11px;
+  color: #291d30;
+  font-size: 16px;
   font-weight: 750;
   letter-spacing: 0.03em;
 }
@@ -7098,8 +7101,8 @@ body[data-page="shelves"]
 .shelf-results-ready > [data-shelf-check] > small {
   align-self: end;
   padding-bottom: 3px;
-  color: #c8b4d4;
-  font-size: 13px;
+  color: #291d30;
+  font-size: 16px;
 }
 body[data-page="shelves"] .shelf-next:not(:disabled):hover {
   background: linear-gradient(135deg, #73408788, #34213f);

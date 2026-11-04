@@ -351,9 +351,19 @@ and unrelated scoped brackets do not erase a collection's recent history. The
 history horizon grows with the eligible pool. Non-preview tracks remain exempt
 from visibility balancing. A full-pool bracket can still select every entry.
 Diagnostics use the same competition-only initial entry weights. Tournament retains relative noisy Elo seeding; local result adjustments apply only to local artist/album brackets. Shelves chooses
-albums by exposure and recency with capacity lookahead, then distributes ten
-tracks and draws within each album by exposure. All prepared questions remain
-frozen even when the pool changes later.
+two or three albums with equal probability when both formats are feasible.
+Album support compares track-exposure density and expected placements per album
+appearance, rather than treating a short EP and a long album as equal workloads.
+Relative album-size preference uses a bounded square-root factor for two-album
+rounds and a fourth-root factor for three-album rounds. Artist overlap with the
+first chosen album gets a soft 1.4 multiplier, alongside the existing bounded
+Vibe affinity. Recency is soft, including the immediately previous albums.
+A 15% uniform mixture preserves alternatives after these conditional preferences.
+Capacity lookahead still guarantees ten unique tracks and at least two per album.
+Only then are songs drawn within each album: exposure/age support is mixed with
+15% uniform randomness and sampled without replacement. Saved questions remain
+frozen; scoring and grading do not change. Selection Health shows format-averaged
+base album weights before conditional artist/recency/capacity adjustments.
 
 ## Impact and Overall
 
@@ -848,8 +858,11 @@ use 1. Fully correct cards retain green; unrevealed cards expose no error depth.
 The shared stylesheet mixes light and deep red surfaces while retaining readable
 text, correction labels, counts and points. No grading or placement logic changes.
 A completed reveal with positive available points and a points/available difference
-under 1e-8 shows one Perfect shelves badge, matching the report's perfect tolerance.
-It has one brief glow, respects reduced motion, and clears with the next round.
+under 1e-8 shows one Perfect shelves result panel, matching the report's perfect tolerance.
+Its gold/mauve celebration and 100% completion value appear only after the final
+reveal, respect reduced motion, and clear with the next round. Revealed album
+titles and cover art then link to that exact album profile; arranging/revealing
+keeps the album identities static.
 
 
 ### Voting report cohort and presentation (V5.3.7.2)

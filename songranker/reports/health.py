@@ -160,6 +160,10 @@ def build_selection_health(conn, context=None):
         n = len(rows)
         values = [S.nonnegative(counts.get(s["id"], 0)) for s in rows]
         base = S.exposure_probabilities(values, [s.get("added_at", 0) for s in rows])
+        if rule == "shelves":
+            formats = [n for n in (2, 3) if S.shelves_feasible(groups, list(groups), n)]
+            balances = [S.shelf_album_weights(groups, album_counts, mode_counts(conn, "shelves"), n) for n in formats]
+            base = [sum(b[s["id"]] for b in balances) / len(balances) if balances else 0 for s in rows]
         weights = list(base)
         excluded = set(previous)
         if rule == "pair":
@@ -271,6 +275,7 @@ def build_selection_health(conn, context=None):
         album_counts,
         kind="album",
         unit="albums",
+        rule="shelves",
         ready=bool(groups),
     )
     possible = [n for n in (2, 3) if S.shelves_feasible(groups, list(groups), n)]

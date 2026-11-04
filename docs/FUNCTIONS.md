@@ -477,15 +477,16 @@ Adaptive draw algorithms plus the shared SQL exposure/recency adapters.
 | [tournament_selection_evidence](../songranker/modes/selection.py#L339) | `conn, pool, is_blind, *, scope='global', scope_id=None` | Read entry-based visibility counts and pool-relative recent bracket groups. |
 | [preference_evidence](../songranker/modes/selection.py#L379) | `conn` | Read pair exposure and local seed evidence without writing ratings. |
 | [shelves_feasible](../songranker/modes/selection.py#L413) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
-| [draw_shelves](../songranker/modes/selection.py#L423) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None` | Album-first fairness; frozen ten-track draws with capacity lookahead. |
-| [mode_counts](../songranker/modes/selection.py#L518) | `conn, mode` | Read mode exposures and add effective weighted tournament participation to voting modes. |
-| [preference_pair](../songranker/modes/selection.py#L536) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
-| [vibe_song](../songranker/modes/selection.py#L569) | `conn, *, counts=None, previous=None, rng=random` | Read-only Vibe Map draw, ready for the later round controller. |
-| [album_vibe_groups](../songranker/modes/selection.py#L599) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
-| [recent_preferences](../songranker/modes/selection.py#L614) | `conn, owner=None, limit=128` | Read a bounded newest-first song history across both voting visibilities. |
-| [previous_preference](../songranker/modes/selection.py#L640) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
-| [shelf_history](../songranker/modes/selection.py#L666) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
-| [with_catalogue_age](../songranker/modes/selection.py#L681) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
+| [shelf_album_weights](../songranker/modes/selection.py#L423) | `groups, album_counts, track_counts, count` | Size-aware exposure support; two-album rounds favour more track capacity. |
+| [draw_shelves](../songranker/modes/selection.py#L447) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None, album_artists=None` | Equal feasible formats; soft album/artist/recency balance, then track exposure. |
+| [mode_counts](../songranker/modes/selection.py#L546) | `conn, mode` | Read mode exposures and add effective weighted tournament participation to voting modes. |
+| [preference_pair](../songranker/modes/selection.py#L564) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
+| [vibe_song](../songranker/modes/selection.py#L597) | `conn, *, counts=None, previous=None, rng=random` | Read-only Vibe Map draw, ready for the later round controller. |
+| [album_vibe_groups](../songranker/modes/selection.py#L627) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
+| [recent_preferences](../songranker/modes/selection.py#L642) | `conn, owner=None, limit=128` | Read a bounded newest-first song history across both voting visibilities. |
+| [previous_preference](../songranker/modes/selection.py#L668) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
+| [shelf_history](../songranker/modes/selection.py#L694) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
+| [with_catalogue_age](../songranker/modes/selection.py#L709) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
 
 ## songranker/modes/shelves.py
 
@@ -500,24 +501,24 @@ Album Shelves eligibility, ordering/grading and detailed Shelves Stats.
 | [shelf_stats](../songranker/modes/shelves.py#L89) | `` | Shelf stats; GET /album_shelves_stats. |
 | [shelf_pool](../songranker/modes/shelves.py#L107) | `conn` | The existing numbered/proper-album pool, shared by the picker and stats. |
 | [shelf_candidates](../songranker/modes/shelves.py#L129) | `conn, count` | Draw eligible albums and tracks using production exposure, recency and Vibe-aware selection. |
-| [shelf_payload](../songranker/modes/shelves.py#L153) | `conn, row` | Shelf payload; reads album_shelf_items, albums, songs. |
-| [shelf_round](../songranker/modes/shelves.py#L181) | `` | Shelf round; POST /api/album-shelves/round. |
-| [shelf_answer](../songranker/modes/shelves.py#L249) | `` | Shelf answer; POST /api/album-shelves/answer. |
-| [percentage](../songranker/modes/shelves.py#L328) | `right, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [saved_date](../songranker/modes/shelves.py#L332) | `value` | Parse a saved result date for report display and ordering. |
-| [integer](../songranker/modes/shelves.py#L342) | `value, low=1, high=None` | Validate/normalise the feature’s integer input before using it. |
-| [can_grade](../songranker/modes/shelves.py#L346) | `items, rules` | Validate saved Shelves rules, slots, track positions and unique identities before reconstructing a grade. |
-| [can_grade.unique](../songranker/modes/shelves.py#L365) | `keys` | Check that a chosen tuple of saved item fields is unique within the round. |
-| [empty_counts](../songranker/modes/shelves.py#L378) | `` | Create the zeroed track/order/point counters shared by Shelves report aggregates. |
-| [add_counts](../songranker/modes/shelves.py#L395) | `target, source` | Accumulate one Shelves result's known counters into an existing aggregate. |
-| [item_counts](../songranker/modes/shelves.py#L401) | `item` | Project a graded track into album/order/point and error-category report counters. |
-| [finish_counts](../songranker/modes/shelves.py#L419) | `row` | Derive album/order accuracy and wrong-order counts from aggregated Shelves counters. |
-| [window_totals](../songranker/modes/shelves.py#L431) | `rows` | Summarise Shelves rounds in a report window, distinguishing graded results from unknown history. |
-| [page_number](../songranker/modes/shelves.py#L451) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
-| [build_shelves_stats](../songranker/modes/shelves.py#L461) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
-| [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L492) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
-| [build_shelves_stats.records](../songranker/modes/shelves.py#L768) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
-| [profile_shelves_details](../songranker/modes/shelves.py#L883) | `conn, song_ids` | Grade each full eligible round once, then pool distinct cohort items. |
+| [shelf_payload](../songranker/modes/shelves.py#L158) | `conn, row` | Shelf payload; reads album_shelf_items, albums, songs. |
+| [shelf_round](../songranker/modes/shelves.py#L186) | `` | Shelf round; POST /api/album-shelves/round. |
+| [shelf_answer](../songranker/modes/shelves.py#L254) | `` | Shelf answer; POST /api/album-shelves/answer. |
+| [percentage](../songranker/modes/shelves.py#L333) | `right, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [saved_date](../songranker/modes/shelves.py#L337) | `value` | Parse a saved result date for report display and ordering. |
+| [integer](../songranker/modes/shelves.py#L347) | `value, low=1, high=None` | Validate/normalise the feature’s integer input before using it. |
+| [can_grade](../songranker/modes/shelves.py#L351) | `items, rules` | Validate saved Shelves rules, slots, track positions and unique identities before reconstructing a grade. |
+| [can_grade.unique](../songranker/modes/shelves.py#L370) | `keys` | Check that a chosen tuple of saved item fields is unique within the round. |
+| [empty_counts](../songranker/modes/shelves.py#L383) | `` | Create the zeroed track/order/point counters shared by Shelves report aggregates. |
+| [add_counts](../songranker/modes/shelves.py#L400) | `target, source` | Accumulate one Shelves result's known counters into an existing aggregate. |
+| [item_counts](../songranker/modes/shelves.py#L406) | `item` | Project a graded track into album/order/point and error-category report counters. |
+| [finish_counts](../songranker/modes/shelves.py#L424) | `row` | Derive album/order accuracy and wrong-order counts from aggregated Shelves counters. |
+| [window_totals](../songranker/modes/shelves.py#L436) | `rows` | Summarise Shelves rounds in a report window, distinguishing graded results from unknown history. |
+| [page_number](../songranker/modes/shelves.py#L456) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
+| [build_shelves_stats](../songranker/modes/shelves.py#L466) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
+| [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L497) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
+| [build_shelves_stats.records](../songranker/modes/shelves.py#L773) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
+| [profile_shelves_details](../songranker/modes/shelves.py#L888) | `conn, song_ids` | Grade each full eligible round once, then pool distinct cohort items. |
 
 ## songranker/modes/tournament.py
 
@@ -786,7 +787,7 @@ Shared exposure/coverage health and diagnostics using production selectors.
 | [normalize](../songranker/reports/health.py#L88) | `weights` | Normalise diagnostic weights to probabilities, returning zeros for an empty-weight distribution. |
 | [build_selection_health](../songranker/reports/health.py#L96) | `conn, context=None` | Build selection health; reads albums, challenge_runs, genres, shelf_album_exposures, song_details, song_genres, songs, sqlite_master. |
 | [build_selection_health.pool](../songranker/reports/health.py#L142) | `key, label, rows, counts, *, previous=(), rule='base', recent=(), other_counts=None, unit='tracks', kind='song', ready=True` | Project an eligible draw pool into production-rule probabilities and exposure diagnostics. |
-| [build_selection_health.coverage](../songranker/reports/health.py#L283) | `label, count` | Describe one eligibility count relative to the full catalogue with coverage health. |
+| [build_selection_health.coverage](../songranker/reports/health.py#L288) | `label, count` | Describe one eligibility count relative to the full catalogue with coverage health. |
 
 ## songranker/reports/query.py
 
@@ -1621,6 +1622,18 @@ Milestone regressions for collection growth and weighted exposure.
 | [CoverageMilestoneTests.test_next_unfinished_target_and_growth](../tests/test_scalable_stats.py#L7) | `self` | Completed milestones advance; newly added records return to one. |
 | [CoverageMilestoneTests.test_empty_and_fractional_evidence](../tests/test_scalable_stats.py#L14) | `self` | Empty pools are unavailable and fractional appearances never round up. |
 
+## tests/test_shelves_selection.py
+
+Soft album-first Shelves balance across capacity, artists and exposure.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [groups](../tests/test_shelves_selection.py#L8) | `*sizes` | Groups. |
+| [ShelvesSelectionTests.test_size_preference_is_stronger_in_two_album_rounds](../tests/test_shelves_selection.py#L14) | `self` | Verify size preference is stronger in two album rounds. |
+| [ShelvesSelectionTests.test_formats_remain_even_and_all_draws_are_unique_and_feasible](../tests/test_shelves_selection.py#L27) | `self` | Verify formats remain even and all draws are unique and feasible. |
+| [ShelvesSelectionTests.test_artist_affinity_is_soft_and_previous_albums_are_not_banned](../tests/test_shelves_selection.py#L39) | `self` | Verify artist affinity is soft and previous albums are not banned. |
+| [ShelvesSelectionTests.test_tracks_favour_low_exposure_without_a_fixed_order_or_quota](../tests/test_shelves_selection.py#L51) | `self` | Verify tracks favour low exposure without a fixed order or quota. |
+
 ## tests/test_shutdown.py
 
 Rotating backup durability, fresh-PIN shutdown, acknowledgement and failure recovery.
@@ -2065,4 +2078,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1403 Python definitions**.
+Total: **1409 Python definitions**.

@@ -415,3 +415,12 @@ panels retain their own semantic accents. Global summaries use the same metric
 sizes, panel spacing, linked record metadata and labels as their detailed pages.
 Its Elo distribution shares Voting Stats' voted-track cohort and bands, excluding
 unplayed/manual ratings. Bracket links open the saved bracket workspace.
+
+### Shelves completed rounds (v5.9.4)
+
+After the full reveal, album titles and covers link to their profiles. Score
+overlays do not intercept cover clicks. Result copy and comparison counts use
+readable type with wrapping inside each track card. Perfect rounds show one
+gold/mauve completion panel and 100% value below the totals, with one short
+entrance and a stationary glow; reduced motion removes the entrance. Keep this
+inside the normal page flow and clear it for the next round.
