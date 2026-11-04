@@ -28,7 +28,8 @@ restore a generation-3 SQL snapshot, use an optional catalogue seed, or start
 empty. A **first V2-to-V3 transfer** resets results; a routine code update does
 not repeat that reset. See [upgrades and recovery](docs/UPGRADES.md).
 
-The app reports `5.5.10.4`; Vibe Map retains its internal mode version `1.1`.
+The current app version is defined in [songranker/version.py](songranker/version.py);
+Vibe Map retains its internal mode version `1.1`.
 
 ## Modes
 
