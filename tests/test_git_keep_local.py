@@ -94,6 +94,7 @@ class KeepLocalTests(unittest.TestCase):
 
     def test_failed_backup_cannot_accept_choice(self):
         self.changed_remote()
+        self.edit(self.db, "UPDATE songs SET title='Unpublished local edit' WHERE id=1")
         r = self.sync.local_choice_review()
         before = self.state()
         with patch(

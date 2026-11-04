@@ -26,13 +26,13 @@ HISTORY_LIMIT = 32
 MAX_SQL_BYTES = 64 * 1024 * 1024
 
 
-def model(conn):
+def model(conn, state=None):
     """Compare stored facts by primary key; only install metadata is device-local.
 
     Hidden rowids matter for tables without explicit keys. Junction rowids do not
     turn a re-saved link into a different song/tag relationship.
     """
-    state = capture(conn)
+    state = capture(conn) if state is None else state
     facts = {}
     for name, data in state["tables"].items():
         if name in ("@schema", "@sequences", "@application"):
@@ -336,7 +336,8 @@ class DatabaseSync:
         """Compare logical hashes before every pull/push, independently of code ancestry."""
         remote_commit = self.state.get("tracking_head")
         blob = self.blob(remote_commit) if remote_commit else None
-        if not blob or placeholder(self.sql(blob)):
+        sql = self.sql(blob) if blob else None
+        if not blob or placeholder(sql):
             # Removing an existing remote backup is a change requiring review, not
             # permission to silently replace it with an unrelated database.
             if self.receipt():
@@ -350,7 +351,6 @@ class DatabaseSync:
                     message="No committed remote database is available; the first backup can be uploaded.",
                 )
             return
-        sql = self.sql(blob)
         self.git.database.parent.mkdir(parents=True, exist_ok=True)
         with tempfile.TemporaryDirectory(
             dir=self.git.database.parent, prefix=".git_database_"
@@ -358,7 +358,8 @@ class DatabaseSync:
             candidate, remote = prepare_sql(sql, folder, "remote")
             with snapshot(self.git.database) as conn:
                 validate(conn)
-                local, live_hash = model(conn), digest(capture(conn))
+                live = capture(conn)
+                local, live_hash = model(conn, live), digest(live)
             identity, registry = self.remote_identity()
             key = self.device_key()
             same_device = (
@@ -426,7 +427,9 @@ class DatabaseSync:
                     raise DatabaseValidationError(
                         "Database sync baseline no longer matches its Git commit."
                     )
-                if old_blob:
+                if old_blob == blob:
+                    base = remote
+                elif old_blob:
                     _, base = prepare_sql(self.sql(old_blob), folder, "baseline")
                 common["baseline_hash"] = digest(base) if base is not None else receipt.get("model_hash")
             else:
@@ -469,6 +472,13 @@ class DatabaseSync:
                     reason="remote_unchanged",
                     code="database_local_ahead",
                     message="Remote hash still matches the accepted baseline. Local changes can upload without intervention.",
+                )
+            elif common["baseline_hash"] == local_hash:
+                yield dict(
+                    common,
+                    reason="local_unchanged",
+                    code="database_remote_ahead",
+                    message="This device still matches its baseline. The newer remote backup can load without choosing between copies; a safety backup is made first.",
                 )
             elif same_device:
                 yield dict(

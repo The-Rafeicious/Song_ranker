@@ -203,6 +203,22 @@ def compact_git_storage():
     return git_reply(git().compact(review["fingerprint"]))
 
 
+@app.post("/api/dev/git/download")
+@admin_required
+def download_git_database():
+    """Receive a newer snapshot only when the live database still equals its baseline."""
+    if request.environ.get("wsgi.multiprocess"):
+        return jsonify(message="Stop all WSGI workers and use the offline recovery guide."), 409
+    data = request.get_json(silent=True)
+    try:
+        if not isinstance(data, dict):
+            raise ValueError("Refresh Git status before receiving a backup.")
+        review = unpack(data.get("review_token"), "git")
+    except ValueError as error:
+        return jsonify(message=str(error)), 400
+    return git_reply(git().use_remote(expected=review["fingerprint"]))
+
+
 def backup_folder():
     """Resolve the backup directory beside the configured live database."""
     return Path(services.DB_NAME).resolve().parent / "database_backups"
@@ -402,6 +418,10 @@ def inventory():
 @app.route("/api/dev/system")
 @admin_required
 def system_status():
+    """Task-specific status skips full integrity/table scans on Git and backup pages."""
+    view = request.args.get("view")
+    if view in ("export", "backups"):
+        return jsonify(version=APP_VERSION, backups=backups(), git=git_payload() if view == "export" else None)
     return jsonify(**inventory(), backups=backups(), git=git_payload())
 
 

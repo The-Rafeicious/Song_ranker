@@ -2,7 +2,8 @@
 import math
 import unicodedata
 from functools import cmp_to_key
-from songranker.catalog import summarize_votes, song_performance, proper_album
+from songranker.catalog import summarize_votes, song_performance, proper_album, source_sql
+from songranker.modes.tournament_scoring import scored_match
 from urllib.parse import quote
 
 KINDS = ('songs', 'artists', 'albums', 'tags')
@@ -219,3 +220,47 @@ def execute(data,spec):
         return (normal(a['name'])>normal(b['name']))-(normal(a['name'])<normal(b['name'])) or a['id']-b['id']
     rows.sort(key=cmp_to_key(compare)); total=len(rows); pages=max(1,math.ceil(total/20)); spec['page']=min(spec['page'],pages)
     return dict(spec=spec,total=total,pages=pages,page=spec['page'],items=rows[(spec['page']-1)*20:spec['page']*20])
+
+
+def match_records(conn, songs, mode='all', source='all', include_local=False):
+    """Read Query opponent evidence, deduplicating first rounds and preserving real snapshots."""
+    from songranker.modes.voting import finite, saved_date
+    from songranker.modes.tournament import recorded_result, stage_name
+    brackets = {r['id']:dict(r) for r in conn.execute("SELECT id,size,is_blind,scope_type,status FROM tournaments WHERE status='completed'")
+                if include_local or r['scope_type'] in ('global','tag')}
+    rows, linked, omitted = [], set(), 0
+    for raw in conn.execute(f'SELECT * FROM {source_sql(conn)}'):
+        r = dict(raw)
+        tournament = r.get('origin')=='tournament'
+        if tournament and r.get('tournament_id') not in brackets:
+            continue
+        a,b = r['winner_id'],r['loser_id']
+        if a not in songs or b not in songs or a==b:
+            omitted += 1; continue
+        wb,wa,lb,la = [finite(r.get(k)) for k in ('winner_before','winner_after','loser_before','loser_after')]
+        valid = all(v is not None for v in (wb,wa,lb,la)) and wa>=wb and la<=lb and finite(wa-wb) is not None and finite(la-lb) is not None
+        date = saved_date(r.get('created_at'))
+        rows.append(dict(key='v'+str(r['id']),winner_id=a,loser_id=b,mode=r['mode'],source='first_round' if tournament else 'voting',
+                         scope=brackets[r['tournament_id']]['scope_type'] if tournament else None,tournament_id=r.get('tournament_id'),
+                         stage=stage_name(brackets[r['tournament_id']]['size'],1) if tournament else None,
+                         time=date['iso'] if date else None,seconds=date['seconds'] if date else -1e30,
+                         winner_before=wb if valid else None,winner_after=wa if valid else None,
+                         loser_before=lb if valid else None,loser_after=la if valid else None,
+                         rating_weight=finite(r.get('rating_weight')),points=None))
+        if tournament and r.get('tournament_match_id') is not None:
+            linked.add(r['tournament_match_id'])
+    for raw in conn.execute("SELECT * FROM tournament_matches WHERE status='completed'"):
+        r = dict(raw)
+        if r['tournament_id'] not in brackets or r['id'] in linked:
+            continue
+        if not recorded_result(r) or r['winner_id'] not in songs or r['loser_id'] not in songs:
+            omitted += 1; continue
+        t = brackets[r['tournament_id']]; r=scored_match(r,t); date = saved_date(r.get('played_at'))
+        rows.append(dict(key='t'+str(r['id']),winner_id=r['winner_id'],loser_id=r['loser_id'],mode='blind' if t['is_blind'] else 'standard',
+                         source='first_round' if r['round_number']==1 and r['match_type']=='bracket' else 'tournament',scope=t['scope_type'],
+                         tournament_id=t['id'],stage=stage_name(t['size'],r['round_number'],r['match_type']),time=date['iso'] if date else None,
+                         seconds=date['seconds'] if date else -1e30,winner_before=None,winner_after=None,loser_before=None,loser_after=None,
+                         rating_weight=None,points=finite(r.get('points_awarded'))))
+    rows = [r for r in rows if (mode=='all' or r['mode']==mode) and (source=='all' or r['source']==source)]
+    rows.sort(key=lambda r:(r['seconds'],int(r['key'][1:]),r['key'][0]))
+    return rows,omitted

@@ -656,7 +656,7 @@ owns snapshot validation, the logical row model, SHA-256 baselines, numbered
 installation identities and transactional adoption. No storage owner imports
 Flask. App-managed source pulls compare databases before updating code, preserve
 the live DB, then recheck after bootstrap/re-exec before serving. A future snapshot
-can require newer code for validation; it never authorizes automatic data adoption.
+can require newer code for validation; code ancestry alone never authorizes data adoption.
 
 Logical hashes include primary-keyed rows, sequence high-water marks and schema
 objects, including extension data. Hidden rowids identify unkeyed extension rows;
@@ -667,8 +667,14 @@ rules still reject invalid, corrupt or future-schema SQL.
 Version-2 private receipts bind the accepted remote model hash plus Git witnesses
 to the repository, database path and destination; V1 receipts and confirmed history
 remain readable. An unchanged remote hash authorizes local work regardless of Git
-ancestry. Otherwise the latest snapshot's registered writer may authorize this
-device's current local data; another/unidentified writer requires an explicit
+ancestry. If the local hash still equals its accepted baseline while the remote
+changed, classify it as database_remote_ahead regardless of writer identity. The
+normal launcher may adopt it after bootstrap; a running single-worker app exposes
+POST /api/dev/git/download with a browser-bound Git status token. This path fetches
+and checks the unchanged-local condition again, then uses the same safety backup,
+maintenance lock and transactional replacement as a reviewed remote choice. Status
+checks stay read-only. Otherwise the latest snapshot's registered writer may
+authorize this device's local work; another/unidentified writer requires an explicit
 whole-copy choice. Baseline and direct per-table deltas explain additions,
 removals, edits, schema and sequence differences; row counts do not decide policy.
 
@@ -1081,59 +1087,6 @@ public Elo exchange policy and ordinary voting behaviour are unchanged. Current
 queries exclude historical local entries immediately, with no result deletion,
 reset or migration. Existing library/tag play still affects its own selection.
 
-## Opponent match network (V5.8.0)
-
-`/match-network` is a dedicated Voting Stats workspace; `song_id` opens it focused
-on a current song. Song profiles lazily mount the same controller after Explore
-matches. Assets are registered once in templates/assets.html; the independent
-workspace does not hydrate /api/collection. Frontend and scoped CSS live in
-match_network.js/css, with read-only graph operations in reports/match_network.py
-and routes in modes/voting.py. There is no graph audio or database migration.
-
-`GET /api/match-network` accepts optional song_id, depth=1..5 (default 4),
-branches=3..5 (default 4), mode=all|standard|blind,
-source=all|voting|first_round|tournament, local=0|1 and through (a zero-based count
-of included chronological matches). Local means artist/album tournaments; it
-defaults off. Only finished tournament brackets and decided valid matches appear.
-Effective public first-round events replace their raw tournament counterpart,
-preventing double counting. Other rounds remain points-only unless a real public
-snapshot exists. Corrections/voids use the effective projection. Removed or invalid
-participants are omitted explicitly; dates/snapshots are never fabricated.
-
-Each opponent pair becomes one aggregated connection with both participants'
-win counts, source/visibility mix and local count. Current catalogue Elo/rank are
-always labelled current. Layout represents connections, not historical Elo.
-The timeline selects a prefix of the filtered match history; it does not invent
-intermediate ratings or expose pending rounds. Positions are deterministic: a
-spatially indexed bounded layout for the full graph and rings for focused hops.
-
-Focused breadth exploration adds at most the selected number of new opponents
-per expanded song for the requested layers (strongest/recent connections first),
-retains cross-links and recomputes visible hop distances. Limit the focused map
-to 180 nodes; full drawing to 1,400 connected nodes and 6,000 connections. Totals
-and drawing-limit notices are separate from the visible subset. Unplayed and
-capped-out songs remain searchable. `search` returns at most 25 current songs by
-accent-insensitive title/artist match. `pair=a,b&page=1` returns all filtered pair
-history in newest-first pages of twenty, independently of drawing caps. All reads
-use a single caller-owned transaction; graph controls validate ranges and IDs.
-
-Canvas uses capped device-pixel ratio, viewport culling, album-image reuse and a
-96-image cache. Pan/zoom, resize-centre preservation and shared controls are local;
-filters/selected history fetch bounded graph summaries. Separate abortable search
-and match-inspector reads have stale-response guards, timeout/retry and exit
-cleanup. Node selection exposes accessible opponent buttons; a native visible
-song list provides keyboard access to the diagram. Camera and network requests
-do not replace the song hero or interfere with existing preview/replay ownership.
-
-V5.8.0.1 draws a loser-to-winner head at each endpoint with at least one saved
-win in the selected history. Split results have two heads, rather than implying
-a majority winner; the existing inspector retains exact W/L counts. The full
-layout expands its force spacing and then assigns cover/label-sized vacant cells
-with deterministic small offsets, preventing overlaps even in crowded components.
-Large full maps open at a readable hub-centred zoom, while Fit map shows the
-complete overview. Focused hop-ring layout and match data are unchanged.
-
-
 ## Tournament depth and Overall (v5.9)
 
 One round of advancement is worth progressively more points. All public views,
@@ -1160,3 +1113,16 @@ First-round preference Elo, visibility projections and history are unchanged.
 Library/tag competition eligibility and the separate local artist/album policy
 also remain in force. Pending brackets do not supply completed-result evidence.
 Overall calibration version 10 invalidates the prior cached model automatically.
+
+
+## Retired match network and focused system tasks (v5.9.1)
+
+The match-network page/API, song panels, Voting Stats link, canvas controller and
+styles are removed. Historical match data is retained. Query owns match_records:
+effective first rounds are deduplicated, local scopes stay explicit, and later
+round points use the current policy without invented Elo snapshots.
+
+GET /api/dev/system?view=export or view=backups returns only task status, avoiding
+full inventory/integrity scans. The default endpoint retains the full dashboard
+contract. Backup browsing filters by purpose and date order. Changing Dev tasks
+clears old task data and pending reviews before a new response renders.

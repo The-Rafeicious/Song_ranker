@@ -62,18 +62,26 @@ class ArchitectureTests(unittest.TestCase):
             r
             for r in actual
             if r["endpoint"]
-            in ("dev_area", "dev_task", "use_remote_database", "compact_git_storage", "tournament_bracket_page")
+            in ("dev_area", "dev_task", "use_remote_database", "compact_git_storage", "tournament_bracket_page", "download_git_database")
         ]
-        self.assertEqual(5, len(added))
+        self.assertEqual(6, len(added))
         added.append(dict(path='/tournament_local_stats',endpoint='local_tournament_stats_page',methods=['GET']))
         added.append(dict(path='/api/voting-replay',endpoint='voting_replay',methods=['GET']))
         added.append(dict(path='/api/song/<int:song_id>/stats',endpoint='song_stats',methods=['GET']))
         added.append(dict(path='/api/profile/<kind>/<int:entity_id>/stats',endpoint='collection_stats',methods=['GET']))
         added.append(dict(path='/query',endpoint='mode_query_page',methods=['GET']))
         added.append(dict(path='/api/query',endpoint='mode_query_api',methods=['GET']))
-        added.append(dict(path='/match-network',endpoint='match_network_page',methods=['GET']))
-        added.append(dict(path='/api/match-network',endpoint='match_network_api',methods=['GET']))
         self.assertEqual(expected, [r for r in actual if r not in added])
+
+    def test_retired_match_network_has_no_routes_or_public_assets(self):
+        self.register()
+        client = services.app.test_client()
+        self.assertEqual(client.get('/match-network').status_code, 404)
+        self.assertEqual(client.get('/api/match-network').status_code, 404)
+        for path in ('/song/1', '/voting_stats'):
+            html = client.get(path).get_data(as_text=True)
+            self.assertNotIn('match_network', html)
+            self.assertNotIn('match-network', html)
 
     def test_pages_use_one_asset_registry_and_last_shared_baseline(self):
         self.register()
@@ -95,7 +103,6 @@ class ArchitectureTests(unittest.TestCase):
             "/vibe-map",
             "/global_stats",
             "/voting_stats",
-            "/match-network",
             "/query",
             "/history",
             "/trivia_stats",

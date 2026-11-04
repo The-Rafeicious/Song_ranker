@@ -57,7 +57,7 @@ class GitDatabaseTests(unittest.TestCase):
         command(self.work, "pull", "--ff-only")
 
     def accept_remote(self):
-        """Explicitly review and apply a remote copy; automatic adoption is retired."""
+        """Explicitly review and apply a remote copy when a whole-copy choice is wanted."""
         reviewed = self.sync.local_choice_review()
         self.assertTrue(reviewed["ok"], reviewed)
         return self.sync.use_remote(reviewed["choice"])
@@ -154,10 +154,8 @@ class GitDatabaseTests(unittest.TestCase):
             timeout=30,
         )
         self.assertEqual(result.returncode, 0, result.stderr)
-        self.assertIn("server songs 1", result.stdout)
-        self.assertIn("changed the remote database", result.stdout)
-        self.assertEqual(self.count(), 1)
-        self.assertTrue(self.accept_remote()["ok"])
+        self.assertIn("server songs 2", result.stdout)
+        self.assertIn("local data matched its baseline", result.stdout)
         self.assertEqual(self.count(), 2)
 
     def test_initial_upgrade_recovers_baseline_from_history_after_pull(self):
@@ -180,7 +178,7 @@ class GitDatabaseTests(unittest.TestCase):
         self.publish()
         result = self.sync.startup()
         self.assertEqual(result["code"], "updated")
-        self.assertEqual(result["database_sync"]["code"], "database_conflict")
+        self.assertEqual(result["database_sync"]["code"], "database_remote_ahead")
         self.assertEqual(self.count(), 1)
         self.assertEqual(self.accept_remote()["code"], "database_updated")
         self.assertEqual(self.count(), 2)
@@ -329,7 +327,7 @@ class GitDatabaseTests(unittest.TestCase):
         sql = self.sync.sql.read_bytes()
         result = self.sync.check()
         self.assertTrue(result["ok"], result)
-        self.assertEqual(result["git"]["database_sync"]["code"], "database_conflict")
+        self.assertEqual(result["git"]["database_sync"]["code"], "database_remote_ahead")
         self.assertEqual(self.state(), before)
         self.assertEqual(self.head(), head)
         self.assertEqual(self.sync.sql.read_bytes(), sql)
@@ -683,7 +681,7 @@ class GitDatabaseTests(unittest.TestCase):
         self.assertTrue(result["ok"], result)
         state = result["git"]
         self.assertEqual(state["state"], "up_to_date")
-        self.assertEqual(state["database_sync"]["code"], "database_conflict")
+        self.assertEqual(state["database_sync"]["code"], "database_remote_ahead")
         self.assertFalse(state["upload_ready"])
         self.assertEqual(state["status_source"], "checked")
         self.assertIn("checked_at", state)
@@ -808,7 +806,7 @@ class GitDatabaseTests(unittest.TestCase):
             command(self.remote, "show", "main:app.py"), "incoming code only"
         )
 
-    def test_different_device_requires_review_even_when_remote_covers_local(self):
+    def test_different_device_unchanged_baseline_can_receive_without_copy_choice(self):
         self.pair()
         self.edit(
             self.desktop_db, "INSERT INTO songs(id,title) VALUES(2,'Other device')"
@@ -817,16 +815,16 @@ class GitDatabaseTests(unittest.TestCase):
         before = self.state()
         result = self.sync.startup()
         self.assertEqual(result["code"], "updated")
-        self.assertEqual(result["database_sync"]["code"], "database_conflict")
+        self.assertEqual(result["database_sync"]["code"], "database_remote_ahead")
         self.assertEqual(self.state(), before)
         reviewed = self.sync.local_choice_review()
         details = reviewed["details"]
-        self.assertEqual(details["reason"], "different_device")
+        self.assertEqual(details["reason"], "local_unchanged")
         self.assertEqual(details["remote_device"], 2)
         self.assertEqual(details["different_rows"]["songs"]["removed"], 1)
         self.assertEqual(details["baseline_hash"], details["local_hash"])
         self.assertFalse(self.sync.upload()["ok"])
-        self.assertTrue(self.sync.use_remote(reviewed["choice"])["ok"])
+        self.assertTrue(self.sync.use_remote(expected=self.sync.inspect()["fingerprint"])["ok"])
         self.assertEqual(self.count(), 2)
 
     def test_explicit_remote_choice_rejects_stale_local_and_remote(self):
@@ -900,6 +898,30 @@ class GitDatabaseTests(unittest.TestCase):
         self.assertFalse(result["git"]["upload_ready"])
         self.assertEqual(self.sync.upload()["code"], "database_conflict")
         self.assertEqual(self.state(), before)
+
+    def test_baseline_receive_rejects_local_activity_after_status(self):
+        self.pair()
+        self.edit(self.desktop_db, "UPDATE songs SET title='Remote edit'")
+        self.publish()
+        checked = self.sync.check()
+        self.assertEqual(checked['git']['database_sync']['code'], 'database_remote_ahead')
+        self.edit(self.db, "UPDATE songs SET title='New local activity'")
+        before = self.state()
+        result = self.sync.use_remote(expected=checked['git']['fingerprint'])
+        self.assertEqual(result['code'], 'database_conflict')
+        self.assertEqual(self.state(), before)
+
+    def test_launcher_receives_unchanged_baseline_with_verified_safety_backup(self):
+        self.pair()
+        before = self.state()
+        self.edit(self.desktop_db, "DELETE FROM songs WHERE id=1")
+        self.publish()
+        result = self.sync.reconcile_database()
+        self.assertEqual(result['code'], 'database_updated', result)
+        self.assertEqual(self.count(), 0)
+        with readonly(self.db.parent / 'database_backups' / result['backup']) as archived:
+            self.assertEqual(capture(archived), before)
+        self.assertEqual(self.sync.reconcile_database()['code'], 'database_matches')
 
 
 if __name__ == "__main__":

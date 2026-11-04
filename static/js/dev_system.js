@@ -18,6 +18,8 @@ window.DevSystem = (() => {
     localReview = null,
     databaseChoice = "local",
     backupQuery = "",
+    backupPurpose = "",
+    backupOrder = "newest",
     backupLimit = 10,
     note = "";
   const bytes = (n) =>
@@ -41,6 +43,7 @@ window.DevSystem = (() => {
       ++reviewId;
       restoreReview = null;
       localReview = null;
+      data = null;
       loadError = "";
       window.DevDatabase?.close();
     }
@@ -63,7 +66,7 @@ window.DevSystem = (() => {
           ? "Local backup"
           : "Create backup";
     });
-    $$("[data-system-check],[data-system-upload]").forEach(
+    $$("[data-system-check],[data-system-upload],[data-system-download],[data-system-compact],[data-system-local-review]").forEach(
       (b) => (b.disabled = b.disabled || gitBusy || restoreBusy),
     );
   }
@@ -76,7 +79,7 @@ window.DevSystem = (() => {
       overview: "Developer home",
       database: "Database inspector",
       backups: "Backups & restore",
-      export: "Git upload & updates",
+      export: "Git sync",
     }[view];
     U.root().innerHTML =
       U.title(title) +
@@ -143,7 +146,7 @@ window.DevSystem = (() => {
     return `<section class="panel"><div class="dev-status-strip"><span>V${esc(data.version)} / schema ${data.schema}</span><span>${bytes(data.database_bytes || 0)}</span><strong class="${data.integrity === "ok" ? "song" : "error"}">Integrity: ${esc(data.integrity)}</strong><button class="btn" data-tool="Database integrity">Health details</button><a href="/dev/tools/guides?guide=technical" data-dev-guide-link>Technical guide</a></div></section><section class="panel" id="system-inventory-panel"><div id="system-inventory"></div></section>`;
   }
   function backups() {
-    return `<section class="panel"><div class="section-head"><h2>Local backups</h2><a href="/dev/tools/guides">Dev guide</a></div><div class="system-actions">${button("Create backup", "data-system-backup")}<a class="btn" href="/api/dev/database/export">Download full database</a></div><label class="system-search">Find a backup<input id="system-backup-query" type="search" value="${esc(backupQuery)}" placeholder="Date, name or purpose…"></label><div class="backup-workspace"><div id="system-backups" class="system-bounded"></div><div id="system-restore"></div></div></section>`;
+    return `<section class="panel"><div class="section-head"><h2>Local backups</h2><a href="/dev/tools/export" data-dev="export">Git sync →</a></div><div class="system-actions">${button("Create backup", "data-system-backup")}<a class="btn" href="/api/dev/database/export">Download full database</a></div><div class="system-backup-filters"><label class="system-search">Find a backup<input id="system-backup-query" type="search" value="${esc(backupQuery)}" placeholder="Date, name or purpose…"></label><label>Backup type<select id="system-backup-purpose"><option value="">All types</option>${[...new Set(data.backups.map(r => r.purpose))].sort().map(p => `<option value="${esc(p)}" ${p === backupPurpose ? "selected" : ""}>${esc(p)}</option>`).join("")}</select></label><label>Order<select id="system-backup-order"><option value="newest" ${backupOrder === "newest" ? "selected" : ""}>Newest first</option><option value="oldest" ${backupOrder === "oldest" ? "selected" : ""}>Oldest first</option></select></label></div><div class="backup-workspace"><div id="system-backups" class="system-bounded"></div><div id="system-restore"></div></div></section>`;
   }
   const labels = {
     up_to_date: "Up to date",
@@ -157,6 +160,7 @@ window.DevSystem = (() => {
     const g = gitState || data.git,
       d = g?.database_sync,
       checked = g?.status_source === "checked";
+    const canDownload = checked && g?.available && g.review_token && !g.in_progress && d?.code === "database_remote_ahead";
     const canUpload =
       checked &&
       g?.available &&
@@ -184,7 +188,7 @@ window.DevSystem = (() => {
       database_updated: "Remote snapshot loaded",
       database_check_failed: "Comparison failed",
     };
-    return `<section class="panel dashboard-surface"><div class="section-head"><h2>Git & database sync</h2><a href="/dev/tools/guides">Dev guide</a></div><div class="system-actions">${button(gitBusy ? "Checking…" : "Refresh status", "data-system-check" + (!g?.available || gitBusy ? " disabled" : ""))}${button("Upload backup", 'data-system-upload aria-label="Upload database backup"' + (!canUpload || gitBusy ? " disabled" : ""), "primary")}${button("Compact Git storage", "data-system-compact" + (!g?.available || !g.review_token || g.in_progress || gitBusy ? " disabled" : ""))}${button("Compare databases…", 'data-system-local-review aria-label="Compare local and remote databases"' + (!g?.available || !g.review_token || !g.tracking_head || g.in_progress || gitBusy ? " disabled" : ""))}</div><p class="muted" role="status">${checked ? "Checked " + esc(date(g.checked_at)) : "Not freshly checked · cached results below"}</p><details class="git-comparison-summary" ${localReview ? "" : "open"}><summary>Code and database status</summary><div class="git-status-grid"><section><h3>Code commits</h3>${g?.available ? pair("Branch", g.branch) + pair("Target", g.remote + "/" + g.target) + pair("Local commit", g.head?.slice(0, 10)) + pair("Remote commit", g.tracking_head?.slice(0, 10)) + pair(checked ? "Code status" : "Cached code status", labels[g.state] || g.state, g.in_progress ? "error" : "") + pair("Local / incoming", String(g.ahead ?? "—") + " / " + String(g.behind ?? "—")) : `<p class="error">${esc(g?.message || "Git unavailable")}</p>`}${g?.storage ? pair("Git objects", bytes(g.storage.object_bytes)) + pair("Loose objects / packs", g.storage.loose_objects + " / " + g.storage.packs) : ""}</section><section><h3>Live database</h3>${pair(checked ? "Comparison" : "Last comparison", databaseLabels[d?.code] || "Not checked", !checked || ["database_conflict", "database_remote_ahead", "database_check_failed"].includes(d?.code) ? "error" : "song")}<p class="${d && ["database_conflict", "database_remote_ahead", "database_check_failed"].includes(d.code) ? "error" : "muted"}" role="status">${esc(d?.message || "Refresh to compare the live database with the committed snapshot.")}</p>${d?.local_songs != null ? pair("Local / remote songs", d.local_songs + " / " + d.remote_songs) : ""}${comparisonDetails(d)}${g?.behind ? '<p class="muted">Incoming code commits stay separate; a safe database backup can still upload.</p>' : ""}${g?.pending_code ? '<p class="muted">Local code commits stay local; backup uploads do not publish them.</p>' : ""}${g?.in_progress ? '<p class="error">Finish the active Git operation first.</p>' : ""}${
+    return `<section class="panel dashboard-surface"><div class="section-head"><h2>Git & database sync</h2><a href="/dev/tools/backups" data-dev="backups">Local backups →</a></div><div class="system-actions">${button(gitBusy ? "Checking…" : "Refresh status", "data-system-check" + (!g?.available || gitBusy ? " disabled" : ""))}${button("Upload backup", 'data-system-upload aria-label="Upload database backup"' + (!canUpload || gitBusy ? " disabled" : ""), "primary")}${canDownload ? button(gitBusy ? "Receiving…" : "Receive backup", "data-system-download" + (gitBusy ? " disabled" : ""), "primary") : ""}${button("Compact Git storage", "data-system-compact" + (!g?.available || !g.review_token || g.in_progress || gitBusy ? " disabled" : ""))}${button("Compare databases…", 'data-system-local-review aria-label="Compare local and remote databases"' + (!g?.available || !g.review_token || !g.tracking_head || g.in_progress || gitBusy ? " disabled" : ""))}</div><p class="muted" role="status">${checked ? "Checked " + esc(date(g.checked_at)) : "Not freshly checked · cached results below"}</p><div class="git-next-step" data-state="${esc(d?.code || "unchecked")}" role="status"><strong>${esc(databaseLabels[d?.code] || "Check remote status")}</strong><p>${esc(d?.message || "Refresh to compare this device with Git.")}</p>${canDownload ? "<small>No copy choice needed: this device has no changes since its baseline. A safety backup is made before receiving.</small>" : ""}</div><details class="git-comparison-summary"><summary>Code, devices & comparison details</summary><div class="git-status-grid"><section><h3>Code commits</h3>${g?.available ? pair("Branch", g.branch) + pair("Target", g.remote + "/" + g.target) + pair("Local commit", g.head?.slice(0, 10)) + pair("Remote commit", g.tracking_head?.slice(0, 10)) + pair(checked ? "Code status" : "Cached code status", labels[g.state] || g.state, g.in_progress ? "error" : "") + pair("Local / incoming", String(g.ahead ?? "—") + " / " + String(g.behind ?? "—")) : `<p class="error">${esc(g?.message || "Git unavailable")}</p>`}${g?.storage ? pair("Git objects", bytes(g.storage.object_bytes)) + pair("Loose objects / packs", g.storage.loose_objects + " / " + g.storage.packs) : ""}</section><section><h3>Live database</h3>${pair(checked ? "Comparison" : "Last comparison", databaseLabels[d?.code] || "Not checked", !checked || ["database_conflict", "database_check_failed"].includes(d?.code) ? "error" : "song")}<p class="${d && ["database_conflict", "database_check_failed"].includes(d.code) ? "error" : "muted"}" role="status">${esc(d?.message || "Refresh to compare the live database with the committed snapshot.")}</p>${d?.local_songs != null ? pair("Local / remote songs", d.local_songs + " / " + d.remote_songs) : ""}${comparisonDetails(d)}${g?.behind ? '<p class="muted">Incoming code commits stay separate; a safe database backup can still upload.</p>' : ""}${g?.pending_code ? '<p class="muted">Local code commits stay local; backup uploads do not publish them.</p>' : ""}${g?.in_progress ? '<p class="error">Finish the active Git operation first.</p>' : ""}${
       d?.local_changes || d?.remote_changes
         ? `<div class="db-scroll"><table class="data-table"><thead><tr><th>Table</th><th>Local + / − / edited</th><th>Remote + / − / edited</th></tr></thead><tbody>${[
             ...new Set([
@@ -219,10 +223,10 @@ window.DevSystem = (() => {
       rows = data.backups.filter((r) =>
         (r.name + " " + r.purpose + " " + r.modified)
           .toLocaleLowerCase()
-          .includes(q),
-      );
+          .includes(q) && (!backupPurpose || r.purpose === backupPurpose),
+      ).sort((a,b) => (backupOrder === "oldest" ? 1 : -1) * (a.modified.localeCompare(b.modified) || a.name.localeCompare(b.name)));
     root.innerHTML =
-      `<p>${rows.length} matching backups</p>` +
+      `<p class="muted">${rows.length} of ${data.backups.length} backups · ${backupOrder === "newest" ? "newest" : "oldest"} first</p>` +
       rows
         .slice(0, backupLimit)
         .map(
@@ -253,7 +257,7 @@ window.DevSystem = (() => {
     const id = ++loadId;
     loading = true;
     try {
-      const r = await U.api("/api/dev/system");
+      const r = await U.api("/api/dev/system" + (["backups", "export"].includes(view) ? "?view=" + view : ""));
       if (id !== loadId) return;
       data = r;
       gitState = r.git;
@@ -297,7 +301,9 @@ window.DevSystem = (() => {
     note =
       kind === "compact"
         ? "Compacting Git storage…"
-        : kind === "check"
+        : kind === "download"
+          ? "Backing up this device and receiving the newer backup…"
+          : kind === "check"
           ? "Checking remote…"
           : "Checking remote, saving snapshot and uploading…";
     draw();
@@ -310,6 +316,13 @@ window.DevSystem = (() => {
       gitState = r.git;
       if (data) data.git = r.git;
       note = r.message;
+      if (kind === "download") {
+        try {
+          await U.afterRestore();
+        } catch {
+          note += " Backup received; reload to refresh the catalogue.";
+        }
+      }
       if (kind === "compact" && r.before && r.after)
         note +=
           " Git objects: " +
@@ -515,6 +528,14 @@ window.DevSystem = (() => {
     }
     return false;
   }
+  document.addEventListener("change", e => {
+    if (e.target.id === "system-backup-purpose" || e.target.id === "system-backup-order") {
+      if (e.target.id === "system-backup-purpose") backupPurpose = e.target.value;
+      else backupOrder = e.target.value;
+      backupLimit = 10;
+      drawBackups();
+    }
+  });
   document.addEventListener("click", (e) => {
     const b = e.target.closest("button");
     if (!U || !b || b.disabled) return;
@@ -525,6 +546,7 @@ window.DevSystem = (() => {
     if (b.hasAttribute("data-system-check")) gitTask("check");
     if (b.hasAttribute("data-system-upload")) gitTask("upload");
     if (b.hasAttribute("data-system-local-review")) reviewLocalChoice();
+    if (b.hasAttribute("data-system-download")) gitTask("download");
     if (b.hasAttribute("data-system-local-apply")) keepLocalChoice();
     if (b.hasAttribute("data-system-local-cancel")) {
       localReview = null;
@@ -788,8 +810,8 @@ window.DevSelection = (() => {
     poolKey = pool.key;
     const q = query.trim().toLocaleLowerCase(),
       rows = pool.rows.filter((r) =>
-        (r.name + " " + r.album + " #" + r.id).toLocaleLowerCase().includes(q),
-      );
+        (r.name + " " + r.album + " #" + r.id).toLocaleLowerCase().includes(q) && (!backupPurpose || r.purpose === backupPurpose),
+      ).sort((a,b) => (backupOrder === "oldest" ? 1 : -1) * (a.modified.localeCompare(b.modified) || a.name.localeCompare(b.name)));
     const label =
       pool.key === "shelves"
         ? "Album base share"
