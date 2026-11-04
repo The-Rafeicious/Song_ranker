@@ -575,6 +575,42 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.equal(await page.locator('[data-ranking-view="bottom"]').getAttribute('aria-pressed'),'true');
   await page.locator('.rank-links a[href="/artists?view=bottom"]').click();await page.locator('.ranking-heading h1').waitFor();
   assert.match(await page.locator('.ranking-heading h1').textContent(),/Bottom Artists/);
+  // Audit every public profile/report composition, including expanded histories.
+  const reportRoutes=[['global','/global_stats'],['voting','/voting_stats'],['trivia','/trivia_stats'],['tournament','/tournament_stats'],['local-tournaments','/tournament_local_stats'],['guesser','/elo_guesser_stats'],['shelves','/album_shelves_stats'],['vibe','/vibe_map_stats'],['history','/history'],['song','/song/2'],['artist','/artist/Artist%20with%20a%20longer%20name'],['album','/album/A%20long%20album%20title%20for%20responsive%20testing'],['tag','/tag/Melancholy']];
+  for(const [name,route] of reportRoutes){
+   await page.goto(base+route);await page.locator('#main .panel').first().waitFor();
+   if(['song','artist','album','tag'].includes(name)){
+    await page.locator('#overall-profile').waitFor();
+    if(name!=='tag')await page.waitForFunction(()=>!document.querySelector('[data-song-details][aria-busy]'));
+   }
+   await page.locator('.profile-song-disclosure,.overall-breakdown,.guess-history-item,.shelf-history-item').evaluateAll(nodes=>nodes.slice(0,8).forEach(n=>n.open=true));
+   assert.equal(await page.locator('.profile-detail-note,.overall-balance-copy,.overall-mode-context').count(),0,'No methodology footnotes: '+name);
+   assert.ok(!/Recalculated|recalibrated|Public Elo retains a legacy anchor/i.test(await page.locator('#main').textContent()),'No scoring-update notices: '+name);
+   assert.ok((await page.locator('.history-match .versus-center').allTextContents()).every(t=>/^(VS|VSBlind|VSNon-blind)$/.test(t.trim())),'Compact match centres: '+name);
+   for(const width of [390,768,1365]){
+    await page.setViewportSize({width,height:1000});await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+    await bounded(page,width,'report-audit-'+name,folder);
+    const spills=await page.locator('.mode-stats-panel,.profile-mode-panel,.profile-inset,.report-facts,.joined-metrics>div,.overall-mode-grid>div,.versus-row').evaluateAll(nodes=>nodes.filter(e=>e.getBoundingClientRect().width&&getComputedStyle(e).overflowX==='visible'&&e.scrollWidth>e.clientWidth+2).map(e=>({class:e.className,width:e.clientWidth,content:e.scrollWidth,text:e.textContent.trim().slice(0,100)})));
+    assert.deepEqual(spills,[],'Container overflow: '+name+' at '+width);
+    if(width!==768)await page.screenshot({path:folder+'/report-audit-'+name+'-'+width+'.png',fullPage:true});
+   }
+  }
+  // Real font/layout measurement: keep full thousands where they fit, abbreviate
+  // only narrow count slots, then restore on expansion without changing scores.
+  await page.evaluate(()=>{
+   const host=document.createElement('div');host.id='qa-number-fit';host.className='stat';host.style.cssText='width:220px;min-width:0;max-width:none;padding:0';host.innerHTML='<span class="stat-label">Tracks tested</span><strong class="stat-value">1234</strong>';document.querySelector('#main').prepend(host);
+  });
+  assert.equal(await page.locator('#qa-number-fit strong').textContent(),'1234');
+  await page.locator('#qa-number-fit').evaluate(e=>e.style.width='50px');
+  await page.waitForFunction(()=>document.querySelector('#qa-number-fit strong').classList.contains('compact-count'));
+  assert.equal(await page.locator('#qa-number-fit strong').getAttribute('aria-label'),'1,234');
+  await page.locator('#qa-number-fit').evaluate(e=>e.style.width='220px');
+  await page.waitForFunction(()=>document.querySelector('#qa-number-fit strong').textContent==='1234');
+  await page.locator('#qa-number-fit').evaluate(e=>{e.querySelector('.stat-label').textContent='Elo rating';e.querySelector('strong').textContent='1234.56';e.style.width='50px'});
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  assert.equal(await page.locator('#qa-number-fit strong').textContent(),'1234.56');
+  assert.equal(await page.locator('#qa-number-fit strong').getAttribute('aria-label'),null);
+  await page.locator('#qa-number-fit').evaluate(e=>e.remove());
   // Reproduce a transient artwork failure and recover without navigating/reloading.
   let transientCoverRequests=0,permanentCoverRequests=0,lazyCoverRequests=0;
   const coverPng=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAIAAAACCAIAAAD91JpzAAAAEElEQVR4nGOQ3RkCRAwQCgAfygSpU2iFkQAAAABJRU5ErkJggg==','base64');

@@ -39,37 +39,85 @@ window.SongRankerUI = (() => {
   const countText = (value) => Number.isFinite(value)
     ? Math.abs(value) >= 1000 ? countFormatter.format(value).replace("K", "k") : String(value)
     : "—";
-  // Only summary counts are shortened. Ratings, positions, rates and raw tables
-  // retain their precision; refreshed summaries are handled by the same observer.
+  // Fit the exact value at its designed size first. Abbreviate counts only if
+  // they overflow; scores/ratings/rates retain every displayed digit. Refit on
+  // resize, disclosure opening, font readiness and asynchronously replaced data.
+  const numericSelector = ".stat-value, .joined-metrics > * > b, .joined-metrics dd, .mode-stats-metrics dd, .mode-stats-small-metrics dd, .global-metric > strong, .mode-stats-primary, .mode-stats-result > strong, .overall-value, .profile-rate-caption > strong, .versus-count > b, [data-count]";
+  const fittedNumbers = new WeakMap(), numberParents = new Set();
+  let numberObserver, numberTimer, measureCanvas;
   function refreshCounts() {
     if (typeof document === "undefined" || !document) return;
-    document.querySelectorAll(".stat-value, .mode-stats-metrics dd, .mode-stats-small-metrics dd, .global-metric > strong, .pulse-metrics b, .mini-stats b, [data-count]").forEach((node) => {
-      const label = node.parentElement.querySelector("dt, .stat-label, small, span")?.textContent || "";
-      if (/elo(?! matches)|rating|score|points|mean|average|accuracy|rate|gap|gain|credit|active days/i.test(label)) return;
-      const raw = node.textContent.trim();
-      if (node.classList.contains("compact-count") && /^[+-]?\d+(?:\.\d+)?$/.test(raw)) {
-        node.removeAttribute("title");
-        node.removeAttribute("aria-label");
-        node.removeAttribute("tabindex");
-        node.classList.remove("compact-count");
+    const nodes = [...document.querySelectorAll(numericSelector)];
+    const plans = [];
+    for (const node of nodes) {
+      if (node.children.length) continue;
+      const prior = fittedNumbers.get(node), displayed = node.textContent.trim();
+      const raw = prior && displayed === prior.rendered ? prior.raw : displayed;
+      if (!/^[+#−+\-]?\d[\d,.]*(?:\s*[/–→]\s*[#−+\-]?\d[\d,.]*)*%?$/.test(raw)) continue;
+      if (prior && displayed !== prior.rendered) {
+        node.removeAttribute("title"); node.removeAttribute("aria-label"); node.removeAttribute("tabindex");
       }
-      if (!/^[+-]?\d+(?:\.\d+)?$/.test(raw) || Math.abs(Number(raw)) < 1000) return;
-      const exact = new Intl.NumberFormat("en-GB", {maximumFractionDigits: 20}).format(Number(raw));
-      node.textContent = countText(Number(raw));
-      node.title = exact;
-      node.setAttribute("aria-label", exact);
-      node.setAttribute("tabindex", "0");
-      node.classList.add("compact-count");
-    });
+      node.style.removeProperty("font-size");
+      node.classList.remove("compact-count");
+      plans.push({node, raw});
+    }
+    for (const {node, raw} of plans) {
+      const style = getComputedStyle(node), parent = node.parentElement;
+      const parentStyle = getComputedStyle(parent);
+      const available = parent.clientWidth - parseFloat(parentStyle.paddingLeft || 0) - parseFloat(parentStyle.paddingRight || 0) - parseFloat(style.paddingLeft || 0) - parseFloat(style.paddingRight || 0);
+      if (available <= 0) continue; // Hidden/unlaid-out slots keep exact text.
+      measureCanvas ||= document.createElement("canvas");
+      const context = measureCanvas.getContext("2d");
+      if (!context) continue;
+      const baseSize = parseFloat(style.fontSize) || 36;
+      context.font = `${style.fontWeight} ${baseSize}px ${style.fontFamily}`;
+      const width = text => context.measureText(text).width + (parseFloat(style.letterSpacing) || 0) * text.length;
+      const label = parent.querySelector("dt, .stat-label, small, .report-meta, span")?.textContent || "";
+      const count = /^[+\-]?\d+(?:\.\d+)?$/.test(raw) && Math.abs(Number(raw)) >= 1000 &&
+        !/elo(?! matches)|rating|score|points|mean|average|accuracy|rate|gap|gain|credit|weight|evidence|confidence/i.test(label) &&
+        !node.matches(".overall-value, .mode-stats-primary, .mode-stats-result > strong, .profile-rate-caption > strong");
+      const compact = count && width(raw) > available + 1;
+      const rendered = compact ? countText(Number(raw)) : raw;
+      // Keep a readable 18px floor. Exceptional exact values may wrap at separators.
+      const size = Math.min(baseSize, Math.max(18, baseSize * available / Math.max(1, width(rendered))));
+      if (size < baseSize - .5) node.style.fontSize = `${size}px`;
+      if (node.textContent !== rendered) node.textContent = rendered;
+      node.classList.toggle("compact-count", compact);
+      if (compact) {
+        const exact = new Intl.NumberFormat("en-GB", {maximumFractionDigits: 20}).format(Number(raw));
+        node.title = exact; node.setAttribute("aria-label", exact); node.setAttribute("tabindex", "0");
+      } else if (fittedNumbers.has(node)) {
+        node.removeAttribute("title"); node.removeAttribute("aria-label"); node.removeAttribute("tabindex");
+      }
+      fittedNumbers.set(node, {raw, rendered});
+      numberParents.add(parent);
+    }
+    if (numberObserver) {
+      for (const parent of numberParents) {
+        if (!parent.isConnected) { numberObserver.unobserve(parent); numberParents.delete(parent); }
+        else numberObserver.observe(parent);
+      }
+    }
+  }
+  function scheduleNumbers() {
+    if (numberTimer) return;
+    const run = () => { numberTimer = null; refreshCounts(); };
+    numberTimer = true;
+    if (window.requestAnimationFrame) numberTimer = window.requestAnimationFrame(run);
+    else Promise.resolve().then(run);
   }
   if (typeof document !== "undefined" && typeof MutationObserver !== "undefined") {
     document.addEventListener("DOMContentLoaded", () => {
+      if (typeof ResizeObserver !== "undefined") numberObserver = new ResizeObserver(scheduleNumbers);
       refreshCounts();
       const main = document.querySelector("#main");
       if (main) {
-        const observer = new MutationObserver(refreshCounts);
+        const observer = new MutationObserver(scheduleNumbers);
         observer.observe(main, {subtree: true, childList: true, characterData: true});
-        window.addEventListener("pagehide", () => observer.disconnect(), {once: true});
+        window.addEventListener("resize", scheduleNumbers);
+        main.addEventListener("toggle", scheduleNumbers, true);
+        document.fonts?.ready.then(scheduleNumbers);
+        window.addEventListener("pagehide", () => { observer.disconnect(); numberObserver?.disconnect(); if (window.cancelAnimationFrame) window.cancelAnimationFrame(numberTimer); numberParents.clear(); }, {once: true});
       }
     });
   }

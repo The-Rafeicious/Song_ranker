@@ -108,7 +108,7 @@ async function harness(page,width=1280,size=75,eligible=true,detailState={}){
  for(const type of ['artist','album']){
   const collection=await harness(type,390),{d}=collection;
   check(d.querySelector('[data-song-details="voting"]').textContent.includes('Within-collection matches'),type+' separates internal voting');
-  check(d.querySelector('[data-song-details="guesser"]').textContent.includes('unique comparisons'),type+' counts Guesser pairs once');
+  check(d.querySelector('[data-song-details="guesser"]').textContent.includes('Different comparisons'),type+' counts Guesser pairs once');
   check(d.querySelector('[data-song-details="tournament"] .profile-opponent a.song[href="/song/1"]'),type+' finish identifies its collection track');
   check(d.querySelector('[data-song-details="tournament"] .profile-opponent a.song[href="/song/2"]'),type+' finish retains knockout opponent');
   check(d.querySelector('[data-song-details="trivia"] .profile-opponent a.song'),type+' recall identifies source song');
@@ -121,9 +121,9 @@ async function harness(page,width=1280,size=75,eligible=true,detailState={}){
  }
  const detail=await harness('song');
  check(detail.d.querySelector('[data-song-details="voting"]').textContent.includes('Different opponents'),'song shows opponents away from leaderboards');
- check(detail.d.querySelector('.profile-vote-mode').textContent.includes('of 75 rated tracks'),'mode standings use all rated songs');
+ check(detail.d.querySelector('.profile-vote-mode').textContent.includes('75Rated tracks'),'mode standings use all rated songs');
  const middle=detail.d.createElement('div');middle.innerHTML=detail.w.ProfileUI.stats([detail.data.songs[37]]);
- check(middle.querySelector('.profile-vote-mode').textContent.includes('Rank #38 of 75 rated tracks'),'middle-ranked songs use the whole cohort rather than a top/bottom slice');
+ check(middle.querySelector('.profile-vote-mode').textContent.includes('#38Mode rank75Rated tracks'),'middle-ranked songs use the whole cohort rather than a top/bottom slice');
  check(detail.d.querySelector('[data-song-details="trivia"]').textContent.includes('Previous · 5 rounds'),'recall comparison windows are explicit');
  check(detail.d.querySelector('[data-song-details="tournament"] a[href="/tournament/9/bracket"]'),'saved finishes link directly to bracket');
  check(detail.d.querySelector('[data-song-details="tournament"] .profile-result-context').textContent.includes('Lost in Final to'),'finish identifies knockout stage');

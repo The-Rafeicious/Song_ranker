@@ -323,7 +323,7 @@ body.site-style-baseline #main .versus-label {
   color: var(--muted);
 }
 body.site-style-baseline #main .versus-date {
-  font-size: 13px;
+  font-size: 16px;
   color: var(--muted);
   line-height: 1.4;
   overflow-wrap: anywhere;
@@ -334,9 +334,9 @@ body.site-style-baseline #main .versus-count b {
   font-weight: 900;
   overflow-wrap: anywhere;
 }
-body.site-style-baseline #main .versus-count small {
+body.site-style-baseline #main .versus-count :is(small, .report-meta) {
   display: block;
-  font-size: 13px;
+  font-size: 16px;
 }
 body.site-style-baseline #main .versus-mode-label {
   position: absolute;
@@ -393,21 +393,21 @@ body.site-style-baseline #main .versus-mode-label {
     font-size: 22px;
   }
   body.site-style-baseline #main .versus-date {
-    font-size: 11px;
+    font-size: 16px;
   }
   body.site-style-baseline #main .versus-count b {
     font-size: 20px;
   }
-  body.site-style-baseline #main .versus-count small {
-    font-size: 11px;
+  body.site-style-baseline #main .versus-count :is(small, .report-meta) {
+    font-size: 16px;
   }
   body.site-style-baseline #main .versus-rating {
-    font-size: 13px;
+    font-size: 16px;
     margin-top: 9px;
     gap: 3px 5px;
   }
   body.site-style-baseline #main .versus-rating strong {
-    font-size: 15px;
+    font-size: 16px;
   }
 }
 /* V5 shared report additions. Existing palette, baseline and mode owners remain. */
@@ -507,19 +507,37 @@ body.site-style-baseline #main :is(.joined-metrics dd, .joined-metrics b, .stat-
   word-break: normal;
   max-width: 100%;
 }
-body.site-style-baseline #main :is(.joined-metrics dd, .joined-metrics b, .stat-value, .global-metric > strong).compact-count {
-  font-size: clamp(18px, 25cqi, var(--site-value-size, 36px));
-  white-space: nowrap;
-  cursor: help;
-}
+ .compact-count { cursor: help; }
 .compact-count:focus-visible { outline: 2px solid currentColor; outline-offset: 3px; }
-
-body.site-style-baseline #main .joined-metrics > * > :is(dd, b),
-body.site-style-baseline #main .stat > .stat-value,
-body.site-style-baseline #main .global-metric > strong {
-  font-size: clamp(16px, 22cqi, var(--site-value-size, 36px));
+body.site-style-baseline #main :is(.stat-value, .joined-metrics > * > b, .joined-metrics dd, .global-metric > strong, .mode-stats-primary, .mode-stats-result > strong, .overall-value) {
+  min-width: 0;
+  max-width: 100%;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
 }
 
-body.site-style-baseline #main .mode-stats-small-metrics > * > dd {
-  font-size: clamp(16px, 22cqi, 28px);
+/* Match metadata uses the row's full width; the middle holds only VS/counts. */
+body.site-style-baseline #main .versus-context {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  min-width: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 10px 16px;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--versus-accent) 24%, transparent);
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.4;
+}
+body.site-style-baseline #main .versus-context :is(span, a, time) { font-size: 16px; overflow-wrap: anywhere; }
+body.site-style-baseline #main .versus-context > :is(span, a, time) { padding: 5px 10px; border-radius: 10px; background: var(--raised); max-width: 100%; }
+@media (max-width: 900px) {
+  body.site-style-baseline #main :is(.profile-history-body, .compact-elo-history) .versus-context { grid-row: 4; }
+}
+@media (max-width: 600px) {
+  body.site-style-baseline #main .versus-context { grid-row: 3; justify-content: flex-start; }
+  body.site-style-baseline #main .voting-stats-page .versus-context { grid-row: 4; }
 }

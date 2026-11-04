@@ -1791,8 +1791,8 @@ Tournament scope policy and backed-up removal of historical selective Elo.
 | [TournamentPolicyTests.test_historical_artist_elo_is_archived_voided_and_replayed_once](../tests/test_tournament_policy.py#L56) | `self` | Verify historical artist elo is archived voided and replayed once. |
 | [TournamentPolicyTests.test_failure_during_scope_replay_rolls_back_and_retains_archive](../tests/test_tournament_policy.py#L69) | `self` | Verify failure during scope replay rolls back and retains archive. |
 | [TournamentPolicyTests.test_report_has_semantic_colours_depth_and_bracket_payload](../tests/test_tournament_policy.py#L76) | `self` | Verify report has semantic colours depth and bracket payload. |
-| [TournamentPolicyTests.test_local_comparisons_filter_finished_results_and_keep_raw_counts](../tests/test_tournament_policy.py#L105) | `self` | Verify local comparisons filter finished results and keep raw counts. |
-| [TournamentPolicyTests.test_unfinished_blind_comparisons_hide_identities](../tests/test_tournament_policy.py#L144) | `self` | Verify unfinished blind comparisons hide identities. |
+| [TournamentPolicyTests.test_local_comparisons_filter_finished_results_and_keep_raw_counts](../tests/test_tournament_policy.py#L107) | `self` | Verify local comparisons filter finished results and keep raw counts. |
+| [TournamentPolicyTests.test_unfinished_blind_comparisons_hide_identities](../tests/test_tournament_policy.py#L146) | `self` | Verify unfinished blind comparisons hide identities. |
 
 ## tests/test_tournament_scoring.py
 
@@ -2048,16 +2048,16 @@ Disposable served-page and Chromium integration fixtures.
 | --- | --- | --- |
 | [run_dev](../tools/browser_check.py#L19) | `` | Run served Dev DOM checks against a disposable local fixture server. |
 | [serve_dev](../tools/browser_check.py#L58) | `database, port` | Serve dev; reads songs; writes albums, artists, genres, song_artists, song_genres, songs. |
-| [serve_dev.lookup](../tools/browser_check.py#L118) | `url` | Return deterministic Apple track offers for served import/review checks. |
-| [run_vibe](../tools/browser_check.py#L146) | `` | Run vibe; reads songs, tournament_entries, tournament_matches; writes albums, artists, genres, preference_events, song_artists, song_genres, song_vibe_positions, songs. |
-| [run_vibe.cover](../tools/browser_check.py#L222) | `` | Serve local artwork so browser screenshots do not depend on external images. |
-| [run_vibe.tag_audio_enable](../tools/browser_check.py#L231) | `` | Tag audio enable; POST /tag-test-enable. |
-| [run_vibe.tag_audio](../tools/browser_check.py#L239) | `` | Serve silence or bounded test tones without Apple transport. |
-| [run_vibe.enable_voting_report](../tools/browser_check.py#L257) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
-| [run_vibe.enable_tournament_map](../tools/browser_check.py#L271) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
-| [run_vibe.enable_discs](../tools/browser_check.py#L299) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
-| [run_vibe.enable_elo_replay](../tools/browser_check.py#L311) | `` | Create timestamped public votes only in the disposable browser fixture. |
-| [main](../tools/browser_check.py#L342) | `` | Run the requested disposable integration fixture. |
+| [serve_dev.lookup](../tools/browser_check.py#L121) | `url` | Return deterministic Apple track offers for served import/review checks. |
+| [run_vibe](../tools/browser_check.py#L149) | `` | Run vibe; reads songs, tournament_entries, tournament_matches; writes albums, artists, genres, preference_events, song_artists, song_genres, song_vibe_positions, songs. |
+| [run_vibe.cover](../tools/browser_check.py#L225) | `` | Serve local artwork so browser screenshots do not depend on external images. |
+| [run_vibe.tag_audio_enable](../tools/browser_check.py#L234) | `` | Tag audio enable; POST /tag-test-enable. |
+| [run_vibe.tag_audio](../tools/browser_check.py#L242) | `` | Serve silence or bounded test tones without Apple transport. |
+| [run_vibe.enable_voting_report](../tools/browser_check.py#L260) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
+| [run_vibe.enable_tournament_map](../tools/browser_check.py#L274) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
+| [run_vibe.enable_discs](../tools/browser_check.py#L302) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
+| [run_vibe.enable_elo_replay](../tools/browser_check.py#L314) | `` | Create timestamped public votes only in the disposable browser fixture. |
+| [main](../tools/browser_check.py#L345) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 

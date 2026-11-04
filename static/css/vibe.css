@@ -408,18 +408,18 @@ body.profile-page #main .vibe-profile-panel {
 }
 .vibe-global-leaders strong,
 .vibe-global-leaders span,
-.vibe-global-leaders small {
+.vibe-global-leaders :is(small, .report-meta) {
   display: block;
   margin-top: 8px;
 }
 .vibe-global-leaders strong {
   font-size: 24px;
 }
-.vibe-global-leaders strong small {
+.vibe-global-leaders strong :is(small, .report-meta) {
   display: inline;
   font-size: 14px;
 }
-.vibe-global-leaders > div > small {
+.vibe-global-leaders > div > :is(small, .report-meta) {
   color: #bba7af;
   font-size: 13px;
 }

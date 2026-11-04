@@ -1126,3 +1126,53 @@ GET /api/dev/system?view=export or view=backups returns only task status, avoidi
 full inventory/integrity scans. The default endpoint retains the full dashboard
 contract. Backup browsing filters by purpose and date order. Changing Dev tasks
 clears old task data and pending reviews before a new response renders.
+
+
+## Reading profiles and reports (v5.9.2)
+
+Public pages show measurements and availability, with calculation rules here:
+
+- Public Elo combines eligible recorded preferences. Blind and Non-blind ratings
+  each start at 1200 and reflect their own opponents and sample sizes. Selective
+  tournament first rounds have half weight in public win rates/evidence; library
+  first rounds have full influence. Local artist/album rounds remain points-only.
+  Cross-mode win-rate comparisons require three appearances per mode; independent
+  Elo comparisons require three effective votes per mode. Unusable records are
+  excluded. Historical rating anchors and policy updates are recorded internally,
+  without recalculation notices beside each public match.
+- Profiles distinguish raw completed results from weighted competition credit.
+  Internal collection matches contribute one win and one loss; opponent counts
+  name external songs. Recorded net Elo uses only usable before/after snapshots.
+  Recall details use completed saved rounds; edited lifetime totals can differ.
+  Guesser difficulty uses the gap saved when the pair was offered; unique pair
+  counts avoid counting both collection tracks twice. A perfect Shelves track
+  earns all its available points, even if other tracks in that round are wrong.
+- Tournament seeds are saved starting positions, rather than current standings.
+  The draw blends Elo and randomness with champion priority. Top/bottom halves
+  depend on bracket size (1–8 / 9–16 for sixteen songs). Seed #1 champions are
+  also top-half champions. Seed shares use only known seeds; higher-numbered seed
+  wins count later seeds beating earlier seeds, for example #12 beating #3.
+- Activity counts completed saved results. First-round Elo and a completed bracket
+  are separate events. Vibe activity retains only a track's latest update. Lower-
+  rated wins use pre-match public Elo; equal/missing ratings have no denominator.
+  Shelves order accuracy pools correct pairwise comparisons in gradeable rounds.
+  Participation targets advance to the next whole appearance after the current
+  eligible pool reaches the target. Missing/ungraded/undated counts stay visible.
+- The replay skips quiet votes and accelerates external-only song rank changes.
+  Its clock is UTC. Song replay uses the hero player; leaderboard replay uses the
+  leader's preview. Saved manual adjustments are not opponent-earned Elo gains.
+- Overall mode balance shows adjusted score, effective weight, points contribution
+  and relative evidence; collections also show eligible tracks. Contribution is
+  adjusted score × effective weight / 100. Collection confidence leaves unused
+  allocation neutral at 50%. Relative evidence measures exposure against current
+  typical/high exposure, independently of performance. The full calculator is in
+  Dev; no rating/scoring inputs are changed by this presentation cleanup.
+
+Numeric presentation measures each summary's available content width at its
+normal font size. It keeps the exact text if it fits; only overflowing counts use
+compact notation, with the exact count on hover/focus. Ratings, points, scores,
+positions, percentages and ratios keep their displayed precision and fit their
+slot independently. Resize, font readiness and asynchronous updates re-evaluate
+fit, restoring exact counts when more space becomes available. Raw tables retain
+exact text. Shared match rows reserve the centre for VS/counts and move mode,
+source, date/time and saved gap into a wrapping full-width footer.

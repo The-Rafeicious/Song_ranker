@@ -62,6 +62,9 @@ def serve_dev(database, port):
     os.environ["SONG_RANKER_DB"] = str(Path(database))
     os.environ["SONG_RANKER_PIN"] = "qa-test-pin"
     os.environ["SONG_RANKER_SECRET"] = "isolated-local-ui-test-secret-000000000000"
+    # This fixture lives under a checkout: never discover its parent repository
+    # when the Git page loads. Real Git transport has separate bare-remote tests.
+    os.environ["GIT_CEILING_DIRECTORIES"] = str(Path(database).resolve().parent)
     from songranker.storage.database import initialize_database
 
     initialize_database(os.environ["SONG_RANKER_DB"])

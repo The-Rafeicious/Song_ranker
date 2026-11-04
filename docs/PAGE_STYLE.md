@@ -285,9 +285,11 @@ Local tournament lookup has separate entity-type and record selectors; entity op
 
 Standard Vote family navigation, summaries and report headers use light green. Non-blind remains orange and Blind teal. Tournament Elo rows retain pink origin accents plus orange/teal visibility edges and labels.
 
-Summary counts use compact notation from 1,000 (for example 1.3k), with exact
-values in the title and accessible label. Preserve ratings, scores, percentages,
-positions and raw tables. Numeric slots use tabular figures and responsive size.
+Summary values use their designed type size and exact text first. Measure the
+available slot before abbreviation or font reduction. Only overflowing counts use
+compact notation (with exact hover/focus text); restore the full value when space
+returns. Ratings, scores, points, percentages, positions, ratios and raw tables
+retain precision. Numeric slots use tabular figures and a readable 18px floor.
 Participation bars show the first unfinished whole-appearance milestone across
 the current eligible pool, recalculated each report. Existing once-tested totals
 remain explicit. Vibe coverage measures retained map selections, not repeat plays.
@@ -393,3 +395,13 @@ typed copy choice; genuine conflicts retain the existing whole-copy review.
 Backup search, type and date-order controls align in one row, stacking on phones.
 Both pages link directly to one another. The retired Match network has no panels,
 links, routes or assets; saved match history and tournament bracket maps remain.
+
+
+Profiles and reports show data, not methodology or scoring-update notices.
+Calculation explanations belong in docs/TECHNICAL_GUIDE.md. Important secondary
+figures use labelled metrics or the shared report-facts surface; metadata is normal
+16px type, with mode/entity colours retained. Unknown/incomplete evidence stays
+visible. Keep detailed histories collapsed initially, with bounded titles and
+linked artwork. Paired-match centres hold VS/counts only; a wrapping, full-width
+footer holds mode, source, date/time and gaps. Never hide overflow to mask a bad
+layout. Size panels for their data, with shared spacing and responsive reflow.

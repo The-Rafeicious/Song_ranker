@@ -36,24 +36,24 @@
     <dl class="joined-metrics mode-stats-metrics">{{figure('Completed brackets',local_summary.summary.completed)}}{{figure('Matches',local_summary.summary.matches)}}{{figure('Tracks compared',local_summary.summary.tracks)}}</dl>
     {% if local_summary.tracks %}<div class="mode-stats-inset"><h3>Leading track</h3>{{song(local_summary.tracks[0],local_summary.tracks[0].championships,'Titles')}}</div>{% endif %}
   </section>
-  {% if selected_missing %}<p class="mode-stats-caption" role="status">That bracket is no longer available. Your tournament stats are below.</p>{% endif %}
+  {% if selected_missing %}<p class="report-facts" role="status">That bracket is no longer available. Your tournament stats are below.</p>{% endif %}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-overview">
     <div class="section-head"><h2 class="tournament" id="ts-overview">Tournament overview</h2>{% if summary.unfinished %}<a class="tournament" href="{{ url_for('tournament') }}">Saved brackets ↗</a>{% endif %}</div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">
-      <div><dt>Brackets</dt><dd>{{ summary.brackets }}{% if summary.unfinished %}<small class="ts-unfinished">({{ summary.unfinished }} unfinished)</small>{% endif %}</dd></div>
+      <div><dt>Brackets</dt><dd>{{ summary.brackets }}{% if summary.unfinished %}<span class="report-meta ts-unfinished">({{ summary.unfinished }} unfinished)</span>{% endif %}</dd></div>
       {{ figure('Matches decided',summary.matches) }}{{figure('Finished · last 30 days',summary.month)}}
       {{ figure('Track entries',('≥' if summary.missing_entries and summary.entries else '')+(summary.entries|string) if not summary.missing_entries or summary.entries else '—') }}
     </dl>
     <div class="mode-stats-inset mode-stats-rate"><h3>Brackets completed</h3><strong class="mode-stats-primary">{{ rate(summary.completion) }}</strong>{{ progress('Brackets completed',summary.completion) }}<p>{{ summary.finished }} / {{ summary.brackets }} brackets</p></div>
-    {% if summary.missing_entries %}<p class="mode-stats-caption">Entry counts unavailable for {{ summary.missing_entries }} {{ 'bracket' if summary.missing_entries==1 else 'brackets' }}.</p>{% endif %}
+    {% if summary.missing_entries %}<p class="report-facts">Entry counts unavailable for {{ summary.missing_entries }} {{ 'bracket' if summary.missing_entries==1 else 'brackets' }}.</p>{% endif %}
   </section>
   {{pulse(pulse_data)}}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-elo"><div class="section-head"><h2 class="tournament" id="ts-elo">First-round Elo</h2><a class="tournament" href="/history?origin=tournament">Match history ↗</a></div>
     <dl class="joined-metrics mode-stats-metrics">{{figure('Full influence',tournament_elo.full)}}{{figure('Half influence',tournament_elo.half)}}{{figure('Elo tracks involved',tournament_elo.tracks)}}</dl>
-    <p class="mode-stats-caption">Whole library: full Elo · Tags: half Elo · Artist / album: tournament points only</p>
-    <p class="mode-stats-caption">{{tournament_elo.total}} Elo matches · <span class="standard">{{tournament_elo.standard}} Non-blind</span> · <span class="blind">{{tournament_elo.blind}} Blind</span></p>
+
+    <p class="report-facts">{{tournament_elo.total}} Elo matches · <span class="standard">{{tournament_elo.standard}} Non-blind</span> · <span class="blind">{{tournament_elo.blind}} Blind</span></p>
   </section>
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-podium">
     <div class="section-head"><h2 class="tournament" id="ts-podium">Latest podium</h2>{% if latest %}<a class="tournament" href="{{ url_for('tournament_stats_page',tournament=latest.id) }}#tournament-{{ latest.id }}">Bracket #{{ latest.id }} ↗</a>{% endif %}</div>
@@ -64,7 +64,7 @@
         <h3>{{ ['Champion','Runner-up','Third place'][loop.index0] }}</h3>
         <span class="mode-stats-art">{{ art(place.song.cover_url) }}</span>
         <div class="mode-stats-copy">{{ song_name(place.song) }}{{ metadata(place.song) }}</div>
-        <strong class="mode-stats-primary">{{ '%g'|format(place.points) if place.points is not none else '—' }}<small> points</small></strong>
+        <strong class="mode-stats-primary">{{ '%g'|format(place.points) if place.points is not none else '—' }}<span class="report-meta"> points</span></strong>
       </div>{% endfor %}
     </div>
     {% if recent_champions %}<div class="mode-stats-inset"><h3>Previous champions</h3>
@@ -80,16 +80,16 @@
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-breakdowns">
     <div class="section-head"><h2 class="tournament" id="ts-breakdowns">Bracket breakdowns</h2></div>
-    <p class="mode-stats-caption">All saved brackets</p>
+
     {{ distribution('Bracket sizes',sizes) }}{{ distribution('Blind and non-blind',visibility) }}{{ distribution('Collection scopes',scopes) }}
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-activity">
     <div class="section-head"><h2 class="tournament" id="ts-activity">Match activity</h2></div>
     <dl class="joined-metrics mode-stats-metrics">{{ figure('Bracket matches',summary.main_matches) }}{{ figure('Bronze playoffs',summary.bronze_matches) }}{{ figure('Recorded points',('%g'|format(summary.points)) if summary.points is not none else '—') }}</dl>
-    {% if summary.other_matches or summary.missing_points %}<p class="mode-stats-caption">{% if summary.other_matches %}{{ summary.other_matches }} other saved match {{ 'type' if summary.other_matches==1 else 'types' }}.{% endif %}{% if summary.missing_points %} Points unavailable for {{ summary.missing_points }} {{ 'match' if summary.missing_points==1 else 'matches' }}.{% endif %}</p>{% endif %}
+    {% if summary.other_matches or summary.missing_points %}<p class="report-facts">{% if summary.other_matches %}{{ summary.other_matches }} other saved match {{ 'type' if summary.other_matches==1 else 'types' }}.{% endif %}{% if summary.missing_points %} Points unavailable for {{ summary.missing_points }} {{ 'match' if summary.missing_points==1 else 'matches' }}.{% endif %}</p>{% endif %}
     <div class="mode-stats-inset"><h3>Matches by stage</h3>
-      <div class="ts-stages">{% for stage in stages %}<div><strong title="{{ stage.label }}">{{ stage.label }}</strong>{{ progress(stage.label+' share of decided matches',stage.share) }}<span>{{ stage.count }} <small>· {{ rate(stage.share) }}</small></span></div>{% else %}<div class="empty">No decided matches yet.</div>{% endfor %}</div>
+      <div class="ts-stages">{% for stage in stages %}<div><strong title="{{ stage.label }}">{{ stage.label }}</strong>{{ progress(stage.label+' share of decided matches',stage.share) }}<span>{{ stage.count }} <span class="report-meta">· {{ rate(stage.share) }}</span></span></div>{% else %}<div class="empty">No decided matches yet.</div>{% endfor %}</div>
     </div>
   </section>
 
@@ -105,7 +105,7 @@
     <div class="ts-records">{% for record in records %}<article class="mode-stats-inset ts-record">
       <h3>{{ record.label }}</h3>
       {% if record.song %}<div class="ts-record-track"><span class="mode-stats-art">{{ art(record.song.cover_url) }}</span><div class="mode-stats-copy">{{ song_name(record.song) }}{{ metadata(record.song) }}</div></div>
-      <strong class="mode-stats-primary">{{ '%g'|format(record.value) }}{{ '%' if record.unit=='%' else '' }}{% if record.unit!='%' %}<small> {{ record.unit }}</small>{% endif %}</strong>
+      <strong class="mode-stats-primary">{{ '%g'|format(record.value) }}{{ '%' if record.unit=='%' else '' }}{% if record.unit!='%' %}<span class="report-meta"> {{ record.unit }}</span>{% endif %}</strong>
       <p>{{ '%.2f'|format(record.song.tournament_wins) }}W · {{ '%.2f'|format(record.song.tournament_losses) }}L · {{ record.song.entries }} brackets</p>
       {% else %}<div class="empty">No qualifying result yet.</div>{% endif %}
     </article>{% endfor %}</div>
@@ -114,7 +114,7 @@
   {% for category in categories %}
   <section class="panel dashboard-surface mode-stats-panel ts-entity ts-entity-{{ category.kind }}" aria-labelledby="ts-{{ category.kind }}-records">
     <div class="section-head"><h2 class="{{ category.kind }}" id="ts-{{ category.kind }}-records">{{ {'artist':'Artist records','album':'Album records','tag':'Tag records'}[category.kind] }}</h2></div>
-    <p class="mode-stats-caption">Titles, podiums and points · current collection links</p>
+
     <ol class="mode-stats-list mode-stats-dense">
     {% for row in category.rows %}<li class="mode-stats-row">
       <span class="mode-stats-art">{{ art(row.cover_url|default(''),category.kind=='artist') }}</span>
@@ -122,7 +122,7 @@
         {% if category.kind=='artist' %}{% set href=url_for('artist_page',artist_name=row.name) %}{% elif category.kind=='album' %}{% set href=url_for('album_page',album_title=row.name) %}{% else %}{% set href=url_for('tag_page',tag_name=row.name) %}{% endif %}
         <a class="{{ category.kind }} mode-stats-name" title="{{ row.name }}" href="{{ href }}">{{ row.name }}</a><span>{{ row.tracks }} {{ 'track' if row.tracks==1 else 'tracks' }} · {{ row.brackets }} brackets</span>
       </div>
-      <div class="mode-stats-result"><strong>{{ '%.2f'|format(row.titles) }}<small> {{ 'title' if row.titles==1 else 'titles' }}</small></strong><span>{{ '%.2f'|format(row.podiums) }} podium credit · {{ '%g'|format(row.points) }} points</span></div>
+      <div class="mode-stats-result"><strong>{{ '%.2f'|format(row.titles) }}<span class="report-meta"> {{ 'title' if row.titles==1 else 'titles' }}</span></strong><span>{{ '%.2f'|format(row.podiums) }} podium credit · {{ '%g'|format(row.points) }} points</span></div>
     </li>{% else %}<li class="empty">No tournament entries yet.</li>{% endfor %}
     </ol>
   </section>
@@ -130,24 +130,24 @@
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-seeds">
     <div class="section-head"><h2 class="tournament" id="ts-seeds">Seed patterns</h2></div>
-    <p class="mode-stats-caption">A seed is a track’s saved starting position in that bracket, not its current rank. Lower numbers are placed earlier. The draw combines Elo with randomness and gives previous champions priority.</p>
-    <p class="mode-stats-caption">Top half means seeds 1–8 in a 16-track bracket; bottom half means 9–16. Seed #1 champions counts bracket wins by the first seed, which is also included in the top-half count. The championship share compares top-half winners with all champions whose seed was saved.</p>
+
+
     <dl class="joined-metrics mode-stats-metrics">{{ figure('Seed #1 champions',seeds.first) }}{{ figure('Top-half champions',seeds.top_half) }}{{ figure('Bottom-half champions',seeds.bottom_half) }}</dl>
     <div class="mode-stats-comparisons">
       <div class="mode-stats-inset mode-stats-rate"><h3>Top-half championship share</h3><strong class="mode-stats-primary">{{ rate(seeds.top_share) }}</strong>{{ progress('Top-half championship share',seeds.top_share) }}<p>{{ seeds.top_half }} / {{ seeds.known }} champions with saved seeds</p></div>
-      <div class="mode-stats-inset mode-stats-rate"><h3>Higher-numbered seed wins</h3><strong class="mode-stats-primary">{{ rate(seeds.upset_share) }}</strong>{{ progress('Higher-numbered seed wins',seeds.upset_share) }}<p>{{ seeds.upsets }} / {{ seeds.matches }} matches with both seeds</p><p class="mode-stats-caption">How often a later seed beat an earlier one — for example, #12 beating #3. Only decided matches with both starting seeds saved count.</p></div>
+      <div class="mode-stats-inset mode-stats-rate"><h3>Higher-numbered seed wins</h3><strong class="mode-stats-primary">{{ rate(seeds.upset_share) }}</strong>{{ progress('Higher-numbered seed wins',seeds.upset_share) }}<p>{{ seeds.upsets }} / {{ seeds.matches }} matches with both seeds</p></div>
     </div>
-    {% if seeds.largest %}<div class="mode-stats-inset ts-seed-record"><h3>Highest-numbered champion seed</h3><p class="mode-stats-caption">The highest seed number to win a completed bracket.</p><div class="ts-record-track"><span class="mode-stats-art">{{ art(seeds.largest.song.cover_url) }}</span><div class="mode-stats-copy">{{ song_name(seeds.largest.song) }}{{ metadata(seeds.largest.song) }}</div><div class="mode-stats-result"><strong>#{{ seeds.largest.seed }}</strong><a class="tournament" href="{{ url_for('tournament_stats_page',tournament=seeds.largest.bracket.id) }}#tournament-{{ seeds.largest.bracket.id }}">{{ seeds.largest.bracket.size }}-track bracket #{{ seeds.largest.bracket.id }} ↗</a></div></div></div>{% endif %}
+    {% if seeds.largest %}<div class="mode-stats-inset ts-seed-record"><h3>Highest-numbered champion seed</h3><div class="ts-record-track"><span class="mode-stats-art">{{ art(seeds.largest.song.cover_url) }}</span><div class="mode-stats-copy">{{ song_name(seeds.largest.song) }}{{ metadata(seeds.largest.song) }}</div><div class="mode-stats-result"><strong>#{{ seeds.largest.seed }}</strong><a class="tournament" href="{{ url_for('tournament_stats_page',tournament=seeds.largest.bracket.id) }}#tournament-{{ seeds.largest.bracket.id }}">{{ seeds.largest.bracket.size }}-track bracket #{{ seeds.largest.bracket.id }} ↗</a></div></div></div>{% endif %}
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" id="tournament-archive" aria-labelledby="ts-archive">
-    <div class="section-head"><h2 class="tournament" id="ts-archive">Bracket history</h2><span class="mode-stats-caption">{{ archive_total }} {{ 'bracket' if archive_total==1 else 'brackets' }}</span></div>
+    <div class="section-head"><h2 class="tournament" id="ts-archive">Bracket history</h2><span class="report-facts">{{ archive_total }} {{ 'bracket' if archive_total==1 else 'brackets' }}</span></div>
     {% for t in archive %}
     <details class="mode-stats-inset ts-bracket{% if t.selected %} ts-selected{% endif %}" id="tournament-{{ t.id }}"{% if t.selected %} open{% endif %}>
       <summary><span class="ts-bracket-heading"><b>Bracket #{{ t.id }} · {{ t.size if t.size else '?' }} tracks</b><span>{{ t.visibility }} · {{ 'Completed' if t.finished else 'Unfinished' }} · {{ t.decided }}{% if t.expected_matches %} / {{ t.expected_matches }}{% endif %} matches</span></span><span class="ts-expand" aria-hidden="true">View details</span></summary>
       <div class="ts-bracket-body">
         {{ context(t, true) }}
-        {% if t.finished %}<div class="ts-bracket-champion"><span class="mode-stats-art">{{ art(t.champion.cover_url) }}</span><div class="mode-stats-copy"><small>{{ 'Champion' if t.finished else 'Saved progress' }}</small>{{ song_name(t.champion) }}{{ metadata(t.champion) }}</div><a class="btn tournament" href="{{ url_for('tournament',tournament=t.id) }}">View podium ↗</a></div>{% endif %}
+        {% if t.finished %}<div class="ts-bracket-champion"><span class="mode-stats-art">{{ art(t.champion.cover_url) }}</span><div class="mode-stats-copy"><span class="report-meta">{{ 'Champion' if t.finished else 'Saved progress' }}</span>{{ song_name(t.champion) }}{{ metadata(t.champion) }}</div><a class="btn tournament" href="{{ url_for('tournament',tournament=t.id) }}">View podium ↗</a></div>{% endif %}
         {% if not t.finished %}{{ progress('Bracket '+(t.id|string)+' progress',t.progress) }}{% endif %}
         <a class="btn tournament" href="{{url_for('tournament_bracket_page',tournament_id=t.id)}}">Explore bracket ↗</a>
       </div>

@@ -21,8 +21,8 @@ window.EloReplay = (() => {
       <div class="elo-replay-clock"><time data-replay-time>Starting ratings → current</time><span data-replay-step>Saved public Elo</span></div>
       <label class="elo-replay-seek">Timeline <input data-replay-seek type="range" min="0" max="0" value="0" disabled aria-label="Replay position"></label>
       <div class="elo-replay-layout" data-replay-layout hidden><div class="elo-replay-stage" data-replay-stage aria-label="${songId ? "Two tracks above and two below the selected song" : "Five highest public Elo ratings"}"></div>${songId ? "" : '<aside class="elo-replay-opponent" data-replay-opponent aria-label="Latest leaderboard points gain"></aside>'}</div>
-      <div class="elo-replay-cue" data-replay-cue aria-live="polite" aria-atomic="true">${songId ? "Follow this song and the tracks immediately around it." : "Watch the leaders change and hear the current top track."}</div>
-      <p class="mode-stats-caption elo-replay-note" data-replay-note>Current collection · Quiet votes are skipped · Date/time shown in UTC</p>`;
+      <div class="elo-replay-cue" data-replay-cue aria-live="polite" aria-atomic="true">${songId ? "Ready to replay." : "Ready to replay."}</div>
+      <div class="report-facts elo-replay-note" data-replay-note hidden></div>`;
     root.querySelector(`#${paceId}`).setAttribute("data-replay-speed", "");
     const $ = selector => root.querySelector(selector);
     const play = $("[data-replay-play]"), restart = $("[data-replay-restart]"), speed = $("[data-replay-speed]"), seek = $("[data-replay-seek]");
@@ -281,7 +281,8 @@ window.EloReplay = (() => {
             }
             seek.max = Math.max(0, data.frames.length - 1); seek.disabled = data.frames.length < 2;
             restart.disabled = data.frames.length < 2;
-            $("[data-replay-note]").textContent = `Current collection · Quiet votes skipped · UTC${songId ? " · External rank shifts fast-forward · Audio uses the cover player above" : ""}${data.anchored ? " · History starts at a saved anchor" : ""}${data.omitted ? ` · ${data.omitted} votes lack usable saved ratings` : ""}${data.reconciled ? " · Current endpoint includes saved rating adjustments" : ""}`;
+            $("[data-replay-note]").hidden = !data.omitted;
+            $("[data-replay-note]").textContent = data.omitted ? `${data.omitted} votes without usable saved ratings` : "";
             render();
           } catch (error) {
             if (disposed || error.name === "AbortError") return;

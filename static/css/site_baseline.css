@@ -424,7 +424,7 @@ body.site-style-baseline #main .metadata a {
     margin-top: 0;
     font-size: 28px;
   }
-  body.site-style-baseline #main .leaderboard .leader-score small {
+  body.site-style-baseline #main .leaderboard .leader-score :is(small, .report-meta) {
     font-size: 12px;
     margin: 0;
   }

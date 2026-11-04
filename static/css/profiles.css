@@ -75,7 +75,7 @@ body.profile-page #main .tag-description {
 body.profile-page #main .profile-facts {
   flex-wrap: wrap;
   gap: 10px 18px;
-  font-size: 15px;
+  font-size: 16px;
 }
 body.profile-page #main .profile-facts b {
   color: var(--page-color);
@@ -121,7 +121,7 @@ body.profile-page #main .album-player-info {
   border-radius: 0 0 var(--profile-cover-radius) var(--profile-cover-radius);
   background: linear-gradient(transparent, #000d);
   color: #fff;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.3;
   pointer-events: none;
 }
@@ -143,7 +143,7 @@ body.profile-page #main .album-player-info a {
 }
 body.profile-page #main .profile-preview-position {
   color: #eee;
-  font-size: 12px;
+  font-size: 16px;
   white-space: nowrap;
 }
 body.profile-page #main .profile-artist .album-player-info {
@@ -155,7 +155,7 @@ body.profile-page #main .profile-artist .album-player-info {
   background: #101010df;
 }
 body.profile-page #main .profile-artist .album-player-info a {
-  font-size: 15px;
+  font-size: 16px;
 }
 body.profile-page #main .profile-tag-list {
   position: relative;
@@ -184,8 +184,8 @@ body.profile-page #main .profile-tag-name {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-body.profile-page #main .profile-tag-list small {
-  font-size: 13px;
+body.profile-page #main .profile-tag-list :is(small, .report-meta) {
+  font-size: 16px;
   flex-shrink: 0;
 }
 body.profile-page #main .profile-key-stats {
@@ -240,7 +240,7 @@ body.profile-page #main .joined-metrics b {
   color: var(--section-color, var(--page-color));
   overflow-wrap: anywhere;
 }
-body.profile-page #main .joined-metrics small {
+body.profile-page #main .joined-metrics :is(small, .report-meta) {
   font-size: 16px;
   color: var(--muted);
 }
@@ -268,8 +268,8 @@ body.profile-page #main .profile-rate .overall-progress {
 body.profile-page #main .profile-rate .overall-progress span {
   background: var(--section-color, var(--page-color));
 }
-body.profile-page #main .profile-rate > small {
-  font-size: 15px;
+body.profile-page #main .profile-rate > :is(small, .report-meta) {
+  font-size: 16px;
   color: var(--muted);
   overflow-wrap: anywhere;
 }
@@ -393,7 +393,7 @@ body.profile-page #main .profile-track-row .compact-score {
   min-width: 0;
   margin-left: 0;
 }
-body.profile-page #main .profile-track-row .compact-score small {
+body.profile-page #main .profile-track-row .compact-score :is(small, .report-meta) {
   white-space: normal;
 }
 body.profile-page #main .profile-track-row .btn {
@@ -446,17 +446,17 @@ body.profile-page #main #history .pill-nav {
     font-size: 28px;
   }
   body.profile-page #main .profile-key-stats .stat-label {
-    font-size: 15px;
+    font-size: 16px;
   }
   body.profile-page #main .joined-metrics b {
     font-size: clamp(20px, 5vw, 25px);
   }
-  body.profile-page #main .joined-metrics small {
-    font-size: 14px;
+  body.profile-page #main .joined-metrics :is(small, .report-meta) {
+    font-size: 16px;
   }
   body.profile-page #main .profile-stat-links {
     justify-content: flex-end;
-    font-size: 15px;
+    font-size: 16px;
   }
   body.profile-page #main .profile-track-row {
     grid-template-columns: minmax(20px, max-content) 56px minmax(0, 1fr) 48px;
@@ -478,7 +478,7 @@ body.profile-page #main #history .pill-nav {
     grid-row: 1;
   }
   body.profile-page #main .profile-track-row .metadata {
-    font-size: 15px;
+    font-size: 16px;
   }
   body.profile-page #main .profile-track-row .compact-score {
     grid-column: 3;
@@ -500,12 +500,7 @@ body.profile-page #main .profile-song-details {
   padding-top: 20px;
   min-width: 0;
 }
-body.profile-page #main .profile-detail-note {
-  color: var(--muted);
-  font-size: 15px;
-  line-height: 1.5;
-  overflow-wrap: anywhere;
-}
+
 body.profile-page #main .profile-song-disclosure { margin-top: 18px; }
 body.profile-page #main .profile-song-disclosure summary {
   min-height: 44px;
@@ -531,10 +526,10 @@ body.profile-page #main .profile-result-list > li > strong {
   text-align: right;
   font-variant-numeric: tabular-nums;
 }
-body.profile-page #main .profile-result-list small {
+body.profile-page #main .profile-result-list :is(small, .report-meta) {
   display: block;
   color: var(--muted);
-  font-size: 14px;
+  font-size: 16px;
   margin-top: 5px;
   line-height: 1.5;
 }
@@ -548,5 +543,5 @@ body.profile-page #main .profile-opponent-copy { min-width: 0; }
 body.profile-page #main .profile-opponent-copy > a {
   display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-body.profile-page #main .profile-opponent-copy .metadata { font-size: 14px; }
-body.profile-page #main .profile-result-context { grid-column: 1 / -1; margin: 0; color: var(--muted); font-size: 14px; }
+body.profile-page #main .profile-opponent-copy .metadata { font-size: 16px; }
+body.profile-page #main .profile-result-context { grid-column: 1 / -1; margin: 0; padding: 12px; border-radius: 12px; background: var(--raised); color: var(--muted); font-size: 16px; }
