@@ -335,8 +335,8 @@ def collection(include_overall_sources=False, include_query_sources=False):
             or {}
         )
         if include_query_sources:
-            from songranker.reports.match_network import network_records
-            data['query_matches'] = network_records(conn, {s['id']:s for s in data['songs']}, include_local=True)[0]
+            from songranker.reports.query import match_records
+            data['query_matches'] = match_records(conn, {s['id']:s for s in data['songs']}, include_local=True)[0]
         return data
     finally:
         conn.close()

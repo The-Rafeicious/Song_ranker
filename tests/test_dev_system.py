@@ -52,6 +52,22 @@ class DeveloperSystemTests(unittest.TestCase):
         with readonly(self.path) as db:
             return capture(db)
 
+    def test_git_and_backups_status_skip_full_inventory_scans(self):
+        with patch.object(system, 'inventory', side_effect=AssertionError('No full scan')):
+            for view in ('export', 'backups'):
+                response = self.client.get('/api/dev/system?view=' + view)
+                self.assertEqual(response.status_code, 200)
+                self.assertIn('backups', response.json)
+                self.assertNotIn('inventory', response.json)
+
+    def test_baseline_receive_needs_auth_browser_review_and_single_worker(self):
+        self.assertEqual(services.app.test_client().post('/api/dev/git/download', json={}).status_code, 302)
+        self.assertEqual(self.client.post('/api/dev/git/download', json={}).status_code, 400)
+        self.assertEqual(self.client.post('/api/dev/git/download', json={}, environ_overrides={'wsgi.multiprocess': True}).status_code, 409)
+        # A status receipt is browser-bound; a forged token cannot reach adoption.
+        with patch.object(system.GitSync, 'use_remote', side_effect=AssertionError('No adoption')):
+            self.assertEqual(self.client.post('/api/dev/git/download', json={'review_token': 'forged'}).status_code, 400)
+
     def test_focused_dev_destinations_require_auth_and_match_the_navigation_registry(
         self,
     ):
@@ -387,6 +403,18 @@ class DeveloperSystemTests(unittest.TestCase):
                 upload.assert_called_once_with("target-1")
         self.assertEqual(r.status_code, 200)
         self.assertIn("review_token", r.json["git"])
+
+    def test_baseline_receive_uses_browser_bound_target_without_typed_choice(self):
+        with patch.object(system.GitSync, 'status', return_value=dict(available=True, fingerprint='target-1')):
+            token = self.client.get('/api/dev/git/status').json['review_token']
+            with patch.object(system.GitSync, 'use_remote', return_value=dict(ok=True, code='database_updated', message='Received')) as receive:
+                response = self.client.post('/api/dev/git/download', json={'review_token': token})
+                receive.assert_called_once_with(expected='target-1')
+            self.assertEqual(response.status_code, 200)
+            other = services.app.test_client()
+            with other.session_transaction() as session:
+                session['is_admin'] = True
+            self.assertEqual(other.post('/api/dev/git/download', json={'review_token': token}).status_code, 400)
 
     def test_git_failures_return_actionable_status_and_current_review(self):
         with patch.object(

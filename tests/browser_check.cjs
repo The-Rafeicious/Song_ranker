@@ -251,7 +251,7 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.locator('[data-tags-mode="bulk"]').click();assert.equal(await page.locator('[data-tags-mode="bulk"]').getAttribute('aria-pressed'),'true');
   // Isolate only the Git transport: real served Dev markup/scripts and confirmation UI.
   const gitChoice={available:true,state:'behind',branch:'main',remote:'origin',target:'main',destination:'example.org/owner/app',tracking_head:'abc',ahead:0,behind:1,pending_code:false,code_changes:0,in_progress:false,review_token:'browser-git-review',history:[],snapshot:{exists:true,name:'database_backup.sql',bytes:20}};
-  await page.route('**/api/dev/system',async route=>{const response=await route.fetch();const body=await response.json();body.git=gitChoice;await route.fulfill({json:body});});
+  await page.route('**/api/dev/system*',async route=>{const response=await route.fetch();const body=await response.json();body.git=gitChoice;await route.fulfill({json:body});});
   const gitDetails={code:'database_conflict',reason:'different_device',message:'Device 2 changed the remote database; compare copies.',local_hash:'a'.repeat(64),remote_hash:'b'.repeat(64),baseline_hash:'c'.repeat(64),local_device:1,remote_device:2,remote_time:'2026-10-23T10:00:00Z',snapshot_commit:'d'.repeat(40),local_songs:7,remote_songs:7,different_rows:{song_vibe_positions:{added:0,removed:24,edited:4}},local_changes:{songs:{added:0,removed:0,edited:1}},remote_changes:{song_vibe_positions:{added:24,removed:0,edited:0}}};
   await page.route('**/api/dev/git/check',route=>route.fulfill({json:{ok:true,message:'Fresh comparison complete',git:{...gitChoice,status_source:'checked',checked_at:'2026-10-22T12:00:00Z',upload_ready:false,database_sync:gitDetails}}}));
   await page.route('**/api/dev/git/keep-local/review',route=>route.fulfill({json:{ok:true,local:{Songs:7,'Vibe positions':0},remote:{Songs:7,'Vibe positions':24},choice_token:'browser-choice',details:gitDetails,git:gitChoice,message:'Compare both copies.'}}));
@@ -276,6 +276,16 @@ await page.locator('#global-vibe[aria-busy="false"]').waitFor();
   await page.locator('#system-local-confirmation').fill('USE REMOTE');await page.locator('[data-system-local-apply]').click();await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Reviewed remote database loaded'));assert.equal(remoteApplied,1);
   await page.locator('[data-system-compact]').click();await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Git storage compacted'));assert.equal(compacted,1);
 assert.ok(await page.locator('[data-system-upload]').isDisabled());
+  // A proven unchanged local baseline receives directly, with no typed copy choice.
+  await page.unroute('**/api/dev/git/check');
+  await page.route('**/api/dev/git/check',route=>route.fulfill({json:{ok:true,message:'Unchanged baseline',git:{...gitChoice,status_source:'checked',upload_ready:false,database_sync:{...gitDetails,code:'database_remote_ahead',reason:'local_unchanged',message:'Local data still matches the accepted baseline.'}}}}));
+  let received=0;
+  await page.route('**/api/dev/git/download',async route=>{assert.deepEqual(route.request().postDataJSON(),{review_token:'browser-git-review'});received++;await route.fulfill({json:{ok:true,message:'Backup received with safety backup.',git:{...gitChoice,status_source:'checked',database_sync:{code:'database_matches',message:'Copies match.'}}}});});
+  await page.locator('[data-system-check]').click();await page.locator('[data-system-download]:enabled').waitFor();
+  assert.equal(await page.locator('#system-local-confirmation').count(),0);
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'dev-receive-backup',folder);await page.screenshot({path:folder+'/dev-receive-backup-'+width+'.png',fullPage:true});}
+  await page.locator('[data-system-download]').click();await page.waitForFunction(()=>document.querySelector('#system-note').textContent.includes('Backup received'));assert.equal(received,1);
+  assert.equal(await page.locator('[data-system-download]').count(),0);
   await page.goto(base+'/dev/dashboard');await page.locator('.dev-home-areas').waitFor();
   assert.equal(await page.locator('.dev-navbar').count(),1);assert.equal(await page.locator('.nav-matches,.dev-sidebar,.dev-taskbar,.dev-category').count(),0);
   assert.equal(await page.locator('#dev-page-menu > a').count(),4);assert.equal(await page.locator('.dev-home-status > section').count(),3);assert.equal(await page.locator('.dev-home-areas [data-dev]').count(),27);
@@ -505,49 +515,6 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'song-elo-replay',folder);}
 
   await page.locator('.elo-replay-panel').screenshot({path:folder+'/song-elo-replay.png'});
-  await page.emulateMedia({reducedMotion:'no-preference'});
-  // Opponent networks use real saved votes, a lazy song panel and bounded canvas.
-  await page.goto(base+'/song/1');await page.locator('[data-network-start]').waitFor();
-  assert.equal(await page.locator('[data-match-network] canvas').count(),0,'Song network remains lazy');
-  await page.locator('[data-network-start]').click();await page.waitForFunction(()=>document.querySelector('[data-match-network] .network-status')?.textContent.includes('connections'));
-  assert.ok(await page.locator('[data-match-network] .network-viewport canvas').isVisible());
-  assert.equal(await page.locator('[data-match-network] audio').count(),0,'Network never creates audio');
-  await page.goto(base+'/match-network?song_id=1');
-  await page.waitForFunction(()=>document.querySelector('[data-match-network] .network-status')?.textContent.includes('connections'));
-  const networkSource=page.locator('[data-match-network] [data-game-select$="-source"]');
-  await networkSource.locator('.game-select-trigger').click();assert.ok(await networkSource.locator('.game-select-menu').isVisible());
-  assert.equal(await networkSource.locator('.game-select-menu').evaluate(e=>getComputedStyle(e).position),'absolute');
-  assert.equal(await networkSource.locator('.game-select-trigger').evaluate(e=>getComputedStyle(e).color),'rgb(156, 219, 145)');
-  await networkSource.locator('[data-game-option="all"]').click();await page.waitForFunction(()=>!document.querySelector('[data-match-network][aria-busy]'));
-  await page.locator('.network-song-list summary').click();
-  await page.locator('[data-network-node="1"]').click();
-  await page.locator('[data-network-pair]').first().click();
-  await page.locator('.network-match-list li').first().waitFor();
-  assert.match(await page.locator('.network-details').textContent(),/Won:|Lost:/);
-  assert.match(await page.locator('.network-details').textContent(),/Current Elo/);
-  const initial=await page.locator('.network-viewport canvas').screenshot();
-  await page.locator('[data-network-action="in"]').click();
-  const zoomed=await page.locator('.network-viewport canvas').screenshot();assert.ok(!initial.equals(zoomed),'Canvas zoom changes the drawing');
-  await page.locator('.network-viewport').focus();await page.keyboard.press('ArrowRight');await page.keyboard.press('Home');
-  for(const width of [390,768,1365]){
-   await page.setViewportSize({width,height:1000});await bounded(page,width,'match-network',folder);
-   await page.locator('[data-match-network]').screenshot({path:folder+'/match-network-'+width+'.png'});
-  }
-  await page.locator('[data-network-action="close"]').click();
-  await page.locator('[data-match-network] input[type="search"]').fill('Bracket track');
-  await page.locator('[data-network-find]').first().waitFor();
-  await page.locator('[data-network-find]').first().click();
-  await page.waitForFunction(()=>!document.querySelector('[data-match-network][aria-busy]'));
-  assert.ok(await page.locator('.network-details .network-identity').count());
-  await page.locator('[data-network-action="all"]').click();await page.waitForFunction(()=>!document.querySelector('[data-match-network][aria-busy]'));
-  assert.match(await page.locator('.network-legend').textContent(),/loser → winner/);
-  assert.match(await page.locator('.network-viewport canvas').getAttribute('aria-label'),/loser-to-winner/);
-  for(const width of [390,1365]){
-   await page.setViewportSize({width,height:1000});await bounded(page,width,'whole-match-network',folder);
-   await page.locator('[data-match-network]').screenshot({path:folder+'/whole-match-network-'+width+'.png'});
-  }
-  await page.emulateMedia({reducedMotion:'reduce'});
-  assert.equal(await page.locator('[data-match-network]').evaluate(root=>root.getAnimations({subtree:true}).length),0);
   await page.emulateMedia({reducedMotion:'no-preference'});
   await page.goto(base+'/query');
   await page.locator('.query-result').first().waitFor();

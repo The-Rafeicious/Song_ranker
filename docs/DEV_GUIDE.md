@@ -138,14 +138,18 @@ reviews show verified disc/track proposals; ambiguous matches still need manual 
 
 Opening Git refreshes the remote and compares its committed SQL backup with the
 **live database**. Refresh status repeats the check; Upload always checks again.
-Code ahead/behind and database safety are independent.
+Code ahead/behind and database safety are independent. The Git page shows the next
+action first; expand Code, devices & comparison details for hashes and row deltas.
+Git and backup task status skips full health/integrity scans. Backups has type and
+newest/oldest filters alongside its search, plus a direct link to Git sync.
 
 | Comparison | Action |
 | --- | --- |
 | Local and remote hashes match | No duplicate backup commit. |
 | Remote hash matches the accepted baseline | Local edits/deletions upload without another choice. |
+| Local hash still matches its accepted baseline; remote changed | Receive backup directly, with a safety backup first. The normal launcher does this before serving. |
 | Last remote backup was uploaded by this device | Trust the current local database, including intentional resets or restores. |
-| Another/unidentified device changed the remote backup | Compare the copies before keeping either one. No automatic database replacement. |
+| Both local and remote changed from the baseline, with another/unidentified remote writer | Compare the copies before keeping either one. |
 | Invalid/missing previously accepted snapshot | Keep local data and review the remote problem. |
 
 Device numbers start at **1**, then **2**, **3**, and so on when each new
@@ -161,7 +165,7 @@ records per table. “Only local”, “Only remote” and “Different values�
 whole rows by identity; schema and ID high-water differences are also included.
 Expand the per-table details when counts alone do not explain a difference.
 
-Choose **Keep this device’s local database** and type `KEEP LOCAL`, or **Use the
+When both copies need a choice, choose **Keep this device’s local database** and type `KEEP LOCAL`, or **Use the
 reviewed remote database** and type `USE REMOTE`. Switching choices clears the
 confirmation. Keep local archives both copies and accepts that exact remote as
 the baseline, allowing Upload immediately. Use remote takes a safety backup and

@@ -483,13 +483,27 @@ class GitSync:
             Path(path).unlink(missing_ok=True)
         return result
 
-    def review_database(self, state):
-        """Compare hashes/devices without replacing live data; preserve review copies."""
+    def review_database(self, state, adopt_unchanged=False):
+        """Compare copies; only launcher reconciliation may adopt an unchanged baseline."""
         from songranker.storage.git_database import DatabaseSync
 
         policy = DatabaseSync(self, state)
         with policy.review() as reviewed:
             result = dict(policy.public(reviewed), database_binding=policy.binding)
+            if adopt_unchanged and result["code"] == "database_remote_ahead":
+                backup = policy.adopt(reviewed)
+                result.update(
+                    code="database_updated", backup=backup,
+                    local_hash=reviewed["remote_hash"], baseline_hash=reviewed["remote_hash"],
+                    local_songs=reviewed["remote_songs"], different_rows={}, local_changes={}, remote_changes={},
+                    message="Newer remote backup loaded: local data matched its baseline. The previous database was backed up.",
+                )
+                try:
+                    policy.remember(reviewed["commit"], reviewed["blob"], reviewed["remote_hash"])
+                    return self.database_report(result)
+                except (OSError, sqlite3.Error, ValueError):
+                    result["message"] += " Local sync status could not be saved; refresh Git status."
+                    return result
             if result["code"] == "database_matches":
                 policy.remember(
                     reviewed["commit"], reviewed["blob"], reviewed.get("remote_hash")
@@ -525,7 +539,7 @@ class GitSync:
                     )
                 self.fetch(state)
                 state = self.inspect()
-                result = self.review_database(state)
+                result = self.review_database(state, adopt_unchanged=True)
                 result = dict(
                     result, ok=result["code"] != "database_conflict", action="database"
                 )
@@ -1045,8 +1059,12 @@ class GitSync:
                 )
             return self.failure("keep_local", error)
 
-    def use_remote(self, choice):
-        """Apply an explicitly reviewed remote copy with stale checks and rollback."""
+    def use_remote(self, choice=None, expected=None):
+        """Apply a reviewed choice, or receive remote only while local equals its baseline.
+
+        Both paths fetch again, validate inside the Git lock, and recheck exact
+        live bytes under the database write lock before backing up/replacing.
+        """
         adopted = False
         result = {}
         try:
@@ -1058,7 +1076,7 @@ class GitSync:
                         "operation_in_progress",
                         "Finish the active Git operation first.",
                     )
-                if state["fingerprint"] != choice.get("fingerprint"):
+                if state["fingerprint"] != (choice.get("fingerprint") if choice else expected):
                     raise SyncError(
                         "stale_target", "Git changed. Compare the databases again."
                     )
@@ -1067,19 +1085,24 @@ class GitSync:
                 from songranker.storage.git_database import DatabaseSync
 
                 policy = DatabaseSync(self, state)
-                if policy.binding != choice.get("binding"):
+                if choice and policy.binding != choice.get("binding"):
                     raise SyncError(
                         "stale_target",
                         "Database or destination changed. Compare again.",
                     )
                 with policy.review() as reviewed:
-                    if any(
+                    if choice and any(
                         reviewed.get(k) != choice.get(k)
                         for k in ("commit", "blob", "live_hash")
                     ):
                         raise SyncError(
                             "stale_database",
                             "Local or remote data changed. Neither database was replaced; compare again.",
+                        )
+                    if not choice and reviewed["code"] != "database_remote_ahead":
+                        raise SyncError(
+                            "database_conflict",
+                            "Local data no longer matches an unchanged baseline. Refresh status and compare the copies; neither was replaced.",
                         )
                     backup = policy.adopt(reviewed)
                     adopted = True

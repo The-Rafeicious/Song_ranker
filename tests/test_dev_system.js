@@ -22,7 +22,7 @@ async function harness(view='',width=1280,session={}){
   if(url==='/api/collection')return respond(data);
   if(url==='/api/dev/song-sources')return respond({songs:Object.fromEntries(data.songs.map(s=>[s.id,{status:'needs_link',content_label:'Unknown'}]))});
   if(url.startsWith('/api/dev/database/inspect?'))return respond({object:{name:'songs',sql:'CREATE TABLE songs(id INTEGER)'},columns:[{name:'id',type:'INTEGER',pk:1,notnull:0,hidden:0,dflt_value:null}],rows:[{cells:[{type:'integer',value:'1',truncated:false}],review_token:'row'}],total:4,offset:0,limit:25,foreign_keys:[],indexes:[]});
-  if(url==='/api/dev/system')return respond(state);
+  if(url.startsWith('/api/dev/system'))return respond(state);
   if(url==='/api/dev/backup')return respond({backup:'manual_new_'+(++backups)+'.db'});
   if(url==='/api/dev/git/check')return respond({message:'Remote checked.',git:state.git});
   if(url==='/api/dev/git/upload')return respond({message:'Database backup uploaded.',git:state.git});
@@ -108,7 +108,7 @@ async function gitFlows(){
  for(const extra of [{in_progress:true},{tracking_head:null}]){
   h.state.git=git(extra);h.w.testDev.setView('export');await flush();check(h.d.querySelector('[data-system-upload]').disabled,'unsafe Git state disables upload');
  }
- for(const code of ['database_remote_ahead','database_conflict','database_check_failed']){
+ for(const code of ['database_conflict','database_check_failed']){
   h.state.git=git({database_sync:{code,message:'Database <needs> review & retry'}});h.w.testDev.setView('export');await flush();
   check(h.d.querySelector('p.error[role="status"]').textContent.includes('Database <needs> review & retry'),'database state shown separately from code commits');
   check(!h.d.querySelector('p.error needs'),'database message escaped');
@@ -152,7 +152,7 @@ async function staleResponses(){
  const first=h.w.testDev.refreshData();await flush();await h.w.testDev.refreshData();old.resolve({...h.data,songs:h.data.songs.map(s=>({...s,title:'Old '+s.id}))});await first;
  check(h.w.testDev.records('songs')[0].title.startsWith('New'),'late pre-restore catalogue cannot overwrite newer fetch');
  check(h.errors.length===0,'late responses have no script errors');h.close();
- const bad=await harness('database');bad.handler(url=>url==='/api/dev/system'?{status:503,body:{message:'Temporarily unavailable'}}:undefined);bad.w.testDev.setView('overview');await flush();
+ const bad=await harness('database');bad.handler(url=>url.startsWith('/api/dev/system')?{status:503,body:{message:'Temporarily unavailable'}}:undefined);bad.w.testDev.setView('overview');await flush();
  check(bad.d.querySelector('[data-system-retry]'),'status failure offers retry');bad.handler(()=>undefined);bad.click('[data-system-retry]');await flush();check(!bad.d.querySelector('[data-system-retry]'),'retry recovers');bad.close();
 }
 async function responsiveContracts(){
@@ -243,6 +243,34 @@ async function remoteChoiceAndCompaction(){
  check(d.querySelector('#system-note').textContent.includes('compacted')&&d.querySelector('.git-status-grid').textContent.includes('1.0 KB'),'compaction result and storage sizes are visible');h.close();
 }
 
-if(require.main===module)(async()=>{await entryAndShortcuts();await deferredCatalogue();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();await freshDatabaseReadiness();await remoteChoiceAndCompaction();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
+async function baselineReceiveAndBackupFilters(){
+ const h=await harness('export');
+ h.state.git=git({database_sync:{code:'database_remote_ahead',message:'Local baseline unchanged'},upload_ready:false});
+ h.w.testDev.setView('export');await flush();
+ check(!h.d.querySelector('[data-system-download]').disabled,'unchanged baseline exposes direct receive');
+ check(h.d.querySelector('[data-system-upload]').disabled,'stale local cannot upload over newer remote');
+ check(!h.d.querySelector('#system-local-confirmation'),'safe receive requires no typed copy choice');
+ const pending=deferred();h.handler(url=>url==='/api/dev/git/download'?pending.promise:undefined);
+ h.click('[data-system-download]');h.click('[data-system-download]');await flush();
+ check(h.requests.filter(r=>r.url==='/api/dev/git/download').length===1,'receive is single flight');
+ check(JSON.parse(h.requests.find(r=>r.url==='/api/dev/git/download').options.body).review_token==='git-review','receive binds browser status');
+ pending.resolve({ok:true,message:'New backup received',git:git({database_sync:{code:'database_matches'}})});await flush();
+ check(!h.d.querySelector('[data-system-download]'),'matched copies no longer offer receive');
+ check(h.d.querySelector('#system-note').textContent.includes('New backup received'),'receive outcome stays visible');
+ h.handler(()=>undefined);h.state.backups=[
+ {name:'manual_old.db',purpose:'Manual backup',modified:'2026-10-01T00:00:00Z',bytes:100},
+ {name:'incoming_new.db',purpose:'Incoming Git database',modified:'2026-11-01T00:00:00Z',bytes:100}];
+ h.w.testDev.setView('backups');await flush();
+ check(h.requests.some(r=>r.url==='/api/dev/system?view=backups'),'backups request focused status');
+ check(h.d.querySelector('.system-backup p').textContent==='incoming_new.db','backups newest first');
+ h.input('#system-backup-order','oldest','change');
+ check(h.d.querySelector('.system-backup p').textContent==='manual_old.db','oldest order works');
+ h.input('#system-backup-purpose','Incoming Git database','change');
+ check(h.d.querySelectorAll('.system-backup').length===1,'type filter narrows backups');
+ check(h.d.querySelector('.system-backup p').textContent==='incoming_new.db','type filter selects matching backup');
+ h.close();
+}
+
+if(require.main===module)(async()=>{await entryAndShortcuts();await deferredCatalogue();await inventoryAndBackups();await gitFlows();await restoreFlows();await staleResponses();await responsiveContracts();await stopFlows();await localDatabaseChoice();await freshDatabaseReadiness();await remoteChoiceAndCompaction();await baselineReceiveAndBackupFilters();console.log(JSON.stringify({suite:'Developer system',passed:true,assertions}));})().catch(error=>{console.error(error);process.exitCode=1});
 
 
