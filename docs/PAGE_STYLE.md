@@ -408,3 +408,11 @@ layout. Size panels for their data, with shared spacing and responsive reflow.
 
 Empty activity keeps its counts, compact state and Daily figures disclosure,
 without reserving large blank bar/line plots.
+
+
+Global Stats uses the shared mode-spectrum title/navigation label and a quiet
+multi-mode page glow. Collection-wide panels are neutral/mixed; mode and entity
+panels retain their own semantic accents. Global summaries use the same metric
+sizes, panel spacing, linked record metadata and labels as their detailed pages.
+Its Elo distribution shares Voting Stats' voted-track cohort and bands, excluding
+unplayed/manual ratings. Bracket links open the saved bracket workspace.

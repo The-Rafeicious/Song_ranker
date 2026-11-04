@@ -519,7 +519,7 @@
     {
       home: "mixed",
       standard: "voting",
-      global_stats: "voting",
+      global_stats: "mixed",
       voting_stats: "voting",
       history: "voting",
       recognition_stats: "recognition",

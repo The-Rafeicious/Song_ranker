@@ -20,6 +20,7 @@
   --shelves-deep: #592862;
   --overall: #f5ead8;
   --vibe: #ed6573;
+  --mode-spectrum: linear-gradient(105deg, var(--standard), var(--blind), var(--recognition), var(--tournament), var(--guesser), var(--shelves), var(--vibe));
 }
 /* Mode/entity palette and page-tone variables are defined here once. */
 :root:has(body[data-tone="guesser"]),
@@ -7744,3 +7745,15 @@ body:is([data-page="tournament_bracket"],:has(#tournament-replay)) .footer { wid
 
 /* Navbar interaction policy lives here, independent of the active page. */
 .navbar :is(a,summary):is(:hover,:focus-visible){text-decoration:none}
+
+/* Global Stats represents every mode; individual report panels keep their accents. */
+.nav-global-stats, .global-theme-title {
+  color: var(--overall);
+  background: var(--mode-spectrum);
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+@media (forced-colors: active) {
+  .nav-global-stats, .global-theme-title { background: none; color: CanvasText; -webkit-text-fill-color: currentColor; }
+}
