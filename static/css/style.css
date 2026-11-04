@@ -6304,9 +6304,6 @@ body[data-tone="shelves"] .btn.primary:hover {
   margin-top: 10px;
   color: var(--shelves);
 }
-.shelf-track {
-  transform-style: preserve-3d;
-}
 .shelf-track.reveal-pending.reveal-track {
   border-color: #5d5265;
   box-shadow: none;
