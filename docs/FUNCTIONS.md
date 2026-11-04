@@ -457,35 +457,35 @@ Adaptive draw algorithms plus the shared SQL exposure/recency adapters.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [nonnegative](../songranker/modes/selection.py#L19) | `value` | Coerce exposure/evidence input to a finite nonnegative float, defaulting invalid values to zero. |
-| [policy](../songranker/modes/selection.py#L30) | `counts` | Smooth stage changes relative to this pool's mean, never a hard match quota. |
-| [exposure_probabilities](../songranker/modes/selection.py#L47) | `counts, added_at=None, now=None` | Bounded below-average support plus an eight-percent uniform floor. |
-| [pool_probabilities](../songranker/modes/selection.py#L77) | `songs, counts, fallback` | Compute exposure-aware draw probabilities using mode counts and catalogue age. |
-| [weighted_index](../songranker/modes/selection.py#L84) | `weights, rng=random` | Draw an index from a validated nonnegative weight distribution using the supplied random source. |
-| [quantile](../songranker/modes/selection.py#L105) | `values, fraction` | Linearly interpolate a quantile from the sorted eligible rating distribution. |
-| [rating_spread](../songranker/modes/selection.py#L114) | `ratings` | IQR, then 10–90% span, then median adjacent distinct-rating gap. |
-| [rated_pool](../songranker/modes/selection.py#L133) | `songs` | Keep unique songs with finite numeric Elo ratings for preference and tournament draws. |
-| [counts_for](../songranker/modes/selection.py#L153) | `songs, counts, fallback` | Resolve per-song mode exposure counts, using the requested row field only when no count map exists. |
-| [voting_weights](../songranker/modes/selection.py#L163) | `songs, counts=None, other_counts=None, recent=(), *, fallback='matches_played'` | Apply pool-sized recency and each track's own visibility balance to exposure. |
-| [choose_match](../songranker/modes/selection.py#L194) | `songs, rng=random, *, counts=None, previous=(), pair_counts=None, other_counts=None, recent=()` | Exposure-fair Elo neighbours with soft recency and per-track mode balance. |
-| [choose_match.closeness](../songranker/modes/selection.py#L212) | `i` | Weight a candidate by its rating distance from the first song relative to the pool scale. |
-| [choose_single](../songranker/modes/selection.py#L237) | `songs, rng=random, *, counts=None, previous=None` | Draw one exposure-weighted song while avoiding the previous song when alternatives exist. |
-| [vibe_probabilities](../songranker/modes/selection.py#L250) | `songs, *, counts=None, previous=None, now=None` | Adaptive draws with extra mass for the least-completed Vibe Map pass. |
-| [choose_vibe_song](../songranker/modes/selection.py#L276) | `songs, rng=random, *, counts=None, previous=None` | One unique eligible song; coverage first, no rating or preview requirement. |
-| [draw_entries](../songranker/modes/selection.py#L295) | `pool, size, rng=random, *, counts=None, other_counts=None, recent=()` | Select unique exposure-weighted tournament entries with a bounded Vibe affinity after the first draw. |
-| [tournament_tracks](../songranker/modes/selection.py#L320) | `pool, size, rng=random, *, counts=None, local_strength=None, other_counts=None, recent=()` | Fair entry draw followed by strength seeding; local evidence is bounded. |
-| [tournament_selection_evidence](../songranker/modes/selection.py#L340) | `conn, pool, is_blind, *, scope='global', scope_id=None` | Read entry-based visibility counts and pool-relative recent bracket groups. |
-| [preference_evidence](../songranker/modes/selection.py#L380) | `conn` | Read pair exposure and local seed evidence without writing ratings. |
-| [shelves_feasible](../songranker/modes/selection.py#L414) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
-| [draw_shelves](../songranker/modes/selection.py#L424) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None` | Album-first fairness; frozen ten-track draws with capacity lookahead. |
-| [mode_counts](../songranker/modes/selection.py#L519) | `conn, mode` | Read mode exposures and add effective weighted tournament participation to voting modes. |
-| [preference_pair](../songranker/modes/selection.py#L537) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
-| [vibe_song](../songranker/modes/selection.py#L570) | `conn, *, counts=None, previous=None, rng=random` | Read-only Vibe Map draw, ready for the later round controller. |
-| [album_vibe_groups](../songranker/modes/selection.py#L600) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
-| [recent_preferences](../songranker/modes/selection.py#L615) | `conn, owner=None, limit=128` | Read a bounded newest-first song history across both voting visibilities. |
-| [previous_preference](../songranker/modes/selection.py#L641) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
-| [shelf_history](../songranker/modes/selection.py#L667) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
-| [with_catalogue_age](../songranker/modes/selection.py#L682) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
+| [nonnegative](../songranker/modes/selection.py#L18) | `value` | Coerce exposure/evidence input to a finite nonnegative float, defaulting invalid values to zero. |
+| [policy](../songranker/modes/selection.py#L29) | `counts` | Smooth stage changes relative to this pool's mean, never a hard match quota. |
+| [exposure_probabilities](../songranker/modes/selection.py#L46) | `counts, added_at=None, now=None` | Bounded below-average support plus an eight-percent uniform floor. |
+| [pool_probabilities](../songranker/modes/selection.py#L76) | `songs, counts, fallback` | Compute exposure-aware draw probabilities using mode counts and catalogue age. |
+| [weighted_index](../songranker/modes/selection.py#L83) | `weights, rng=random` | Draw an index from a validated nonnegative weight distribution using the supplied random source. |
+| [quantile](../songranker/modes/selection.py#L104) | `values, fraction` | Linearly interpolate a quantile from the sorted eligible rating distribution. |
+| [rating_spread](../songranker/modes/selection.py#L113) | `ratings` | IQR, then 10–90% span, then median adjacent distinct-rating gap. |
+| [rated_pool](../songranker/modes/selection.py#L132) | `songs` | Keep unique songs with finite numeric Elo ratings for preference and tournament draws. |
+| [counts_for](../songranker/modes/selection.py#L152) | `songs, counts, fallback` | Resolve per-song mode exposure counts, using the requested row field only when no count map exists. |
+| [voting_weights](../songranker/modes/selection.py#L162) | `songs, counts=None, other_counts=None, recent=(), *, fallback='matches_played'` | Apply pool-sized recency and each track's own visibility balance to exposure. |
+| [choose_match](../songranker/modes/selection.py#L193) | `songs, rng=random, *, counts=None, previous=(), pair_counts=None, other_counts=None, recent=()` | Exposure-fair Elo neighbours with soft recency and per-track mode balance. |
+| [choose_match.closeness](../songranker/modes/selection.py#L211) | `i` | Weight a candidate by its rating distance from the first song relative to the pool scale. |
+| [choose_single](../songranker/modes/selection.py#L236) | `songs, rng=random, *, counts=None, previous=None` | Draw one exposure-weighted song while avoiding the previous song when alternatives exist. |
+| [vibe_probabilities](../songranker/modes/selection.py#L249) | `songs, *, counts=None, previous=None, now=None` | Adaptive draws with extra mass for the least-completed Vibe Map pass. |
+| [choose_vibe_song](../songranker/modes/selection.py#L275) | `songs, rng=random, *, counts=None, previous=None` | One unique eligible song; coverage first, no rating or preview requirement. |
+| [draw_entries](../songranker/modes/selection.py#L294) | `pool, size, rng=random, *, counts=None, other_counts=None, recent=()` | Select unique exposure-weighted tournament entries with a bounded Vibe affinity after the first draw. |
+| [tournament_tracks](../songranker/modes/selection.py#L319) | `pool, size, rng=random, *, counts=None, local_strength=None, other_counts=None, recent=()` | Fair entry draw followed by strength seeding; local evidence is bounded. |
+| [tournament_selection_evidence](../songranker/modes/selection.py#L339) | `conn, pool, is_blind, *, scope='global', scope_id=None` | Read entry-based visibility counts and pool-relative recent bracket groups. |
+| [preference_evidence](../songranker/modes/selection.py#L379) | `conn` | Read pair exposure and local seed evidence without writing ratings. |
+| [shelves_feasible](../songranker/modes/selection.py#L413) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
+| [draw_shelves](../songranker/modes/selection.py#L423) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None` | Album-first fairness; frozen ten-track draws with capacity lookahead. |
+| [mode_counts](../songranker/modes/selection.py#L518) | `conn, mode` | Read mode exposures and add effective weighted tournament participation to voting modes. |
+| [preference_pair](../songranker/modes/selection.py#L536) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
+| [vibe_song](../songranker/modes/selection.py#L569) | `conn, *, counts=None, previous=None, rng=random` | Read-only Vibe Map draw, ready for the later round controller. |
+| [album_vibe_groups](../songranker/modes/selection.py#L599) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
+| [recent_preferences](../songranker/modes/selection.py#L614) | `conn, owner=None, limit=128` | Read a bounded newest-first song history across both voting visibilities. |
+| [previous_preference](../songranker/modes/selection.py#L640) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
+| [shelf_history](../songranker/modes/selection.py#L666) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
+| [with_catalogue_age](../songranker/modes/selection.py#L681) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
 
 ## songranker/modes/shelves.py
 
@@ -786,7 +786,7 @@ Shared exposure/coverage health and diagnostics using production selectors.
 | [normalize](../songranker/reports/health.py#L88) | `weights` | Normalise diagnostic weights to probabilities, returning zeros for an empty-weight distribution. |
 | [build_selection_health](../songranker/reports/health.py#L96) | `conn, context=None` | Build selection health; reads albums, challenge_runs, genres, shelf_album_exposures, song_details, song_genres, songs, sqlite_master. |
 | [build_selection_health.pool](../songranker/reports/health.py#L142) | `key, label, rows, counts, *, previous=(), rule='base', recent=(), other_counts=None, unit='tracks', kind='song', ready=True` | Project an eligible draw pool into production-rule probabilities and exposure diagnostics. |
-| [build_selection_health.coverage](../songranker/reports/health.py#L262) | `label, count` | Describe one eligibility count relative to the full catalogue with coverage health. |
+| [build_selection_health.coverage](../songranker/reports/health.py#L283) | `label, count` | Describe one eligibility count relative to the full catalogue with coverage health. |
 
 ## songranker/reports/query.py
 

@@ -4,7 +4,6 @@ import math
 from itertools import groupby
 import random
 import statistics
-import sys
 import time
 from songranker.modes.vibe_similarity import SongVibeBias, AlbumVibeBias
 

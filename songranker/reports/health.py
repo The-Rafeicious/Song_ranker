@@ -171,6 +171,27 @@ def build_selection_health(conn, context=None):
             weights = S.voting_weights(rows, counts, other_counts, recent, fallback="tournament_entries")
         elif rule == "single" and n > 1:
             weights = [0 if s["id"] in excluded else w for s, w in zip(rows, base)]
+        probabilities = normalize(weights) if ready else [0.0] * n
+        mean = fmean(values) if n else None
+        entries = [
+            dict(
+                id=s["id"],
+                name=s.get("title", ""),
+                album=albums.get(s.get("album_id"), {}).get("title", ""),
+                exposure=c,
+                base_probability=b,
+                probability=p,
+                cooling=s["id"] in excluded and p == 0,
+            )
+            for s, c, b, p in zip(rows, values, base, probabilities)
+        ]
+        eligible = sum(p > 0 for p in probabilities)
+
+        spread = (
+            S.rating_spread(s["elo_score"] for s in rows)
+            if rows and "elo_score" in rows[0]
+            else None
+        )
         health = exposure_health(values, spread)
         pools.append(
             dict(
