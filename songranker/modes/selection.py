@@ -420,6 +420,30 @@ def shelves_feasible(groups, available, count):
     )
 
 
+def shelf_album_weights(groups, album_counts, track_counts, count):
+    """Size-aware exposure support; two-album rounds favour more track capacity.
+
+    Compare track exposure density, including the album's expected placement load.
+    Size preference is relative to the current pool, bounded, and weaker for three
+    albums. A random floor keeps every eligible album in contention.
+    """
+    ids = list(groups)
+    if not ids:
+        return {}
+    sizes = [len(groups[aid]) for aid in ids]
+    reference = statistics.median(sizes)
+    density = [max(
+        sum(nonnegative(track_counts.get(t['id'], t.get('shelf_attempts', 0))) for t in groups[aid]) / len(groups[aid]),
+        nonnegative(album_counts.get(aid, 0)) * (10 / count) / len(groups[aid]),
+    ) for aid in ids]
+    support = exposure_probabilities(density)
+    exponent = .5 if count == 2 else .25
+    weights = [w * max(.5, min(2, (size / reference) ** exponent))
+               for w, size in zip(support, sizes)]
+    total = math.fsum(weights)
+    return {aid: w / total for aid, w in zip(ids, weights)}
+
+
 def draw_shelves(
     groups,
     album_counts,
@@ -429,8 +453,13 @@ def draw_shelves(
     rng=random,
     *,
     vibe_groups=None,
+    album_artists=None,
 ):
-    """Album-first fairness; frozen ten-track draws with capacity lookahead."""
+    """Equal feasible formats; soft album/artist/recency balance, then track exposure.
+
+    Album size and track coverage adapt to the live pool; no artist or exposure
+    quota excludes a feasible choice. Saved rounds remain frozen.
+    """
     if type(count) is not int or count not in (0, 2, 3):
         return None
     groups = {aid: list(tracks) for aid, tracks in groups.items() if len(tracks) >= 2}
@@ -445,19 +474,12 @@ def draw_shelves(
     n = rng.choice(possible)
     history = list(history)
     last = set(history[-1]) if history else set()
-    fresh = [aid for aid in ids if aid not in last]
-    if shelves_feasible(groups, fresh, n):
-        ids = fresh
     all_ids = list(groups)
     vibe = AlbumVibeBias(
         {aid: (vibe_groups or groups).get(aid, groups[aid]) for aid in all_ids}
     )
-    base = dict(
-        zip(
-            all_ids,
-            exposure_probabilities([album_counts.get(aid, 0) for aid in all_ids]),
-        )
-    )
+    base = shelf_album_weights(groups, album_counts, track_counts, n)
+    artists = {aid: set((album_artists or {}).get(aid, ())) for aid in all_ids}
     ages = {}
     for age, albums in enumerate(reversed(history)):
         for aid in albums:
@@ -481,6 +503,7 @@ def draw_shelves(
         ]
         weights = [
             base[aid]
+            * (.35 if aid in last else 1)
             * (
                 1.0
                 if aid not in ages
@@ -490,8 +513,12 @@ def draw_shelves(
         ]
         if chosen:
             weights = [
-                w * vibe.multiplier(chosen[0], aid) for w, aid in zip(weights, eligible)
+                w * vibe.multiplier(chosen[0], aid)
+                * (1.4 if artists[chosen[0]] & artists[aid] else 1)
+                for w, aid in zip(weights, eligible)
             ]
+        total = math.fsum(weights)
+        weights = [.15 / len(eligible) + .85 * w / total for w in weights]
         chosen.append(eligible[weighted_index(weights, rng)])
     allocation = dict.fromkeys(chosen, 2)
     while sum(allocation.values()) < 10:
@@ -504,6 +531,7 @@ def draw_shelves(
     for aid in chosen:
         remaining = list(groups[aid])
         weights = pool_probabilities(remaining, track_counts, "shelf_attempts")
+        weights = [.15 / len(remaining) + .85 * w for w in weights]
         for _ in range(allocation[aid]):
             index = weighted_index(weights, rng)
             selected.append(remaining.pop(index))

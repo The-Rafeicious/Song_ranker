@@ -590,7 +590,7 @@ body.gameplay-page #main .shelf-position .shelf-position-actual {
   color: var(--song);
 }
 body.gameplay-page #main .shelf-revealed-answer > :is(span, b) {
-  font-size: 14px;
+  font-size: 16px;
 }
 body.gameplay-page #main .shelf-audio-bar {
   max-width: 780px;
@@ -615,7 +615,7 @@ body.gameplay-page #main .shelf-cover-score {
 }
 body.gameplay-page #main .shelf-cover-score small {
   flex-basis: 100%;
-  font-size: 14px;
+  font-size: 16px;
 }
 body.gameplay-page #main .shelf-cover-score strong {
   font-size: 32px;
@@ -953,3 +953,19 @@ body[data-page="standard"][data-vote-mode="standard"] { --game-accent:var(--stan
 body[data-page="standard"][data-vote-mode="blind"] { --game-accent:var(--blind); }
 body[data-page="standard"] [data-mode="standard"] { color:var(--standard); }
 body[data-page="standard"] [data-mode="blind"] { color:var(--blind); }
+
+/* Revealed album identities remain usable around the score overlay. */
+body.gameplay-page #main .shelf-album-link {display: block; width: 100%; height: 100%; border-radius: inherit;}
+body.gameplay-page #main .shelf-album-link:focus-visible {outline: 3px solid var(--album); outline-offset: 5px;}
+body.gameplay-page #main .shelf-album-art:has(.shelf-album-link) .shelf-cover-score {pointer-events: none;}
+body.gameplay-page #main .shelf-column-head h2 {min-width: 0; max-width: 100%; line-height: 1.35; overflow-wrap: anywhere;}
+body.gameplay-page #main .shelf-column-head h2 a {display: block; color: inherit;}
+body.gameplay-page #main .shelf-column-head h2 a:hover {text-decoration: underline; text-underline-offset: 4px;}
+body.gameplay-page #main .shelf-revealed-answer {min-width: 0; gap: 8px; line-height: 1.4;}
+body.gameplay-page #main .shelf-revealed-answer > :is(strong, span, b) {overflow-wrap: anywhere;}
+body.gameplay-page #main .shelf-reveal-progress {font-size: 16px; line-height: 1.5; max-width: 100%; overflow-wrap: anywhere;}
+@media(max-width: 520px) {
+  body.gameplay-page #main .shelf-perfect {padding: 20px; gap: 14px; text-align: center;}
+  body.gameplay-page #main .shelf-perfect-copy {flex-basis: calc(100% - 76px); text-align: left;}
+  body.gameplay-page #main .shelf-perfect-score {width: 100%;}
+}

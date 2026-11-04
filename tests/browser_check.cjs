@@ -408,6 +408,9 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.ok(await page.locator('#shelf-perfect').isVisible(),'Perfect round gets compact feedback after reveal');
   await page.emulateMedia({reducedMotion:'reduce'});assert.equal(await page.locator('#shelf-perfect').evaluate(e=>getComputedStyle(e).animationName),'none');await page.emulateMedia({reducedMotion:'no-preference'});
   assert.ok((await page.locator('.shelf-position-actual').allTextContents()).some(t=>t.includes('2·')));
+  assert.equal(await page.locator('.shelf-column-head h2 a').count(),2,'Revealed album titles are linked');
+  assert.equal(await page.locator('.shelf-album-link').count(),2,'Revealed album covers are linked');
+  assert.ok(await page.locator('#shelf-perfect').isVisible(),'Perfect round gets a finished result panel');
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shelves-discs-result',folder);await page.screenshot({path:folder+'/shelves-discs-result-'+width+'.png',fullPage:true});}
   // Actual grading: one adjacent swap is a near miss; the other album is reversed.
   await page.route('**/api/album-shelves/round',async route=>{const response=await route.fetch(),data=await response.json();data.songs.forEach(s=>s.audio_url='');await route.fulfill({response,json:data})});

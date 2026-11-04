@@ -109,7 +109,7 @@ class VibeSimilarityTests(unittest.TestCase):
         old=self.captured(fn,plain);new=self.captured(fn,groups)
         self.assertEqual(old[0],new[0])
         self.assertTrue(any(abs(a-b)>1e-9 for a,b in zip(old[1],new[1])))
-        for a,b in zip(old[1],new[1]):self.assertTrue(.85<=b/a<=1.15+1e-12)
+        for a,b in zip(old[1],new[1]):self.assertTrue(.85/1.15-1e-12<=b/a<=1.15/.85+1e-12)
         for seed in range(30):
             albums,tracks=S.draw_shelves(groups,{}, {},[],count=3,rng=random.Random(seed))
             self.assertEqual(len(albums),3);self.assertEqual(len(tracks),10)

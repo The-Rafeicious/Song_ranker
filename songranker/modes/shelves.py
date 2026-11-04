@@ -140,6 +140,10 @@ def shelf_candidates(conn, count):
         r["album_id"]: r["appearances"]
         for r in conn.execute("SELECT * FROM shelf_album_exposures")
     }
+    artists = defaultdict(set)
+    for row in conn.execute("SELECT s.album_id,sa.artist_id FROM songs s JOIN song_artists sa ON sa.song_id=s.id"):
+        if row["album_id"] in grouped:
+            artists[row["album_id"]].add(row["artist_id"])
     return draw_shelves(
         grouped,
         exposure,
@@ -147,6 +151,7 @@ def shelf_candidates(conn, count):
         shelf_history(conn),
         count,
         vibe_groups=album_vibe_groups(conn, grouped),
+        album_artists=artists,
     )
 
 

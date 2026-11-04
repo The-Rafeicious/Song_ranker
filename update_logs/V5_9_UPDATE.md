@@ -1,6 +1,6 @@
 # V5.9 updates
 
-## V5.9.4 — Retire Elo Guesser and rebalance Overall
+## V5.9.4 — Retire Elo Guesser, rebalance Overall and polish Shelves
 
 - Remove the unused game and its navigation, Home cards, Global/profile summaries,
   stats report, mode rankings, Query fields and dedicated developer controls.
@@ -11,6 +11,14 @@
 - Preserve archived Guesser rounds and historical challenge rows in database
   exports, backups and the raw inspector. They contribute no active statistics.
 
+
+- Make revealed Shelves album covers/titles clickable, enlarge result text and
+  give perfect rounds a gold/mauve completion panel with a readable 100% value.
+- Keep feasible two-/three-album formats equally likely. Balance album workload
+  by size and track exposure, with stronger large-album support in two-album
+  rounds, soft same-artist/recency preferences and a uniform random allowance.
+- Pick albums before songs; favour under-tested songs while sampling without
+  replacement and preserving ten tracks, capacity checks and frozen grading.
 
 ## V5.9.3 — Mixed-mode Global Stats theme and aligned summaries
 
