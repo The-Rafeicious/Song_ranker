@@ -72,14 +72,14 @@
   font-size: 20px;
 }
 .vibe-song-panel .mode-stats-meta {
-  font-size: 14px;
+  font-size: 16px;
   margin-top: 5px;
   gap: 4px 12px;
 }
 .vibe-song-evidence {
   display: block;
   color: #c6adb5;
-  font-size: 13px;
+  font-size: 16px;
   margin-top: 6px;
 }
 .vibe-song-chart {
@@ -116,7 +116,7 @@
   font-size: 22px;
 }
 .vibe-song-matches .mode-stats-result > span {
-  font-size: 13px;
+  font-size: 16px;
 }
 .vibe-song-matches .mode-stats-copy {
   grid-column: auto;
@@ -170,7 +170,7 @@ body.profile-page #main .vibe-profile-panel {
 .vibe-partial-count {
   display: block;
   color: #bba3ad;
-  font-size: 12px;
+  font-size: 16px;
   margin-top: 4px;
 }
 .vibe-profile-maps {
@@ -197,11 +197,11 @@ body.profile-page #main .vibe-profile-panel {
 .vibe-mini-map figcaption h3 {
   margin: 0;
   color: var(--vibe);
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.25;
 }
 .vibe-mini-map figcaption > span {
-  font-size: 13px;
+  font-size: 16px;
 }
 .vibe-mini-plot {
   position: relative;
@@ -310,7 +310,7 @@ body.profile-page #main .vibe-profile-panel {
     font-size: 23px;
   }
   .vibe-profile-panel .mode-stats-small-metrics dt {
-    font-size: 13px;
+    font-size: 16px;
   }
 }
 .vibe-profile-panel[hidden] {
@@ -385,7 +385,7 @@ body.profile-page #main .vibe-profile-panel {
   font-size: 28px;
 }
 .vibe-global-coverage > span {
-  font-size: 14px;
+  font-size: 16px;
 }
 .vibe-global-leaders {
   display: grid;
@@ -417,11 +417,11 @@ body.profile-page #main .vibe-profile-panel {
 }
 .vibe-global-leaders strong :is(small, .report-meta) {
   display: inline;
-  font-size: 14px;
+  font-size: 16px;
 }
 .vibe-global-leaders > div > :is(small, .report-meta) {
   color: #bba7af;
-  font-size: 13px;
+  font-size: 16px;
 }
 .vibe-rankings .leader-votes > span {
   color: var(--song);
