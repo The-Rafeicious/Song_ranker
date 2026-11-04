@@ -2,7 +2,7 @@
 {% if boxed %}<section class="panel dashboard-surface stats-pulse" style="--pulse-accent:var(--{{ 'voting' if data.mode in ['global','voting','history'] else data.mode }})" aria-label="Recent activity">{% else %}<div class="mode-stats-inset stats-pulse">{% endif %}
  <div class="pulse-head"><h2>Last 14 days</h2><span>UTC</span></div>
  <div class="joined-metrics pulse-metrics" data-columns="4"><div><b>{{data.total}}</b><span>Saved results</span></div><div><b>{{data.current}}</b><span>Last 7 days</span></div><div><b>{{'%+d'|format(data.current-data.previous)}}</b><span>vs previous 7 days</span></div><div><b>{{data.active}} / 14</b><span>Active days</span></div></div>
- <div class="pulse-charts{% if not data.rate_label %} pulse-single{% endif %}">
+ {% if data.total %}<div class="pulse-charts{% if not data.rate_label %} pulse-single{% endif %}">
   <div class="pulse-chart"><h3>Daily results</h3><div class="pulse-bars" role="img" aria-label="{{data.total}} saved results in the last 14 days">
    {% for day in data.days %}<div class="pulse-day" tabindex="0" aria-label="{{day.date}}: {{day.count}} results"><span class="pulse-bar" style="height:{{day.height}}%">{% for bar in day.bars %}<i class="{{bar.kind}}" style="height:{{bar.height}}%;background:var(--{{bar.kind}})"></i>{% endfor %}</span><span class="report-meta" data-count>{{day.count if day.count else ''}}</span><span class="pulse-tip">{{day.date[5:]}} · {{day.count}}</span></div>{% endfor %}
   </div><div class="pulse-axis"><span>{{data.days[0].date[5:]}}</span><span>{{data.days[-1].date[5:]}}</span></div></div>
@@ -12,7 +12,8 @@
   </div>{% endif %}
  </div>
  {% if data.legend|length>1 or (data.legend and data.legend[0].kind=='vibe') %}<ul class="pulse-legend">{% for row in data.legend %}<li class="{{row.kind}}"><i style="background:var(--{{row.kind}})"></i>{{row.label}} <b>{{row.count}}</b></li>{% endfor %}</ul>{% endif %}
- {% if not data.total %}<p class="pulse-empty">No dated results in this period.</p>{% endif %}
+ {% endif %}
+ {% if not data.total %}<div class="report-facts pulse-empty">No dated results in this period.</div>{% endif %}
  <details class="stats-notes"><summary>Daily figures{% if data.undated %} · {{data.undated}} undated results excluded{% endif %}</summary><div class="data-scroll"><table class="pulse-table"><thead><tr><th>Date</th><th>Results</th>{% if data.rate_label %}<th>{{data.rate_label}}</th><th>Eligible outcomes</th>{% endif %}</tr></thead><tbody>{% for day in data.days %}<tr><td>{{day.date}}</td><td>{{day.count}}</td>{% if data.rate_label %}<td>{{('%.1f'|format(day.rate))+'%' if day.rate is not none else '—'}}</td><td>{{day.right}} / {{day.denominator}}</td>{% endif %}</tr>{% endfor %}</tbody></table></div></details>
  {% if boxed %}</section>{% else %}</div>{% endif %}
 {%- endmacro %}

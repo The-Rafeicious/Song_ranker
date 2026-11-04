@@ -14,6 +14,8 @@
 - Put match mode, origin, date/time and gap into a full-width footer so the VS
   column cannot grow into a tall explanation stack. Retain linked identities,
   covers, outcomes, filters and page-bound histories.
+- Collapse empty activity plots into a compact state while preserving counts and
+  expandable daily figures.
 - Align shared responsive spacing, numeric wrapping and metadata across reports
   while preserving each page's distinctive statistics and semantic colours.
 

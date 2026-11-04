@@ -3582,3 +3582,5 @@ body.site-style-baseline #main .elo-replay-panel .game-select-menu button:is(:ho
 .mode-stats-page :is(.mode-stats-result, .mode-stats-primary, .joined-metrics, .vibe-balance-poles) { font-variant-numeric: tabular-nums; }
 .mode-stats-result { max-width: 100%; overflow-wrap: anywhere; }
 .mode-stats-panel .section-head :is(h2,h3) { overflow-wrap: anywhere; }
+
+.report-facts.tournament { --section-color: var(--tournament); }

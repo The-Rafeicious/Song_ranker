@@ -585,6 +585,8 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
    }
    await page.locator('.profile-song-disclosure,.overall-breakdown,.guess-history-item,.shelf-history-item').evaluateAll(nodes=>nodes.slice(0,8).forEach(n=>n.open=true));
    assert.equal(await page.locator('.profile-detail-note,.overall-balance-copy,.overall-mode-context').count(),0,'No methodology footnotes: '+name);
+   const blankPlots=await page.locator('.stats-pulse').evaluateAll(nodes=>nodes.filter(e=>e.querySelector('.pulse-metrics b')?.textContent.trim()==='0'&&e.querySelector('.pulse-charts')).length);
+   assert.equal(blankPlots,0,'Empty activity has a compact state rather than blank plots: '+name);
    assert.ok(!/Recalculated|recalibrated|Public Elo retains a legacy anchor/i.test(await page.locator('#main').textContent()),'No scoring-update notices: '+name);
    assert.ok((await page.locator('.history-match .versus-center').allTextContents()).every(t=>/^(VS|VSBlind|VSNon-blind)$/.test(t.trim())),'Compact match centres: '+name);
    for(const width of [390,768,1365]){

@@ -405,3 +405,6 @@ visible. Keep detailed histories collapsed initially, with bounded titles and
 linked artwork. Paired-match centres hold VS/counts only; a wrapping, full-width
 footer holds mode, source, date/time and gaps. Never hide overflow to mask a bad
 layout. Size panels for their data, with shared spacing and responsive reflow.
+
+Empty activity keeps its counts, compact state and Daily figures disclosure,
+without reserving large blank bar/line plots.
