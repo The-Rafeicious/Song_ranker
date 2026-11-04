@@ -48,7 +48,7 @@ class MatchNetworkTests(unittest.TestCase):
         first=next(r for r in pair['history'] if r['source']=='first_round')
         self.assertIsNotNone(first['winner_after'])
         later=next(r for r in pair['history'] if r['source']=='tournament')
-        self.assertIsNone(later['winner_after']);self.assertEqual(later['points'],1.5)
+        self.assertIsNone(later['winner_after']);self.assertEqual(later['points'],2.0,'Second-round points use the current depth policy')
         self.assertEqual(capture(self.conn),before)
 
     def test_breadth_depth_cycles_and_disconnected_focus(self):

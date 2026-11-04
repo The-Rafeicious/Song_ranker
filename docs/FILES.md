@@ -104,3 +104,6 @@ provides the independent page shell; templates/assets.html remains the registry.
 Ranking header/category/range HTML is shared in `static/js/ui.js`; its layout and
 responsive typography live in `static/css/standard_rankings.css`, also loaded by
 Query. Feature controllers retain routing, ranking data and event ownership.
+
+- `songranker/modes/tournament_scoring.py`: pure shared round points, archived-match
+  projections, knockout advancement and size-weighted top-four achievement.

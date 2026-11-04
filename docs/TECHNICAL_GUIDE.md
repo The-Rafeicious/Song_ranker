@@ -237,7 +237,7 @@ bracket points are not reduced by this preference-evidence policy.
 | --- | --- |
 | Trivia | A 30-second answer clock, paused explicitly. Song/artist/eligible-album field weights are 0.5/0.2/0.3, renormalised by 0.7 without an album. A correct field earns its weight × `(0.75 + 0.25 × (1 − seconds/30))`; points round to four decimals. Field accuracy pools correct available fields, independently of timing. |
 | Trivia challenge | Below 10 streak: any correct available field; 10–24: song or album when eligible; 25+: song and album. Without an eligible album, song is required from streak 10 onward. The offered rule is frozen with the round. |
-| Tournament | An 8/16/32-track champion's bracket path totals seven points before display rounding. Round points are `7 × 2**(round−1)/(size−1)`. Bronze awards half the semifinal value. Placement requires the completed bracket. |
+| Tournament | Round wins earn their round number (1, 2, 3, 4, 5), so 8/16/32-track champions earn 6/10/15 points. Bronze earns half the semifinal round value (1/1.5/2). Overall uses bracket advancement and size-weighted top-four credit, including fourth place; a bronze loss does not deduct progress or points. Placement requires a completed bracket. |
 | Elo Guesser | Choose the higher frozen offered rating. One correct point and a progressive streak. Target relative gap rank is `0.60/(1 + streak/10)`; frozen ratings are never replaced by current Elo when grading. |
 | Vibe Map | Four continuous descriptions saved as compact means/counts; radar, similarity and consistency are descriptive, without a performance score. |
 | Album Shelves | Ten tracks across two or three proper albums. Correct album placement earns 0.5; correct relative-order comparisons earn up to 2.5 per track. Relative-order percentage is the primary accuracy; points retain their own saved denominator. |
@@ -374,7 +374,7 @@ Overall retains five equally based game families: voting, Trivia, Tournament,
 Guesser and Shelves. Voting's correlated Elo/Non-blind/Blind views split its 20
 base points as 8/6/6. Only applicable tested evidence contributes. Current/peak
 Elo split 85/15 within Elo; mode win rates, Trivia fields/perfect rounds, bracket
-wins/podium/points and quiz/order accuracies provide the other metrics.
+advancement/top-four achievement/depth points and quiz/order accuracies provide the other metrics.
 
 Relative evidence is 50% at the current mean sample count and 100% at its robust
 high reference (90th percentile, with a fallback when flat). Rate calibration
@@ -1132,3 +1132,31 @@ layout expands its force spacing and then assigns cover/label-sized vacant cells
 with deterministic small offsets, preventing overlaps even in crowded components.
 Large full maps open at a readable hub-centred zoom, while Fit map shows the
 complete overview. Focused hop-ring layout and match data are unchanged.
+
+
+## Tournament depth and Overall (v5.9)
+
+One round of advancement is worth progressively more points. All public views,
+including older archives, use the current points policy; saved match facts and
+original point fields remain intact for exports and inspection. New matches save
+current-policy points. Unsupported legacy bracket sizes retain their saved points.
+
+| Bracket | Round win points | Champion | Runner-up | Third | Fourth | Bronze win |
+| --- | --- | ---: | ---: | ---: | ---: | ---: |
+| 8 | 1, 2, 3 | 6 | 3 | 2 | 1 | 1 |
+| 16 | 1, 2, 3, 4 | 10 | 6 | 4.5 | 3 | 1.5 |
+| 32 | 1, 2, 3, 4, 5 | 15 | 10 | 8 | 6 | 2 |
+
+Overall's Tournament family keeps its existing 20% family allocation and its
+30/45/25 internal mix. Its inputs are now advancement / 5, top-four achievement,
+and points / 15 per completed competition entry. Top-four base credits are
+1, .75, .55 and .4, multiplied by bracket depth / 5 (3/5, 4/5 or 1).
+Larger titles therefore carry greater significance, while title/podium counters
+still count actual finishes. An earlier knockout exit cannot improve a song's
+Tournament inputs over fourth place in that same bracket. Raw win/loss figures
+remain factual and separate, including a recorded bronze-playoff loss.
+
+First-round preference Elo, visibility projections and history are unchanged.
+Library/tag competition eligibility and the separate local artist/album policy
+also remain in force. Pending brackets do not supply completed-result evidence.
+Overall calibration version 10 invalidates the prior cached model automatically.

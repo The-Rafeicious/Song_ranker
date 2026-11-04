@@ -15,6 +15,7 @@ import sys
 
 ROOT = Path(__file__).resolve().parents[1]
 OWNERS = {
+    "songranker/modes/tournament_scoring.py": "Pure depth-based tournament points, stage advancement and size-weighted top-four achievement policy.",
     "songranker/reports/query.py": "Read-only cross-mode filtering, pooled metrics, stable sorting and bounded paging.",
     "songranker/apple_access.py": "Apple request gates, bounded lookup/preview caches and streaming diagnostics.",
     "songranker/catalog.py": "Shared catalogue projections, cross-mode results and Elo history queries.",
