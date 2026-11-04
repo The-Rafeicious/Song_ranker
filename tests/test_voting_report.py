@@ -91,6 +91,22 @@ class VotingReportTests(unittest.TestCase):
         self.assertEqual(report["coverage"]["under_two"], 2)
         self.assertEqual(capture(self.conn), before)
 
+    def test_global_and_voting_distribution_share_cohort_and_bands(self):
+        from songranker.reports.global_stats_data import build_global_stats
+        self.vote()
+        self.conn.execute("UPDATE songs SET elo_score=9999,matches_played=50 WHERE id=3")
+        self.conn.commit()
+        before = capture(self.conn)
+        voting = build_voting_stats(self.conn)
+        global_stats = build_global_stats(self.conn)
+        self.assertEqual(global_stats['elo_cohort'], voting['distribution'])
+        self.assertEqual([b['band'] for b in global_stats['elo_distribution']], [b['label'] for b in voting['distribution']['bands']])
+        self.assertEqual(sum(b['count'] for b in global_stats['elo_distribution']), 2)
+        self.assertEqual(global_stats['total_matches'], global_stats['elo_summary']['total'])
+        self.assertEqual(capture(self.conn), before)
+        self.conn.execute('UPDATE songs SET elo_score=NULL WHERE id=1')
+        self.assertEqual(build_global_stats(self.conn)['elo_cohort'], build_voting_stats(self.conn)['distribution'])
+
     def test_unavailable_ratings_and_empty_cohorts_stay_explicit(self):
         empty = build_voting_stats(self.conn)["distribution"]
         self.assertEqual(

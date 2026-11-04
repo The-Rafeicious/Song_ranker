@@ -4,7 +4,6 @@ from songranker.modes.tournament_scoring import scored_matches
 from songranker.reports.stats_activity import attach_reports, latest_vibe_saves
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
-import math
 from songranker.catalog import proper_album, versus_metadata, voting_records, summarize_votes
 from songranker.catalog import special_records
 
@@ -26,6 +25,13 @@ def percent(correct,total):
 
 
 def build_global_stats(conn):
+    from songranker.modes.voting import finite, rating_distribution
+
+    def mean_elo(rows):
+        """Average finite current ratings without inventing missing values."""
+        values=[s['elo_score'] for s in rows if s['elo_score'] is not None]
+        return sum(values)/len(values) if values else None
+
     songs={r['id']:dict(r) for r in conn.execute('SELECT * FROM songs')}
     artists={r['id']:dict(r) for r in conn.execute('SELECT * FROM artists')}
     albums={r['id']:dict(r) for r in conn.execute('SELECT * FROM albums')}
@@ -38,6 +44,7 @@ def build_global_stats(conn):
     for r in conn.execute('SELECT * FROM song_genres'):
         if r['song_id'] in songs and r['genre_id'] in tags:tag_songs[r['genre_id']].add(r['song_id'])
     for s in songs.values():
+        s['elo_score']=finite(s['elo_score'])
         s.update(versus_metadata(albums.get(s['album_id']), [artists[a] for a in song_artists[s['id']]]))
         s['artist']=', '.join(sorted(artists[a]['name'] for a in song_artists[s['id']]))
         album_songs[s['album_id']].append(s)
@@ -46,15 +53,15 @@ def build_global_stats(conn):
     for aid,a in artists.items():
         tracks=[songs[sid] for sid in artist_songs[aid]]
         if not tracks:continue
-        best=max(tracks,key=lambda s:s['elo_score'])
+        best=max(tracks,key=lambda s:s['elo_score'] if s['elo_score'] is not None else float('-inf'))
         artist_rows.append(dict(a,title=a['name'],songs=len(tracks),
             albums=len({s['album_id'] for s in tracks if s['album_id'] in proper}),
-            avg_elo=sum(s['elo_score'] for s in tracks)/len(tracks),
+            avg_elo=mean_elo(tracks),
             artwork=a.get('cover_url') or best['cover_url']))
     for aid,a in proper.items():
         tracks=album_songs[aid]
         if not tracks:continue
-        album_rows.append(dict(a,songs=len(tracks),avg_elo=sum(s['elo_score'] for s in tracks)/len(tracks),
+        album_rows.append(dict(a,songs=len(tracks),avg_elo=mean_elo(tracks),
             artist=', '.join(sorted({artists[x]['name'] for s in tracks for x in song_artists[s['id']]}))))
     from songranker.catalog import source_sql
     history=[dict(r) for r in conn.execute(f"SELECT * FROM {source_sql(conn)} WHERE mode IN ('standard','blind')")]
@@ -78,11 +85,11 @@ def build_global_stats(conn):
         name=row.get('title',row.get('name',''))
         href=f"/song/{row['id']}" if kind=='song' else None
         return dict(label=label,row=row,kind=kind,name=name,value=round(row[key],2) if key=='wins' else round(row[key]),unit=unit,href=href)
-    srows=list(songs.values());most_wins=max(srows,key=lambda s:(votes[s['id']]['wins'],s['elo_score']),default=None)
+    srows=list(songs.values());rated_rows=[s for s in srows if s['elo_score'] is not None];most_wins=max(srows,key=lambda s:(votes[s['id']]['wins'],s['elo_score'] if s['elo_score'] is not None else float('-inf')),default=None)
     if most_wins:most_wins=dict(most_wins,wins=votes[most_wins['id']]['wins'])
     tag_rows=sorted([dict(t,songs=len(tag_songs[tid])) for tid,t in tags.items() if tag_songs[tid]],key=lambda t:(-t['songs'],t['name'].casefold()))
-    records=[record('Highest Elo',max(srows,key=lambda s:s['elo_score'],default=None),'song','elo_score'),
-        record('Lowest Elo',min(srows,key=lambda s:s['elo_score'],default=None),'song','elo_score'),
+    records=[record('Highest Elo',max(rated_rows,key=lambda s:s['elo_score'],default=None),'song','elo_score'),
+        record('Lowest Elo',min(rated_rows,key=lambda s:s['elo_score'],default=None),'song','elo_score'),
         record('Most wins',most_wins if most_wins and most_wins['wins'] else None,'song','wins','win weight'),
         record('Most voted track',max((dict(s,vote_count=votes[s['id']]['raw']['matches']) for s in srows),key=lambda s:s['vote_count'],default=None),'song','vote_count','votes'),
         record('Most tracks by an artist',max(artist_rows,key=lambda a:(a['songs'],a['name']),default=None),'artist','songs','tracks'),
@@ -140,22 +147,24 @@ def build_global_stats(conn):
     def special_leader(key):
         """Choose the positive special-mode metric leader, using Elo to break ties."""
         eligible=[dict(songs[sid],value=r[key]) for sid,r in special.items() if r[key]>0]
-        return max(eligible,key=lambda s:(s['value'],s['elo_score']),default=None)
+        return max(eligible,key=lambda s:(s['value'],s['elo_score'] if s['elo_score'] is not None else float('-inf')),default=None)
     guess['most_tested']=special_leader('guess_attempts')
     missed_guesses=[dict(songs[sid],value=r['guess_attempts']-r['guess_correct']) for sid,r in special.items() if r['guess_attempts']>r['guess_correct']]
-    guess['most_missed']=max(missed_guesses,key=lambda s:(s['value'],s['elo_score']),default=None)
+    guess['most_missed']=max(missed_guesses,key=lambda s:(s['value'],s['elo_score'] if s['elo_score'] is not None else float('-inf')),default=None)
     from songranker.modes.shelves import shelf_report_filter
     shelf_albums=[dict(r) for r in conn.execute(f'''SELECT a.*,COUNT(DISTINCT i.round_id) rounds,
         COUNT(*) placements,SUM(i.answer_slot!=i.album_slot) misses FROM album_shelf_items i
         JOIN album_shelf_rounds r ON r.id=i.round_id JOIN albums a ON a.id=i.album_id
         WHERE {shelf_report_filter(conn)} GROUP BY a.id''')]
+    for row in shelf_albums:
+        row['artist_links']=[dict(id=aid,name=artists[aid]['name']) for aid in sorted({aid for song in album_songs[row['id']] for aid in song_artists[song['id']]})]
     shelf.update(albums=len(shelf_albums),album_accuracy=percent(shelf['album_correct'],shelf['tracks']),
         order_accuracy=percent(shelf['order_right'],shelf['order_pairs']),
         most_played=max(shelf_albums,key=lambda a:(a['rounds'],a['placements']),default=None),
         most_missed=max((a for a in shelf_albums if a['misses']),key=lambda a:(a['misses'],a['placements']),default=None))
-    bands=Counter(50*math.floor(s['elo_score']/50) for s in songs.values())
-    bounds=list(range(min(bands),max(bands)+50,50)) if bands and (max(bands)-min(bands))/50<=60 else sorted(bands)
-    elo=[dict(start=b,band=f'{b}–{b+49}',count=bands[b]) for b in bounds]
+    rating_rows=[dict(s,elo_score=finite(s['elo_score']),matches=votes[s['id']]['matches']) for s in songs.values()]
+    distribution=rating_distribution(rating_rows,[s for s in rating_rows if s['matches']])
+    elo=[dict(b,band=b['label']) for b in distribution['bands']]
     activity=[]
     def event(kind,id,when,title,details,href,related,metrics=None,artwork=None,scope=None):
         """Append a uniform dated activity entry with identities, metrics, scope and
@@ -215,7 +224,7 @@ def build_global_stats(conn):
         if scope_kind=='global':metrics.append(metric('Whole library','scope'))
         elif not scope:metrics.append(metric(scope_kind.capitalize(),'scope'))
         event('tournament',t['id'],t['completed_at'] or t['created_at'],'Tournament',f"{t['size']}-track bracket · champion",
-              f"/tournament?tournament={t['id']}",[dict(saved_song(t['champion_id']),role='Champion')],metrics,scope=scope)
+              f"/tournament/{t['id']}/bracket",[dict(saved_song(t['champion_id']),role='Champion')],metrics,scope=scope)
     shelf_times={r['id']:r['completed_at'] for r in conn.execute(f'SELECT id,completed_at FROM album_shelf_rounds r WHERE {shelf_report_filter(conn)} ORDER BY completed_at DESC,id DESC LIMIT 10')}
     shelf_membership=defaultdict(dict)
     for item in conn.execute(f'''SELECT round_id,album_slot,album_id FROM album_shelf_items
@@ -238,14 +247,14 @@ def build_global_stats(conn):
         event('vibe',r['song_id'],r['updated_at'],'Vibe Map','Latest saved selections','/vibe_map_stats',
               [saved_song(r['song_id'])],[metric(f"{r['placed']} / 4",'maps placed')])
     activity.sort(key=lambda e:(-e['timestamp'],e['kind'],-e['id']))
-    return attach_reports(conn, dict(elo_summary=elo_summary(conn),total_songs=len(songs),total_artists=len(artists),total_albums=len(proper),total_matches=len(history),
+    return attach_reports(conn, dict(elo_summary=elo_summary(conn),total_songs=len(songs),total_artists=len(artists),total_albums=len(proper),total_matches=elo_summary(conn)['total'],
         mode_totals=[dict(label='Trivia rounds',value=trivia_total,kind='recognition'),dict(label='Tournaments',value=tournament['total'],kind='tournament'),
             dict(label='Elo Guesser rounds',value=guess['rounds'],kind='guesser'),dict(label='Shelves rounds',value=shelf['rounds'],kind='shelves')],
         collection_records=[r for r in records if r],voting=voting,voting_leaders=leaders,matchups=matchups,expand_matchups=expandable,
-        elo_distribution=elo,average_elo=round(sum(s['elo_score'] for s in songs.values())/len(songs)) if songs else None,
+        elo_distribution=elo,elo_cohort=distribution,average_elo=round(mean_elo(rated_rows)) if rated_rows else None,
         unplayed=sum(not votes[sid]['matches'] for sid in songs),audio_previews=sum(bool(str(s['audio_url'] or '').strip()) for s in songs.values()),
         week_votes=sum(timestamp(h['created_at'])>=datetime.now(timezone.utc).timestamp()-7*86400 for h in history),
         recognition=recognition,tournament=tournament,guess=guess,shelf=shelf,
-        top_artists=sorted(artist_rows,key=lambda a:(-a['avg_elo'],-a['songs'],a['name'].casefold()))[:5],
-        top_albums=sorted(album_rows,key=lambda a:(-a['avg_elo'],-a['songs'],a['title'].casefold()))[:5],
+        top_artists=sorted([a for a in artist_rows if a['avg_elo'] is not None],key=lambda a:(-a['avg_elo'],-a['songs'],a['name'].casefold()))[:5],
+        top_albums=sorted([a for a in album_rows if a['avg_elo'] is not None],key=lambda a:(-a['avg_elo'],-a['songs'],a['title'].casefold()))[:5],
         top_tags=tag_rows[:10],tag_count=len(tags),recent_activity=activity[:10]), 'global')

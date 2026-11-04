@@ -191,6 +191,14 @@ async function bounded(page,width,phase,folder){
    assert.equal(await page.locator('#profile-vibe .vibe-profile-content').textContent(),'');
   }
   await page.goto(base+'/global_stats');
+  assert.equal(await page.locator('body').getAttribute('data-tone'),'mixed');
+  const globalTheme=await page.evaluate(()=>({title:getComputedStyle(document.querySelector('.global-theme-title')).backgroundImage,back:getComputedStyle(document.body,'::before').backgroundImage}));
+  assert.match(globalTheme.title,/linear-gradient/);assert.match(globalTheme.back,/radial-gradient/);
+  for(const [id,colour] of [['global-voting','rgb(156, 219, 145)'],['global-recognition','rgb(242, 211, 79)'],['global-tournaments','rgb(255, 120, 166)'],['global-guesser','rgb(237, 120, 99)'],['global-shelves','rgb(175, 137, 189)']]){
+   assert.equal(await page.locator('#'+id+' h2').evaluate(e=>getComputedStyle(e).color),colour,'Global summary keeps its mode colour: '+id);
+  }
+  for(const [mode,colour] of [['standard','#f0a35b'],['blind','#55d6c2']])assert.equal(await page.locator('#global-voting .vote-column.'+mode).evaluate(e=>getComputedStyle(e).getPropertyValue('--section-color').trim()),colour,'Voting sub-card keeps its own accent');
+  for(const width of [390,768,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'global-mode-theme',folder);if(width!==768)await page.screenshot({path:folder+'/global-mode-theme-'+width+'.png',fullPage:true});}
   assert.ok(await page.locator('.pulse-bar i.vibe').count()>0);
   assert.ok(await page.locator('#global-activity [data-activity-kind=vibe]').count()>0);
   assert.ok((await page.locator('#global-activity').getAttribute('data-current-modes')).includes('vibe'));

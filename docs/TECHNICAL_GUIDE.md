@@ -1176,3 +1176,20 @@ slot independently. Resize, font readiness and asynchronous updates re-evaluate
 fit, restoring exact counts when more space becomes available. Raw tables retain
 exact text. Shared match rows reserve the centre for VS/counts and move mode,
 source, date/time and saved gap into a wrapping full-width footer.
+
+
+## Global Stats theme and inherited summaries (v5.9.3)
+
+The Global Stats shell uses --mode-spectrum in style.css; its ambient background
+and summary surfaces live in reports.css. Per-mode and per-entity panels keep
+explicit --section-color values so the page theme cannot recolour their figures.
+Metric type/spacing uses the shared report tokens. Song highlights include linked
+artist/album metadata; album highlights include linked artists, and tag cards use
+the shared gold # identity. Saved podium/champion/activity links open bracket maps.
+
+Voting and Global Stats call rating_distribution with the current evidence-backed
+track cohort. They share finite ratings, band boundaries, averages/median and
+missing-evidence counts. Neither stale counters nor manual ratings make unplayed
+songs eligible. Global catalogue collection averages retain their existing scope;
+this change does not write results or recompute Elo. All summaries still read one
+caller-owned snapshot, without hydrating complete detailed reports.

@@ -1,6 +1,18 @@
 # V5.9 updates
 
 
+## V5.9.3 — Mixed-mode Global Stats theme and aligned summaries
+
+- Blend the mode palette through Global Stats' heading, navigation label and
+  background. Keep the specific mode/entity colours inside their summary panels.
+- Align panel spacing, metric sizing and labels with the detailed stats pages.
+  Add linked artist/album metadata to highlights and gold # identity to tag cards.
+- Share Voting Stats' Elo distribution cohort and bands, excluding unplayed
+  ratings even when stale counters claim appearances. Show rated/unplayed counts,
+  the voted-track average and median, without changing any stored Elo.
+- Open saved bracket workspaces from podium, champion and tournament activity
+  links. Keep the page's compact summaries and one read-only database snapshot.
+
 ## V5.9.2 — Profile and statistics presentation cleanup
 
 - Review song/artist/album/tag profiles, Global Stats and each mode report. Move

@@ -719,12 +719,13 @@ Standard/blind voting operations, history page and detailed Voting Stats.
 | [percent](../songranker/modes/voting.py#L267) | `n, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
 | [average](../songranker/modes/voting.py#L271) | `values` | Return a rounded mean for report values, preserving unavailable for an empty sample. |
 | [saved_date](../songranker/modes/voting.py#L279) | `value` | Parse a saved result date for report display and ordering. |
-| [build_voting_stats](../songranker/modes/voting.py#L295) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
-| [build_voting_stats.identity](../songranker/modes/voting.py#L336) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
-| [build_voting_stats.result_totals](../songranker/modes/voting.py#L425) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
-| [build_voting_stats.top](../songranker/modes/voting.py#L658) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
-| [build_voting_stats.category](../songranker/modes/voting.py#L672) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
-| [profile_voting_details](../songranker/modes/voting.py#L837) | `conn, song_ids` | Pool track appearances, counting internal votes twice but each event once. |
+| [rating_distribution](../songranker/modes/voting.py#L295) | `songs, tested` | Shared current, voted-track Elo cohort and bands for Voting/Global Stats. |
+| [build_voting_stats](../songranker/modes/voting.py#L340) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
+| [build_voting_stats.identity](../songranker/modes/voting.py#L381) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
+| [build_voting_stats.result_totals](../songranker/modes/voting.py#L470) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
+| [build_voting_stats.top](../songranker/modes/voting.py#L668) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
+| [build_voting_stats.category](../songranker/modes/voting.py#L682) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
+| [profile_voting_details](../songranker/modes/voting.py#L847) | `conn, song_ids` | Pool track appearances, counting internal votes twice but each event once. |
 
 ## songranker/overall.py
 
@@ -786,16 +787,17 @@ Read-only cross-mode Global Stats from one SQLite snapshot.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [timestamp](../songranker/reports/global_stats_data.py#L12) | `value` | Convert saved numeric or ISO times to UTC epoch seconds, returning zero when unavailable. |
-| [percent](../songranker/reports/global_stats_data.py#L24) | `correct, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [build_global_stats](../songranker/reports/global_stats_data.py#L28) | `conn` | Build global stats; reads album_shelf_items, album_shelf_rounds, albums, artists, elo_guess_rounds, genres, global_stats, song_artists. |
-| [build_global_stats.record](../songranker/reports/global_stats_data.py#L73) | `label, row, kind, key, unit=''` | Build a labelled Global Stats record with formatted value, identity and optional song link. |
-| [build_global_stats.misses](../songranker/reports/global_stats_data.py#L105) | `counter, attempts, rows` | Choose the three largest nonzero recognition miss totals with their attempt counts. |
-| [build_global_stats.saved_song](../songranker/reports/global_stats_data.py#L126) | `sid` | Resolve an activity song identity with a safe placeholder for removed tracks. |
-| [build_global_stats.special_leader](../songranker/reports/global_stats_data.py#L140) | `key` | Choose the positive special-mode metric leader, using Elo to break ties. |
-| [build_global_stats.event](../songranker/reports/global_stats_data.py#L160) | `kind, id, when, title, details, href, related, metrics=None, artwork=None, scope=None` | Append a uniform dated activity entry with identities, metrics, scope and artwork. |
-| [build_global_stats.metric](../songranker/reports/global_stats_data.py#L170) | `value, label, state=''` | Represent one activity metric with its display label and semantic state. |
-| [build_global_stats.vote_participant](../songranker/reports/global_stats_data.py#L173) | `h, role` | Build a saved vote participant with winner/loser role and known Elo change. |
+| [timestamp](../songranker/reports/global_stats_data.py#L11) | `value` | Convert saved numeric or ISO times to UTC epoch seconds, returning zero when unavailable. |
+| [percent](../songranker/reports/global_stats_data.py#L23) | `correct, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [build_global_stats](../songranker/reports/global_stats_data.py#L27) | `conn` | Build global stats; reads album_shelf_items, album_shelf_rounds, albums, artists, elo_guess_rounds, genres, global_stats, song_artists. |
+| [build_global_stats.mean_elo](../songranker/reports/global_stats_data.py#L30) | `rows` | Average finite current ratings without inventing missing values. |
+| [build_global_stats.record](../songranker/reports/global_stats_data.py#L80) | `label, row, kind, key, unit=''` | Build a labelled Global Stats record with formatted value, identity and optional song link. |
+| [build_global_stats.misses](../songranker/reports/global_stats_data.py#L112) | `counter, attempts, rows` | Choose the three largest nonzero recognition miss totals with their attempt counts. |
+| [build_global_stats.saved_song](../songranker/reports/global_stats_data.py#L133) | `sid` | Resolve an activity song identity with a safe placeholder for removed tracks. |
+| [build_global_stats.special_leader](../songranker/reports/global_stats_data.py#L147) | `key` | Choose the positive special-mode metric leader, using Elo to break ties. |
+| [build_global_stats.event](../songranker/reports/global_stats_data.py#L169) | `kind, id, when, title, details, href, related, metrics=None, artwork=None, scope=None` | Append a uniform dated activity entry with identities, metrics, scope and artwork. |
+| [build_global_stats.metric](../songranker/reports/global_stats_data.py#L179) | `value, label, state=''` | Represent one activity metric with its display label and semantic state. |
+| [build_global_stats.vote_participant](../songranker/reports/global_stats_data.py#L182) | `h, role` | Build a saved vote participant with winner/loser role and known Elo change. |
 
 ## songranker/reports/health.py
 
@@ -1984,10 +1986,11 @@ Voting report cohorts and compact rendering use saved evidence, without writes.
 | [VotingReportTests.setUp](../tests/test_voting_report.py#L21) | `self` | Create isolated disposable state and register cleanup for this test. |
 | [VotingReportTests.vote](../tests/test_voting_report.py#L41) | `self, pair=(1, 2), mode='standard'` | Vote. |
 | [VotingReportTests.test_distribution_ignores_unplayed_ratings_and_stale_counters](../tests/test_voting_report.py#L65) | `self` | Verify distribution ignores unplayed ratings and stale counters. |
-| [VotingReportTests.test_unavailable_ratings_and_empty_cohorts_stay_explicit](../tests/test_voting_report.py#L94) | `self` | Verify unavailable ratings and empty cohorts stay explicit. |
-| [VotingReportTests.test_evidence_depth_and_history_filters_reconcile](../tests/test_voting_report.py#L111) | `self` | Verify evidence depth and history filters reconcile. |
-| [VotingReportTests.test_half_weight_tournament_match_still_qualifies_both_tracks](../tests/test_voting_report.py#L125) | `self` | Verify half weight tournament match still qualifies both tracks. |
-| [VotingReportTests.test_page_has_new_summaries_and_one_useful_disclosure](../tests/test_voting_report.py#L149) | `self` | Verify page has new summaries and one useful disclosure. |
+| [VotingReportTests.test_global_and_voting_distribution_share_cohort_and_bands](../tests/test_voting_report.py#L94) | `self` | Verify global and voting distribution share cohort and bands. |
+| [VotingReportTests.test_unavailable_ratings_and_empty_cohorts_stay_explicit](../tests/test_voting_report.py#L110) | `self` | Verify unavailable ratings and empty cohorts stay explicit. |
+| [VotingReportTests.test_evidence_depth_and_history_filters_reconcile](../tests/test_voting_report.py#L127) | `self` | Verify evidence depth and history filters reconcile. |
+| [VotingReportTests.test_half_weight_tournament_match_still_qualifies_both_tracks](../tests/test_voting_report.py#L141) | `self` | Verify half weight tournament match still qualifies both tracks. |
+| [VotingReportTests.test_page_has_new_summaries_and_one_useful_disclosure](../tests/test_voting_report.py#L165) | `self` | Verify page has new summaries and one useful disclosure. |
 
 ## tests/test_voting_selection.py
 
@@ -2078,4 +2081,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L375) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L385) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1416 Python definitions**.
+Total: **1419 Python definitions**.

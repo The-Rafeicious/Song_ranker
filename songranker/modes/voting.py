@@ -292,6 +292,51 @@ def saved_date(value):
         return None
 
 
+def rating_distribution(songs, tested):
+    """Shared current, voted-track Elo cohort and bands for Voting/Global Stats.
+
+    Callers supply finite-or-None Elo and evidence-backed matches. Unplayed/manual
+    ratings do not become voting evidence; missing ratings stay unavailable.
+    """
+    rated_tracks = [s for s in tested if s["elo_score"] is not None]
+    ratings = [s["elo_score"] for s in rated_tracks]
+    distribution = dict(
+        median=round(median(ratings), 1) if ratings else None,
+        highest=max(ratings) if ratings else None,
+        lowest=min(ratings) if ratings else None,
+        spread=round(pstdev(ratings), 1) if ratings else None,
+        rated=len(ratings),
+        unavailable=len(tested) - len(ratings),
+        excluded=len(songs) - len(tested),
+        average=average(ratings),
+        above_start=sum(value > 1200 for value in ratings),
+        at_start=sum(value == 1200 for value in ratings),
+        below_start=sum(value < 1200 for value in ratings),
+        bands=[],
+    )
+    for low, high, label in (
+        [(None, 1000, "Below 1000")]
+        + [(n, n + 50, f"{n}–<{n+50}") for n in range(1000, 1400, 50)]
+        + [(1400, None, "1400+")]
+    ):
+        group = [
+            s
+            for s in rated_tracks
+            if s["elo_score"] is not None
+            and (low is None or s["elo_score"] >= low)
+            and (high is None or s["elo_score"] < high)
+        ]
+        distribution["bands"].append(
+            dict(
+                label=label,
+                count=len(group),
+                share=percent(len(group), len(ratings)),
+                voted=sum(bool(s["matches"]) for s in group),
+            )
+        )
+    return distribution
+
+
 def build_voting_stats(
     conn, now=None, history_mode="all", history_page=1, history_origin="all"
 ):
@@ -556,42 +601,7 @@ def build_voting_stats(
     )
     # A starting/manual Elo is not voting evidence. All summaries and bands use
     # the same current-track cohort reconstructed from valid saved matches.
-    rated_tracks = [s for s in tested if s["elo_score"] is not None]
-    ratings = [s["elo_score"] for s in rated_tracks]
-    distribution = dict(
-        median=round(median(ratings), 1) if ratings else None,
-        highest=max(ratings) if ratings else None,
-        lowest=min(ratings) if ratings else None,
-        spread=round(pstdev(ratings), 1) if ratings else None,
-        rated=len(ratings),
-        unavailable=len(tested) - len(ratings),
-        excluded=len(songs) - len(tested),
-        average=average(ratings),
-        above_start=sum(value > 1200 for value in ratings),
-        at_start=sum(value == 1200 for value in ratings),
-        below_start=sum(value < 1200 for value in ratings),
-        bands=[],
-    )
-    for low, high, label in (
-        [(None, 1000, "Below 1000")]
-        + [(n, n + 50, f"{n}–<{n+50}") for n in range(1000, 1400, 50)]
-        + [(1400, None, "1400+")]
-    ):
-        group = [
-            s
-            for s in rated_tracks
-            if s["elo_score"] is not None
-            and (low is None or s["elo_score"] >= low)
-            and (high is None or s["elo_score"] < high)
-        ]
-        distribution["bands"].append(
-            dict(
-                label=label,
-                count=len(group),
-                share=percent(len(group), len(ratings)),
-                voted=sum(bool(s["matches"]) for s in group),
-            )
-        )
+    distribution = rating_distribution(songs, tested)
     unequal = [r for r in matches if r["gap"] is not None and not r["level"]]
     snapshots = [r for r in matches if r["snapshot"]]
     movement = dict(
