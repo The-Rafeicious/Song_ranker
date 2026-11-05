@@ -623,8 +623,38 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   }
   // History uses the same bounded record lookup and styled selectors as Query.
   await page.goto(base+'/history');
+  // Gradient labels do not colour-mask emoji, even on hovered navigation rows.
+  for(const width of [390,1365]) {
+   await page.setViewportSize({width,height:1000});
+   await page.locator('.nav-stats').click();
+   for(const route of ['/history','/global_stats']) {
+    const link=page.locator('.nav-global-stats[href="'+route+'"]');await link.hover();
+    assert.notEqual(await link.locator('.nav-emoji').evaluate(e=>getComputedStyle(e).webkitTextFillColor),'rgba(0, 0, 0, 0)');
+    assert.match(await link.locator('.nav-spectrum-label').evaluate(e=>getComputedStyle(e).backgroundImage),/linear-gradient/);
+   }
+   await page.screenshot({path:folder+'/history-nav-hover-'+width+'.png'});await page.locator('.nav-stats').click();
+  }
+  assert.match(await page.locator('#archive-mode-value').evaluate(e=>getComputedStyle(e).backgroundImage),/linear-gradient/);
+  await page.locator('[data-game-select="archive-mode"] .game-select-trigger').click();
+  assert.equal(await page.getByRole('option',{name:'Trivia',exact:true}).evaluate(e=>getComputedStyle(e).color),'rgb(242, 211, 79)');
+  await page.getByRole('option',{name:'Trivia',exact:true}).click();
+  assert.equal(await page.locator('[data-game-select="archive-mode"] .game-select-trigger').evaluate(e=>getComputedStyle(e).color),'rgb(242, 211, 79)');
+  await page.locator('[data-game-select="archive-mode"] .game-select-trigger').click();await page.getByRole('option',{name:'All modes',exact:true}).click();
+  // One shared calendar preserves the actual date input and its form value.
+  for(const width of [390,1365]) {
+   await page.setViewportSize({width,height:1000});await page.locator('input[name="from"]').fill('2024-02-28');
+   await page.locator('.archive-date-from .date-open').click();await page.locator('dialog.date-picker[open]').waitFor();
+   await bounded(page,width,'history-calendar',folder);
+   const bounds=await page.locator('dialog.date-picker').boundingBox();assert.ok(bounds.x>=0&&bounds.x+bounds.width<=width+1);assert.ok(bounds.y>=0&&bounds.y+bounds.height<=1001);
+   await page.screenshot({path:folder+'/history-calendar-'+width+'.png'});
+   await page.locator('[data-date-day="2024-02-29"]').click();assert.equal(await page.locator('input[name="from"]').inputValue(),'2024-02-29');
+   await page.locator('.archive-date-from .date-open').click();await page.locator('[data-date-clear]').click();assert.equal(await page.locator('input[name="from"]').inputValue(),'');
+  }
+
   assert.equal(await page.locator('[data-game-select="archive-mode"] .game-select-trigger').evaluate(e=>getComputedStyle(e).borderRadius),'999px');
   assert.equal(await page.locator('input[name="from"]').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(36, 36, 36)');
+  await page.locator('#archive-search').fill('Bracket track');
+  await page.locator('#archive-suggestions button').first().waitFor();assert.ok(await page.locator('#archive-suggestions button').count()<=3);
   await page.locator('#archive-search').fill('Bracket track 20');
   await page.locator('#archive-suggestions button').first().waitFor();
   const lookupArt=await page.locator('#archive-suggestions button img').first().boundingBox();assert.equal(lookupArt.width,48);assert.equal(lookupArt.height,48);

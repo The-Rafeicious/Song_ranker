@@ -7700,8 +7700,11 @@ body:is([data-page="tournament_bracket"],:has(#tournament-replay)) .footer { wid
 /* Navbar interaction policy lives here, independent of the active page. */
 .navbar :is(a,summary):is(:hover,:focus-visible){text-decoration:none}
 
+/* Keep emoji and hover surfaces outside gradient text. */
+.nav-global-stats { color:var(--overall); }
+.nav-global-stats .nav-emoji { -webkit-text-fill-color:initial; }
 /* Global Stats represents every mode; individual report panels keep their accents. */
-.nav-global-stats, .global-theme-title {
+.nav-global-stats .nav-spectrum-label, .global-theme-title {
   color: var(--overall);
   background: var(--mode-spectrum);
   background-clip: text;
@@ -7709,5 +7712,5 @@ body:is([data-page="tournament_bracket"],:has(#tournament-replay)) .footer { wid
   -webkit-text-fill-color: transparent;
 }
 @media (forced-colors: active) {
-  .nav-global-stats, .global-theme-title { background: none; color: CanvasText; -webkit-text-fill-color: currentColor; }
+  .nav-global-stats .nav-spectrum-label, .global-theme-title { background: none; color: CanvasText; -webkit-text-fill-color: currentColor; }
 }

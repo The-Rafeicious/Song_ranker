@@ -312,6 +312,151 @@ window.SongRankerUI = (() => {
     if(doc.readyState!=='loading')scan();
     return Object.freeze({scan,dispose});
   }
+  function manageDateInputs(root = document) {
+    const doc = root.ownerDocument || root, view = doc.defaultView;
+    if (!view.HTMLDialogElement?.prototype.showModal) return null;
+    const controls = new Map();
+    let source = null, returnTo = null, cursor = null;
+    const popup = doc.createElement('dialog');
+    popup.className = 'date-picker'; popup.id = 'shared-date-picker';
+    popup.setAttribute('aria-label', 'Choose date'); popup.setAttribute('aria-modal', 'true');
+    const date = (year, month, day) => { const d = new Date(0); d.setUTCFullYear(year,month,day); d.setUTCHours(0,0,0,0); return d; };
+    const iso = d => d.toISOString().slice(0,10);
+    function parse(value) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(value || '')) return null;
+      const [y,m,d] = value.split('-').map(Number), result = date(y,m-1,d);
+      return y>0 && iso(result)===value ? result : null;
+    }
+    function today() {
+      const now = new Date();
+      return source?.dataset.dateZone==='utc' ? date(now.getUTCFullYear(),now.getUTCMonth(),now.getUTCDate()) : date(now.getFullYear(),now.getMonth(),now.getDate());
+    }
+    function allowed(d) { return d.getUTCFullYear()>=1 && d.getUTCFullYear()<=9999 && (!parse(source.min) || d>=parse(source.min)) && (!parse(source.max) || d<=parse(source.max)); }
+    function clamp(d) { const min=parse(source.min),max=parse(source.max); return min && d<min ? min : max && d>max ? max : d; }
+    function close(focus = true) {
+      if (popup.open) popup.close();
+      const button = returnTo; source = null; returnTo = null;
+      for (const control of controls.values()) control.setAttribute('aria-expanded','false');
+      if (focus && button?.isConnected) button.focus();
+    }
+    function position() {
+      if (!source) return;
+      const rect = source.getBoundingClientRect(), width = Math.max(240,Math.min(360,view.innerWidth-24));
+      popup.style.width = width+'px';
+      popup.style.left = Math.max(12,Math.min(rect.left,view.innerWidth-width-12))+'px';
+      const height = popup.getBoundingClientRect().height;
+      const top = rect.bottom+8+height<=view.innerHeight-12 ? rect.bottom+8 : rect.top-height-8;
+      popup.style.top = Math.max(12,Math.min(top,view.innerHeight-height-12))+'px';
+    }
+    function draw(focusDay = false) {
+      const year=cursor.getUTCFullYear(),month=cursor.getUTCMonth(),start=date(year,month,1),end=date(year,month+1,0);
+      const heading=new Intl.DateTimeFormat(undefined,{month:'long',year:'numeric',timeZone:'UTC'}).format(start);
+      const months=Array.from({length:12},(_,m)=>new Intl.DateTimeFormat(undefined,{month:'long',timeZone:'UTC'}).format(date(2000,m,1)));
+      const offset=(start.getUTCDay()+6)%7, count=Math.ceil((offset+end.getUTCDate())/7)*7;
+      const previous=date(year,month,0),next=date(year,month+1,1);
+      let cells='';
+      for(let i=0;i<count;i++) {
+        if(i%7===0) cells+='<tr>';
+        const day=i-offset+1;
+        if(day<1 || day>end.getUTCDate()) cells+='<td aria-hidden="true"></td>';
+        else {
+          const d=date(year,month,day),value=iso(d),label=new Intl.DateTimeFormat(undefined,{dateStyle:'full',timeZone:'UTC'}).format(d);
+          cells+=`<td role="gridcell" aria-selected="${source.value===value}"><button type="button" data-date-day="${value}" aria-label="${esc(label)}" ${value===iso(today())?'aria-current="date"':''} tabindex="${value===iso(cursor)?0:-1}" ${allowed(d)?'':'disabled'}>${day}</button></td>`;
+        }
+        if(i%7===6) cells+='</tr>';
+      }
+      popup.innerHTML=`<div class="date-picker-head"><h2>Choose date</h2><button type="button" data-date-close aria-label="Close calendar">×</button></div><div class="date-picker-month"><button type="button" data-date-step="-1" aria-label="Previous month" ${previous.getUTCFullYear()<1 || (parse(source.min) && previous<parse(source.min))?'disabled':''}>‹</button><select aria-label="Calendar month" data-date-month>${months.map((name,m)=>`<option value="${m}" ${m===month?'selected':''}>${esc(name)}</option>`).join('')}</select><input type="number" aria-label="Calendar year" data-date-year min="1" max="9999" value="${year}"><button type="button" data-date-step="1" aria-label="Next month" ${next.getUTCFullYear()>9999 || (parse(source.max) && next>parse(source.max))?'disabled':''}>›</button></div><table role="grid" aria-label="${esc(heading)}"><thead><tr>${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(day=>`<th scope="col">${day}</th>`).join('')}</tr></thead><tbody>${cells}</tbody></table><div class="date-picker-actions"><button type="button" data-date-today ${allowed(today())?'':'disabled'}>Today</button><button type="button" data-date-clear>Clear</button></div>`;
+      position();
+      if(focusDay) popup.querySelector(`[data-date-day="${iso(cursor)}"]:not(:disabled)`)?.focus();
+    }
+    function open(input) {
+      if (input.matches(':disabled') || input.readOnly || !input.isConnected) return;
+      source=input; returnTo=controls.get(input); cursor=clamp(parse(input.value)||today());
+      popup.style.setProperty('--date-accent',view.getComputedStyle(input).getPropertyValue('--date-accent').trim() || 'var(--artist)');
+      if(!popup.isConnected) doc.body.append(popup);
+      draw();
+      if(!popup.open) popup.showModal();
+      returnTo.setAttribute('aria-expanded','true');
+      draw(true);
+    }
+    function write(value) {
+      const input=source;
+      if(value && !allowed(parse(value))) {cursor=clamp(parse(value));draw(true);return;}
+      input.value=value;
+      input.dispatchEvent(new view.Event('input',{bubbles:true}));
+      input.dispatchEvent(new view.Event('change',{bubbles:true}));
+      close();
+    }
+    function moveMonth(delta) {
+      const day=cursor.getUTCDate(),first=date(cursor.getUTCFullYear(),cursor.getUTCMonth()+delta,1);
+      if(first.getUTCFullYear()<1 || first.getUTCFullYear()>9999) return;
+      cursor=clamp(date(first.getUTCFullYear(),first.getUTCMonth(),Math.min(day,date(first.getUTCFullYear(),first.getUTCMonth()+1,0).getUTCDate())));
+      draw(true);
+    }
+    popup.addEventListener('click',event=>{
+      const button=event.target.closest('button');
+      if(button?.dataset.dateDay) write(button.dataset.dateDay);
+      else if(button?.hasAttribute('data-date-clear')) write('');
+      else if(button?.hasAttribute('data-date-today')) write(iso(today()));
+      else if(button?.hasAttribute('data-date-step')) moveMonth(Number(button.dataset.dateStep));
+      else if(button?.hasAttribute('data-date-close')) close();
+      else if(event.target===popup) { const r=popup.getBoundingClientRect(); if(event.clientX<r.left || event.clientX>r.right || event.clientY<r.top || event.clientY>r.bottom) close(); }
+    });
+    popup.addEventListener('change',event=>{
+      if(event.target.matches('[data-date-month],[data-date-year]')) {
+        const year=Number(popup.querySelector('[data-date-year]').value),month=Number(popup.querySelector('[data-date-month]').value);
+        if(Number.isInteger(year) && year>=1 && year<=9999) cursor=clamp(date(year,month,Math.min(cursor.getUTCDate(),date(year,month+1,0).getUTCDate())));
+        draw(true);
+      }
+    });
+    popup.addEventListener('keydown',event=>{
+      if(!event.target.matches('[data-date-day]')) return;
+      const day=parse(event.target.dataset.dateDay),weekday=(day.getUTCDay()+6)%7;
+      const offsets={ArrowLeft:-1,ArrowRight:1,ArrowUp:-7,ArrowDown:7,Home:-weekday,End:6-weekday};
+      if(event.key in offsets) {
+        event.preventDefault();
+        const moved=date(day.getUTCFullYear(),day.getUTCMonth(),day.getUTCDate()+offsets[event.key]);
+        if(moved.getUTCFullYear()>=1 && moved.getUTCFullYear()<=9999) {cursor=clamp(moved);draw(true);}
+      } else if(event.key==='PageUp' || event.key==='PageDown') {event.preventDefault();moveMonth((event.key==='PageUp'?-1:1)*(event.shiftKey?12:1));}
+    });
+    popup.addEventListener('cancel',event=>{event.preventDefault();close();});
+    function scan(node = root) {
+      const inputs=[...(node.matches?.('input[type="date"]')?[node]:[]),...node.querySelectorAll('input[type="date"]')];
+      for(const input of inputs) {
+        if(controls.has(input)) {controls.get(input).disabled=input.matches(':disabled')||input.readOnly;continue;}
+        const wrapper=doc.createElement('span'),button=doc.createElement('button');
+        wrapper.className='date-control';button.type='button';button.className='date-open';
+        const label=input.getAttribute('aria-label') || input.labels?.[0]?.textContent.trim() || input.name || 'date';
+        button.setAttribute('aria-label','Open calendar · '+label);button.setAttribute('aria-haspopup','dialog');button.setAttribute('aria-expanded','false');button.setAttribute('aria-controls',popup.id);
+        button.disabled=input.matches(':disabled')||input.readOnly;
+        button.innerHTML='<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v5M17 3v5M3 11h18M8 15h2M14 15h2"/></svg>';
+        controls.set(input,button);input.classList.add('date-enhanced');input.before(wrapper);wrapper.append(input,button);
+      }
+    }
+    function click(event) {
+      const button=event.target.closest('.date-open'),input=button?.parentElement.querySelector('input[type="date"]') || (event.target.matches?.('input.date-enhanced')?event.target:null);
+      if(input && controls.has(input)) {event.preventDefault();open(input);}
+    }
+    function key(event) {
+      if(event.target.matches?.('input.date-enhanced') && (event.key===' ' || event.altKey && event.key==='ArrowDown')) {event.preventDefault();open(event.target);}
+    }
+    const observer=new view.MutationObserver(records=>{
+      for(const record of records) {
+        if(record.type==='attributes') scan(record.target);
+        else for(const node of record.addedNodes) if(node.nodeType===1 && !popup.contains(node)) scan(node);
+      }
+      for(const [input,button] of controls) if(!input.isConnected) {controls.delete(input);button.parentElement?.remove();if(source===input)close(false);}
+      if(source && (source.matches(':disabled') || source.readOnly)) close(false);
+    });
+    const dismiss=()=>close(false), resize=()=>{if(popup.open)position();}, ready=()=>scan();
+    root.addEventListener('click',click);root.addEventListener('keydown',key);
+    doc.addEventListener('DOMContentLoaded',ready);
+    view.addEventListener('resize',resize);view.addEventListener('pagehide',dismiss);
+    observer.observe(root.documentElement || root,{subtree:true,childList:true,attributes:true,attributeFilter:['disabled','readonly']});
+    scan();
+    return Object.freeze({scan,close,dispose(){close(false);observer.disconnect();root.removeEventListener('click',click);root.removeEventListener('keydown',key);doc.removeEventListener('DOMContentLoaded',ready);view.removeEventListener('resize',resize);view.removeEventListener('pagehide',dismiss);popup.remove();for(const [input,button] of controls){input.classList.remove('date-enhanced');const wrapper=button.parentElement;wrapper.replaceWith(input);}controls.clear();}});
+  }
+  const dateInputs=typeof document==='undefined'?null:manageDateInputs();
   let fullscreenPending = false;
   function fullscreenShortcut(event) {
     if (event.defaultPrevented || event.repeat || event.isComposing ||
@@ -347,6 +492,8 @@ window.SongRankerUI = (() => {
     sumFields,
     trackPosition,
     manageCoverImages,
+    manageDateInputs,
+    dateInputs,
     coverRecovery,
     entityTypes,
     entityLabels,

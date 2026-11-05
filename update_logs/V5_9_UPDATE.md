@@ -115,3 +115,15 @@
   exposure/recency/visibility/freshness support and bounded first-track Vibe affinity.
   Artist names do not set quotas or force pairs. Selection rules and saved brackets
   remain unchanged; added artist-label invariance coverage and documentation.
+
+
+## v5.9.5.3 — History controls, navigation and shared calendar
+
+- Separated Global Stats/Match History emoji from gradient text and hover surfaces.
+- Added mixed All modes and semantic selected-mode/dropdown colours; entity options
+  keep their catalogue colours.
+- History shows up to three live matches immediately, coalescing in-flight searches
+  and filtering available candidates without waiting for typing to stop.
+- Added a shared dark calendar for native date inputs throughout the app, including
+  dynamic controls, keyboard navigation, month/year, Today/Clear, limits and focus.
+  Original input values, form fields and native validation remain in place.
