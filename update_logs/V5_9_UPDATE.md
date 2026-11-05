@@ -105,3 +105,13 @@
 - Added per-song tournament finishes and points below podiums, including early exits.
   Collection filters show each matching entrant; tied exits retain place ranges,
   points use the existing scoring policy and missing results stay unavailable.
+
+
+## v5.9.5.2 — Tournament draw clarification and fullscreen
+
+- Added F to toggle native fullscreen across the app, with typing, selectors,
+  dialogs, modifiers, repeats, composition and in-flight requests protected.
+- Investigated artist clusters: selection is per-track weighted randomness with
+  exposure/recency/visibility/freshness support and bounded first-track Vibe affinity.
+  Artist names do not set quotas or force pairs. Selection rules and saved brackets
+  remain unchanged; added artist-label invariance coverage and documentation.

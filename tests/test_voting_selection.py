@@ -210,6 +210,16 @@ class VotingHistoryTests(unittest.TestCase):
         large_group = S.voting_weights(pool, recent=[tuple(range(32)), (50, 51)])[50]
         self.assertGreater(large_group, small_group)
 
+    def test_tournament_draw_ignores_artist_labels_and_uses_tracks_without_replacement(self):
+        rows = [dict(id=i, elo_score=1200, artist='One artist', added_at=0) for i in range(120)]
+        relabelled = [dict(s, artist='Artist ' + str(s['id']), artist_ids=[s['id']]) for s in rows]
+        counts = {i: i % 7 for i in range(120)}
+        for seed in range(20):
+            a = S.tournament_tracks(rows, 32, random.Random(seed), counts=counts)
+            b = S.tournament_tracks(relabelled, 32, random.Random(seed), counts=counts)
+            self.assertEqual([s['id'] for s in a], [s['id'] for s in b])
+            self.assertEqual(len({s['id'] for s in a}), 32)
+
     def test_tournament_draw_soft_balance_unique_and_full_pool_fallback(self):
         rows = [dict(id=i, elo_score=1200) for i in range(100)]
         counts, other = {i:20 for i in range(100)}, {i:20 for i in range(100)}

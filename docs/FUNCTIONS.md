@@ -2031,12 +2031,13 @@ Voting recency, per-track visibility balance and saved-history routing.
 | [VotingHistoryTests.bracket](../tests/test_voting_selection.py#L181) | `self, tid, ids, blind=False, status='in_progress', scope='global', scope_id=None` | Save a bracket's unique entrants without manufacturing match results. |
 | [VotingHistoryTests.test_tournament_counts_split_visibility_and_count_entries_once](../tests/test_voting_selection.py#L188) | `self` | Verify tournament counts split visibility and count entries once. |
 | [VotingHistoryTests.test_tournament_history_ignores_unrelated_scopes_and_scales_group_age](../tests/test_voting_selection.py#L202) | `self` | Verify tournament history ignores unrelated scopes and scales group age. |
-| [VotingHistoryTests.test_tournament_draw_soft_balance_unique_and_full_pool_fallback](../tests/test_voting_selection.py#L213) | `self` | Verify tournament draw soft balance unique and full pool fallback. |
-| [VotingHistoryTests.test_tournament_diagnostics_match_entry_weights](../tests/test_voting_selection.py#L227) | `self` | Verify tournament diagnostics match entry weights. |
-| [VotingHistoryTests.test_bracket_route_passes_visibility_evidence_and_preserves_eligibility](../tests/test_voting_selection.py#L241) | `self` | Verify bracket route passes visibility evidence and preserves eligibility. |
-| [VotingHistoryTests.test_local_entries_and_results_leave_competition_weights_and_draws_unchanged](../tests/test_voting_selection.py#L263) | `self` | Verify local entries and results leave competition weights and draws unchanged. |
-| [VotingHistoryTests.test_local_visibility_and_recency_use_only_the_selected_collection](../tests/test_voting_selection.py#L295) | `self` | Verify local visibility and recency use only the selected collection. |
-| [VotingHistoryTests.test_route_never_uses_local_seed_results_for_library_or_tag](../tests/test_voting_selection.py#L314) | `self` | Verify route never uses local seed results for library or tag. |
+| [VotingHistoryTests.test_tournament_draw_ignores_artist_labels_and_uses_tracks_without_replacement](../tests/test_voting_selection.py#L213) | `self` | Verify tournament draw ignores artist labels and uses tracks without replacement. |
+| [VotingHistoryTests.test_tournament_draw_soft_balance_unique_and_full_pool_fallback](../tests/test_voting_selection.py#L223) | `self` | Verify tournament draw soft balance unique and full pool fallback. |
+| [VotingHistoryTests.test_tournament_diagnostics_match_entry_weights](../tests/test_voting_selection.py#L237) | `self` | Verify tournament diagnostics match entry weights. |
+| [VotingHistoryTests.test_bracket_route_passes_visibility_evidence_and_preserves_eligibility](../tests/test_voting_selection.py#L251) | `self` | Verify bracket route passes visibility evidence and preserves eligibility. |
+| [VotingHistoryTests.test_local_entries_and_results_leave_competition_weights_and_draws_unchanged](../tests/test_voting_selection.py#L273) | `self` | Verify local entries and results leave competition weights and draws unchanged. |
+| [VotingHistoryTests.test_local_visibility_and_recency_use_only_the_selected_collection](../tests/test_voting_selection.py#L305) | `self` | Verify local visibility and recency use only the selected collection. |
+| [VotingHistoryTests.test_route_never_uses_local_seed_results_for_library_or_tag](../tests/test_voting_selection.py#L324) | `self` | Verify route never uses local seed results for library or tag. |
 
 ## tests/test_waitress_shutdown.py
 
@@ -2097,4 +2098,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1421 Python definitions**.
+Total: **1422 Python definitions**.

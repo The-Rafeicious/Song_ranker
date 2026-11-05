@@ -16,6 +16,12 @@ async function bounded(page,width,phase,folder){
   page.on('pageerror',error=>errors.push(error.message));
   const base=process.env.VIBE_TEST_URL,folder='artifacts/vibe-map';fs.mkdirSync(folder,{recursive:true});
   await page.goto(base+'/');await page.locator('#volume-btn').waitFor();
+  await page.locator('body').press('f');await page.waitForFunction(()=>document.fullscreenElement===document.documentElement);
+  await page.locator('body').press('f');await page.waitForFunction(()=>!document.fullscreenElement);
+  await page.locator('#navbar-search input').press('f');
+  assert.equal(await page.locator('#navbar-search input').inputValue(),'f');assert.equal(await page.evaluate(()=>!!document.fullscreenElement),false);
+  await page.locator('#navbar-search input').fill('');
+
   await page.goto(base+'/vibe-map');await page.locator('#vibe-plane').waitFor();
   assert.match(await page.locator('#vibe-tag-count').textContent(),/^\d+ tags?$/);
   assert.ok(await page.locator('#vibe-tag-count').evaluate(e=>e.previousElementSibling.classList.contains('album')));
