@@ -1473,10 +1473,10 @@ Cross-mode archive dates, scope, pagination, privacy and saved result rendering.
 | --- | --- | --- |
 | [HistoryTests.seed](../tests/test_history.py#L14) | `self` | Store results on UTC boundaries with repeated collection membership. |
 | [HistoryTests.test_union_scope_date_and_no_writes](../tests/test_history.py#L27) | `self` | Verify union scope date and no writes. |
-| [HistoryTests.test_page_bounds_and_invalid_dates](../tests/test_history.py#L40) | `self` | Verify page bounds and invalid dates. |
-| [HistoryTests.test_results_and_rendering](../tests/test_history.py#L50) | `self` | Verify results and rendering. |
-| [HistoryTests.open_connection](../tests/test_history.py#L66) | `self` | Open connection. |
-| [HistoryTests.test_excluded_shelves_and_private_brackets](../tests/test_history.py#L72) | `self` | Verify excluded shelves and private brackets. |
+| [HistoryTests.test_page_bounds_and_invalid_dates](../tests/test_history.py#L42) | `self` | Verify page bounds and invalid dates. |
+| [HistoryTests.test_results_and_rendering](../tests/test_history.py#L52) | `self` | Verify results and rendering. |
+| [HistoryTests.open_connection](../tests/test_history.py#L68) | `self` | Open connection. |
+| [HistoryTests.test_excluded_shelves_and_private_brackets](../tests/test_history.py#L74) | `self` | Verify excluded shelves and private brackets. |
 
 ## tests/test_impact.py
 

@@ -615,6 +615,29 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
     if(width!==768)await page.screenshot({path:folder+'/report-audit-'+name+'-'+width+'.png',fullPage:true});
    }
   }
+  // History uses the same bounded record lookup and styled selectors as Query.
+  await page.goto(base+'/history');
+  await page.locator('#archive-search').fill('Bracket track 20');
+  await page.locator('#archive-suggestions button').first().waitFor();
+  await page.locator('#archive-search').press('ArrowDown');await page.keyboard.press('Enter');
+  assert.equal(await page.locator('#archive-target').inputValue(),'20');
+  await page.getByRole('button',{name:'View history',exact:true}).click();
+  await page.waitForURL(url=>url.searchParams.get('target')==='20');
+  assert.match(await page.locator('#archive-selection').textContent(),/Selected: Bracket track 20/);
+  await page.locator('#archive-clear').click();
+  await page.locator('[data-game-select="archive-mode"] .game-select-trigger').click();
+  await page.getByRole('option',{name:'Album Shelves',exact:true}).click();
+  await page.getByRole('button',{name:'View history',exact:true}).click();
+  await page.waitForURL(url=>url.searchParams.get('mode')==='shelves');
+  assert.ok(await page.locator('.archive-placement').count()>0);
+  assert.match(await page.locator('.archive-placement').first().textContent(),/Correct: shelf/);
+  for(const width of [390,768,1365,1800]){
+   await page.setViewportSize({width,height:1000});await bounded(page,width,'history-shelves',folder);
+   if(width!==768)await page.screenshot({path:folder+'/history-shelves-'+width+'.png',fullPage:true});
+  }
+  await page.goto(base+'/history?mode=tournament');
+  assert.ok(await page.locator('.archive-podium').count()>0);
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1000});await bounded(page,width,'history-podium',folder);await page.screenshot({path:folder+'/history-podium-'+width+'.png',fullPage:true});}
   // Real font/layout measurement: keep full thousands where they fit, abbreviate
   // only narrow count slots, then restore on expansion without changing scores.
   await page.evaluate(()=>{
