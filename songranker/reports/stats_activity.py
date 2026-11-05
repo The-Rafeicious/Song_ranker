@@ -176,7 +176,7 @@ def match_archive(conn, args):
     if kind not in ('songs', 'albums', 'artists', 'tags'):
         kind = 'songs'
     try:
-        target = max(0, int(args.get('target', 0)))
+        target = min(2**63-1, max(0, int(args.get('target', 0))))
     except (ValueError, TypeError):
         target = 0
     dates, errors = {}, []

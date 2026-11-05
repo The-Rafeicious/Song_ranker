@@ -23,7 +23,7 @@ body[data-page="history"] {
 .archive-suggestions small { color:#ccc; }
 #archive-selection { margin:0; color:var(--artist); }
 .archive-actions,.archive-context,.history-pagination { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:14px; margin-top:20px; }
-.archive-error { color:var(--danger); }
+.archive-error,.archive-event .danger { color:var(--danger); }
 .archive-error:empty { display:none; }
 .archive-counts { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; }
 .archive-count { display:grid; gap:8px; text-align:center; padding:16px; background:#242424; border-radius:18px; border:1px solid color-mix(in srgb,var(--section-color) 35%,transparent); }
