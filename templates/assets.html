@@ -21,7 +21,7 @@
 {% if page|default('') == 'search' %}{{ css('search') }}{% endif %}
 {% if ranked or path == '/query' %}{{ css('standard_rankings') }}{% endif %}
 {% if profile %}{{ css('profiles') }}{% endif %}
-{% if game or path in ['/query','/tournament_local_stats','/voting_stats'] or page|default('') == 'song' %}{{ css('gameplay') }}{% endif %}
+{% if game or path in ['/query','/history','/tournament_local_stats','/voting_stats'] or page|default('') == 'song' %}{{ css('gameplay') }}{% endif %}
 {% if path == '/vibe-map' %}{{ css('vibe_map') }}{% endif %}
 {% if path == '/history' %}{{ css('history') }}{% endif %}
 {% if report or profile or vibe or dev %}{{ css('reports') }}{% endif %}
@@ -36,7 +36,7 @@
 
 {% macro scripts() %}
 {{ js('ui') }}
-{% if game or path in ['/query','/tournament_stats','/tournament_local_stats','/voting_stats'] or page|default('') == 'song' or path.endswith('/bracket') %}{{ js('gameplay') }}{% endif %}
+{% if game or path in ['/query','/history','/tournament_stats','/tournament_local_stats','/voting_stats'] or page|default('') == 'song' or path.endswith('/bracket') %}{{ js('gameplay') }}{% endif %}
 {{ js('preview') }}
 {% if path == '/voting_stats' or page|default('') == 'song' %}{{ js('elo_replay') }}{% endif %}
 {% if path in ['/','/game','/album_shelves'] or ranked or dev %}{{ js('special_modes') }}{% endif %}
@@ -56,6 +56,7 @@
   {{ js('dev_system') }}
 {% endif %}
 {% if path == '/query' %}{{ js('query') }}{% endif %}
+{% if path == '/history' %}{{ js('history') }}{% endif %}
 {{ js('app_stop') }}
 {{ js('site') }}
 {% endmacro %}

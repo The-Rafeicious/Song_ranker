@@ -84,3 +84,14 @@
   point fields are preserved; viewing a report does not rewrite saved records.
 - Preserve first-round preference Elo and the separation of local artist/album
   tournaments from library/tag competition and Overall.
+
+## v5.9.5 — Cross-mode Match History
+
+- Moved Match History above Voting Stats and applied the shared mode-spectrum palette.
+- Added mode, song/album/artist/tag and inclusive UTC date filters, bounded Query lookup,
+  filtered activity counts and twenty-result pagination with preserved filters.
+- Reused Elo VS rows for ordinary and tournament first-round votes; added completed
+  tournament podiums and bracket links, Trivia field results/timings, submitted
+  Shelves with saved correction positions and shared grading, and retained Vibe maps.
+- Kept missing evidence visible, excluded Shelves rounds consistent with reports,
+  unfinished Blind identities private and Vibe's retained-state limitation explicit.

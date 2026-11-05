@@ -148,3 +148,151 @@ def attach_reports(conn, data, mode, now=None, tournament_ids=None):
             AND m.status='completed' AND m.winner_id IS NOT NULL AND m.loser_id IS NOT NULL AND m.winner_id!=m.loser_id""").fetchone()[0]
     if mode=='tournament' and tournament_ids is not None:data['tournament_elo']['points_only']=0
     return data
+
+
+def match_archive(conn, args):
+    """Page a read-only cross-mode archive before hydrating results.
+
+    Dates are inclusive UTC days. Entity membership uses the current catalogue;
+    a round is counted once even when several matching tracks participated.
+    Vibe stores retained placements, not an immutable lifetime attempt log.
+    """
+    from math import ceil
+    from songranker.catalog import source_sql, versus_metadata
+    from songranker.modes.shelves import shelf_report_filter, can_grade, grade_shelf
+
+    mode = args.get('mode', 'all')
+    if mode not in ('all', 'standard', 'blind', 'voting', 'first_round', 'tournament', 'recognition', 'shelves', 'vibe'):
+        mode = 'all'
+    origin = args.get('origin', 'all')
+    visibility = args.get('visibility', 'all')
+    if visibility not in ('standard', 'blind'):
+        visibility = 'all'
+    if origin in ('ordinary', 'tournament') and mode in ('standard', 'blind'):
+        visibility = mode
+    if origin in ('ordinary', 'tournament'):
+        mode = 'voting' if origin == 'ordinary' else 'first_round'
+    kind = args.get('entity', 'songs')
+    if kind not in ('songs', 'albums', 'artists', 'tags'):
+        kind = 'songs'
+    try:
+        target = max(0, int(args.get('target', 0)))
+    except (ValueError, TypeError):
+        target = 0
+    dates, errors = {}, []
+    for key in ('from', 'to'):
+        value = args.get(key, '')
+        try:
+            dates[key] = datetime.strptime(value, '%Y-%m-%d').date().isoformat() if value else ''
+        except ValueError:
+            dates[key] = ''
+            errors.append('Choose a valid ' + key + ' date.')
+    if dates['from'] and dates['to'] and dates['from'] > dates['to']:
+        errors.append('The end date must be on or after the start date.')
+    membership = {
+        'songs': 's.id=?', 'albums': 's.album_id=?',
+        'artists': 'EXISTS (SELECT 1 FROM song_artists sa WHERE sa.song_id=s.id AND sa.artist_id=?)',
+        'tags': 'EXISTS (SELECT 1 FROM song_genres sg WHERE sg.song_id=s.id AND sg.genre_id=?)',
+    }[kind]
+    source = source_sql(conn)
+    cte = f"""WITH selected AS (SELECT s.id FROM songs s WHERE {membership}),
+    events AS (
+      SELECT 'elo' family,h.id,CASE WHEN h.origin='tournament' THEN 'first_round' ELSE 'voting' END activity,
+        h.mode visibility,julianday(h.created_at) moment,
+        (h.winner_id IN selected OR h.loser_id IN selected) matched
+        FROM {source} h WHERE h.mode IN ('standard','blind') AND h.winner_id!=h.loser_id
+        AND NOT EXISTS (SELECT 1 FROM tournaments private WHERE private.id=h.tournament_id
+          AND private.is_blind=1 AND private.status!='completed')
+      UNION ALL SELECT 'tournament',t.id,'tournament',CASE WHEN t.is_blind THEN 'blind' ELSE 'standard' END,
+        julianday(COALESCE(t.completed_at,t.timestamp)),
+        (EXISTS(SELECT 1 FROM tournament_entries e WHERE e.tournament_id=t.id AND e.song_id IN selected)
+         OR t.champion_id IN selected OR t.runner_up_id IN selected OR t.third_place_id IN selected
+         OR EXISTS(SELECT 1 FROM tournament_matches m WHERE m.tournament_id=t.id
+           AND (m.song1_id IN selected OR m.song2_id IN selected)))
+        FROM tournaments t WHERE t.status='completed'
+      UNION ALL SELECT 'recognition',id,'recognition','',julianday(completed_at,'unixepoch'),song_id IN selected
+        FROM trivia_rounds WHERE completed_at IS NOT NULL
+      UNION ALL SELECT 'shelves',r.id,'shelves','',julianday(r.completed_at,'unixepoch'),
+        EXISTS(SELECT 1 FROM album_shelf_items i WHERE i.round_id=r.id AND i.song_id IN selected)
+        FROM album_shelf_rounds r WHERE {shelf_report_filter(conn)}
+      UNION ALL SELECT 'vibe',p.song_id || ':' || p.map_id,'vibe','',julianday(p.updated_at,'unixepoch'),p.song_id IN selected
+        FROM song_vibe_positions p WHERE p.status!='unmapped' AND p.updated_at IS NOT NULL
+    ), filtered AS (SELECT * FROM events WHERE (?='all' OR activity=? OR (family='elo' AND visibility=?))
+      AND (?='all' OR visibility=?)
+      AND (?=0 OR matched) AND (?='' OR moment>=julianday(?))
+      AND (?='' OR moment<julianday(?)+1)) """
+    params = (target, mode, mode, mode, visibility, visibility, target, dates['from'], dates['from'], dates['to'], dates['to'])
+    totals = {r['activity']: r['n'] for r in conn.execute(cte + 'SELECT activity,COUNT(*) n FROM filtered GROUP BY activity', params)} if not errors else {}
+    total = sum(totals.values())
+    pages = max(1, ceil(total / 20))
+    try:
+        page = max(1, min(pages, int(args.get('page', 1))))
+    except (ValueError, TypeError):
+        page = 1
+    rows = [dict(r) for r in conn.execute(cte + 'SELECT *,datetime(moment) date FROM filtered ORDER BY moment DESC,family,id DESC LIMIT 20 OFFSET ?', (*params, (page-1)*20))] if not errors else []
+    songs = {}
+
+    def song(sid):
+        """Hydrate only visible identities, retaining explicit deleted-track gaps."""
+        if sid not in songs:
+            raw = conn.execute('SELECT s.*,a.title album_title,a.cover_url FROM songs s LEFT JOIN albums a ON a.id=s.album_id WHERE s.id=?', (sid,)).fetchone()
+            if raw:
+                item = dict(raw)
+                artists = [dict(r) for r in conn.execute('SELECT a.id,a.name FROM artists a JOIN song_artists sa ON sa.artist_id=a.id WHERE sa.song_id=?', (sid,))]
+                item.update(versus_metadata(dict(id=item['album_id'], title=item['album_title'], cover_url=item['cover_url']), artists))
+                songs[sid] = item
+            else:
+                songs[sid] = None
+        return songs[sid]
+
+    for row in rows:
+        family, rid = row['family'], row['id']
+        if family == 'elo':
+            match = dict(conn.execute(f'SELECT * FROM {source} WHERE id=?', (rid,)).fetchone())
+            match.update(winner_song=song(match['winner_id']), loser_song=song(match['loser_id']))
+            row['result'] = match
+        elif family == 'tournament':
+            bracket = dict(conn.execute('SELECT * FROM tournaments WHERE id=?', (rid,)).fetchone())
+            row['result'] = bracket
+            row['podium'] = [dict(place=label, song=song(bracket[key])) for key,label in [('champion_id','1st'),('runner_up_id','2nd'),('third_place_id','3rd')]]
+        elif family == 'recognition':
+            result = dict(conn.execute('SELECT * FROM trivia_rounds WHERE id=?', (rid,)).fetchone())
+            row['song'] = song(result['song_id'])
+            row['fields'] = [dict(label=label, correct=result[key+'_correct'], seconds=result[key+'_seconds']) for key,label in [('title','Title'),('artist','Artist'),('album','Album')] if key!='album' or result['album_available']]
+        elif family == 'shelves':
+            items = [dict(r) for r in conn.execute('SELECT * FROM album_shelf_items WHERE round_id=? ORDER BY answer_slot,answer_position,item_slot', (rid,))]
+            rules = conn.execute('SELECT rules_version FROM album_shelf_rounds WHERE id=?', (rid,)).fetchone()[0]
+            grade = grade_shelf(items) if can_grade(items, rules) else None
+            row['grade'] = grade
+            graded = {i['item_slot']: i for i in grade['items']} if grade else {}
+            slots = {}
+            for item in items:
+                slots.setdefault(item['album_slot'], item['album_id'])
+            for item in items:
+                if item['answer_slot'] is not None:
+                    slots.setdefault(item['answer_slot'], None)
+            row['shelves'] = []
+            for slot, aid in sorted(slots.items()):
+                album = conn.execute('SELECT * FROM albums WHERE id=?', (aid,)).fetchone()
+                group = dict(slot=slot, album=dict(album) if album else None, tracks=[])
+                for item in items:
+                    if item['answer_slot'] == slot or (item['answer_slot'] is None and item['album_slot']==slot):
+                        result = graded.get(item['item_slot'])
+                        item.update(song=song(item['song_id']), result=result,
+                            outcome='Unavailable' if result is None else 'Wrong album' if not result['album_correct'] else 'Correct' if result['order_right']==result['order_pairs'] else 'Order affected')
+                        group['tracks'].append(item)
+                row['shelves'].append(group)
+        else:
+            sid, map_id = rid.split(':', 1)
+            row['song'] = song(int(sid))
+            row['result'] = dict(conn.execute('SELECT p.*,m.title,m.x_low,m.x_high,m.y_low,m.y_high FROM song_vibe_positions p JOIN vibe_maps m ON m.id=p.map_id WHERE p.song_id=? AND p.map_id=?', (sid,map_id)).fetchone())
+    selected = None
+    if target:
+        table, label = {'songs':('songs','title'), 'albums':('albums','title'), 'artists':('artists','name'), 'tags':('genres','name')}[kind]
+        record = conn.execute(f'SELECT {label} name FROM {table} WHERE id=?', (target,)).fetchone()
+        selected = record['name'] if record else 'Record unavailable'
+    filters = dict(mode=mode, visibility=visibility, entity=kind, target=target or '', **dates)
+    return dict(events=rows, archive_filters=filters, selected_name=selected, archive_errors=errors,
+        archive_total=total, archive_totals=totals, archive_page=page, archive_pages=pages,
+        archive_start=(page-1)*20+1 if total else 0, archive_end=min(page*20,total),
+        archive_modes=[('all','All modes'),('voting','Voting'),('first_round','Tournament first rounds'),('standard','Non-blind Elo'),('blind','Blind Elo'),('tournament','Tournament podiums'),('recognition','Trivia'),('shelves','Album Shelves'),('vibe','Vibe Map')])

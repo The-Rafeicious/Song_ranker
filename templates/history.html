@@ -1,16 +1,54 @@
 {% extends 'base.html' %}
-{% from 'components.html' import versus_row %}
+{% from 'components.html' import versus_row, art %}
 {% block title %}Match History · Song Ranker{% endblock %}
 {% block page_kind %}history{% endblock %}
-
+{% macro identity(song) %}
+{% if song %}<div class="archive-identity">{{ art(song.cover_url) }}<div class="archive-copy"><a class="song" href="{{url_for('song_page',song_id=song.id)}}" title="{{song.title}}">{{song.title}}</a><div>{% for artist in song.artist_links %}<a class="artist" href="{{url_for('artist_page',artist_name=artist.name)}}">{{artist.name}}</a>{% if not loop.last %}, {% endif %}{% else %}<span>Artist unavailable</span>{% endfor %}</div>{% if song.album_link %}<a class="album" href="{{url_for('album_page',album_title=song.album_link.title)}}">{{song.album_link.title}}</a>{% endif %}</div></div>{% else %}<p class="muted">Track unavailable</p>{% endif %}
+{% endmacro %}
 {% block content %}
-<div class="page-head history-page-header"><h1 class="voting">Match History</h1></div>
-<section class="panel history-overview">
- <div class="joined-metrics" data-columns="3"><div><b>{{elo_summary.total}}</b><span>Elo matches</span></div><div><b class="voting">{{elo_summary.ordinary}}</b><span>Voting</span></div><div><b class="tournament">{{elo_summary.tournament}}</b><span>Tournament first rounds</span></div></div>
- <nav class="pill-nav history-filters" aria-label="Match filter">{% for key,label in [('all','All modes'),('standard','Non-blind'),('blind','Blind')] %}<a class="pill {{key}}{% if history_mode==key %} active{% endif %}" href="{{url_for('history',mode=key,origin=history_origin)}}"{% if history_mode==key %} aria-current="page"{% endif %}>{{label}}</a>{% endfor %}</nav>
- <nav class="pill-nav history-filters" aria-label="Match origin">{% for key,label in [('all','All Elo matches'),('ordinary','Voting'),('tournament','Tournament first rounds')] %}<a class="pill{% if key=='tournament' %} tournament{% endif %}{% if history_origin==key %} active{% endif %}" href="{{url_for('history',mode=history_mode,origin=key)}}"{% if history_origin==key %} aria-current="page"{% endif %}>{{label}}</a>{% endfor %}</nav>
+<div class="page-head history-page-header"><h1 class="global-theme-title">Match History</h1></div>
+<section class="panel history-overview" aria-label="Choose history">
+<form method="get" id="archive-filters">
+{% if archive_filters.visibility!='all' %}<input type="hidden" name="visibility" value="{{archive_filters.visibility}}"><p class="report-facts">{{'Blind' if archive_filters.visibility=='blind' else 'Non-blind'}} history · <a href="{{url_for('history',mode=archive_filters.mode)}}">Clear visibility filter</a></p>{% endif %}
+ <div class="archive-controls">
+ <label>Mode<select name="mode" id="archive-mode">{% for key,label in archive_modes %}<option value="{{key}}"{% if archive_filters.mode==key %} selected{% endif %}>{{label}}</option>{% endfor %}</select></label>
+ <label>Record type<select name="entity" id="archive-kind">{% for key,label in [('songs','Songs'),('albums','Albums'),('artists','Artists'),('tags','Tags')] %}<option value="{{key}}"{% if archive_filters.entity==key %} selected{% endif %}>{{label}}</option>{% endfor %}</select></label>
+ <div class="archive-lookup"><label for="archive-search">Find a record</label><div class="archive-search-field"><input type="search" id="archive-search" placeholder="Search by name or artist" autocomplete="off" maxlength="200" value="{{selected_name or ''}}" aria-controls="archive-suggestions" aria-expanded="false"><button type="button" id="archive-clear" aria-label="Clear record selection">×</button></div><input type="hidden" name="target" id="archive-target" value="{{archive_filters.target}}"><div id="archive-suggestions" class="archive-suggestions" hidden></div><p id="archive-selection" role="status">{{'Selected: '+selected_name if selected_name else 'All records'}}</p></div>
+ <label>From · UTC<input type="date" name="from" value="{{archive_filters['from']}}"></label>
+ <label>To · UTC<input type="date" name="to" value="{{archive_filters['to']}}"></label>
+ </div>
+ <div class="archive-actions"><button class="btn" type="submit">View history</button><a class="btn" href="{{url_for('history')}}">Reset</a></div>
+ <p class="archive-error" id="archive-error" role="alert">{{archive_errors|join(' ')}}</p>
+</form>
+<p class="report-facts">Dates use UTC. Record filters use current song, album, artist and tag relationships. Select the same start and end date for one day.</p>
 </section>
-<section class="panel stats-glow glow-voting history-list" id="all-history" aria-label="Recent matches">
-  {% for match in history %}{{ versus_row(match.winner_song,match.loser_song,mode=match.mode,created_at=match.created_at,before_left=match.winner_before,after_left=match.winner_after,before_right=match.loser_before,after_right=match.loser_after,match_id=match.id,history_note=match.get('history_note',''),origin=match.get('origin','ordinary'),tournament_id=match.get('tournament_id'),rating_weight=match.get('rating_weight',1)) }}{% endfor %}
-  <div class="empty" id="history-empty" {% if history %}hidden{% endif %}>No matches</div>
-</section><nav class="history-pagination" aria-label="Match history pages">{% if history_page>1 %}<a class="btn" href="{{url_for('history',mode=history_mode,origin=history_origin,page=history_page-1)}}">← Newer</a>{% endif %}<span>{{history_start}}–{{history_end}} of {{history_total}} · Page {{history_page}} / {{history_pages}}</span>{% if history_page<history_pages %}<a class="btn" href="{{url_for('history',mode=history_mode,origin=history_origin,page=history_page+1)}}">Older →</a>{% endif %}</nav>{% endblock %}
+<section class="panel history-overview" aria-label="Filtered activity totals">
+<div class="section-head"><h2>Activity</h2><span>{{archive_total}} saved results</span></div>
+<div class="archive-counts">{% for key,label in [('voting','Votes'),('first_round','First-round votes'),('tournament','Completed brackets'),('recognition','Trivia rounds'),('shelves','Shelves rounds'),('vibe','Retained maps')] %}<div class="archive-count" style="--section-color:var(--{{'tournament' if key in ['first_round','tournament'] else 'voting' if key=='voting' else key}})"><b>{{archive_totals.get(key,0)}}</b><span>{{label}}</span></div>{% endfor %}</div>
+<p class="report-facts">Completed brackets and their first-round Elo matches are separate results. Vibe Map keeps the latest saved map per track, including repeat sample totals.</p>
+</section>
+<div class="history-list" id="all-history">
+{% for event in events %}
+{% set color='tournament' if event.activity in ['first_round','tournament'] else event.visibility if event.family=='elo' else event.family %}
+<section class="panel archive-event dashboard-surface" style="--section-color:var(--{{color}})" aria-labelledby="archive-heading-{{loop.index}}">
+<div class="section-head"><h2 class="{{color}}" id="archive-heading-{{loop.index}}">{{'Tournament first round' if event.activity=='first_round' else 'Standard Vote' if event.family=='elo' else 'Tournament podium' if event.family=='tournament' else 'Trivia' if event.family=='recognition' else 'Album Shelves' if event.family=='shelves' else 'Vibe Map'}}</h2><time>{{event.date or 'Date unavailable'}}{{' UTC' if event.date else ''}}</time></div>
+{% if event.family=='elo' %}{% set m=event.result %}
+{% if m.winner_song and m.loser_song %}{{ versus_row(m.winner_song,m.loser_song,mode=m.mode,created_at=m.created_at or '',before_left=m.winner_before,after_left=m.winner_after,before_right=m.loser_before,after_right=m.loser_after,match_id=m.id,origin=m.get('origin','ordinary'),tournament_id=m.get('tournament_id'),rating_weight=m.get('rating_weight',1)) }}{% else %}<div class="empty">Match identities unavailable</div>{% endif %}
+{% elif event.family=='tournament' %}
+<div class="archive-context"><span class="{{event.visibility}}">{{'Blind' if event.visibility=='blind' else 'Non-blind'}}</span><span>{{event.result.size}} tracks · {{event.result.scope_type|capitalize}}</span><a class="tournament" href="/tournament/{{event.id}}/bracket">Bracket #{{event.id}} ↗</a></div>
+<div class="archive-podium">{% for place in event.podium %}<div class="archive-place" data-place="{{loop.index}}"><strong class="tournament">{{place.place}}</strong>{{identity(place.song)}}</div>{% endfor %}</div>
+{% elif event.family=='recognition' %}
+{{identity(event.song)}}
+<div class="archive-fields">{% for field in event.fields %}<div class="archive-field"><h3 class="{{'song' if field.label=='Title' else 'artist' if field.label=='Artist' else 'album'}}">{{field.label}}</h3><strong class="{{'song' if field.correct==1 else 'danger' if field.correct==0 else 'muted'}}">{{'✓ Correct' if field.correct==1 else '✕ Missed' if field.correct==0 else 'Unavailable'}}</strong>{% if field.seconds is not none %}<span>{{'%g'|format(field.seconds)}} s</span>{% endif %}</div>{% endfor %}</div>
+{% elif event.family=='shelves' %}
+<div class="archive-context"><strong class="shelves">{% if event.grade %}{{'%g'|format(event.grade.points)}} / {{'%g'|format(event.grade.available)}} points{% if event.grade.points==event.grade.available %} · Perfect shelves{% endif %}{% else %}Result unavailable{% endif %}</strong><a class="shelves" href="/album_shelves_stats?round={{event.id}}#shelf-round-{{event.id}}">Round #{{event.id}} ↗</a></div>
+<div class="archive-shelves">{% for group in event.shelves %}<div class="archive-shelf"><h3 class="album">{% if group.album %}<a href="{{url_for('album_page',album_title=group.album.title)}}">{{art(group.album.cover_url)}}{{group.album.title}}</a>{% else %}Album unavailable{% endif %}</h3><span>Submitted shelf {{group.slot}}</span><ol>{% for item in group.tracks %}<li class="archive-placement" data-outcome="{{item.outcome}}"><b>{{item.answer_position if item.answer_position is not none else '?'}}</b><div>{{identity(item.song)}}<p><strong class="{{'song' if item.outcome=='Correct' else 'muted' if item.outcome=='Unavailable' else 'danger'}}">{{item.outcome}}</strong> · Correct: shelf {{item.album_slot}}, disc {{item.disc_number}}, track {{item.track_number}}</p>{% if item.result %}<span>{{'%g'|format(item.result.points)}} / {{'%g'|format(item.result.available)}} points · {{item.result.order_right}} / {{item.result.order_pairs}} order comparisons</span>{% endif %}</div></li>{% else %}<li class="empty">No submitted tracks</li>{% endfor %}</ol></div>{% endfor %}</div>
+{% else %}
+{{identity(event.song)}}{% set point=event.result %}<div class="archive-context"><h3 class="vibe">{{point.title}}</h3><span>{{point.sample_count}} placed samples · {{point.not_applicable_count}} not applicable</span></div>
+{% if point.status=='placed' %}<div class="archive-fields">{% for axis in ['x','y'] %}<div class="archive-field"><span>{{point[axis+'_low']}} ↔ {{point[axis+'_high']}}</span><meter min="-1" max="1" value="{{point[axis]}}" aria-label="{{axis|upper}} · {{point[axis+'_low']}} to {{point[axis+'_high']}}">{{point[axis]}}</meter><strong>{{'%+.2f'|format(point[axis])}}</strong></div>{% endfor %}</div>{% else %}<p>Not applicable</p>{% endif %}
+{% endif %}
+</section>
+{% else %}<section class="panel empty" id="history-empty">No saved results match these filters.</section>{% endfor %}
+</div>
+<nav class="history-pagination" aria-label="Match history pages">{% if archive_page>1 %}<a class="btn" href="{{url_for('history',page=1,**archive_filters)}}">First</a><a class="btn" href="{{url_for('history',page=archive_page-1,**archive_filters)}}">← Newer</a>{% endif %}<span>{{archive_start}}–{{archive_end}} of {{archive_total}} · Page {{archive_page}} / {{archive_pages}}</span>{% if archive_page<archive_pages %}<a class="btn" href="{{url_for('history',page=archive_page+1,**archive_filters)}}">Older →</a><a class="btn" href="{{url_for('history',page=archive_pages,**archive_filters)}}">Last</a>{% endif %}</nav>
+{% endblock %}

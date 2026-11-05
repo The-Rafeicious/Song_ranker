@@ -684,24 +684,24 @@ Standard/blind voting operations, history page and detailed Voting Stats.
 | [api_vote](../songranker/modes/voting.py#L29) | `` | Serve vote; POST /api/vote. |
 | [api_matchup](../songranker/modes/voting.py#L45) | `` | Serve matchup; GET /api/matchup. |
 | [history](../songranker/modes/voting.py#L70) | `` | History; GET /history. |
-| [voting_stats](../songranker/modes/voting.py#L89) | `` | Voting stats; GET /voting_stats. |
-| [voting_replay](../songranker/modes/voting.py#L113) | `` | Return a read-only public-Elo timeline, optionally focused on one track. |
-| [build_elo_replay](../songranker/modes/voting.py#L129) | `conn, song_id=None` | Build compact visible changes from saved public projections in event order. |
-| [build_elo_replay.key](../songranker/modes/voting.py#L165) | `sid` | Deterministic score/title/ID ordering for tied leaderboard positions. |
-| [build_elo_replay.change](../songranker/modes/voting.py#L169) | `sid, value` | Replace one saved rating without re-sorting the entire collection. |
-| [build_elo_replay.snapshot](../songranker/modes/voting.py#L175) | `kind, event=None, changes=(), ordinal=0` | Capture five leaders or two neighbours on each side of the centred song. |
-| [build_elo_replay.visible](../songranker/modes/voting.py#L192) | `frame` | Keep only changes to the leaders or the focused song and its nearby standings. |
-| [finite](../songranker/modes/voting.py#L257) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
-| [percent](../songranker/modes/voting.py#L265) | `n, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [average](../songranker/modes/voting.py#L269) | `values` | Return a rounded mean for report values, preserving unavailable for an empty sample. |
-| [saved_date](../songranker/modes/voting.py#L277) | `value` | Parse a saved result date for report display and ordering. |
-| [rating_distribution](../songranker/modes/voting.py#L293) | `songs, tested` | Shared current, voted-track Elo cohort and bands for Voting/Global Stats. |
-| [build_voting_stats](../songranker/modes/voting.py#L338) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
-| [build_voting_stats.identity](../songranker/modes/voting.py#L379) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
-| [build_voting_stats.result_totals](../songranker/modes/voting.py#L468) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
-| [build_voting_stats.top](../songranker/modes/voting.py#L666) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
-| [build_voting_stats.category](../songranker/modes/voting.py#L680) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
-| [profile_voting_details](../songranker/modes/voting.py#L845) | `conn, song_ids` | Pool track appearances, counting internal votes twice but each event once. |
+| [voting_stats](../songranker/modes/voting.py#L83) | `` | Voting stats; GET /voting_stats. |
+| [voting_replay](../songranker/modes/voting.py#L107) | `` | Return a read-only public-Elo timeline, optionally focused on one track. |
+| [build_elo_replay](../songranker/modes/voting.py#L123) | `conn, song_id=None` | Build compact visible changes from saved public projections in event order. |
+| [build_elo_replay.key](../songranker/modes/voting.py#L159) | `sid` | Deterministic score/title/ID ordering for tied leaderboard positions. |
+| [build_elo_replay.change](../songranker/modes/voting.py#L163) | `sid, value` | Replace one saved rating without re-sorting the entire collection. |
+| [build_elo_replay.snapshot](../songranker/modes/voting.py#L169) | `kind, event=None, changes=(), ordinal=0` | Capture five leaders or two neighbours on each side of the centred song. |
+| [build_elo_replay.visible](../songranker/modes/voting.py#L186) | `frame` | Keep only changes to the leaders or the focused song and its nearby standings. |
+| [finite](../songranker/modes/voting.py#L251) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
+| [percent](../songranker/modes/voting.py#L259) | `n, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [average](../songranker/modes/voting.py#L263) | `values` | Return a rounded mean for report values, preserving unavailable for an empty sample. |
+| [saved_date](../songranker/modes/voting.py#L271) | `value` | Parse a saved result date for report display and ordering. |
+| [rating_distribution](../songranker/modes/voting.py#L287) | `songs, tested` | Shared current, voted-track Elo cohort and bands for Voting/Global Stats. |
+| [build_voting_stats](../songranker/modes/voting.py#L332) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
+| [build_voting_stats.identity](../songranker/modes/voting.py#L373) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
+| [build_voting_stats.result_totals](../songranker/modes/voting.py#L462) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
+| [build_voting_stats.top](../songranker/modes/voting.py#L660) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
+| [build_voting_stats.category](../songranker/modes/voting.py#L674) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
+| [profile_voting_details](../songranker/modes/voting.py#L839) | `conn, song_ids` | Pool track appearances, counting internal votes twice but each event once. |
 
 ## songranker/overall.py
 
@@ -823,6 +823,8 @@ Shared dated activity, comparison charts and report attachments.
 | [build_activity.rows](../songranker/reports/stats_activity.py#L59) | `table` | Read a known activity source table while tolerating its absence in historical fixtures. |
 | [build_activity.add](../songranker/reports/stats_activity.py#L64) | `when, kind, right=0, denominator=0` | Add an in-window dated result and its success denominator, counting undated records separately. |
 | [attach_reports](../songranker/reports/stats_activity.py#L135) | `conn, data, mode, now=None, tournament_ids=None` | Attach shared activity charts and effective tournament Elo history to a mode report. |
+| [match_archive](../songranker/reports/stats_activity.py#L153) | `conn, args` | Page a read-only cross-mode archive before hydrating results. |
+| [match_archive.song](../songranker/reports/stats_activity.py#L235) | `sid` | Hydrate only visible identities, retaining explicit deleted-track gaps. |
 
 ## songranker/services.py
 
@@ -1463,6 +1465,19 @@ Real local repositories/remotes only. Never contacts the user's remote.
 | [GitSyncTests.test_new_code_clears_only_its_python_cache](../tests/test_git_sync.py#L548) | `self` | Verify new code clears only its python cache. |
 | [GitSyncTests.test_cli_update_reexecutes_before_importing_new_application_modules](../tests/test_git_sync.py#L558) | `self` | Verify cli update reexecutes before importing new application modules. |
 
+## tests/test_history.py
+
+Cross-mode archive dates, scope, pagination, privacy and saved result rendering.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [HistoryTests.seed](../tests/test_history.py#L14) | `self` | Store results on UTC boundaries with repeated collection membership. |
+| [HistoryTests.test_union_scope_date_and_no_writes](../tests/test_history.py#L27) | `self` | Verify union scope date and no writes. |
+| [HistoryTests.test_page_bounds_and_invalid_dates](../tests/test_history.py#L40) | `self` | Verify page bounds and invalid dates. |
+| [HistoryTests.test_results_and_rendering](../tests/test_history.py#L50) | `self` | Verify results and rendering. |
+| [HistoryTests.open_connection](../tests/test_history.py#L66) | `self` | Open connection. |
+| [HistoryTests.test_excluded_shelves_and_private_brackets](../tests/test_history.py#L72) | `self` | Verify excluded shelves and private brackets. |
+
 ## tests/test_impact.py
 
 Impact evidence, shrinkage and browser/server parity.
@@ -2078,4 +2093,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1409 Python definitions**.
+Total: **1417 Python definitions**.
