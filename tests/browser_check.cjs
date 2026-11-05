@@ -16,6 +16,13 @@ async function bounded(page,width,phase,folder){
   page.on('pageerror',error=>errors.push(error.message));
   const base=process.env.VIBE_TEST_URL,folder='artifacts/vibe-map';fs.mkdirSync(folder,{recursive:true});
   await page.goto(base+'/');await page.locator('#volume-btn').waitFor();
+  await page.locator('.mode-card.voting h2').waitFor();
+  assert.equal(await page.locator('.mode-card.voting h2').evaluate(e=>getComputedStyle(e).color),'rgb(163, 230, 53)');
+  const homeSurfaces=await page.locator('.mode-card').evaluateAll(nodes=>nodes.map(e=>{const s=getComputedStyle(e);return {base:s.backgroundColor,glow:s.getPropertyValue('--surface-glow-strength').trim(),blur:s.getPropertyValue('--surface-glow-size').trim(),shadow:s.boxShadow,wash:s.backgroundImage};}));
+  assert.ok(homeSurfaces.length>=5);
+  for(const surface of homeSurfaces){assert.equal(surface.base,'rgb(30, 30, 30)');assert.equal(surface.glow,'16%');assert.equal(surface.blur,'26px');assert.match(surface.shadow,/26px/);assert.match(surface.wash,/radial-gradient/);}
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'shared-home-surfaces',folder);await page.screenshot({path:folder+'/shared-home-surfaces-'+width+'.png',fullPage:true});}
+
   await page.locator('body').press('f');await page.waitForFunction(()=>document.fullscreenElement===document.documentElement);
   await page.locator('body').press('f');await page.waitForFunction(()=>!document.fullscreenElement);
   await page.locator('#navbar-search input').press('f');
@@ -200,7 +207,7 @@ async function bounded(page,width,phase,folder){
   assert.equal(await page.locator('body').getAttribute('data-tone'),'mixed');
   const globalTheme=await page.evaluate(()=>({title:getComputedStyle(document.querySelector('.global-theme-title')).backgroundImage,back:getComputedStyle(document.body,'::before').backgroundImage}));
   assert.match(globalTheme.title,/linear-gradient/);assert.match(globalTheme.back,/radial-gradient/);
-  for(const [id,colour] of [['global-voting','rgb(156, 219, 145)'],['global-recognition','rgb(242, 211, 79)'],['global-tournaments','rgb(255, 120, 166)'],['global-shelves','rgb(175, 137, 189)']]){
+  for(const [id,colour] of [['global-voting','rgb(163, 230, 53)'],['global-recognition','rgb(242, 211, 79)'],['global-tournaments','rgb(255, 120, 166)'],['global-shelves','rgb(175, 137, 189)']]){
    assert.equal(await page.locator('#'+id+' h2').evaluate(e=>getComputedStyle(e).color),colour,'Global summary keeps its mode colour: '+id);
   }
   for(const [mode,colour] of [['standard','#f0a35b'],['blind','#55d6c2']])assert.equal(await page.locator('#global-voting .vote-column.'+mode).evaluate(e=>getComputedStyle(e).getPropertyValue('--section-color').trim()),colour,'Voting sub-card keeps its own accent');
@@ -590,6 +597,8 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
     await page.goto(base+route);await page.locator('.ranking-heading h1').waitFor();await page.locator('#main .rank-links').waitFor();
     const sizes=await page.evaluate(()=>[getComputedStyle(document.querySelector('.ranking-heading h1')).fontSize,getComputedStyle(document.querySelector('#main .rank-links a,#main .rank-links button')).fontSize]);
     if(titleSize===null){[titleSize,tabSize]=sizes;}else assert.deepEqual(sizes,[titleSize,tabSize],'Shared ranking header sizes: '+route+' at '+width);
+    const rankScales=await page.locator('.leader-row').evaluateAll(nodes=>nodes.slice(0,5).map(e=>{const s=getComputedStyle(e);return {blur:s.getPropertyValue('--rank-blur').trim(),shadow:s.boxShadow};}));
+    for(const row of rankScales)if(row.blur)assert.ok(row.shadow.includes(parseFloat(row.blur)+'px'),'Rank scale retains its own halo');
     await bounded(page,width,'ranking-header-'+route.replace(/\W+/g,'-'),folder);
     if(width!==768)await page.screenshot({path:folder+'/ranking-header-'+route.replace(/\W+/g,'-')+'-'+width+'.png'});
     if(route==='/overall_rankings')assert.equal(await page.locator('.overall-score-note').count(),0);
@@ -607,6 +616,10 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
     await page.locator('#overall-profile').waitFor();
     if(name!=='tag')await page.waitForFunction(()=>!document.querySelector('[data-song-details][aria-busy]'));
    }
+   const primaryIssues=await page.locator('#main .panel').evaluateAll(nodes=>nodes.filter(e=>e.getBoundingClientRect().width).flatMap(e=>{const s=getComputedStyle(e);return s.backgroundColor==='rgb(30, 30, 30)'&&s.backgroundImage.includes('gradient')&&s.boxShadow.includes('26px')?[]:[{class:e.className,base:s.backgroundColor,shadow:s.boxShadow,wash:s.backgroundImage}];}));
+   assert.deepEqual(primaryIssues,[],'Shared primary surface recipe: '+name);
+   const insetIssues=await page.locator('#main .mode-stats-inset,#main .joined-metrics').evaluateAll(nodes=>nodes.filter(e=>e.getBoundingClientRect().width).flatMap(e=>{const s=getComputedStyle(e);return s.backgroundColor==='rgb(36, 36, 36)'&&s.boxShadow==='none'?[]:[{class:e.className,base:s.backgroundColor,shadow:s.boxShadow}];}));
+   assert.deepEqual(insetIssues,[],'Nested surfaces do not stack halos: '+name);
    await page.locator('.profile-song-disclosure,.overall-breakdown,.guess-history-item,.shelf-history-item').evaluateAll(nodes=>nodes.slice(0,8).forEach(n=>n.open=true));
    assert.equal(await page.locator('.profile-detail-note,.overall-balance-copy,.overall-mode-context').count(),0,'No methodology footnotes: '+name);
    const blankPlots=await page.locator('.stats-pulse').evaluateAll(nodes=>nodes.filter(e=>e.querySelector('.pulse-metrics b')?.textContent.trim()==='0'&&e.querySelector('.pulse-charts')).length);

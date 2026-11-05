@@ -19,7 +19,7 @@ history and `update_logs/`; they are not alternative implementations to restore.
 | Variable names | Single-line ellipses unless the feature specifies a bounded two-line title; full DOM text/title retained | shared baseline, feature owner |
 | Main ranking covers | 120 px desktop; all min/max/width/height constraints agree | shared baseline |
 | Other artwork | Keep larger profile/game heroes and smaller table/record thumbnails | feature owner |
-| Glows | Preserve rank-dependent falloff; shared dashboard surfaces use the semantic accent | `components.css` |
+| Glows | Outer panels: 26 px / 16% semantic halo; nested insets: no stacked halo; preserve rank/result scales | `components.css` |
 
 Below 760 px use 88 px ranking art, 26/16/32 px ranking title/metadata/value and
 20 px main padding. Below 520 px use 72 px art, 22/15/28 px ranking type,
@@ -47,7 +47,7 @@ inside a mode card retains the song colour.
 | Artist | `--artist` | `#5b9bff` |
 | Album | `--album` | `#bf77ff` |
 | Tag | `--tag` | `#ffb833` |
-| Standard Vote family | `--voting` | `#9cdb91` |
+| Standard Vote family | `--voting` | `#a3e635` |
 | Non-blind / Blind | `--standard` / `--blind` | `#f0a35b` / `#55d6c2` |
 | Trivia | `--recognition` | `#f2d34f` |
 | Tournament | `--tournament` | `#ff78a6` |
@@ -282,7 +282,7 @@ Local tournament filters reuse the tournament mode selector. Activity, bracket m
 
 Local tournament lookup has separate entity-type and record selectors; entity options show artwork with circular artist portraits. Panel borders, dividers and glows share the entity accent.
 
-Standard Vote family navigation, summaries and report headers use light green. Non-blind remains orange and Blind teal. Tournament Elo rows retain pink origin accents plus orange/teal visibility edges and labels.
+Standard Vote family navigation, summaries and report headers use vibrant lime green. Non-blind remains orange and Blind teal. Tournament Elo rows retain pink origin accents plus orange/teal visibility edges and labels.
 
 Summary values use their designed type size and exact text first. Measure the
 available slot before abbreviation or font reduction. Only overflowing counts use
@@ -457,3 +457,13 @@ Shared date fields keep native ISO values, names, keyboard editing and validatio
 Today/Clear actions. Retain keyboard arrows/Home/End/Page keys, native modal focus,
 Escape/outside dismissal, current/selected/disabled states and min/max constraints.
 Picker geometry must fit phone viewports; unsupported browsers retain native inputs.
+
+Shared surfaces use the components.css recipe through site_baseline.css: primary
+panels/cards have a #1e1e1e base, 6% semantic corner washes, 28% accent borders and
+a 26px/16% halo plus one neutral drop shadow. Nested boxes use #242424, 3% washes,
+18% borders and no outer halo, preventing stacked glow. Feature owners choose
+accents rather than arbitrary background colours or shadow strengths. Mixed-mode
+controls may supply a multi-accent --surface-fill over the same dark base. Rank
+falloff, podium emphasis, playback halos, chart data colours and winner/loser
+states keep their purposeful scales. Voting tokens and washes always reference
+--voting rather than a copied colour.

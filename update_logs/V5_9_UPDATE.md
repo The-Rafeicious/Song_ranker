@@ -127,3 +127,13 @@
 - Added a shared dark calendar for native date inputs throughout the app, including
   dynamic controls, keyboard navigation, month/year, Today/Clear, limits and focus.
   Original input values, form fields and native validation remain in place.
+
+
+## v5.9.5.4 — Voting palette and consistent surfaces
+
+- Replaced muted voting green with vibrant lime #a3e635 across navigation, reports,
+  replay controls, summaries and glows; Non-blind/Blind retain their own colours.
+- Unified neutral primary panels, subtle semantic washes, borders and standard
+  halo intensity through shared surface tokens. Nested containers use one quieter
+  raised level so glows do not stack. Corrected Shelves glows to the mode token.
+- Preserved rank-dependent falloff, podium emphasis, playback and result states.

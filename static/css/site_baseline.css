@@ -145,31 +145,16 @@ body.site-style-baseline
   ) {
   border-radius: var(--site-inner-radius);
 }
-/* C1 soft insets. Keep semantic borders, glows, live mode washes and outcomes. */
-body.site-style-baseline
-  #main
-  :is(
-    .collection-record,
-    .stats-group,
-    .global-metrics,
-    .stats-subsection,
-    .field-accuracy-grid,
-    .overall-global-summary,
-    .stats-tag,
-    .win-rate,
-    .tool-tile
-  ) {
-  background: var(--raised);
-}
-body.site-style-baseline #main :is(.stat, .mode-card) {
-  background-color: var(--panel);
-}
-body.site-style-baseline
-  #main
-  .panel:not(.song-profile):not(.special-panel):not(.overall-panel):not(
-    #global-activity
-  ):not([data-query-form]) {
-  background: var(--panel);
+/* Shared surface ownership: components.css supplies the recipe and tokens.
+   Nested boxes are quieter to avoid stacking halos; rank/outcome scales stay local. */
+body.site-style-baseline #main :is(.panel,.stat,.mode-card,.shelf-card,.spotlight,.overall-highlight,.stats-pulse,
+  .dashboard-surface,.versus-row,.game-card):not(.leader-row):not(.winner):not(.loser):not(.is-winner):not(.is-loser),
+body.site-style-baseline #main :is(.mode-stats-inset,.profile-inset,.profile-highlight,.joined-metrics,.collection-record,
+  .stats-group,.global-metrics,.stats-subsection,.field-accuracy-grid,.overall-global-summary,
+  .stats-tag,.win-rate,.tool-tile,.report-facts,.archive-field,.archive-shelf,.archive-place,.archive-count,.archive-entry) {
+  background:var(--surface-fill);
+  border-color:var(--surface-border);
+  box-shadow:var(--surface-shadow);
 }
 body.site-style-baseline
   #main
