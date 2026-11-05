@@ -552,6 +552,7 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | [build_local_tournament_stats](../songranker/modes/tournament.py#L1237) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
 | [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1277) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
 | [profile_tournament_details](../songranker/modes/tournament.py#L1318) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
+| [archive_entry_results](../songranker/modes/tournament.py#L1351) | `conn, bracket, selected=None` | Return each saved entrant's finish and current-policy recorded points. |
 
 ## songranker/modes/tournament_scoring.py
 
@@ -824,7 +825,7 @@ Shared dated activity, comparison charts and report attachments.
 | [build_activity.add](../songranker/reports/stats_activity.py#L64) | `when, kind, right=0, denominator=0` | Add an in-window dated result and its success denominator, counting undated records separately. |
 | [attach_reports](../songranker/reports/stats_activity.py#L135) | `conn, data, mode, now=None, tournament_ids=None` | Attach shared activity charts and effective tournament Elo history to a mode report. |
 | [match_archive](../songranker/reports/stats_activity.py#L153) | `conn, args` | Page a read-only cross-mode archive before hydrating results. |
-| [match_archive.song](../songranker/reports/stats_activity.py#L235) | `sid` | Hydrate only visible identities, retaining explicit deleted-track gaps. |
+| [match_archive.song](../songranker/reports/stats_activity.py#L242) | `sid` | Hydrate only visible identities, retaining explicit deleted-track gaps. |
 
 ## songranker/services.py
 
@@ -1475,8 +1476,11 @@ Cross-mode archive dates, scope, pagination, privacy and saved result rendering.
 | [HistoryTests.test_union_scope_date_and_no_writes](../tests/test_history.py#L27) | `self` | Verify union scope date and no writes. |
 | [HistoryTests.test_page_bounds_and_invalid_dates](../tests/test_history.py#L42) | `self` | Verify page bounds and invalid dates. |
 | [HistoryTests.test_results_and_rendering](../tests/test_history.py#L52) | `self` | Verify results and rendering. |
-| [HistoryTests.open_connection](../tests/test_history.py#L68) | `self` | Open connection. |
-| [HistoryTests.test_excluded_shelves_and_private_brackets](../tests/test_history.py#L74) | `self` | Verify excluded shelves and private brackets. |
+| [HistoryTests.seed_complete_bracket](../tests/test_history.py#L68) | `self` | Save a full eight-track bracket with collection-specific early exits. |
+| [HistoryTests.test_tournament_entries_include_early_exits_points_and_collection_tracks](../tests/test_history.py#L83) | `self` | Verify tournament entries include early exits points and collection tracks. |
+| [HistoryTests.test_combined_voting_filter_and_unknown_entry_points](../tests/test_history.py#L104) | `self` | Verify combined voting filter and unknown entry points. |
+| [HistoryTests.open_connection](../tests/test_history.py#L120) | `self` | Open connection. |
+| [HistoryTests.test_excluded_shelves_and_private_brackets](../tests/test_history.py#L126) | `self` | Verify excluded shelves and private brackets. |
 
 ## tests/test_impact.py
 
@@ -2093,4 +2097,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1417 Python definitions**.
+Total: **1421 Python definitions**.

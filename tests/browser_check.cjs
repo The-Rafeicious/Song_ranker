@@ -640,6 +640,21 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.goto(base+'/history?mode=tournament');
   assert.ok(await page.locator('.archive-podium').count()>0);
   for(const width of [390,1365]){await page.setViewportSize({width,height:1000});await bounded(page,width,'history-podium',folder);await page.screenshot({path:folder+'/history-podium-'+width+'.png',fullPage:true});}
+  await page.goto(base+'/history?mode=tournament&entity=songs&target=21');
+  await page.locator('.archive-entry').first().waitFor();
+  assert.ok(await page.locator('.archive-entries').first().evaluate(e=>e.open));
+  assert.match(await page.locator('.archive-entry').first().textContent(),/Joint 5–8/);
+  assert.match(await page.locator('.archive-entry').first().textContent(),/Out in Quarter-finals/);
+  assert.equal((await page.locator('.archive-entry-points strong').first().textContent()).trim(),'0');
+  for(const width of [390,768,1365,1800]){
+   await page.setViewportSize({width,height:1000});await bounded(page,width,'history-entry-search',folder);
+   const art=await page.locator('.archive-entry .small-art').first().boundingBox();assert.equal(art.width,64);assert.equal(art.height,64);
+   if(width!==768)await page.screenshot({path:folder+'/history-entry-search-'+width+'.png',fullPage:true});
+  }
+  await page.goto(base+'/history?mode=voting');
+  assert.equal(await page.locator('#archive-mode option[value="first_round"]').count(),0);
+  assert.equal(await page.locator('.history-overview .report-facts').count(),0);
+  assert.ok(await page.locator('.archive-event').count()>0);
   // Real font/layout measurement: keep full thousands where they fit, abbreviate
   // only narrow count slots, then restore on expansion without changing scores.
   await page.evaluate(()=>{

@@ -1,4 +1,4 @@
-from songranker.modes.tournament_scoring import round_points, scored_match, scored_matches
+from songranker.modes.tournament_scoring import round_points, rounds, scored_match, scored_matches
 from flask import render_template, request, jsonify, abort, redirect, url_for
 from songranker.modes.selection import tournament_tracks
 from songranker.services import app, get_db_connection
@@ -1346,3 +1346,51 @@ def profile_tournament_details(conn, song_ids):
     rows.sort(key=lambda r:((r['date'] or {}).get('seconds',float('-inf')),r['id'],-r['song_id']),reverse=True)
     return dict(completed=len(rows),brackets=len({r['id'] for r in rows}),first_exits=sum(r['first_exit'] for r in rows),
                 groups=[dict(key=key,entries=sum(r['scope'] in scopes for r in rows),wins=sum(r['wins'] for r in rows if r['scope'] in scopes),losses=sum(r['losses'] for r in rows if r['scope'] in scopes)) for key,scopes in [('competition',('global','tag')),('local',('artist','album'))]],recent=rows[:5])
+
+
+def archive_entry_results(conn, bracket, selected=None):
+    """Return each saved entrant's finish and current-policy recorded points.
+
+    Knockout exits share a place range; only recorded podium/playoff results
+    establish exact top-four places. Missing matches never become zero points.
+    An optional song-ID set scopes collection searches without pooling entrants.
+    """
+    tid = bracket['id']
+    entries = {r['song_id'] for r in conn.execute('SELECT song_id FROM tournament_entries WHERE tournament_id=?', (tid,))}
+    matches = [scored_match(dict(r), bracket) for r in conn.execute('SELECT * FROM tournament_matches WHERE tournament_id=?', (tid,)) if recorded_result(dict(r))]
+    finishes = {key: bracket.get(key) for key in ('champion_id', 'runner_up_id', 'third_place_id', 'fourth_place_id')}
+    depth = rounds(bracket.get('size'))
+    for match in matches:
+        entries.update((match['winner_id'], match['loser_id']))
+        keys = ('third_place_id', 'fourth_place_id') if match.get('match_type') == 'third_place' else ('champion_id', 'runner_up_id') if depth and match['round_number'] == depth and match['match_number'] == 1 else None
+        if keys and finishes[keys[0]] in (None, match['winner_id']):
+            for key, sid in zip(keys, (match['winner_id'], match['loser_id'])):
+                if finishes[key] is None:
+                    finishes[key] = sid
+    entries.update(sid for sid in finishes.values() if sid is not None)
+    rows = []
+    for sid in sorted(entries if selected is None else entries & selected):
+        played = [m for m in matches if sid in (m['winner_id'], m['loser_id'])]
+        wins = [m for m in played if m['winner_id'] == sid]
+        losses = [m for m in played if m['loser_id'] == sid and m.get('match_type', 'bracket') == 'bracket']
+        knockout = [m for m in played if m.get('match_type', 'bracket') == 'bracket']
+        place = next((i for i, key in enumerate(finishes, 1) if finishes[key] == sid), None)
+        exit_match = min(losses, key=lambda m: m['round_number']) if losses else None
+        lowest = place
+        label = {1:'1st', 2:'2nd', 3:'3rd', 4:'4th'}.get(place)
+        if label is None and exit_match:
+            stage = exit_match['round_number']
+            remaining = bracket['size'] // 2**(stage-1) if depth and 1 <= stage <= depth else None
+            lowest = remaining//2+1 if remaining else None
+            label = ('Joint ' + str(lowest) + '–' + str(remaining)) if remaining and remaining > 2 else 'Finish unavailable'
+        partial = bool(knockout and depth and max(m['round_number'] for m in knockout) > len(knockout))
+        if place in (1, 2) and depth and len(knockout) < depth:
+            partial = True
+        if place in (3, 4) and depth and (len(knockout) < depth-1 or
+                (bracket.get('playoff_enabled') and not any(m.get('match_type') == 'third_place' for m in played))):
+            partial = True
+        rows.append(dict(song_id=sid, place=label or 'Finish unavailable', rank=lowest or float('inf'),
+                         exit='Out in ' + stage_name(bracket['size'], exit_match['round_number']) if exit_match and place not in (1, 2, 3, 4) else '',
+                         points=podium_points(sid, matches),
+                         partial=partial, wins=len(wins), matches=len(played)))
+    return sorted(rows, key=lambda r: (r['rank'], -(r['points'] or 0), r['song_id']))

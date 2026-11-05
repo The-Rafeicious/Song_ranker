@@ -65,6 +65,58 @@ class HistoryTests(unittest.TestCase):
             self.assertIn(fragment, text)
         self.assertLess(text.index('📜 Match History'), text.index('🔥 Voting Stats'))
 
+    def seed_complete_bracket(self):
+        """Save a full eight-track bracket with collection-specific early exits."""
+        self.conn.execute("INSERT INTO albums(id,title) VALUES(2,'Other album')")
+        self.conn.execute("INSERT INTO artists(id,name) VALUES(2,'Other artist')")
+        self.conn.execute("INSERT INTO genres(id,name) VALUES(2,'Other tag')")
+        self.conn.execute("UPDATE songs SET album_id=2 WHERE id IN (7,8)")
+        self.conn.execute("DELETE FROM song_artists WHERE song_id IN (7,8)")
+        self.conn.executemany('INSERT INTO song_artists VALUES(?,2)', [(7,), (8,)])
+        self.conn.executemany('INSERT INTO song_genres VALUES(?,2)', [(5,), (6,)])
+        self.conn.executemany('INSERT INTO tournament_entries VALUES(1,?,?)', [(i,i) for i in range(1,9)])
+        self.conn.execute('UPDATE tournaments SET fourth_place_id=4 WHERE id=1')
+        for stage, index, winner, loser, kind in [(1,1,1,5,'bracket'),(1,2,3,6,'bracket'),(1,3,2,7,'bracket'),(1,4,4,8,'bracket'),(2,1,1,3,'bracket'),(2,2,2,4,'bracket'),(3,0,3,4,'third_place'),(3,1,1,2,'bracket')]:
+            self.conn.execute("INSERT INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id,winner_id,loser_id,status,points_awarded,match_type) VALUES(1,?,?,?,?,?,?,'completed',99,?)", (stage,index,winner,loser,winner,loser,kind))
+        self.conn.commit()
+
+    def test_tournament_entries_include_early_exits_points_and_collection_tracks(self):
+        self.seed()
+        self.seed_complete_bracket()
+        before = capture(self.conn)
+        all_entries = match_archive(self.conn, {'mode':'tournament'})['events'][0]['entries']
+        self.assertEqual(len(all_entries), 8)
+        self.assertEqual({r['song_id']:r['points'] for r in all_entries}, {1:6,2:3,3:2,4:1,5:0,6:0,7:0,8:0})
+        for kind, target, expected in [('songs',5,{5}),('albums',2,{7,8}),('artists',2,{7,8}),('tags',2,{5,6})]:
+            result = match_archive(self.conn, {'mode':'tournament','entity':kind,'target':str(target)})['events'][0]
+            self.assertTrue(result['entries_filtered'])
+            self.assertEqual({r['song_id'] for r in result['entries']}, expected)
+            self.assertTrue(all(r['place']=='Joint 5–8' and r['exit']=='Out in Quarter-finals' for r in result['entries']))
+        with patch.object(voting, 'get_db_connection', side_effect=self.open_connection):
+            html = services.app.test_client().get('/history?mode=tournament&entity=tags&target=2').text
+        self.assertIn('Matching entries · 2', html)
+        self.assertIn('Joint 5–8', html)
+        self.assertIn('Out in Quarter-finals', html)
+        self.assertNotIn('Dates use UTC.', html)
+        self.assertNotIn('Completed brackets and their first-round', html)
+        self.assertEqual(capture(self.conn), before)
+
+    def test_combined_voting_filter_and_unknown_entry_points(self):
+        self.seed()
+        self.seed_complete_bracket()
+        mid = self.conn.execute('SELECT id FROM tournament_matches WHERE tournament_id=1 AND round_number=1 AND match_number=1').fetchone()[0]
+        self.conn.execute("INSERT INTO preference_events(winner_id,loser_id,mode,origin,tournament_id,tournament_match_id,rating_weight,created_at) VALUES(1,5,'standard','tournament',1,?,1,'2026-11-01 12:00:00')", (mid,))
+        result = match_archive(self.conn, {'mode':'voting'})
+        self.assertEqual(result['archive_total'],3)
+        self.assertEqual(result['archive_totals'],{'voting':3})
+        self.assertEqual({r['activity'] for r in result['events']}, {'voting','first_round'})
+        self.assertNotIn('first_round', dict(result['archive_modes']))
+        self.assertEqual(match_archive(self.conn, {'mode':'first_round'})['archive_total'],3)
+        self.assertEqual(match_archive(self.conn, {'mode':'blind','origin':'ordinary'})['archive_total'],1)
+        self.conn.execute('DELETE FROM tournament_matches WHERE tournament_id=1')
+        entries = match_archive(self.conn, {'mode':'tournament'})['events'][0]['entries']
+        self.assertTrue(all(r['points'] is None for r in entries))
+
     def open_connection(self):
         import sqlite3
         conn = sqlite3.connect(self.path)

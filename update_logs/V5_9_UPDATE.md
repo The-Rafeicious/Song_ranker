@@ -95,3 +95,13 @@
   Shelves with saved correction positions and shared grading, and retained Vibe maps.
 - Kept missing evidence visible, excluded Shelves rounds consistent with reports,
   unfinished Blind identities private and Vibe's retained-state limitation explicit.
+
+
+## v5.9.5.1 — History polish and tournament entry searches
+
+- Coloured the history search controls and removed explanatory paragraphs.
+- Unified voting and first-round Elo filters/totals, preserving per-match origin.
+- Matched all result cards to the voting surfaces and corrected thumbnail constraints.
+- Added per-song tournament finishes and points below podiums, including early exits.
+  Collection filters show each matching entrant; tied exits retain place ranges,
+  points use the existing scoring policy and missing results stay unavailable.

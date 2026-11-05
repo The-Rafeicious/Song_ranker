@@ -164,14 +164,17 @@ def match_archive(conn, args):
     mode = args.get('mode', 'all')
     if mode not in ('all', 'standard', 'blind', 'voting', 'first_round', 'tournament', 'recognition', 'shelves', 'vibe'):
         mode = 'all'
+    if mode == 'first_round':
+        mode = 'voting'
     origin = args.get('origin', 'all')
+    source_filter = {'ordinary':'voting', 'tournament':'first_round'}.get(origin, 'all')
     visibility = args.get('visibility', 'all')
     if visibility not in ('standard', 'blind'):
         visibility = 'all'
     if origin in ('ordinary', 'tournament') and mode in ('standard', 'blind'):
         visibility = mode
     if origin in ('ordinary', 'tournament'):
-        mode = 'voting' if origin == 'ordinary' else 'first_round'
+        mode = 'voting'
     kind = args.get('entity', 'songs')
     if kind not in ('songs', 'albums', 'artists', 'tags'):
         kind = 'songs'
@@ -206,7 +209,7 @@ def match_archive(conn, args):
       UNION ALL SELECT 'tournament',t.id,'tournament',CASE WHEN t.is_blind THEN 'blind' ELSE 'standard' END,
         julianday(COALESCE(t.completed_at,t.timestamp)),
         (EXISTS(SELECT 1 FROM tournament_entries e WHERE e.tournament_id=t.id AND e.song_id IN selected)
-         OR t.champion_id IN selected OR t.runner_up_id IN selected OR t.third_place_id IN selected
+         OR t.champion_id IN selected OR t.runner_up_id IN selected OR t.third_place_id IN selected OR t.fourth_place_id IN selected
          OR EXISTS(SELECT 1 FROM tournament_matches m WHERE m.tournament_id=t.id
            AND (m.song1_id IN selected OR m.song2_id IN selected)))
         FROM tournaments t WHERE t.status='completed'
@@ -217,12 +220,15 @@ def match_archive(conn, args):
         FROM album_shelf_rounds r WHERE {shelf_report_filter(conn)}
       UNION ALL SELECT 'vibe',p.song_id || ':' || p.map_id,'vibe','',julianday(p.updated_at,'unixepoch'),p.song_id IN selected
         FROM song_vibe_positions p WHERE p.status!='unmapped' AND p.updated_at IS NOT NULL
-    ), filtered AS (SELECT * FROM events WHERE (?='all' OR activity=? OR (family='elo' AND visibility=?))
+    ), filtered AS (SELECT * FROM events WHERE (?='all' OR activity=? OR (family='elo' AND visibility=?) OR (?='voting' AND family='elo'))
+      AND (?='all' OR activity=?)
       AND (?='all' OR visibility=?)
       AND (?=0 OR matched) AND (?='' OR moment>=julianday(?))
       AND (?='' OR moment<julianday(?)+1)) """
-    params = (target, mode, mode, mode, visibility, visibility, target, dates['from'], dates['from'], dates['to'], dates['to'])
+    params = (target, mode, mode, mode, mode, source_filter, source_filter, visibility, visibility, target, dates['from'], dates['from'], dates['to'], dates['to'])
     totals = {r['activity']: r['n'] for r in conn.execute(cte + 'SELECT activity,COUNT(*) n FROM filtered GROUP BY activity', params)} if not errors else {}
+    if 'first_round' in totals:
+        totals['voting'] = totals.get('voting', 0) + totals.pop('first_round')
     total = sum(totals.values())
     pages = max(1, ceil(total / 20))
     try:
@@ -231,6 +237,7 @@ def match_archive(conn, args):
         page = 1
     rows = [dict(r) for r in conn.execute(cte + 'SELECT *,datetime(moment) date FROM filtered ORDER BY moment DESC,family,id DESC LIMIT 20 OFFSET ?', (*params, (page-1)*20))] if not errors else []
     songs = {}
+    selected_ids = {r['id'] for r in conn.execute(f'SELECT s.id FROM songs s WHERE {membership}', (target,))} if target else None
 
     def song(sid):
         """Hydrate only visible identities, retaining explicit deleted-track gaps."""
@@ -254,7 +261,11 @@ def match_archive(conn, args):
         elif family == 'tournament':
             bracket = dict(conn.execute('SELECT * FROM tournaments WHERE id=?', (rid,)).fetchone())
             row['result'] = bracket
-            row['podium'] = [dict(place=label, song=song(bracket[key])) for key,label in [('champion_id','1st'),('runner_up_id','2nd'),('third_place_id','3rd')]]
+            from songranker.modes.tournament import archive_entry_results
+            results = archive_entry_results(conn, bracket)
+            row['podium'] = [dict(place=label, song=song(bracket.get(key) or next((r['song_id'] for r in results if r['place']==label), None))) for key,label in [('champion_id','1st'),('runner_up_id','2nd'),('third_place_id','3rd')]]
+            row['entries'] = [dict(r, song=song(r['song_id'])) for r in results if selected_ids is None or r['song_id'] in selected_ids]
+            row['entries_filtered'] = selected_ids is not None
         elif family == 'recognition':
             result = dict(conn.execute('SELECT * FROM trivia_rounds WHERE id=?', (rid,)).fetchone())
             row['song'] = song(result['song_id'])
@@ -292,7 +303,9 @@ def match_archive(conn, args):
         record = conn.execute(f'SELECT {label} name FROM {table} WHERE id=?', (target,)).fetchone()
         selected = record['name'] if record else 'Record unavailable'
     filters = dict(mode=mode, visibility=visibility, entity=kind, target=target or '', **dates)
+    if origin in ('ordinary', 'tournament'):
+        filters['origin'] = origin
     return dict(events=rows, archive_filters=filters, selected_name=selected, archive_errors=errors,
         archive_total=total, archive_totals=totals, archive_page=page, archive_pages=pages,
         archive_start=(page-1)*20+1 if total else 0, archive_end=min(page*20,total),
-        archive_modes=[('all','All modes'),('voting','Voting'),('first_round','Tournament first rounds'),('standard','Non-blind Elo'),('blind','Blind Elo'),('tournament','Tournament podiums'),('recognition','Trivia'),('shelves','Album Shelves'),('vibe','Vibe Map')])
+        archive_modes=[('all','All modes'),('voting','Voting'),('standard','Non-blind Elo'),('blind','Blind Elo'),('tournament','Tournaments'),('recognition','Trivia'),('shelves','Album Shelves'),('vibe','Vibe Map')])
