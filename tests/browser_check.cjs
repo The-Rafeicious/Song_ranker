@@ -204,6 +204,7 @@ async function bounded(page,width,phase,folder){
    assert.equal(await page.locator('#profile-vibe .vibe-profile-content').textContent(),'');
   }
   await page.goto(base+'/global_stats');
+  await page.waitForFunction(()=>document.body.dataset.tone==='mixed');
   assert.equal(await page.locator('body').getAttribute('data-tone'),'mixed');
   const globalTheme=await page.evaluate(()=>({title:getComputedStyle(document.querySelector('.global-theme-title')).backgroundImage,back:getComputedStyle(document.body,'::before').backgroundImage}));
   assert.match(globalTheme.title,/linear-gradient/);assert.match(globalTheme.back,/radial-gradient/);
