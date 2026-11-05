@@ -427,10 +427,18 @@ inside the normal page flow and clear it for the next round.
 
 Match History sits above Voting Stats and shares Global Stats' mode-spectrum
 heading/navigation treatment. Its compact mode, entity lookup and inclusive UTC
-date filters precede filtered result totals and a twenty-result page. Use Query's
-bounded identity lookup and shared styled selectors. Elo uses shared VS rows;
-completed brackets use linked podiums, Trivia uses explicit field outcomes,
-Shelves uses submitted shelf/position with saved correct positions and shared
-relative-order grading. Vibe displays retained map coordinates and sample counts,
-with that retention limit explicit. Missing identities/results remain unavailable;
-unfinished Blind brackets do not reveal tracks. Hydrate only the displayed page.
+date filters precede filtered totals and a twenty-result page. Use Query's bounded
+identity lookup and shared styled selectors, with catalogue-coloured search controls
+and a subtle mixed-mode surface. Keep explanatory paragraphs out of the workspace.
+Voting includes ordinary and tournament first-round Elo; retain origin labels on
+individual shared VS rows. All result cards use mode-tinted paired-row-style washes,
+borders and glows. Every thumbnail's width/height/min/max/flex dimensions must agree.
+Completed brackets show linked podiums and per-entry finishes/points underneath;
+matching song/album/artist/tag entries expand automatically, while all entries use a
+closed disclosure. Below-podium knockout exits use tied place ranges and their exit
+stage, never invented exact positions. Reuse current tournament scoring and keep
+missing/incomplete match evidence explicit. Trivia uses field outcomes, Shelves
+shows submitted and saved correction positions with its shared grader, and Vibe
+shows retained map coordinates/sample counts. Missing identities/results remain
+unavailable; unfinished Blind brackets do not reveal tracks. Hydrate only the
+visible page's identities.

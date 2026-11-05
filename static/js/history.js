@@ -40,7 +40,10 @@
       error.textContent = '';
     }
     document.getElementById('archive-clear').addEventListener('click', () => { clear(); search.focus(); });
-    kind.addEventListener('change', clear);
+    kind.addEventListener('change', () => {
+      clear();
+      form.closest('.history-search-panel')?.style.setProperty('--lookup-accent', 'var(--' + ({songs:'song',albums:'album',artists:'artist',tags:'tag'})[kind.value] + ')');
+    });
     search.addEventListener('input', () => {
       cancel();
       target.value = '';

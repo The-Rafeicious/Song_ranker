@@ -7,36 +7,38 @@
 {% endmacro %}
 {% block content %}
 <div class="page-head history-page-header"><h1 class="global-theme-title">Match History</h1></div>
-<section class="panel history-overview" aria-label="Choose history">
+<section class="panel history-overview history-search-panel dashboard-surface" aria-label="Choose history" style="--lookup-accent:var(--{{{'songs':'song','albums':'album','artists':'artist','tags':'tag'}[archive_filters.entity]}})">
 <form method="get" id="archive-filters">
+{% if archive_filters.origin is defined %}<input type="hidden" name="origin" value="{{archive_filters.origin}}">{% endif %}
 {% if archive_filters.visibility!='all' %}<input type="hidden" name="visibility" value="{{archive_filters.visibility}}"><p class="report-facts">{{'Blind' if archive_filters.visibility=='blind' else 'Non-blind'}} history · <a href="{{url_for('history',mode=archive_filters.mode)}}">Clear visibility filter</a></p>{% endif %}
  <div class="archive-controls">
  <label>Mode<select name="mode" id="archive-mode">{% for key,label in archive_modes %}<option value="{{key}}"{% if archive_filters.mode==key %} selected{% endif %}>{{label}}</option>{% endfor %}</select></label>
  <label>Record type<select name="entity" id="archive-kind">{% for key,label in [('songs','Songs'),('albums','Albums'),('artists','Artists'),('tags','Tags')] %}<option value="{{key}}"{% if archive_filters.entity==key %} selected{% endif %}>{{label}}</option>{% endfor %}</select></label>
  <div class="archive-lookup"><label for="archive-search">Find a record</label><div class="archive-search-field"><input type="search" id="archive-search" placeholder="Search by name or artist" autocomplete="off" maxlength="200" value="{{selected_name or ''}}" aria-controls="archive-suggestions" aria-expanded="false"><button type="button" id="archive-clear" aria-label="Clear record selection">×</button></div><input type="hidden" name="target" id="archive-target" value="{{archive_filters.target}}"><div id="archive-suggestions" class="archive-suggestions" hidden></div><p id="archive-selection" role="status">{{'Selected: '+selected_name if selected_name else 'All records'}}</p></div>
- <label>From · UTC<input type="date" name="from" value="{{archive_filters['from']}}"></label>
- <label>To · UTC<input type="date" name="to" value="{{archive_filters['to']}}"></label>
+ <label class="archive-date-from">From · UTC<input type="date" name="from" value="{{archive_filters['from']}}"></label>
+ <label class="archive-date-to">To · UTC<input type="date" name="to" value="{{archive_filters['to']}}"></label>
  </div>
- <div class="archive-actions"><button class="btn" type="submit">View history</button><a class="btn" href="{{url_for('history')}}">Reset</a></div>
+ <div class="archive-actions"><button class="btn archive-apply" type="submit">View history</button><a class="btn" href="{{url_for('history')}}">Reset</a></div>
  <p class="archive-error" id="archive-error" role="alert">{{archive_errors|join(' ')}}</p>
 </form>
-<p class="report-facts">Dates use UTC. Record filters use current song, album, artist and tag relationships. Select the same start and end date for one day.</p>
+
 </section>
 <section class="panel history-overview" aria-label="Filtered activity totals">
 <div class="section-head"><h2>Activity</h2><span>{{archive_total}} saved results</span></div>
-<div class="archive-counts">{% for key,label in [('voting','Votes'),('first_round','First-round votes'),('tournament','Completed brackets'),('recognition','Trivia rounds'),('shelves','Shelves rounds'),('vibe','Retained maps')] %}<div class="archive-count" style="--section-color:var(--{{'tournament' if key in ['first_round','tournament'] else 'voting' if key=='voting' else key}})"><b>{{archive_totals.get(key,0)}}</b><span>{{label}}</span></div>{% endfor %}</div>
-<p class="report-facts">Completed brackets and their first-round Elo matches are separate results. Vibe Map keeps the latest saved map per track, including repeat sample totals.</p>
+<div class="archive-counts">{% for key,label in [('voting','Votes'),('tournament','Completed brackets'),('recognition','Trivia rounds'),('shelves','Shelves rounds'),('vibe','Retained maps')] %}<div class="archive-count" style="--section-color:var(--{{'tournament' if key in ['first_round','tournament'] else 'voting' if key=='voting' else key}})"><b>{{archive_totals.get(key,0)}}</b><span>{{label}}</span></div>{% endfor %}</div>
+
 </section>
 <div class="history-list" id="all-history">
 {% for event in events %}
 {% set color='tournament' if event.activity in ['first_round','tournament'] else event.visibility if event.family=='elo' else event.family %}
-<section class="panel archive-event dashboard-surface" style="--section-color:var(--{{color}})" aria-labelledby="archive-heading-{{loop.index}}">
+<section class="panel archive-event dashboard-surface" data-archive-mode="{{event.family}}" style="--section-color:var(--{{color}})" aria-labelledby="archive-heading-{{loop.index}}">
 <div class="section-head"><h2 class="{{color}}" id="archive-heading-{{loop.index}}">{{'Tournament first round' if event.activity=='first_round' else 'Standard Vote' if event.family=='elo' else 'Tournament podium' if event.family=='tournament' else 'Trivia' if event.family=='recognition' else 'Album Shelves' if event.family=='shelves' else 'Vibe Map'}}</h2><time>{{event.date or 'Date unavailable'}}{{' UTC' if event.date else ''}}</time></div>
 {% if event.family=='elo' %}{% set m=event.result %}
 {% if m.winner_song and m.loser_song %}{{ versus_row(m.winner_song,m.loser_song,mode=m.mode,created_at=m.created_at or '',before_left=m.winner_before,after_left=m.winner_after,before_right=m.loser_before,after_right=m.loser_after,match_id=m.id,origin=m.get('origin','ordinary'),tournament_id=m.get('tournament_id'),rating_weight=m.get('rating_weight',1)) }}{% else %}<div class="empty">Match identities unavailable</div>{% endif %}
 {% elif event.family=='tournament' %}
 <div class="archive-context"><span class="{{event.visibility}}">{{'Blind' if event.visibility=='blind' else 'Non-blind'}}</span><span>{{event.result.size}} tracks · {{event.result.scope_type|capitalize}}</span><a class="tournament" href="/tournament/{{event.id}}/bracket">Bracket #{{event.id}} ↗</a></div>
 <div class="archive-podium">{% for place in event.podium %}<div class="archive-place" data-place="{{loop.index}}"><strong class="tournament">{{place.place}}</strong>{{identity(place.song)}}</div>{% endfor %}</div>
+<details class="archive-entries"{% if event.entries_filtered %} open{% endif %}><summary>{{'Matching entries' if event.entries_filtered else 'Entries'}} · {{event.entries|length}}</summary><div class="archive-entry-list">{% for entry in event.entries %}<article class="archive-entry"><div class="archive-entry-place"><strong class="tournament">{{entry.place}}</strong>{% if entry.exit %}<span>{{entry.exit}}</span>{% endif %}</div>{{identity(entry.song)}}<div class="archive-entry-points"><strong class="tournament">{{'%g'|format(entry.points) if entry.points is not none else '—'}}</strong><span>{{'Points unavailable' if entry.points is none else 'Recorded points' if entry.partial else 'Points'}}</span></div></article>{% else %}<p class="empty">Entry details unavailable</p>{% endfor %}</div></details>
 {% elif event.family=='recognition' %}
 {{identity(event.song)}}
 <div class="archive-fields">{% for field in event.fields %}<div class="archive-field"><h3 class="{{'song' if field.label=='Title' else 'artist' if field.label=='Artist' else 'album'}}">{{field.label}}</h3><strong class="{{'song' if field.correct==1 else 'danger' if field.correct==0 else 'muted'}}">{{'✓ Correct' if field.correct==1 else '✕ Missed' if field.correct==0 else 'Unavailable'}}</strong>{% if field.seconds is not none %}<span>{{'%g'|format(field.seconds)}} s</span>{% endif %}</div>{% endfor %}</div>
