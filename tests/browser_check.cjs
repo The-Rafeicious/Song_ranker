@@ -617,6 +617,8 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   }
   // History uses the same bounded record lookup and styled selectors as Query.
   await page.goto(base+'/history');
+  assert.equal(await page.locator('[data-game-select="archive-mode"] .game-select-trigger').evaluate(e=>getComputedStyle(e).borderRadius),'999px');
+  assert.equal(await page.locator('input[name="from"]').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(36, 36, 36)');
   await page.locator('#archive-search').fill('Bracket track 20');
   await page.locator('#archive-suggestions button').first().waitFor();
   await page.locator('#archive-search').press('ArrowDown');await page.keyboard.press('Enter');

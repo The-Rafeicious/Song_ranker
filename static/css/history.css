@@ -7,7 +7,12 @@ body[data-page="history"] {
 .archive-controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
 .archive-controls label,.archive-lookup { display:grid; gap:10px; min-width:0; }
 .archive-controls label { color:var(--overall); font-weight:700; }
-.archive-controls input,.archive-controls select { width:100%; min-width:0; min-height:44px; box-sizing:border-box; }
+.archive-controls input,.archive-controls select { width:100%; min-width:0; min-height:50px; box-sizing:border-box; }
+.archive-controls input[type="date"] { color-scheme:dark; background:#242424; color:var(--overall); border:1px solid #555; border-radius:18px; padding:12px 16px; font:inherit; }
+.archive-controls>.game-select { display:grid; gap:10px; align-content:start; }
+.archive-controls .game-control-label { font-size:16px; font-weight:700; color:var(--overall); }
+body[data-page="history"] #main .game-select-trigger { color:var(--overall); border-color:#555; font-size:16px; }
+body[data-page="history"] #main .game-select-menu { border-color:#555; }
 .archive-lookup { grid-column:1 / -1; }
 .archive-search-field { display:flex; border:1px solid #555; background:#242424; border-radius:18px; align-items:center; padding:0 12px; }
 .archive-search-field:focus-within { outline:2px solid var(--artist); outline-offset:2px; }
