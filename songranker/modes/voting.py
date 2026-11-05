@@ -71,15 +71,9 @@ def history():
     conn = get_db_connection()
     try:
         conn.execute("BEGIN")
-        from songranker.catalog import page
+        from songranker.reports.stats_activity import match_archive
 
-        history_data = page(
-            conn,
-            mode=request.args.get("mode"),
-            origin=request.args.get("origin"),
-            number=request.args.get("page", 1),
-            reader=fetch_match_history,
-        )
+        history_data = match_archive(conn, request.args)
     finally:
         conn.close()
     return render_template("history.html", **history_data)
