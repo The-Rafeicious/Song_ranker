@@ -621,6 +621,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.equal(await page.locator('input[name="from"]').evaluate(e=>getComputedStyle(e).backgroundColor),'rgb(36, 36, 36)');
   await page.locator('#archive-search').fill('Bracket track 20');
   await page.locator('#archive-suggestions button').first().waitFor();
+  const lookupArt=await page.locator('#archive-suggestions button img').first().boundingBox();assert.equal(lookupArt.width,48);assert.equal(lookupArt.height,48);
   await page.locator('#archive-search').press('ArrowDown');await page.keyboard.press('Enter');
   assert.equal(await page.locator('#archive-target').inputValue(),'20');
   await page.getByRole('button',{name:'View history',exact:true}).click();

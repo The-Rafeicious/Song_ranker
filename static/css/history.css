@@ -31,7 +31,7 @@ body[data-page="history"] #main .game-select-menu { border-color:#555; }
 .archive-suggestions { max-height:360px; overflow:auto; border:1px solid #555; border-radius:18px; padding:8px; }
 .archive-suggestions button { display:flex; align-items:center; gap:12px; text-align:left; width:100%; min-height:60px; padding:12px; background:#242424; border:0; border-radius:12px; color:var(--overall); cursor:pointer; margin-bottom:6px; }
 .archive-suggestions button:focus,.archive-suggestions button:hover { outline:2px solid var(--artist); outline-offset:-2px; }
-.archive-suggestions img { width:48px; height:48px; object-fit:cover; border-radius:8px; }
+.archive-suggestions img { flex:0 0 48px; width:48px; height:48px; min-width:48px; max-width:48px; min-height:48px; max-height:48px; object-fit:cover; border-radius:8px; }
 .archive-suggestions [data-kind="artists"] img { border-radius:50%; }
 .archive-suggestions .archive-tag-art { display:grid; place-items:center; width:48px; height:48px; color:var(--tag); font-size:32px; }
 .archive-suggestions strong,.archive-suggestions small { display:block; overflow-wrap:anywhere; }
