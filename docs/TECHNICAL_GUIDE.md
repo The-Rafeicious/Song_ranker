@@ -1098,6 +1098,28 @@ public Elo exchange policy and ordinary voting behaviour are unchanged. Current
 queries exclude historical local entries immediately, with no result deletion,
 reset or migration. Existing library/tag play still affects its own selection.
 
+### Artist clusters in a tournament draw
+
+Tournament entries are weighted song draws without replacement, not equal artist
+draws. Artist labels and membership do not set quotas, pair songs or force at least
+two entries. Larger eligible artist catalogues have more opportunities. Per-track
+appearance support, catalogue age, recent brackets and Blind/Non-blind balance can
+also concentrate support across related tracks. After the first random entry,
+`SongVibeBias` scales each remaining weight by similarity to that fixed first
+entry: at most 0.85–1.15 with complete map coverage, weaker with less coverage,
+and neutral for missing shared maps. Similar artists can therefore cluster
+indirectly through their tracks' Vibe coordinates. The seed ordering happens only
+after the entrants are chosen. One observed 32-track bracket cannot distinguish
+these effects from ordinary random variation; no selection rule changed in v5.9.5.2.
+
+### Fullscreen shortcut
+
+Press F outside typing, selector and dialog contexts to toggle native document
+fullscreen across the app. The shared UI handler ignores modified, repeated,
+composing and already-handled keys. Unsupported/denied fullscreen requests do not
+change application state or produce unhandled promise failures. Escape retains
+its native fullscreen exit behaviour.
+
 ## Tournament depth and Overall (v5.9)
 
 One round of advancement is worth progressively more points. All public views,

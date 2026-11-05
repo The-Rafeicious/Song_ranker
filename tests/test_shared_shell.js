@@ -31,6 +31,28 @@ const {JSDOM}=require('jsdom'),fs=require('node:fs'),assert=require('node:assert
  assert.equal(header.querySelector('[data-special-view="bottom"]').getAttribute('aria-pressed'),'true');
  header.innerHTML=UI.rankingCategories('tags',UI.entityTypes.map(entity=>({entity})),'query-kind');
  assert.equal(header.querySelector('[aria-pressed="true"]').dataset.queryKind,'tags');assert.equal(header.querySelectorAll('button').length,4);
+ // F uses the native document fullscreen API without stealing typing/typeahead.
+ let entered=0,exited=0,fullscreen=null,pendingResolve;
+ Object.defineProperty(w.document,'fullscreenElement',{configurable:true,get:()=>fullscreen});
+ w.document.documentElement.requestFullscreen=()=>{entered++;fullscreen=w.document.documentElement;return Promise.resolve();};
+ w.document.exitFullscreen=()=>{exited++;fullscreen=null;return Promise.resolve();};
+ const key=(node,options={})=>{const event=new w.KeyboardEvent('keydown',{key:'f',bubbles:true,cancelable:true,...options});node.dispatchEvent(event);return event;};
+ const flush=async()=>{for(let i=0;i<5;i++)await Promise.resolve();};
+ assert.equal(key(w.document.body).defaultPrevented,true);await flush();assert.equal(entered,1);
+ key(w.document.body,{key:'F'});await flush();assert.equal(exited,1);
+ for(const html of ['<input>','<textarea></textarea>','<select><option>First</option></select>','<div contenteditable="true"><span>Editor</span></div>','<div role="textbox"></div>','<div class="game-select"><button>Choose</button></div>','<div role="listbox"><button role="option">First</button></div>']){
+  const host=w.document.createElement('div');host.innerHTML=html;w.document.body.append(host);
+  assert.equal(key(host.querySelector('span,button')||host.firstElementChild).defaultPrevented,false);host.remove();
+ }
+ for(const options of [{ctrlKey:true},{altKey:true},{metaKey:true},{repeat:true},{isComposing:true},{key:'g'}])assert.equal(key(w.document.body,options).defaultPrevented,false);
+ const prevented=new w.KeyboardEvent('keydown',{key:'f',bubbles:true,cancelable:true});prevented.preventDefault();w.document.body.dispatchEvent(prevented);assert.equal(entered,1);
+ const dialog=w.document.createElement('dialog');dialog.setAttribute('open','');w.document.body.append(dialog);assert.equal(key(w.document.body).defaultPrevented,false);dialog.remove();
+ w.document.documentElement.requestFullscreen=()=>{entered++;return new Promise(resolve=>pendingResolve=resolve);};
+ key(w.document.body);key(w.document.body);assert.equal(entered,2);pendingResolve();await flush();
+ w.document.documentElement.requestFullscreen=()=>Promise.reject(Error('Fullscreen blocked'));
+ key(w.document.body);await flush();
+ w.document.documentElement.requestFullscreen=()=>{throw Error('Unsupported context');};key(w.document.body);await flush();
+ w.document.documentElement.requestFullscreen=undefined;assert.equal(key(w.document.body).defaultPrevented,false);
  w.dispatchEvent(new w.Event('pagehide'));w.close();
- console.log('Shared shell: independent report loading, persistent volume and common search/tag policies passed.');
+ console.log('Shared shell: independent report loading, persistent volume, guarded F fullscreen and common search/tag policies passed.');
 })().catch(error=>{console.error(error);process.exitCode=1});

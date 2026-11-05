@@ -312,6 +312,27 @@ window.SongRankerUI = (() => {
     if(doc.readyState!=='loading')scan();
     return Object.freeze({scan,dispose});
   }
+  let fullscreenPending = false;
+  function fullscreenShortcut(event) {
+    if (event.defaultPrevented || event.repeat || event.isComposing ||
+        event.ctrlKey || event.altKey || event.metaKey || event.key?.toLowerCase() !== 'f') return;
+    const target = event.target;
+    if (target?.isContentEditable || target?.closest?.('input, textarea, select, [contenteditable]:not([contenteditable="false"]), [role="textbox"], [role="combobox"], [role="listbox"], [role="option"], .game-select') ||
+        document.querySelector('dialog[open], [role="dialog"][aria-modal="true"]')) return;
+    if (fullscreenPending) return;
+    const action = document.fullscreenElement
+      ? document.exitFullscreen?.bind(document)
+      : document.fullscreenEnabled === false ? null : document.documentElement.requestFullscreen?.bind(document.documentElement);
+    if (!action) return;
+    event.preventDefault();
+    fullscreenPending = true;
+    try {
+      Promise.resolve(action()).catch(() => {}).finally(() => { fullscreenPending = false; });
+    } catch {
+      fullscreenPending = false;
+    }
+  }
+  if (typeof document !== 'undefined') document.addEventListener('keydown', fullscreenShortcut);
   const coverRecovery=typeof document==='undefined'?null:manageCoverImages();
   return Object.freeze({
     $,
