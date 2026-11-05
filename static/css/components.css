@@ -538,3 +538,32 @@ body.site-style-baseline #main .versus-context > :is(span, a, time) { padding: 5
   body.site-style-baseline #main .versus-context { grid-row: 3; justify-content: flex-start; }
   body.site-style-baseline #main .voting-stats-page .versus-context { grid-row: 4; }
 }
+
+/* Shared date fields keep native values/validation; the picker uses a modal grid. */
+.date-control { position:relative; display:block; min-width:0; width:100%; }
+.date-control input.date-enhanced { box-sizing:border-box; width:100%; padding-right:56px; color-scheme:dark; }
+.date-control input.date-enhanced::-webkit-calendar-picker-indicator { opacity:0; pointer-events:none; }
+.date-control input.date-enhanced::-webkit-inner-spin-button { display:none; }
+.date-control .date-open { position:absolute; right:4px; top:50%; transform:translateY(-50%); display:grid; place-items:center; width:44px; height:44px; min-height:44px; border:0; border-radius:50%; background:transparent; color:var(--date-accent,var(--artist)); cursor:pointer; }
+.date-control .date-open:hover { background:color-mix(in srgb,var(--date-accent,var(--artist)) 12%,transparent); }
+.date-control .date-open:focus-visible { outline:2px solid var(--date-accent,var(--artist)); outline-offset:-2px; }
+.date-control .date-open:disabled { opacity:.45; cursor:default; }
+body.site-style-baseline dialog.date-picker { position:fixed; inset:auto; margin:0; padding:14px; min-width:0; max-width:calc(100vw - 24px); max-height:calc(100dvh - 24px); box-sizing:border-box; overflow:auto; background:#1e1e1e; color:var(--overall); border:1px solid color-mix(in srgb,var(--date-accent) 55%,#383838); border-radius:24px; box-shadow:0 16px 60px #000b,0 0 28px color-mix(in srgb,var(--date-accent) 14%,transparent); font-family:Arial,Helvetica,sans-serif; }
+.date-picker::backdrop { background:#0004; }
+.date-picker .date-picker-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+body.site-style-baseline .date-picker .date-picker-head h2 { font-size:22px; margin:0; color:var(--date-accent); }
+.date-picker button { color:var(--overall); font:inherit; min-height:44px; border:1px solid transparent; border-radius:12px; background:transparent; cursor:pointer; }
+.date-picker button:is(:hover,:focus-visible) { border-color:var(--date-accent); background:color-mix(in srgb,var(--date-accent) 12%,#242424); outline-offset:-2px; }
+.date-picker button:disabled { opacity:.3; cursor:default; border-color:transparent; background:transparent; }
+.date-picker [data-date-close],.date-picker [data-date-step] { width:44px; flex:none; font-size:24px; }
+.date-picker-month { display:grid; grid-template-columns:44px minmax(0,1fr) 76px 44px; gap:4px; align-items:center; margin:12px 0; }
+.date-picker-month :is(input,select) { min-width:0; width:100%; height:44px; box-sizing:border-box; padding:4px; font:inherit; color:var(--date-accent); color-scheme:dark; background:#242424; border:1px solid #555; border-radius:12px; }
+.date-picker table { width:100%; table-layout:fixed; border-spacing:2px; border-collapse:separate; }
+.date-picker th { font-size:12px; font-weight:700; padding:6px 0; color:#bbb; text-align:center; }
+.date-picker td { padding:0; border:0; text-align:center; }
+.date-picker td button { display:block; width:100%; min-width:0; padding:0; font-size:16px; font-variant-numeric:tabular-nums; }
+.date-picker [aria-selected="true"] button { background:var(--date-accent); color:#101010; font-weight:800; }
+.date-picker [aria-current="date"] { box-shadow:inset 0 0 0 1px var(--date-accent); }
+.date-picker-actions { display:flex; justify-content:space-between; gap:12px; margin-top:12px; padding-top:10px; border-top:1px solid #444; }
+.date-picker-actions button { padding:8px 16px; color:var(--date-accent); border-color:color-mix(in srgb,var(--date-accent) 40%,#383838); border-radius:999px; }
+@media(forced-colors:active) { body.site-style-baseline dialog.date-picker { color:CanvasText; background:Canvas; border-color:CanvasText; } .date-picker [aria-selected="true"] button { color:HighlightText; background:Highlight; } }

@@ -5,9 +5,10 @@ body[data-page="history"] {
 .history-page-header { justify-content:center; text-align:center; }
 .history-overview,.archive-event { margin-bottom:20px; }
 .history-search-panel {
-  --surface-accent:var(--lookup-accent);
-  border-color:color-mix(in srgb,var(--lookup-accent) 35%,#383838);
-  background:linear-gradient(125deg,color-mix(in srgb,var(--blind) 8%,transparent),transparent 45%,color-mix(in srgb,var(--shelves) 9%,transparent)),var(--panel,#1e1e1e);
+  --history-mode-accent:var(--overall);
+  --surface-accent:var(--history-mode-accent);
+  border-color:color-mix(in srgb,var(--history-mode-accent) 35%,#383838);
+  background:linear-gradient(125deg,color-mix(in srgb,var(--history-mode-accent) 12%,transparent),transparent 45%,color-mix(in srgb,var(--history-mode-accent) 8%,transparent)),var(--panel,#1e1e1e);
 }
 .archive-controls { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:20px; }
 .archive-controls label,.archive-lookup { display:grid; gap:10px; min-width:0; }
@@ -15,14 +16,37 @@ body[data-page="history"] {
 .archive-controls input,.archive-controls select { width:100%; min-width:0; min-height:50px; box-sizing:border-box; }
 .archive-controls input[type="date"] { color-scheme:dark; background:#242424; color:var(--overall); border:1px solid #555; border-radius:18px; padding:12px 16px; font:inherit; }
 .archive-controls>.game-select { display:grid; gap:10px; align-content:start; }
-.archive-controls .game-control-label { display:block; font-size:16px; font-weight:700; color:var(--voting); }
+.archive-controls .game-control-label { display:block; font-size:16px; font-weight:700; color:var(--history-mode-accent); }
 .archive-controls [data-game-select="archive-kind"] .game-control-label,.archive-lookup>label { color:var(--lookup-accent); }
-.archive-controls .archive-date-from { color:var(--blind); }
-.archive-controls .archive-date-to { color:var(--standard); }
-body[data-page="history"] #main .game-select-trigger { color:var(--voting); border-color:color-mix(in srgb,var(--voting) 45%,#383838); font-size:16px; }
+.archive-controls .archive-date-from { --date-accent:var(--blind); color:var(--blind); }
+.archive-controls .archive-date-to { --date-accent:var(--standard); color:var(--standard); }
+body[data-page="history"] #main .game-select-trigger { color:var(--history-mode-accent); border-color:color-mix(in srgb,var(--history-mode-accent) 45%,#383838); font-size:16px; }
 body[data-page="history"] #main [data-game-select="archive-kind"] .game-select-trigger { color:var(--lookup-accent); border-color:color-mix(in srgb,var(--lookup-accent) 45%,#383838); }
-body[data-page="history"] #main .archive-apply { color:var(--voting); border-color:color-mix(in srgb,var(--voting) 50%,#383838); background:color-mix(in srgb,var(--voting) 12%,#242424); }
-body[data-page="history"] #main .game-select-menu { border-color:#555; }
+body[data-page="history"] #main .archive-apply { color:var(--history-mode-accent); border-color:color-mix(in srgb,var(--history-mode-accent) 50%,#383838); background:color-mix(in srgb,var(--history-mode-accent) 12%,#242424); }
+body[data-page="history"] #main .game-select-menu { border-color:color-mix(in srgb,var(--history-mode-accent) 45%,#383838); background:#242424; }
+body[data-page="history"] #main [data-game-select="archive-mode"] [data-game-option] { --option-accent:var(--overall); color:var(--option-accent); }
+body[data-page="history"] #main [data-game-select="archive-mode"] [data-game-option="voting"] { --option-accent:var(--voting); }
+body[data-page="history"] #main [data-game-select="archive-mode"] [data-game-option="standard"] { --option-accent:var(--standard); }
+body[data-page="history"] #main [data-game-select="archive-mode"] [data-game-option="blind"] { --option-accent:var(--blind); }
+body[data-page="history"] #main [data-game-select="archive-mode"] [data-game-option="recognition"] { --option-accent:var(--recognition); }
+body[data-page="history"] #main [data-game-select="archive-mode"] [data-game-option="tournament"] { --option-accent:var(--tournament); }
+body[data-page="history"] #main [data-game-select="archive-mode"] [data-game-option="shelves"] { --option-accent:var(--shelves); }
+body[data-page="history"] #main [data-game-select="archive-mode"] [data-game-option="vibe"] { --option-accent:var(--vibe); }
+body[data-page="history"] #main [data-game-select="archive-mode"] [data-game-option]:is(:hover,:focus-visible,[aria-selected="true"]) { background:color-mix(in srgb,var(--option-accent) 12%,#242424); border-color:color-mix(in srgb,var(--option-accent) 40%,transparent); }
+body[data-page="history"] #main [data-game-select="archive-mode"] .game-select-check { color:inherit; }
+body[data-page="history"] #main [data-game-select="archive-kind"] [data-game-option] { --option-accent:var(--song); color:var(--option-accent); }
+body[data-page="history"] #main [data-game-select="archive-kind"] [data-game-option="artists"] { --option-accent:var(--artist); }
+body[data-page="history"] #main [data-game-select="archive-kind"] [data-game-option="albums"] { --option-accent:var(--album); }
+body[data-page="history"] #main [data-game-select="archive-kind"] [data-game-option="tags"] { --option-accent:var(--tag); }
+body[data-page="history"] #main [data-game-select="archive-kind"] .game-select-menu { border-color:color-mix(in srgb,var(--lookup-accent) 45%,#383838); }
+body[data-page="history"] #main [data-game-select="archive-kind"] [data-game-option]:is(:hover,:focus-visible,[aria-selected="true"]) { background:color-mix(in srgb,var(--option-accent) 12%,#242424); border-color:color-mix(in srgb,var(--option-accent) 40%,transparent); }
+body[data-page="history"] #main [data-game-select="archive-kind"] .game-select-check { color:inherit; }
+.history-search-panel[data-mode="all"] { background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--standard) 10%,transparent),transparent 45%),radial-gradient(ellipse at 50% 0,color-mix(in srgb,var(--recognition) 8%,transparent),transparent 50%),radial-gradient(ellipse at 100% 0,color-mix(in srgb,var(--tournament) 10%,transparent),transparent 45%),radial-gradient(ellipse at 0 100%,color-mix(in srgb,var(--blind) 9%,transparent),transparent 45%),radial-gradient(ellipse at 65% 100%,color-mix(in srgb,var(--shelves) 9%,transparent),transparent 40%),radial-gradient(ellipse at 100% 100%,color-mix(in srgb,var(--vibe) 8%,transparent),transparent 45%),#1e1e1e; }
+.history-search-panel[data-mode="all"] [data-game-select="archive-mode"] .game-control-label,
+.history-search-panel[data-mode="all"] #archive-mode-value,
+[data-game-select="archive-mode"] [data-game-option="all"] .game-option-copy b { background:var(--mode-spectrum); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+body[data-page="history"] #main .history-search-panel[data-mode="all"] [data-game-select="archive-mode"] .game-select-trigger { border:1px solid transparent; background:linear-gradient(#242424,#242424) padding-box,var(--mode-spectrum) border-box; }
+@media(forced-colors:active) { .history-search-panel[data-mode="all"] [data-game-select="archive-mode"] .game-control-label,.history-search-panel[data-mode="all"] #archive-mode-value,[data-game-select="archive-mode"] [data-game-option="all"] .game-option-copy b { background:none; -webkit-text-fill-color:currentColor; } }
 .archive-lookup { grid-column:1 / -1; }
 .archive-search-field { display:flex; border:1px solid color-mix(in srgb,var(--lookup-accent) 45%,#383838); background:#242424; border-radius:18px; align-items:center; padding:0 12px; }
 .archive-search-field:focus-within { outline:2px solid var(--artist); outline-offset:2px; }

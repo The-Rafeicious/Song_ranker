@@ -63,7 +63,7 @@ class HistoryTests(unittest.TestCase):
         text = response.text
         for fragment in ('Correct: shelf 1, disc 1, track', '✓ Correct', '✕ Missed', '/tournament/1/bracket', 'Retained maps', 'Artist &lt;unsafe&gt;'):
             self.assertIn(fragment, text)
-        self.assertLess(text.index('📜 Match History'), text.index('🔥 Voting Stats'))
+        self.assertLess(text.index('href="/history"'), text.index('href="/voting_stats"'))
 
     def seed_complete_bracket(self):
         """Save a full eight-track bracket with collection-specific early exits."""

@@ -442,3 +442,18 @@ shows submitted and saved correction positions with its shared grader, and Vibe
 shows retained map coordinates/sample counts. Missing identities/results remain
 unavailable; unfinished Blind brackets do not reveal tracks. Hydrate only the
 visible page's identities.
+
+History mode controls use the mode-spectrum text/border for All modes and the
+selected mode's semantic accent otherwise. Dropdown rows retain their own mode
+or entity accents, including selected/hover/focus states. Navbar spectrum colour
+belongs to label spans only; emoji stay outside the clipped text and link hover
+surfaces never overwrite the label gradient. Live History lookup starts immediately,
+coalesces the newest query behind an active request, locally filters available
+suggestions as typing continues and shows at most three candidates.
+
+Shared date fields keep native ISO values, names, keyboard editing and validation.
+`ui.js` enhances current and dynamically added date inputs with one custom calendar;
+`components.css` owns its dark modal surface, month/year controls, day grid and
+Today/Clear actions. Retain keyboard arrows/Home/End/Page keys, native modal focus,
+Escape/outside dismissal, current/selected/disabled states and min/max constraints.
+Picker geometry must fit phone viewports; unsupported browsers retain native inputs.
