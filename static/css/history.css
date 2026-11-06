@@ -4,6 +4,7 @@ body[data-page="history"] {
 }
 .history-page-header { justify-content:center; text-align:center; }
 .history-overview,.archive-event { margin-bottom:20px; }
+.history-overview { --surface-accent:var(--overall); }
 .history-search-panel {
   --history-mode-accent:var(--overall);
   --surface-accent:var(--history-mode-accent);
@@ -41,7 +42,7 @@ body[data-page="history"] #main [data-game-select="archive-kind"] [data-game-opt
 body[data-page="history"] #main [data-game-select="archive-kind"] .game-select-menu { border-color:color-mix(in srgb,var(--lookup-accent) 45%,#383838); }
 body[data-page="history"] #main [data-game-select="archive-kind"] [data-game-option]:is(:hover,:focus-visible,[aria-selected="true"]) { background:color-mix(in srgb,var(--option-accent) 12%,#242424); border-color:color-mix(in srgb,var(--option-accent) 40%,transparent); }
 body[data-page="history"] #main [data-game-select="archive-kind"] .game-select-check { color:inherit; }
-.history-search-panel[data-mode="all"] { background:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--standard) 10%,transparent),transparent 45%),radial-gradient(ellipse at 50% 0,color-mix(in srgb,var(--recognition) 8%,transparent),transparent 50%),radial-gradient(ellipse at 100% 0,color-mix(in srgb,var(--tournament) 10%,transparent),transparent 45%),radial-gradient(ellipse at 0 100%,color-mix(in srgb,var(--blind) 9%,transparent),transparent 45%),radial-gradient(ellipse at 65% 100%,color-mix(in srgb,var(--shelves) 9%,transparent),transparent 40%),radial-gradient(ellipse at 100% 100%,color-mix(in srgb,var(--vibe) 8%,transparent),transparent 45%),#1e1e1e; }
+.history-search-panel[data-mode="all"] { --surface-fill:radial-gradient(ellipse at 0 0,color-mix(in srgb,var(--standard) var(--surface-wash-strength),transparent),transparent 45%),radial-gradient(ellipse at 50% 0,color-mix(in srgb,var(--recognition) var(--surface-wash-strength),transparent),transparent 50%),radial-gradient(ellipse at 100% 0,color-mix(in srgb,var(--tournament) var(--surface-wash-strength),transparent),transparent 45%),radial-gradient(ellipse at 0 100%,color-mix(in srgb,var(--blind) var(--surface-wash-strength),transparent),transparent 45%),radial-gradient(ellipse at 65% 100%,color-mix(in srgb,var(--shelves) var(--surface-wash-strength),transparent),transparent 40%),radial-gradient(ellipse at 100% 100%,color-mix(in srgb,var(--vibe) var(--surface-wash-strength),transparent),transparent 45%),#1e1e1e; }
 .history-search-panel[data-mode="all"] [data-game-select="archive-mode"] .game-control-label,
 .history-search-panel[data-mode="all"] #archive-mode-value,
 [data-game-select="archive-mode"] [data-game-option="all"] .game-option-copy b { background:var(--mode-spectrum); background-clip:text; -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
@@ -91,7 +92,7 @@ body[data-page="history"] #main .archive-identity .small-art {
   padding:18px; border:1px solid color-mix(in srgb,var(--section-color) 20%,#383838); border-radius:18px;
 }
 .archive-place { display:grid; gap:16px; align-content:start; border-top:3px solid var(--tournament); }
-.archive-place[data-place="1"] { background:color-mix(in srgb,var(--tournament) 12%,#242424); }
+.archive-place[data-place="1"] { --surface-wash-strength:12%; }
 .archive-place>strong { font-size:30px; text-align:center; }
 .archive-fields { grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); }
 .archive-field { display:grid; gap:12px; }

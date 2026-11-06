@@ -3,89 +3,58 @@
 :root {
   --surface-glow-size: 26px;
   --surface-glow-strength: 16%;
+  --surface-primary-wash: 6%;
+  --surface-inset-wash: 3%;
+  --surface-primary-border: 28%;
+  --surface-inset-border: 18%;
 }
-/* One accent drives the soft glow; existing borders and washes are retained. */
-:where(
-  .panel,
-  .stat,
-  .mode-card,
-  .shelf-card,
-  .spotlight,
-  .overall-highlight,
-  .dashboard-surface
-) {
-  --surface-accent: var(--section-color, var(--page-color, var(--muted)));
+/* One surface recipe: neutral bases, semantic washes and one standard halo.
+   Feature owners select accents; ranked/outcome states retain their own scales. */
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.overall-highlight,
+       .dashboard-surface,.versus-row,.game-card,.stats-pulse,dialog,
+       .mode-stats-inset,.profile-inset,.profile-highlight,.joined-metrics,.collection-record,
+       .stats-group,.global-metrics,.stats-subsection,.field-accuracy-grid,
+       .overall-global-summary,.stats-tag,.win-rate,.tool-tile,.report-facts,
+       .archive-field,.archive-shelf,.archive-place,.archive-count,.archive-entry) {
+  --surface-accent:var(--section-color,var(--page-color,var(--muted)));
+  --surface-accent-secondary:var(--surface-accent);
+  --surface-base:var(--panel,#1e1e1e);
+  --surface-wash-strength:var(--surface-primary-wash);
+  --surface-border-strength:var(--surface-primary-border);
+  --surface-fill:
+    radial-gradient(ellipse at top left,color-mix(in srgb,var(--surface-accent) var(--surface-wash-strength),transparent),transparent 70%),
+    radial-gradient(ellipse at bottom right,color-mix(in srgb,var(--surface-accent-secondary) var(--surface-wash-strength),transparent),transparent 70%),
+    var(--surface-base);
+  --surface-border:color-mix(in srgb,var(--surface-accent) var(--surface-border-strength),#383838);
+  --surface-shadow:0 0 var(--surface-glow-size) color-mix(in srgb,var(--surface-accent) var(--surface-glow-strength),transparent),0 8px 24px #0005;
 }
-:where(.stat) {
-  --surface-accent: var(--stat-color, var(--song));
+:where(.mode-stats-inset,.profile-inset,.profile-highlight,.joined-metrics,.collection-record,
+       .stats-group,.global-metrics,.stats-subsection,.field-accuracy-grid,
+       .overall-global-summary,.stats-tag,.win-rate,.tool-tile,.report-facts,
+       .archive-field,.archive-shelf,.archive-place,.archive-count,.archive-entry) {
+  --surface-base:var(--raised,#242424);
+  --surface-wash-strength:var(--surface-inset-wash);
+  --surface-border-strength:var(--surface-inset-border);
+  --surface-shadow:none;
 }
-:where(.mode-card, .shelf-card, .spotlight) {
-  --surface-accent: var(--shelf-accent, var(--song));
-}
-:where(.mode-card, .shelf-card, .spotlight, .dashboard-surface).song {
-  --surface-accent: var(--song);
-}
-:where(.mode-card, .shelf-card, .spotlight, .dashboard-surface).artist {
-  --surface-accent: var(--artist);
-}
-:where(.mode-card, .shelf-card, .spotlight, .dashboard-surface).album {
-  --surface-accent: var(--album);
-}
-:where(.mode-card, .shelf-card, .spotlight, .dashboard-surface).tag {
-  --surface-accent: var(--tag);
-}
-:where(.mode-card, .shelf-card, .spotlight, .dashboard-surface).standard {
-  --surface-accent: var(--standard);
-}
-:where(.mode-card, .shelf-card, .spotlight, .dashboard-surface).blind {
-  --surface-accent: var(--blind);
-}
-:where(.mode-card, .shelf-card, .spotlight, .dashboard-surface).recognition {
-  --surface-accent: var(--recognition);
-}
-:where(.mode-card, .shelf-card, .spotlight, .dashboard-surface).tournament {
-  --surface-accent: var(--tournament);
-}
-:where(
-  .special-panel,
-  .mode-card,
-  .stat,
-  .shelf-card,
-  .dashboard-surface
-).shelves {
-  --surface-accent: #9259a8;
-}
-:where(.stat).shelves {
-  --surface-accent: #83569b;
-}
-:where(.overall-panel, .overall-highlight) {
-  --surface-accent: var(--overall);
-}
-:where(.recognition-panel) {
-  --surface-accent: var(--recognition);
-}
-:where(.tournament-panel) {
-  --surface-accent: var(--tournament);
-}
-:where(.stats-glow) {
-  --surface-accent: var(--stat-a);
-}
-.global-stats-page #global-activity {
-  --surface-accent: var(--activity-accent, var(--muted));
-}
-body.site-style-baseline #main .dashboard-surface,
-body:is([data-page="home"], [data-page="global_stats"])
-  #main
-  :is(.panel, .stat, .mode-card, .shelf-card, .spotlight, .overall-highlight) {
-  box-shadow:
-    0 0 var(--surface-glow-size)
-      color-mix(
-        in srgb,
-        var(--surface-accent) var(--surface-glow-strength),
-        transparent
-      ),
-    0 8px 24px #0005;
-}
+:where(.stat) { --surface-accent:var(--stat-color,var(--section-color,var(--page-color))); }
+:where(.mode-card,.shelf-card,.spotlight) { --surface-accent:var(--shelf-accent,var(--section-color,var(--page-color))); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).song { --surface-accent:var(--song); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).artist { --surface-accent:var(--artist); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).album { --surface-accent:var(--album); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).tag { --surface-accent:var(--tag); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).voting { --surface-accent:var(--voting); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).standard { --surface-accent:var(--standard); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).blind { --surface-accent:var(--blind); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).recognition { --surface-accent:var(--recognition); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).tournament { --surface-accent:var(--tournament); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).shelves { --surface-accent:var(--shelves); }
+:where(.panel,.stat,.mode-card,.shelf-card,.spotlight,.dashboard-surface,.game-card,.mode-stats-inset,.profile-inset,.report-facts).vibe { --surface-accent:var(--vibe); }
+:where(.overall-panel,.overall-highlight,.overall) { --surface-accent:var(--overall); }
+:where(.recognition-panel) { --surface-accent:var(--recognition); }
+:where(.tournament-panel) { --surface-accent:var(--tournament); }
+:where(.stats-glow) { --surface-accent:var(--stat-a); --surface-accent-secondary:var(--stat-b,var(--stat-a)); }
+.global-stats-page #global-activity { --surface-accent:var(--activity-accent,var(--overall)); }
 /* A joined row is one quiet inset. Dividers belong only between neighbours. */
 body.site-style-baseline #main .joined-metrics {
   display: grid;
@@ -178,17 +147,9 @@ body.site-style-baseline #main .versus-row {
   min-width: 0;
   padding: var(--versus-padding, var(--site-padding, 24px));
   border: 1px solid #383838;
-  border-color: color-mix(in srgb, var(--versus-accent) 22%, #383838);
+  border-color: color-mix(in srgb, var(--versus-accent) var(--surface-border-strength), #383838);
   border-radius: var(--versus-radius, var(--site-radius, 24px));
-  background:
-    linear-gradient(
-      90deg,
-      color-mix(in srgb, var(--versus-accent) 14%, transparent),
-      transparent 30%,
-      transparent 70%,
-      color-mix(in srgb, var(--versus-accent) 14%, transparent)
-    ),
-    var(--panel, #1e1e1e);
+  background:var(--surface-fill);
 }
 body.site-style-baseline #main .history-match {
   --versus-accent: var(--muted);
@@ -548,7 +509,7 @@ body.site-style-baseline #main .versus-context > :is(span, a, time) { padding: 5
 .date-control .date-open:hover { background:color-mix(in srgb,var(--date-accent,var(--artist)) 12%,transparent); }
 .date-control .date-open:focus-visible { outline:2px solid var(--date-accent,var(--artist)); outline-offset:-2px; }
 .date-control .date-open:disabled { opacity:.45; cursor:default; }
-body.site-style-baseline dialog.date-picker { position:fixed; inset:auto; margin:0; padding:14px; min-width:0; max-width:calc(100vw - 24px); max-height:calc(100dvh - 24px); box-sizing:border-box; overflow:auto; background:#1e1e1e; color:var(--overall); border:1px solid color-mix(in srgb,var(--date-accent) 55%,#383838); border-radius:24px; box-shadow:0 16px 60px #000b,0 0 28px color-mix(in srgb,var(--date-accent) 14%,transparent); font-family:Arial,Helvetica,sans-serif; }
+body.site-style-baseline dialog.date-picker { position:fixed; inset:auto; margin:0; padding:14px; min-width:0; max-width:calc(100vw - 24px); max-height:calc(100dvh - 24px); box-sizing:border-box; overflow:auto; background:#1e1e1e; color:var(--overall); border:1px solid color-mix(in srgb,var(--date-accent) 55%,#383838); border-radius:24px; box-shadow:0 16px 60px #000b,0 0 var(--surface-glow-size) color-mix(in srgb,var(--date-accent) var(--surface-glow-strength),transparent); font-family:Arial,Helvetica,sans-serif; }
 .date-picker::backdrop { background:#0004; }
 .date-picker .date-picker-head { display:flex; justify-content:space-between; align-items:center; gap:12px; }
 body.site-style-baseline .date-picker .date-picker-head h2 { font-size:22px; margin:0; color:var(--date-accent); }

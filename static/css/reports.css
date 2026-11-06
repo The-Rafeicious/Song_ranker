@@ -1359,9 +1359,9 @@
 .voting-stats-page {
   --section-color: var(--voting);
   --surface-accent: var(--voting);
-  --mode-stats-border: #9cdb9166;
-  --mode-stats-rule: #9cdb9129;
-  --mode-stats-divider: #9cdb9122;
+  --mode-stats-border: color-mix(in srgb,var(--voting) 40%,transparent);
+  --mode-stats-rule: color-mix(in srgb,var(--voting) 16%,transparent);
+  --mode-stats-divider: color-mix(in srgb,var(--voting) 13%,transparent);
 }
 .voting-mode-blind {
   --section-color: var(--blind);
@@ -3182,7 +3182,7 @@ body.site-style-baseline #main .pulse-scale {
 .elo-replay-stage { --replay-row-height:112px; position:relative; height:calc(5 * var(--replay-row-height)); isolation:isolate; min-width:0; }
 .elo-replay-stage.is-empty { height:auto; min-height:64px; }
 .elo-replay-row { position:absolute; top:0; left:0; width:100%; height:calc(var(--replay-row-height) - 10px); display:grid; grid-template-columns:minmax(36px,max-content) 72px minmax(0,1fr) auto; gap:16px; align-items:center; padding:12px 18px; border-radius:18px; background:var(--raised,#242424); border:1px solid #ffffff12; box-sizing:border-box; }
-.elo-replay-row.is-featured { background:color-mix(in srgb,var(--voting) 10%,#242424); border-color:var(--voting); box-shadow:0 0 20px #9cdb9120,inset 0 0 18px #9cdb910a; }
+.elo-replay-row.is-featured { background:color-mix(in srgb,var(--voting) 10%,#242424); border-color:var(--voting); box-shadow:0 0 20px color-mix(in srgb,var(--voting) 12.5%,transparent),inset 0 0 18px color-mix(in srgb,var(--voting) 4%,transparent); }
 .elo-replay-row.is-featured .elo-replay-art { transform:scale(1.06); }
 .elo-replay-rank { font-size:24px; font-weight:900; text-align:center; color:var(--voting); font-variant-numeric:tabular-nums; }
 .elo-replay-art { width:72px; height:72px; display:grid; place-items:center; border-radius:14px; background:#181818; color:var(--song); overflow:hidden; }
@@ -3196,7 +3196,7 @@ body.site-style-baseline #main .pulse-scale {
 .elo-replay-row.is-gain .elo-replay-delta { color:var(--song); }
 .elo-replay-row.is-loss .elo-replay-delta { color:var(--danger); }
 .elo-replay-gap { position:absolute; left:0; top:0; width:100%; height:calc(var(--replay-row-height) - 10px); display:grid; place-items:center; border:1px dashed #ffffff12; border-radius:18px; color:#888; font-size:16px; box-sizing:border-box; }
-.elo-replay-opponent { min-width:0; padding:18px; background:#ffffff04; border:1px solid #9cdb9128; border-radius:18px; }
+.elo-replay-opponent { min-width:0; padding:18px; background:#ffffff04; border:1px solid color-mix(in srgb,var(--voting) 16%,transparent); border-radius:18px; }
 .elo-replay-opponent h3 { color:var(--voting); font-size:18px; margin:0 0 16px; }
 .elo-replay-opponent-art { display:grid; place-items:center; width:100%; aspect-ratio:1; background:#181818; border-radius:16px; overflow:hidden; margin-bottom:18px; color:var(--song); font-size:44px; }
 .elo-replay-opponent-art img { width:100%; height:100%; object-fit:cover; }
@@ -3229,10 +3229,10 @@ body.site-style-baseline #main .pulse-scale {
 }
 @media(prefers-reduced-motion:reduce) { .elo-replay-panel *, .elo-replay-panel *::before { animation:none!important; transition:none!important; } }
 
-body.site-style-baseline #main .elo-replay-panel :is(.game-select-trigger,.game-select-menu) { color:var(--voting); border-color:#9cdb9180; }
+body.site-style-baseline #main .elo-replay-panel :is(.game-select-trigger,.game-select-menu) { color:var(--voting); border-color:color-mix(in srgb,var(--voting) 50%,transparent); }
 body.site-style-baseline #main .elo-replay-panel .game-select-menu { background:#242424; }
 body.site-style-baseline #main .elo-replay-panel .game-select-check { color:var(--voting); }
-body.site-style-baseline #main .elo-replay-panel .game-select-menu button:is(:hover,:focus-visible,[aria-selected="true"]) { background:#9cdb9117; border-color:#9cdb9150; }
+body.site-style-baseline #main .elo-replay-panel .game-select-menu button:is(:hover,:focus-visible,[aria-selected="true"]) { background:color-mix(in srgb,var(--voting) 9%,transparent); border-color:color-mix(in srgb,var(--voting) 31%,transparent); }
 .elo-replay-controls .game-control-label { display:block; color:#aaa; font-size:16px; margin-bottom:6px; }
 
 /* A quiet stationary glow lasts until the next leaderboard change. */
