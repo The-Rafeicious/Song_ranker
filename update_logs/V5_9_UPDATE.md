@@ -137,3 +137,9 @@
   halo intensity through shared surface tokens. Nested containers use one quieter
   raised level so glows do not stack. Corrected Shelves glows to the mode token.
 - Preserved rank-dependent falloff, podium emphasis, playback and result states.
+
+## v5.9.5.4.1 — Voting colour harmony
+
+- Changed the shared voting accent to periwinkle #a5b4fc, complementing Non-blind
+  orange and Blind teal across headings, controls, panels and glows.
+- Retained the existing panel intensity and both voting sub-mode colours.
