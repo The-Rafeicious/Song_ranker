@@ -17,7 +17,7 @@ async function bounded(page,width,phase,folder){
   const base=process.env.VIBE_TEST_URL,folder='artifacts/vibe-map';fs.mkdirSync(folder,{recursive:true});
   await page.goto(base+'/');await page.locator('#volume-btn').waitFor();
   await page.locator('.mode-card.voting h2').waitFor();
-  assert.equal(await page.locator('.mode-card.voting h2').evaluate(e=>getComputedStyle(e).color),'rgb(163, 230, 53)');
+  assert.equal(await page.locator('.mode-card.voting h2').evaluate(e=>getComputedStyle(e).color),'rgb(165, 180, 252)');
   const homeSurfaces=await page.locator('.mode-card').evaluateAll(nodes=>nodes.map(e=>{const s=getComputedStyle(e);return {base:s.backgroundColor,glow:s.getPropertyValue('--surface-glow-strength').trim(),blur:s.getPropertyValue('--surface-glow-size').trim(),shadow:s.boxShadow,wash:s.backgroundImage};}));
   assert.ok(homeSurfaces.length>=5);
   for(const surface of homeSurfaces){assert.equal(surface.base,'rgb(30, 30, 30)');assert.equal(surface.glow,'16%');assert.equal(surface.blur,'26px');assert.match(surface.shadow,/26px/);assert.match(surface.wash,/radial-gradient/);}
@@ -208,7 +208,7 @@ async function bounded(page,width,phase,folder){
   assert.equal(await page.locator('body').getAttribute('data-tone'),'mixed');
   const globalTheme=await page.evaluate(()=>({title:getComputedStyle(document.querySelector('.global-theme-title')).backgroundImage,back:getComputedStyle(document.body,'::before').backgroundImage}));
   assert.match(globalTheme.title,/linear-gradient/);assert.match(globalTheme.back,/radial-gradient/);
-  for(const [id,colour] of [['global-voting','rgb(163, 230, 53)'],['global-recognition','rgb(242, 211, 79)'],['global-tournaments','rgb(255, 120, 166)'],['global-shelves','rgb(175, 137, 189)']]){
+  for(const [id,colour] of [['global-voting','rgb(165, 180, 252)'],['global-recognition','rgb(242, 211, 79)'],['global-tournaments','rgb(255, 120, 166)'],['global-shelves','rgb(175, 137, 189)']]){
    assert.equal(await page.locator('#'+id+' h2').evaluate(e=>getComputedStyle(e).color),colour,'Global summary keeps its mode colour: '+id);
   }
   for(const [mode,colour] of [['standard','#f0a35b'],['blind','#55d6c2']])assert.equal(await page.locator('#global-voting .vote-column.'+mode).evaluate(e=>getComputedStyle(e).getPropertyValue('--section-color').trim()),colour,'Voting sub-card keeps its own accent');

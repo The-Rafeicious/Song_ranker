@@ -47,7 +47,7 @@ inside a mode card retains the song colour.
 | Artist | `--artist` | `#5b9bff` |
 | Album | `--album` | `#bf77ff` |
 | Tag | `--tag` | `#ffb833` |
-| Standard Vote family | `--voting` | `#a3e635` |
+| Standard Vote family | `--voting` | `#a5b4fc` |
 | Non-blind / Blind | `--standard` / `--blind` | `#f0a35b` / `#55d6c2` |
 | Trivia | `--recognition` | `#f2d34f` |
 | Tournament | `--tournament` | `#ff78a6` |
@@ -282,7 +282,7 @@ Local tournament filters reuse the tournament mode selector. Activity, bracket m
 
 Local tournament lookup has separate entity-type and record selectors; entity options show artwork with circular artist portraits. Panel borders, dividers and glows share the entity accent.
 
-Standard Vote family navigation, summaries and report headers use vibrant lime green. Non-blind remains orange and Blind teal. Tournament Elo rows retain pink origin accents plus orange/teal visibility edges and labels.
+Standard Vote family navigation, summaries and report headers use periwinkle. Non-blind remains orange and Blind teal. Tournament Elo rows retain pink origin accents plus orange/teal visibility edges and labels.
 
 Summary values use their designed type size and exact text first. Measure the
 available slot before abbreviation or font reduction. Only overflowing counts use
