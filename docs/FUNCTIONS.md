@@ -48,20 +48,20 @@ Shared catalogue projections, cross-mode results and Elo history queries.
 | [voting_records](../songranker/catalog.py#L155) | `conn` | Combined public preference results, retaining origin and mode breakdowns. |
 | [summarize_votes](../songranker/catalog.py#L192) | `records` | Summarise combined preference records by standard/blind mode and ordinary/tournament origin. |
 | [summarize_votes.project](../songranker/catalog.py#L199) | `rows` | Aggregate wins, losses, match counts and win rates for one subset of preference records. |
-| [collection](../songranker/catalog.py#L224) | `include_overall_sources=False, include_query_sources=False` | Collection; reads competition_state, global_stats, song_artists, song_details, song_genres, songs, sqlite_master, trivia_rounds. |
-| [ranked](../songranker/catalog.py#L345) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
-| [special_records](../songranker/catalog.py#L427) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, songs. |
-| [display_song](../songranker/catalog.py#L502) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
-| [special_stats](../songranker/catalog.py#L526) | `` | Special stats; GET /api/special-modes/stats. |
-| [source_sql](../songranker/catalog.py#L564) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
-| [filters](../songranker/catalog.py#L581) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
-| [summary](../songranker/catalog.py#L588) | `conn` | Count effective preference matches by mode and origin for the history summary. |
-| [page](../songranker/catalog.py#L606) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
-| [tournament_appearances](../songranker/catalog.py#L642) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
-| [profile_selection](../songranker/catalog.py#L664) | `song_ids` | Bind a distinct cohort as one JSON parameter, avoiding SQL variable limits. |
-| [profile_details](../songranker/catalog.py#L671) | `conn, song_ids, kind, entity_id` | Assemble bounded display identities from mode-owned, full-cohort aggregates. |
-| [song_stats](../songranker/catalog.py#L692) | `song_id` | Build mode detail for one existing song in a read-only snapshot. |
-| [collection_stats](../songranker/catalog.py#L705) | `kind, entity_id` | Read all current artist/album tracks once; missing and empty differ. |
+| [collection](../songranker/catalog.py#L225) | `include_overall_sources=False, include_query_sources=False` | Collection; reads competition_state, global_stats, song_artists, song_details, song_genres, songs, sqlite_master, trivia_rounds. |
+| [ranked](../songranker/catalog.py#L346) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
+| [special_records](../songranker/catalog.py#L428) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, songs. |
+| [display_song](../songranker/catalog.py#L503) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
+| [special_stats](../songranker/catalog.py#L527) | `` | Special stats; GET /api/special-modes/stats. |
+| [source_sql](../songranker/catalog.py#L565) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
+| [filters](../songranker/catalog.py#L582) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
+| [summary](../songranker/catalog.py#L589) | `conn` | Count effective preference matches by mode and origin for the history summary. |
+| [page](../songranker/catalog.py#L607) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
+| [tournament_appearances](../songranker/catalog.py#L643) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
+| [profile_selection](../songranker/catalog.py#L665) | `song_ids` | Bind a distinct cohort as one JSON parameter, avoiding SQL variable limits. |
+| [profile_details](../songranker/catalog.py#L672) | `conn, song_ids, kind, entity_id` | Assemble bounded display identities from mode-owned, full-cohort aggregates. |
+| [song_stats](../songranker/catalog.py#L693) | `song_id` | Build mode detail for one existing song in a read-only snapshot. |
+| [collection_stats](../songranker/catalog.py#L706) | `kind, entity_id` | Read all current artist/album tracks once; missing and empty differ. |
 
 ## songranker/developer/catalog_sources.py
 
@@ -108,8 +108,8 @@ Offline audit/export/rebuild/restore/compare CLI.
 | Definition | Signature | Purpose |
 | --- | --- | --- |
 | [parser](../songranker/developer/db_tools.py#L15) | `` | Define the offline audit, export, rebuild, restore and compare commands with explicit input/output paths. |
-| [run](../songranker/developer/db_tools.py#L44) | `args` | Dispatch one offline recovery command and return its validated JSON report. |
-| [main](../songranker/developer/db_tools.py#L77) | `argv=None` | Run the recovery CLI, optionally save a new report file and return a structured success/error exit code. |
+| [run](../songranker/developer/db_tools.py#L47) | `args` | Dispatch one offline recovery command and return its validated JSON report. |
+| [main](../songranker/developer/db_tools.py#L86) | `argv=None` | Run the recovery CLI, optionally save a new report file and return a structured success/error exit code. |
 
 ## songranker/developer/dev.py
 
@@ -699,10 +699,10 @@ Standard/blind voting operations, history page and detailed Voting Stats.
 | [rating_distribution](../songranker/modes/voting.py#L287) | `songs, tested` | Shared current, voted-track Elo cohort and bands for Voting/Global Stats. |
 | [build_voting_stats](../songranker/modes/voting.py#L332) | `conn, now=None, history_mode='all', history_page=1, history_origin='all'` | Caller supplies a SELECT snapshot. Rates pool outcomes, never percentages. |
 | [build_voting_stats.identity](../songranker/modes/voting.py#L373) | `sid` | Resolve a report participant or retain a safe removed-track identity. |
-| [build_voting_stats.result_totals](../songranker/modes/voting.py#L462) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
-| [build_voting_stats.top](../songranker/modes/voting.py#L660) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
-| [build_voting_stats.category](../songranker/modes/voting.py#L674) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
-| [profile_voting_details](../songranker/modes/voting.py#L839) | `conn, song_ids` | Pool track appearances, counting internal votes twice but each event once. |
+| [build_voting_stats.result_totals](../songranker/modes/voting.py#L464) | `rows` | Aggregate effective voting evidence, rating gaps, saved changes and dated participation. |
+| [build_voting_stats.top](../songranker/modes/voting.py#L662) | `rows, metric, reverse=True` | Select five report leaders with deterministic metric, exposure, title and ID ordering. |
+| [build_voting_stats.category](../songranker/modes/voting.py#L676) | `kind, title, entities, links` | Aggregate tested song preference records into artist, full-album or tag leaders. |
+| [profile_voting_details](../songranker/modes/voting.py#L841) | `conn, song_ids` | Pool track appearances, counting internal votes twice but each event once. |
 
 ## songranker/overall.py
 
@@ -840,15 +840,15 @@ Flask configuration, managed connections, song hydration and catalogue writes.
 | [get_db_connection](../songranker/services.py#L56) | `` | Open the configured app database with foreign keys, row objects and a maintenance-gate lease. |
 | [init_db](../songranker/services.py#L81) | `` | Restore before creating anything, then apply the single versioned schema. |
 | [activate_elo_policy](../songranker/services.py#L93) | `` | Back up and activate adaptive Elo after startup database reconciliation. |
-| [export_rankings](../songranker/services.py#L108) | `` | Exports a comprehensive database snapshot to a text file. |
-| [is_close_match](../songranker/services.py#L171) | `guess, actual, threshold=0.75` | Compare trimmed case-insensitive answer text using the configured sequence-similarity threshold. |
-| [fetch_songs](../songranker/services.py#L184) | `conn, *, song_id=None, audio_only=False` | Consistent song metadata plus batched, independent Vibe Map placements. |
-| [get_song_full](../songranker/services.py#L197) | `song_id, conn` | Hydrate one catalogue song through the shared song query, returning no result when absent. |
-| [fetch_match_history](../songranker/services.py#L205) | `conn, song_id=None, limit=50, *, offset=0, mode='all', origin='all'` | Fetch recent matches with the rich song records used by shared VS rows. |
-| [create_database_backup](../songranker/services.py#L267) | `prefix='song_ranker'` | Save the configured live database through the shared rotating-backup policy. |
-| [get_or_create_album](../songranker/services.py#L273) | `conn, album_title, cover_url=None, release_date=None` | Retrieves an existing album or creates one, updating artwork if missing. |
-| [link_artists_to_song](../songranker/services.py#L292) | `conn, song_id, artist_string, default_cover=None, *, artist_names=None` | Splits an artist string and links each artist via the song_artists junction table. |
-| [link_genres_to_song](../songranker/services.py#L316) | `conn, song_id, genre_string` | Splits a genre string and links each tag via the song_genres junction table. |
+| [export_rankings](../songranker/services.py#L109) | `` | Exports a comprehensive database snapshot to a text file. |
+| [is_close_match](../songranker/services.py#L172) | `guess, actual, threshold=0.75` | Compare trimmed case-insensitive answer text using the configured sequence-similarity threshold. |
+| [fetch_songs](../songranker/services.py#L185) | `conn, *, song_id=None, audio_only=False` | Consistent song metadata plus batched, independent Vibe Map placements. |
+| [get_song_full](../songranker/services.py#L198) | `song_id, conn` | Hydrate one catalogue song through the shared song query, returning no result when absent. |
+| [fetch_match_history](../songranker/services.py#L206) | `conn, song_id=None, limit=50, *, offset=0, mode='all', origin='all'` | Fetch recent matches with the rich song records used by shared VS rows. |
+| [create_database_backup](../songranker/services.py#L268) | `prefix='song_ranker'` | Save the configured live database through the shared rotating-backup policy. |
+| [get_or_create_album](../songranker/services.py#L274) | `conn, album_title, cover_url=None, release_date=None` | Retrieves an existing album or creates one, updating artwork if missing. |
+| [link_artists_to_song](../songranker/services.py#L293) | `conn, song_id, artist_string, default_cover=None, *, artist_names=None` | Splits an artist string and links each artist via the song_artists junction table. |
+| [link_genres_to_song](../songranker/services.py#L317) | `conn, song_id, genre_string` | Splits a genre string and links each tag via the song_genres junction table. |
 
 ## songranker/storage/competition.py
 
@@ -884,6 +884,7 @@ Backed-up transactional bootstrap and versioned migration.
 | [retire_selective_tournament_elo](../songranker/storage/database.py#L265) | `filename` | Archive and retract artist/album first-round Elo once; retain match facts. |
 | [initialize_database](../songranker/storage/database.py#L303) | `filename, sql_backup=None` | Existing DB wins. Missing DB restores SQL before any empty schema is made. |
 | [initialize_database.authorize](../songranker/storage/database.py#L322) | `action, arg1, arg2, db, trigger` | Deny ATTACH/DETACH statements while importing a supplied SQL snapshot. |
+| [promote_tag_tournament_elo](../songranker/storage/database.py#L367) | `filename` | Back up, promote historical tag first rounds to full weight and replay once. |
 
 ## songranker/storage/database_access.py
 
@@ -1811,6 +1812,11 @@ Tournament scope policy and backed-up removal of historical selective Elo.
 | [TournamentPolicyTests.test_report_has_semantic_colours_depth_and_bracket_payload](../tests/test_tournament_policy.py#L76) | `self` | Verify report has semantic colours depth and bracket payload. |
 | [TournamentPolicyTests.test_local_comparisons_filter_finished_results_and_keep_raw_counts](../tests/test_tournament_policy.py#L107) | `self` | Verify local comparisons filter finished results and keep raw counts. |
 | [TournamentPolicyTests.test_unfinished_blind_comparisons_hide_identities](../tests/test_tournament_policy.py#L146) | `self` | Verify unfinished blind comparisons hide identities. |
+| [TournamentPolicyTests.old_tag_vote](../tests/test_tournament_policy.py#L156) | `self, blind=False` | Old tag vote; writes tournament_matches, tournaments. |
+| [TournamentPolicyTests.test_tag_full_weight_backup_replay_and_retry_preserve_match_facts](../tests/test_tournament_policy.py#L167) | `self` | Verify tag full weight backup replay and retry preserve match facts. |
+| [TournamentPolicyTests.test_tag_replay_failure_rolls_back_and_cutoff_is_not_guessed](../tests/test_tournament_policy.py#L195) | `self` | Verify tag replay failure rolls back and cutoff is not guessed. |
+| [TournamentPolicyTests.test_offline_tag_script_preserves_input_and_creates_full_weight_copy](../tests/test_tournament_policy.py#L206) | `self` | Verify offline tag script preserves input and creates full weight copy. |
+| [TournamentPolicyTests.test_schema22_migrates_old_constraint_before_full_tag_startup](../tests/test_tournament_policy.py#L218) | `self` | Verify schema22 migrates old constraint before full tag startup. |
 
 ## tests/test_tournament_scoring.py
 
@@ -2098,4 +2104,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1422 Python definitions**.
+Total: **1428 Python definitions**.

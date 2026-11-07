@@ -92,7 +92,7 @@ def api_generate_bracket():
                     (size, scope_type, scope_id, status, created_at, updated_at, current_round, points_version, is_blind, playoff_enabled,
                      elo_policy_version,elo_weight)
                     VALUES (?, ?, ?, 'in_progress', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 1, ?, 1, ?, ?)""",
-            (size, scope, scope_id, is_blind, 0 if scope in ("artist", "album") else 1, 1 if scope == "global" else 0.5 if scope == "tag" else 0),
+            (size, scope, scope_id, is_blind, 0 if scope in ("artist", "album") else 1, 1 if scope in ("global", "tag") else 0),
         )
         tournament_id = cursor.lastrowid
         for seed, song in enumerate(songs, start=1):
@@ -118,7 +118,7 @@ def api_generate_bracket():
                 "tracks": songs,
                 "matches": _tournament_matches(conn, tournament_id),
                 "elo_policy_version": 0 if scope in ("artist", "album") else 1,
-                "elo_weight": 1 if scope == "global" else 0.5 if scope == "tag" else 0,
+                "elo_weight": 1 if scope in ("global", "tag") else 0,
             }
         )
     except Exception:

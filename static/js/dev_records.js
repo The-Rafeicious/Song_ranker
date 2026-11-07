@@ -148,7 +148,7 @@ window.PreferenceAdmin = {
                 item.songs.find((s) => s.id === item.winner_id) ||
                 item.songs[0],
               other = item.songs.find((s) => s !== winner) || item.songs[1];
-            return `<div class="health-row"><div class="compact-copy"><strong class="song" title="${esc(title(winner))}">#${item.id} · ${esc(title(winner))}</strong><small title="${esc(title(other))}">vs ${esc(title(other))}</small><small>${esc(mode(item.mode))}${item.origin === "tournament" ? " · Tournament #" + esc(item.tournament_id) + " · " + (item.rating_weight === 0.5 ? "Half" : "Full") + " Elo influence" : ""} · ${item.active ? "Active" : "Voided"} · ${esc(item.created_at || "Date unavailable")}</small></div><button class="btn" type="button" data-preference-edit="${item.id}">Review</button></div>`;
+            return `<div class="health-row"><div class="compact-copy"><strong class="song" title="${esc(title(winner))}">#${item.id} · ${esc(title(winner))}</strong><small title="${esc(title(other))}">vs ${esc(title(other))}</small><small>${esc(mode(item.mode))}${item.origin === "tournament" ? " · Tournament #" + esc(item.tournament_id) + " · " + "Elo" : ""} · ${item.active ? "Active" : "Voided"} · ${esc(item.created_at || "Date unavailable")}</small></div><button class="btn" type="button" data-preference-edit="${item.id}">Review</button></div>`;
           })
           .join("") || '<div class="empty">No saved votes</div>';
       openDialog(

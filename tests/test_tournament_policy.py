@@ -32,7 +32,7 @@ class TournamentPolicyTests(unittest.TestCase):
         return result.json
 
     def test_scopes_have_correct_exchange_and_points_only_retries(self):
-        for scope,weight in [('artist',0),('album',0),('tag',.5),('global',1)]:
+        for scope,weight in [('artist',0),('album',0),('tag',1),('global',1)]:
             data=self.generate(scope);self.assertEqual(data['elo_weight'],weight)
             m=data['matches'][0];payload=dict(tournament_id=data['tournament_id'],match_id=m['id'],winner_id=m['song1_id'],loser_id=m['song2_id'])
             before=self.conn.execute('SELECT COUNT(*) FROM preference_events').fetchone()[0]
@@ -152,5 +152,85 @@ class TournamentPolicyTests(unittest.TestCase):
         self.assertEqual(local['tracks'],[])
         self.assertEqual(local['pairs'],[])
         self.assertIsNone(local['archive'][0]['winner'])
+
+    def old_tag_vote(self, blind=False):
+        data=self.generate('tag');m=data['matches'][0]
+        self.conn.execute('BEGIN IMMEDIATE')
+        self.conn.execute('UPDATE tournaments SET elo_weight=.5,is_blind=? WHERE id=?',(int(blind),data['tournament_id']))
+        event=record_preference(self.conn,m['song1_id'],m['song2_id'],'blind' if blind else 'standard',
+            {sid:dict(id=sid,title=f'Track {sid}') for sid in (m['song1_id'],m['song2_id'])},
+            tournament_id=data['tournament_id'],tournament_match_id=m['id'],weight=.5)
+        self.conn.execute("UPDATE tournament_matches SET status='completed',winner_id=song1_id,loser_id=song2_id,points_awarded=1 WHERE id=?",(m['id'],))
+        self.conn.commit()
+        return event,m
+
+    def test_tag_full_weight_backup_replay_and_retry_preserve_match_facts(self):
+        from songranker.storage.database import promote_tag_tournament_elo
+        event,m=self.old_tag_vote(blind=True)
+        self.assertEqual(self.conn.execute('SELECT winner_after-winner_before FROM preference_events WHERE id=?',(event,)).fetchone()[0],8)
+        before=capture(self.conn)
+        report=promote_tag_tournament_elo(self.path)
+        self.assertEqual(report['events'],1)
+        with readonly(report['backup']) as saved:self.assertEqual(capture(saved),before)
+        self.assertEqual(self.conn.execute('SELECT winner_after-winner_before FROM preference_rating_projection WHERE event_id=?',(event,)).fetchone()[0],16)
+        self.assertEqual(self.conn.execute('SELECT rating_weight FROM preference_events WHERE id=?',(event,)).fetchone()[0],1)
+        self.assertEqual(self.conn.execute('SELECT matches FROM preference_mode_ratings WHERE song_id=? AND mode=\'blind\'',(m['song1_id'],)).fetchone()[0],1)
+        self.assertEqual(capture(self.conn)['tables']['tournament_matches'],before['tables']['tournament_matches'])
+        self.assertEqual(capture(self.conn)['tables']['preference_corrections'],before['tables']['preference_corrections'])
+        # Saved outcomes/dates/snapshots are retained; public history uses projections.
+        original=dict(self.conn.execute('SELECT * FROM preference_events WHERE id=?',(event,)).fetchone())
+        cols=before['tables']['preference_events']['columns'];old=dict(zip(cols,before['tables']['preference_events']['rows'][0]))
+        self.assertEqual({k:v for k,v in original.items() if k!='rating_weight'},{k:v for k,v in old.items() if k!='rating_weight'})
+        after=capture(self.conn)
+        self.assertIsNone(promote_tag_tournament_elo(self.path));self.assertEqual(capture(self.conn),after)
+        page=self.client.get('/voting_stats').text
+        self.assertNotIn('Half influence',page);self.assertNotIn('Effective votes',page)
+        self.assertNotIn('½',page);self.assertNotIn('recalibrat',page.lower())
+        # An unfinished historical bracket continues at full weight too.
+        other=self.conn.execute("SELECT * FROM tournament_matches WHERE tournament_id=? AND status!='completed' LIMIT 1",(m['tournament_id'],)).fetchone()
+        result=self.client.post('/api/tournament_vote',json=dict(tournament_id=m['tournament_id'],match_id=other['id'],winner_id=other['song1_id'],loser_id=other['song2_id']))
+        self.assertEqual(result.status_code,200,result.json)
+        self.assertEqual(self.conn.execute('SELECT rating_weight FROM preference_events WHERE id=?',(result.json['preference_event_id'],)).fetchone()[0],1)
+
+    def test_tag_replay_failure_rolls_back_and_cutoff_is_not_guessed(self):
+        from songranker.storage.database import promote_tag_tournament_elo
+        event,_=self.old_tag_vote();before=capture(self.conn)
+        with patch('songranker.storage.preference_state.rebuild_preference_ratings',side_effect=RuntimeError('interrupted')):
+            with self.assertRaises(RuntimeError):promote_tag_tournament_elo(self.path)
+        self.assertEqual(capture(self.conn),before)
+        self.conn.execute('UPDATE preference_replay_state SET cutoff_event_id=?',(event,));self.conn.commit()
+        before=capture(self.conn)
+        with self.assertRaisesRegex(ValueError,'baseline'):promote_tag_tournament_elo(self.path)
+        self.assertEqual(capture(self.conn),before)
+
+    def test_offline_tag_script_preserves_input_and_creates_full_weight_copy(self):
+        from songranker.developer.db_tools import parser, run
+        self.old_tag_vote();before=capture(self.conn)
+        output=Path(self.temp.name)/'adjusted.db'
+        args=parser().parse_args(['tag-elo','--db',str(self.path),'--output',str(output)])
+        self.assertEqual(run(args)['status'],'verified')
+        self.assertEqual(capture(self.conn),before)
+        with readonly(output) as result:
+            self.assertEqual(result.execute('SELECT rating_weight FROM preference_events').fetchone()[0],1)
+            self.assertEqual(result.execute('SELECT winner_after-winner_before FROM preference_rating_projection').fetchone()[0],16)
+        with self.assertRaisesRegex(ValueError,'Output already exists'):run(args)
+
+    def test_schema22_migrates_old_constraint_before_full_tag_startup(self):
+        from songranker.storage.database import migrate
+        path=Path(self.temp.name)/'schema22.db'
+        initialize_database(path)
+        with sqlite3.connect(path) as seeded:
+            script='\n'.join(seeded.iterdump()).replace("scope_type IN ('global','tag') AND elo_weight=1", "scope_type='global' AND elo_weight=1")
+        path.unlink()
+        with sqlite3.connect(path) as old:
+            old.executescript(script)
+            old.execute('PRAGMA user_version=22')
+            old.execute("INSERT INTO genres(id,name) VALUES(1,'Old tag')")
+            old.execute("INSERT INTO tournaments(size,scope_type,scope_id,elo_policy_version,elo_weight) VALUES(8,'tag',1,1,.5)")
+        migrate(path)
+        with sqlite3.connect(path) as updated:
+            self.assertEqual(updated.execute('PRAGMA user_version').fetchone()[0],23)
+            updated.execute('UPDATE tournaments SET elo_weight=1')
+            self.assertEqual(updated.execute('SELECT elo_weight FROM tournaments').fetchone()[0],1)
 
 if __name__=='__main__':unittest.main()

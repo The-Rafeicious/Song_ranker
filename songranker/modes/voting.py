@@ -388,6 +388,8 @@ def build_voting_stats(
         f"SELECT * FROM {source_sql(conn)} WHERE mode IN ('standard','blind')"
     ):
         r = dict(raw)
+        if r.get("rating_weight") == 1:
+            r["rating_weight"] = 1
         if (
             r.get("winner_id") is None
             or r.get("loser_id") is None

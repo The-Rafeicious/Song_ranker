@@ -121,7 +121,7 @@ CREATE TABLE IF NOT EXISTS tournaments (
     elo_policy_version INTEGER NOT NULL DEFAULT 0 CHECK(elo_policy_version IN (0,1)),
     elo_weight REAL NOT NULL DEFAULT 0 CHECK(elo_weight IN (0,0.5,1)),
     CHECK((elo_policy_version=0 AND elo_weight=0) OR
-          (elo_policy_version=1 AND ((scope_type='global' AND elo_weight=1) OR
+          (elo_policy_version=1 AND ((scope_type IN ('global','tag') AND elo_weight=1) OR
           (scope_type IN ('artist','album','tag') AND elo_weight=0.5)))),
     FOREIGN KEY(champion_id) REFERENCES songs(id)
 );

@@ -186,7 +186,7 @@ def build_global_stats(conn):
         tournament_vote=h.get('origin')=='tournament'
         title=('Tournament #'+str(h['tournament_id'])+' · Round 1 Elo') if tournament_vote else ('Blind Audition' if h['mode']=='blind' else 'Standard Vote')
         href='/tournament_stats?tournament='+str(h['tournament_id']) if tournament_vote else '/history'
-        event('tournament' if tournament_vote else h['mode'],h['id'],h['created_at'],title,('Half Elo' if h.get('rating_weight')==.5 else 'Full Elo') if tournament_vote else 'Vote recorded',href,
+        event('tournament' if tournament_vote else h['mode'],h['id'],h['created_at'],title,'Elo' if tournament_vote else 'Vote recorded',href,
               [vote_participant(h,'winner'),vote_participant(h,'loser')])
     trivia_total=conn.execute('SELECT COUNT(*) FROM trivia_rounds WHERE completed_at IS NOT NULL').fetchone()[0]
     rounds=[dict(r) for r in conn.execute('SELECT * FROM trivia_rounds WHERE completed_at IS NOT NULL ORDER BY completed_at DESC,id DESC LIMIT 10')]

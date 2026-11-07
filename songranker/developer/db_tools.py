@@ -33,10 +33,13 @@ def parser():
     restore = commands.add_parser('restore', help='Validate/migrate a SQLite backup into a new recovery file')
     restore.add_argument('--backup', required=True)
     restore.add_argument('--output', required=True)
+    tag_elo = commands.add_parser('tag-elo', help='Full-weight tag first-round Elo in a new verified database')
+    tag_elo.add_argument('--db', default=default_db)
+    tag_elo.add_argument('--output', required=True)
     compare = commands.add_parser('compare', help='Reconcile all stored values, view results and ID high-water marks')
     compare.add_argument('--before', required=True)
     compare.add_argument('--after', required=True)
-    for command in (audit_parser, export_parser, build, restore, compare):
+    for command in (audit_parser, export_parser, build, restore, compare, tag_elo):
         command.add_argument('--report', help='Also save the JSON report to a new file')
     return result
 
@@ -60,7 +63,13 @@ def run(args):
     output = Path(args.output).resolve()
     if output.exists():
         raise DatabaseValidationError('Output already exists; choose a new filename.')
-    if args.command == 'restore':
+    if args.command == 'tag-elo':
+        from songranker.storage.database import promote_tag_tournament_elo
+        with tempfile.TemporaryDirectory(dir=output.parent, prefix='.tag_elo_') as folder:
+            candidate = prepare_candidate(args.db, Path(folder) / 'candidate.db')
+            promote_tag_tournament_elo(candidate)
+            publish(candidate, output)
+    elif args.command == 'restore':
         with tempfile.TemporaryDirectory(dir=output.parent, prefix='.restore_') as folder:
             candidate = prepare_candidate(args.backup, Path(folder) / 'candidate.db')
             publish(candidate, output)

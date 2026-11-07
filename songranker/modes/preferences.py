@@ -348,7 +348,7 @@ def save_tournament_preference(conn, tournament, match, winner, loser):
         snapshots,
         tournament_id=match["tournament_id"],
         tournament_match_id=match["id"],
-        weight=tournament["elo_weight"],
+        weight=1,
     )
 
 

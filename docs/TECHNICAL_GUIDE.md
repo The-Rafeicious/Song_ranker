@@ -177,8 +177,7 @@ expected(A) = 1 / (1 + 10 ** ((rating(B) - rating(A)) / scale))
 new(A)      = rating(A) + 32 * influence * (actual(A) - expected(A))
 ```
 
-`influence` is 1 for ordinary votes and whole-library tournament first rounds;
-it is 0.5 for tag first rounds. Artist and album brackets never create preference
+`influence` is 1 for ordinary votes and both global and tag tournament first rounds. Artist and album brackets never create preference
 events or contribute Elo confidence/exposure. Later rounds, bronze
 playoffs and points-only brackets do not create preference events. There is no
 high-K placement stage, forced rating range or health-based rating adjustment.
@@ -186,7 +185,7 @@ high-K placement stage, forced rating range or health-based rating adjustment.
 The IQR uses linearly interpolated quartiles, excluding zero-evidence songs.
 Fewer than four tested songs use scale 400. Completed eligible first-round
 tournament appearances count once for scale maturity, including scoped events;
-their exchange budget remains halved. Public evidence is seeded ordinary matches
+their exchange budget is the full K32. Public evidence is seeded ordinary matches
 plus effective ordinary and tournament appearances. Each independent stream
 uses only its own tested ratings and completed appearances. No catalogue-wide
 mean or rank rescaling moves ratings without a saved result. The blend is bounded
@@ -220,8 +219,7 @@ streams, with equal track means; they do not establish causal visibility bias.
 `elo_history.source_sql` supplies active corrected ordinary and first-round
 preference events. `catalog.voting_records` pools weighted wins/losses and
 Standard/Blind evidence, with `ordinary`, `tournament` and `raw` breakdowns.
-A full win plus a half-weight loss gives 1 / 1.5 = 66.7%. Raw match counts remain
-two. Stored ordinary `matches_played` and compatibility views retain their
+Each accepted event counts once: one win and one loss gives 1 / 2 = 50%. Stored ordinary `matches_played` and compatibility views retain their
 meaning; `elo_matches_played` is the combined raw count.
 
 Selectors, Overall preference confidence, minimum rate samples and mode
@@ -958,7 +956,7 @@ The shared map holds each result for 3.5 seconds and fills the available space b
 
 ### Tournament competition and local reports (V5.5.10.2)
 
-Library and tag tournament results have competition weight 1, and artist/album brackets zero. Tag first-round Elo remains half-weight. Local results cannot affect tournament competition achievements or Overall values, evidence, appearances or calibration. Overall calibration version 9 refreshes the changed policy. Saved points, matches, replay data and Elo are unchanged.
+Library and tag tournament results have competition weight 1, and artist/album brackets zero. Tag first-round Elo has full weight. Local results cannot affect tournament competition achievements or Overall values, evidence, appearances or calibration. Overall calibration version 9 refreshes the changed policy. Saved points, matches, replay data and Elo are unchanged.
 
 `/tournament_stats` contains only library/tag brackets, including its activity counts and archives. Old selected-local-bracket links redirect to `/tournament_local_stats`, filtered by saved scope. Direct bracket workspaces remain valid for every scope and link back to the appropriate report.
 
@@ -1225,3 +1223,15 @@ missing-evidence counts. Neither stale counters nor manual ratings make unplayed
 songs eligible. Global catalogue collection averages retain their existing scope;
 this change does not write results or recompute Elo. All summaries still read one
 caller-owned snapshot, without hydrating complete detailed reports.
+
+### v5.9.6 tag first-round Elo
+
+Schema 23 permits full tag first-round weights. Startup under the maintenance gate
+archives the pre-change database, promotes tag event/bracket weights from 0.5 to 1,
+and replays public/independent Elo, peaks and evidence in event order. Corrections,
+voids, manual overrides, dates, bracket outcomes and points remain intact. Repeating
+the operation does nothing after success. No scoring-update labels are added.
+
+Offline: `python -m songranker.developer.db_tools tag-elo --db INPUT.db --output OUTPUT.db`.
+This writes a new verified copy; input databases and tracked SQL backups are never
+replaced. The normal launcher applies the adjustment to the active database once.
