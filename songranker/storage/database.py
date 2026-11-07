@@ -362,3 +362,43 @@ def initialize_database(filename, sql_backup=None):
                 return 'existing'
             raise
     return 'restored' if restored else 'created'
+
+
+def promote_tag_tournament_elo(filename):
+    """Back up, promote historical tag first rounds to full weight and replay once.
+
+    Caller drains application connections. Outcomes, dates, corrections, bracket
+    points and manual overrides stay intact; no history annotations are added.
+    Half weights mark pending work, so retries after success are a no-op.
+    """
+    from songranker.storage.database_io import create_backup, validate
+    from songranker.storage.preference_state import rebuild_preference_ratings
+    path = Path(filename).resolve(strict=True)
+    conn = sqlite3.connect(path, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute('PRAGMA foreign_keys=ON')
+    try:
+        conn.execute('BEGIN IMMEDIATE')
+        brackets = conn.execute("SELECT id FROM tournaments WHERE scope_type='tag' AND elo_policy_version=1 AND elo_weight=.5").fetchall()
+        events = conn.execute("""SELECT e.id FROM preference_events e JOIN tournaments t ON t.id=e.tournament_id
+            WHERE e.origin='tournament' AND e.rating_weight=.5 AND t.scope_type='tag'""").fetchall()
+        if not brackets and not events:
+            conn.rollback()
+            return None
+        cutoff = conn.execute('SELECT cutoff_event_id FROM preference_replay_state WHERE id=1').fetchone()[0]
+        if any(row['id'] <= cutoff for row in events):
+            raise ValueError('Tag Elo history precedes its replay baseline; restore a complete history before adjusting it.')
+        backup = create_backup(path, 'pre_tag_elo')
+        conn.execute("UPDATE tournaments SET elo_weight=1 WHERE scope_type='tag' AND elo_policy_version=1 AND elo_weight=.5")
+        conn.execute("""UPDATE preference_events SET rating_weight=1 WHERE origin='tournament' AND rating_weight=.5
+            AND tournament_id IN (SELECT id FROM tournaments WHERE scope_type='tag')""")
+        if events:
+            rebuild_preference_ratings(conn)
+        validate(conn)
+        conn.commit()
+        return dict(events=len(events), backup=str(backup))
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()

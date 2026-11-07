@@ -92,10 +92,11 @@ def init_db():
 
 def activate_elo_policy():
     """Back up and activate adaptive Elo after startup database reconciliation."""
-    from songranker.storage.database import activate_adaptive_elo, retire_selective_tournament_elo
+    from songranker.storage.database import activate_adaptive_elo, retire_selective_tournament_elo, promote_tag_tournament_elo
     with gate.maintenance():
         report = activate_adaptive_elo(DB_NAME)
         scope_report = retire_selective_tournament_elo(DB_NAME)
+        promote_tag_tournament_elo(DB_NAME)
     if scope_report:
         app.logger.warning("Artist/album tournament Elo retired: %s; rollback backup: %s",
                            scope_report["events"], scope_report["backup"])

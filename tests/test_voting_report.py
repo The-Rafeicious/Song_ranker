@@ -138,7 +138,7 @@ class VotingReportTests(unittest.TestCase):
         self.assertEqual(report["history_total"], 2)
         self.assertTrue(all(r["mode"] == "blind" for r in report["history"]))
 
-    def test_half_weight_tournament_match_still_qualifies_both_tracks(self):
+    def test_old_tag_bracket_new_match_has_full_weight_and_qualifies_both_tracks(self):
         self.conn.execute(
             "INSERT INTO tournaments(id,size,scope_type,scope_id,elo_policy_version,elo_weight) VALUES(1,8,'tag',1,1,0.5)"
         )
@@ -156,11 +156,12 @@ class VotingReportTests(unittest.TestCase):
         report = build_voting_stats(self.conn, history_origin="tournament")
         self.assertEqual(report["distribution"]["rated"], 2)
         self.assertEqual(report["distribution"]["excluded"], 4)
-        self.assertEqual(report["coverage"]["avg_appearances"], 0.5)
+        self.assertEqual(report["coverage"]["avg_appearances"], 1)
         self.assertEqual(report["coverage"]["milestone"]["target"], 1)
         self.assertEqual(report["coverage"]["milestone"]["reached"], 2)
         self.assertEqual(report["history_total"], 1)
-        self.assertEqual(report["elo_summary"]["half"], 1)
+        self.assertEqual(report["elo_summary"]["half"], 0)
+        self.assertEqual(report["elo_summary"]["full"], 1)
 
     def test_page_has_new_summaries_and_one_useful_disclosure(self):
         self.vote()

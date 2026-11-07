@@ -51,7 +51,7 @@
   {{pulse(pulse_data)}}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-elo"><div class="section-head"><h2 class="tournament" id="ts-elo">First-round Elo</h2><a class="tournament" href="/history?origin=tournament">Match history ↗</a></div>
-    <dl class="joined-metrics mode-stats-metrics">{{figure('Full influence',tournament_elo.full)}}{{figure('Half influence',tournament_elo.half)}}{{figure('Elo tracks involved',tournament_elo.tracks)}}</dl>
+    <dl class="joined-metrics mode-stats-metrics">{{figure('First-round Elo matches',tournament_elo.total)}}{{figure('Elo tracks involved',tournament_elo.tracks)}}</dl>
 
     <p class="report-facts">{{tournament_elo.total}} Elo matches · <span class="standard">{{tournament_elo.standard}} Non-blind</span> · <span class="blind">{{tournament_elo.blind}} Blind</span></p>
   </section>

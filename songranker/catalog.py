@@ -202,6 +202,7 @@ def summarize_votes(records):
         """
         rows = list(rows)
         totals = {key: sum(record.get(key, 0) for record in rows) for key in keys}
+        totals = {key: int(value) if value == int(value) else value for key, value in totals.items()}
         totals.update(
             wins=totals["standard_wins"] + totals["blind_wins"],
             losses=totals["standard_losses"] + totals["blind_losses"],

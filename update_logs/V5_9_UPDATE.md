@@ -143,3 +143,10 @@
 - Changed the shared voting accent to periwinkle #a5b4fc, complementing Non-blind
   orange and Blind teal across headings, controls, panels and glows.
 - Retained the existing panel intensity and both voting sub-mode colours.
+
+## v5.9.6 — Full tag tournament Elo
+
+- Tag tournament first rounds now use the same full Elo and one-match evidence as global first rounds.
+- Startup backs up and replays historical half-weight tag first rounds once, preserving outcomes, points and dates without history labels.
+- Removed half/full influence panels and the duplicate weighted match total; match counts display as whole numbers.
+- Offline script: `python -m songranker.developer.db_tools tag-elo --db INPUT.db --output OUTPUT.db` produces a new adjusted database without replacing the input.

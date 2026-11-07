@@ -1,6 +1,6 @@
 # V5 database dictionary
 
-**Generation-3 competition · schema 21 · app v5.3.3**
+**Generation-3 competition · schema 23 · app v5.9.6**
 
 The active default is `data/song_ranker_v3.db`. The schema registry is
 [data/schema.sql](../data/schema.sql); this dictionary is derived from it.
@@ -23,14 +23,14 @@ do not. See [UPGRADES.md](UPGRADES.md) for the catalogue whitelist and backup.
 ## Units and privacy
 
 - `songs.elo_score` and independent ratings start at 1200. Preference influence
-  is 1 or 0.5; it is already applied to saved rating changes.
+  is 1 for ordinary and global/tag first-round votes. Historical 0.5 weights remain readable for lossless transport; startup promotes tag weights and replays their changes.
 - `song_details.added_at`, competition/source epoch times are seconds
   since Unix epoch. Imported catalogue age is zero; future inserts are timestamped.
 - Preview `preview_bad`, `preview_note` and `flagged_at` never appear in public
   catalogue/game/profile payloads. They do appear in authenticated analysis
   downloads and full database exports/backups.
 - Ordinary stored match counters and raw event totals remain distinct from
-  weighted effective appearances. Do not multiply saved Elo deltas by influence again.
+  combined Elo appearances, including eligible first rounds. Do not multiply saved Elo deltas again.
 - `competition_state.migration_report` is JSON with source schema/name, archive
   name/hash, transferred counts and reset scope. It contains no old match results.
 
