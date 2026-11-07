@@ -150,3 +150,9 @@
 - Startup backs up and replays historical half-weight tag first rounds once, preserving outcomes, points and dates without history labels.
 - Removed half/full influence panels and the duplicate weighted match total; match counts display as whole numbers.
 - Offline script: `python -m songranker.developer.db_tools tag-elo --db INPUT.db --output OUTPUT.db` produces a new adjusted database without replacing the input.
+
+## v5.9.6.1 — Head-to-head Vibe similarity
+
+- After a successful vote, show the existing Vibe similarity percentage and shared-map coverage by VS, before Elo/points appear.
+- Keep the badge throughout ordinary and tournament result stages; shared-map gaps leave it absent. Blind matches show it only after voting.
+- Reuse the fixed public Vibe metric and result pacing, including Quick, reduced-motion and round cancellation.

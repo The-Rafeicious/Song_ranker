@@ -31,6 +31,21 @@ class TournamentPolicyTests(unittest.TestCase):
         self.assertEqual(result.status_code,200,result.json)
         return result.json
 
+    def test_tournament_similarity_is_available_for_elo_and_points_only_votes(self):
+        from songranker.storage.vibe_state import MAPS
+        for key in [m[0] for m in MAPS[:2]]:
+            self.conn.execute("UPDATE song_vibe_positions SET status='placed',updated_at=1,x=.2,y=-.1 WHERE map_id=?",(key,))
+        self.conn.commit()
+        for scope in ['global','tag','artist','album']:
+            data=self.generate(scope)
+            self.assertNotIn('match_similarity',data)
+            m=data['matches'][0]
+            payload=dict(tournament_id=data['tournament_id'],match_id=m['id'],winner_id=m['song1_id'],loser_id=m['song2_id'])
+            first=self.client.post('/api/tournament_vote',json=payload)
+            self.assertEqual(first.status_code,200,first.json)
+            self.assertEqual(first.json['match_similarity'],dict(similarity=100,shared_maps=2,total_maps=4))
+            self.assertEqual(self.client.post('/api/tournament_vote',json=payload).json,first.json)
+
     def test_scopes_have_correct_exchange_and_points_only_retries(self):
         for scope,weight in [('artist',0),('album',0),('tag',1),('global',1)]:
             data=self.generate(scope);self.assertEqual(data['elo_weight'],weight)

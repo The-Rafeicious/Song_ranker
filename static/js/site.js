@@ -373,6 +373,7 @@
       timer: null,
       fadeTimer: null,
       stageTimer: null,
+      scoreTimer: null,
       token: 0,
       closed: false,
     };
@@ -380,9 +381,11 @@
     cancelLater(roundTransition.timer);
     cancelLater(roundTransition.fadeTimer);
     cancelLater(roundTransition.stageTimer);
+    cancelLater(roundTransition.scoreTimer);
     roundTransition.timer = null;
     roundTransition.fadeTimer = null;
     roundTransition.stageTimer = null;
+    roundTransition.scoreTimer = null;
     roundTransition.token++;
   }
   function scheduleRoundTransition(
@@ -444,8 +447,10 @@
         if (id) loadBracket(id, false).catch(error => toast(error.message));
         return;
       }
-      if (page === "standard" && revealed)
+      if (page === "standard" && revealed) {
+        showGameScores();
         scheduleRoundTransition(null, nextMatch);
+      }
       if (page === "tournament_play" && bracketReveal)
         scheduleBracketReveal(null);
     }
@@ -836,13 +841,16 @@
   function gameCard(s, i) {
     const winner = i === gameWinner,
       overlay = revealed
-        ? `<div class="score-reveal elo-reveal ${winner ? "score-win" : "score-loss"}" role="status"><small>Elo</small><div class="score-values"><span class="score-before">${Math.round(gameOld[i])}</span><span class="score-arrow" aria-hidden="true">→</span><strong class="elo-score" id="elo-${i}">${Math.round(gameOld[i])}</strong></div><b class="elo-delta ${winner ? "" : "loss"}" id="delta-${i}">${winner ? "↑ +" : "↓ "}${Math.round(gameChanges[i])}</b></div>`
+        ? `<div class="score-reveal elo-reveal ${winner ? "score-win" : "score-loss"}" ${gameScoresVisible ? "" : "hidden"} role="status"><small>Elo</small><div class="score-values"><span class="score-before">${Math.round(gameOld[i])}</span><span class="score-arrow" aria-hidden="true">→</span><strong class="elo-score" id="elo-${i}">${Math.round(gameOld[i])}</strong></div><b class="elo-delta ${winner ? "" : "loss"}" id="delta-${i}">${winner ? "↑ +" : "↓ "}${Math.round(gameChanges[i])}</b></div>`
         : "";
     return `<article class="game-card dashboard-surface ${revealed ? (winner ? "winner" : "loser") : ""}">${matchCover(s, "game-audio-" + i, blind && !revealed, overlay)}<h2>${blind && !revealed ? "Track " + "AB"[i] : `<a class="song" title="${esc(s.title)}" href="${urlFor("songs", s)}">${esc(s.title)}</a>`}</h2><div class="game-meta">${blind && !revealed ? "" : gameMetadata(s)}</div><button class="btn primary vote-btn" data-vote="${i}" ${revealed ? "disabled" : ""}>${revealed ? (winner ? "✓ Winner" : "Runner-up") : "Vote for " + "AB"[i]}</button></article>`;
   }
   let gameWinner = 0,
     gameChanges = [0, 0],
-    gameOld = [0, 0];
+    gameOld = [0, 0],
+    gameSimilarity = null,
+    gameScoresVisible = true,
+    gameResultHold = RESULT_HOLD_MS;
   function holdGameHeight() {
     const previous = main.style.minHeight;
     main.style.minHeight = main.getBoundingClientRect().height + "px";
@@ -859,7 +867,7 @@
       pageTone("voting");
       document.body.dataset.voteMode=blind ? "blind" : "standard";
       document.body.classList.add("game-page");
-      main.innerHTML = `<div class="game-head" style="--mode-color:var(--voting)"><h1>${blind ? "Blind Audition" : "Which track is better?"}</h1><div class="pill-nav" aria-label="Voting mode"><button class="pill ${!blind ? "active" : ""}" data-mode="standard" ${revealed ? "disabled" : ""}>Non-blind</button><button class="pill ${blind ? "active" : ""}" data-mode="blind" ${revealed ? "disabled" : ""}>Blind</button></div></div><div class="matchup">${gameCard(pair[0], 0)}<span class="vs-circle">VS</span>${gameCard(pair[1], 1)}</div>${revealed ? roundProgress() : ""}`;
+      main.innerHTML = `<div class="game-head" style="--mode-color:var(--voting)"><h1>${blind ? "Blind Audition" : "Which track is better?"}</h1><div class="pill-nav" aria-label="Voting mode"><button class="pill ${!blind ? "active" : ""}" data-mode="standard" ${revealed ? "disabled" : ""}>Non-blind</button><button class="pill ${blind ? "active" : ""}" data-mode="blind" ${revealed ? "disabled" : ""}>Blind</button></div></div><div class="matchup">${gameCard(pair[0], 0)}${window.GameplayUI.matchCenter(revealed ? gameSimilarity : null)}${gameCard(pair[1], 1)}</div>${revealed ? roundProgress(gameResultHold) : ""}`;
       $$("[data-mode]").forEach((b) =>
         b.setAttribute(
           "aria-pressed",
@@ -941,17 +949,39 @@
       ...s,
       elo_score: (j === i ? result.winner : result.loser).elo_score,
     }));
+    gameSimilarity = result.match_similarity;
+    const similarityWait = similarityDelay(gameSimilarity);
+    gameScoresVisible = !similarityWait;
+    gameResultHold = (flow?.duration("pairResult") || RESULT_HOLD_MS) + similarityWait;
     revealed = true;
     window.PreviewPlayback?.hold();
     renderGame();
-    pair.forEach((s, j) =>
-      animateScore($("#elo-" + j), gameOld[j], s.elo_score),
-    );
-    scheduleRoundTransition("game-audio-" + i, nextMatch);
+    scheduleRoundTransition("game-audio-" + i, nextMatch, gameResultHold);
+    if (similarityWait) {
+      const token = roundTransition.token;
+      roundTransition.scoreTimer = later(() => {
+        if (token !== roundTransition.token || roundTransition.closed) return;
+        roundTransition.scoreTimer = null;
+        showGameScores();
+      }, similarityWait);
+    } else showGameScores();
     const mode = blind ? "blind" : "standard";
     flow?.prepare("vote:" + mode, (signal) =>
       api("/api/matchup?mode=" + mode, undefined, undefined, { signal }),
     );
+  }
+  function similarityDelay(comparison) {
+    return Number.isFinite(comparison?.similarity) && comparison.shared_maps > 0 &&
+      !matchMedia("(prefers-reduced-motion: reduce)").matches
+      ? flow?.duration("similarity") || 700 : 0;
+  }
+  function showGameScores() {
+    gameScoresVisible = true;
+    pair.forEach((s, j) => {
+      const score = $("#elo-" + j);
+      if (score) score.closest(".score-reveal").hidden = false;
+      animateScore(score, gameOld[j], s.elo_score);
+    });
   }
   let matchLoading = false;
   async function nextMatch() {
@@ -2660,7 +2690,7 @@
     renderBracketMatch();
   }
   function bracketOverlay(s, i) {
-    if (!bracketReveal) return "";
+    if (!bracketReveal || bracketReveal.phase === "similarity") return "";
     const winner = bracketReveal.winner === s.id;
     if (bracketReveal.phase === "elo") {
       const side = winner ? bracketReveal.elo.winner : bracketReveal.elo.loser,
@@ -2694,35 +2724,40 @@
     const saved = bracketReveal;
     if (!saved) return;
     scheduleRoundTransition(audioId, nextBracketMatch, saved.hold);
-    if (!saved.elo || saved.phase !== "points") return;
     const token = roundTransition.token;
-    roundTransition.stageTimer = later(() => {
-      if (
-        token !== roundTransition.token ||
-        bracketReveal !== saved ||
-        roundTransition.closed
-      )
-        return;
-      roundTransition.stageTimer = null;
-      saved.phase = "elo";
-      [bracketState.active.song1_id, bracketState.active.song2_id].forEach(
-        (id, i) => {
-          const cover = $$(".matchup .match-cover")[i],
-            old = cover?.querySelector(".score-reveal"),
-            track = bracketState.tracks.get(id);
-          if (!old || !track) return;
-          old.outerHTML = bracketOverlay(track, i);
+    const current = () => token === roundTransition.token && bracketReveal === saved && !roundTransition.closed;
+    const updateOverlays = () => {
+      [bracketState.active.song1_id, bracketState.active.song2_id].forEach((id, i) => {
+        const cover = $$(".matchup .match-cover")[i], track = bracketState.tracks.get(id);
+        if (!cover || !track) return;
+        const old = cover.querySelector(".score-reveal"), html = bracketOverlay(track, i);
+        if (old) old.outerHTML = html;
+        else cover.insertAdjacentHTML("beforeend", html);
+        if (saved.phase === "elo") {
           const side = id === saved.winner ? saved.elo.winner : saved.elo.loser;
-          animateScore(
-            $("#bracket-elo-" + i),
-            side.elo_before,
-            side.elo_score,
-            0,
-            () => bracketReveal === saved,
-          );
-        },
-      );
-    }, saved.pointsDelay);
+          animateScore($("#bracket-elo-" + i), side.elo_before, side.elo_score, 0, current);
+        }
+      });
+    };
+    const scheduleElo = () => {
+      if (!saved.elo || saved.phase !== "points") return;
+      roundTransition.stageTimer = later(() => {
+        if (!current()) return;
+        roundTransition.stageTimer = null;
+        saved.phase = "elo";
+        updateOverlays();
+      }, saved.pointsDelay);
+    };
+    if (saved.phase === "similarity") {
+      roundTransition.scoreTimer = later(() => {
+        if (!current()) return;
+        roundTransition.scoreTimer = null;
+        saved.phase = "points";
+        updateOverlays();
+        animateScore($("#bracket-points"), 0, Number(saved.points), 2, current);
+        scheduleElo();
+      }, saved.similarityWait);
+    } else scheduleElo();
   }
   function renderBracketMatch() {
     const { tournament, active, tracks, matches } = bracketState,
@@ -2748,7 +2783,7 @@
               : remaining === 8
                 ? "Quarter-finals"
                 : "Round " + active.round_number;
-    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
+    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}${window.GameplayUI.matchCenter(bracketReveal?.similarity)}${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
     attachPlayers();
     window.PreviewPlayback?.preloadPair([
       $("#bracket-audio-0"),
@@ -2790,19 +2825,22 @@
           (side) =>
             Number.isFinite(side.elo_before) && Number.isFinite(side.elo_score),
         );
+    const similarityWait = similarityDelay(result.match_similarity);
     bracketReveal = {
+      similarity: result.match_similarity,
+      similarityWait,
       winner,
       points: result.points_awarded,
       elo: eligible ? receipt : null,
-      phase: "points",
-      hold: eligible
+      phase: similarityWait ? "similarity" : "points",
+      hold: (eligible
         ? flow?.duration("tournamentFirst") || 7500
-        : flow?.duration("pairResult") || RESULT_HOLD_MS,
+        : flow?.duration("pairResult") || RESULT_HOLD_MS) + similarityWait,
       pointsDelay: flow?.duration("tournamentPoints") || 2800,
     };
     window.PreviewPlayback?.hold();
     renderBracketMatch();
-    animateScore($("#bracket-points"), 0, Number(result.points_awarded), 2);
+    if (!similarityWait) animateScore($("#bracket-points"), 0, Number(result.points_awarded), 2);
     scheduleBracketReveal("bracket-audio-" + index);
   }
   async function completeBracket() {

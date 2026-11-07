@@ -111,3 +111,18 @@ def compare_positions(a,b):
     mean_squared=(sum(sum((x-y)**2 for x,y in zip(a[key],b[key])) for key in shared)/len(shared)) if shared else None
     return dict(similarity=100*math.exp(-mean_squared/(2*WIDTH**2)) if mean_squared is not None else None,
                 shared_maps=len(shared),map_ids=shared,coverage=len(shared)/len(MAPS))
+
+
+def match_similarity(conn, first_id, second_id):
+    """Read the shared public Vibe metric for an accepted head-to-head result.
+
+    Return no badge data when the pair has no shared placed maps. Missing and N/A
+    maps never imply a centre point or a fabricated zero-percent similarity.
+    """
+    from songranker.vibe_maps import song_profiles
+    profiles = song_profiles(conn, (first_id, second_id))
+    result = compare_profiles(profiles[first_id], profiles[second_id])
+    if not result['shared_maps']:
+        return None
+    return dict(similarity=round(result['similarity'], 1),
+                shared_maps=result['shared_maps'], total_maps=len(MAPS))

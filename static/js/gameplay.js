@@ -141,7 +141,15 @@ window.GameplayUI = (() => {
       });
     }
   });
-  return Object.freeze({ select, close });
+  function matchCenter(comparison) {
+    const score = comparison?.similarity, shared = comparison?.shared_maps,
+      total = comparison?.total_maps;
+    const available = Number.isFinite(score) && score >= 0 && score <= 100 &&
+      Number.isInteger(shared) && shared > 0 && Number.isInteger(total) && total >= shared;
+    const badge = available ? `<div class="match-similarity" role="status" title="Vibe Map closeness across shared placed maps"><small>Vibe similarity</small><strong>${score.toFixed(1).replace(/\.0$/, "")}%</strong><span>${shared}/${total} maps</span></div>` : "";
+    return `<div class="match-center"><span class="vs-circle">VS</span>${badge}</div>`;
+  }
+  return Object.freeze({ select, close, matchCenter });
 })();
 
 /* Shared result pacing and one speculative JSON question. No scoring or audio. */
@@ -152,6 +160,7 @@ window.RoundFlow = (() => {
     clock = () => performance.now();
   const durations = {
     pairResult: [4500, 2200],
+    similarity: [700, 250],
     tournamentPoints: [2800, 1600],
     tournamentFirst: [7500, 4400],
     triviaResult: [5500, 2800],
