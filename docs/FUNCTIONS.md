@@ -1085,17 +1085,17 @@ Album-only Shelves exclusions, preserved rounds and lossless schema upgrades.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [AlbumShelvesTests.client](../tests/test_album_shelves.py#L22) | `self` | Create the test HTTP client with the requested authentication state. |
-| [AlbumShelvesTests.edit](../tests/test_album_shelves.py#L27) | `self, flag, **extra` | Edit. |
-| [AlbumShelvesTests.test_flag_only_excludes_shelves_and_can_be_reversed](../tests/test_album_shelves.py#L30) | `self` | Verify flag only excludes shelves and can be reversed. |
-| [AlbumShelvesTests.test_saved_round_can_still_be_graded_after_exclusion](../tests/test_album_shelves.py#L47) | `self` | Verify saved round can still be graded after exclusion. |
-| [AlbumShelvesTests.test_new_rounds_use_other_albums_and_old_clients_preserve_flag](../tests/test_album_shelves.py#L60) | `self` | Verify new rounds use other albums and old clients preserve flag. |
-| [AlbumShelvesTests.test_excluded_history_is_hidden_everywhere_and_returns_when_included](../tests/test_album_shelves.py#L73) | `self` | Verify excluded history is hidden everywhere and returns when included. |
-| [AlbumShelvesTests.test_new_trivia_skips_excluded_album_name_but_preserves_album](../tests/test_album_shelves.py#L105) | `self` | Verify new trivia skips excluded album name but preserves album. |
-| [AlbumShelvesTests.test_dedicated_bracket_page_has_missing_record_404](../tests/test_album_shelves.py#L115) | `self` | Verify dedicated bracket page has missing record 404. |
-| [AlbumShelvesTests.test_invalid_flags_are_rejected_without_changes_and_auth_is_required](../tests/test_album_shelves.py#L118) | `self` | Verify invalid flags are rejected without changes and auth is required. |
-| [AlbumShelvesTests.test_flag_survives_sql_and_lossless_export_rebuild](../tests/test_album_shelves.py#L125) | `self` | Verify flag survives sql and lossless export rebuild. |
-| [AlbumShelvesTests.test_schema_21_upgrade_and_unversioned_dump_default_to_included](../tests/test_album_shelves.py#L136) | `self` | Verify schema 21 upgrade and unversioned dump default to included. |
+| [AlbumShelvesTests.client](../tests/test_album_shelves.py#L23) | `self` | Create the test HTTP client with the requested authentication state. |
+| [AlbumShelvesTests.edit](../tests/test_album_shelves.py#L28) | `self, flag, **extra` | Edit. |
+| [AlbumShelvesTests.test_flag_only_excludes_shelves_and_can_be_reversed](../tests/test_album_shelves.py#L31) | `self` | Verify flag only excludes shelves and can be reversed. |
+| [AlbumShelvesTests.test_saved_round_can_still_be_graded_after_exclusion](../tests/test_album_shelves.py#L48) | `self` | Verify saved round can still be graded after exclusion. |
+| [AlbumShelvesTests.test_new_rounds_use_other_albums_and_old_clients_preserve_flag](../tests/test_album_shelves.py#L61) | `self` | Verify new rounds use other albums and old clients preserve flag. |
+| [AlbumShelvesTests.test_excluded_history_is_hidden_everywhere_and_returns_when_included](../tests/test_album_shelves.py#L74) | `self` | Verify excluded history is hidden everywhere and returns when included. |
+| [AlbumShelvesTests.test_new_trivia_skips_excluded_album_name_but_preserves_album](../tests/test_album_shelves.py#L106) | `self` | Verify new trivia skips excluded album name but preserves album. |
+| [AlbumShelvesTests.test_dedicated_bracket_page_has_missing_record_404](../tests/test_album_shelves.py#L116) | `self` | Verify dedicated bracket page has missing record 404. |
+| [AlbumShelvesTests.test_invalid_flags_are_rejected_without_changes_and_auth_is_required](../tests/test_album_shelves.py#L119) | `self` | Verify invalid flags are rejected without changes and auth is required. |
+| [AlbumShelvesTests.test_flag_survives_sql_and_lossless_export_rebuild](../tests/test_album_shelves.py#L126) | `self` | Verify flag survives sql and lossless export rebuild. |
+| [AlbumShelvesTests.test_schema_21_upgrade_and_unversioned_dump_default_to_included](../tests/test_album_shelves.py#L137) | `self` | Verify schema 21 upgrade and unversioned dump default to included. |
 
 ## tests/test_apple_source_columns.py
 
@@ -1152,56 +1152,56 @@ Verified imports and Singles moves: real HTTP, isolated DBs, mocked Apple only.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [apple](../tests/test_catalog_sources.py#L25) | `**changes` | Apple. |
-| [SourceFieldTests.test_content_flags_are_distinct_and_never_inferred_from_censored_titles](../tests/test_catalog_sources.py#L35) | `self` | Verify content flags are distinct and never inferred from censored titles. |
-| [SourceFieldTests.test_disc_positions_are_not_flattened_and_dates_are_not_guessed](../tests/test_catalog_sources.py#L42) | `self` | Verify disc positions are not flattened and dates are not guessed. |
-| [SourceFieldTests.test_store_urls_and_identifiers_are_validated](../tests/test_catalog_sources.py#L47) | `self` | Verify store urls and identifiers are validated. |
-| [CatalogSourceTests.client](../tests/test_catalog_sources.py#L66) | `self` | Create the test HTTP client with the requested authentication state. |
-| [CatalogSourceTests.result](../tests/test_catalog_sources.py#L71) | `self, client, track=None, query='New Song', country='gb'` | Result. |
-| [CatalogSourceTests.add](../tests/test_catalog_sources.py#L78) | `self, client, row, **data` | Add. |
-| [CatalogSourceTests.link](../tests/test_catalog_sources.py#L81) | `self, client, sid, row, **data` | Link. |
-| [CatalogSourceTests.solo](../tests/test_catalog_sources.py#L86) | `self, sid=1` | Solo; writes albums, songs. |
-| [CatalogSourceTests.move](../tests/test_catalog_sources.py#L90) | `self, client, sid, **data` | Move. |
-| [CatalogSourceTests.test_all_new_developer_routes_require_authentication](../tests/test_catalog_sources.py#L96) | `self` | Verify all new developer routes require authentication. |
-| [CatalogSourceTests.test_search_requests_a_bounded_explicit_inclusive_store_batch](../tests/test_catalog_sources.py#L102) | `self` | Verify search requests a bounded explicit inclusive store batch. |
-| [CatalogSourceTests.test_link_country_takes_precedence_and_album_results_deduplicate_ids](../tests/test_catalog_sources.py#L109) | `self` | Verify link country takes precedence and album results deduplicate ids. |
-| [CatalogSourceTests.test_invalid_country_and_invalid_source_entries_do_not_write](../tests/test_catalog_sources.py#L117) | `self` | Verify invalid country and invalid source entries do not write. |
-| [CatalogSourceTests.test_title_matches_remain_unverified_then_become_confirmed_after_linking](../tests/test_catalog_sources.py#L125) | `self` | Verify title matches remain unverified then become confirmed after linking. |
-| [CatalogSourceTests.test_signed_offer_owns_metadata_and_preserves_comma_artist_names](../tests/test_catalog_sources.py#L132) | `self` | Verify signed offer owns metadata and preserves comma artist names. |
-| [CatalogSourceTests.test_forged_and_foreign_browser_tokens_do_not_import](../tests/test_catalog_sources.py#L143) | `self` | Verify forged and foreign browser tokens do not import. |
-| [CatalogSourceTests.test_expired_offers_request_a_new_search](../tests/test_catalog_sources.py#L150) | `self` | Verify expired offers request a new search. |
-| [CatalogSourceTests.test_import_retry_is_one_song_and_one_source_observation](../tests/test_catalog_sources.py#L156) | `self` | Verify import retry is one song and one source observation. |
-| [CatalogSourceTests.test_known_collaboration_respects_commas_without_splitting_unknown_acts](../tests/test_catalog_sources.py#L164) | `self` | Verify known collaboration respects commas without splitting unknown acts. |
-| [CatalogSourceTests.test_matching_titles_need_explicit_separate_add_and_do_not_use_artist_prefixes](../tests/test_catalog_sources.py#L175) | `self` | Verify matching titles need explicit separate add and do not use artist prefixes. |
-| [CatalogSourceTests.test_multidisc_source_and_single_import_preserve_original_position](../tests/test_catalog_sources.py#L183) | `self` | Verify multidisc source and single import preserve original position. |
-| [CatalogSourceTests.test_source_only_link_does_not_change_local_metadata_scores_or_dates](../tests/test_catalog_sources.py#L190) | `self` | Verify source only link does not change local metadata scores or dates. |
-| [CatalogSourceTests.test_relink_replaces_current_source_and_same_link_retry_is_noop](../tests/test_catalog_sources.py#L197) | `self` | Verify relink replaces current source and same link retry is noop. |
-| [CatalogSourceTests.test_one_source_cannot_be_linked_to_two_current_songs](../tests/test_catalog_sources.py#L204) | `self` | Verify one source cannot be linked to two current songs. |
-| [CatalogSourceTests.test_stale_source_review_is_rejected_but_unrelated_votes_are_allowed](../tests/test_catalog_sources.py#L209) | `self` | Verify stale source review is rejected but unrelated votes are allowed. |
-| [CatalogSourceTests.test_refresh_keeps_current_single_placement_and_custom_tags](../tests/test_catalog_sources.py#L218) | `self` | Verify refresh keeps current single placement and custom tags. |
-| [CatalogSourceTests.test_refresh_source_album_cleans_only_unreferenced_empty_album_and_keeps_pending_answers](../tests/test_catalog_sources.py#L231) | `self` | Verify refresh source album cleans only unreferenced empty album and keeps pending answers. |
-| [CatalogSourceTests.test_unchanged_manual_edit_preserves_existing_artist_links_and_song_date](../tests/test_catalog_sources.py#L242) | `self` | Verify unchanged manual edit preserves existing artist links and song date. |
-| [CatalogSourceTests.test_manual_dates_are_per_song_and_invalid_input_is_atomic](../tests/test_catalog_sources.py#L249) | `self` | Verify manual dates are per song and invalid input is atomic. |
-| [CatalogSourceTests.test_single_preview_is_read_only_and_move_keeps_game_facts_and_date](../tests/test_catalog_sources.py#L258) | `self` | Verify single preview is read only and move keeps game facts and date. |
-| [CatalogSourceTests.test_song_date_precedes_source_and_album_dates_when_moving](../tests/test_catalog_sources.py#L271) | `self` | Verify song date precedes source and album dates when moving. |
-| [CatalogSourceTests.test_verified_source_date_is_carried_before_album_fallback](../tests/test_catalog_sources.py#L277) | `self` | Verify verified source date is carried before album fallback. |
-| [CatalogSourceTests.test_missing_dates_remain_unknown_and_shared_albums_are_kept](../tests/test_catalog_sources.py#L282) | `self` | Verify missing dates remain unknown and shared albums are kept. |
-| [CatalogSourceTests.test_archive_album_references_survive_a_single_move](../tests/test_catalog_sources.py#L288) | `self` | Verify archive album references survive a single move. |
-| [CatalogSourceTests.test_extension_foreign_keys_prevent_empty_album_cleanup](../tests/test_catalog_sources.py#L299) | `self` | Verify extension foreign keys prevent empty album cleanup. |
-| [CatalogSourceTests.test_single_names_do_not_merge_unrelated_same_title_tracks](../tests/test_catalog_sources.py#L306) | `self` | Verify single names do not merge unrelated same title tracks. |
-| [CatalogSourceTests.test_stale_single_review_never_moves_a_changed_song](../tests/test_catalog_sources.py#L313) | `self` | Verify stale single review never moves a changed song. |
-| [CatalogSourceTests.test_parallel_single_retries_make_one_destination](../tests/test_catalog_sources.py#L319) | `self` | Verify parallel single retries make one destination. |
-| [CatalogSourceTests.test_parallel_single_retries_make_one_destination.run](../tests/test_catalog_sources.py#L322) | `_` | Run. |
-| [CatalogSourceTests.test_album_inspection_orders_tracks_and_reports_source_unknowns_without_writes](../tests/test_catalog_sources.py#L329) | `self` | Verify album inspection orders tracks and reports source unknowns without writes. |
-| [CatalogSourceTests.test_source_history_and_dates_survive_export_rebuild_and_sql_restore](../tests/test_catalog_sources.py#L335) | `self` | Verify source history and dates survive export rebuild and sql restore. |
-| [CatalogSourceTests.test_schema12_upgrade_keeps_legacy_dates_and_source_identity_unknown](../tests/test_catalog_sources.py#L345) | `self` | Verify schema12 upgrade keeps legacy dates and source identity unknown. |
-| [CatalogSourceTests.test_reserved_source_names_fail_closed_without_discarding_extensions](../tests/test_catalog_sources.py#L359) | `self` | Verify reserved source names fail closed without discarding extensions. |
-| [CatalogSourceTests.test_new_assets_load_only_for_developer_page](../tests/test_catalog_sources.py#L366) | `self` | Verify new assets load only for developer page. |
-| [AlbumDiscTests.client](../tests/test_catalog_sources.py#L381) | `self` | Create the test HTTP client with the requested authentication state. |
-| [AlbumDiscTests.test_same_track_number_on_different_discs_and_conflicts_are_atomic](../tests/test_catalog_sources.py#L387) | `self` | Verify same track number on different discs and conflicts are atomic. |
-| [AlbumDiscTests.test_bulk_combine_discs_keeps_destination_artwork_and_saved_scores](../tests/test_catalog_sources.py#L402) | `self` | Verify bulk combine discs keeps destination artwork and saved scores. |
-| [AlbumDiscTests.test_round_uses_saved_disc_order_after_catalogue_edit](../tests/test_catalog_sources.py#L419) | `self` | Verify round uses saved disc order after catalogue edit. |
-| [AlbumDiscTests.test_schema20_sql_restore_defaults_discs_and_preserves_rounds](../tests/test_catalog_sources.py#L449) | `self` | Verify schema20 sql restore defaults discs and preserves rounds. |
+| [apple](../tests/test_catalog_sources.py#L26) | `**changes` | Apple. |
+| [SourceFieldTests.test_content_flags_are_distinct_and_never_inferred_from_censored_titles](../tests/test_catalog_sources.py#L36) | `self` | Verify content flags are distinct and never inferred from censored titles. |
+| [SourceFieldTests.test_disc_positions_are_not_flattened_and_dates_are_not_guessed](../tests/test_catalog_sources.py#L43) | `self` | Verify disc positions are not flattened and dates are not guessed. |
+| [SourceFieldTests.test_store_urls_and_identifiers_are_validated](../tests/test_catalog_sources.py#L48) | `self` | Verify store urls and identifiers are validated. |
+| [CatalogSourceTests.client](../tests/test_catalog_sources.py#L67) | `self` | Create the test HTTP client with the requested authentication state. |
+| [CatalogSourceTests.result](../tests/test_catalog_sources.py#L72) | `self, client, track=None, query='New Song', country='gb'` | Result. |
+| [CatalogSourceTests.add](../tests/test_catalog_sources.py#L79) | `self, client, row, **data` | Add. |
+| [CatalogSourceTests.link](../tests/test_catalog_sources.py#L82) | `self, client, sid, row, **data` | Link. |
+| [CatalogSourceTests.solo](../tests/test_catalog_sources.py#L87) | `self, sid=1` | Solo; writes albums, songs. |
+| [CatalogSourceTests.move](../tests/test_catalog_sources.py#L91) | `self, client, sid, **data` | Move. |
+| [CatalogSourceTests.test_all_new_developer_routes_require_authentication](../tests/test_catalog_sources.py#L97) | `self` | Verify all new developer routes require authentication. |
+| [CatalogSourceTests.test_search_requests_a_bounded_explicit_inclusive_store_batch](../tests/test_catalog_sources.py#L103) | `self` | Verify search requests a bounded explicit inclusive store batch. |
+| [CatalogSourceTests.test_link_country_takes_precedence_and_album_results_deduplicate_ids](../tests/test_catalog_sources.py#L110) | `self` | Verify link country takes precedence and album results deduplicate ids. |
+| [CatalogSourceTests.test_invalid_country_and_invalid_source_entries_do_not_write](../tests/test_catalog_sources.py#L118) | `self` | Verify invalid country and invalid source entries do not write. |
+| [CatalogSourceTests.test_title_matches_remain_unverified_then_become_confirmed_after_linking](../tests/test_catalog_sources.py#L126) | `self` | Verify title matches remain unverified then become confirmed after linking. |
+| [CatalogSourceTests.test_signed_offer_owns_metadata_and_preserves_comma_artist_names](../tests/test_catalog_sources.py#L133) | `self` | Verify signed offer owns metadata and preserves comma artist names. |
+| [CatalogSourceTests.test_forged_and_foreign_browser_tokens_do_not_import](../tests/test_catalog_sources.py#L144) | `self` | Verify forged and foreign browser tokens do not import. |
+| [CatalogSourceTests.test_expired_offers_request_a_new_search](../tests/test_catalog_sources.py#L151) | `self` | Verify expired offers request a new search. |
+| [CatalogSourceTests.test_import_retry_is_one_song_and_one_source_observation](../tests/test_catalog_sources.py#L157) | `self` | Verify import retry is one song and one source observation. |
+| [CatalogSourceTests.test_known_collaboration_respects_commas_without_splitting_unknown_acts](../tests/test_catalog_sources.py#L165) | `self` | Verify known collaboration respects commas without splitting unknown acts. |
+| [CatalogSourceTests.test_matching_titles_need_explicit_separate_add_and_do_not_use_artist_prefixes](../tests/test_catalog_sources.py#L176) | `self` | Verify matching titles need explicit separate add and do not use artist prefixes. |
+| [CatalogSourceTests.test_multidisc_source_and_single_import_preserve_original_position](../tests/test_catalog_sources.py#L184) | `self` | Verify multidisc source and single import preserve original position. |
+| [CatalogSourceTests.test_source_only_link_does_not_change_local_metadata_scores_or_dates](../tests/test_catalog_sources.py#L191) | `self` | Verify source only link does not change local metadata scores or dates. |
+| [CatalogSourceTests.test_relink_replaces_current_source_and_same_link_retry_is_noop](../tests/test_catalog_sources.py#L198) | `self` | Verify relink replaces current source and same link retry is noop. |
+| [CatalogSourceTests.test_one_source_cannot_be_linked_to_two_current_songs](../tests/test_catalog_sources.py#L205) | `self` | Verify one source cannot be linked to two current songs. |
+| [CatalogSourceTests.test_stale_source_review_is_rejected_but_unrelated_votes_are_allowed](../tests/test_catalog_sources.py#L210) | `self` | Verify stale source review is rejected but unrelated votes are allowed. |
+| [CatalogSourceTests.test_refresh_keeps_current_single_placement_and_custom_tags](../tests/test_catalog_sources.py#L219) | `self` | Verify refresh keeps current single placement and custom tags. |
+| [CatalogSourceTests.test_refresh_source_album_cleans_only_unreferenced_empty_album_and_keeps_pending_answers](../tests/test_catalog_sources.py#L232) | `self` | Verify refresh source album cleans only unreferenced empty album and keeps pending answers. |
+| [CatalogSourceTests.test_unchanged_manual_edit_preserves_existing_artist_links_and_song_date](../tests/test_catalog_sources.py#L243) | `self` | Verify unchanged manual edit preserves existing artist links and song date. |
+| [CatalogSourceTests.test_manual_dates_are_per_song_and_invalid_input_is_atomic](../tests/test_catalog_sources.py#L250) | `self` | Verify manual dates are per song and invalid input is atomic. |
+| [CatalogSourceTests.test_single_preview_is_read_only_and_move_keeps_game_facts_and_date](../tests/test_catalog_sources.py#L259) | `self` | Verify single preview is read only and move keeps game facts and date. |
+| [CatalogSourceTests.test_song_date_precedes_source_and_album_dates_when_moving](../tests/test_catalog_sources.py#L272) | `self` | Verify song date precedes source and album dates when moving. |
+| [CatalogSourceTests.test_verified_source_date_is_carried_before_album_fallback](../tests/test_catalog_sources.py#L278) | `self` | Verify verified source date is carried before album fallback. |
+| [CatalogSourceTests.test_missing_dates_remain_unknown_and_shared_albums_are_kept](../tests/test_catalog_sources.py#L283) | `self` | Verify missing dates remain unknown and shared albums are kept. |
+| [CatalogSourceTests.test_archive_album_references_survive_a_single_move](../tests/test_catalog_sources.py#L289) | `self` | Verify archive album references survive a single move. |
+| [CatalogSourceTests.test_extension_foreign_keys_prevent_empty_album_cleanup](../tests/test_catalog_sources.py#L300) | `self` | Verify extension foreign keys prevent empty album cleanup. |
+| [CatalogSourceTests.test_single_names_do_not_merge_unrelated_same_title_tracks](../tests/test_catalog_sources.py#L307) | `self` | Verify single names do not merge unrelated same title tracks. |
+| [CatalogSourceTests.test_stale_single_review_never_moves_a_changed_song](../tests/test_catalog_sources.py#L314) | `self` | Verify stale single review never moves a changed song. |
+| [CatalogSourceTests.test_parallel_single_retries_make_one_destination](../tests/test_catalog_sources.py#L320) | `self` | Verify parallel single retries make one destination. |
+| [CatalogSourceTests.test_parallel_single_retries_make_one_destination.run](../tests/test_catalog_sources.py#L323) | `_` | Run. |
+| [CatalogSourceTests.test_album_inspection_orders_tracks_and_reports_source_unknowns_without_writes](../tests/test_catalog_sources.py#L330) | `self` | Verify album inspection orders tracks and reports source unknowns without writes. |
+| [CatalogSourceTests.test_source_history_and_dates_survive_export_rebuild_and_sql_restore](../tests/test_catalog_sources.py#L336) | `self` | Verify source history and dates survive export rebuild and sql restore. |
+| [CatalogSourceTests.test_schema12_upgrade_keeps_legacy_dates_and_source_identity_unknown](../tests/test_catalog_sources.py#L346) | `self` | Verify schema12 upgrade keeps legacy dates and source identity unknown. |
+| [CatalogSourceTests.test_reserved_source_names_fail_closed_without_discarding_extensions](../tests/test_catalog_sources.py#L360) | `self` | Verify reserved source names fail closed without discarding extensions. |
+| [CatalogSourceTests.test_new_assets_load_only_for_developer_page](../tests/test_catalog_sources.py#L367) | `self` | Verify new assets load only for developer page. |
+| [AlbumDiscTests.client](../tests/test_catalog_sources.py#L382) | `self` | Create the test HTTP client with the requested authentication state. |
+| [AlbumDiscTests.test_same_track_number_on_different_discs_and_conflicts_are_atomic](../tests/test_catalog_sources.py#L388) | `self` | Verify same track number on different discs and conflicts are atomic. |
+| [AlbumDiscTests.test_bulk_combine_discs_keeps_destination_artwork_and_saved_scores](../tests/test_catalog_sources.py#L403) | `self` | Verify bulk combine discs keeps destination artwork and saved scores. |
+| [AlbumDiscTests.test_round_uses_saved_disc_order_after_catalogue_edit](../tests/test_catalog_sources.py#L420) | `self` | Verify round uses saved disc order after catalogue edit. |
+| [AlbumDiscTests.test_schema20_sql_restore_defaults_discs_and_preserves_rounds](../tests/test_catalog_sources.py#L450) | `self` | Verify schema20 sql restore defaults discs and preserves rounds. |
 
 ## tests/test_database_foundation.py
 
@@ -2011,8 +2011,8 @@ Voting report cohorts and compact rendering use saved evidence, without writes.
 | [VotingReportTests.test_global_and_voting_distribution_share_cohort_and_bands](../tests/test_voting_report.py#L94) | `self` | Verify global and voting distribution share cohort and bands. |
 | [VotingReportTests.test_unavailable_ratings_and_empty_cohorts_stay_explicit](../tests/test_voting_report.py#L110) | `self` | Verify unavailable ratings and empty cohorts stay explicit. |
 | [VotingReportTests.test_evidence_depth_and_history_filters_reconcile](../tests/test_voting_report.py#L127) | `self` | Verify evidence depth and history filters reconcile. |
-| [VotingReportTests.test_half_weight_tournament_match_still_qualifies_both_tracks](../tests/test_voting_report.py#L141) | `self` | Verify half weight tournament match still qualifies both tracks. |
-| [VotingReportTests.test_page_has_new_summaries_and_one_useful_disclosure](../tests/test_voting_report.py#L165) | `self` | Verify page has new summaries and one useful disclosure. |
+| [VotingReportTests.test_old_tag_bracket_new_match_has_full_weight_and_qualifies_both_tracks](../tests/test_voting_report.py#L141) | `self` | Verify old tag bracket new match has full weight and qualifies both tracks. |
+| [VotingReportTests.test_page_has_new_summaries_and_one_useful_disclosure](../tests/test_voting_report.py#L166) | `self` | Verify page has new summaries and one useful disclosure. |
 
 ## tests/test_voting_selection.py
 

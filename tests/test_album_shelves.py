@@ -1,4 +1,5 @@
 """Album-only Shelves exclusions, preserved rounds and lossless schema upgrades."""
+from songranker.storage.database_schema import SCHEMA_VERSION
 from pathlib import Path
 from unittest.mock import patch
 import sqlite3
@@ -147,7 +148,7 @@ class AlbumShelvesTests(unittest.TestCase):
         restored=Path(self.temp.name)/'old-restored.db';initialize_database(restored,dump);migrate(old)
         for path in (old,restored):
             with readonly(path) as conn:
-                self.assertEqual(conn.execute('PRAGMA user_version').fetchone()[0],22)
+                self.assertEqual(conn.execute('PRAGMA user_version').fetchone()[0],SCHEMA_VERSION)
                 self.assertEqual(tuple(conn.execute('SELECT id,title,shelves_excluded FROM albums').fetchone()),(42,'Grouped singles',0))
                 self.assertEqual(tuple(conn.execute('SELECT id,album_id FROM songs').fetchone()),(77,42))
                 before=capture(conn)
