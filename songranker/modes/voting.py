@@ -34,7 +34,10 @@ def api_vote():
         return jsonify(message="Submit a valid vote object."), 400
     conn = get_db_connection()
     try:
-        return jsonify(save_vote(conn, session.get("preference_owner"), data))
+        result = save_vote(conn, session.get("preference_owner"), data)
+        from songranker.modes.vibe_similarity import match_similarity
+        result["match_similarity"] = match_similarity(conn, result["winner"]["id"], result["loser"]["id"])
+        return jsonify(result)
     except PreferenceError as error:
         return _preference_error(error)
     finally:

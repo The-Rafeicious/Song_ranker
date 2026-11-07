@@ -1235,3 +1235,15 @@ the operation does nothing after success. No scoring-update labels are added.
 Offline: `python -m songranker.developer.db_tools tag-elo --db INPUT.db --output OUTPUT.db`.
 This writes a new verified copy; input databases and tracked SQL backups are never
 replaced. The normal launcher applies the adjustment to the active database once.
+
+### Post-vote head-to-head similarity
+
+Ordinary and tournament accepted-vote responses add `match_similarity`: the
+existing fixed Vibe similarity percentage with `shared_maps` and `total_maps`,
+or null when there are no shared placed maps. Missing/N/A coordinates do not
+become centre points. The metric is read-only and changes no votes, Elo or points.
+
+The shared gameplay VS badge is shown only after success. Standard pacing gives
+it a 700 ms lead before scores (250 ms in Quick); the normal score hold follows.
+Reduced motion adds no delay. The badge remains across tournament points/Elo
+phases. All phase timers share round cancellation and clear on Next/pagehide.

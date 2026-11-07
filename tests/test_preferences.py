@@ -345,6 +345,30 @@ class PreferenceTests(unittest.TestCase):
         self.assertEqual(list(self.conn.execute('SELECT * FROM elo_guess_rounds')),before)
         self.assertNotIn('guesser',special_records(self.conn)[1])
 
+    def test_http_similarity_reuses_shared_metric_only_after_accepted_vote(self):
+        from songranker.modes.vibe_similarity import compare_profiles
+        from songranker.vibe_maps import song_profiles
+        from songranker.storage.vibe_state import MAPS
+        client=services.app.test_client()
+        offered=client.get('/api/matchup?mode=blind').json
+        self.assertNotIn('match_similarity',offered)
+        a,b=[s['id'] for s in offered['songs']]
+        key=MAPS[0][0]
+        for sid,x in [(a,0),(b,.3)]:
+            self.conn.execute("UPDATE song_vibe_positions SET status='placed',updated_at=1,x=?,y=0 WHERE song_id=? AND map_id=?",(x,sid,key))
+        self.conn.commit()
+        profiles=song_profiles(self.conn,[a,b]);expected=compare_profiles(profiles[a],profiles[b])
+        result=client.post('/api/vote',json=self.payload(offered,a))
+        self.assertEqual(result.status_code,200)
+        self.assertEqual(result.json['match_similarity'],dict(similarity=round(expected['similarity'],1),shared_maps=1,total_maps=4))
+        count=self.conn.execute('SELECT COUNT(*) FROM preference_events').fetchone()[0]
+        self.assertEqual(client.post('/api/vote',json=self.payload(offered,a)).json,result.json)
+        self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM preference_events').fetchone()[0],count)
+        self.assertIsNone(client.post('/api/vote',json=self.payload(offered,a)|{'winner_id':999}).json.get('match_similarity'))
+        self.conn.execute("UPDATE song_vibe_positions SET status='not_applicable',updated_at=1,x=NULL,y=NULL");self.conn.commit()
+        next_offer=client.get('/api/matchup?mode=standard').json
+        self.assertIsNone(client.post('/api/vote',json=self.payload(next_offer)).json['match_similarity'])
+
     def test_http_receipts_owner_binding_and_admin_permissions(self):
         client=services.app.test_client();other=services.app.test_client()
         offered=client.get('/api/matchup?mode=blind')

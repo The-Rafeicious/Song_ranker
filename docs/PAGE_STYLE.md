@@ -467,3 +467,8 @@ controls may supply a multi-accent --surface-fill over the same dark base. Rank
 falloff, podium emphasis, playback halos, chart data colours and winner/loser
 states keep their purposeful scales. Voting tokens and washes always reference
 --voting rather than a copied colour.
+
+Head-to-head results show available Vibe similarity beneath VS (beside it on phones).
+The quiet Vibe-accent badge includes shared-map coverage and appears only after
+a successful vote. Scores follow a short pace-aware pause; the badge persists
+through points/Elo phases. No shared placements means no badge or extra pause.

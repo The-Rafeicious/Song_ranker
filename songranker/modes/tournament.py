@@ -213,8 +213,10 @@ def api_tournament_vote():
                 (match_id,),
             ).fetchone()
             from songranker.modes.preferences import receipt
+            from songranker.modes.vibe_similarity import match_similarity
 
             return jsonify(
+                match_similarity=match_similarity(conn, winner_id, loser_id),
                 success=True,
                 points_awarded=scored_match(dict(match),dict(tournament))["points_awarded"],
                 preference_event_id=event["id"] if event else None,
@@ -329,8 +331,10 @@ def api_tournament_vote():
                 )
 
         conn.commit()
+        from songranker.modes.vibe_similarity import match_similarity
         return jsonify(
             {
+                "match_similarity": match_similarity(conn, winner_id, loser_id),
                 "success": True,
                 "points_awarded": points,
                 "preference_event_id": event_id,
