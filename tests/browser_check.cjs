@@ -788,6 +788,38 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.setViewportSize({width:390,height:1050});await bounded(page,390,'tournament-similarity-elo',folder);
   await page.locator('.matchup').screenshot({path:folder+'/tournament-similarity-elo-phone.png'});
   await page.unroute('**/api/matchup?*');await page.unroute('**/api/vote');await page.unroute('**/api/tournaments/999');await page.unroute('**/api/tournament_vote');
+  // The saved cover and prior score reveal together after the last field, even on a miss.
+  let priorTrivia={accuracy:66.7,rounds:2}, triviaFields;
+  const freshTrivia=()=>Object.fromEntries(['title','artist','album'].map(field=>[field,{correct:null,actual:null,links:[]}]));
+  const triviaAnswers={title:matchTracks[0].title,artist:'Artist with a longer name',album:'A long album title for responsive testing'};
+  await page.route('**/api/trivia/**',async route=>{
+   const path=new URL(route.request().url()).pathname;
+   if(path.endsWith('/round'))triviaFields=freshTrivia();
+   if(path.endsWith('/field')){const field=route.request().postDataJSON().field;triviaFields[field]={correct:false,actual:triviaAnswers[field],links:[]};}
+   const completed=path.endsWith('/finish');
+   if(completed)for(const field of Object.keys(triviaFields))triviaFields[field]={correct:false,actual:triviaAnswers[field],links:[]};
+   await route.fulfill({json:{token:'cover-qa',song_id:matchTracks[0].id,audio_url:'/tag-test-audio.wav',rules_version:1,streak_rule:'any',album_available:true,started:!path.endsWith('/round'),paused:false,elapsed:0,completed,round_points:0,score:0,streak:0,high_score:0,high_streak:0,fields:triviaFields,...(completed?{game_over:true,cover_url:'/vibe-test-art.svg',previous_trivia:priorTrivia}:{})}});
+  });
+  await page.setViewportSize({width:1365,height:1050});await page.goto(base+'/trivia');await page.locator('#trivia-start').waitFor();
+  assert.ok(await page.locator('#trivia-cover').isHidden());assert.ok(await page.locator('#trivia-accuracy').isHidden());
+  await page.locator('#trivia-start').click();
+  for(const field of ['title','artist','album']){
+   await page.locator('#guess-'+field).fill('Wrong answer');await page.locator('#guess-'+field).press('Enter');
+   await page.locator('#guess-'+field+'[data-graded]').waitFor();
+   if(field!=='album'){assert.ok(await page.locator('#trivia-cover').isHidden());assert.ok(await page.locator('#trivia-accuracy').isHidden());}
+  }
+  await page.locator('#trivia-accuracy').waitFor();assert.match(await page.locator('#trivia-accuracy').textContent(),/66\.7%/);
+  assert.ok(await page.locator('#trivia-cover').isVisible());assert.match(await page.locator('#trivia-result').textContent(),/Streak finished/);
+  await page.locator('#trivia-accuracy').evaluate(async node=>{await Promise.allSettled(node.getAnimations().map(a=>a.finished));});
+  for(const width of [1365,390]){
+   await page.setViewportSize({width,height:1050});await bounded(page,width,'trivia-cover-score',folder);
+   const boxes=await page.locator('.trivia-art').evaluate(root=>({cover:root.querySelector('img').getBoundingClientRect().toJSON(),score:root.querySelector('.score-reveal').getBoundingClientRect().toJSON()}));
+   assert.ok(boxes.score.left>=boxes.cover.left&&boxes.score.right<=boxes.cover.right&&boxes.score.bottom<=boxes.cover.bottom,'Score overlay stays inside cover');
+   await page.locator('.trivia-stage').screenshot({path:folder+'/trivia-cover-score-'+width+'.png'});
+  }
+  priorTrivia=null;await page.goto(base+'/trivia');await page.locator('#trivia-start').click();await page.locator('#trivia-finish').click();
+  await page.locator('#trivia-cover').waitFor();assert.ok(await page.locator('#trivia-accuracy').isHidden(),'First attempts have no prior overlay');
+  await page.unroute('**/api/trivia/**');
   assert.deepEqual(errors,[]);console.log('Multi-disc Shelves: hidden positions, one shelf per album, disc-first perfect grade, responsive reveal and history passed.');console.log('Vibe Map browser integration passed: saves, manual Finish, clean results, Next song, centred card, 3+2 home, read-only stats, four all-song heatmaps, compact in-page song radar, metadata links, two matches, mouse/keyboard activation, four profile cards above Overall, compact responsive map rows, Home library maps and consistency banner, Global summary and three collection ranking categories, 320–1365 px.');
  }finally{await browser.close();}
 })().catch(error=>{console.error(error);process.exitCode=1});

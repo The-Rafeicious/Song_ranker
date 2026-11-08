@@ -1005,3 +1005,8 @@ body.gameplay-page #main .score-reveal[hidden] {display: none;}
   body.gameplay-page #main .match-center {width: auto; gap: 12px;}
   body.gameplay-page #main .match-similarity {position: static; width: 110px;}
 }
+
+/* Trivia shares the result gradient, type and arrival motion used by Elo/points. */
+body.gameplay-page #main .trivia-art {position:relative;width:fit-content;margin:0 auto 14px;}
+body.gameplay-page #main .trivia-art .mystery-cover {display:block;margin:0;}
+body.gameplay-page #main .trivia-accuracy {inset:auto 2px 2px;border-radius:0 0 16px 16px;color:var(--recognition);text-shadow:none;}

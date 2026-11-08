@@ -164,3 +164,10 @@
 - Resume active or partial mappings, preserving saved maps and completing only missing ones.
 - Single-song choices return to the chooser; artist/album/random sequences continue manually through remaining songs.
 - Existing saved profiles and historical averages remain intact; duplicate browser saves cannot add another pass.
+
+## v5.9.6.3 — Previous Trivia accuracy on reveal
+
+- Show a song's previous trivia percentage on its revealed cover using the shared Elo/points overlay.
+- Wait for every available field to be settled, whether correct or incorrect.
+- Freeze the pre-round accuracy in the question snapshot; first attempts do not show a prior percentage.
+- Use the existing correct/available-field accuracy, including album N/A and legacy records; scoring is unchanged.

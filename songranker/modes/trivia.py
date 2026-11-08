@@ -84,6 +84,25 @@ def round_song(conn, row):
     )
 
 
+def trivia_accuracy(conn, song_id, before_id=None):
+    """Read established field accuracy, excluding this/later rounds for older snapshots.
+
+    Uses the same available-field denominator as Trivia Stats, including legacy
+    adjustments and album N/A. No prior evidence returns None; a real 0% remains.
+    """
+    stats = conn.execute('SELECT attempts,correct,available_points FROM trivia_stats WHERE song_id=?',(song_id,)).fetchone()
+    if stats is None:
+        return None
+    attempts, correct, available = stats
+    if before_id is not None:
+        later = conn.execute("""SELECT COUNT(*),COALESCE(SUM(COALESCE(title_correct,0)+COALESCE(artist_correct,0)+COALESCE(album_correct,0)),0),
+            COALESCE(SUM(2+album_available),0) FROM trivia_rounds WHERE song_id=? AND id>=? AND completed_at IS NOT NULL""",(song_id,before_id)).fetchone()
+        attempts,correct,available = (a-b for a,b in zip((attempts,correct,available),later))
+    if attempts<=0 or available<=0 or not 0<=correct<=available:
+        return None
+    return dict(accuracy=round(100*correct/available,1),rounds=int(attempts))
+
+
 def freeze_song(conn, song):
     facts = {
         key: song[key]
@@ -97,6 +116,7 @@ def freeze_song(conn, song):
             "cover_url",
         )
     }
+    facts["previous_trivia"] = trivia_accuracy(conn, song["id"])
     facts["artist_answers"] = [
         dict(r)
         for r in conn.execute(
@@ -269,6 +289,7 @@ def payload(conn, row, reveal=False):
             streak=row["streak_after"],
             game_over=row["streak_after"] == 0,
             cover_url=song["cover_url"],
+            previous_trivia=song["previous_trivia"] if "previous_trivia" in song else trivia_accuracy(conn,row["song_id"],row["id"]),
             streak_passed=(
                 bool(row["streak_passed"])
                 if row["streak_passed"] is not None
