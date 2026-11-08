@@ -472,3 +472,9 @@ Head-to-head results show available Vibe similarity beneath VS (beside it on pho
 The quiet Vibe-accent badge includes shared-map coverage and appears only after
 a successful vote. Scores follow a short pace-aware pause; the badge persists
 through points/Elo phases. No shared placements means no badge or extra pause.
+
+Vibe Map opens a read-only music chooser before loading a player. Shared pill
+buttons switch song/artist/album search; artwork choices show remaining songs.
+Random and scoped sequences exclude completed profiles. Resume preserves the
+current mapping; single-song results return to choices. Partial saved maps remain
+visible but are not remapped by a new mapping.

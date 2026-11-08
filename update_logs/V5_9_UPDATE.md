@@ -156,3 +156,11 @@
 - After a successful vote, show the existing Vibe similarity percentage and shared-map coverage by VS, before Elo/points appear.
 - Keep the badge throughout ordinary and tournament result stages; shared-map gaps leave it absent. Blind matches show it only after voting.
 - Reuse the fixed public Vibe metric and result pacing, including Quick, reduced-motion and round cancellation.
+
+## v5.9.6.2 — Choose music for Vibe Map
+
+- Added a song/artist/album chooser and random sequence before loading the map.
+- Completed songs leave every sequence after one mapping, including N/A-complete profiles.
+- Resume active or partial mappings, preserving saved maps and completing only missing ones.
+- Single-song choices return to the chooser; artist/album/random sequences continue manually through remaining songs.
+- Existing saved profiles and historical averages remain intact; duplicate browser saves cannot add another pass.

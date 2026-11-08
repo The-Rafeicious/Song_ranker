@@ -481,12 +481,13 @@ Adaptive draw algorithms plus the shared SQL exposure/recency adapters.
 | [draw_shelves](../songranker/modes/selection.py#L447) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None, album_artists=None` | Equal feasible formats; soft album/artist/recency balance, then track exposure. |
 | [mode_counts](../songranker/modes/selection.py#L546) | `conn, mode` | Read mode exposures and add effective weighted tournament participation to voting modes. |
 | [preference_pair](../songranker/modes/selection.py#L564) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
-| [vibe_song](../songranker/modes/selection.py#L597) | `conn, *, counts=None, previous=None, rng=random` | Read-only Vibe Map draw, ready for the later round controller. |
-| [album_vibe_groups](../songranker/modes/selection.py#L627) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
-| [recent_preferences](../songranker/modes/selection.py#L642) | `conn, owner=None, limit=128` | Read a bounded newest-first song history across both voting visibilities. |
-| [previous_preference](../songranker/modes/selection.py#L668) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
-| [shelf_history](../songranker/modes/selection.py#L694) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
-| [with_catalogue_age](../songranker/modes/selection.py#L709) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
+| [eligible_vibe_ids](../songranker/modes/selection.py#L597) | `conn, scope='all', scope_id=None` | Return unfinished profiles only; completed passes and four resolved slots retire a song. |
+| [vibe_song](../songranker/modes/selection.py#L611) | `conn, *, counts=None, previous=None, rng=random, scope='all', scope_id=None` | Draw only unfinished songs in the requested cohort, without changing evidence. |
+| [album_vibe_groups](../songranker/modes/selection.py#L642) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
+| [recent_preferences](../songranker/modes/selection.py#L657) | `conn, owner=None, limit=128` | Read a bounded newest-first song history across both voting visibilities. |
+| [previous_preference](../songranker/modes/selection.py#L683) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
+| [shelf_history](../songranker/modes/selection.py#L709) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
+| [with_catalogue_age](../songranker/modes/selection.py#L724) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
 
 ## songranker/modes/shelves.py
 
@@ -619,44 +620,47 @@ Vibe round state, saving, similarity, stats, profile/library queries and APIs.
 | [payload](../songranker/modes/vibe_map.py#L155) | `conn, row, now=None` | Project the current Vibe round into browser state with definitions, draft and completion summary. |
 | [require_round](../songranker/modes/vibe_map.py#L208) | `conn, owner, data` | Reject Vibe writes whose token no longer matches the owning browser's current round. |
 | [require_stage](../songranker/modes/vibe_map.py#L226) | `row, data` | Require a valid current map, live round and matching revision before accepting placement changes. |
-| [start](../songranker/modes/vibe_map.py#L247) | `conn, owner, data` | Start; reads vibe_rounds; writes vibe_rounds. |
-| [draft](../songranker/modes/vibe_map.py#L271) | `conn, owner, data` | Save an idempotent Vibe placement draft and advance its revision without completing the map. |
-| [advance](../songranker/modes/vibe_map.py#L310) | `conn, owner, data` | Advance; reads song_vibe_positions; writes song_vibe_positions, song_vibe_progress, vibe_rounds. |
-| [cancel](../songranker/modes/vibe_map.py#L427) | `conn, owner, data` | Cancel the owning browser's active Vibe round and clear its draft with stale-revision protection. |
-| [heatmap](../songranker/modes/vibe_map.py#L449) | `conn, kind, entity_id=None` | Build mapped-song coordinate data for the whole library or a validated artist/album/tag scope. |
-| [browser_owner](../songranker/modes/vibe_map.py#L504) | `create=False` | Read or explicitly create the session identity that owns Vibe round state. |
-| [respond](../songranker/modes/vibe_map.py#L511) | `action, *, write=False` | Run a Vibe action with managed SQLite access, consistent read snapshots and structured noncached errors. |
-| [api_vibe_map_state](../songranker/modes/vibe_map.py#L537) | `` | Serve vibe map state; GET /api/vibe-map/state. |
-| [api_vibe_map_round](../songranker/modes/vibe_map.py#L548) | `` | Serve vibe map round; POST /api/vibe-map/round. |
-| [api_vibe_map_draft](../songranker/modes/vibe_map.py#L553) | `` | Serve vibe map draft; POST /api/vibe-map/draft. |
-| [api_vibe_map_advance](../songranker/modes/vibe_map.py#L558) | `` | Serve vibe map advance; POST /api/vibe-map/advance. |
-| [api_vibe_map_cancel](../songranker/modes/vibe_map.py#L563) | `` | Serve vibe map cancel; POST /api/vibe-map/cancel. |
-| [api_vibe_map_profile](../songranker/modes/vibe_map.py#L568) | `song_id` | Serve vibe map profile; GET /api/vibe-map/profile/<int:song_id>. |
-| [api_vibe_map_heatmap](../songranker/modes/vibe_map.py#L573) | `` | Serve vibe map heatmap; GET /api/vibe-map/heatmap. |
-| [api_vibe_map_heatmap.read](../songranker/modes/vibe_map.py#L574) | `conn, data` | Validate the optional numeric scope ID and read the requested Vibe heatmap. |
-| [vibe_map_page](../songranker/modes/vibe_map.py#L589) | `` | Vibe map page; GET /vibe-map. |
-| [similar_songs](../songranker/modes/vibe_map.py#L595) | `conn, song_id, limit=2` | Rank shared placed maps by fixed Gaussian RMS closeness. |
-| [api_vibe_map_similar](../songranker/modes/vibe_map.py#L624) | `song_id` | Serve vibe map similar; GET /api/vibe-map/similar/<int:song_id>. |
-| [api_vibe_map_similar.read](../songranker/modes/vibe_map.py#L625) | `conn, data` | Validate the requested match limit before comparing a song's saved Vibe profile. |
-| [percentage](../songranker/modes/vibe_map.py#L647) | `numerator, denominator` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [consistency](../songranker/modes/vibe_map.py#L651) | `vectors` | Gaussian of mean squared pair distance, equally weighting four maps. |
-| [density](../songranker/modes/vibe_map.py#L669) | `points` | Fixed-radius neighbours on a spatial grid; each point stays at its location. |
-| [colour_points](../songranker/modes/vibe_map.py#L691) | `points, maximum` | Add chart coordinates, density colours and opacity to normalised Vibe points. |
-| [paired_highlights](../songranker/modes/vibe_map.py#L708) | `complete, songs, vectors` | Find the two closest and two most contrasting fully mapped song pairs with bounded heaps. |
-| [paired_highlights.retain](../songranker/modes/vibe_map.py#L715) | `heap, rank, pair` | Keep only the best two ranked pair candidates in a highlight heap. |
-| [common_patterns](../songranker/modes/vibe_map.py#L740) | `vectors` | Count shared directional Vibe axis patterns and rank the strongest library patterns. |
-| [build_vibe_stats](../songranker/modes/vibe_map.py#L793) | `conn` | Build vibe stats; reads albums, artists, genres, song_artists, song_genres, songs. |
-| [build_song_vibe](../songranker/modes/vibe_map.py#L944) | `conn, song_id, *, show_identity=True` | Build a read-only song Vibe panel with aggregate placement, nearest matches and profile links. |
-| [build_entity_vibe](../songranker/modes/vibe_map.py#L982) | `conn, kind, entity_id` | Build entity vibe; reads songs. |
-| [library_data](../songranker/modes/vibe_map.py#L1062) | `conn` | Aggregate library Vibe coverage, consistency, validated vectors and collection rankings. |
-| [build_library_vibe](../songranker/modes/vibe_map.py#L1142) | `conn` | Build shared-scale library maps, summary/banner rankings and consistency counts. |
-| [build_vibe_rankings](../songranker/modes/vibe_map.py#L1177) | `conn, category, view` | Validate collection category/direction and return up to twenty ranked Vibe collection results. |
-| [vibe_map_stats](../songranker/modes/vibe_map.py#L1198) | `` | Vibe map stats; GET /vibe_map_stats. |
-| [api_vibe_map_stats](../songranker/modes/vibe_map.py#L1221) | `` | Serve vibe map stats; GET /api/vibe-map/stats. |
-| [api_vibe_map_inspect](../songranker/modes/vibe_map.py#L1234) | `song_id` | Serve vibe map inspect; GET /api/vibe-map/inspect/<int:song_id>. |
-| [api_vibe_map_entity](../songranker/modes/vibe_map.py#L1245) | `kind, entity_id` | Serve vibe map entity; GET /api/vibe-map/entity/<kind>/<int:entity_id>. |
-| [api_vibe_map_library](../songranker/modes/vibe_map.py#L1252) | `` | Serve vibe map library; GET /api/vibe-map/library. |
-| [api_vibe_map_rankings](../songranker/modes/vibe_map.py#L1259) | `` | Serve vibe map rankings; GET /api/vibe-map/rankings. |
+| [mapping_scope](../songranker/modes/vibe_map.py#L249) | `conn, data` | Validate a requested mapping cohort without creating or changing a round. |
+| [mapping_options](../songranker/modes/vibe_map.py#L265) | `conn, kind='song', query='', scope='all', scope_id=None` | Search unfinished songs or collections with remaining songs; return bounded linked choices. |
+| [start](../songranker/modes/vibe_map.py#L301) | `conn, owner, data` | Start an unfinished song in the requested cohort, or resume this browser's saved mapping. |
+| [draft](../songranker/modes/vibe_map.py#L326) | `conn, owner, data` | Save an idempotent Vibe placement draft and advance its revision without completing the map. |
+| [advance](../songranker/modes/vibe_map.py#L365) | `conn, owner, data` | Advance; reads song_vibe_positions; writes song_vibe_positions, song_vibe_progress, vibe_rounds. |
+| [cancel](../songranker/modes/vibe_map.py#L486) | `conn, owner, data` | Cancel the owning browser's active Vibe round and clear its draft with stale-revision protection. |
+| [heatmap](../songranker/modes/vibe_map.py#L508) | `conn, kind, entity_id=None` | Build mapped-song coordinate data for the whole library or a validated artist/album/tag scope. |
+| [browser_owner](../songranker/modes/vibe_map.py#L563) | `create=False` | Read or explicitly create the session identity that owns Vibe round state. |
+| [respond](../songranker/modes/vibe_map.py#L570) | `action, *, write=False` | Run a Vibe action with managed SQLite access, consistent read snapshots and structured noncached errors. |
+| [api_vibe_map_state](../songranker/modes/vibe_map.py#L596) | `` | Serve vibe map state; GET /api/vibe-map/state. |
+| [api_vibe_map_options](../songranker/modes/vibe_map.py#L607) | `` | Read-only bounded chooser for unfinished song/artist/album selections. |
+| [api_vibe_map_round](../songranker/modes/vibe_map.py#L614) | `` | Serve vibe map round; POST /api/vibe-map/round. |
+| [api_vibe_map_draft](../songranker/modes/vibe_map.py#L619) | `` | Serve vibe map draft; POST /api/vibe-map/draft. |
+| [api_vibe_map_advance](../songranker/modes/vibe_map.py#L624) | `` | Serve vibe map advance; POST /api/vibe-map/advance. |
+| [api_vibe_map_cancel](../songranker/modes/vibe_map.py#L629) | `` | Serve vibe map cancel; POST /api/vibe-map/cancel. |
+| [api_vibe_map_profile](../songranker/modes/vibe_map.py#L634) | `song_id` | Serve vibe map profile; GET /api/vibe-map/profile/<int:song_id>. |
+| [api_vibe_map_heatmap](../songranker/modes/vibe_map.py#L639) | `` | Serve vibe map heatmap; GET /api/vibe-map/heatmap. |
+| [api_vibe_map_heatmap.read](../songranker/modes/vibe_map.py#L640) | `conn, data` | Validate the optional numeric scope ID and read the requested Vibe heatmap. |
+| [vibe_map_page](../songranker/modes/vibe_map.py#L655) | `` | Vibe map page; GET /vibe-map. |
+| [similar_songs](../songranker/modes/vibe_map.py#L661) | `conn, song_id, limit=2` | Rank shared placed maps by fixed Gaussian RMS closeness. |
+| [api_vibe_map_similar](../songranker/modes/vibe_map.py#L690) | `song_id` | Serve vibe map similar; GET /api/vibe-map/similar/<int:song_id>. |
+| [api_vibe_map_similar.read](../songranker/modes/vibe_map.py#L691) | `conn, data` | Validate the requested match limit before comparing a song's saved Vibe profile. |
+| [percentage](../songranker/modes/vibe_map.py#L713) | `numerator, denominator` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [consistency](../songranker/modes/vibe_map.py#L717) | `vectors` | Gaussian of mean squared pair distance, equally weighting four maps. |
+| [density](../songranker/modes/vibe_map.py#L735) | `points` | Fixed-radius neighbours on a spatial grid; each point stays at its location. |
+| [colour_points](../songranker/modes/vibe_map.py#L757) | `points, maximum` | Add chart coordinates, density colours and opacity to normalised Vibe points. |
+| [paired_highlights](../songranker/modes/vibe_map.py#L774) | `complete, songs, vectors` | Find the two closest and two most contrasting fully mapped song pairs with bounded heaps. |
+| [paired_highlights.retain](../songranker/modes/vibe_map.py#L781) | `heap, rank, pair` | Keep only the best two ranked pair candidates in a highlight heap. |
+| [common_patterns](../songranker/modes/vibe_map.py#L806) | `vectors` | Count shared directional Vibe axis patterns and rank the strongest library patterns. |
+| [build_vibe_stats](../songranker/modes/vibe_map.py#L859) | `conn` | Build vibe stats; reads albums, artists, genres, song_artists, song_genres, songs. |
+| [build_song_vibe](../songranker/modes/vibe_map.py#L1010) | `conn, song_id, *, show_identity=True` | Build a read-only song Vibe panel with aggregate placement, nearest matches and profile links. |
+| [build_entity_vibe](../songranker/modes/vibe_map.py#L1048) | `conn, kind, entity_id` | Build entity vibe; reads songs. |
+| [library_data](../songranker/modes/vibe_map.py#L1128) | `conn` | Aggregate library Vibe coverage, consistency, validated vectors and collection rankings. |
+| [build_library_vibe](../songranker/modes/vibe_map.py#L1208) | `conn` | Build shared-scale library maps, summary/banner rankings and consistency counts. |
+| [build_vibe_rankings](../songranker/modes/vibe_map.py#L1243) | `conn, category, view` | Validate collection category/direction and return up to twenty ranked Vibe collection results. |
+| [vibe_map_stats](../songranker/modes/vibe_map.py#L1264) | `` | Vibe map stats; GET /vibe_map_stats. |
+| [api_vibe_map_stats](../songranker/modes/vibe_map.py#L1287) | `` | Serve vibe map stats; GET /api/vibe-map/stats. |
+| [api_vibe_map_inspect](../songranker/modes/vibe_map.py#L1300) | `song_id` | Serve vibe map inspect; GET /api/vibe-map/inspect/<int:song_id>. |
+| [api_vibe_map_entity](../songranker/modes/vibe_map.py#L1311) | `kind, entity_id` | Serve vibe map entity; GET /api/vibe-map/entity/<kind>/<int:entity_id>. |
+| [api_vibe_map_library](../songranker/modes/vibe_map.py#L1318) | `` | Serve vibe map library; GET /api/vibe-map/library. |
+| [api_vibe_map_rankings](../songranker/modes/vibe_map.py#L1325) | `` | Serve vibe map rankings; GET /api/vibe-map/rankings. |
 
 ## songranker/modes/vibe_similarity.py
 
@@ -1126,9 +1130,9 @@ Preserve public routes, asset order and profile reads across module consolidatio
 | [Assets.handle_starttag](../tests/test_architecture.py#L28) | `self, tag, attrs` | Handle starttag. |
 | [ArchitectureTests.register](../tests/test_architecture.py#L40) | `self` | Register the launcher's actual feature owners without running startup sync. |
 | [ArchitectureTests.test_all_previous_urls_methods_and_endpoint_names_are_preserved](../tests/test_architecture.py#L45) | `self` | Verify all previous urls methods and endpoint names are preserved. |
-| [ArchitectureTests.test_retired_match_network_has_no_routes_or_public_assets](../tests/test_architecture.py#L76) | `self` | Verify retired match network has no routes or public assets. |
-| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L86) | `self` | Verify pages use one asset registry and last shared baseline. |
-| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L136) | `self` | Verify collection profiles share identity payloads and are read only. |
+| [ArchitectureTests.test_retired_match_network_has_no_routes_or_public_assets](../tests/test_architecture.py#L77) | `self` | Verify retired match network has no routes or public assets. |
+| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L87) | `self` | Verify pages use one asset registry and last shared baseline. |
+| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L137) | `self` | Verify collection profiles share identity payloads and are read only. |
 
 ## tests/test_bulk_source_review.py
 
@@ -1896,14 +1900,14 @@ Review replaces one contribution; public similarity has explicit evidence.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [VibeReviewTests.edit](../tests/test_vibe_review.py#L18) | `self, row, map_id='pace_mood', x=5, y=-5, status='placed', owner='browser'` | Edit. |
-| [VibeReviewTests.test_review_completed_round_replaces_sample_without_counting_pass](../tests/test_vibe_review.py#L26) | `self` | Verify review completed round replaces sample without counting pass. |
-| [VibeReviewTests.test_review_preserves_other_browser_and_previous_pass_contributions](../tests/test_vibe_review.py#L37) | `self` | Verify review preserves other browser and previous pass contributions. |
-| [VibeReviewTests.test_backtracking_never_unlocks_uncompleted_map](../tests/test_vibe_review.py#L54) | `self` | Verify backtracking never unlocks uncompleted map. |
-| [VibeReviewTests.test_pending_review_restores_target_and_survives_canonical_export](../tests/test_vibe_review.py#L62) | `self` | Verify pending review restores target and survives canonical export. |
-| [VibeReviewTests.test_similarity_ranks_coordinates_and_ignores_missing_or_na](../tests/test_vibe_review.py#L73) | `self` | Verify similarity ranks coordinates and ignores missing or na. |
-| [VibeReviewTests.test_similarity_has_fixed_curve_and_penalises_a_mismatched_map](../tests/test_vibe_review.py#L95) | `self` | Verify similarity has fixed curve and penalises a mismatched map. |
-| [VibeReviewTests.test_play_page_loads_real_assets_and_no_write_on_get](../tests/test_vibe_review.py#L109) | `self` | Verify play page loads real assets and no write on get. |
+| [VibeReviewTests.edit](../tests/test_vibe_review.py#L19) | `self, row, map_id='pace_mood', x=5, y=-5, status='placed', owner='browser'` | Edit. |
+| [VibeReviewTests.test_review_completed_round_replaces_sample_without_counting_pass](../tests/test_vibe_review.py#L27) | `self` | Verify review completed round replaces sample without counting pass. |
+| [VibeReviewTests.test_review_preserves_historical_other_browser_contributions](../tests/test_vibe_review.py#L38) | `self` | Verify review preserves historical other browser contributions. |
+| [VibeReviewTests.test_backtracking_never_unlocks_uncompleted_map](../tests/test_vibe_review.py#L63) | `self` | Verify backtracking never unlocks uncompleted map. |
+| [VibeReviewTests.test_pending_review_restores_target_and_survives_canonical_export](../tests/test_vibe_review.py#L71) | `self` | Verify pending review restores target and survives canonical export. |
+| [VibeReviewTests.test_similarity_ranks_coordinates_and_ignores_missing_or_na](../tests/test_vibe_review.py#L82) | `self` | Verify similarity ranks coordinates and ignores missing or na. |
+| [VibeReviewTests.test_similarity_has_fixed_curve_and_penalises_a_mismatched_map](../tests/test_vibe_review.py#L104) | `self` | Verify similarity has fixed curve and penalises a mismatched map. |
+| [VibeReviewTests.test_play_page_loads_real_assets_and_no_write_on_get](../tests/test_vibe_review.py#L118) | `self` | Verify play page loads real assets and no write on get. |
 
 ## tests/test_vibe_runtime.py
 
@@ -1912,27 +1916,33 @@ Backend-only continuous maps, timed autosave, compact averages and recovery.
 | Definition | Signature | Purpose |
 | --- | --- | --- |
 | [VibeRuntimeTests.setUp](../tests/test_vibe_runtime.py#L22) | `self` | Create isolated disposable state and register cleanup for this test. |
-| [VibeRuntimeTests.start](../tests/test_vibe_runtime.py#L30) | `self, owner='browser', previous=None` | Start. |
-| [VibeRuntimeTests.draft](../tests/test_vibe_runtime.py#L33) | `self, row, x=1.234567, y=-2.345678, status='placed', owner='browser'` | Draft. |
-| [VibeRuntimeTests.advance](../tests/test_vibe_runtime.py#L39) | `self, row, owner='browser'` | Advance. |
-| [VibeRuntimeTests.finish](../tests/test_vibe_runtime.py#L44) | `self, row, x=1, y=2, status='placed', owner='browser'` | Finish. |
-| [VibeRuntimeTests.test_start_and_get_are_resumable_and_do_not_count_attempts](../tests/test_vibe_runtime.py#L50) | `self` | Verify start and get are resumable and do not count attempts. |
-| [VibeRuntimeTests.test_continuous_draft_rounding_timer_restart_and_retry](../tests/test_vibe_runtime.py#L61) | `self` | Verify continuous draft rounding timer restart and retry. |
-| [VibeRuntimeTests.test_summary_has_eight_spokes_and_pass_counts_only_after_four_maps](../tests/test_vibe_runtime.py#L87) | `self` | Verify summary has eight spokes and pass counts only after four maps. |
-| [VibeRuntimeTests.test_repeat_placements_are_true_running_means_not_repeated_halves](../tests/test_vibe_runtime.py#L100) | `self` | Verify repeat placements are true running means not repeated halves. |
-| [VibeRuntimeTests.test_not_applicable_is_a_gap_and_does_not_erase_an_existing_average](../tests/test_vibe_runtime.py#L114) | `self` | Verify not applicable is a gap and does not erase an existing average. |
-| [VibeRuntimeTests.test_reordered_stale_and_foreign_requests_are_rejected_without_writes](../tests/test_vibe_runtime.py#L124) | `self` | Verify reordered stale and foreign requests are rejected without writes. |
-| [VibeRuntimeTests.test_invalid_coordinates_and_reused_request_keys_fail_closed](../tests/test_vibe_runtime.py#L133) | `self` | Verify invalid coordinates and reused request keys fail closed. |
-| [VibeRuntimeTests.test_cancellation_keeps_saved_maps_and_discards_only_draft](../tests/test_vibe_runtime.py#L140) | `self` | Verify cancellation keeps saved maps and discards only draft. |
-| [VibeRuntimeTests.test_failure_on_fourth_map_rolls_back_average_receipt_and_pass_together](../tests/test_vibe_runtime.py#L148) | `self` | Verify failure on fourth map rolls back average receipt and pass together. |
-| [VibeRuntimeTests.test_simultaneous_duplicate_saves_count_once](../tests/test_vibe_runtime.py#L158) | `self` | Verify simultaneous duplicate saves count once. |
-| [VibeRuntimeTests.test_simultaneous_duplicate_saves_count_once.save](../tests/test_vibe_runtime.py#L162) | `` | Save. |
-| [VibeRuntimeTests.test_two_browsers_merge_samples_without_lost_updates](../tests/test_vibe_runtime.py#L170) | `self` | Verify two browsers merge samples without lost updates. |
-| [VibeRuntimeTests.test_active_draft_and_receipts_survive_rebuild_and_restart](../tests/test_vibe_runtime.py#L177) | `self` | Verify active draft and receipts survive rebuild and restart. |
-| [VibeRuntimeTests.test_song_delete_removes_its_round_counter_and_map_slots](../tests/test_vibe_runtime.py#L192) | `self` | Verify song delete removes its round counter and map slots. |
-| [VibeRuntimeTests.test_heatmaps_use_one_aggregate_point_per_song_not_one_per_attempt](../tests/test_vibe_runtime.py#L199) | `self` | Verify heatmaps use one aggregate point per song not one per attempt. |
-| [VibeRuntimeTests.test_http_contract_is_same_origin_browser_owned_and_read_only_on_get](../tests/test_vibe_runtime.py#L209) | `self` | Verify http contract is same origin browser owned and read only on get. |
-| [VibeRuntimeTests.test_schema17_migration_clears_incompatible_old_points_once](../tests/test_vibe_runtime.py#L225) | `self` | Verify schema17 migration clears incompatible old points once. |
+| [VibeRuntimeTests.start](../tests/test_vibe_runtime.py#L31) | `self, owner='browser', previous=None` | Start. |
+| [VibeRuntimeTests.draft](../tests/test_vibe_runtime.py#L34) | `self, row, x=1.234567, y=-2.345678, status='placed', owner='browser'` | Draft. |
+| [VibeRuntimeTests.advance](../tests/test_vibe_runtime.py#L40) | `self, row, owner='browser'` | Advance. |
+| [VibeRuntimeTests.finish](../tests/test_vibe_runtime.py#L45) | `self, row, x=1, y=2, status='placed', owner='browser'` | Finish. |
+| [VibeRuntimeTests.test_chooser_is_read_only_and_filters_completed_songs_and_collections](../tests/test_vibe_runtime.py#L51) | `self` | Verify chooser is read only and filters completed songs and collections. |
+| [VibeRuntimeTests.test_selected_cohort_and_specific_song_are_server_enforced](../tests/test_vibe_runtime.py#L67) | `self` | Verify selected cohort and specific song are server enforced. |
+| [VibeRuntimeTests.test_fully_mapped_legacy_averages_are_retired_without_changing_values](../tests/test_vibe_runtime.py#L80) | `self` | Verify fully mapped legacy averages are retired without changing values. |
+| [VibeRuntimeTests.test_exhausted_sequence_does_not_create_another_round](../tests/test_vibe_runtime.py#L87) | `self` | Verify exhausted sequence does not create another round. |
+| [VibeRuntimeTests.test_start_and_get_are_resumable_and_do_not_count_attempts](../tests/test_vibe_runtime.py#L95) | `self` | Verify start and get are resumable and do not count attempts. |
+| [VibeRuntimeTests.test_continuous_draft_rounding_timer_restart_and_retry](../tests/test_vibe_runtime.py#L106) | `self` | Verify continuous draft rounding timer restart and retry. |
+| [VibeRuntimeTests.test_summary_has_eight_spokes_and_pass_counts_only_after_four_maps](../tests/test_vibe_runtime.py#L132) | `self` | Verify summary has eight spokes and pass counts only after four maps. |
+| [VibeRuntimeTests.test_completed_song_cannot_receive_another_pass](../tests/test_vibe_runtime.py#L145) | `self` | Verify completed song cannot receive another pass. |
+| [VibeRuntimeTests.test_not_applicable_completes_once_without_fabricated_coordinates](../tests/test_vibe_runtime.py#L156) | `self` | Verify not applicable completes once without fabricated coordinates. |
+| [VibeRuntimeTests.test_cancelled_partial_resumes_only_missing_maps](../tests/test_vibe_runtime.py#L165) | `self` | Verify cancelled partial resumes only missing maps. |
+| [VibeRuntimeTests.test_parallel_browser_cannot_add_another_sample](../tests/test_vibe_runtime.py#L177) | `self` | Verify parallel browser cannot add another sample. |
+| [VibeRuntimeTests.test_reordered_stale_and_foreign_requests_are_rejected_without_writes](../tests/test_vibe_runtime.py#L184) | `self` | Verify reordered stale and foreign requests are rejected without writes. |
+| [VibeRuntimeTests.test_invalid_coordinates_and_reused_request_keys_fail_closed](../tests/test_vibe_runtime.py#L193) | `self` | Verify invalid coordinates and reused request keys fail closed. |
+| [VibeRuntimeTests.test_cancellation_keeps_saved_maps_and_discards_only_draft](../tests/test_vibe_runtime.py#L200) | `self` | Verify cancellation keeps saved maps and discards only draft. |
+| [VibeRuntimeTests.test_failure_on_fourth_map_rolls_back_average_receipt_and_pass_together](../tests/test_vibe_runtime.py#L208) | `self` | Verify failure on fourth map rolls back average receipt and pass together. |
+| [VibeRuntimeTests.test_simultaneous_duplicate_saves_count_once](../tests/test_vibe_runtime.py#L218) | `self` | Verify simultaneous duplicate saves count once. |
+| [VibeRuntimeTests.test_simultaneous_duplicate_saves_count_once.save](../tests/test_vibe_runtime.py#L222) | `` | Save. |
+| [VibeRuntimeTests.test_two_browsers_keep_first_saved_mapping_without_averaging](../tests/test_vibe_runtime.py#L230) | `self` | Verify two browsers keep first saved mapping without averaging. |
+| [VibeRuntimeTests.test_active_draft_and_receipts_survive_rebuild_and_restart](../tests/test_vibe_runtime.py#L238) | `self` | Verify active draft and receipts survive rebuild and restart. |
+| [VibeRuntimeTests.test_song_delete_removes_its_round_counter_and_map_slots](../tests/test_vibe_runtime.py#L253) | `self` | Verify song delete removes its round counter and map slots. |
+| [VibeRuntimeTests.test_heatmaps_use_one_aggregate_point_per_song_not_one_per_attempt](../tests/test_vibe_runtime.py#L260) | `self` | Verify heatmaps use one aggregate point per song not one per attempt. |
+| [VibeRuntimeTests.test_http_contract_is_same_origin_browser_owned_and_read_only_on_get](../tests/test_vibe_runtime.py#L270) | `self` | Verify http contract is same origin browser owned and read only on get. |
+| [VibeRuntimeTests.test_schema17_migration_clears_incompatible_old_points_once](../tests/test_vibe_runtime.py#L286) | `self` | Verify schema17 migration clears incompatible old points once. |
 
 ## tests/test_vibe_selection.py
 
@@ -1952,8 +1962,8 @@ Coverage-first Vibe Map draws; no results or counters are written.
 | [VibeSelectionDataTests.setUp](../tests/test_vibe_selection.py#L89) | `self` | Create isolated disposable state and register cleanup for this test. |
 | [VibeSelectionDataTests.test_reader_counts_only_resolved_passes_and_hydrates_the_chosen_song](../tests/test_vibe_selection.py#L100) | `self` | Verify reader counts only resolved passes and hydrates the chosen song. |
 | [VibeSelectionDataTests.test_explicit_repeat_counts_override_only_supplied_entries](../tests/test_vibe_selection.py#L111) | `self` | Verify explicit repeat counts override only supplied entries. |
-| [VibeSelectionDataTests.test_real_draws_do_not_mark_songs_seen_or_change_results](../tests/test_vibe_selection.py#L117) | `self` | Verify real draws do not mark songs seen or change results. |
-| [VibeSelectionDataTests.test_empty_database_returns_none](../tests/test_vibe_selection.py#L124) | `self` | Verify empty database returns none. |
+| [VibeSelectionDataTests.test_real_draws_do_not_mark_songs_seen_or_change_results](../tests/test_vibe_selection.py#L119) | `self` | Verify real draws do not mark songs seen or change results. |
+| [VibeSelectionDataTests.test_empty_database_returns_none](../tests/test_vibe_selection.py#L126) | `self` | Verify empty database returns none. |
 
 ## tests/test_vibe_similarity.py
 
@@ -2079,14 +2089,15 @@ Disposable served-page and Chromium integration fixtures.
 | [serve_dev](../tools/browser_check.py#L58) | `database, port` | Serve dev; reads songs; writes albums, artists, genres, song_artists, song_genres, songs. |
 | [serve_dev.lookup](../tools/browser_check.py#L121) | `url` | Return deterministic Apple track offers for served import/review checks. |
 | [run_vibe](../tools/browser_check.py#L149) | `` | Run vibe; reads songs, tournament_entries, tournament_matches; writes albums, artists, genres, preference_events, song_artists, song_genres, song_vibe_positions, songs. |
-| [run_vibe.cover](../tools/browser_check.py#L225) | `` | Serve local artwork so browser screenshots do not depend on external images. |
-| [run_vibe.tag_audio_enable](../tools/browser_check.py#L234) | `` | Tag audio enable; POST /tag-test-enable. |
-| [run_vibe.tag_audio](../tools/browser_check.py#L242) | `` | Serve silence or bounded test tones without Apple transport. |
-| [run_vibe.enable_voting_report](../tools/browser_check.py#L260) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
-| [run_vibe.enable_tournament_map](../tools/browser_check.py#L274) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
-| [run_vibe.enable_discs](../tools/browser_check.py#L302) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
-| [run_vibe.enable_elo_replay](../tools/browser_check.py#L314) | `` | Create timestamped public votes only in the disposable browser fixture. |
-| [main](../tools/browser_check.py#L345) | `` | Run the requested disposable integration fixture. |
+| [run_vibe.fixture_vibe_song](../tools/browser_check.py#L220) | `conn, previous=None, **scope` | Choose deterministic unfinished fixture songs using production eligibility. |
+| [run_vibe.cover](../tools/browser_check.py#L229) | `` | Serve local artwork so browser screenshots do not depend on external images. |
+| [run_vibe.tag_audio_enable](../tools/browser_check.py#L238) | `` | Tag audio enable; POST /tag-test-enable. |
+| [run_vibe.tag_audio](../tools/browser_check.py#L246) | `` | Serve silence or bounded test tones without Apple transport. |
+| [run_vibe.enable_voting_report](../tools/browser_check.py#L264) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
+| [run_vibe.enable_tournament_map](../tools/browser_check.py#L278) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
+| [run_vibe.enable_discs](../tools/browser_check.py#L306) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
+| [run_vibe.enable_elo_replay](../tools/browser_check.py#L318) | `` | Create timestamped public votes only in the disposable browser fixture. |
+| [main](../tools/browser_check.py#L349) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 
@@ -2107,4 +2118,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1431 Python definitions**.
+Total: **1442 Python definitions**.

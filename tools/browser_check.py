@@ -217,9 +217,13 @@ def run_vibe():
         from songranker.modes import vibe_map
 
         vibe_map.READJUST_SECONDS = 0.3
-        vibe_map.vibe_song = lambda conn, previous=None: dict(
-            id=2 if previous == 1 else 1
-        )
+        def fixture_vibe_song(conn, previous=None, **scope):
+            """Choose deterministic unfinished fixture songs using production eligibility."""
+            from songranker.modes.selection import eligible_vibe_ids
+            ids=eligible_vibe_ids(conn,scope.get('scope','all'),scope.get('scope_id'))
+            if previous in ids and len(ids)>1:ids.remove(previous)
+            return dict(id=min(ids)) if ids else None
+        vibe_map.vibe_song = fixture_vibe_song
 
         @application.app.get("/vibe-test-art.svg")
         def cover():

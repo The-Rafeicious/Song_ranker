@@ -256,8 +256,8 @@ rename of canonical stored Casual. Every song has four linked slots.
 Play coordinates are continuous −5…+5; storage/comparison readers use −1…+1.
 The browser owns one current round. Draft/advance revision and request IDs reject
 stale saves and replay accepted requests once. A five-second deadline restarts
-on adjustment. Advancing accepts the latest draft, saves its averaged contribution
-and moves to the next map. Reviewing a saved map replaces this pass's contribution.
+on adjustment. Advancing accepts the latest draft, saves its contribution
+and moves to the next missing map. Reviewing a map in the current mapping replaces its contribution.
 A full pass increments progress once. One buffered round per browser and compact
 per-map means/counts avoid an ever-growing placement-attempt table.
 
@@ -266,7 +266,7 @@ show an ordered eight-axis radar and two related songs, then wait for Next song.
 No map may be skipped by navigation. Missing points stay absent from comparisons.
 Similarity is descriptive; coverage and Gaussian coordinate distance are distinct.
 
-The coverage-first selector prioritises never-mapped songs. A bounded similarity
+The chooser and random selector exclude completed profiles and finish partial profiles without repeating saved maps. A bounded similarity
 factor softly biases voting, tournament and album-hotspot selection;
 coverage adapts its strength, while positive random support prevents isolated
 pockets. It does not rewrite Elo, quality scores or preferences.
@@ -1247,3 +1247,21 @@ The shared gameplay VS badge is shown only after success. Standard pacing gives
 it a 700 ms lead before scores (250 ms in Quick); the normal score hold follows.
 Reduced motion adds no delay. The badge remains across tournament points/Elo
 phases. All phase timers share round cancellation and clear on Next/pagehide.
+
+### v5.9.6.2 Vibe mapping choices
+
+`GET /api/vibe-map/options?kind=song|artist|album&q=...` is a read-only bounded
+chooser. Its remaining counts exclude completed passes and legacy profiles with
+four resolved (placed/N/A) slots. `POST /api/vibe-map/round` accepts optional
+`scope` (`all`, `song`, `artist`, `album`) and `scope_id`; the server validates
+cohort membership and exhaustion. No eligible song returns `selection_complete`
+without replacing the existing round. Existing state reads and routes remain.
+
+The setup screen creates no round or player until Start or Resume. Scope is kept
+in browser session storage for subsequent manual Next actions. Partially saved
+profiles seed read-only answers in a new round and map only missing slots. A
+second browser cannot add another contribution to an already recorded slot.
+Same-round review still replaces its own contribution rather than adding a pass.
+Completed profiles are retired from every selection; old averages/pass counts
+are preserved without migration or relabelling. Artist/album choices stop when
+their remaining songs are exhausted; single-song choices return to setup.

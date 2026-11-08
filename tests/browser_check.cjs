@@ -29,7 +29,13 @@ async function bounded(page,width,phase,folder){
   assert.equal(await page.locator('#navbar-search input').inputValue(),'f');assert.equal(await page.evaluate(()=>!!document.fullscreenElement),false);
   await page.locator('#navbar-search input').fill('');
 
-  await page.goto(base+'/vibe-map');await page.locator('#vibe-plane').waitFor();
+  await page.goto(base+'/vibe-map');await page.locator('#vibe-start:not([disabled])').waitFor();
+  assert.equal(await page.locator('#vibe-plane').count(),0,'Setup loads without creating a mapping');
+  for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'vibe-chooser',folder);await page.locator('#vibe-setup').screenshot({path:folder+'/vibe-chooser-'+width+'.png'});}
+  await page.locator('[data-vibe-kind=artist]').click();await page.locator('.vibe-choice.artist').first().waitFor();
+  await page.locator('.vibe-choice.artist').first().click();assert.ok((await page.locator('#vibe-selection').textContent()).length>0);
+  await page.locator('#vibe-random').click();await page.locator('#vibe-start:not([disabled])').waitFor();
+  await page.locator('#vibe-start').click();await page.locator('#vibe-plane').waitFor();
   assert.match(await page.locator('#vibe-tag-count').textContent(),/^\d+ tags?$/);
   assert.ok(await page.locator('#vibe-tag-count').evaluate(e=>e.previousElementSibling.classList.contains('album')));
   assert.ok(await page.locator('#vibe-forward').isDisabled());
@@ -78,8 +84,11 @@ async function bounded(page,width,phase,folder){
   await page.setViewportSize({width:390,height:844});await page.screenshot({path:folder+'/results-phone.png',fullPage:true});
   assert.equal(await page.locator('#vibe-finish').textContent(),'Next song →');
   assert.equal(await page.locator('.vibe-radar-key,#vibe-edit-results').count(),0);
+  const completedMapping=(await (await page.request.get(base+'/api/vibe-map/state')).json()).round.song.id;
+  const unfinishedChoices=await (await page.request.get(base+'/api/vibe-map/options?kind=song')).json();
+  assert.ok(!unfinishedChoices.results.some(row=>row.id===completedMapping),'Completed songs leave the chooser');
   await page.locator('#vibe-finish').click();
-  await page.waitForFunction(()=>document.querySelector('.vibe-song h2').textContent.endsWith('2'));
+  await page.waitForFunction(()=>document.querySelector('.vibe-song h2').textContent==='Unmapped song');
   assert.ok(await page.locator('#vibe-finish').isDisabled());
   await page.setViewportSize({width:1365,height:1050});await page.goto(base+'/');await page.locator('.mode-card.vibe').waitFor();
   assert.equal(await page.locator('.mode-card').count(),5);

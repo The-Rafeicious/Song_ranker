@@ -4,9 +4,9 @@ const {JSDOM,VirtualConsole}=require('jsdom');
 const read=file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8');
 const flush=async()=>{for(let i=0;i<100;i++)await Promise.resolve()};
 let count=0;const check=(value,message)=>{assert.ok(value,message);count++};
-async function harness(){
+async function harness({autostart=true,resume=false}={}){
  const vc=new VirtualConsole(),errors=[];vc.on('jsdomError',e=>errors.push(e.message));
- const dom=new JSDOM(`<body data-page="vibe_map"><div id="vibe-error" hidden><span></span><button id="vibe-retry"></button><button id="vibe-reload"></button></div><div id="vibe-loading"></div><div id="vibe-layout" hidden><section id="vibe-song"></section><section id="vibe-workspace"></section></div></body>`,{url:'http://localhost/vibe-map',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
+ const dom=new JSDOM(`<body data-page="vibe_map"><div id="vibe-error" hidden><span></span><button id="vibe-retry"></button><button id="vibe-reload"></button></div><div id="vibe-setup" hidden></div><button id="vibe-choose" hidden></button><div id="vibe-loading"></div><div id="vibe-layout" hidden><section id="vibe-song"></section><section id="vibe-workspace"></section></div></body>`,{url:'http://localhost/vibe-map',runScripts:'outside-only',pretendToBeVisual:true,virtualConsole:vc});
  const w=dom.window,d=w.document;let now=0,tick,hidden=false,playCount=0,warmCount=0,forgetCount=0,failDraft=false,failAdvance=false,server=null,seq=0;
  Object.defineProperty(w.performance,'now',{value:()=>now});w.setInterval=fn=>{tick=fn;return 1};w.clearInterval=()=>{};
  Object.defineProperty(d,'hidden',{get:()=>hidden});
@@ -21,9 +21,13 @@ async function harness(){
  const maps=['pace_mood','sound_impact','connection','perspective'].map((id,i)=>({id,title:'Map '+(i+1),x_low:'Low X',x_high:'High X',y_low:'Low Y',y_high:'High Y',x_center:i===3?'Present':null}));
  const newRound=()=>({token:'token-'+(++seq),song:{id:seq,title:'Song '+seq,album:'Album',tag_ids:seq===1?[]:[7],artist:'Artist',artist_links:[{name:'Artist'}],cover_url:'/art.jpg',audio_url:'https://audio-ssl.itunes.apple.com/test.m4a'},maps,map_index:0,revision:0,status:'active',saved_maps:[],draft:null,remaining_ms:null});
  function summary(){const spokes=Array.from({length:8},(_,i)=>({key:''+i,low:'Sad',high:'Happy',label:'Happy',radius:i/8,value:i-4}));server.summary={selection_radar:{spokes},aggregate:{radar:{spokes},completed_passes:1}};}
+ if(resume)server=newRound();
  const calls=[];w.fetch=async(url,options={})=>{
   const body=options.body?JSON.parse(options.body):null;calls.push({url,body});let replay=false;
-  if(url.endsWith('/round')){if(!server||body.previous_token===server.token)server=newRound();}
+  if(url.endsWith('/state'))return {ok:true,json:async()=>({round:structuredClone(server)})};
+  if(url.includes('/options?')){const kind=new URL('http://localhost'+url).searchParams.get('kind');return {ok:true,json:async()=>({library_remaining:8,remaining:8,matches:1,results:[{id:42,name:kind==='song'?'Song to map':kind==='artist'?'Chosen artist':'Chosen album',artist:'Artist',album:'Album',remaining:3}]})};}
+  if(url.endsWith('/cancel')){server.status='cancelled';server.draft=null;}
+  else if(url.endsWith('/round')){if(!server||body.previous_token===server.token)server=newRound();}
   else if(url.endsWith('/draft')){
    if(failDraft){failDraft=false;throw Error('Offline')}
    assert.equal(body.revision,server.revision);server.draft={...body};server.revision++;server.remaining_ms=5000;
@@ -43,6 +47,8 @@ async function harness(){
  };
  for(const file of ['ui.js','vibe_charts.js','vibe_map.js'])w.eval(read('static/js/'+file));await flush();
  const click=async selector=>{const element=d.querySelector(selector);assert.ok(element,selector);element.click();await flush()};
+ check(!calls.some(c=>c.url.endsWith('/round')),'setup does not create a round or preload audio');
+ if(autostart)await click('#vibe-start');
  const place=async(x=2,y=-3)=>{
   const plane=d.querySelector('#vibe-plane');plane.getBoundingClientRect=()=>({left:0,top:0,width:100,height:100});
   const e=new w.MouseEvent('pointerdown',{bubbles:true,clientX:(x+5)*10,clientY:(5-y)*10,button:0});plane.dispatchEvent(e);
@@ -52,6 +58,23 @@ async function harness(){
  return {dom,w,d,calls,errors,click,place,advance,setHidden:value=>{hidden=value;d.dispatchEvent(new w.Event('visibilitychange'))},end:()=>{const a=d.querySelector('audio');playing.delete(a);ended.add(a);a.dispatchEvent(new w.Event('ended'))},failDraft:()=>{failDraft=true},failAdvance:()=>{failAdvance=true},stats:()=>({playCount,warmCount,forgetCount,server})};
 }
 (async()=>{
+ const chooser=await harness({autostart:false});
+ check(chooser.d.querySelectorAll('audio').length===0,'chooser loads no song player');
+ await chooser.click('[data-vibe-kind="artist"]');await chooser.click('[data-vibe-pick]');
+ check(chooser.d.querySelector('#vibe-selection').textContent==='Chosen artist','artist is selectable');
+ await chooser.click('#vibe-start');
+ check(chooser.calls.find(c=>c.url.endsWith('/round')).body.scope==='artist','selected artist reaches the server');
+ for(let i=0;i<4;i++){await chooser.place();await chooser.advance();}
+ await chooser.click('#vibe-finish');await chooser.click('#vibe-finish');
+ check(chooser.calls.filter(c=>c.url.endsWith('/round'))[1].body.scope_id===42,'artist sequence stays scoped on Next');chooser.dom.window.close();
+ const single=await harness({autostart:false});await single.click('[data-vibe-pick]');await single.click('#vibe-start');
+ for(let i=0;i<4;i++){await single.place();await single.advance();}
+ await single.click('#vibe-finish');check(single.d.querySelector('#vibe-finish').textContent==='Choose another song','single choice stops after its mapping');
+ await single.click('#vibe-finish');check(!single.d.querySelector('#vibe-setup').hidden,'single result returns to chooser');
+ check(single.calls.filter(c=>c.url.endsWith('/round')).length===1,'returning to chooser does not auto-draw');single.dom.window.close();
+ const resumed=await harness({autostart:false,resume:true});check(!!resumed.d.querySelector('#vibe-resume-button'),'active saved mapping offers Resume');
+ await resumed.click('#vibe-resume-button');check(!!resumed.d.querySelector('#vibe-plane'),'Resume returns to mapping');
+ check(!resumed.calls.some(c=>c.url.endsWith('/round')),'Resume creates no second round');resumed.dom.window.close();
  const h=await harness(),{d}=h;
  check(d.querySelector('#vibe-back').disabled&&d.querySelector('#vibe-forward').disabled&&d.querySelector('#vibe-finish').disabled,'incomplete maps cannot be skipped or finished');
  check(h.stats().warmCount===1,'current preview automatically warmed once');

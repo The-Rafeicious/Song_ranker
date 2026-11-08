@@ -3,9 +3,10 @@
 {% block title %}Vibe Map · Song Ranker{% endblock %}
 
 {% block content %}
-<div class="game-head vibe-head"><h1>📍 Vibe Map</h1><a class="btn vibe vibe-stats-link" href="/vibe_map_stats">Stats ↗</a></div>
+<div class="game-head vibe-head"><h1>📍 Vibe Map</h1><div class="vibe-head-actions"><a class="btn vibe vibe-stats-link" href="/vibe_map_stats">Stats ↗</a><button type="button" class="btn vibe" id="vibe-choose" hidden>Choose songs</button></div></div>
 <div id="vibe-error" class="vibe-error" role="alert" hidden><span></span><button class="btn" type="button" id="vibe-retry">Retry</button><button class="btn" type="button" id="vibe-reload">Reload round</button></div>
-<div id="vibe-loading" class="empty" role="status">Loading song…</div>
+<section id="vibe-setup" class="panel dashboard-surface vibe-setup" aria-label="Choose music to map" hidden></section>
+<div id="vibe-loading" class="empty" role="status">Loading choices…</div>
 <div id="vibe-layout" class="vibe-layout" hidden>
   <section class="panel vibe-song" id="vibe-song" aria-label="Current song"></section>
   <section class="panel vibe-workspace" id="vibe-workspace" aria-label="Vibe maps"></section>

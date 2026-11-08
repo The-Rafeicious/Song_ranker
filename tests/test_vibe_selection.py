@@ -111,7 +111,9 @@ class VibeSelectionDataTests(unittest.TestCase):
     def test_explicit_repeat_counts_override_only_supplied_entries(self):
         from songranker.modes import selection
         with patch.object(selection,'choose_vibe_song',return_value=dict(id=3)) as choose:
-            vibe_song(self.conn,counts={3:2})
+            result=vibe_song(self.conn,counts={3:2})
+        self.assertIsNone(result)
+        self.assertEqual([s["id"] for s in choose.call_args.args[0]],[1,2])
         self.assertEqual(choose.call_args.kwargs['counts'],{1:0,2:0,3:2})
 
     def test_real_draws_do_not_mark_songs_seen_or_change_results(self):
