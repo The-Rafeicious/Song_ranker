@@ -495,14 +495,14 @@
     loopWanted=false;if(audio){await player.forgetPair([audio]);audio=null;}
     $("#vibe-layout").hidden=true;$("#vibe-choose").hidden=true;$("#vibe-loading").hidden=true;setup.hidden=false;
     choice={scope:"all",name:"Random sequence"};
-    setup.innerHTML=`<div class="section-head"><h2>Choose music to map</h2></div><p id="vibe-remaining" class="muted" role="status">Finding unmapped music…</p>${note?`<p class="report-facts" role="status">${esc(note)}</p>`:""}<div id="vibe-resume"></div><div class="vibe-setup-actions"><button class="btn vibe-primary" id="vibe-random" type="button">Random sequence</button><strong id="vibe-selection">Random sequence</strong><button class="btn vibe-primary" id="vibe-start" type="button" disabled>Start mapping →</button></div><div class="pill-nav" aria-label="Find music">${["song","artist","album"].map((kind,i)=>`<button class="pill ${kind} ${i===0?"active":""}" type="button" data-vibe-kind="${kind}" aria-pressed="${i===0}">${kind[0].toUpperCase()+kind.slice(1)}s</button>`).join("")}</div><label class="vibe-search-label" for="vibe-search">Find a song, artist or album</label><input id="vibe-search" class="vibe-search" type="search" placeholder="Search songs…" autocomplete="off"><div id="vibe-choices" class="vibe-choices" aria-live="polite"></div>`;
+    setup.innerHTML=`<div class="section-head"><h2>Choose music to map</h2></div><p id="vibe-remaining" class="muted" role="status">Finding unmapped music…</p>${note?`<p class="report-facts" role="status">${esc(note)}</p>`:""}<div id="vibe-resume"></div><div class="vibe-setup-actions"><button class="btn vibe-primary" id="vibe-random" type="button">Random sequence</button><strong id="vibe-selection"></strong><button class="btn vibe-primary" id="vibe-start" type="button" disabled>Start mapping →</button></div><div class="pill-nav" aria-label="Find music">${["song","artist","album"].map((kind,i)=>`<button class="pill ${kind} ${i===0?"active":""}" type="button" data-vibe-kind="${kind}" aria-pressed="${i===0}">${kind[0].toUpperCase()+kind.slice(1)}s</button>`).join("")}</div><label class="vibe-search-label" for="vibe-search">Find a song, artist or album</label><div class="search-form"><input id="vibe-search" class="vibe-search" type="search" placeholder="Search songs…" autocomplete="off"></div><div id="vibe-choices" class="vibe-choices" aria-live="polite"></div>`;
     let kind="song",starting=false;
     $("#vibe-search").addEventListener("input",()=>void searchChoices(kind));
     setup.querySelectorAll("[data-vibe-kind]").forEach(button=>button.addEventListener("click",()=>{
       kind=button.dataset.vibeKind;setup.querySelectorAll("[data-vibe-kind]").forEach(b=>{b.setAttribute("aria-pressed",String(b===button));b.classList.toggle("active",b===button);});
       $("#vibe-search").placeholder=`Search ${kind}s…`;void searchChoices(kind);
     }));
-    $("#vibe-random").onclick=()=>{choice={scope:"all",name:"Random sequence"};$("#vibe-selection").textContent=choice.name;void searchChoices(kind);};
+    $("#vibe-random").onclick=()=>{choice={scope:"all",name:"Random sequence"};$("#vibe-selection").textContent="";void searchChoices(kind);};
     $("#vibe-start").onclick=async()=>{
       if(starting)return;starting=true;
       const button=$("#vibe-start");button.disabled=true;button.textContent="Loading…";

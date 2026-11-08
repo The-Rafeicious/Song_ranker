@@ -545,3 +545,7 @@ body[data-page="vibe_map"] .vibe-head {display:block;}
 .vibe-head-actions {position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;gap:12px;flex-wrap:wrap;}
 body[data-page="vibe_map"] .vibe-head-actions .vibe-stats-link {position:static;transform:none;margin:0;}
 @media(max-width:900px){.vibe-head-actions{position:static;transform:none;justify-content:flex-end;margin-top:12px;}}
+
+.vibe-setup .search-form {margin:0;}
+.vibe-setup-actions #vibe-selection:empty {display:none;}
+.vibe-setup-actions #vibe-start {margin-left:auto;}
