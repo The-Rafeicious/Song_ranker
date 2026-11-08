@@ -579,29 +579,30 @@ Timed field recognition, answer grading/corrections and detailed Trivia Stats.
 | [score_state](../songranker/modes/trivia.py#L49) | `conn` | Read current legacy-session Trivia score/streak and stored all-time records. |
 | [current](../songranker/modes/trivia.py#L66) | `conn, token` | Resolve a Trivia token only when its persisted challenge or legacy session belongs to this browser. |
 | [round_song](../songranker/modes/trivia.py#L76) | `conn, row` | Read the frozen Trivia answer snapshot, falling back to current song metadata for older rounds. |
-| [freeze_song](../songranker/modes/trivia.py#L87) | `conn, song` | Freeze song; reads artists, song_artists. |
-| [actual_answers](../songranker/modes/trivia.py#L111) | `conn, song` | Actual answers; reads artists, song_artists. |
-| [trivia_match](../songranker/modes/trivia.py#L130) | `guess, actual, field` | Bracketed additions are optional; the meaningful base must still match. |
-| [trivia_match.base](../songranker/modes/trivia.py#L135) | `value` | Strip nested bracketed credits and edition notes before comparing a Trivia answer. |
-| [grade](../songranker/modes/trivia.py#L156) | `conn, row, field, guess, song, seconds` | Save a single unanswered available Trivia field's correctness and bounded response time. |
-| [payload](../songranker/modes/trivia.py#L178) | `conn, row, reveal=False` | Payload; reads albums, artists, song_artists. |
-| [trivia_mode](../songranker/modes/trivia.py#L285) | `` | Trivia mode; GET /trivia. |
-| [api_trivia_round](../songranker/modes/trivia.py#L290) | `` | Serve trivia round; GET /api/trivia/round. |
-| [api_trivia_start](../songranker/modes/trivia.py#L351) | `token` | Serve trivia start; POST /api/trivia/<token>/start. |
-| [api_trivia_pause](../songranker/modes/trivia.py#L371) | `token` | Serve trivia pause; POST /api/trivia/<token>/pause. |
-| [api_trivia_field](../songranker/modes/trivia.py#L399) | `token` | Serve trivia field; POST /api/trivia/<token>/field. |
-| [api_trivia_finish](../songranker/modes/trivia.py#L429) | `token` | Serve trivia finish; POST /api/trivia/<token>/finish. |
-| [edit_trivia_totals](../songranker/modes/trivia.py#L497) | `conn, song_id, data` | Sparse manual deltas preserve the detailed history instead of rewriting it. |
-| [percentage](../songranker/modes/trivia.py#L553) | `correct, attempts` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [nonnegative](../songranker/modes/trivia.py#L557) | `value` | Coerce saved recognition counters to nonnegative integers with zero for invalid values. |
-| [finite](../songranker/modes/trivia.py#L567) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
-| [build_recognition_stats](../songranker/modes/trivia.py#L575) | `conn, now=None` | Use one caller-owned read snapshot, with no history LIMIT on aggregates. |
-| [build_recognition_stats.add_group](../songranker/modes/trivia.py#L613) | `target, identity, attempts, correct, sid` | Accumulate recognition attempts, correct answers and distinct tested songs for a collection. |
-| [build_recognition_stats.category](../songranker/modes/trivia.py#L750) | `kind, title, note, source, identities` | Build stable recognition accuracy/struggle leaders for one collection category. |
-| [trivia_stats](../songranker/modes/trivia.py#L893) | `` | Trivia stats; GET /trivia_stats. |
-| [saved_date](../songranker/modes/trivia.py#L904) | `value` | Format a finite saved recall time without inventing an unavailable date. |
-| [profile_trivia_details](../songranker/modes/trivia.py#L915) | `conn, song_ids` | Pool full completed recall evidence before selecting recent cohort rounds. |
-| [profile_trivia_details.window](../songranker/modes/trivia.py#L933) | `rows` | Pool eligible field counts in a disjoint recent round window. |
+| [trivia_accuracy](../songranker/modes/trivia.py#L87) | `conn, song_id, before_id=None` | Read established field accuracy, excluding this/later rounds for older snapshots. |
+| [freeze_song](../songranker/modes/trivia.py#L106) | `conn, song` | Freeze song; reads artists, song_artists. |
+| [actual_answers](../songranker/modes/trivia.py#L131) | `conn, song` | Actual answers; reads artists, song_artists. |
+| [trivia_match](../songranker/modes/trivia.py#L150) | `guess, actual, field` | Bracketed additions are optional; the meaningful base must still match. |
+| [trivia_match.base](../songranker/modes/trivia.py#L155) | `value` | Strip nested bracketed credits and edition notes before comparing a Trivia answer. |
+| [grade](../songranker/modes/trivia.py#L176) | `conn, row, field, guess, song, seconds` | Save a single unanswered available Trivia field's correctness and bounded response time. |
+| [payload](../songranker/modes/trivia.py#L198) | `conn, row, reveal=False` | Payload; reads albums, artists, song_artists. |
+| [trivia_mode](../songranker/modes/trivia.py#L306) | `` | Trivia mode; GET /trivia. |
+| [api_trivia_round](../songranker/modes/trivia.py#L311) | `` | Serve trivia round; GET /api/trivia/round. |
+| [api_trivia_start](../songranker/modes/trivia.py#L372) | `token` | Serve trivia start; POST /api/trivia/<token>/start. |
+| [api_trivia_pause](../songranker/modes/trivia.py#L392) | `token` | Serve trivia pause; POST /api/trivia/<token>/pause. |
+| [api_trivia_field](../songranker/modes/trivia.py#L420) | `token` | Serve trivia field; POST /api/trivia/<token>/field. |
+| [api_trivia_finish](../songranker/modes/trivia.py#L450) | `token` | Serve trivia finish; POST /api/trivia/<token>/finish. |
+| [edit_trivia_totals](../songranker/modes/trivia.py#L518) | `conn, song_id, data` | Sparse manual deltas preserve the detailed history instead of rewriting it. |
+| [percentage](../songranker/modes/trivia.py#L574) | `correct, attempts` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [nonnegative](../songranker/modes/trivia.py#L578) | `value` | Coerce saved recognition counters to nonnegative integers with zero for invalid values. |
+| [finite](../songranker/modes/trivia.py#L588) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
+| [build_recognition_stats](../songranker/modes/trivia.py#L596) | `conn, now=None` | Use one caller-owned read snapshot, with no history LIMIT on aggregates. |
+| [build_recognition_stats.add_group](../songranker/modes/trivia.py#L634) | `target, identity, attempts, correct, sid` | Accumulate recognition attempts, correct answers and distinct tested songs for a collection. |
+| [build_recognition_stats.category](../songranker/modes/trivia.py#L771) | `kind, title, note, source, identities` | Build stable recognition accuracy/struggle leaders for one collection category. |
+| [trivia_stats](../songranker/modes/trivia.py#L914) | `` | Trivia stats; GET /trivia_stats. |
+| [saved_date](../songranker/modes/trivia.py#L925) | `value` | Format a finite saved recall time without inventing an unavailable date. |
+| [profile_trivia_details](../songranker/modes/trivia.py#L936) | `conn, song_ids` | Pool full completed recall evidence before selecting recent cohort rounds. |
+| [profile_trivia_details.window](../songranker/modes/trivia.py#L954) | `rows` | Pool eligible field counts in a disjoint recent round window. |
 
 ## songranker/modes/vibe_map.py
 
@@ -1841,6 +1842,20 @@ Bracket depth rewards must not turn a bronze-playoff loss into an early-exit adv
 | [TournamentScoringTests.test_bad_and_unsupported_archives_keep_saved_points](../tests/test_tournament_scoring.py#L75) | `self` | Verify bad and unsupported archives keep saved points. |
 | [TournamentPointsAPITests.test_first_round_elo_and_archival_facts_are_preserved](../tests/test_tournament_scoring.py#L90) | `self` | Verify first round elo and archival facts are preserved. |
 
+## tests/test_trivia_reveal.py
+
+Prior field accuracy is frozen and revealed only with completed Trivia results.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [TriviaRevealTests.offer](../tests/test_trivia_reveal.py#L19) | `self` | Offer. |
+| [TriviaRevealTests.finish](../tests/test_trivia_reveal.py#L26) | `self, offered, guesses=None` | Finish. |
+| [TriviaRevealTests.test_prior_accuracy_uses_existing_fields_and_is_hidden_until_completion](../tests/test_trivia_reveal.py#L33) | `self` | Verify prior accuracy uses existing fields and is hidden until completion. |
+| [TriviaRevealTests.test_first_attempt_has_no_previous_percentage_even_when_correct](../tests/test_trivia_reveal.py#L49) | `self` | Verify first attempt has no previous percentage even when correct. |
+| [TriviaRevealTests.test_real_zero_percent_history_is_not_treated_as_missing](../tests/test_trivia_reveal.py#L54) | `self` | Verify real zero percent history is not treated as missing. |
+| [TriviaRevealTests.test_album_not_applicable_uses_only_available_fields](../tests/test_trivia_reveal.py#L59) | `self` | Verify album not applicable uses only available fields. |
+| [TriviaRevealTests.test_old_snapshots_exclude_current_and_later_rounds_without_writes](../tests/test_trivia_reveal.py#L63) | `self` | Verify old snapshots exclude current and later rounds without writes. |
+
 ## tests/test_vibe_entities.py
 
 Regression fixtures and assertions for vibe entities.
@@ -2120,4 +2135,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1444 Python definitions**.
+Total: **1452 Python definitions**.

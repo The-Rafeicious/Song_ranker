@@ -1265,3 +1265,13 @@ Same-round review still replaces its own contribution rather than adding a pass.
 Completed profiles are retired from every selection; old averages/pass counts
 are preserved without migration or relabelling. Artist/album choices stop when
 their remaining songs are exhausted; single-song choices return to setup.
+
+### v5.9.6.3 Trivia cover accuracy
+
+The completed Trivia payload adds `previous_trivia` with the pre-round field
+accuracy and prior round count, or null for a first attempt. The question
+snapshot freezes this value before grading; older snapshots fall back to
+read-only totals excluding that and later rounds. The value is absent until
+completion. It uses the same correct/available-field denominator as Trivia Stats,
+including legacy deltas and album N/A. The cover overlay does not alter points,
+field grading, timers or streaks.

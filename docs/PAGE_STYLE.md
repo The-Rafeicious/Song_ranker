@@ -478,3 +478,7 @@ buttons switch song/artist/album search; artwork choices show remaining songs.
 Random and scoped sequences exclude completed profiles. Resume preserves the
 current mapping; single-song results return to choices. Partial saved maps remain
 visible but are not remapped by a new mapping.
+
+Trivia's completed reveal uses the shared score-reveal cover overlay for previous
+field accuracy, in the Trivia accent. It appears with artwork only after all
+fields are settled, regardless of correctness. First attempts show no prior score.
