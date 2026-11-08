@@ -520,3 +520,32 @@ body[data-page="vibe_map"] .vibe-stats-link {
     margin: 12px 0 0 auto;
   }
 }
+
+/* Library-first mapping setup; reuse shared pills, actions and neutral panels. */
+body[data-page="vibe_map"] .vibe-setup {--surface-accent:var(--vibe);}
+.vibe-setup-actions,.vibe-resume {display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin:20px 0;}
+.vibe-setup-actions #vibe-selection {flex:1;min-width:0;overflow-wrap:anywhere;}
+.vibe-resume {padding:16px;border:1px solid color-mix(in srgb,var(--vibe) 18%,#383838);border-radius:18px;background:var(--panel);justify-content:space-between;}
+.vibe-search-label {display:block;margin:20px 0 8px;}
+.vibe-search {width:100%;min-height:48px;box-sizing:border-box;}
+.vibe-choices {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:20px;}
+.vibe-choices>.empty,.vibe-choices>p {grid-column:1/-1;}
+.vibe-choice {display:flex;align-items:center;gap:12px;text-align:left;min-width:0;padding:14px;border:1px solid #383838;border-radius:18px;background:#242424;color:var(--text);cursor:pointer;}
+.vibe-choice:is(:hover,[aria-pressed="true"]) {border-color:var(--vibe);background:color-mix(in srgb,var(--vibe) 6%,#242424);}
+.vibe-choice-art {display:grid;place-items:center;flex:0 0 56px;width:56px;height:56px;background:#161616;border-radius:12px;overflow:hidden;color:var(--vibe);}
+.vibe-choice-art.artist {border-radius:50%;}
+.vibe-choice-art img {width:100%;height:100%;object-fit:cover;}
+.vibe-choice-copy {display:flex;flex:1;flex-direction:column;gap:6px;min-width:0;}
+.vibe-choice-copy :is(strong,small) {overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.vibe-choice-copy small {color:var(--muted);font-size:14px;}
+.vibe-choice.song strong {color:var(--song);}.vibe-choice.artist strong {color:var(--artist);}.vibe-choice.album strong {color:var(--album);}
+@media(max-width:700px){.vibe-choices{grid-template-columns:minmax(0,1fr);}.vibe-setup-actions #vibe-start{width:100%;}.vibe-resume{align-items:flex-start;}}
+
+body[data-page="vibe_map"] .vibe-head {display:block;}
+.vibe-head-actions {position:absolute;right:0;top:50%;transform:translateY(-50%);display:flex;gap:12px;flex-wrap:wrap;}
+body[data-page="vibe_map"] .vibe-head-actions .vibe-stats-link {position:static;transform:none;margin:0;}
+@media(max-width:900px){.vibe-head-actions{position:static;transform:none;justify-content:flex-end;margin-top:12px;}}
+
+.vibe-setup .search-form {margin:0;}
+.vibe-setup-actions #vibe-selection:empty {display:none;}
+.vibe-setup-actions #vibe-start {margin-left:auto;}

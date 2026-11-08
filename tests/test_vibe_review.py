@@ -1,4 +1,5 @@
 """Review replaces one contribution; public similarity has explicit evidence."""
+import json
 from unittest.mock import patch
 import unittest
 from songranker.modes import vibe_map as V
@@ -34,9 +35,17 @@ class VibeReviewTests(unittest.TestCase):
         self.assertEqual(row['map_index'],4)
         validate(self.conn)
 
-    def test_review_preserves_other_browser_and_previous_pass_contributions(self):
+    def test_review_preserves_historical_other_browser_contributions(self):
         a=self.finish(self.start('a'),x=-5,y=-5,owner='a')
-        b=self.finish(self.start('b'),x=5,y=5,owner='b')
+        # Import an old second pass without offering another one in the new mode.
+        legacy=dict(V.current(self.conn,'a'));legacy['owner_hash']=V.owner_hash('b');legacy['token']='historical-b'
+        answers=json.loads(legacy['answers'])
+        for key in V.KEYS:answers[key].update(x=1,y=1)
+        legacy['answers']=json.dumps(answers)
+        self.conn.execute('INSERT INTO vibe_rounds ('+','.join(legacy)+') VALUES ('+','.join('?' for _ in legacy)+')',tuple(legacy.values()))
+        self.conn.execute("UPDATE song_vibe_positions SET x=0,y=0,sample_count=2 WHERE song_id=1")
+        self.conn.execute('UPDATE song_vibe_progress SET completed_passes=2 WHERE song_id=1');self.conn.commit()
+        b=V.payload(self.conn,V.current(self.conn,'b'))['round']
         a,_=self.edit(a,x=0,y=0,owner='a')
         point=V.profile(self.conn,1)['maps']['pace_mood']
         self.assertEqual((point['x'],point['y'],point['sample_count']),(2.5,2.5,2))

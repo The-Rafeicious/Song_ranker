@@ -70,6 +70,7 @@ class ArchitectureTests(unittest.TestCase):
         added.append(dict(path='/api/song/<int:song_id>/stats',endpoint='song_stats',methods=['GET']))
         added.append(dict(path='/api/profile/<kind>/<int:entity_id>/stats',endpoint='collection_stats',methods=['GET']))
         added.append(dict(path='/query',endpoint='mode_query_page',methods=['GET']))
+        added.append(dict(path='/api/vibe-map/options',endpoint='api_vibe_map_options',methods=['GET']))
         added.append(dict(path='/api/query',endpoint='mode_query_api',methods=['GET']))
         self.assertEqual(expected, [r for r in actual if r not in added])
 

@@ -594,12 +594,25 @@ def preference_pair(conn, mode, owner=None, rng=random):
     return tuple(dict(get_song_full(s["id"], conn)) for s in pair)
 
 
-def vibe_song(conn, *, counts=None, previous=None, rng=random):
-    """Read-only Vibe Map draw, ready for the later round controller.
+def eligible_vibe_ids(conn, scope="all", scope_id=None):
+    """Return unfinished profiles only; completed passes and four resolved slots retire a song."""
+    filters = {
+        "all": "1=1", "song": "s.id=?", "album": "s.album_id=?",
+        "artist": "EXISTS(SELECT 1 FROM song_artists a WHERE a.song_id=s.id AND a.artist_id=?)",
+    }
+    if scope not in filters:
+        raise ValueError("Choose songs, an artist, an album or random.")
+    return {r[0] for r in conn.execute("""SELECT s.id FROM songs s WHERE """ + filters[scope] + """
+        AND NOT EXISTS(SELECT 1 FROM song_vibe_progress p WHERE p.song_id=s.id AND p.completed_passes>0)
+        AND (SELECT COUNT(*) FROM song_vibe_positions v WHERE v.song_id=s.id AND v.status IN ('placed','not_applicable'))<4""",
+        () if scope == "all" else (scope_id,))}
 
-    Read saved completed-pass counts, retaining a one-pass lower bound for
-    legacy fully mapped songs. Merely drawing or editing a draft never counts.
-    Explicit caller counts can override individual entries.
+
+def vibe_song(conn, *, counts=None, previous=None, rng=random, scope="all", scope_id=None):
+    """Draw only unfinished songs in the requested cohort, without changing evidence.
+
+    Completed passes and legacy four-slot profiles never re-enter the pool, even
+    when an explicit selection counter overrides draw weights.
     """
 
     from songranker.services import get_song_full
@@ -620,8 +633,10 @@ def vibe_song(conn, *, counts=None, previous=None, rng=random):
     }
     if counts is not None:
         completed.update(counts)
+    eligible = eligible_vibe_ids(conn, scope, scope_id)
+    pool = [song for song in pool if song["id"] in eligible]
     chosen = choose_vibe_song(pool, rng, counts=completed, previous=previous)
-    return get_song_full(chosen["id"], conn) if chosen is not None else None
+    return get_song_full(chosen["id"], conn) if chosen is not None and chosen["id"] in eligible else None
 
 
 def album_vibe_groups(conn, album_ids):

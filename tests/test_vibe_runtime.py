@@ -24,7 +24,8 @@ class VibeRuntimeTests(unittest.TestCase):
         self.now=1000.0
         clock=patch.object(V.time,'time',side_effect=lambda:self.now)
         clock.start();self.addCleanup(clock.stop)
-        chooser=patch.object(V,'vibe_song',return_value=dict(id=1))
+        from songranker.modes.selection import eligible_vibe_ids
+        chooser=patch.object(V,'vibe_song',side_effect=lambda conn,**kw: next((dict(id=sid) for sid in sorted(eligible_vibe_ids(conn,kw.get('scope','all'),kw.get('scope_id')))),None))
         chooser.start();self.addCleanup(chooser.stop)
 
     def start(self,owner='browser',previous=None):
@@ -46,6 +47,73 @@ class VibeRuntimeTests(unittest.TestCase):
             row,_=self.draft(row,x,y,status,owner);self.now+=5
             result,_=self.advance(row,owner);row=result['round']
         return row
+
+    def test_chooser_is_read_only_and_filters_completed_songs_and_collections(self):
+        self.finish(self.start())
+        before=capture(self.conn)
+        songs=V.mapping_options(self.conn,'song','Song')
+        self.assertEqual(songs['library_remaining'],9)
+        self.assertNotIn(1,[r['id'] for r in songs['results']])
+        self.assertEqual(V.mapping_options(self.conn,'artist')['results'][0]['remaining'],9)
+        albums=V.mapping_options(self.conn,'album')['results']
+        self.assertEqual({r['id']:r['remaining'] for r in albums},{1:4,2:5})
+        self.assertEqual(V.mapping_options(self.conn,'song','Song 2')['results'][0]['id'],2)
+        self.assertEqual(capture(self.conn),before)
+        client=V.app.test_client()
+        self.assertEqual(client.get('/api/vibe-map/options?kind=artist').status_code,200)
+        self.assertEqual(client.get('/api/vibe-map/options?kind=bad').status_code,400)
+        self.assertEqual(capture(self.conn),before)
+
+    def test_selected_cohort_and_specific_song_are_server_enforced(self):
+        row=V.start(self.conn,'album',dict(scope='album',scope_id=2))['round']
+        self.assertEqual(row['song']['id'],6)
+        row=self.finish(row,owner='album')
+        row=V.start(self.conn,'album',dict(scope='album',scope_id=2,previous_token=row['token']))['round']
+        self.assertEqual(row['song']['id'],7)
+        row=V.start(self.conn,'one',dict(scope='song',scope_id=3))['round']
+        self.assertEqual(row['song']['id'],3)
+        before=capture(self.conn)
+        for data in [dict(scope='bad'),dict(scope=[]),dict(scope='song',scope_id=True),dict(scope='album',scope_id=99999)]:
+            with self.assertRaises(V.VibeError):V.start(self.conn,'invalid',data)
+        self.assertEqual(capture(self.conn),before)
+
+    def test_fully_mapped_legacy_averages_are_retired_without_changing_values(self):
+        self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=.3,y=-.4,updated_at=1,sample_count=3 WHERE song_id=1")
+        self.conn.commit();before=capture(self.conn)
+        self.assertNotIn(1,[r['id'] for r in V.mapping_options(self.conn)['results']])
+        with self.assertRaises(V.VibeError):V.start(self.conn,'legacy',dict(scope='song',scope_id=1))
+        self.assertEqual(capture(self.conn),before)
+
+    def test_pending_same_mapping_review_can_resume_or_leave_without_another_pass(self):
+        row=self.finish(self.start())
+        row=V.draft(self.conn,'browser',dict(token=row['token'],map_id='pace_mood',revision=row['revision'],request_id='review',x=2,y=3))['round']
+        self.assertTrue(row['can_resume'])
+        V.cancel(self.conn,'browser',dict(token=row['token'],revision=row['revision']))
+        self.assertIsNone(V.current(self.conn,'browser')['draft_status'])
+        self.assertEqual(pass_counts(self.conn,[1])[1],1)
+        self.assertEqual(self.start(previous=row['token'])['song']['id'],2)
+
+    def test_upgrade_does_not_resume_an_old_repeat_but_still_allows_switching(self):
+        row=self.start()
+        self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=.3,y=.4,updated_at=1,sample_count=2 WHERE song_id=1")
+        self.conn.execute('UPDATE song_vibe_progress SET completed_passes=2 WHERE song_id=1');self.conn.commit()
+        before=capture(self.conn)
+        self.assertFalse(V.payload(self.conn,V.current(self.conn,'browser'))['round']['can_resume'])
+        with self.assertRaises(V.VibeError):self.draft(row)
+        self.assertEqual(capture(self.conn),before)
+        V.cancel(self.conn,'browser',dict(token=row['token'],revision=row['revision']))
+        next_round=V.start(self.conn,'browser',dict(previous_token=row['token'],scope='song',scope_id=2))['round']
+        self.assertEqual(next_round['song']['id'],2)
+        self.assertEqual(V.profile(self.conn,1)['completed_passes'],2)
+        self.assertTrue(all(p['sample_count']==2 for p in V.profile(self.conn,1)['maps'].values()))
+
+    def test_exhausted_sequence_does_not_create_another_round(self):
+        self.conn.execute('UPDATE song_vibe_progress SET completed_passes=1');self.conn.commit()
+        before=capture(self.conn)
+        with self.assertRaises(V.VibeError) as error:self.start()
+        self.assertEqual(error.exception.code,'selection_complete')
+        self.assertEqual(V.mapping_options(self.conn)['library_remaining'],0)
+        self.assertEqual(capture(self.conn),before)
 
     def test_start_and_get_are_resumable_and_do_not_count_attempts(self):
         row=self.start();again=self.start()
@@ -97,29 +165,44 @@ class VibeRuntimeTests(unittest.TestCase):
         self.assertEqual(next_round['saved_maps'],[])
         self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM vibe_rounds').fetchone()[0],1)
 
-    def test_repeat_placements_are_true_running_means_not_repeated_halves(self):
-        row=self.start()
-        for x in (-5,5,5):
-            row=self.finish(row,x=x,y=-x)
-            if x==-5 or pass_counts(self.conn,[1])[1]<3:row=self.start(previous=row['token'])
-        points=self.conn.execute('SELECT * FROM song_vibe_positions WHERE song_id=1').fetchall()
-        self.assertEqual(len(points),4)
-        for point in points:
-            self.assertEqual(point['sample_count'],3)
-            self.assertAlmostEqual(point['x'],1/3)
-            self.assertAlmostEqual(point['y'],-1/3)
-        self.assertEqual(pass_counts(self.conn,[1])[1],3)
-        self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM vibe_rounds').fetchone()[0],1)
+    def test_completed_song_cannot_receive_another_pass(self):
+        row=self.finish(self.start(),x=-5,y=5)
+        before=capture(self.conn)
+        with self.assertRaises(V.VibeError) as error:
+            V.start(self.conn,'browser',dict(previous_token=row['token'],scope='song',scope_id=1))
+        self.assertEqual(error.exception.code,'selection_complete')
+        self.assertEqual(capture(self.conn),before)
+        self.assertEqual(self.start(previous=row['token'])['song']['id'],2)
+        self.assertEqual(pass_counts(self.conn,[1])[1],1)
+        self.assertTrue(all(r[0]==1 for r in self.conn.execute('SELECT sample_count FROM song_vibe_positions WHERE song_id=1')))
 
-    def test_not_applicable_is_a_gap_and_does_not_erase_an_existing_average(self):
+    def test_not_applicable_completes_once_without_fabricated_coordinates(self):
         row=self.finish(self.start(),status='not_applicable')
         self.assertTrue(all(p['radius'] is None for p in row['summary']['selection_radar']['spokes']))
-        row=self.finish(self.start(previous=row['token']),x=4,y=3)
-        row=self.finish(self.start(previous=row['token']),status='not_applicable')
+        self.assertEqual(pass_counts(self.conn,[1])[1],1)
         for point in V.profile(self.conn,1)['maps'].values():
-            self.assertEqual(point['status'],'placed');self.assertEqual(point['sample_count'],1)
-            self.assertEqual(point['not_applicable_count'],2)
-            self.assertEqual(point['x'],4);self.assertEqual(point['y'],3)
+            self.assertEqual(point['status'],'not_applicable');self.assertEqual(point['sample_count'],0)
+            self.assertEqual(point['not_applicable_count'],1);self.assertIsNone(point['x'])
+        self.assertNotEqual(self.start(previous=row['token'])['song']['id'],1)
+
+    def test_cancelled_partial_resumes_only_missing_maps(self):
+        row,_=self.draft(self.start());self.now+=5
+        row=self.advance(row)[0]['round']
+        V.cancel(self.conn,'browser',dict(token=row['token'],revision=row['revision']))
+        row=V.start(self.conn,'browser',dict(previous_token=row['token'],scope='song',scope_id=1))['round']
+        self.assertEqual(row['map_index'],1);self.assertTrue(row['saved_maps'][0]['read_only'])
+        row=self.finish(row,x=4,y=3)
+        points=V.profile(self.conn,1)['maps']
+        self.assertAlmostEqual(points['pace_mood']['x'],1.234567)
+        self.assertTrue(all(p['sample_count']==1 for p in points.values()))
+        self.assertEqual(pass_counts(self.conn,[1])[1],1)
+
+    def test_parallel_browser_cannot_add_another_sample(self):
+        first=self.start();second=self.start(owner='second')
+        first,_=self.draft(first);second,_=self.draft(second,owner='second');self.now+=5
+        self.advance(first);before=capture(self.conn)
+        with self.assertRaises(V.VibeError) as error:self.advance(second,owner='second')
+        self.assertEqual(error.exception.code,'already_mapped');self.assertEqual(capture(self.conn),before)
 
     def test_reordered_stale_and_foreign_requests_are_rejected_without_writes(self):
         row,_=self.draft(self.start());before=capture(self.conn)
@@ -167,12 +250,13 @@ class VibeRuntimeTests(unittest.TestCase):
         self.assertEqual(sorted(results),[False,True])
         self.assertEqual(self.conn.execute('SELECT SUM(sample_count) FROM song_vibe_positions').fetchone()[0],1)
 
-    def test_two_browsers_merge_samples_without_lost_updates(self):
+    def test_two_browsers_keep_first_saved_mapping_without_averaging(self):
         a,_=self.draft(self.start('a'),x=-5,y=-5,owner='a')
         b,_=self.draft(self.start('b'),x=5,y=5,owner='b');self.now+=5
-        self.advance(a,'a');self.advance(b,'b')
+        self.advance(a,'a')
+        with self.assertRaises(V.VibeError):self.advance(b,'b')
         p=V.profile(self.conn,1)['maps']['pace_mood']
-        self.assertEqual(p['sample_count'],2);self.assertEqual(p['x'],0);self.assertEqual(p['y'],0)
+        self.assertEqual(p['sample_count'],1);self.assertEqual(p['x'],-5);self.assertEqual(p['y'],-5)
 
     def test_active_draft_and_receipts_survive_rebuild_and_restart(self):
         row,_=self.draft(self.start());self.now+=5
