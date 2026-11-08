@@ -507,7 +507,7 @@
       if(starting)return;starting=true;
       const button=$("#vibe-start");button.disabled=true;button.textContent="Loading…";
       try {
-        if(round?.status==="active")round=(await api("cancel",{token:round.token,revision:round.revision})).round;
+        if(round?.status==="active"||round?.draft)round=(await api("cancel",{token:round.token,revision:round.revision})).round;
         sequence={...choice};try{sessionStorage.setItem("vibe-mapping-selection",JSON.stringify(sequence));}catch{}
         await load({...sequence,...(round?{previous_token:round.token}:{})});
       } catch(error){showError(error,()=>showSetup());}
@@ -516,7 +516,7 @@
     try {
       const state=await api("state");if(closed||phase!=="setup")return;
       round=state.round;
-      if(round?.status==="active"){
+      if((round?.status==="active"||round?.draft)&&round.can_resume!==false){
         $("#vibe-resume").innerHTML=`<div class="vibe-resume"><span>Continue <strong>${esc(round.song.title)}</strong> · ${round.saved_maps.length}/4 maps saved</span><button class="btn" id="vibe-resume-button" type="button">Resume mapping</button></div>`;
         $("#vibe-resume-button").onclick=()=>displayRound(round);
       }

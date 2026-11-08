@@ -22,6 +22,7 @@ async function harness({autostart=true,resume=false}={}){
  const newRound=()=>({token:'token-'+(++seq),song:{id:seq,title:'Song '+seq,album:'Album',tag_ids:seq===1?[]:[7],artist:'Artist',artist_links:[{name:'Artist'}],cover_url:'/art.jpg',audio_url:'https://audio-ssl.itunes.apple.com/test.m4a'},maps,map_index:0,revision:0,status:'active',saved_maps:[],draft:null,remaining_ms:null});
  function summary(){const spokes=Array.from({length:8},(_,i)=>({key:''+i,low:'Sad',high:'Happy',label:'Happy',radius:i/8,value:i-4}));server.summary={selection_radar:{spokes},aggregate:{radar:{spokes},completed_passes:1}};}
  if(resume)server=newRound();
+ if(resume==="retired")server.can_resume=false;
  const calls=[];w.fetch=async(url,options={})=>{
   const body=options.body?JSON.parse(options.body):null;calls.push({url,body});let replay=false;
   if(url.endsWith('/state'))return {ok:true,json:async()=>({round:structuredClone(server)})};
@@ -72,6 +73,8 @@ async function harness({autostart=true,resume=false}={}){
  await single.click('#vibe-finish');check(single.d.querySelector('#vibe-finish').textContent==='Choose another song','single choice stops after its mapping');
  await single.click('#vibe-finish');check(!single.d.querySelector('#vibe-setup').hidden,'single result returns to chooser');
  check(single.calls.filter(c=>c.url.endsWith('/round')).length===1,'returning to chooser does not auto-draw');single.dom.window.close();
+ const retired=await harness({autostart:false,resume:"retired"});check(!retired.d.querySelector('#vibe-resume-button'),'old repeat mappings are not offered for Resume');
+ await retired.click('#vibe-start');check(retired.calls.some(c=>c.url.endsWith('/cancel')),'switching from an old repeat remains possible');retired.dom.window.close();
  const resumed=await harness({autostart:false,resume:true});check(!!resumed.d.querySelector('#vibe-resume-button'),'active saved mapping offers Resume');
  await resumed.click('#vibe-resume-button');check(!!resumed.d.querySelector('#vibe-plane'),'Resume returns to mapping');
  check(!resumed.calls.some(c=>c.url.endsWith('/round')),'Resume creates no second round');resumed.dom.window.close();

@@ -84,6 +84,29 @@ class VibeRuntimeTests(unittest.TestCase):
         with self.assertRaises(V.VibeError):V.start(self.conn,'legacy',dict(scope='song',scope_id=1))
         self.assertEqual(capture(self.conn),before)
 
+    def test_pending_same_mapping_review_can_resume_or_leave_without_another_pass(self):
+        row=self.finish(self.start())
+        row=V.draft(self.conn,'browser',dict(token=row['token'],map_id='pace_mood',revision=row['revision'],request_id='review',x=2,y=3))['round']
+        self.assertTrue(row['can_resume'])
+        V.cancel(self.conn,'browser',dict(token=row['token'],revision=row['revision']))
+        self.assertIsNone(V.current(self.conn,'browser')['draft_status'])
+        self.assertEqual(pass_counts(self.conn,[1])[1],1)
+        self.assertEqual(self.start(previous=row['token'])['song']['id'],2)
+
+    def test_upgrade_does_not_resume_an_old_repeat_but_still_allows_switching(self):
+        row=self.start()
+        self.conn.execute("UPDATE song_vibe_positions SET status='placed',x=.3,y=.4,updated_at=1,sample_count=2 WHERE song_id=1")
+        self.conn.execute('UPDATE song_vibe_progress SET completed_passes=2 WHERE song_id=1');self.conn.commit()
+        before=capture(self.conn)
+        self.assertFalse(V.payload(self.conn,V.current(self.conn,'browser'))['round']['can_resume'])
+        with self.assertRaises(V.VibeError):self.draft(row)
+        self.assertEqual(capture(self.conn),before)
+        V.cancel(self.conn,'browser',dict(token=row['token'],revision=row['revision']))
+        next_round=V.start(self.conn,'browser',dict(previous_token=row['token'],scope='song',scope_id=2))['round']
+        self.assertEqual(next_round['song']['id'],2)
+        self.assertEqual(V.profile(self.conn,1)['completed_passes'],2)
+        self.assertTrue(all(p['sample_count']==2 for p in V.profile(self.conn,1)['maps'].values()))
+
     def test_exhausted_sequence_does_not_create_another_round(self):
         self.conn.execute('UPDATE song_vibe_progress SET completed_passes=1');self.conn.commit()
         before=capture(self.conn)

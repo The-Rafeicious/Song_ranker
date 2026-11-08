@@ -164,7 +164,9 @@ def payload(conn, row, now=None):
     for definition in definitions:
         definition.update(min=-SCALE, max=SCALE, step=None, display_decimals=2)
     song = get_song_full(row["song_id"], conn)
+    from songranker.modes.selection import eligible_vibe_ids
     result = dict(
+        can_resume=(row["status"] == "active" and row["song_id"] in eligible_vibe_ids(conn,"song",row["song_id"])) or (row["status"] == "complete" and row["draft_status"] is not None),
         version=VIBE_MAP_VERSION,
         token=row["token"],
         song=snapshot_song(conn, song),
@@ -304,6 +306,8 @@ def start(conn, owner, data):
     with transaction(conn):
         scope, scope_id = mapping_scope(conn, data)
         old = current(conn, owner)
+        if old and old['status']=='active' and old['song_id'] not in eligible_vibe_ids(conn,'song',old['song_id']):
+            raise VibeError('This song is already mapped. Choose another song.', 'already_mapped',409)
         if old and (old['status']=='active' or old['draft_status'] is not None or data.get('previous_token') is None):
             if old['status']=='active' and scope != 'all' and old['song_id'] not in eligible_vibe_ids(conn,scope,scope_id):
                 raise VibeError('Resume or leave the current song before choosing another.', 'active_round',409)
@@ -329,6 +333,9 @@ def draft(conn, owner, data):
     """
     with transaction(conn):
         row = require_round(conn, owner, data)
+        from songranker.modes.selection import eligible_vibe_ids
+        if row['status']=='active' and row['song_id'] not in eligible_vibe_ids(conn,'song',row['song_id']):
+            raise VibeError('This song is already mapped. Reload choices for another song.', 'already_mapped',409)
         key = identifier(data.get("request_id"))
         status, x, y = placement(data)
         answers = json.loads(row["answers"])
@@ -384,6 +391,9 @@ def advance(conn, owner, data):
             raise VibeError(
                 "Use a new request_id for each save.", "request_conflict", 409
             )
+        from songranker.modes.selection import eligible_vibe_ids
+        if row['status']=='active' and row['song_id'] not in eligible_vibe_ids(conn,'song',row['song_id']):
+            raise VibeError('This song is already mapped. Reload choices for another song.', 'already_mapped',409)
         require_stage(row, data)
         if (
             row["draft_status"] is None
@@ -490,15 +500,17 @@ def cancel(conn, owner, data):
     with transaction(conn):
         row = require_round(conn, owner, data)
         expected = revision(data.get("revision"))
+        if row["status"] == "complete" and row["draft_status"] is None and expected == row["revision"]-1:
+            return payload(conn, row)
         if row["status"] == "cancelled" and expected in (
             row["revision"],
             row["revision"] - 1,
         ):
             return payload(conn, row)
-        if row["status"] != "active" or row["revision"] != expected:
+        if (row["status"] != "active" and not (row["status"] == "complete" and row["draft_status"] is not None)) or row["revision"] != expected:
             raise VibeError("This round has changed or ended.", "stale_revision", 409)
         conn.execute(
-            """UPDATE vibe_rounds SET status='cancelled',finished_at=?,revision=revision+1,
+            """UPDATE vibe_rounds SET status=CASE WHEN status='complete' THEN 'complete' ELSE 'cancelled' END,finished_at=COALESCE(finished_at,?),revision=revision+1,
             draft_status=NULL,draft_x=NULL,draft_y=NULL,draft_at=NULL,draft_key=NULL WHERE owner_hash=?""",
             (time.time(), owner_hash(owner)),
         )
