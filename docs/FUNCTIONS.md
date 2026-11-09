@@ -1134,9 +1134,9 @@ Preserve public routes, asset order and profile reads across module consolidatio
 | [Assets.handle_starttag](../tests/test_architecture.py#L28) | `self, tag, attrs` | Handle starttag. |
 | [ArchitectureTests.register](../tests/test_architecture.py#L40) | `self` | Register the launcher's actual feature owners without running startup sync. |
 | [ArchitectureTests.test_all_previous_urls_methods_and_endpoint_names_are_preserved](../tests/test_architecture.py#L45) | `self` | Verify all previous urls methods and endpoint names are preserved. |
-| [ArchitectureTests.test_retired_match_network_has_no_routes_or_public_assets](../tests/test_architecture.py#L77) | `self` | Verify retired match network has no routes or public assets. |
-| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L87) | `self` | Verify pages use one asset registry and last shared baseline. |
-| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L137) | `self` | Verify collection profiles share identity payloads and are read only. |
+| [ArchitectureTests.test_retired_match_network_has_no_routes_or_public_assets](../tests/test_architecture.py#L79) | `self` | Verify retired match network has no routes or public assets. |
+| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L89) | `self` | Verify pages use one asset registry and last shared baseline. |
+| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L139) | `self` | Verify collection profiles share identity payloads and are read only. |
 
 ## tests/test_bulk_source_review.py
 
