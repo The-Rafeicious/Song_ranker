@@ -970,41 +970,25 @@ body.gameplay-page #main .shelf-reveal-progress {line-height: 1.5; max-width: 10
   body.gameplay-page #main .shelf-perfect-score {width: 100%;}
 }
 
-/* Post-vote Vibe evidence stays beside VS throughout the score reveal. */
-body.gameplay-page #main .match-center {
-  position: relative;
-  align-self: center;
-  justify-self: center;
-  width: 48px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+/* A full row above the cards keeps the comparison visible on narrow screens. */
 body.gameplay-page #main .match-similarity {
-  position: absolute;
-  top: calc(100% + 10px);
-  width: 84px;
-  box-sizing: border-box;
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 9px 4px;
-  border: 1px solid color-mix(in srgb, var(--vibe) 28%, #383838);
-  border-radius: 14px;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px 18px;
+  margin: 0 auto 16px;
+  padding: 12px 18px;
+  border: 1px solid color-mix(in srgb, var(--vibe) 18%, #383838);
+  border-radius: 18px;
   background: color-mix(in srgb, var(--vibe) 3%, #242424);
-  color: var(--vibe);
   text-align: center;
   line-height: 1.2;
 }
-body.gameplay-page #main .match-similarity small {font-size: 11px;}
-body.gameplay-page #main .match-similarity strong {font-size: 20px;}
-body.gameplay-page #main .match-similarity span {font-size: 11px; color: var(--muted);}
+body.gameplay-page #main .match-similarity-label {font-size: 16px; font-weight: 800;}
+body.gameplay-page #main .match-similarity strong {font-size: clamp(28px, 4vw, 36px); color: var(--vibe);}
+body.gameplay-page #main .match-similarity-coverage {font-size: 14px; color: var(--muted);}
 body.gameplay-page #main .score-reveal[hidden] {display: none;}
-@media (max-width: 700px) {
-  body.gameplay-page #main .match-center {width: auto; gap: 12px;}
-  body.gameplay-page #main .match-similarity {position: static; width: 110px;}
-}
 
 /* Trivia shares the result gradient, type and arrival motion used by Elo/points. */
 body.gameplay-page #main .trivia-art {position:relative;width:fit-content;margin:0 auto 14px;}

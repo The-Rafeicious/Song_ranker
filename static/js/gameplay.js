@@ -141,15 +141,14 @@ window.GameplayUI = (() => {
       });
     }
   });
-  function matchCenter(comparison) {
+  function matchSimilarity(comparison) {
     const score = comparison?.similarity, shared = comparison?.shared_maps,
       total = comparison?.total_maps;
     const available = Number.isFinite(score) && score >= 0 && score <= 100 &&
       Number.isInteger(shared) && shared > 0 && Number.isInteger(total) && total >= shared;
-    const badge = available ? `<div class="match-similarity" role="status" title="Vibe Map closeness across shared placed maps"><small>Vibe similarity</small><strong>${score.toFixed(1).replace(/\.0$/, "")}%</strong><span>${shared}/${total} maps</span></div>` : "";
-    return `<div class="match-center"><span class="vs-circle">VS</span>${badge}</div>`;
+    return available ? `<div class="match-similarity" role="status" title="Vibe Map closeness across shared placed maps"><span class="match-similarity-label">Vibe similarity</span><strong>${score.toFixed(1).replace(/\.0$/, "")}%</strong><span class="match-similarity-coverage">${shared}/${total} maps</span></div>` : "";
   }
-  return Object.freeze({ select, close, matchCenter });
+  return Object.freeze({ select, close, matchSimilarity });
 })();
 
 /* Shared result pacing and one speculative JSON question. No scoring or audio. */

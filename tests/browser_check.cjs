@@ -771,8 +771,13 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.match(await page.locator('.match-similarity').textContent(),/82.4%/);
   for(const width of [1365,390]){
    await page.setViewportSize({width,height:1050});await bounded(page,width,'vote-similarity',folder);
-   if(width>700){const boxes=await page.locator('.matchup').evaluate(root=>({left:root.querySelectorAll('.game-card')[0].getBoundingClientRect().right,right:root.querySelectorAll('.game-card')[1].getBoundingClientRect().left,badge:root.querySelector('.match-similarity').getBoundingClientRect().toJSON()}));assert.ok(boxes.badge.left>=boxes.left&&boxes.badge.right<=boxes.right,'Similarity fits between cards');}
-   await page.locator('.matchup').screenshot({path:folder+'/vote-similarity-'+width+'.png'});
+   const boxes=await page.locator('.matchup').evaluate(root=>({
+     matchup:root.getBoundingClientRect().toJSON(),
+     panel:root.previousElementSibling.getBoundingClientRect().toJSON(),
+     scoreSize:parseFloat(getComputedStyle(root.previousElementSibling.querySelector('strong')).fontSize),
+   }));
+   assert.ok(boxes.panel.bottom<=boxes.matchup.top&&boxes.panel.width>=boxes.matchup.width*.8&&boxes.scoreSize>=28,'Similarity has a readable row above the cards');
+   await page.locator('#main').screenshot({path:folder+'/vote-similarity-'+width+'.png'});
   }
   const similarityMatches=[0,1].map(i=>({id:900+i,tournament_id:999,round_number:1,match_number:i+1,match_type:'bracket',song1_id:matchTracks[2*i].id,song2_id:matchTracks[2*i+1].id,status:'pending'}));
   await page.route('**/api/tournaments/999',route=>route.fulfill({json:{tournament:{id:999,size:8,status:'in_progress',is_blind:1,scope_type:'global'},entries:matchTracks,matches:similarityMatches}}));
@@ -783,10 +788,10 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.equal(await page.locator('.score-reveal:visible').count(),0,'Similarity precedes tournament points');
   await page.locator('#bracket-points').waitFor();
   await page.setViewportSize({width:1365,height:1050});await bounded(page,1365,'tournament-similarity-points',folder);
-  await page.locator('.matchup').screenshot({path:folder+'/tournament-similarity-points.png'});
+  await page.locator('#main').screenshot({path:folder+'/tournament-similarity-points.png'});
   await page.locator('#bracket-elo-0').waitFor();assert.match(await page.locator('.match-similarity').textContent(),/82.4%/);
   await page.setViewportSize({width:390,height:1050});await bounded(page,390,'tournament-similarity-elo',folder);
-  await page.locator('.matchup').screenshot({path:folder+'/tournament-similarity-elo-phone.png'});
+  await page.locator('#main').screenshot({path:folder+'/tournament-similarity-elo-phone.png'});
   await page.unroute('**/api/matchup?*');await page.unroute('**/api/vote');await page.unroute('**/api/tournaments/999');await page.unroute('**/api/tournament_vote');
   // The saved cover and prior score reveal together after the last field, even on a miss.
   let priorTrivia={accuracy:66.7,rounds:2}, triviaFields;
