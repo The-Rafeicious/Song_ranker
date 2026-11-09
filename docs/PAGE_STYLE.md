@@ -468,10 +468,11 @@ falloff, podium emphasis, playback halos, chart data colours and winner/loser
 states keep their purposeful scales. Voting tokens and washes always reference
 --voting rather than a copied colour.
 
-Head-to-head results show available Vibe similarity beneath VS (beside it on phones).
-The quiet Vibe-accent badge includes shared-map coverage and appears only after
-a successful vote. Scores follow a short pace-aware pause; the badge persists
-through points/Elo phases. No shared placements means no badge or extra pause.
+Head-to-head results show available Vibe similarity in a full row above the cards.
+The Vibe-accent percentage is the focal value, with shared-map coverage alongside.
+The row appears only after
+a successful vote. Scores follow a short pace-aware pause; the row persists
+through points/Elo phases. No shared placements means no row or extra pause.
 
 Vibe Map opens a read-only music chooser before loading a player. Shared pill
 buttons switch song/artist/album search; artwork choices show remaining songs.

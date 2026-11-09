@@ -867,7 +867,7 @@
       pageTone("voting");
       document.body.dataset.voteMode=blind ? "blind" : "standard";
       document.body.classList.add("game-page");
-      main.innerHTML = `<div class="game-head" style="--mode-color:var(--voting)"><h1>${blind ? "Blind Audition" : "Which track is better?"}</h1><div class="pill-nav" aria-label="Voting mode"><button class="pill ${!blind ? "active" : ""}" data-mode="standard" ${revealed ? "disabled" : ""}>Non-blind</button><button class="pill ${blind ? "active" : ""}" data-mode="blind" ${revealed ? "disabled" : ""}>Blind</button></div></div><div class="matchup">${gameCard(pair[0], 0)}${window.GameplayUI.matchCenter(revealed ? gameSimilarity : null)}${gameCard(pair[1], 1)}</div>${revealed ? roundProgress(gameResultHold) : ""}`;
+      main.innerHTML = `<div class="game-head" style="--mode-color:var(--voting)"><h1>${blind ? "Blind Audition" : "Which track is better?"}</h1><div class="pill-nav" aria-label="Voting mode"><button class="pill ${!blind ? "active" : ""}" data-mode="standard" ${revealed ? "disabled" : ""}>Non-blind</button><button class="pill ${blind ? "active" : ""}" data-mode="blind" ${revealed ? "disabled" : ""}>Blind</button></div></div>${window.GameplayUI.matchSimilarity(revealed ? gameSimilarity : null)}<div class="matchup">${gameCard(pair[0], 0)}<span class="vs-circle">VS</span>${gameCard(pair[1], 1)}</div>${revealed ? roundProgress(gameResultHold) : ""}`;
       $$("[data-mode]").forEach((b) =>
         b.setAttribute(
           "aria-pressed",
@@ -2783,7 +2783,7 @@
               : remaining === 8
                 ? "Quarter-finals"
                 : "Round " + active.round_number;
-    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div><div class="matchup">${bracketCard(pair[0], 0)}${window.GameplayUI.matchCenter(bracketReveal?.similarity)}${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
+    main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div>${window.GameplayUI.matchSimilarity(bracketReveal?.similarity)}<div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
     attachPlayers();
     window.PreviewPlayback?.preloadPair([
       $("#bracket-audio-0"),
