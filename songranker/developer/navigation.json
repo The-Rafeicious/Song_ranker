@@ -137,6 +137,13 @@
       "Check eligible pools, exposure balance and draw probabilities."
     ],
     [
+      "query_presets",
+      "tools",
+      "query-presets",
+      "Query presets",
+      "Edit or delete saved queries and their filters."
+    ],
+    [
       "database",
       "tools",
       "database",

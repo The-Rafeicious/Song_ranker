@@ -244,7 +244,7 @@ class TournamentPolicyTests(unittest.TestCase):
             old.execute("INSERT INTO tournaments(size,scope_type,scope_id,elo_policy_version,elo_weight) VALUES(8,'tag',1,1,.5)")
         migrate(path)
         with sqlite3.connect(path) as updated:
-            self.assertEqual(updated.execute('PRAGMA user_version').fetchone()[0],23)
+            self.assertEqual(updated.execute('PRAGMA user_version').fetchone()[0],24)
             updated.execute('UPDATE tournaments SET elo_weight=1')
             self.assertEqual(updated.execute('SELECT elo_weight FROM tournaments').fetchone()[0],1)
 

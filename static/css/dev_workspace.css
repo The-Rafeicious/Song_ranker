@@ -560,3 +560,7 @@ body[data-page="dev"] #main .dev-guide-tabs .btn.active {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+[data-dev-query-presets] .dev-destination { cursor: default; }
+[data-dev-query-presets] .dev-destination strong { overflow-wrap: anywhere; }
+[data-dev-query-presets] .system-actions { grid-column: 1 / -1; }

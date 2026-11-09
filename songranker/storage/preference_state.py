@@ -346,10 +346,11 @@ def upgrade_state(original):
         generation=(19 if 'definition_version' in columns and maps.get('rows') and
                     all(row[columns.index('definition_version')]==2 for row in maps['rows']) else 18)
         from songranker.storage.schema_compat import LISTENING_COLUMNS as listening_columns
-        pre_shelves={name:columns-({'shelves_excluded'} if name=='albums' else set()) for name,columns in current.items()}
+        pre_presets = {name: columns for name, columns in current.items() if name != "query_presets"}
+        pre_shelves={name:columns-({'shelves_excluded'} if name=='albums' else set()) for name,columns in pre_presets.items()}
         pre_discs={name:columns-({'disc_number'} if name in ('songs','album_shelf_items') else set()) for name,columns in pre_shelves.items()}
         legacy_current=dict(pre_discs,listening_observations=set(listening_columns))
-        layouts=[(22,current),(21,pre_shelves),(20,pre_discs),(generation,legacy_current)]
+        layouts=[(24,current),(23,pre_presets),(21,pre_shelves),(20,pre_discs),(generation,legacy_current)]
         current=legacy_current
         seventeen={name:set(columns) for name,columns in current.items() if name not in ('song_vibe_progress','vibe_rounds')}
         seventeen['song_vibe_positions']-={'sample_count','not_applicable_count'}

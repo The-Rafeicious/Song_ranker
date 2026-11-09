@@ -155,3 +155,15 @@ body.site-style-baseline #main .query-page .query-search-field input:focus,body.
 .query-tag-list .badge{display:inline-flex;align-items:center;gap:10px;max-width:100%;min-height:40px;padding:8px 14px;white-space:normal;overflow-wrap:anywhere}
 .query-tag-list .badge small{color:var(--tag);font-size:12px;font-variant-numeric:tabular-nums}
 .query-page .query-expanded>h2{font-size:26px;line-height:1.3;overflow-wrap:anywhere}
+
+.query-preset-dialog {
+  width: min(420px, calc(100vw - 32px));
+  max-height: calc(100dvh - 32px);
+  box-sizing: border-box;
+  padding: 24px;
+  --surface-accent: var(--artist);
+}
+.query-preset-dialog h2 { margin: 0 0 18px; color: var(--artist); }
+.query-preset-dialog .query-actions { margin-bottom: 0; }
+.query-page [data-preset-status]:empty,
+.query-preset-dialog [data-preset-error]:empty { display: none; }

@@ -1,4 +1,5 @@
-from flask import render_template, request, jsonify, abort
+from contextlib import closing
+from flask import session, render_template, request, jsonify, abort
 from songranker.services import app, get_db_connection
 from songranker.catalog import collection, ranked, proper_album
 
@@ -201,3 +202,81 @@ def mode_query_api():
         return jsonify(execute(collection(include_overall_sources=True, include_query_sources=relationships),spec))
     except (ValueError, TypeError, KeyError, OverflowError) as error:
         return jsonify(error=str(error) or 'Invalid query.'),400
+
+
+@app.route('/api/query/presets', methods=['GET', 'POST'])
+def query_presets_api():
+    """List personal presets or save a new one from the current Query builder."""
+    import json
+    import sqlite3
+    from uuid import uuid4
+
+    with closing(get_db_connection()) as conn, conn:
+        if request.method == 'GET':
+            rows = conn.execute(
+                'SELECT id, name, spec, revision FROM query_presets ORDER BY name, id'
+            )
+            return jsonify(presets=[dict(row, spec=json.loads(row['spec'])) for row in rows])
+        try:
+            name, spec = query_preset_fields(request.get_json(silent=True))
+            preset_id = uuid4().hex
+            conn.execute('INSERT INTO query_presets(id, name, spec) VALUES(?,?,?)',
+                         (preset_id, name, json.dumps(spec)))
+        except (ValueError, TypeError, KeyError, OverflowError) as error:
+            return jsonify(error=str(error) or 'Invalid preset.'), 400
+        except sqlite3.IntegrityError:
+            return jsonify(error='A preset already uses that name.'), 409
+        return jsonify(id=preset_id, name=name, spec=spec, revision=1), 201
+
+
+def query_preset_fields(data):
+    """Validate a bounded name and normalize the current builder options for reuse."""
+    import json
+    from songranker.reports.query import validate
+
+    if not isinstance(data, dict) or not isinstance(data.get('name'), str):
+        raise ValueError('Enter a preset name.')
+    name = data['name'].strip()
+    name.encode('utf-8')
+    if not 1 <= len(name) <= 80 or any(ord(ch) < 32 for ch in name):
+        raise ValueError('Enter a preset name of 1 to 80 characters.')
+    raw = data.get('spec')
+    if not isinstance(raw, dict) or len(json.dumps(raw)) > 12000:
+        raise ValueError('Invalid or oversized query.')
+    spec = validate(dict(raw, page=1))
+    spec['sort'] = [{key: sort[key] for key in ('field', 'direction')} for sort in spec['sort']]
+    return name, spec
+
+
+@app.route('/api/dev/query/presets/<preset_id>', methods=['PUT', 'DELETE'])
+def edit_query_preset_api(preset_id):
+    """Update or delete a preset with the Dev session and the editor's revision."""
+    import json
+    import sqlite3
+
+    if not session.get('is_admin'):
+        return jsonify(error='Unlock Dev to edit saved presets.'), 403
+    data = request.get_json(silent=True)
+    revision = data.get('revision') if isinstance(data, dict) else None
+    if type(revision) is not int or not 1 <= revision < 2**63 - 1:
+        return jsonify(error='Reload the preset before making changes.'), 400
+    with closing(get_db_connection()) as conn, conn:
+        try:
+            if request.method == 'DELETE':
+                cursor = conn.execute('DELETE FROM query_presets WHERE id=? AND revision=?',
+                                      (preset_id, revision))
+            else:
+                name, spec = query_preset_fields(data)
+                cursor = conn.execute(
+                    'UPDATE query_presets SET name=?, spec=?, revision=revision+1 '
+                    'WHERE id=? AND revision=?',
+                    (name, json.dumps(spec), preset_id, revision))
+        except (ValueError, TypeError, KeyError, OverflowError) as error:
+            return jsonify(error=str(error) or 'Invalid preset.'), 400
+        except sqlite3.IntegrityError:
+            return jsonify(error='A preset already uses that name.'), 409
+        if not cursor.rowcount:
+            return jsonify(error='This preset changed or was deleted. Reload before editing.'), 409
+        if request.method == 'DELETE':
+            return jsonify(deleted=True)
+        return jsonify(id=preset_id, name=name, spec=spec, revision=revision + 1)

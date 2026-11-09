@@ -614,3 +614,10 @@ CREATE TABLE IF NOT EXISTS vibe_rounds (
        OR (status='complete' AND map_index=4 AND finished_at IS NOT NULL)
        OR (status='cancelled' AND map_index<4 AND finished_at IS NOT NULL))
 ) WITHOUT ROWID;
+
+CREATE TABLE IF NOT EXISTS query_presets (
+    id TEXT PRIMARY KEY NOT NULL,
+    name TEXT NOT NULL COLLATE NOCASE UNIQUE CHECK(length(name) BETWEEN 1 AND 80),
+    spec TEXT NOT NULL,
+    revision INTEGER NOT NULL DEFAULT 1 CHECK(revision >= 1)
+) WITHOUT ROWID;
