@@ -171,3 +171,11 @@
 - Wait for every available field to be settled, whether correct or incorrect.
 - Freeze the pre-round accuracy in the question snapshot; first attempts do not show a prior percentage.
 - Use the existing correct/available-field accuracy, including album N/A and legacy records; scoring is unchanged.
+
+## V5.9.6.5 — Saved Query presets
+
+- Save a named preset from Query with its entity, search, filters, sort order,
+  and columns. Select it alongside the built-in presets.
+- Manage saved presets from Dev → Tools & systems → Query presets. Edit in the
+  Query builder, or delete from the manager.
+- Database backups and Git sync carry presets to other devices.

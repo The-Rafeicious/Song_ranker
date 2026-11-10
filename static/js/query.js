@@ -12,10 +12,108 @@ window.ModeQuery = (() => {
     'Unplayed recognition':{filters:[{field:'trivia_rounds',op:'eq',value:0}]},
     'Vibe coverage':{sort:[{field:'vibe_maps',direction:'desc'},{field:'vibe_samples',direction:'desc'}],columns:['vibe_maps','vibe_samples','vibe_passes','elo']}
   };
+  const presetURL='/api/query/presets';
+  const editURL=id=>'/api/dev/query/presets/'+encodeURIComponent(id);
+  async function presetRequest(url, method='GET', data) {
+    const options=method==='GET'?{}:{
+      method, headers:{'Content-Type':'application/json'}, body:JSON.stringify(data)
+    };
+    const response=await fetch(url, options);
+    const result=await response.json();
+    if(!response.ok)throw Error(result.error||result.message||'Could not access presets.');
+    return result;
+  }
+
+  async function managePresets(node) {
+    const list=node.querySelector('[data-dev-query-presets]');
+    const status=node.querySelector('[data-dev-preset-status]');
+    try {
+      const {presets:items}=await presetRequest(presetURL);
+      list.replaceChildren();
+      if(!items.length)list.textContent='No saved presets. Save your current filters from Query.';
+      for(const item of items){
+        const row=document.createElement('div');
+        row.className='dev-destination';
+        row.innerHTML=`<strong>${esc(item.name)}</strong><span>${esc(item.spec.entity)} · ${item.spec.filters.length} filters</span><div class="system-actions"><a class="btn" href="/query?preset=${encodeURIComponent(item.id)}">Edit preset</a><button type="button" class="btn danger">Delete</button></div>`;
+        const remove=row.querySelector('button');
+        remove.setAttribute('aria-label','Delete '+item.name);
+        remove.addEventListener('click',async()=>{
+          if(!window.confirm('Delete the preset “'+item.name+'”?'))return;
+          const buttons=[...list.querySelectorAll('button')];
+          buttons.forEach(button=>button.disabled=true);
+          status.textContent='';
+          try {
+            await presetRequest(editURL(item.id),'DELETE',{revision:item.revision});
+            status.textContent='Deleted “'+item.name+'”.';
+            await managePresets(node);
+          } catch(e) {
+            status.textContent=e.message;
+            buttons.forEach(button=>button.disabled=false);
+          }
+        });
+        list.append(row);
+      }
+    } catch(e) {
+      status.textContent=e.message;
+      list.textContent='';
+    }
+  }
+
   function mount(root){
     if(root.dataset.queryMounted)return;root.dataset.queryMounted='true';
     let spec=defaults(),metrics=[],result=null,controller=null,serial=0,lookupSerial=0,revision=0,searchTimer=null,lookupController=null,columnSearch='',columnFamily='',filterSearch='',filterFamily='';
     const controls=root.querySelector('[data-query-controls]'),output=root.querySelector('[data-query-results]'),error=root.querySelector('[data-query-error]');
+    const saveButton=root.querySelector('[data-query-save]'), dialog=root.querySelector('.query-preset-dialog');
+    const saveForm=dialog?.querySelector('form'), presetStatus=root.querySelector('[data-preset-status]');
+    let savedPresets=[], editing=null, pendingSpec;
+    const presetOptions=()=>[
+      {value:'',label:'Choose a preset'},
+      ...savedPresets.map(item=>({value:'saved:'+item.id,label:item.name,detail:'Saved preset'})),
+      ...Object.keys(presets).map(key=>({value:key,label:key,detail:'Built-in'}))
+    ];
+    function selectEdit(item){
+      editing=item;
+      if(saveButton)saveButton.textContent=item?'Save changes':'Save preset';
+      if(presetStatus)presetStatus.textContent=item?'Editing “'+item.name+'”.':'';
+      if(!item){
+        const url=new URL(location.href);
+        if(url.searchParams.has('preset')){
+          url.searchParams.delete('preset');
+          history.replaceState(null,'',url);
+        }
+      }
+    }
+    saveButton?.addEventListener('click',()=>{
+      if(!root.querySelector('[data-query-form]').reportValidity())return;
+      pendingSpec=structuredClone(spec);
+      saveForm.elements.name.value=editing?.name||'';
+      dialog.querySelector('[data-preset-error]').textContent='';
+      dialog.showModal();
+    });
+    dialog?.querySelector('[data-preset-cancel]').addEventListener('click',()=>dialog.close());
+    dialog?.addEventListener('cancel',event=>{
+      if(saveForm.querySelector('[type=submit]').disabled)event.preventDefault();
+    });
+    saveForm?.addEventListener('submit',async event=>{
+      event.preventDefault();
+      const buttons=[...saveForm.querySelectorAll('button')];
+      if(buttons[0].disabled)return;
+      const saveError=dialog.querySelector('[data-preset-error]');
+      saveError.textContent='';
+      buttons.forEach(button=>button.disabled=true);
+      try{
+        const item=await presetRequest(editing?editURL(editing.id):presetURL,editing?'PUT':'POST',{
+          name:saveForm.elements.name.value,spec:pendingSpec,revision:editing?.revision
+        });
+        savedPresets=[...savedPresets.filter(row=>row.id!==item.id),item]
+          .sort((a,b)=>a.name.localeCompare(b.name));
+        if(editing)selectEdit(item);
+        dialog.close();
+        draw();
+        presetStatus.textContent='Saved “'+item.name+'”.';
+      }catch(e){saveError.textContent=e.message;}
+      finally{buttons.forEach(button=>button.disabled=false);}
+    });
     const select=(id,label,options,value)=>window.GameplayUI.select(id,label,options.map(o=>typeof o==='string'?{value:o,label:o.replaceAll('_',' ')}:o),value);
     const commonKeys=['elo','matches','win_rate','trivia_rounds','trivia_accuracy','tournament_championships'];
     function metricView(m){
@@ -41,7 +139,7 @@ window.ModeQuery = (() => {
       const focused=document.activeElement?.closest('[data-game-select]')?.dataset.gameSelect,focusedKind=document.activeElement?.dataset.queryKind;
       lookupSerial++;lookupController?.abort();
       root.querySelector('[data-query-entity]').innerHTML=U.rankingCategories(spec.entity,['songs','artists','albums','tags'].map(entity=>({entity})),'query-kind');
-      controls.innerHTML=`<div class="query-grid"><label class="query-search-label">Search library<div class="query-search-field"><span aria-hidden="true">⌕</span><input type="search" data-search value="${esc(spec.q)}" placeholder="Search names, artists, albums or tags" autocomplete="off" maxlength="200" aria-label="Search library"><button type="button" data-search-clear aria-label="Clear library search" ${spec.q?'':'hidden'}>×</button></div></label>${select('query-preset','Quick start',[{value:'',label:'Choose a preset'},...Object.keys(presets).map(k=>({value:k,label:k}))],'')}</div><h2>Filters</h2>${filterChooser()}<div data-filters>${spec.filters.map((f,i)=>`<div class="query-filter" data-filter="${i}">${select('field-'+i,'Filter',fieldOptions(),f.field)}${relation(f)?`<label>Find ${['artist','album','tag'].includes(f.field)?f.field:'opponent song'}<div class="query-search-field"><span aria-hidden="true">⌕</span><input type="search" data-target-search="${i}" placeholder="Search by name or artist" value="${esc(f.target_name||'')}" autocomplete="off" maxlength="200" aria-controls="query-targets-${i}" aria-expanded="false"><button type="button" data-target-clear="${i}" aria-label="Clear selected record" ${f.target_name?'':'hidden'}>×</button></div></label><div class="query-targets" id="query-targets-${i}" data-targets="${i}" aria-label="Matching records">${f.target_id?`<span>Selected: ${esc(f.target_name||'#'+f.target_id)}</span>`:''}</div>${['won_against','lost_to'].includes(f.field)?`${select('source-'+i,'Match source',[{value:'all',label:'All competition matches'},{value:'voting',label:'Ordinary voting'},{value:'first_round',label:'Tournament first round'},{value:'tournament',label:'Tournament later rounds'},{value:'local',label:'Local tournaments'}],f.source||'all')}${select('mode-'+i,'Visibility',[{value:'all',label:'Both modes'},{value:'standard',label:'Non-blind'},{value:'blind',label:'Blind'}],f.mode||'all')}`:''}`:`${select('op-'+i,'Comparison',[{value:'min',label:'At least'},{value:'max',label:'At most'},{value:'between',label:'Between'},{value:'eq',label:'Exactly'},{value:'has',label:'Available'},{value:'missing',label:'Unavailable'}],f.op||'min')}${!['has','missing'].includes(f.op)?`<label>${f.op==='between'?'From':'Value'}<input type="number" step="any" data-number="${i}" value="${esc(f.value??'')}" required></label>${f.op==='between'?`<label>To<input type="number" step="any" data-max="${i}" value="${esc(f.max??'')}" required></label>`:''}`:''}`}<button type="button" data-remove="${i}" aria-label="Remove filter ${i+1}">Remove</button></div>`).join('')}</div><h2>Sort results</h2><div class="query-grid">${[0,1,2].map(i=>{const chosen=spec.sort[i];const available=[{value:'name',label:'Alphabetical'},...metricOptions()].filter(o=>!spec.sort.some((s,j)=>j!==i&&s.field===o.value));return `<div>${select('sort-'+i,['Primary','Secondary','Third'][i],i?[{value:'',label:i===2&&!spec.sort[1]?'Choose secondary first':'None'},...(i===2&&!spec.sort[1]?[]:available)]:available,chosen?.field||'')}${chosen?select('direction-'+i,'Order',[{value:'desc',label:chosen.field==='name'?'Z–A':'Highest first'},{value:'asc',label:chosen.field==='name'?'A–Z':'Lowest first'}],chosen.direction):''}</div>`;}).join('')}</div>${columnChooser(columnsOpen)}`;
+      controls.innerHTML=`<div class="query-grid"><label class="query-search-label">Search library<div class="query-search-field"><span aria-hidden="true">⌕</span><input type="search" data-search value="${esc(spec.q)}" placeholder="Search names, artists, albums or tags" autocomplete="off" maxlength="200" aria-label="Search library"><button type="button" data-search-clear aria-label="Clear library search" ${spec.q?'':'hidden'}>×</button></div></label>${select('query-preset','Presets',presetOptions(),editing?'saved:'+editing.id:'')}</div><h2>Filters</h2>${filterChooser()}<div data-filters>${spec.filters.map((f,i)=>`<div class="query-filter" data-filter="${i}">${select('field-'+i,'Filter',fieldOptions(),f.field)}${relation(f)?`<label>Find ${['artist','album','tag'].includes(f.field)?f.field:'opponent song'}<div class="query-search-field"><span aria-hidden="true">⌕</span><input type="search" data-target-search="${i}" placeholder="Search by name or artist" value="${esc(f.target_name||'')}" autocomplete="off" maxlength="200" aria-controls="query-targets-${i}" aria-expanded="false"><button type="button" data-target-clear="${i}" aria-label="Clear selected record" ${f.target_name?'':'hidden'}>×</button></div></label><div class="query-targets" id="query-targets-${i}" data-targets="${i}" aria-label="Matching records">${f.target_id?`<span>Selected: ${esc(f.target_name||'#'+f.target_id)}</span>`:''}</div>${['won_against','lost_to'].includes(f.field)?`${select('source-'+i,'Match source',[{value:'all',label:'All competition matches'},{value:'voting',label:'Ordinary voting'},{value:'first_round',label:'Tournament first round'},{value:'tournament',label:'Tournament later rounds'},{value:'local',label:'Local tournaments'}],f.source||'all')}${select('mode-'+i,'Visibility',[{value:'all',label:'Both modes'},{value:'standard',label:'Non-blind'},{value:'blind',label:'Blind'}],f.mode||'all')}`:''}`:`${select('op-'+i,'Comparison',[{value:'min',label:'At least'},{value:'max',label:'At most'},{value:'between',label:'Between'},{value:'eq',label:'Exactly'},{value:'has',label:'Available'},{value:'missing',label:'Unavailable'}],f.op||'min')}${!['has','missing'].includes(f.op)?`<label>${f.op==='between'?'From':'Value'}<input type="number" step="any" data-number="${i}" value="${esc(f.value??'')}" required></label>${f.op==='between'?`<label>To<input type="number" step="any" data-max="${i}" value="${esc(f.max??'')}" required></label>`:''}`:''}`}<button type="button" data-remove="${i}" aria-label="Remove filter ${i+1}">Remove</button></div>`).join('')}</div><h2>Sort results</h2><div class="query-grid">${[0,1,2].map(i=>{const chosen=spec.sort[i];const available=[{value:'name',label:'Alphabetical'},...metricOptions()].filter(o=>!spec.sort.some((s,j)=>j!==i&&s.field===o.value));return `<div>${select('sort-'+i,['Primary','Secondary','Third'][i],i?[{value:'',label:i===2&&!spec.sort[1]?'Choose secondary first':'None'},...(i===2&&!spec.sort[1]?[]:available)]:available,chosen?.field||'')}${chosen?select('direction-'+i,'Order',[{value:'desc',label:chosen.field==='name'?'Z–A':'Highest first'},{value:'asc',label:chosen.field==='name'?'A–Z':'Lowest first'}],chosen.direction):''}</div>`;}).join('')}</div>${columnChooser(columnsOpen)}`;
       updateColumns();updateFilterChoices();decorateLabels();
       if(searchFocus){const input=controls.querySelector('[data-search]');input.focus();input.setSelectionRange(caret,caret);}
       if(columnFocus){const input=controls.querySelector('[data-column-search]');input.focus();input.setSelectionRange(caret,caret);}
@@ -190,7 +288,14 @@ window.ModeQuery = (() => {
     controls.addEventListener('change',e=>{revision++;const t=e.target,id=t.id;let redraw=true;
       if(id==='query-filter-family'){filterFamily=t.value;updateFilterChoices();return;}
       if(id==='query-column-family'){columnFamily=t.value;updateColumns();return;}
-      if(id==='query-preset'){if(!t.value)return;spec={...defaults(),entity:spec.entity,...structuredClone(presets[t.value])};draw();load();return;}
+      if(id==='query-preset'){
+        if(!t.value)return;
+        const saved=savedPresets.find(item=>'saved:'+item.id===t.value);
+        const entity=spec.entity;
+        selectEdit(null);
+        spec=saved?structuredClone(saved.spec):{...defaults(),entity,...structuredClone(presets[t.value])};
+        draw();load();return;
+      }
       else if(id.startsWith('field-'))spec.filters[+id.slice(6)]={field:t.value,op:'min',value:0};
       else if(id.startsWith('op-'))spec.filters[+id.slice(3)].op=t.value;
       else if(id.startsWith('source-'))spec.filters[+id.slice(7)].source=t.value;
@@ -206,14 +311,33 @@ window.ModeQuery = (() => {
       else redraw=false;
       if(redraw)draw();
     });
-    root.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;revision++;if(t.hasAttribute('data-search-clear')){spec.q='';spec.page=1;draw();controls.querySelector('[data-search]').focus();queueSearch();}if(t.dataset.targetClear!==undefined){const f=spec.filters[+t.dataset.targetClear];delete f.target_id;f.target_name='';draw();controls.querySelector(`[data-target-search="${t.dataset.targetClear}"]`)?.focus();}if(t.dataset.columnRemove){spec.columns=spec.columns.filter(k=>k!==t.dataset.columnRemove);updateColumns();controls.querySelector('[data-column-search]')?.focus();}if(t.dataset.queryKind){spec.entity=t.dataset.queryKind;spec.page=1;draw();root.querySelector(`[data-query-kind="${spec.entity}"]`)?.focus();load();}if(t.hasAttribute('data-add'))addFilter('matches');if(t.dataset.addField)addFilter(t.dataset.addField);if(t.dataset.remove!==undefined){spec.filters.splice(+t.dataset.remove,1);draw();}if(t.dataset.target){const f=spec.filters[+t.dataset.index];f.target_id=+t.dataset.target;f.target_name=t.dataset.targetName;draw();controls.querySelector(`[data-target-search="${t.dataset.index}"]`)?.focus();}if(t.hasAttribute('data-query-reset')){spec=defaults();columnSearch='';columnFamily='';filterSearch='';filterFamily='';draw();load();}if(t.dataset.page){spec.page=+t.dataset.page;load();}});
+    root.addEventListener('click',e=>{const t=e.target.closest('button');if(!t)return;revision++;if(t.hasAttribute('data-search-clear')){spec.q='';spec.page=1;draw();controls.querySelector('[data-search]').focus();queueSearch();}if(t.dataset.targetClear!==undefined){const f=spec.filters[+t.dataset.targetClear];delete f.target_id;f.target_name='';draw();controls.querySelector(`[data-target-search="${t.dataset.targetClear}"]`)?.focus();}if(t.dataset.columnRemove){spec.columns=spec.columns.filter(k=>k!==t.dataset.columnRemove);updateColumns();controls.querySelector('[data-column-search]')?.focus();}if(t.dataset.queryKind){spec.entity=t.dataset.queryKind;spec.page=1;draw();root.querySelector(`[data-query-kind="${spec.entity}"]`)?.focus();load();}if(t.hasAttribute('data-add'))addFilter('matches');if(t.dataset.addField)addFilter(t.dataset.addField);if(t.dataset.remove!==undefined){spec.filters.splice(+t.dataset.remove,1);draw();}if(t.dataset.target){const f=spec.filters[+t.dataset.index];f.target_id=+t.dataset.target;f.target_name=t.dataset.targetName;draw();controls.querySelector(`[data-target-search="${t.dataset.index}"]`)?.focus();}if(t.hasAttribute('data-query-reset')){selectEdit(null);spec=defaults();columnSearch='';columnFamily='';filterSearch='';filterFamily='';draw();load();}if(t.dataset.page){spec.page=+t.dataset.page;load();}});
     output.addEventListener('change',e=>{if(e.target.matches('[data-page-input]')){spec.page=+e.target.value||1;load();}});
     root.querySelector('form').addEventListener('submit',e=>{e.preventDefault();spec.page=1;load();});
-    window.addEventListener('popstate',()=>{readURL();draw();load(false);});
+    window.addEventListener('popstate',()=>{selectEdit(null);readURL();draw();load(false);});
     window.addEventListener('pagehide',()=>{controller?.abort();lookupController?.abort();clearTimeout(searchTimer);lookupSerial++;});
-    async function init(){try{metrics=(await request('/api/query?schema=1')).metrics;readURL();draw();await load(false);}catch(e){error.textContent=e.message;output.innerHTML='<button type="button" data-query-retry>Retry loading options</button>';output.querySelector('button').onclick=init;}}
-    init();
+    async function init(){try{metrics=(await request('/api/query?schema=1')).metrics;if(saveButton)saveButton.disabled=false;readURL();draw();await load(false);}catch(e){error.textContent=e.message;output.innerHTML='<button type="button" data-query-retry>Retry loading options</button>';output.querySelector('button').onclick=init;}}
+    if(saveButton){
+      const presetID=new URL(location.href).searchParams.get('preset');
+      presetRequest(presetURL).then(({presets:items})=>{
+        savedPresets=items;
+        const item=items.find(row=>row.id===presetID);
+        if(presetID&&item){
+          if(root.hasAttribute('data-query-admin'))selectEdit(item);
+          const url=new URL(location.href);
+          url.searchParams.set('spec',JSON.stringify(item.spec));
+          history.replaceState(null,'',url);
+        }else if(presetID){
+          selectEdit(null);
+          presetStatus.textContent='This saved preset is no longer available.';
+        }
+        return init();
+      }).catch(e=>{
+        presetStatus.textContent=e.message;
+        return init();
+      });
+    }else init();
   }
   document.addEventListener('DOMContentLoaded',()=>{const root=document.querySelector('[data-mode-query]');if(root)mount(root);});
-  return {defaults,presets,mount};
+  return {defaults,presets,mount,managePresets};
 })();

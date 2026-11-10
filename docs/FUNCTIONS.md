@@ -745,25 +745,28 @@ Home, catalogue/search/rankings, shared collection profiles and Global Stats rou
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [home](../songranker/pages.py#L7) | `` | Home; GET /. |
-| [leaderboard](../songranker/pages.py#L12) | `` | Leaderboard; GET /leaderboard. |
-| [artists_leaderboard](../songranker/pages.py#L17) | `` | Artists leaderboard; GET /artists. |
-| [albums_leaderboard](../songranker/pages.py#L22) | `` | Albums leaderboard; GET /albums. |
-| [api_library](../songranker/pages.py#L27) | `` | Serve library; GET /api/library. |
-| [api_collection](../songranker/pages.py#L62) | `` | Serve collection; GET /api/collection. |
-| [search](../songranker/pages.py#L67) | `` | Search; GET /search. |
-| [artist_performance](../songranker/pages.py#L72) | `` | Artist performance; GET /artist_stats. |
-| [album_performance](../songranker/pages.py#L84) | `` | Album performance; GET /album_stats. |
-| [global_stats](../songranker/pages.py#L96) | `` | Global stats; GET /global_stats. |
-| [song_page](../songranker/pages.py#L109) | `song_id` | Song page; GET /song/<int:song_id>. |
-| [artist_page](../songranker/pages.py#L119) | `artist_name` | Resolve the collection identity; the shared profile reads its data once. |
-| [album_page](../songranker/pages.py#L125) | `album_title` | Resolve the collection identity; the shared profile reads its data once. |
-| [tags_index](../songranker/pages.py#L131) | `` | Render tag rankings through the shared rankings shell. |
-| [tag_page](../songranker/pages.py#L137) | `tag_name` | Resolve the collection identity; the shared profile reads its data once. |
-| [special_rankings](../songranker/pages.py#L143) | `mode` | Special rankings; GET /mode_rankings/<mode>. |
-| [collection_profile](../songranker/pages.py#L149) | `kind, table, column, name` | Resolve one named collection for the shared profile template. |
-| [mode_query_page](../songranker/pages.py#L175) | `` | Cross-mode query workspace without eager client catalogue hydration. |
-| [mode_query_api](../songranker/pages.py#L181) | `` | Validate public filters and return bounded results from a single read snapshot. |
+| [home](../songranker/pages.py#L8) | `` | Home; GET /. |
+| [leaderboard](../songranker/pages.py#L13) | `` | Leaderboard; GET /leaderboard. |
+| [artists_leaderboard](../songranker/pages.py#L18) | `` | Artists leaderboard; GET /artists. |
+| [albums_leaderboard](../songranker/pages.py#L23) | `` | Albums leaderboard; GET /albums. |
+| [api_library](../songranker/pages.py#L28) | `` | Serve library; GET /api/library. |
+| [api_collection](../songranker/pages.py#L63) | `` | Serve collection; GET /api/collection. |
+| [search](../songranker/pages.py#L68) | `` | Search; GET /search. |
+| [artist_performance](../songranker/pages.py#L73) | `` | Artist performance; GET /artist_stats. |
+| [album_performance](../songranker/pages.py#L85) | `` | Album performance; GET /album_stats. |
+| [global_stats](../songranker/pages.py#L97) | `` | Global stats; GET /global_stats. |
+| [song_page](../songranker/pages.py#L110) | `song_id` | Song page; GET /song/<int:song_id>. |
+| [artist_page](../songranker/pages.py#L120) | `artist_name` | Resolve the collection identity; the shared profile reads its data once. |
+| [album_page](../songranker/pages.py#L126) | `album_title` | Resolve the collection identity; the shared profile reads its data once. |
+| [tags_index](../songranker/pages.py#L132) | `` | Render tag rankings through the shared rankings shell. |
+| [tag_page](../songranker/pages.py#L138) | `tag_name` | Resolve the collection identity; the shared profile reads its data once. |
+| [special_rankings](../songranker/pages.py#L144) | `mode` | Special rankings; GET /mode_rankings/<mode>. |
+| [collection_profile](../songranker/pages.py#L150) | `kind, table, column, name` | Resolve one named collection for the shared profile template. |
+| [mode_query_page](../songranker/pages.py#L176) | `` | Cross-mode query workspace without eager client catalogue hydration. |
+| [mode_query_api](../songranker/pages.py#L182) | `` | Validate public filters and return bounded results from a single read snapshot. |
+| [query_presets_api](../songranker/pages.py#L208) | `` | List personal presets or save a new one from the current Query builder. |
+| [query_preset_fields](../songranker/pages.py#L232) | `data` | Validate a bounded name and normalize the current builder options for reuse. |
+| [edit_query_preset_api](../songranker/pages.py#L252) | `preset_id` | Update or delete a preset with the Dev session and the editor's revision. |
 
 ## songranker/reports/global_stats_data.py
 
@@ -988,10 +991,10 @@ Pure preference replay and lossless historical state transport.
 | [_upgrade_to_11](../songranker/storage/preference_state.py#L289) | `original` | Normalize 8/9/10 transports to 11 without rewriting existing stored facts. |
 | [_upgrade_to_11.view_hash](../songranker/storage/preference_state.py#L322) | `values` | Hash deterministically sorted view rows to verify the migrated preference projection. |
 | [upgrade_state](../songranker/storage/preference_state.py#L335) | `original` | Apply lossless upgrades; recognize complete known SQL-dump layouts. |
-| [replay](../songranker/storage/preference_state.py#L387) | `songs, seeds, events, overrides, cutoff, boundary, rules_version=1` | Return current ratings/counts and effective snapshots from immutable inputs. |
-| [replay.set_rating](../songranker/storage/preference_state.py#L407) | `sid, value` | Update one replayed song's Elo while keeping the sorted rating index consistent. |
-| [replay.apply_before](../songranker/storage/preference_state.py#L423) | `event_id` | Apply saved manual rating adjustments that precede the next replayed preference event. |
-| [rebuild_preference_ratings](../songranker/storage/preference_state.py#L467) | `conn` | Replace derived Elo projections inside the caller's transaction, without Flask. |
+| [replay](../songranker/storage/preference_state.py#L388) | `songs, seeds, events, overrides, cutoff, boundary, rules_version=1` | Return current ratings/counts and effective snapshots from immutable inputs. |
+| [replay.set_rating](../songranker/storage/preference_state.py#L408) | `sid, value` | Update one replayed song's Elo while keeping the sorted rating index consistent. |
+| [replay.apply_before](../songranker/storage/preference_state.py#L424) | `event_id` | Apply saved manual rating adjustments that precede the next replayed preference event. |
+| [rebuild_preference_ratings](../songranker/storage/preference_state.py#L468) | `conn` | Replace derived Elo projections inside the caller's transaction, without Flask. |
 
 ## songranker/storage/schema_compat.py
 
@@ -1131,9 +1134,9 @@ Preserve public routes, asset order and profile reads across module consolidatio
 | [Assets.handle_starttag](../tests/test_architecture.py#L28) | `self, tag, attrs` | Handle starttag. |
 | [ArchitectureTests.register](../tests/test_architecture.py#L40) | `self` | Register the launcher's actual feature owners without running startup sync. |
 | [ArchitectureTests.test_all_previous_urls_methods_and_endpoint_names_are_preserved](../tests/test_architecture.py#L45) | `self` | Verify all previous urls methods and endpoint names are preserved. |
-| [ArchitectureTests.test_retired_match_network_has_no_routes_or_public_assets](../tests/test_architecture.py#L77) | `self` | Verify retired match network has no routes or public assets. |
-| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L87) | `self` | Verify pages use one asset registry and last shared baseline. |
-| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L137) | `self` | Verify collection profiles share identity payloads and are read only. |
+| [ArchitectureTests.test_retired_match_network_has_no_routes_or_public_assets](../tests/test_architecture.py#L79) | `self` | Verify retired match network has no routes or public assets. |
+| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L89) | `self` | Verify pages use one asset registry and last shared baseline. |
+| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L139) | `self` | Verify collection profiles share identity payloads and are read only. |
 
 ## tests/test_bulk_source_review.py
 
@@ -1617,6 +1620,15 @@ Query opponent evidence survives retirement of the network UI.
 | [QueryMatchEvidenceTests.match](../tests/test_query_matches.py#L19) | `self, tid, winner, loser, round_no=1` | Store a decided match; Elo can be attached separately for first-round dedup. |
 | [QueryMatchEvidenceTests.raw_votes](../tests/test_query_matches.py#L24) | `self, pairs` | Seed large legacy-style effective history without recalculating Elo. |
 | [QueryMatchEvidenceTests.test_first_round_is_once_later_round_has_no_invented_elo_and_local_is_explicit](../tests/test_query_matches.py#L28) | `self` | Verify first round is once later round has no invented elo and local is explicit. |
+
+## tests/test_query_presets.py
+
+Named Query presets survive backup transport and enforce Dev edits.
+
+| Definition | Signature | Purpose |
+| --- | --- | --- |
+| [QueryPresetTests.setUp](../tests/test_query_presets.py#L17) | `self` | Create isolated disposable state and register cleanup for this test. |
+| [QueryPresetTests.test_create_edit_delete_and_backup](../tests/test_query_presets.py#L28) | `self` | Verify create edit delete and backup. |
 
 ## tests/test_retired_guesser.py
 
@@ -2135,4 +2147,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1452 Python definitions**.
+Total: **1457 Python definitions**.

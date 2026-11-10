@@ -1645,6 +1645,13 @@
         "</div></section>";
       return;
     }
+    if (devView === "query_presets") {
+      node.innerHTML =
+        devTitle("Query presets") +
+        '<section class="panel"><div class="system-actions"><a class="btn" href="/query">Open Query</a><a class="btn" href="/dev/tools/git">Git sync</a></div><p>Saved presets travel with database backups.</p><p data-dev-preset-status role="status"></p><div class="dev-destinations" data-dev-query-presets>Loading presets…</div></section>';
+      window.ModeQuery.managePresets(node);
+      return;
+    }
     if (devView === "reports") {
       node.innerHTML =
         devTitle("Exports") +

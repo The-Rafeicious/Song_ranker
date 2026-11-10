@@ -1,6 +1,6 @@
 # V5 database dictionary
 
-**Generation-3 competition · schema 23 · app v5.9.6**
+**Generation-3 competition · schema 24 · app v5.9.6.5**
 
 The active default is `data/song_ranker_v3.db`. The schema registry is
 [data/schema.sql](../data/schema.sql); this dictionary is derived from it.
@@ -504,3 +504,8 @@ The backed-up migration removes `listening_observations` and its index; all othe
 catalogue and mode facts are preserved. Old backups remain readable and are
 upgraded when restored. Unknown extensions depending on the retired table stop
 the migration for review rather than being silently removed.
+
+Query presets live in `query_presets`. Schema 24 adds the empty table when
+upgrading older backups. SQLite backups and Git SQL snapshots retain each
+preset's name, validated Query options, and revision. Devices receive changes
+through the existing whole-database backup and sync flow.

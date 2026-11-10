@@ -72,6 +72,8 @@ class ArchitectureTests(unittest.TestCase):
         added.append(dict(path='/query',endpoint='mode_query_page',methods=['GET']))
         added.append(dict(path='/api/vibe-map/options',endpoint='api_vibe_map_options',methods=['GET']))
         added.append(dict(path='/api/query',endpoint='mode_query_api',methods=['GET']))
+        added.append(dict(path='/api/query/presets', endpoint='query_presets_api', methods=['GET', 'POST']))
+        added.append(dict(path='/api/dev/query/presets/<preset_id>', endpoint='edit_query_preset_api', methods=['DELETE', 'PUT']))
         self.assertEqual(expected, [r for r in actual if r not in added])
 
     def test_retired_match_network_has_no_routes_or_public_assets(self):
