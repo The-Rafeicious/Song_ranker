@@ -382,7 +382,7 @@ def edit_catalogue_record(table, record_id, fields):
         values[key] = value.strip()
     if table == 'albums' and 'shelves_excluded' in data:
         if type(data['shelves_excluded']) is not bool:
-            return jsonify(message='Album Shelves exclusion must be true or false.'), 400
+            return jsonify(message='Album visibility must be true or false.'), 400
         values['shelves_excluded'] = int(data['shelves_excluded'])
     if 'description' in values and len(values['description']) > 2000:
         return jsonify(message='Tag info must be text, up to 2,000 characters.'), 400

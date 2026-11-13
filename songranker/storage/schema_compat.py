@@ -252,3 +252,25 @@ def upgrade_album_shelves(original):
             row.append(0)
     state['user_version'] = 22
     return state
+
+
+def upgrade_album_visibility(original):
+    """Carry existing Single visibility into the editable flag once per database."""
+    if original['user_version'] >= 25:
+        return original
+    state = deepcopy(original)
+    albums = state['tables'].get('albums')
+    if albums:
+        from songranker.storage.database_io import json_bytes
+
+        title = albums['columns'].index('title')
+        flag = albums['columns'].index('shelves_excluded')
+        for row in albums['rows']:
+            if str(row[title]).strip().casefold().endswith(' - single'):
+                row[flag] = 1
+        ordered = sorted(zip(albums['rows'], albums['rowids']),
+                         key=lambda item: (json_bytes(item[0]), item[1]))
+        albums['rows'] = [row for row, _ in ordered]
+        albums['rowids'] = [rowid for _, rowid in ordered]
+    state['user_version'] = 25
+    return state

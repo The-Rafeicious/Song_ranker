@@ -329,6 +329,11 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('#field-shelves_excluded').waitFor();assert.ok(!(await page.locator('#field-shelves_excluded').isChecked()));
   await page.locator('#field-shelves_excluded').check();const excludeSaved=page.waitForResponse(r=>r.url().endsWith('/api/dev/edit_album/1')&&r.request().method()==='POST');await page.locator('#editor-submit').click();assert.equal((await excludeSaved).status(),200);await page.locator('#field-shelves_excluded').waitFor({state:'hidden'});
   await page.goto(base+'/song/1');await page.locator('#overall-profile').waitFor();assert.equal(await page.locator('[data-profile-panel="shelves"]').count(),0,'Excluded song has no Shelves panel');
+  assert.equal(await page.locator('.song-profile a.album').count(),0,'Hidden album is absent from the song profile');
+  const hiddenAlbum=await page.evaluate(async()=>((await (await fetch('/api/collection')).json()).albums).find(album=>album.id===1));
+  assert.equal((await page.request.get(base+'/album/'+encodeURIComponent(hiddenAlbum.title))).status(),404);
+  const visibleAlbums=await (await page.request.get(base+'/api/library?type=albums&limit=200')).json();
+  assert.ok(!visibleAlbums.items.some(album=>album.id===1),'Hidden album is absent from public album results');
   await page.goto(base+'/dev/library/albums');
   await page.locator('[data-edit="albums"][data-id="1"]').click();await page.locator('#field-shelves_excluded').waitFor();assert.ok(await page.locator('#field-shelves_excluded').isChecked(),'Saved exclusion is reflected when reopened');
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'album-shelves-flag',folder);await page.screenshot({path:folder+'/album-shelves-flag-'+width+'.png',fullPage:true})}

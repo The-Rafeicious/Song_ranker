@@ -31,7 +31,7 @@
   const normal = window.SongRankerUI.searchText;
   const single = (a) => /\s-\s*single\s*$/i.test(a?.title || "");
   const properAlbum = (a) =>
-    !!a?.title?.trim() && !single(a) && normal(a.title) !== "unknown album";
+    !!a?.title?.trim() && !a.shelves_excluded && normal(a.title) !== "unknown album";
   let songs = [],
     artists = [],
     albums = [],
@@ -97,8 +97,8 @@
         elo_matches_played:
           s.elo_matches_played ?? s.voting?.matches ?? s.matches_played,
         artist: aa.map((a) => a.name).join(", "),
-        album: album?.title || "",
-        album_is_single: single(album),
+        album: page === "dev" || properAlbum(album) ? album?.title || "" : "",
+        album_hidden: !properAlbum(album),
         cover_url: album?.cover_url || "",
         tag_names: tt.map((t) => t.name).join(", "),
         name: s.title,
@@ -265,7 +265,7 @@
             `<a class="artist" title="${esc(a.name)}" href="${urlFor("artists", a)}">${esc(a.name)}</a>`,
         )
         .join('<span class="separator muted">,</span>') +
-      (s.album && !s.album_is_single
+      (s.album && !s.album_hidden
         ? `<span class="separator muted">·</span><a class="album" title="${esc(s.album)}" href="${urlFor("albums", byId(albums, s.album_id))}">${esc(s.album)}</a>`
         : "")
     );
@@ -725,7 +725,7 @@
         )
         .join(
           ", ",
-        )}</div>${s.album && !s.album_is_single && properAlbum({ title: s.album }) ? `<a class="album versus-album" href="/album/${encodeURIComponent(s.album)}" title="${esc(s.album)}">${esc(s.album)}</a>` : ""}<div class="versus-rating standard"><span class="versus-rating-label">${saved ? "Public Elo" : "Current Elo"}</span><strong>${rating}</strong>${delta === null ? "" : `<span class="versus-delta ${delta < 0 ? "loss" : "song"}">${delta >= 0 ? "+" : ""}${Number(delta.toFixed(2))}</span>`}</div></div>`;
+        )}</div>${s.album && !s.album_hidden && properAlbum({ title: s.album }) ? `<a class="album versus-album" href="/album/${encodeURIComponent(s.album)}" title="${esc(s.album)}">${esc(s.album)}</a>` : ""}<div class="versus-rating standard"><span class="versus-rating-label">${saved ? "Public Elo" : "Current Elo"}</span><strong>${rating}</strong>${delta === null ? "" : `<span class="versus-delta ${delta < 0 ? "loss" : "song"}">${delta >= 0 ? "+" : ""}${Number(delta.toFixed(2))}</span>`}</div></div>`;
       return position === "right" ? cover + copy : copy + cover;
     };
     const tournament = h.origin === "tournament",
@@ -827,7 +827,7 @@
       })
       .join('<span class="muted">,</span>');
     const album = byId(albums, s.album_id),
-      show = properAlbum({ title: s.album || "" });
+      show = album ? properAlbum(album) : !s.album_hidden && properAlbum({ title: s.album });
     return (
       `<div class="game-artists">${names}</div>` +
       (show
@@ -1059,7 +1059,7 @@
     if (type === "songs")
       return {
         html: metadata(r),
-        text: [r.artist, r.album && !r.album_is_single ? r.album : ""]
+        text: [r.artist, r.album && !r.album_hidden ? r.album : ""]
           .filter(Boolean)
           .join(" · "),
       };
@@ -1286,7 +1286,7 @@
       ["cover_url", "Cover"],
       ["name", "Album / release"],
       ["release_date", "Released"],
-      ["shelves_excluded", "Album Shelves"],
+      ["shelves_excluded", "Album visibility"],
       ["song_count", "Songs"],
       ["score", "Impact"],
       ["avg_elo", "Avg Elo"],
@@ -1395,7 +1395,7 @@
         ) || ""
       );
     if (k === "preview") return r.audio_url ? "yes" : "no";
-    if (k === "shelves_excluded") return r.shelves_excluded ? "Excluded" : "Included";
+    if (k === "shelves_excluded") return r.shelves_excluded ? "Hidden" : "Visible";
     if (k === "release_type") return single(r) ? "Single" : "Album";
     return r[k] ?? "";
   }
@@ -1823,7 +1823,7 @@
         field("title", "Title", r.title, "text", "required") +
           field("release_date", "Release date", r.release_date || "", "date") +
           field("cover_url", "Cover URL", r.cover_url) +
-          `<label class="checkbox-label"><input type="checkbox" id="field-shelves_excluded" name="shelves_excluded" ${r.shelves_excluded ? "checked" : ""}>Exclude from Album Shelves</label><p class="muted">Keeps this as an album. Skips its name in new Trivia rounds; hides it from Shelves play, profiles and statistics. Saved Shelves rounds containing it are hidden until included again.</p>`,
+          `<label class="checkbox-label"><input type="checkbox" id="field-shelves_excluded" name="shelves_excluded" ${r.shelves_excluded ? "checked" : ""}>Hide album across the app</label><p class="muted">Hides the album from rankings, search, profiles, statistics and Album Shelves. Its songs keep their artwork and results.</p>`,
       );
     if (type === "tags")
       body = group(

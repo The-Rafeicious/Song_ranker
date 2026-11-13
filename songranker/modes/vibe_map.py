@@ -259,7 +259,8 @@ def mapping_scope(conn, data):
     sid = data.get('scope_id')
     if type(sid) is not int or not 0 < sid < 2**63:
         raise VibeError('Choose a valid song, artist or album.')
-    if not conn.execute('SELECT 1 FROM '+tables[scope]+' WHERE id=?', (sid,)).fetchone():
+    entity = conn.execute('SELECT * FROM '+tables[scope]+' WHERE id=?', (sid,)).fetchone()
+    if not entity or (scope == 'album' and not proper_album(dict(entity))):
         raise VibeError('This selection no longer exists.', 'missing_selection', 404)
     return scope, sid
 
@@ -281,10 +282,11 @@ def mapping_options(conn, kind='song', query='', scope='all', scope_id=None):
         artists[row['song_id']].append(dict(row))
     rows = {}
     for song in songs:
+        album = song.get('album') if proper_album(dict(title=song.get('album'), shelves_excluded=song.get('album_hidden'))) else ''
         if kind == 'song':
-            rows[song['id']] = dict(id=song['id'],name=song['title'],artist=song.get('artist',''),album=song.get('album',''),cover_url=song.get('cover_url',''),remaining=1)
+            rows[song['id']] = dict(id=song['id'],name=song['title'],artist=song.get('artist',''),album=album,cover_url=song.get('cover_url',''),remaining=1)
         else:
-            identities = artists[song['id']] if kind == 'artist' else [dict(id=song.get('album_id'),name=song.get('album'))]
+            identities = artists[song['id']] if kind == 'artist' else [dict(id=song.get('album_id'),name=album)]
             for item in identities:
                 if not item.get('id') or not item.get('name'):
                     continue
@@ -871,7 +873,7 @@ def common_patterns(vectors):
 def build_vibe_stats(conn):
     albums = {
         r["id"]: dict(r)
-        for r in conn.execute("SELECT id,title,cover_url FROM albums ORDER BY id")
+        for r in conn.execute("SELECT id,title,cover_url,shelves_excluded FROM albums ORDER BY id")
     }
     artists = {
         r["id"]: dict(r)
@@ -1031,7 +1033,7 @@ def build_song_vibe(conn, song_id, *, show_identity=True):
     for item in [song] + [match["song"] for match in comparison["matches"]]:
         item["album_link"] = (
             dict(title=item["album"], id=item["album_id"])
-            if proper_album(dict(title=item["album"]))
+            if proper_album(dict(title=item["album"], shelves_excluded=item.get("album_hidden")))
             else None
         )
     # Public profile coordinates are -5..5; readiness uses the radar's validated slots.
@@ -1069,9 +1071,9 @@ def build_entity_vibe(conn, kind, entity_id):
         raise VibeError("A positive entity ID is required.")
     table, name_column = tables[kind]
     entity = conn.execute(
-        f"SELECT id,{name_column} AS name FROM {table} WHERE id=?", (entity_id,)
+        f"SELECT *,{name_column} AS name FROM {table} WHERE id=?", (entity_id,)
     ).fetchone()
-    if entity is None:
+    if entity is None or (kind == "album" and not proper_album(dict(entity))):
         raise VibeError("This collection no longer exists.", "missing_entity", 404)
     if kind == "album":
         where = "s.album_id=?"
@@ -1166,10 +1168,11 @@ def library_data(conn):
     rankings = {}
     for category, (table, name) in CATEGORIES.items():
         cover = ",cover_url" if category != "tags" else ",'' AS cover_url"
+        visibility = ",shelves_excluded" if category == "albums" else ""
         entities = {
             r["id"]: dict(r)
             for r in conn.execute(
-                f"SELECT id,{name} AS name{cover} FROM {table} ORDER BY id"
+                f"SELECT id,{name} AS name{cover}{visibility} FROM {table} ORDER BY id"
             )
         }
         members = defaultdict(set)
@@ -1187,7 +1190,7 @@ def library_data(conn):
                     members[r["entity_id"]].add(r["song_id"])
         rows = []
         for eid, entity in entities.items():
-            if category == "albums" and not proper_album(dict(title=entity["name"])):
+            if category == "albums" and not proper_album(dict(entity, title=entity["name"])):
                 continue
             ids = members[eid]
             mapped = [

@@ -156,12 +156,12 @@ def collection_profile(kind, table, column, name):
     conn = get_db_connection()
     try:
         row = conn.execute(
-            f"SELECT id,{column} AS name FROM {table} WHERE {column}=? COLLATE NOCASE",
+            f"SELECT *,{column} AS name FROM {table} WHERE {column}=? COLLATE NOCASE",
             (name,),
         ).fetchone()
     finally:
         conn.close()
-    if row is None:
+    if row is None or (kind == "album" and not proper_album(dict(row))):
         abort(404)
     return render_template(
         "profile.html",

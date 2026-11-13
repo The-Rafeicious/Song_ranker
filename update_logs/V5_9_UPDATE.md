@@ -179,3 +179,11 @@
 - Manage saved presets from Dev → Tools & systems → Query presets. Edit in the
   Query builder, or delete from the manager.
 - Database backups and Git sync carry presets to other devices.
+
+## V5.9.6.6 — Album visibility
+
+- Use **Hide album across the app** in Dev → Library → Albums. Hidden albums
+  drop out of public album rankings, search, profiles, statistics and Shelves.
+  Their songs retain artwork and history.
+- Existing and newly created “- Single” releases start hidden. Clear the same
+  checkbox to include a release again.

@@ -98,7 +98,7 @@ class QueryTests(unittest.TestCase):
             self.assertEqual(client.get('/api/query?lookup=songs&q=Artist%20Song%202').json['items'][0]['id'],2)
 
     def test_album_queries_exclude_placeholders_and_tags_never_borrow_covers(self):
-        self.conn.execute("INSERT INTO albums(id,title,cover_url) VALUES(2,'A Song - Single','single-cover'),(3,'Unknown Album','unknown-cover'),(4,'Full Album','full-cover')")
+        self.conn.execute("INSERT INTO albums(id,title,cover_url,shelves_excluded) VALUES(2,'A Song - Single','single-cover',1),(3,'Unknown Album','unknown-cover',0),(4,'Full Album','full-cover',0)")
         self.conn.execute('UPDATE songs SET album_id=2 WHERE id=1')
         self.conn.execute('UPDATE songs SET album_id=3 WHERE id=2')
         self.conn.execute('UPDATE songs SET album_id=4 WHERE id=3')

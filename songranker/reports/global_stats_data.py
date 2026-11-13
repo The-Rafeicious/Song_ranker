@@ -200,7 +200,7 @@ def build_global_stats(conn):
     for match in bracket_matches:
         matches_by_bracket[match['tournament_id']]+=1;points_by_bracket[match['tournament_id']]+=match['points_awarded'] or 0
     for t in finished[:10]:
-        scope_kind=t['scope_type'];scope_rows={'artist':artists,'album':albums,'tag':tags}
+        scope_kind=t['scope_type'];scope_rows={'artist':artists,'album':proper,'tag':tags}
         scope_row=scope_rows.get(scope_kind,{}).get(t['scope_id'])
         scope=dict(scope_row,entity_kind=scope_kind) if scope_row else None
         metrics=[metric(t['size'],'tracks'),metric(matches_by_bracket[t['id']],'matches'),

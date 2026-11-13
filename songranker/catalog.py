@@ -9,9 +9,9 @@ from songranker.modes.tournament_scoring import scored_match, scored_matches
 
 
 def proper_album(album):
-    """Distinguish named full releases from unknown-album and Single placeholders."""
+    """Determine whether an album can appear in public catalogue and game surfaces."""
     title = str(album.get("title") or "").strip().casefold()
-    return bool(title) and title != "unknown album" and not title.endswith(" - single")
+    return bool(title) and title != "unknown album" and not album.get("shelves_excluded", 0)
 
 
 def versus_metadata(album, linked_artists):
@@ -360,11 +360,9 @@ def ranked(data, kind):
                 "artist": ", ".join(
                     artists[a]["name"] for a in row["artist_ids"] if a in artists
                 ),
-                "album": album.get("title", ""),
+                "album": album.get("title", "") if proper_album(album) else "",
                 "cover_url": album.get("cover_url", ""),
-                "album_is_single": str(album.get("title", ""))
-                .casefold()
-                .endswith(" - single"),
+                "album_hidden": not proper_album(album),
                 "genres": ", ".join(
                     tags[t]["name"] for t in row["tag_ids"] if t in tags
                 ),
@@ -503,7 +501,7 @@ def special_records(conn):
 def display_song(conn, sid, include_album=True):
     row = conn.execute(
         """SELECT s.id,s.title,s.audio_url,a.title album,a.cover_url,
-        a.id album_id FROM songs s LEFT JOIN albums a ON a.id=s.album_id WHERE s.id=?""",
+        a.id album_id,a.shelves_excluded FROM songs s LEFT JOIN albums a ON a.id=s.album_id WHERE s.id=?""",
         (sid,),
     ).fetchone()
     if not row:
@@ -517,6 +515,8 @@ def display_song(conn, sid, include_album=True):
             (sid,),
         )
     ]
+    if not proper_album(dict(title=song["album"], shelves_excluded=song.pop("shelves_excluded"))):
+        song["album"] = None
     if not include_album:
         for key in ("album", "album_id", "cover_url"):
             song.pop(key, None)
@@ -710,7 +710,8 @@ def collection_stats(kind, entity_id):
     conn=get_db_connection()
     try:
         conn.execute('BEGIN')
-        if not conn.execute(f'SELECT 1 FROM {kind} WHERE id=?',(entity_id,)).fetchone():
+        entity = conn.execute(f'SELECT * FROM {kind} WHERE id=?',(entity_id,)).fetchone()
+        if not entity or (kind == 'albums' and not proper_album(dict(entity))):
             return jsonify(message='Profile not found.'),404
         query = ('SELECT DISTINCT s.id FROM songs s JOIN song_artists a ON a.song_id=s.id WHERE a.artist_id=?'
                  if kind=='artists' else 'SELECT id FROM songs WHERE album_id=?')

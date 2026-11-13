@@ -5,7 +5,7 @@ import re
 import sqlite3
 from songranker.paths import ROOT
 
-SCHEMA_VERSION = 24
+SCHEMA_VERSION = 25
 SCHEMA_PATH = ROOT/'data/schema.sql'
 
 
