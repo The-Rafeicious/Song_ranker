@@ -329,6 +329,11 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('#field-shelves_excluded').waitFor();assert.ok(!(await page.locator('#field-shelves_excluded').isChecked()));
   await page.locator('#field-shelves_excluded').check();const excludeSaved=page.waitForResponse(r=>r.url().endsWith('/api/dev/edit_album/1')&&r.request().method()==='POST');await page.locator('#editor-submit').click();assert.equal((await excludeSaved).status(),200);await page.locator('#field-shelves_excluded').waitFor({state:'hidden'});
   await page.goto(base+'/song/1');await page.locator('#overall-profile').waitFor();assert.equal(await page.locator('[data-profile-panel="shelves"]').count(),0,'Excluded song has no Shelves panel');
+  assert.equal(await page.locator('.song-profile a.album').count(),0,'Hidden album is absent from the song profile');
+  const hiddenAlbum=await page.evaluate(async()=>((await (await fetch('/api/collection')).json()).albums).find(album=>album.id===1));
+  assert.equal((await page.request.get(base+'/album/'+encodeURIComponent(hiddenAlbum.title))).status(),404);
+  const visibleAlbums=await (await page.request.get(base+'/api/library?type=albums&limit=200')).json();
+  assert.ok(!visibleAlbums.items.some(album=>album.id===1),'Hidden album is absent from public album results');
   await page.goto(base+'/dev/library/albums');
   await page.locator('[data-edit="albums"][data-id="1"]').click();await page.locator('#field-shelves_excluded').waitFor();assert.ok(await page.locator('#field-shelves_excluded').isChecked(),'Saved exclusion is reflected when reopened');
   for(const width of [390,1365]){await page.setViewportSize({width,height:1050});await bounded(page,width,'album-shelves-flag',folder);await page.screenshot({path:folder+'/album-shelves-flag-'+width+'.png',fullPage:true})}
@@ -816,7 +821,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
    assert.ok(boxes.panel.bottom<=boxes.matchup.top&&boxes.panel.width>=boxes.matchup.width*.8&&boxes.scoreSize>=28,'Similarity has a readable row above the cards');
    await page.locator('#main').screenshot({path:folder+'/vote-similarity-'+width+'.png'});
   }
-  const similarityMatches=[0,1].map(i=>({id:900+i,tournament_id:999,round_number:1,match_number:i+1,match_type:'bracket',song1_id:matchTracks[2*i].id,song2_id:matchTracks[2*i+1].id,status:'pending'}));
+  const similarityMatches=[0,1].map(i=>({id:900+i,tournament_id:999,round_number:i+1,match_number:i+1,match_type:'bracket',song1_id:matchTracks[2*i].id,song2_id:matchTracks[2*i+1].id,status:'pending'}));
   await page.route('**/api/tournaments/999',route=>route.fulfill({json:{tournament:{id:999,size:8,status:'in_progress',is_blind:1,scope_type:'global'},entries:matchTracks,matches:similarityMatches}}));
   await page.route('**/api/tournament_vote',route=>route.fulfill({json:{points_awarded:1,elo_result:matchReceipt(matchTracks[0],matchTracks[1]),match_similarity:matchEvidence,matches:similarityMatches.map((m,i)=>i===0?{...m,status:'completed',winner_id:m.song1_id,loser_id:m.song2_id}:m)}}));
   await page.goto(base+'/tournament?tournament=999');await page.locator('[data-tournament-vote="0"]').waitFor();

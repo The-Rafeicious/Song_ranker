@@ -40,7 +40,7 @@ Shared catalogue projections, cross-mode results and Elo history queries.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [proper_album](../songranker/catalog.py#L11) | `album` | Distinguish named full releases from unknown-album and Single placeholders. |
+| [proper_album](../songranker/catalog.py#L11) | `album` | Determine whether an album can appear in public catalogue and game surfaces. |
 | [versus_metadata](../songranker/catalog.py#L17) | `album, linked_artists` | Shared display links for paired song rows; preserve whole artist names. |
 | [tournament_weights](../songranker/catalog.py#L45) | `data` | Per-song competition credit: library and tags 1, artist/album zero. Missing legacy scope is global; unknown scopes receive no credit. |
 | [song_performance](../songranker/catalog.py#L67) | `data, competitive=True` | Project scope-weighted competition achievements, or full raw achievements when competitive=False. Final placements require completion. |
@@ -50,8 +50,8 @@ Shared catalogue projections, cross-mode results and Elo history queries.
 | [summarize_votes.project](../songranker/catalog.py#L199) | `rows` | Aggregate wins, losses, match counts and win rates for one subset of preference records. |
 | [collection](../songranker/catalog.py#L225) | `include_overall_sources=False, include_query_sources=False` | Collection; reads competition_state, global_stats, song_artists, song_details, song_genres, songs, sqlite_master, trivia_rounds. |
 | [ranked](../songranker/catalog.py#L346) | `data, kind` | Build song or grouped collection ranking rows from the shared hydrated catalogue. |
-| [special_records](../songranker/catalog.py#L428) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, songs. |
-| [display_song](../songranker/catalog.py#L503) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
+| [special_records](../songranker/catalog.py#L426) | `conn` | Special records; reads album_shelf_items, album_shelf_rounds, albums, answered, songs. |
+| [display_song](../songranker/catalog.py#L501) | `conn, sid, include_album=True` | Format song; reads albums, artists, song_artists, songs. |
 | [special_stats](../songranker/catalog.py#L527) | `` | Special stats; GET /api/special-modes/stats. |
 | [source_sql](../songranker/catalog.py#L565) | `conn` | Source sql; reads history, preference_effective, preference_events, preference_rating_projection, sqlite_master. |
 | [filters](../songranker/catalog.py#L582) | `mode='all', origin='all'` | Normalise history mode and origin filters to supported values or all. |
@@ -529,31 +529,31 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | --- | --- | --- |
 | [tournament](../songranker/modes/tournament.py#L14) | `` | Use the shared application shell; catalogue scopes load with the collection. |
 | [api_generate_bracket](../songranker/modes/tournament.py#L22) | `` | Serve generate bracket; GET /api/generate_bracket. |
-| [_tournament_seed_order](../songranker/modes/tournament.py#L132) | `size` | Return zero-based track indexes in the same bracket seeding order as tournament.html. |
-| [_tournament_matches](../songranker/modes/tournament.py#L145) | `conn, tournament_id` | Read one bracket's saved matches in round and match order. |
-| [_round_points](../songranker/modes/tournament.py#L158) | `size, round_number` | Current-policy knockout win points; preference Elo is owned separately. |
-| [api_tournament_vote](../songranker/modes/tournament.py#L165) | `` | Serve tournament vote; POST /api/tournament_vote. |
-| [api_tournaments_list](../songranker/modes/tournament.py#L354) | `` | Serve tournaments list; GET /api/tournaments. |
-| [api_tournament_detail](../songranker/modes/tournament.py#L369) | `tournament_id` | Serve tournament detail; GET /api/tournaments/<int:tournament_id>. |
-| [tournament_stats_page](../songranker/modes/tournament.py#L398) | `` | Read-only tournament dashboard; ranking APIs and game actions stay separate. |
-| [tournament_bracket_page](../songranker/modes/tournament.py#L421) | `tournament_id` | A shareable, read-only bracket workspace with saved match inspection. |
-| [api_tournament_stats](../songranker/modes/tournament.py#L436) | `` | Tournament-only leaderboard; regular Elo and history are not involved. |
-| [api_tournament_complete](../songranker/modes/tournament.py#L474) | `` | Serve tournament complete; POST /api/tournament_complete. |
-| [number](../songranker/modes/tournament.py#L553) | `value` | Read a finite nonnegative saved tournament number, returning unknown for invalid values. |
-| [saved_time](../songranker/modes/tournament.py#L564) | `value` | Resolve the saved tournament timestamp for report display. |
-| [stage_name](../songranker/modes/tournament.py#L588) | `size, round_number, match_type='bracket'` | Label a saved bracket stage, third-place playoff or unsupported historical round. |
-| [recorded_result](../songranker/modes/tournament.py#L615) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
-| [podium_points](../songranker/modes/tournament.py#L631) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
-| [build_tournament_stats](../songranker/modes/tournament.py#L649) | `conn, now=None, selected=None, archive_page=1, competition_only=False` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
-| [build_tournament_stats.identity](../songranker/modes/tournament.py#L762) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
-| [build_tournament_stats.scope](../songranker/modes/tournament.py#L774) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
-| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L932) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
-| [build_tournament_stats.category](../songranker/modes/tournament.py#L1006) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
-| [local_tournament_stats_page](../songranker/modes/tournament.py#L1204) | `` | Compare artist/album-only brackets without contributing to competition. |
-| [build_local_tournament_stats](../songranker/modes/tournament.py#L1241) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
-| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1281) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
-| [profile_tournament_details](../songranker/modes/tournament.py#L1322) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
-| [archive_entry_results](../songranker/modes/tournament.py#L1355) | `conn, bracket, selected=None` | Return each saved entrant's finish and current-policy recorded points. |
+| [_tournament_seed_order](../songranker/modes/tournament.py#L135) | `size` | Return zero-based track indexes in the same bracket seeding order as tournament.html. |
+| [_tournament_matches](../songranker/modes/tournament.py#L148) | `conn, tournament_id` | Read one bracket's saved matches in round and match order. |
+| [_round_points](../songranker/modes/tournament.py#L161) | `size, round_number` | Current-policy knockout win points; preference Elo is owned separately. |
+| [api_tournament_vote](../songranker/modes/tournament.py#L168) | `` | Serve tournament vote; POST /api/tournament_vote. |
+| [api_tournaments_list](../songranker/modes/tournament.py#L357) | `` | Serve tournaments list; GET /api/tournaments. |
+| [api_tournament_detail](../songranker/modes/tournament.py#L372) | `tournament_id` | Serve tournament detail; GET /api/tournaments/<int:tournament_id>. |
+| [tournament_stats_page](../songranker/modes/tournament.py#L401) | `` | Read-only tournament dashboard; ranking APIs and game actions stay separate. |
+| [tournament_bracket_page](../songranker/modes/tournament.py#L424) | `tournament_id` | A shareable, read-only bracket workspace with saved match inspection. |
+| [api_tournament_stats](../songranker/modes/tournament.py#L439) | `` | Tournament-only leaderboard; regular Elo and history are not involved. |
+| [api_tournament_complete](../songranker/modes/tournament.py#L477) | `` | Serve tournament complete; POST /api/tournament_complete. |
+| [number](../songranker/modes/tournament.py#L556) | `value` | Read a finite nonnegative saved tournament number, returning unknown for invalid values. |
+| [saved_time](../songranker/modes/tournament.py#L567) | `value` | Resolve the saved tournament timestamp for report display. |
+| [stage_name](../songranker/modes/tournament.py#L591) | `size, round_number, match_type='bracket'` | Label a saved bracket stage, third-place playoff or unsupported historical round. |
+| [recorded_result](../songranker/modes/tournament.py#L618) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
+| [podium_points](../songranker/modes/tournament.py#L634) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
+| [build_tournament_stats](../songranker/modes/tournament.py#L652) | `conn, now=None, selected=None, archive_page=1, competition_only=False` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
+| [build_tournament_stats.identity](../songranker/modes/tournament.py#L765) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
+| [build_tournament_stats.scope](../songranker/modes/tournament.py#L777) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
+| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L935) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
+| [build_tournament_stats.category](../songranker/modes/tournament.py#L1009) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
+| [local_tournament_stats_page](../songranker/modes/tournament.py#L1207) | `` | Compare artist/album-only brackets without contributing to competition. |
+| [build_local_tournament_stats](../songranker/modes/tournament.py#L1244) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
+| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1288) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
+| [profile_tournament_details](../songranker/modes/tournament.py#L1331) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
+| [archive_entry_results](../songranker/modes/tournament.py#L1364) | `conn, bracket, selected=None` | Return each saved entrant's finish and current-policy recorded points. |
 
 ## songranker/modes/tournament_scoring.py
 
@@ -586,23 +586,23 @@ Timed field recognition, answer grading/corrections and detailed Trivia Stats.
 | [trivia_match.base](../songranker/modes/trivia.py#L155) | `value` | Strip nested bracketed credits and edition notes before comparing a Trivia answer. |
 | [grade](../songranker/modes/trivia.py#L176) | `conn, row, field, guess, song, seconds` | Save a single unanswered available Trivia field's correctness and bounded response time. |
 | [payload](../songranker/modes/trivia.py#L198) | `conn, row, reveal=False` | Payload; reads albums, artists, song_artists. |
-| [trivia_mode](../songranker/modes/trivia.py#L306) | `` | Trivia mode; GET /trivia. |
-| [api_trivia_round](../songranker/modes/trivia.py#L311) | `` | Serve trivia round; GET /api/trivia/round. |
-| [api_trivia_start](../songranker/modes/trivia.py#L372) | `token` | Serve trivia start; POST /api/trivia/<token>/start. |
-| [api_trivia_pause](../songranker/modes/trivia.py#L392) | `token` | Serve trivia pause; POST /api/trivia/<token>/pause. |
-| [api_trivia_field](../songranker/modes/trivia.py#L420) | `token` | Serve trivia field; POST /api/trivia/<token>/field. |
-| [api_trivia_finish](../songranker/modes/trivia.py#L450) | `token` | Serve trivia finish; POST /api/trivia/<token>/finish. |
-| [edit_trivia_totals](../songranker/modes/trivia.py#L518) | `conn, song_id, data` | Sparse manual deltas preserve the detailed history instead of rewriting it. |
-| [percentage](../songranker/modes/trivia.py#L574) | `correct, attempts` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [nonnegative](../songranker/modes/trivia.py#L578) | `value` | Coerce saved recognition counters to nonnegative integers with zero for invalid values. |
-| [finite](../songranker/modes/trivia.py#L588) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
-| [build_recognition_stats](../songranker/modes/trivia.py#L596) | `conn, now=None` | Use one caller-owned read snapshot, with no history LIMIT on aggregates. |
-| [build_recognition_stats.add_group](../songranker/modes/trivia.py#L634) | `target, identity, attempts, correct, sid` | Accumulate recognition attempts, correct answers and distinct tested songs for a collection. |
-| [build_recognition_stats.category](../songranker/modes/trivia.py#L771) | `kind, title, note, source, identities` | Build stable recognition accuracy/struggle leaders for one collection category. |
-| [trivia_stats](../songranker/modes/trivia.py#L914) | `` | Trivia stats; GET /trivia_stats. |
-| [saved_date](../songranker/modes/trivia.py#L925) | `value` | Format a finite saved recall time without inventing an unavailable date. |
-| [profile_trivia_details](../songranker/modes/trivia.py#L936) | `conn, song_ids` | Pool full completed recall evidence before selecting recent cohort rounds. |
-| [profile_trivia_details.window](../songranker/modes/trivia.py#L954) | `rows` | Pool eligible field counts in a disjoint recent round window. |
+| [trivia_mode](../songranker/modes/trivia.py#L305) | `` | Trivia mode; GET /trivia. |
+| [api_trivia_round](../songranker/modes/trivia.py#L310) | `` | Serve trivia round; GET /api/trivia/round. |
+| [api_trivia_start](../songranker/modes/trivia.py#L371) | `token` | Serve trivia start; POST /api/trivia/<token>/start. |
+| [api_trivia_pause](../songranker/modes/trivia.py#L391) | `token` | Serve trivia pause; POST /api/trivia/<token>/pause. |
+| [api_trivia_field](../songranker/modes/trivia.py#L419) | `token` | Serve trivia field; POST /api/trivia/<token>/field. |
+| [api_trivia_finish](../songranker/modes/trivia.py#L449) | `token` | Serve trivia finish; POST /api/trivia/<token>/finish. |
+| [edit_trivia_totals](../songranker/modes/trivia.py#L517) | `conn, song_id, data` | Sparse manual deltas preserve the detailed history instead of rewriting it. |
+| [percentage](../songranker/modes/trivia.py#L573) | `correct, attempts` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [nonnegative](../songranker/modes/trivia.py#L577) | `value` | Coerce saved recognition counters to nonnegative integers with zero for invalid values. |
+| [finite](../songranker/modes/trivia.py#L587) | `value` | Convert a numeric value to a finite float; reject invalid/nonfinite input. |
+| [build_recognition_stats](../songranker/modes/trivia.py#L595) | `conn, now=None` | Use one caller-owned read snapshot, with no history LIMIT on aggregates. |
+| [build_recognition_stats.add_group](../songranker/modes/trivia.py#L633) | `target, identity, attempts, correct, sid` | Accumulate recognition attempts, correct answers and distinct tested songs for a collection. |
+| [build_recognition_stats.category](../songranker/modes/trivia.py#L770) | `kind, title, note, source, identities` | Build stable recognition accuracy/struggle leaders for one collection category. |
+| [trivia_stats](../songranker/modes/trivia.py#L913) | `` | Trivia stats; GET /trivia_stats. |
+| [saved_date](../songranker/modes/trivia.py#L924) | `value` | Format a finite saved recall time without inventing an unavailable date. |
+| [profile_trivia_details](../songranker/modes/trivia.py#L935) | `conn, song_ids` | Pool full completed recall evidence before selecting recent cohort rounds. |
+| [profile_trivia_details.window](../songranker/modes/trivia.py#L953) | `rows` | Pool eligible field counts in a disjoint recent round window. |
 
 ## songranker/modes/vibe_map.py
 
@@ -622,46 +622,46 @@ Vibe round state, saving, similarity, stats, profile/library queries and APIs.
 | [require_round](../songranker/modes/vibe_map.py#L210) | `conn, owner, data` | Reject Vibe writes whose token no longer matches the owning browser's current round. |
 | [require_stage](../songranker/modes/vibe_map.py#L228) | `row, data` | Require a valid current map, live round and matching revision before accepting placement changes. |
 | [mapping_scope](../songranker/modes/vibe_map.py#L251) | `conn, data` | Validate a requested mapping cohort without creating or changing a round. |
-| [mapping_options](../songranker/modes/vibe_map.py#L267) | `conn, kind='song', query='', scope='all', scope_id=None` | Search unfinished songs or collections with remaining songs; return bounded linked choices. |
-| [start](../songranker/modes/vibe_map.py#L303) | `conn, owner, data` | Start an unfinished song in the requested cohort, or resume this browser's saved mapping. |
-| [draft](../songranker/modes/vibe_map.py#L330) | `conn, owner, data` | Save an idempotent Vibe placement draft and advance its revision without completing the map. |
-| [advance](../songranker/modes/vibe_map.py#L372) | `conn, owner, data` | Advance; reads song_vibe_positions; writes song_vibe_positions, song_vibe_progress, vibe_rounds. |
-| [cancel](../songranker/modes/vibe_map.py#L496) | `conn, owner, data` | Cancel the owning browser's active Vibe round and clear its draft with stale-revision protection. |
-| [heatmap](../songranker/modes/vibe_map.py#L520) | `conn, kind, entity_id=None` | Build mapped-song coordinate data for the whole library or a validated artist/album/tag scope. |
-| [browser_owner](../songranker/modes/vibe_map.py#L575) | `create=False` | Read or explicitly create the session identity that owns Vibe round state. |
-| [respond](../songranker/modes/vibe_map.py#L582) | `action, *, write=False` | Run a Vibe action with managed SQLite access, consistent read snapshots and structured noncached errors. |
-| [api_vibe_map_state](../songranker/modes/vibe_map.py#L608) | `` | Serve vibe map state; GET /api/vibe-map/state. |
-| [api_vibe_map_options](../songranker/modes/vibe_map.py#L619) | `` | Read-only bounded chooser for unfinished song/artist/album selections. |
-| [api_vibe_map_round](../songranker/modes/vibe_map.py#L626) | `` | Serve vibe map round; POST /api/vibe-map/round. |
-| [api_vibe_map_draft](../songranker/modes/vibe_map.py#L631) | `` | Serve vibe map draft; POST /api/vibe-map/draft. |
-| [api_vibe_map_advance](../songranker/modes/vibe_map.py#L636) | `` | Serve vibe map advance; POST /api/vibe-map/advance. |
-| [api_vibe_map_cancel](../songranker/modes/vibe_map.py#L641) | `` | Serve vibe map cancel; POST /api/vibe-map/cancel. |
-| [api_vibe_map_profile](../songranker/modes/vibe_map.py#L646) | `song_id` | Serve vibe map profile; GET /api/vibe-map/profile/<int:song_id>. |
-| [api_vibe_map_heatmap](../songranker/modes/vibe_map.py#L651) | `` | Serve vibe map heatmap; GET /api/vibe-map/heatmap. |
-| [api_vibe_map_heatmap.read](../songranker/modes/vibe_map.py#L652) | `conn, data` | Validate the optional numeric scope ID and read the requested Vibe heatmap. |
-| [vibe_map_page](../songranker/modes/vibe_map.py#L667) | `` | Vibe map page; GET /vibe-map. |
-| [similar_songs](../songranker/modes/vibe_map.py#L673) | `conn, song_id, limit=2` | Rank shared placed maps by fixed Gaussian RMS closeness. |
-| [api_vibe_map_similar](../songranker/modes/vibe_map.py#L702) | `song_id` | Serve vibe map similar; GET /api/vibe-map/similar/<int:song_id>. |
-| [api_vibe_map_similar.read](../songranker/modes/vibe_map.py#L703) | `conn, data` | Validate the requested match limit before comparing a song's saved Vibe profile. |
-| [percentage](../songranker/modes/vibe_map.py#L725) | `numerator, denominator` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [consistency](../songranker/modes/vibe_map.py#L729) | `vectors` | Gaussian of mean squared pair distance, equally weighting four maps. |
-| [density](../songranker/modes/vibe_map.py#L747) | `points` | Fixed-radius neighbours on a spatial grid; each point stays at its location. |
-| [colour_points](../songranker/modes/vibe_map.py#L769) | `points, maximum` | Add chart coordinates, density colours and opacity to normalised Vibe points. |
-| [paired_highlights](../songranker/modes/vibe_map.py#L786) | `complete, songs, vectors` | Find the two closest and two most contrasting fully mapped song pairs with bounded heaps. |
-| [paired_highlights.retain](../songranker/modes/vibe_map.py#L793) | `heap, rank, pair` | Keep only the best two ranked pair candidates in a highlight heap. |
-| [common_patterns](../songranker/modes/vibe_map.py#L818) | `vectors` | Count shared directional Vibe axis patterns and rank the strongest library patterns. |
-| [build_vibe_stats](../songranker/modes/vibe_map.py#L871) | `conn` | Build vibe stats; reads albums, artists, genres, song_artists, song_genres, songs. |
-| [build_song_vibe](../songranker/modes/vibe_map.py#L1022) | `conn, song_id, *, show_identity=True` | Build a read-only song Vibe panel with aggregate placement, nearest matches and profile links. |
-| [build_entity_vibe](../songranker/modes/vibe_map.py#L1060) | `conn, kind, entity_id` | Build entity vibe; reads songs. |
-| [library_data](../songranker/modes/vibe_map.py#L1140) | `conn` | Aggregate library Vibe coverage, consistency, validated vectors and collection rankings. |
-| [build_library_vibe](../songranker/modes/vibe_map.py#L1220) | `conn` | Build shared-scale library maps, summary/banner rankings and consistency counts. |
-| [build_vibe_rankings](../songranker/modes/vibe_map.py#L1255) | `conn, category, view` | Validate collection category/direction and return up to twenty ranked Vibe collection results. |
-| [vibe_map_stats](../songranker/modes/vibe_map.py#L1276) | `` | Vibe map stats; GET /vibe_map_stats. |
-| [api_vibe_map_stats](../songranker/modes/vibe_map.py#L1299) | `` | Serve vibe map stats; GET /api/vibe-map/stats. |
-| [api_vibe_map_inspect](../songranker/modes/vibe_map.py#L1312) | `song_id` | Serve vibe map inspect; GET /api/vibe-map/inspect/<int:song_id>. |
-| [api_vibe_map_entity](../songranker/modes/vibe_map.py#L1323) | `kind, entity_id` | Serve vibe map entity; GET /api/vibe-map/entity/<kind>/<int:entity_id>. |
-| [api_vibe_map_library](../songranker/modes/vibe_map.py#L1330) | `` | Serve vibe map library; GET /api/vibe-map/library. |
-| [api_vibe_map_rankings](../songranker/modes/vibe_map.py#L1337) | `` | Serve vibe map rankings; GET /api/vibe-map/rankings. |
+| [mapping_options](../songranker/modes/vibe_map.py#L268) | `conn, kind='song', query='', scope='all', scope_id=None` | Search unfinished songs or collections with remaining songs; return bounded linked choices. |
+| [start](../songranker/modes/vibe_map.py#L305) | `conn, owner, data` | Start an unfinished song in the requested cohort, or resume this browser's saved mapping. |
+| [draft](../songranker/modes/vibe_map.py#L332) | `conn, owner, data` | Save an idempotent Vibe placement draft and advance its revision without completing the map. |
+| [advance](../songranker/modes/vibe_map.py#L374) | `conn, owner, data` | Advance; reads song_vibe_positions; writes song_vibe_positions, song_vibe_progress, vibe_rounds. |
+| [cancel](../songranker/modes/vibe_map.py#L498) | `conn, owner, data` | Cancel the owning browser's active Vibe round and clear its draft with stale-revision protection. |
+| [heatmap](../songranker/modes/vibe_map.py#L522) | `conn, kind, entity_id=None` | Build mapped-song coordinate data for the whole library or a validated artist/album/tag scope. |
+| [browser_owner](../songranker/modes/vibe_map.py#L577) | `create=False` | Read or explicitly create the session identity that owns Vibe round state. |
+| [respond](../songranker/modes/vibe_map.py#L584) | `action, *, write=False` | Run a Vibe action with managed SQLite access, consistent read snapshots and structured noncached errors. |
+| [api_vibe_map_state](../songranker/modes/vibe_map.py#L610) | `` | Serve vibe map state; GET /api/vibe-map/state. |
+| [api_vibe_map_options](../songranker/modes/vibe_map.py#L621) | `` | Read-only bounded chooser for unfinished song/artist/album selections. |
+| [api_vibe_map_round](../songranker/modes/vibe_map.py#L628) | `` | Serve vibe map round; POST /api/vibe-map/round. |
+| [api_vibe_map_draft](../songranker/modes/vibe_map.py#L633) | `` | Serve vibe map draft; POST /api/vibe-map/draft. |
+| [api_vibe_map_advance](../songranker/modes/vibe_map.py#L638) | `` | Serve vibe map advance; POST /api/vibe-map/advance. |
+| [api_vibe_map_cancel](../songranker/modes/vibe_map.py#L643) | `` | Serve vibe map cancel; POST /api/vibe-map/cancel. |
+| [api_vibe_map_profile](../songranker/modes/vibe_map.py#L648) | `song_id` | Serve vibe map profile; GET /api/vibe-map/profile/<int:song_id>. |
+| [api_vibe_map_heatmap](../songranker/modes/vibe_map.py#L653) | `` | Serve vibe map heatmap; GET /api/vibe-map/heatmap. |
+| [api_vibe_map_heatmap.read](../songranker/modes/vibe_map.py#L654) | `conn, data` | Validate the optional numeric scope ID and read the requested Vibe heatmap. |
+| [vibe_map_page](../songranker/modes/vibe_map.py#L669) | `` | Vibe map page; GET /vibe-map. |
+| [similar_songs](../songranker/modes/vibe_map.py#L675) | `conn, song_id, limit=2` | Rank shared placed maps by fixed Gaussian RMS closeness. |
+| [api_vibe_map_similar](../songranker/modes/vibe_map.py#L704) | `song_id` | Serve vibe map similar; GET /api/vibe-map/similar/<int:song_id>. |
+| [api_vibe_map_similar.read](../songranker/modes/vibe_map.py#L705) | `conn, data` | Validate the requested match limit before comparing a song's saved Vibe profile. |
+| [percentage](../songranker/modes/vibe_map.py#L727) | `numerator, denominator` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [consistency](../songranker/modes/vibe_map.py#L731) | `vectors` | Gaussian of mean squared pair distance, equally weighting four maps. |
+| [density](../songranker/modes/vibe_map.py#L749) | `points` | Fixed-radius neighbours on a spatial grid; each point stays at its location. |
+| [colour_points](../songranker/modes/vibe_map.py#L771) | `points, maximum` | Add chart coordinates, density colours and opacity to normalised Vibe points. |
+| [paired_highlights](../songranker/modes/vibe_map.py#L788) | `complete, songs, vectors` | Find the two closest and two most contrasting fully mapped song pairs with bounded heaps. |
+| [paired_highlights.retain](../songranker/modes/vibe_map.py#L795) | `heap, rank, pair` | Keep only the best two ranked pair candidates in a highlight heap. |
+| [common_patterns](../songranker/modes/vibe_map.py#L820) | `vectors` | Count shared directional Vibe axis patterns and rank the strongest library patterns. |
+| [build_vibe_stats](../songranker/modes/vibe_map.py#L873) | `conn` | Build vibe stats; reads albums, artists, genres, song_artists, song_genres, songs. |
+| [build_song_vibe](../songranker/modes/vibe_map.py#L1024) | `conn, song_id, *, show_identity=True` | Build a read-only song Vibe panel with aggregate placement, nearest matches and profile links. |
+| [build_entity_vibe](../songranker/modes/vibe_map.py#L1062) | `conn, kind, entity_id` | Build entity vibe; reads songs. |
+| [library_data](../songranker/modes/vibe_map.py#L1142) | `conn` | Aggregate library Vibe coverage, consistency, validated vectors and collection rankings. |
+| [build_library_vibe](../songranker/modes/vibe_map.py#L1223) | `conn` | Build shared-scale library maps, summary/banner rankings and consistency counts. |
+| [build_vibe_rankings](../songranker/modes/vibe_map.py#L1258) | `conn, category, view` | Validate collection category/direction and return up to twenty ranked Vibe collection results. |
+| [vibe_map_stats](../songranker/modes/vibe_map.py#L1279) | `` | Vibe map stats; GET /vibe_map_stats. |
+| [api_vibe_map_stats](../songranker/modes/vibe_map.py#L1302) | `` | Serve vibe map stats; GET /api/vibe-map/stats. |
+| [api_vibe_map_inspect](../songranker/modes/vibe_map.py#L1315) | `song_id` | Serve vibe map inspect; GET /api/vibe-map/inspect/<int:song_id>. |
+| [api_vibe_map_entity](../songranker/modes/vibe_map.py#L1326) | `kind, entity_id` | Serve vibe map entity; GET /api/vibe-map/entity/<kind>/<int:entity_id>. |
+| [api_vibe_map_library](../songranker/modes/vibe_map.py#L1333) | `` | Serve vibe map library; GET /api/vibe-map/library. |
+| [api_vibe_map_rankings](../songranker/modes/vibe_map.py#L1340) | `` | Serve vibe map rankings; GET /api/vibe-map/rankings. |
 
 ## songranker/modes/vibe_similarity.py
 
@@ -734,10 +734,10 @@ Derived, calibrated Overall scores and their rankings/details APIs.
 | [entity_score](../songranker/overall.py#L305) | `ids, scores, details=False` | Aggregate member-song scores into an evidence-adjusted collection score with a neutral prior. |
 | [apply_display_scores](../songranker/overall.py#L342) | `rows` | Preserve raw distances/endpoints; category standing never rescales a score. |
 | [evaluate](../songranker/overall.py#L359) | `data, force=False, details=False` | Compute and rank Overall songs, artists, albums and tags with calibration and summary diagnostics. |
-| [overall_rankings](../songranker/overall.py#L401) | `` | Overall rankings; GET /overall_rankings. |
-| [overall_api](../songranker/overall.py#L404) | `` | Overall api; GET /api/overall. |
-| [overall_details](../songranker/overall.py#L408) | `` | Overall details; GET /api/overall/details. |
-| [recalibrate_overall](../songranker/overall.py#L420) | `` | Recalibrate overall; POST /api/dev/overall/recalibrate. |
+| [overall_rankings](../songranker/overall.py#L403) | `` | Overall rankings; GET /overall_rankings. |
+| [overall_api](../songranker/overall.py#L406) | `` | Overall api; GET /api/overall. |
+| [overall_details](../songranker/overall.py#L410) | `` | Overall details; GET /api/overall/details. |
+| [recalibrate_overall](../songranker/overall.py#L422) | `` | Recalibrate overall; POST /api/dev/overall/recalibrate. |
 
 ## songranker/pages.py
 
@@ -834,7 +834,7 @@ Shared dated activity, comparison charts and report attachments.
 | [build_activity.add](../songranker/reports/stats_activity.py#L64) | `when, kind, right=0, denominator=0` | Add an in-window dated result and its success denominator, counting undated records separately. |
 | [attach_reports](../songranker/reports/stats_activity.py#L135) | `conn, data, mode, now=None, tournament_ids=None` | Attach shared activity charts and effective tournament Elo history to a mode report. |
 | [match_archive](../songranker/reports/stats_activity.py#L153) | `conn, args` | Page a read-only cross-mode archive before hydrating results. |
-| [match_archive.song](../songranker/reports/stats_activity.py#L242) | `sid` | Hydrate only visible identities, retaining explicit deleted-track gaps. |
+| [match_archive.song](../songranker/reports/stats_activity.py#L248) | `sid` | Hydrate only visible identities, retaining explicit deleted-track gaps. |
 
 ## songranker/services.py
 
@@ -856,8 +856,8 @@ Flask configuration, managed connections, song hydration and catalogue writes.
 | [fetch_match_history](../songranker/services.py#L206) | `conn, song_id=None, limit=50, *, offset=0, mode='all', origin='all'` | Fetch recent matches with the rich song records used by shared VS rows. |
 | [create_database_backup](../songranker/services.py#L268) | `prefix='song_ranker'` | Save the configured live database through the shared rotating-backup policy. |
 | [get_or_create_album](../songranker/services.py#L274) | `conn, album_title, cover_url=None, release_date=None` | Retrieves an existing album or creates one, updating artwork if missing. |
-| [link_artists_to_song](../songranker/services.py#L293) | `conn, song_id, artist_string, default_cover=None, *, artist_names=None` | Splits an artist string and links each artist via the song_artists junction table. |
-| [link_genres_to_song](../songranker/services.py#L317) | `conn, song_id, genre_string` | Splits a genre string and links each tag via the song_genres junction table. |
+| [link_artists_to_song](../songranker/services.py#L294) | `conn, song_id, artist_string, default_cover=None, *, artist_names=None` | Splits an artist string and links each artist via the song_artists junction table. |
+| [link_genres_to_song](../songranker/services.py#L318) | `conn, song_id, genre_string` | Splits a genre string and links each tag via the song_genres junction table. |
 
 ## songranker/storage/competition.py
 
@@ -991,10 +991,10 @@ Pure preference replay and lossless historical state transport.
 | [_upgrade_to_11](../songranker/storage/preference_state.py#L289) | `original` | Normalize 8/9/10 transports to 11 without rewriting existing stored facts. |
 | [_upgrade_to_11.view_hash](../songranker/storage/preference_state.py#L322) | `values` | Hash deterministically sorted view rows to verify the migrated preference projection. |
 | [upgrade_state](../songranker/storage/preference_state.py#L335) | `original` | Apply lossless upgrades; recognize complete known SQL-dump layouts. |
-| [replay](../songranker/storage/preference_state.py#L388) | `songs, seeds, events, overrides, cutoff, boundary, rules_version=1` | Return current ratings/counts and effective snapshots from immutable inputs. |
-| [replay.set_rating](../songranker/storage/preference_state.py#L408) | `sid, value` | Update one replayed song's Elo while keeping the sorted rating index consistent. |
-| [replay.apply_before](../songranker/storage/preference_state.py#L424) | `event_id` | Apply saved manual rating adjustments that precede the next replayed preference event. |
-| [rebuild_preference_ratings](../songranker/storage/preference_state.py#L468) | `conn` | Replace derived Elo projections inside the caller's transaction, without Flask. |
+| [replay](../songranker/storage/preference_state.py#L389) | `songs, seeds, events, overrides, cutoff, boundary, rules_version=1` | Return current ratings/counts and effective snapshots from immutable inputs. |
+| [replay.set_rating](../songranker/storage/preference_state.py#L409) | `sid, value` | Update one replayed song's Elo while keeping the sorted rating index consistent. |
+| [replay.apply_before](../songranker/storage/preference_state.py#L425) | `event_id` | Apply saved manual rating adjustments that precede the next replayed preference event. |
+| [rebuild_preference_ratings](../songranker/storage/preference_state.py#L469) | `conn` | Replace derived Elo projections inside the caller's transaction, without Flask. |
 
 ## songranker/storage/schema_compat.py
 
@@ -1009,6 +1009,7 @@ Offline historical quiz/source/retirement adapters; no Flask imports.
 | [retire_listening](../songranker/storage/schema_compat.py#L193) | `original` | Remove supported retired listening storage at schema 20 while refusing dependent custom extensions. |
 | [upgrade_album_discs](../songranker/storage/schema_compat.py#L220) | `original` | Default pre-21 catalogue and saved Shelves positions to disc one. |
 | [upgrade_album_shelves](../songranker/storage/schema_compat.py#L241) | `original` | Default schema-21 albums to eligible without changing catalogue identity. |
+| [upgrade_album_visibility](../songranker/storage/schema_compat.py#L257) | `original` | Carry existing Single visibility into the editable flag once per database. |
 
 ## songranker/storage/source_storage.py
 
@@ -1096,15 +1097,17 @@ Album-only Shelves exclusions, preserved rounds and lossless schema upgrades.
 | --- | --- | --- |
 | [AlbumShelvesTests.client](../tests/test_album_shelves.py#L23) | `self` | Create the test HTTP client with the requested authentication state. |
 | [AlbumShelvesTests.edit](../tests/test_album_shelves.py#L28) | `self, flag, **extra` | Edit. |
-| [AlbumShelvesTests.test_flag_only_excludes_shelves_and_can_be_reversed](../tests/test_album_shelves.py#L31) | `self` | Verify flag only excludes shelves and can be reversed. |
-| [AlbumShelvesTests.test_saved_round_can_still_be_graded_after_exclusion](../tests/test_album_shelves.py#L48) | `self` | Verify saved round can still be graded after exclusion. |
-| [AlbumShelvesTests.test_new_rounds_use_other_albums_and_old_clients_preserve_flag](../tests/test_album_shelves.py#L61) | `self` | Verify new rounds use other albums and old clients preserve flag. |
-| [AlbumShelvesTests.test_excluded_history_is_hidden_everywhere_and_returns_when_included](../tests/test_album_shelves.py#L74) | `self` | Verify excluded history is hidden everywhere and returns when included. |
-| [AlbumShelvesTests.test_new_trivia_skips_excluded_album_name_but_preserves_album](../tests/test_album_shelves.py#L106) | `self` | Verify new trivia skips excluded album name but preserves album. |
-| [AlbumShelvesTests.test_dedicated_bracket_page_has_missing_record_404](../tests/test_album_shelves.py#L116) | `self` | Verify dedicated bracket page has missing record 404. |
-| [AlbumShelvesTests.test_invalid_flags_are_rejected_without_changes_and_auth_is_required](../tests/test_album_shelves.py#L119) | `self` | Verify invalid flags are rejected without changes and auth is required. |
-| [AlbumShelvesTests.test_flag_survives_sql_and_lossless_export_rebuild](../tests/test_album_shelves.py#L126) | `self` | Verify flag survives sql and lossless export rebuild. |
-| [AlbumShelvesTests.test_schema_21_upgrade_and_unversioned_dump_default_to_included](../tests/test_album_shelves.py#L137) | `self` | Verify schema 21 upgrade and unversioned dump default to included. |
+| [AlbumShelvesTests.test_album_visibility_can_be_reversed](../tests/test_album_shelves.py#L31) | `self` | Verify album visibility can be reversed. |
+| [AlbumShelvesTests.test_hidden_album_is_absent_from_public_routes_but_song_remains](../tests/test_album_shelves.py#L48) | `self` | Verify hidden album is absent from public routes but song remains. |
+| [AlbumShelvesTests.test_single_visibility_migration_runs_once](../tests/test_album_shelves.py#L62) | `self` | Verify single visibility migration runs once. |
+| [AlbumShelvesTests.test_saved_round_can_still_be_graded_after_exclusion](../tests/test_album_shelves.py#L75) | `self` | Verify saved round can still be graded after exclusion. |
+| [AlbumShelvesTests.test_new_rounds_use_other_albums_and_old_clients_preserve_flag](../tests/test_album_shelves.py#L88) | `self` | Verify new rounds use other albums and old clients preserve flag. |
+| [AlbumShelvesTests.test_excluded_history_is_hidden_everywhere_and_returns_when_included](../tests/test_album_shelves.py#L101) | `self` | Verify excluded history is hidden everywhere and returns when included. |
+| [AlbumShelvesTests.test_new_trivia_skips_excluded_album_name_but_preserves_album](../tests/test_album_shelves.py#L133) | `self` | Verify new trivia skips excluded album name but preserves album. |
+| [AlbumShelvesTests.test_dedicated_bracket_page_has_missing_record_404](../tests/test_album_shelves.py#L143) | `self` | Verify dedicated bracket page has missing record 404. |
+| [AlbumShelvesTests.test_invalid_flags_are_rejected_without_changes_and_auth_is_required](../tests/test_album_shelves.py#L146) | `self` | Verify invalid flags are rejected without changes and auth is required. |
+| [AlbumShelvesTests.test_flag_survives_sql_and_lossless_export_rebuild](../tests/test_album_shelves.py#L153) | `self` | Verify flag survives sql and lossless export rebuild. |
+| [AlbumShelvesTests.test_schema_21_upgrade_and_unversioned_dump_default_to_included](../tests/test_album_shelves.py#L164) | `self` | Verify schema 21 upgrade and unversioned dump default to included. |
 
 ## tests/test_apple_source_columns.py
 
@@ -2147,4 +2150,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1457 Python definitions**.
+Total: **1460 Python definitions**.

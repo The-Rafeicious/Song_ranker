@@ -192,6 +192,12 @@ def match_archive(conn, args):
             errors.append('Choose a valid ' + key + ' date.')
     if dates['from'] and dates['to'] and dates['from'] > dates['to']:
         errors.append('The end date must be on or after the start date.')
+    if kind == 'albums' and target:
+        from songranker.catalog import proper_album
+
+        album = conn.execute('SELECT * FROM albums WHERE id=?', (target,)).fetchone()
+        if album and not proper_album(dict(album)):
+            target = -1
     membership = {
         'songs': 's.id=?', 'albums': 's.album_id=?',
         'artists': 'EXISTS (SELECT 1 FROM song_artists sa WHERE sa.song_id=s.id AND sa.artist_id=?)',
@@ -242,11 +248,11 @@ def match_archive(conn, args):
     def song(sid):
         """Hydrate only visible identities, retaining explicit deleted-track gaps."""
         if sid not in songs:
-            raw = conn.execute('SELECT s.*,a.title album_title,a.cover_url FROM songs s LEFT JOIN albums a ON a.id=s.album_id WHERE s.id=?', (sid,)).fetchone()
+            raw = conn.execute('SELECT s.*,a.title album_title,a.cover_url,a.shelves_excluded FROM songs s LEFT JOIN albums a ON a.id=s.album_id WHERE s.id=?', (sid,)).fetchone()
             if raw:
                 item = dict(raw)
                 artists = [dict(r) for r in conn.execute('SELECT a.id,a.name FROM artists a JOIN song_artists sa ON sa.artist_id=a.id WHERE sa.song_id=?', (sid,))]
-                item.update(versus_metadata(dict(id=item['album_id'], title=item['album_title'], cover_url=item['cover_url']), artists))
+                item.update(versus_metadata(dict(id=item['album_id'], title=item['album_title'], cover_url=item['cover_url'], shelves_excluded=item['shelves_excluded']), artists))
                 songs[sid] = item
             else:
                 songs[sid] = None

@@ -28,14 +28,14 @@ class AlbumShelvesTests(unittest.TestCase):
     def edit(self,flag,**extra):
         return self.client().post('/api/dev/edit_album/1',json=dict(title='Album',cover_url='',release_date='',shelves_excluded=flag,**extra))
 
-    def test_flag_only_excludes_shelves_and_can_be_reversed(self):
+    def test_album_visibility_can_be_reversed(self):
         self.conn.execute("UPDATE albums SET cover_url='',release_date='' WHERE id=1");self.conn.commit()
         before=capture(self.conn)
         self.assertIn(1,shelf_pool(self.conn))
         self.assertEqual(self.edit(True).status_code,200)
         self.assertNotIn(1,shelf_pool(self.conn))
         album=dict(self.conn.execute('SELECT * FROM albums WHERE id=1').fetchone())
-        self.assertTrue(proper_album(album))
+        self.assertFalse(proper_album(album))
         songs=[dict(r) for r in self.conn.execute('SELECT * FROM songs')]
         self.assertFalse({s['id'] for s in songs if s['album_id']==1}&shelf_eligible_ids(dict(songs=songs,albums=[dict(r) for r in self.conn.execute('SELECT * FROM albums')])))
         after=capture(self.conn)
@@ -44,6 +44,33 @@ class AlbumShelvesTests(unittest.TestCase):
         self.assertEqual(self.edit(False).status_code,200)
         self.assertIn(1,shelf_pool(self.conn))
         self.assertEqual(capture(self.conn),before)
+
+    def test_hidden_album_is_absent_from_public_routes_but_song_remains(self):
+        client = self.client()
+        self.assertEqual(client.get('/album/Album').status_code, 200)
+        self.assertEqual(self.edit(True).status_code, 200)
+        self.assertEqual(client.get('/album/Album').status_code, 404)
+        self.assertEqual(client.get('/api/profile/albums/1/stats').status_code, 404)
+        self.assertEqual(client.get('/api/vibe-map/entity/album/1').status_code, 404)
+        self.assertNotIn(1, {row['id'] for row in client.get('/api/library?type=albums').json['items']})
+        song = next(row for row in client.get('/api/library?type=songs').json['items'] if row['id'] == 1)
+        self.assertEqual(song['album'], '')
+        self.assertEqual(client.get('/song/1').status_code, 200)
+        self.assertEqual(self.edit(False).status_code, 200)
+        self.assertEqual(client.get('/album/Album').status_code, 200)
+
+    def test_single_visibility_migration_runs_once(self):
+        from songranker.storage.database import migrate
+        path = Path(self.conn.execute('PRAGMA database_list').fetchone()[2])
+        self.conn.execute("UPDATE albums SET title='Test - Single' WHERE id=1")
+        self.conn.execute('PRAGMA user_version=24')
+        self.conn.commit()
+        migrate(path)
+        self.assertEqual(self.conn.execute('SELECT shelves_excluded FROM albums WHERE id=1').fetchone()[0], 1)
+        self.conn.execute('UPDATE albums SET shelves_excluded=0 WHERE id=1')
+        self.conn.commit()
+        migrate(path)
+        self.assertTrue(proper_album(dict(self.conn.execute('SELECT * FROM albums WHERE id=1').fetchone())))
 
     def test_saved_round_can_still_be_graded_after_exclusion(self):
         client=self.client()
@@ -111,7 +138,7 @@ class AlbumShelvesTests(unittest.TestCase):
         self.assertEqual(response.status_code,200,response.json)
         self.assertFalse(response.json['album_available'])
         self.assertNotIn('album',response.json['fields'])
-        self.assertTrue(proper_album(dict(self.conn.execute('SELECT * FROM albums WHERE id=1').fetchone())))
+        self.assertFalse(proper_album(dict(self.conn.execute('SELECT * FROM albums WHERE id=1').fetchone())))
 
     def test_dedicated_bracket_page_has_missing_record_404(self):
         self.assertEqual(self.client().get('/tournament/9999/bracket').status_code,404)

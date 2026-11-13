@@ -381,8 +381,9 @@ def upgrade_state(original):
     from songranker.storage.tag_limits import upgrade_state as upgrade_tags
     from songranker.storage.vibe_state import upgrade_state as upgrade_vibes
     from songranker.storage.schema_compat import retire_listening as retire_listening
-    from songranker.storage.schema_compat import upgrade_album_discs, upgrade_album_shelves
-    return upgrade_album_shelves(upgrade_album_discs(retire_listening(upgrade_vibes(upgrade_tags(upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original)))))))))
+    from songranker.storage.schema_compat import upgrade_album_discs, upgrade_album_shelves, upgrade_album_visibility
+    state = upgrade_album_shelves(upgrade_album_discs(retire_listening(upgrade_vibes(upgrade_tags(upgrade_storage(upgrade_sources(upgrade_challenges(_upgrade_to_11(original)))))))))
+    return upgrade_album_visibility(state)
 
 
 def replay(songs, seeds, events, overrides, cutoff, boundary, rules_version=1):

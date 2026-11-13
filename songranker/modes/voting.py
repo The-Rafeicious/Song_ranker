@@ -136,7 +136,7 @@ def build_elo_replay(conn, song_id=None):
     from songranker.catalog import source_sql
 
     songs = {r["id"]: dict(r) for r in conn.execute("SELECT id,title,album_id,elo_score,audio_url FROM songs")}
-    albums = {r["id"]: dict(r) for r in conn.execute("SELECT id,title,cover_url FROM albums")}
+    albums = {r["id"]: dict(r) for r in conn.execute("SELECT id,title,cover_url,shelves_excluded FROM albums")}
     artists = defaultdict(list)
     for row in conn.execute("SELECT sa.song_id,a.id,a.name FROM song_artists sa JOIN artists a ON a.id=sa.artist_id ORDER BY a.name,a.id"):
         artists[row["song_id"]].append(dict(id=row["id"], name=row["name"]))

@@ -79,7 +79,7 @@ def shelf_eligible_ids(data):
             occupied[(song.get('album_id'),disc,position)].append(song['id'])
     groups=defaultdict(list)
     for (album_id,_,_),ids in occupied.items():
-        if len(ids)==1 and proper_album(albums.get(album_id,{})) and not albums[album_id].get('shelves_excluded',0):
+        if len(ids)==1 and proper_album(albums.get(album_id,{})):
             groups[album_id].extend(ids)
     return {sid for ids in groups.values() if len(ids)>=2 for sid in ids}
 
@@ -121,7 +121,7 @@ def features(data):
           'blind_wins':ratio(v.get('blind_wins'),v.get('blind_matches'),applicable=audio_available),
           'trivia_title':ratio(t.get('title_correct'),title_n,applicable=audio_available),
           'trivia_artist':ratio(t.get('artist_correct'),title_n,applicable=audio_available),
-          'trivia_album':ratio(t.get('album_correct'),t.get('album_attempts'),applicable=audio_available and proper_album(albums.get(song.get('album_id'),{})) and not albums.get(song.get('album_id'),{}).get('shelves_excluded',0)),
+          'trivia_album':ratio(t.get('album_correct'),t.get('album_attempts'),applicable=audio_available and proper_album(albums.get(song.get('album_id'),{}))),
           'trivia_perfect':ratio(*perfect[sid],applicable=audio_available),
           'tournament_wins':ratio(advanced,MAX_ROUNDS*completed_weight,evidence=completed_weight),
           'tournament_podium':ratio(podium,completed_weight),
@@ -185,7 +185,7 @@ def topology(data):
     structural changes.
     """
     rows=[(s['id'],s.get('album_id'),s.get('disc_number',1),s.get('track_number'),bool(str(s.get('audio_url') or '').strip()),sorted(set(s.get('artist_ids',[]))),sorted(set(s.get('tag_ids',[])))) for s in data.get('songs',[])]
-    structure=[sorted(rows),[(kind,sorted((r['id'],(proper_album(r),bool(r.get('shelves_excluded',0))) if kind=='albums' else True) for r in data.get(kind,[]))) for kind in ('artists','albums','tags')]]
+    structure=[sorted(rows),[(kind,sorted((r['id'],proper_album(r) if kind=='albums' else True) for r in data.get(kind,[]))) for kind in ('artists','albums','tags')]]
     return hashlib.sha256(json.dumps(structure).encode()).hexdigest()
 
 
@@ -379,6 +379,8 @@ def evaluate(data,force=False,details=False):
     apply_display_scores(result['songs'])
     for kind,index in [('artists',by_artist),('albums',by_album),('tags',by_tag)]:
         for entity in data.get(kind,[]):
+            if kind == 'albums' and not proper_album(entity):
+                continue
             name=entity.get('name',entity.get('title',''))
             row=dict(id=entity['id'],name=name,title=name,cover_url=entity.get('cover_url'),eligible=kind!='albums' or proper_album(entity),**entity_score(index[entity['id']],scored,details))
             if details:

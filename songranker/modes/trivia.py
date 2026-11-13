@@ -197,6 +197,8 @@ def grade(conn, row, field, guess, song, seconds):
 
 def payload(conn, row, reveal=False):
     song = round_song(conn, row)
+    album = conn.execute("SELECT * FROM albums WHERE id=?", (song["album_id"],)).fetchone()
+    visible_album = album is not None and proper_album(dict(album))
     classic = score_state(conn)
     if row["rules_version"] == challenges.RULES_VERSION:
         state = challenges.progress(conn, row["run_id"], "trivia")
@@ -231,7 +233,7 @@ def payload(conn, row, reveal=False):
                     None if row[f + "_correct"] is None else bool(row[f + "_correct"])
                 ),
                 "actual": (
-                    song[f] if row[f + "_correct"] is not None or reveal else None
+                    song[f] if (f != "album" or visible_album) and (row[f + "_correct"] is not None or reveal) else None
                 ),
             }
             for f in FIELDS
@@ -248,9 +250,6 @@ def payload(conn, row, reveal=False):
                 else []
             )
         elif field == "album":
-            album = conn.execute(
-                "SELECT title FROM albums WHERE id=?", (song["album_id"],)
-            ).fetchone()
             answer["links"] = (
                 [
                     {
@@ -258,7 +257,7 @@ def payload(conn, row, reveal=False):
                         "url": "/album/" + quote(album["title"], safe=""),
                     }
                 ]
-                if album
+                if album and proper_album(dict(album))
                 else []
             )
         else:
@@ -297,7 +296,7 @@ def payload(conn, row, reveal=False):
             ),
             actual_title=song["title"],
             actual_artist=song["artist"],
-            actual_album=song["album"],
+            actual_album=song["album"] if visible_album else None,
         )
     return result
 
@@ -345,7 +344,7 @@ def api_trivia_round():
         song = get_song_full(selected["id"], conn)
         token = uuid.uuid4().hex
         album = conn.execute("SELECT * FROM albums WHERE id=?", (song["album_id"],)).fetchone()
-        available = bool(album and proper_album(dict(album)) and not album["shelves_excluded"])
+        available = bool(album and proper_album(dict(album)))
         state = challenges.progress(conn, run["id"], "trivia")
         conn.execute(
             """INSERT INTO trivia_rounds(token,song_id,album_available,run_id,rules_version,

@@ -31,7 +31,7 @@
   const normal = window.SongRankerUI.searchText;
   const single = (a) => /\s-\s*single\s*$/i.test(a?.title || "");
   const properAlbum = (a) =>
-    !!a?.title?.trim() && !single(a) && normal(a.title) !== "unknown album";
+    !!a?.title?.trim() && !a.shelves_excluded && normal(a.title) !== "unknown album";
   let songs = [],
     artists = [],
     albums = [],
@@ -97,8 +97,8 @@
         elo_matches_played:
           s.elo_matches_played ?? s.voting?.matches ?? s.matches_played,
         artist: aa.map((a) => a.name).join(", "),
-        album: album?.title || "",
-        album_is_single: single(album),
+        album: page === "dev" || properAlbum(album) ? album?.title || "" : "",
+        album_hidden: !properAlbum(album),
         cover_url: album?.cover_url || "",
         tag_names: tt.map((t) => t.name).join(", "),
         name: s.title,
@@ -265,7 +265,7 @@
             `<a class="artist" title="${esc(a.name)}" href="${urlFor("artists", a)}">${esc(a.name)}</a>`,
         )
         .join('<span class="separator muted">,</span>') +
-      (s.album && !s.album_is_single
+      (s.album && !s.album_hidden
         ? `<span class="separator muted">·</span><a class="album" title="${esc(s.album)}" href="${urlFor("albums", byId(albums, s.album_id))}">${esc(s.album)}</a>`
         : "")
     );
@@ -725,7 +725,7 @@
         )
         .join(
           ", ",
-        )}</div>${s.album && !s.album_is_single && properAlbum({ title: s.album }) ? `<a class="album versus-album" href="/album/${encodeURIComponent(s.album)}" title="${esc(s.album)}">${esc(s.album)}</a>` : ""}<div class="versus-rating standard"><span class="versus-rating-label">${saved ? "Public Elo" : "Current Elo"}</span><strong>${rating}</strong>${delta === null ? "" : `<span class="versus-delta ${delta < 0 ? "loss" : "song"}">${delta >= 0 ? "+" : ""}${Number(delta.toFixed(2))}</span>`}</div></div>`;
+        )}</div>${s.album && !s.album_hidden && properAlbum({ title: s.album }) ? `<a class="album versus-album" href="/album/${encodeURIComponent(s.album)}" title="${esc(s.album)}">${esc(s.album)}</a>` : ""}<div class="versus-rating standard"><span class="versus-rating-label">${saved ? "Public Elo" : "Current Elo"}</span><strong>${rating}</strong>${delta === null ? "" : `<span class="versus-delta ${delta < 0 ? "loss" : "song"}">${delta >= 0 ? "+" : ""}${Number(delta.toFixed(2))}</span>`}</div></div>`;
       return position === "right" ? cover + copy : copy + cover;
     };
     const tournament = h.origin === "tournament",
@@ -827,7 +827,7 @@
       })
       .join('<span class="muted">,</span>');
     const album = byId(albums, s.album_id),
-      show = properAlbum({ title: s.album || "" });
+      show = album ? properAlbum(album) : !s.album_hidden && properAlbum({ title: s.album });
     return (
       `<div class="game-artists">${names}</div>` +
       (show
@@ -1059,7 +1059,7 @@
     if (type === "songs")
       return {
         html: metadata(r),
-        text: [r.artist, r.album && !r.album_is_single ? r.album : ""]
+        text: [r.artist, r.album && !r.album_hidden ? r.album : ""]
           .filter(Boolean)
           .join(" · "),
       };
@@ -1286,7 +1286,7 @@
       ["cover_url", "Cover"],
       ["name", "Album / release"],
       ["release_date", "Released"],
-      ["shelves_excluded", "Album Shelves"],
+      ["shelves_excluded", "Album visibility"],
       ["song_count", "Songs"],
       ["score", "Impact"],
       ["avg_elo", "Avg Elo"],
@@ -1395,7 +1395,7 @@
         ) || ""
       );
     if (k === "preview") return r.audio_url ? "yes" : "no";
-    if (k === "shelves_excluded") return r.shelves_excluded ? "Excluded" : "Included";
+    if (k === "shelves_excluded") return r.shelves_excluded ? "Hidden" : "Visible";
     if (k === "release_type") return single(r) ? "Single" : "Album";
     return r[k] ?? "";
   }
@@ -1463,7 +1463,7 @@
     closeRecordMenu();
     activateTable(type);
     $("#dev-main").innerHTML = devTitle(type === "tags" ? "Tags" : type[0].toUpperCase()+type.slice(1)) +
-      `<section class="panel dev-table-panel"><div class="dev-table-toolbar"><form class="search-form" id="manage-search"><input id="manage-query" type="search" aria-label="Search ${type}" placeholder="Search ${type}…" value="${esc(tableQuery)}"><button type="submit">Search</button></form><div class="dev-table-tools"><button class="btn" type="button" data-table-panel="filters" aria-controls="table-filters" aria-expanded="${tablePanel === "filters"}">Filters <span class="table-tool-count" id="table-filter-count"></span></button><button class="btn" type="button" data-table-panel="columns" aria-controls="table-columns" aria-expanded="${tablePanel === "columns"}">Columns <span class="table-tool-count">${columns(type).length}</span></button></div></div>${tableFiltersMarkup(type)}${columnChooser(type)}<div class="table-state-bar"><span id="table-state-label" role="status"></span><button class="btn small" type="button" data-table-clear>Clear filters</button></div><div id="table-filter-chips" class="table-filter-chips"></div><div class="table-view-bar"><label class="table-order-label">Order <select id="table-order" aria-label="Order by">${tableColumns[type].filter(([k])=>!["cover_url","apple_track_url"].includes(k)).map(([key,name])=>`<option value="${key}" ${tableSort === key ? "selected" : ""}>${name}</option>`).join("")}</select></label><button class="btn small" type="button" data-table-direction aria-label="Reverse order">${tableDir === 1 ? "↑" : "↓"}</button><button class="btn small" type="button" data-table-reset-order>Reset order</button><label>Rows <select id="table-page-size">${[15,30,60,100].map(n=>`<option ${tablePageSize === n ? "selected" : ""}>${n}</option>`).join("")}</select></label><label>Page <input id="table-page" type="number" min="1" value="${tablePage+1}" aria-label="Go to page"></label>${tablePager()}</div><div class="table-count" role="status"></div><div class="data-scroll dev-catalog-scroll" tabindex="0" role="region" aria-label="${type} table"><table class="data-table dev-catalog-table"><thead><tr>${columns(type).map(([k,name])=>`<th class="table-col-${k}" scope="col" aria-sort="${tableSort === k ? (tableDir === 1 ? "ascending" : "descending") : "none"}"><button type="button" data-sort="${k}">${name}</button></th>`).join("")}<th class="dev-actions-cell" scope="col">Actions</th></tr></thead><tbody id="manage-rows"></tbody></table></div><div class="dev-pagination"><span class="table-count"></span>${tablePager()}</div></section>`;
+      `<section class="panel dev-table-panel"><div class="dev-table-toolbar"><form class="search-form" id="manage-search"><input id="manage-query" type="search" aria-label="Search ${type}" placeholder="Search ${type}…" value="${esc(tableQuery)}"><button type="submit">Search</button></form><div class="dev-table-tools">${type === "albums" ? '<label class="table-order-label">Album visibility <select id="table-album-visibility"><option value="">All releases</option><option value="Hidden">Hidden only</option><option value="Visible">Visible only</option></select></label>' : ""}<button class="btn" type="button" data-table-panel="filters" aria-controls="table-filters" aria-expanded="${tablePanel === "filters"}">Filters <span class="table-tool-count" id="table-filter-count"></span></button><button class="btn" type="button" data-table-panel="columns" aria-controls="table-columns" aria-expanded="${tablePanel === "columns"}">Columns <span class="table-tool-count">${columns(type).length}</span></button></div></div>${tableFiltersMarkup(type)}${columnChooser(type)}<div class="table-state-bar"><span id="table-state-label" role="status"></span><button class="btn small" type="button" data-table-clear>Clear filters</button></div><div id="table-filter-chips" class="table-filter-chips"></div><div class="table-view-bar"><label class="table-order-label">Order <select id="table-order" aria-label="Order by">${tableColumns[type].filter(([k])=>!["cover_url","apple_track_url"].includes(k)).map(([key,name])=>`<option value="${key}" ${tableSort === key ? "selected" : ""}>${name}</option>`).join("")}</select></label><button class="btn small" type="button" data-table-direction aria-label="Reverse order">${tableDir === 1 ? "↑" : "↓"}</button><button class="btn small" type="button" data-table-reset-order>Reset order</button><label>Rows <select id="table-page-size">${[15,30,60,100].map(n=>`<option ${tablePageSize === n ? "selected" : ""}>${n}</option>`).join("")}</select></label><label>Page <input id="table-page" type="number" min="1" value="${tablePage+1}" aria-label="Go to page"></label>${tablePager()}</div><div class="table-count" role="status"></div><div class="data-scroll dev-catalog-scroll" tabindex="0" role="region" aria-label="${type} table"><table class="data-table dev-catalog-table"><thead><tr>${columns(type).map(([k,name])=>`<th class="table-col-${k}" scope="col" aria-sort="${tableSort === k ? (tableDir === 1 ? "ascending" : "descending") : "none"}"><button type="button" data-sort="${k}">${name}</button></th>`).join("")}<th class="dev-actions-cell" scope="col">Actions</th></tr></thead><tbody id="manage-rows"></tbody></table></div><div class="dev-pagination"><span class="table-count"></span>${tablePager()}</div></section>`;
     configureTableFilter();renderTableBody(type);
   }
   function recordTools(type, r) {
@@ -1557,6 +1557,11 @@
     $$("[data-table-next]").forEach(b=>b.disabled=offset + tablePageSize >= all.length);
     $("#table-page").value=tablePage+1;$("#table-page").max=Math.max(1,Math.ceil(all.length/tablePageSize));
     $("#table-order").value=tableSort;
+    const visibility = $("#table-album-visibility");
+    if (visibility) {
+      const rule = tableFilters.shelves_excluded;
+      visibility.value = rule?.op === "equals" ? rule.value : "";
+    }
     $("#table-filter-chips").innerHTML=Object.entries(tableFilters).map(([key,rule])=>`<button class="btn small" type="button" data-remove-table-filter="${key}" title="Remove this filter">${esc(tableColumns[type].find(([k])=>k===key)?.[1]||key)} ${esc(filterOps[rule.op])} ${esc(["missing","present"].includes(rule.op)?"":rule.value)} ×</button>`).join("");
   }
   function renderImport() {
@@ -1823,7 +1828,7 @@
         field("title", "Title", r.title, "text", "required") +
           field("release_date", "Release date", r.release_date || "", "date") +
           field("cover_url", "Cover URL", r.cover_url) +
-          `<label class="checkbox-label"><input type="checkbox" id="field-shelves_excluded" name="shelves_excluded" ${r.shelves_excluded ? "checked" : ""}>Exclude from Album Shelves</label><p class="muted">Keeps this as an album. Skips its name in new Trivia rounds; hides it from Shelves play, profiles and statistics. Saved Shelves rounds containing it are hidden until included again.</p>`,
+          `<label class="checkbox-label"><input type="checkbox" id="field-shelves_excluded" name="shelves_excluded" ${r.shelves_excluded ? "checked" : ""}>Hide album across the app</label><p class="muted">Hides the album from rankings, search, profiles, statistics and Album Shelves. Its songs keep their artwork and results.</p>`,
       );
     if (type === "tags")
       body = group(
@@ -3483,6 +3488,12 @@
     if(n.id === "table-filter-op")$("#table-filter-value").disabled=["missing","present"].includes(n.value);
     if(n.id === "table-page-size"){tablePageSize=Number(n.value);tablePage=0;renderTableBody();}
     if(n.id === "table-page"){tablePage=Math.max(0,(Number(n.value)||1)-1);renderTableBody();}
+    if (n.id === "table-album-visibility") {
+      if (n.value) tableFilters.shelves_excluded = { op: "equals", value: n.value };
+      else delete tableFilters.shelves_excluded;
+      tablePage = 0;
+      renderTableBody();
+    }
     if (n.id === "table-order") {
       tableSort = n.value;
       tableDir = 1;

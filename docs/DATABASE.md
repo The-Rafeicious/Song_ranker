@@ -1,6 +1,6 @@
 # V5 database dictionary
 
-**Generation-3 competition · schema 24 · app v5.9.6.5**
+**Generation-3 competition · schema 25 · app v5.9.6.6**
 
 The active default is `data/song_ranker_v3.db`. The schema registry is
 [data/schema.sql](../data/schema.sql); this dictionary is derived from it.

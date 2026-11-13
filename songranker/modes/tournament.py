@@ -42,6 +42,9 @@ def api_generate_bracket():
             )
             params.append(scope_id)
         elif scope == "album":
+            album = conn.execute("SELECT * FROM albums WHERE id=?", (scope_id,)).fetchone()
+            if not album or not proper_album(dict(album)):
+                return jsonify(error="Album unavailable."), 404
             conditions.append("s.album_id=?")
             params.append(scope_id)
         elif scope == "tag":
@@ -1253,7 +1256,11 @@ def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
     for kind,rows in [('artist',artists),('album',albums)]:
         for key in sorted({t['scope_id'] for t in brackets if t['scope_type']==kind},key=lambda key: str(rows.get(key,{}).get('name',rows.get(key,{}).get('title',''))).casefold()):
             row=rows.get(key,{})
+            if kind == 'album' and row and not proper_album(row):
+                continue
             choices.append(dict(value=f'{kind}:{key}',name=row.get('name',row.get('title',f'Removed {kind} #{key}')),cover_url=row.get('cover_url') or '',kind=kind))
+    if scope == 'album' and scope_id in albums and not proper_album(albums[scope_id]):
+        abort(404)
     if scope_id is not None and scope_id not in (artists if scope=='artist' else albums) and not any(t['scope_type']==scope and t['scope_id']==scope_id for t in brackets):abort(404)
     brackets=[t for t in brackets if (scope=='all' or t['scope_type']==scope) and (scope_id is None or t['scope_id']==scope_id)]
     by_id={t['id']:t for t in brackets}
@@ -1301,6 +1308,8 @@ def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
     decided_counts=Counter(m['tournament_id'] for m in matches if recorded_result(m))
     for t in brackets:
         identity=(artists if t['scope_type']=='artist' else albums).get(t['scope_id'],{})
+        if t['scope_type']=='album' and not proper_album(identity):
+            identity={}
         t['name']=identity.get('name',identity.get('title','Removed collection'))
         t['decided']=decided_counts[t['id']]
         t['winner']=songs.get(t.get('champion_id')) if t['status']=='completed' else None

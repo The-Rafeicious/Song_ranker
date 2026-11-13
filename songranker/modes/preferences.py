@@ -66,7 +66,7 @@ def snapshot_song(conn, song):
             "album_id",
             "audio_url",
             "album",
-            "album_is_single",
+            "album_hidden",
             "cover_url",
             "artist",
             "genres",

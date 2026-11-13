@@ -285,8 +285,8 @@ clips/minute, below the existing shared 18/minute limit; rapid skips may still
 reach it. Completed previews reuse the ten-track, ten-minute memory cache.
 
 
-In Library → Albums → Edit, **Exclude from Album Shelves** keeps a grouped release
-as a normal album while preventing its tracks from entering new Shelves rounds.
-The Album Shelves table column displays Included/Excluded and supports the normal
-filters. Old clients that omit the setting preserve it. Existing saved rounds can
-still be finished, and unchecking the flag restores normal selection eligibility.
+In Library → Albums → Edit, use **Hide album across the app** to remove a
+release from public album lists, search, profiles, reports and Album Shelves.
+The Album visibility column shows Hidden or Visible. Songs retain their artwork
+and records. Existing and newly imported Single releases default to hidden.
+Clear the checkbox to make a release visible again.
