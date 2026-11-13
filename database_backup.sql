@@ -1,4 +1,4 @@
--- Song Ranker backup · commit time: 2026-11-13T03:05:24Z · device: 2
+-- Song Ranker backup · commit time: 2026-11-13T23:16:34Z · device: 3
 PRAGMA foreign_keys=OFF;
 BEGIN TRANSACTION;
 CREATE TABLE album_shelf_items (
@@ -1947,6 +1947,7 @@ INSERT INTO "albums"("rowid","id","title","cover_url","release_date","shelves_ex
 INSERT INTO "albums"("rowid","id","title","cover_url","release_date","shelves_excluded") VALUES(457,457,'You Promised A Lifetime','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/e6/99/17/e6991798-cc2e-16a4-012e-cf2ebc0ba9df/196871835268.jpg/300x300bb.jpg','2023-10-13',0);
 INSERT INTO "albums"("rowid","id","title","cover_url","release_date","shelves_excluded") VALUES(458,458,'A Minute...','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/c1/a5/e5/c1a5e5c4-7a40-ed20-ee53-1cfc97b22c55/196872574104.jpg/300x300bb.jpg','2024-11-08',0);
 INSERT INTO "albums"("rowid","id","title","cover_url","release_date","shelves_excluded") VALUES(459,459,'A Minute, A Moment...','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/68/76/7b/68767b7b-5f27-8bfa-8f30-d4e886c9d986/196873114255.jpg/300x300bb.jpg','2025-05-23',0);
+INSERT INTO "albums"("rowid","id","title","cover_url","release_date","shelves_excluded") VALUES(460,460,'The Hunger Games: Sunrise on the Reaping - The Album','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/de/a0/db/dea0db01-b9a7-173e-ccb2-c07c31f634bb/26UM1IM10359.rgb.jpg/300x300bb.jpg','',1);
 INSERT INTO "albums"("rowid","id","title","cover_url","release_date","shelves_excluded") VALUES(47,47,'Never Know Love - Single','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/4d/cd/5f/4dcd5f10-f5a6-658d-b1fe-88fd7b9bda87/5026854933047.jpg/300x300bb.jpg','2026-04-10',1);
 INSERT INTO "albums"("rowid","id","title","cover_url","release_date","shelves_excluded") VALUES(48,48,'Walk Me Home...','https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/4b/c9/0b/4bc90b5e-98c9-366a-5ae8-6402dd50f774/093624867142.jpg/300x300bb.jpg','2022-07-29',1);
 INSERT INTO "albums"("rowid","id","title","cover_url","release_date","shelves_excluded") VALUES(49,49,'The Time Of My Life - Single','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/3f/77/eb/3f77ebea-ff60-0db6-3233-ca5ddf899c91/054391214119.jpg/300x300bb.jpg','2026-06-25',1);
@@ -2119,6 +2120,7 @@ INSERT INTO "artists"("rowid","id","name","cover_url") VALUES(229,229,'Wiz Khali
 INSERT INTO "artists"("rowid","id","name","cover_url") VALUES(23,23,'Dylan','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/77/80/9e/77809e64-cdcb-6b28-c1ed-df168b9b7ce2/26UM1IM14236.rgb.jpg/300x300bb.jpg');
 INSERT INTO "artists"("rowid","id","name","cover_url") VALUES(230,230,'Myles Smith','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/68/76/7b/68767b7b-5f27-8bfa-8f30-d4e886c9d986/196873114255.jpg/300x300bb.jpg');
 INSERT INTO "artists"("rowid","id","name","cover_url") VALUES(232,232,'James Bay','https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/c1/a5/e5/c1a5e5c4-7a40-ed20-ee53-1cfc97b22c55/196872574104.jpg/300x300bb.jpg');
+INSERT INTO "artists"("rowid","id","name","cover_url") VALUES(234,234,'The Hunger Games','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/de/a0/db/dea0db01-b9a7-173e-ccb2-c07c31f634bb/26UM1IM10359.rgb.jpg/300x300bb.jpg');
 INSERT INTO "artists"("rowid","id","name","cover_url") VALUES(24,24,'Khloe Rose','https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/f8/2c/31/f82c3127-dac3-ca09-254d-87da0b560c42/artwork.jpg/300x300bb.jpg');
 INSERT INTO "artists"("rowid","id","name","cover_url") VALUES(25,25,'Post Malone','https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/7b/1b/1b/7b1b1b0b-7ce2-b223-f9e0-8e36abe51877/19UMGIM78325.rgb.jpg/300x300bb.jpg');
 INSERT INTO "artists"("rowid","id","name","cover_url") VALUES(26,26,'Swae Lee','https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/4b/30/2c/4b302cb6-7a14-5464-4e97-0577e9d0be49/18UMGIM82277.rgb.jpg/300x300bb.jpg');
@@ -12379,6 +12381,8 @@ INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1752,1420,230);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1753,1421,230);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1754,1422,230);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1755,1423,230);
+INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1759,1424,234);
+INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(1758,1424,3);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(358,143,30);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(500,144,24);
 INSERT INTO "song_artists"("rowid","song_id","artist_id") VALUES(11,145,24);
@@ -13827,6 +13831,7 @@ INSERT INTO "song_details"("rowid","song_id","added_at","preview_bad","preview_n
 INSERT INTO "song_details"("rowid","song_id","added_at","preview_bad","preview_note","flagged_at") VALUES(1421,1421,1794535274.0,0,'',NULL);
 INSERT INTO "song_details"("rowid","song_id","added_at","preview_bad","preview_note","flagged_at") VALUES(1422,1422,1794535274.0,0,'',NULL);
 INSERT INTO "song_details"("rowid","song_id","added_at","preview_bad","preview_note","flagged_at") VALUES(1423,1423,1794535274.0,0,'',NULL);
+INSERT INTO "song_details"("rowid","song_id","added_at","preview_bad","preview_note","flagged_at") VALUES(1424,1424,1794557914.0,0,'',NULL);
 INSERT INTO "song_details"("rowid","song_id","added_at","preview_bad","preview_note","flagged_at") VALUES(143,143,0.0,0,'',NULL);
 INSERT INTO "song_details"("rowid","song_id","added_at","preview_bad","preview_note","flagged_at") VALUES(144,144,0.0,0,'',NULL);
 INSERT INTO "song_details"("rowid","song_id","added_at","preview_bad","preview_note","flagged_at") VALUES(145,145,0.0,0,'',NULL);
@@ -15544,6 +15549,7 @@ INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(4605,1420,85);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(4606,1421,85);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(4607,1422,85);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(4608,1423,85);
+INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(4610,1424,1);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(377,143,11);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(374,143,16);
 INSERT INTO "song_genres"("rowid","song_id","genre_id") VALUES(378,143,27);
@@ -19228,6 +19234,7 @@ INSERT INTO "song_sources"("rowid","id","song_id","provider","external_id","stor
 INSERT INTO "song_sources"("rowid","id","song_id","provider","external_id","storefront","collection_id","snapshot","observed_at") VALUES(1424,1424,1421,'apple','1810457260','us','1810457254','srz1:ePmF2q4RrVRLboMwEL1K5EVXGHuM8QcpqnqAdJMDVOCYFClAlECjtsrdOwSCSJW0UVWJxdjvMd/n+SSnvElCnmaLomobH8zQqktfNWEYkoCMxSPnVvntfih/jz/WlaeVPzAwwGWsRSwfi/n5oPhDW89l5/c0PHS6eN/gtJdl0byO19h/REBIKy1+gMDliBFd9rFmz/7QwddHjrxJGy55fYwxSwQn+iAJKMs5D8iP7s7KJ8kdnbxR8Vnnkwb/ST0CgL1J5jhzmoFDw2lwEVAunKDRKrJU+VRQ6RQoz0Fyq1n5keYvoCNpwJoIpNBSch0bFW43LcZNXbgNS5meWjc8w0mi9wl1yEwZphXTGRpa6UxnNM6FpibLU2ryiNOV9MYoZ1fWKAYWaRFgSnHc6flS7N20xvVBEjEc+xWCwwtIv0Y6oRTV2u/Ysq7Wh13RIByQ6aJCiuAipjymIkLsyt4iiQzIdeF9ox1/8T0uGkTaPfnZ64VCFR/v//s1Hr8AvvBGag==',1794535252.2404747);
 INSERT INTO "song_sources"("rowid","id","song_id","provider","external_id","storefront","collection_id","snapshot","observed_at") VALUES(1425,1425,1422,'apple','1810457261','us','1810457254','srz1:ePmF2q4RrVTJboMwEP0V5ENPGHuMV6So6r055QMqCJAiGRIl0Cqt8u8dsiCokjaqKnEY+z1mfZ5PcsybJOQpmFdN1xZhgNa6Lpo2iiISkqF45Nwqv9udy0+9p/We+qosGFjgUhmh5GM1uxw0PHTrmez9HoeHTud7j9Ne1FX7Olxj/xEBIZ10+AEC0xH3CXsfzPfBM8bq4esjR96oDVPeKcaQJYIjfZAEjOach+RHdxflk+SOTt6o+KLzUYP/pB4hgL1JJgxTkuUZGkrmWR5THacxXRoraeHQKnNItQDIeClZ/ZGWL5pLzkEY/EEqZ8EZFW18h2HTZbSJapkeO3d+haM879MpxuoT05YZzUyGhtEmMxlVpTDUZmVKbRlzmsvCWr10ubOagUNaDCCFUr2cp1rvhzVsD5KI8/G0QXB2ITltEcx1UTWrYssW62b1vq1ahEMy3lNIEVwoyvFziF1ZWyRRIbmuu2+0wy++hz2DSLcjP3udCFTDcP/fj/HwBQBmRIU=',1794535252.2404747);
 INSERT INTO "song_sources"("rowid","id","song_id","provider","external_id","storefront","collection_id","snapshot","observed_at") VALUES(1426,1426,1423,'apple','1810457263','us','1810457254','srz1:ePmF2q4RrVTLboMwEPyVyIeeMMb2+oUUVZV6zSkfUEEwKVIgEYFWbZV/70IIgippq6oSh7Vn2deM94P0dZOYPCxWRdU2PligtS991YRhSAIyNo8+t9pvj0P7We2T0tdHxi2PQBmh4L5YXg5a3rX7JXRBe+Yw4upth1Svy6J5Hq9x+IhwAQ4cfhyBOb+IPg6JOuw62eg0GcDc75xgLBHBiTJIzB0HJwPybbiL5kn8ixneaPei8Mlo/6QbwTl7AQaeGcm8RcNIbzVQr01Oo1QZylMFNIs4kpAlOc8TVr4n+RNYCy6y1mpllNbWAA8PuxbTJpvwEJaQ9JMb3t+kzt8pdChMW2Y0MykaRpvUpFTlwlCb5gm1uYxoBh5L2LjMWc24QzfJOQilOiHPVd6RNe4NEovheN4dyF1AzvsDa10X1dbXbL2vtq910SAckOmGQhcRCUUjRYVE7MrCIrEOyBXRffE5/RB4XC+ItP3/t0LOpKnleP+vD/D0CYJ6Qe4=',1794535252.2404747);
+INSERT INTO "song_sources"("rowid","id","song_id","provider","external_id","storefront","collection_id","snapshot","observed_at") VALUES(1427,1427,1424,'apple','6814871213','gb','6814870921','srz1:ePmF2q4RrVRNb8IwDP0rUQ47EVKnSdpUQtNOsAPStI/zlJQU0KBUsHLYxH+fW6ArqGKft9h+sS37Pb/Tum+a0MeZJ6Myn+IChnbpNwl5KPP1fOPJKievGLz3tpjnU8JIBb2pv/VoMxtM8eV0ZnaRMbuYbz3XMcg4CoyA6/lgb4CA8KpcDWSVtl4t5hynLz7PLRniNjy5IudtNlhcGcJBGSmVURowcMoKjI6wPnaO9atoN0kQ1hrcKa4u8dk5BluMoomQEIS6Ry+mO2qFJn+f/U+GdFRTa0+/4qgA4FvJheHGcK3wYYxWUrHI25TJ2FiWxc4z0C5Ad2YVxHz5ZrNnLUIdxUYbEQcQKhFC3C8WJZa1ab/oL6Wtp33QeqvP76lBiLqxiec24BOHDxtMXADMGRsxiELP0tQJlgZRGkKmQ+kcF/ppDLdj3Jsy/fW0Fs6pqqolN3eKJnAw97eqtvf3Cvu9WxWIbt9AdKKn4xDiRyRKJy/PYbvOlM3BQnvq6MVcLdpWGmv8/6za3QcIPGE0',1794557906.8763204);
 INSERT INTO "song_sources"("rowid","id","song_id","provider","external_id","storefront","collection_id","snapshot","observed_at") VALUES(143,143,233,'apple','1807490837','gb','1807490612','srz1:ePmF2q4RrVRLS8NAEP4rZQ+est3HzD4SKGJPXgRvHsumu5FCkxS1Ckr/u5O0DanUKuJtZ79hXt8388H6ulnBbur0tFqGZnKbaK4sY0PXBP7Y91toXlLkdWiE8tJhLq3S16vZwfDgrrbtDLuwPWkUc95x1kzmbduk4Z8GT5Ay3qFCaTwBp9wS+tDnmtyFpkPPU01uo/ZP/fYphioJHOmCFcoZA5Cxi+HG4IKY3NaJolZh/ZwydlwHVlwa73dzOMp+NPY/iUlrJV5R2EokEDbQI4EN4HhaWs8hpsClDYq7MlZ5WWI0FYj6PVQLah+9904ZRLAK0enpZr2ltGE53UxrDP1AD0s5qvN3stWqL2xZCjDCRHqAMdFIXoEO3FpUPJYSeFBR+hC9gzwXMger0QPmVnbqPpV+x+FwTIjCg7k/KL29PypU6327Ie/xoaJPLbXhErk2hJ25W6zwGTurvy9eux9CD3eGkMeSXQw61ikt0PD/zyu5+wSsREil',1792348366.7724314);
 INSERT INTO "song_sources"("rowid","id","song_id","provider","external_id","storefront","collection_id","snapshot","observed_at") VALUES(144,144,247,'apple','1759201069','gb','1759201036','srz1:ePmF2q4RrVTbisIwEP2Vkod9MiaTewqy4C/4AdI2qQjVFtRd3MV/32nV0oqusuxbJmc4OZkzM9+k001SghL2+2OyqOrP6pjQZLHerqpIJqT/PSY9/X/TsdBdx8LAai84cGne17NrYPzboZ6plrnzD2nnrX3bZF7X29jfowcIgXZWgeLaITC2+VZ0m3DfeMwcFGOcd36lF4rgoEtIKgwoARPyK90QXKKvh01E1jKrdnFCrsNB0leK/agk12EYmPCnFhMA7EOxkDNwTEo8gJOSF9SVPKMlD5Zy6wvqOVeZyPNoo2Gbr6xcAkgttOVWeqnBGOn5tKkO+GxWTJvpRmVdYS+jOtD5WjNfhJmS5QWLAQ95EYN2VNhMUxGip9HoQGMIecGj5yLXjGslPQitlIO258cD0XrZrxiSwiU8r5kuPq+a1pC6wezh+sJLwYWi3FHQiN3ZZh3Fo1a8STw9Ye8XECKrnDzjHXWt8f39/4/p6QdltFaU',1792348366.7724836);
 INSERT INTO "song_sources"("rowid","id","song_id","provider","external_id","storefront","collection_id","snapshot","observed_at") VALUES(145,145,265,'apple','6811063587','gb','6811063582','srz1:ePmF2q4RrVTLagJBEPwVmUNOOzvv14KEEC8GvCXkKOM6o8KaiHEFE/ygfEd+LO2qm12RKCG36ammpqeruj9QVTfK0HMoik6/M5hNpqvOQwna9mYBJaj+PORc/P5qGnA+9YtQEG0Zo1ooy29n3TowN+VrV+5oK+2As/f1udmABvUd9B6uGTeGS8aEBqAtL6CP09C5r97ZoefVhrRj2E6q+H/KA7DhC5Qxyx2lCTrhanQTtcEhKFnOA7BGX7yFBB3HAWVXtPdcH47Ob7T8T37inJG1JDklIRJK4RAipVZgJUYRCyk0HnuhsGXGWBWtt06T+buPQ6aNlVpKp522nEkhpEoXRQnv+jxdpHPpq6YeBrNR6HXW5ayqzHCS50QJOOS5EpHhKBXFzPExNnGscc58ECYYHpwnXD8NWH/AjNQuXU4ql7dHYKdlvVRAykO4XyxVvF8uUO9dsQrLF6hwvZOhubgA5JRrTB3mCrAzewxlPEFnzXiStb1AXe8dQCYj9Ctp27emvv/n2dx+A/aBTfc=',1792348366.7725365);
@@ -22042,6 +22049,10 @@ INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_a
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(1423,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(1423,'perspective',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(1423,'sound_impact',NULL,NULL,'unmapped',NULL,0,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(1424,'connection',NULL,NULL,'unmapped',NULL,0,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(1424,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(1424,'perspective',NULL,NULL,'unmapped',NULL,0,0);
+INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(1424,'sound_impact',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(143,'connection',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(143,'pace_mood',NULL,NULL,'unmapped',NULL,0,0);
 INSERT INTO "song_vibe_positions"("song_id","map_id","x","y","status","updated_at","sample_count","not_applicable_count") VALUES(143,'perspective',NULL,NULL,'unmapped',NULL,0,0);
@@ -26264,6 +26275,7 @@ INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(14
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(1421,1421,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(1422,1422,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(1423,1423,0);
+INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(1424,1424,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(143,143,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(144,144,0);
 INSERT INTO "song_vibe_progress"("rowid","song_id","completed_passes") VALUES(145,145,1);
@@ -27672,6 +27684,7 @@ INSERT INTO "songs"("rowid","id","title","album_id","audio_url","elo_score","mat
 INSERT INTO "songs"("rowid","id","title","album_id","audio_url","elo_score","matches_played","highest_elo","highest_rank","track_number","disc_number","tournament_wins","release_date","release_date_origin") VALUES(1421,1421,'Someone New',459,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/c0/c7/1c/c0c71c31-02c2-3d39-6ea2-4c616e014097/mzaf_17348198314274407586.plus.aac.p.m4a',1200.0,0,1200.0,9999,4,1,0,'2025-05-23','apple');
 INSERT INTO "songs"("rowid","id","title","album_id","audio_url","elo_score","matches_played","highest_elo","highest_rank","track_number","disc_number","tournament_wins","release_date","release_date_origin") VALUES(1422,1422,'All My Life',459,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/27/54/db/2754dbd3-63a3-c784-e9a3-fd1a6211b0f4/mzaf_6040012775445981975.plus.aac.p.m4a',1200.0,0,1200.0,9999,5,1,0,'2025-05-09','apple');
 INSERT INTO "songs"("rowid","id","title","album_id","audio_url","elo_score","matches_played","highest_elo","highest_rank","track_number","disc_number","tournament_wins","release_date","release_date_origin") VALUES(1423,1423,'Dreamers',459,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/4e/73/e8/4e73e864-e67f-0b57-1b54-d01263daf1fa/mzaf_4884908886575668741.plus.aac.p.m4a',1200.0,0,1200.0,9999,6,1,0,'2025-05-23','apple');
+INSERT INTO "songs"("rowid","id","title","album_id","audio_url","elo_score","matches_played","highest_elo","highest_rank","track_number","disc_number","tournament_wins","release_date","release_date_origin") VALUES(1424,1424,'Half Alive',460,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/29/99/65/29996545-7eac-489a-f8be-16b0545fa518/mzaf_6236789692801352318.plus.aac.p.m4a',1200.0,0,1200.0,9999,16,1,0,'',NULL);
 INSERT INTO "songs"("rowid","id","title","album_id","audio_url","elo_score","matches_played","highest_elo","highest_rank","track_number","disc_number","tournament_wins","release_date","release_date_origin") VALUES(143,143,'I miss you, I''m sorry',28,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/3f/f4/45/3ff44563-0444-6bd5-d6a5-440a6e511730/mzaf_10586795270378986098.plus.aac.p.m4a',1184.1571041011612,3,1215.1980109609997,165,5,1,0,'2020-04-08','apple');
 INSERT INTO "songs"("rowid","id","title","album_id","audio_url","elo_score","matches_played","highest_elo","highest_rank","track_number","disc_number","tournament_wins","release_date","release_date_origin") VALUES(144,144,'The In Between',22,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/41/05/41/41054157-9b7f-0442-ad84-24d9c631eda4/mzaf_16820806944448296182.plus.aac.p.m4a',1242.447092164199,2,1242.447092164199,53,1,1,1,'2023-07-14','apple');
 INSERT INTO "songs"("rowid","id","title","album_id","audio_url","elo_score","matches_played","highest_elo","highest_rank","track_number","disc_number","tournament_wins","release_date","release_date_origin") VALUES(145,145,'Fictional',22,'https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/85/8a/d9/858ad960-02af-3930-4f64-2bfe81bf7e6c/mzaf_13987631160945645651.plus.aac.p.m4a',1213.6031475589089,2,1230.3284752785733,57,2,1,0,'2023-04-21','apple');
@@ -31162,15 +31175,15 @@ INSERT INTO "vibe_rounds"("owner_hash","token","song_id","map_index","status","r
 INSERT INTO "vibe_rounds"("owner_hash","token","song_id","map_index","status","revision","draft_status","draft_x","draft_y","draft_at","draft_key","answers","started_at","finished_at") VALUES('fe2705ecb0676fdbd44e27ecabcaf1caf058106a273416cf3249db63f2738de0','cgtPMJQRqzZxJJf0wrKDSkGnVgyChpYp4VuJXi0ZBwI',365,0,'active',0,NULL,NULL,NULL,NULL,NULL,'{}',1793066713.0400286,NULL);
 DELETE FROM sqlite_sequence;
 INSERT INTO sqlite_sequence(name,seq) VALUES('album_shelf_rounds',126);
-INSERT INTO sqlite_sequence(name,seq) VALUES('albums',459);
-INSERT INTO sqlite_sequence(name,seq) VALUES('artists',232);
+INSERT INTO sqlite_sequence(name,seq) VALUES('albums',460);
+INSERT INTO sqlite_sequence(name,seq) VALUES('artists',234);
 INSERT INTO sqlite_sequence(name,seq) VALUES('challenge_runs',48);
 INSERT INTO sqlite_sequence(name,seq) VALUES('elo_guess_rounds',1);
 INSERT INTO sqlite_sequence(name,seq) VALUES('genres',86);
 INSERT INTO sqlite_sequence(name,seq) VALUES('preference_corrections',3);
 INSERT INTO sqlite_sequence(name,seq) VALUES('preference_events',1890);
-INSERT INTO sqlite_sequence(name,seq) VALUES('song_sources',1426);
-INSERT INTO sqlite_sequence(name,seq) VALUES('songs',1423);
+INSERT INTO sqlite_sequence(name,seq) VALUES('song_sources',1427);
+INSERT INTO sqlite_sequence(name,seq) VALUES('songs',1424);
 INSERT INTO sqlite_sequence(name,seq) VALUES('tournament_matches',832);
 INSERT INTO sqlite_sequence(name,seq) VALUES('tournaments',31);
 INSERT INTO sqlite_sequence(name,seq) VALUES('trivia_rounds',853);
