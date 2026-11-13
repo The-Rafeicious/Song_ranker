@@ -71,7 +71,7 @@ class VibeStatsTests(unittest.TestCase):
 
     def test_rankings_counts_pairs_and_read_only_repeats(self):
         self.place(1,-1,-1,samples=6);self.place(2,-1,-1);self.place(3,1,1);self.place(6,.3,.2);self.place(7,.3,.2)
-        self.conn.execute("UPDATE albums SET title='Other - Single' WHERE id=2")
+        self.conn.execute("UPDATE albums SET title='Other - Single',shelves_excluded=1 WHERE id=2")
         self.conn.commit();before=capture(self.conn);data=build_vibe_stats(self.conn)
         self.assertEqual(capture(self.conn),before)
         self.assertEqual(data['overview']['full'],5)

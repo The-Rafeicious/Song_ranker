@@ -61,7 +61,7 @@ class VibeLibraryTests(unittest.TestCase):
 
     def test_proper_album_and_two_complete_track_rules_apply(self):
         self.place(1);self.place(2);self.place(6);self.place(7,maps=3)
-        self.conn.execute("UPDATE albums SET title='Album - Single' WHERE id=1");self.conn.commit()
+        self.conn.execute("UPDATE albums SET title='Album - Single',shelves_excluded=1 WHERE id=1");self.conn.commit()
         self.assertEqual(build_vibe_rankings(self.conn,'albums','top')['items'],[])
         self.place(7)
         self.assertEqual([r['id'] for r in build_vibe_rankings(self.conn,'albums','top')['items']],[2])
