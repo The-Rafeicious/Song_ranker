@@ -14,6 +14,9 @@ async function bounded(page,width,phase,folder){
  try{
   const page=await browser.newPage({viewport:{width:1365,height:1050}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
+  // The dedicated radio page tests auto playback. Other cases inspect foreground audio.
+  await page.addInitScript(()=>localStorage.setItem('songRankerBackgroundPreviews',
+    JSON.stringify({preference:'paused',mix:'related'})));
   const base=process.env.VIBE_TEST_URL,folder='artifacts/vibe-map';fs.mkdirSync(folder,{recursive:true});
   const radio = await browser.newPage({viewport:{width:390,height:844}});
   try {
@@ -31,17 +34,21 @@ async function bounded(page,width,phase,folder){
     const audio=document.createElement('audio'),button=document.createElement('button');
     audio.src='/tag-test-audio.wav?foreground=1';audio.id='radio-foreground';
     button.id='radio-play-foreground';button.textContent='Play foreground';
-    button.onclick=()=>window.PreviewPlayback.play(audio);
+    button.onclick=async()=>{
+      delete audio.dataset.testStarted;
+      await window.PreviewPlayback.play(audio);
+      audio.dataset.testStarted='true';
+    };
     document.querySelector('#main').prepend(button,audio);
    });
    await radio.locator('#radio-play-foreground').click();
-   await radio.waitForFunction(()=>document.querySelector('#radio-foreground').dataset.previewState==='playing');
+   await radio.waitForFunction(()=>document.querySelector('#radio-foreground').dataset.testStarted==='true');
    assert.equal(await radio.locator('#background-audio').evaluate(a=>a.paused),true);
    await radio.locator('#radio-foreground').evaluate(a=>a.pause());
    await radio.locator('#background-track').waitFor();
    assert.match(await radio.locator('#background-track').textContent(),/Bright track/);
    await radio.locator('#radio-play-foreground').click();
-   await radio.waitForFunction(()=>document.querySelector('#radio-foreground').dataset.previewState==='playing');
+   await radio.waitForFunction(()=>document.querySelector('#radio-foreground').dataset.testStarted==='true');
    assert.ok(await radio.locator('#background-audio').evaluate(a=>a.paused),'Selected audio interrupts the active background clip');
    await radio.locator('#radio-foreground').evaluate(a=>a.pause());
    await radio.locator('#background-track').waitFor();
@@ -99,7 +106,7 @@ async function bounded(page,width,phase,folder){
   await page.locator('#vibe-back').click();
   await page.locator('#vibe-plane').press('ArrowRight');
   await page.waitForFunction(()=>document.querySelector('#vibe-save-status').textContent==='All maps saved · finish when ready.');
-  assert.equal(await page.locator('audio').count(),1);
+  assert.equal(await page.locator('audio:not(#background-audio)').count(),1);
   for(const width of [320,360,390,430,768]){
    await page.setViewportSize({width,height:900});await bounded(page,width,'map',folder);
   }
