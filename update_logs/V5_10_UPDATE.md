@@ -13,3 +13,11 @@ available. Voting and Query no longer present a separate first-round Elo source.
   finish, and follows the site volume. Pause it from the banner at any time.
 - The queue and clip position carry across pages in the same tab. Related mixes
   periodically favor a neighboring track by a different artist.
+
+## V5.10.1
+
+- The background player automatically rotates between album, artist, tag, and
+  Vibe Map connections. Connection types that have gone unused gain weight
+  when a suitable track is available.
+- The banner popup shows the cover, track, artist, visible release, progress,
+  and how the current clip connects to the previous one.

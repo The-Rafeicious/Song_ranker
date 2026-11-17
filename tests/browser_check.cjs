@@ -22,17 +22,25 @@ async function bounded(page,width,phase,folder){
   try {
    const library=await (await radio.request.get(base+'/api/background-previews')).json();
    assert.ok(Array.isArray(library.songs),'Background inputs come from the public preview catalogue');
+   const maps=Object.fromEntries(['pace_mood','energy_story'].map(key=>[key,{status:'placed',x:.5,y:.5}]));
    const radioTracks=[
-    {id:1,title:'Quiet track',artist:'Artist A',audio_url:'/tag-test-audio.wav?radio=1',elo_score:1050,matches_played:2,artist_ids:[1],album_id:1,tag_ids:[1],cover_url:'/vibe-test-art.svg'},
-    {id:2,title:'Bright track',artist:'Artist B',audio_url:'/tag-test-audio.wav?radio=2',elo_score:1300,matches_played:3,artist_ids:[2],album_id:2,tag_ids:[1],cover_url:'/vibe-test-art.svg'}
+    {id:1,title:'Quiet track',artist:'Artist A',audio_url:'/tag-test-audio.wav?radio=1',artist_ids:[1],album_id:1,tag_ids:[1]},
+    {id:2,title:'Bright track',artist:'Artist B',album:'Bright release',audio_url:'/tag-test-audio.wav?radio=2',artist_ids:[2],album_id:2,tag_ids:[1],vibe_maps:maps,cover_url:'/vibe-test-art.svg'},
+    {id:3,title:'Warm track',artist:'Artist C',audio_url:'/tag-test-audio.wav?radio=3',artist_ids:[3],album_id:3,tag_ids:[3],vibe_maps:maps},
+    {id:4,title:'Unrelated track',artist:'Artist D',audio_url:'/tag-test-audio.wav?radio=4',artist_ids:[4],album_id:4,tag_ids:[4]},
    ];
    await radio.route('**/api/background-previews',route=>route.fulfill({json:{songs:radioTracks}}));
+   await radio.route('**/api/previews/1?*',async route=>{
+    const response=await radio.request.get(base+'/tag-test-audio.wav?foreground=1');
+    await route.fulfill({response});
+   });
    await radio.goto(base+'/');
    await radio.locator('#background-previews summary').click();
-   await radio.locator('#background-mix').selectOption('top-songs');
+   assert.equal(await radio.locator('#background-previews select').count(),0);
+   await radio.locator('#background-previews summary').click();
    await radio.evaluate(()=>{
     const audio=document.createElement('audio'),button=document.createElement('button');
-    audio.src='/tag-test-audio.wav?foreground=1';audio.id='radio-foreground';
+    audio.src='/api/previews/1?radio-test=1';audio.id='radio-foreground';
     button.id='radio-play-foreground';button.textContent='Play foreground';
     button.onclick=async()=>{
       delete audio.dataset.testStarted;
@@ -52,6 +60,9 @@ async function bounded(page,width,phase,folder){
    assert.ok(await radio.locator('#background-audio').evaluate(a=>a.paused),'Selected audio interrupts the active background clip');
    await radio.locator('#radio-foreground').evaluate(a=>a.pause());
    await radio.locator('#background-track').waitFor();
+   await radio.locator('#background-previews summary').click();
+   assert.equal(await radio.locator('#background-now [data-background-relation]').textContent(),'Shared tags');
+   assert.equal(await radio.locator('#background-now [data-background-album]').textContent(),'Bright release');
    await bounded(radio,390,'background-previews',folder);
    await radio.screenshot({path:folder+'/background-previews-phone.png'});
    await radio.locator('#background-audio').evaluate(a=>{a.currentTime=8;});
@@ -64,6 +75,9 @@ async function bounded(page,width,phase,folder){
    await radio.locator('#background-track').waitFor();
    assert.match(await radio.locator('#background-track').textContent(),/Bright track/);
    await radio.waitForFunction(()=>{const a=document.querySelector('#background-audio');return !a.seeking && a.currentTime>=7.9},null,{timeout:3000});
+   await radio.locator('#background-next').click();
+   await radio.waitForFunction(()=>document.querySelector('#background-now a').textContent==='Warm track');
+   assert.equal(await radio.locator('#background-now [data-background-relation]').textContent(),'Similar vibe');
    await radio.locator('#background-toggle').click();
    await radio.goto(base+'/');
    await radio.locator('#background-previews summary').click();

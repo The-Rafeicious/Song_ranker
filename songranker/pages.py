@@ -292,8 +292,7 @@ def background_previews():
     with closing(get_db_connection()) as conn:
         conn.execute('BEGIN')
         songs = with_vibe_maps(conn, conn.execute("""
-            SELECT s.id, s.title, s.audio_url, s.elo_score, s.matches_played,
-                   s.album_id, a.cover_url
+            SELECT s.id, s.title, s.audio_url, s.album_id, a.cover_url
             FROM songs s LEFT JOIN albums a ON a.id=s.album_id
             LEFT JOIN song_details d ON d.song_id=s.id
             WHERE TRIM(COALESCE(s.audio_url,''))!='' AND COALESCE(d.preview_bad,0)=0
@@ -307,13 +306,14 @@ def background_previews():
             artists[row['song_id']].append((row['artist_id'], row['name']))
         for row in conn.execute('SELECT song_id, genre_id FROM song_genres'):
             tags[row['song_id']].append(row['genre_id'])
-        visible_albums = {row['id'] for row in conn.execute('SELECT * FROM albums')
+        visible_albums = {row['id']: row['title'] for row in conn.execute('SELECT * FROM albums')
                           if proper_album(dict(row))}
         for song in songs:
             sid = song['id']
             song['artist_ids'] = [aid for aid, _ in artists[sid]]
             song['artist'] = ', '.join(name for _, name in artists[sid])
             song['tag_ids'] = tags[sid]
-            if song['album_id'] not in visible_albums:
+            song['album'] = visible_albums.get(song['album_id'])
+            if song['album'] is None:
                 song['album_id'] = None
         return jsonify(songs=songs)
