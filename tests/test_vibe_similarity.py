@@ -165,15 +165,21 @@ if __name__=='__main__':unittest.main()
 
 
 class SelectionEvidenceReviewTests(unittest.TestCase):
-    def test_seed_strength_beats_old_champion_flag_and_separates_favourites(self):
+    def test_seed_labels_are_preserved_but_pairings_and_sides_vary(self):
         from songranker.modes.tournament import _tournament_seed_order
         for size in (8,16,32):
             rows=[dict(id=i,elo_score=2000-100*i,championships=int(i==size-1)) for i in range(size)]
             chosen=S.tournament_tracks(rows,size,random.Random(7))
             self.assertEqual([r['id'] for r in chosen[:4]],[0,1,2,3])
-            positions=_tournament_seed_order(size)
-            self.assertNotEqual(positions.index(0)//(size//2),positions.index(1)//(size//2))
-            self.assertEqual(len({positions.index(i)//(size//4) for i in range(4)}),4)
+            rng = random.Random(19)
+            draws = [_tournament_seed_order(size, rng) for _ in range(200)]
+            for positions in draws:
+                self.assertEqual(sorted(positions), list(range(size)))
+            self.assertTrue(any(p.index(0)//2 == p.index(1)//2 for p in draws))
+            self.assertTrue(any(p.index(0)//2 == p.index(size-1)//2 for p in draws))
+            stronger_on_left = sum(a < b for p in draws for a,b in zip(p[::2], p[1::2]))
+            total = len(draws) * size // 2
+            self.assertTrue(.4 * total < stronger_on_left < .6 * total)
             self.assertEqual({r['id'] for r in chosen},set(range(size)))
 
     def test_saved_pair_history_softly_reduces_repeats(self):

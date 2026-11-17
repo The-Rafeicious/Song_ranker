@@ -322,8 +322,7 @@ def tournament_tracks(pool, size, rng=random, *, counts=None, local_strength=Non
 
     Local opponent-adjusted evidence can shift a seed by at most 10% of the
     eligible pool's rating spread. Two-percent jitter preserves near-tie variety.
-    Standard mirrored seed positions separate the top two/four seeds until the
-    final/semi-finals. This changes neither eligibility nor public ratings.
+    These seed labels support reporting. The bracket draws slots separately.
     """
     pool = rated_pool([dict(s) for s in pool])
     chosen = draw_entries(pool, size, rng, counts=counts, other_counts=other_counts, recent=recent)
