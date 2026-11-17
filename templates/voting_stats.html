@@ -67,7 +67,7 @@
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="vote-independent-elo">
     <div class="section-head"><h2 class="voting" id="vote-independent-elo">Independent Elo across modes</h2></div>
 
-    <div class="mode-stats-comparisons">{% for mode,label in [('standard','Non-blind'),('blind','Blind')] %}{% set r=split_elo.counts[mode] %}<div class="mode-stats-inset voting-mode-{{mode}}"><h3>{{label}} Elo evidence</h3><dl class="joined-metrics mode-stats-small-metrics">{{figure('Votes',number(r.effective_votes))}}{{figure('Tracks rated',r.tested)}}{{figure('First-round tournament votes',r.tournament_votes)}}</dl></div>{% endfor %}</div>
+    <div class="mode-stats-comparisons">{% for mode,label in [('standard','Non-blind'),('blind','Blind')] %}{% set r=split_elo.counts[mode] %}<div class="mode-stats-inset voting-mode-{{mode}}"><h3>{{label}} Elo evidence</h3><dl class="joined-metrics mode-stats-small-metrics">{{figure('Votes',number(r.effective_votes))}}{{figure('Tracks rated',r.tested)}}</dl></div>{% endfor %}</div>
     <p class="report-facts">{{split_elo.qualifying}} tracks · 3+ votes per mode</p>
     <div class="mode-stats-comparisons"><div class="mode-stats-inset voting-mode-blind"><h3>Higher Elo in Blind</h3>{{elo_records(split_elo.higher_blind)}}</div><div class="mode-stats-inset voting-mode-standard"><h3>Higher Elo in Non-blind</h3>{{elo_records(split_elo.higher_standard)}}</div></div>
     {% if split_elo.coverage.excluded %}<div class="report-facts">{{split_elo.coverage.excluded}} records without usable mode ratings</div>{% endif %}

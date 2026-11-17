@@ -170,7 +170,7 @@ class TournamentPolicyTests(unittest.TestCase):
     def old_tag_vote(self, blind=False):
         data=self.generate('tag');m=data['matches'][0]
         self.conn.execute('BEGIN IMMEDIATE')
-        self.conn.execute('UPDATE tournaments SET elo_weight=.5,is_blind=? WHERE id=?',(int(blind),data['tournament_id']))
+        self.conn.execute('UPDATE tournaments SET elo_policy_version=1,elo_weight=.5,is_blind=? WHERE id=?',(int(blind),data['tournament_id']))
         event=record_preference(self.conn,m['song1_id'],m['song2_id'],'blind' if blind else 'standard',
             {sid:dict(id=sid,title=f'Track {sid}') for sid in (m['song1_id'],m['song2_id'])},
             tournament_id=data['tournament_id'],tournament_match_id=m['id'],weight=.5)
