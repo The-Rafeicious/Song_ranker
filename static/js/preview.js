@@ -850,7 +850,14 @@
 
   function mountBackground(root) {
     const audio = root.querySelector("audio");
-    const mix = root.querySelector("select");
+    const nowPlaying = root.querySelector("#background-now");
+    const nowArt = nowPlaying.querySelector("img");
+    const nowTitle = nowPlaying.querySelector("a");
+    const nowArtist = nowPlaying.querySelector("[data-background-byline]");
+    const nowAlbum = nowPlaying.querySelector("[data-background-album]");
+    const nowRelation = nowPlaying.querySelector("[data-background-relation]");
+    const progress = nowPlaying.querySelector("progress");
+    const elapsed = nowPlaying.querySelector("time");
     const toggle = root.querySelector("#background-toggle");
     const skip = root.querySelector("#background-next");
     const status = root.querySelector("#background-state");
@@ -859,21 +866,20 @@
     const preference = "songRankerBackgroundPreviews";
     const handoffKey = "songRankerPreviewHandoff";
     const recent = [];
-    const usedGroups = new Set();
+    const mixHistory = new Map();
     let preferenceValue = "auto";
     let catalogue = null, loading = null, track = null, anchor = null;
     let requested = false, starting = false, failures = 0, revision = 0;
     let wake, cardTimer, loadTimer, foregroundUntil = 0;
-    let handoff = null, steps = 0;
+    let handoff = null, steps = 0, relation = "", counted = false;
 
     try {
       const saved = JSON.parse(localStorage.getItem(preference) || "{}");
       if (saved.preference === "paused") preferenceValue = "paused";
-      if ([...mix.options].some(option => option.value === saved.mix)) mix.value = saved.mix;
     } catch {}
 
     function remember() {
-      try { localStorage.setItem(preference, JSON.stringify({preference: preferenceValue, mix: mix.value})); }
+      try { localStorage.setItem(preference, JSON.stringify({preference: preferenceValue})); }
       catch {}
     }
 
@@ -881,16 +887,18 @@
       try {
         if (requested) {
           sessionStorage.setItem(handoffKey, JSON.stringify({
-            mix: mix.value, id: track?.id ?? handoff?.id,
+            id: track?.id ?? handoff?.id,
             time: track ? audio.currentTime : handoff?.time,
             anchor: anchor?.id ?? handoff?.anchor,
-            recent, groups: [...usedGroups], steps,
+            recent, mixHistory: [...mixHistory], steps, relation: track ? relation : handoff?.relation,
+            counted: track ? counted : handoff?.counted,
           }));
         } else sessionStorage.removeItem(handoffKey);
       } catch {}
       suspend();
       track = null;
       anchor = null;
+      nowPlaying.hidden = true;
       audio.removeAttribute("src");
       audio.load();
     }
@@ -909,11 +917,10 @@
         if (preferenceValue === "paused") showState("Paused");
         return;
       }
-      if ([...mix.options].some(option => option.value === saved.mix)) mix.value = saved.mix;
       handoff = saved;
       recent.splice(0, recent.length, ...(saved.recent || []).slice(-24));
-      usedGroups.clear();
-      for (const id of saved.groups || []) usedGroups.add(id);
+      mixHistory.clear();
+      for (const [type, last] of saved.mixHistory || []) mixHistory.set(type, last);
       steps = saved.steps || 0;
       requested = true;
       failures = 0;
@@ -958,47 +965,55 @@
       cardTimer = setTimeout(() => { card.hidden = true; }, 6500);
     }
 
+    function updateProgress() {
+      const limit = Math.min(30, Number.isFinite(audio.duration) ? audio.duration : 30);
+      const time = Math.min(audio.currentTime, limit);
+      progress.max = limit || 30;
+      progress.value = time;
+      elapsed.textContent = "0:" + String(Math.floor(time)).padStart(2, "0");
+    }
+
+    function showTrack() {
+      nowPlaying.hidden = false;
+      nowArt.hidden = !track.cover_url;
+      if (track.cover_url) nowArt.src = track.cover_url;
+      else nowArt.removeAttribute("src");
+      nowTitle.href = "/song/" + encodeURIComponent(track.id);
+      nowTitle.textContent = track.title;
+      nowArtist.textContent = track.artist;
+      nowAlbum.textContent = track.album || "";
+      nowAlbum.hidden = !track.album;
+      nowRelation.textContent = relation;
+      nowRelation.hidden = !relation;
+      updateProgress();
+    }
+
     function choose(songs) {
-      const available = songs.filter(song => !recent.includes(song.id));
-      const fresh = available.length ? available : songs.filter(song => song.id !== anchor?.id);
-      const candidates = fresh.length ? fresh : songs;
-      const [direction, type] = mix.value.split("-");
-      if (type) {
-        const groups = new Map();
-        for (const song of songs) {
-          const ids = type === "artists" ? song.artist_ids
-            : type === "albums" ? [song.album_id] : [song.id];
-          if (!(song.matches_played > 0) || !Number.isFinite(song.elo_score)) continue;
-          for (const id of ids) {
-            if (id == null) continue;
-            if (!groups.has(id)) groups.set(id, {id, songs: [], total: 0});
-            const group = groups.get(id);
-            group.songs.push(song);
-            group.total += song.elo_score;
-          }
-        }
-        const ranked = [...groups.values()].sort((a,b) =>
-          (a.total/a.songs.length - b.total/b.songs.length) * (direction === "top" ? -1 : 1));
-        const pool = ranked.slice(0, 16);
-        if (!pool.length) return null;
-        const ids = new Set(candidates.map(song => song.id));
-        const playable = pool.filter(group => group.songs.some(song => ids.has(song.id)));
-        const choices = playable.length ? playable : pool;
-        if (choices.every(group => usedGroups.has(group.id))) usedGroups.clear();
-        const group = choices.find(group => !usedGroups.has(group.id));
-        usedGroups.add(group.id);
-        const options = group.songs.filter(song => ids.has(song.id));
-        const alternatives = group.songs.filter(song => song.id !== anchor?.id);
-        const tracks = options.length ? options : alternatives.length ? alternatives : group.songs;
-        return tracks[Math.floor(Math.random() * tracks.length)];
-      }
-      if (!anchor) return candidates[Math.floor(Math.random() * candidates.length)];
+      const liked = candidates => {
+        const fresh = candidates.filter(({song}) => !recent.includes(song.id));
+        return fresh.length ? fresh : candidates;
+      };
+      const draw = candidates => {
+        let roll = Math.random() * candidates.reduce((sum, candidate) => sum + candidate.weight, 0);
+        return candidates.find(candidate => (roll -= candidate.weight) < 0) || candidates.at(-1);
+      };
+      if (!anchor) return draw(liked(songs.map(song => ({song, reason: "", weight: 1}))));
+
       const anchorTags = new Set(anchor.tag_ids);
       const tagCounts = new Map();
       for (const song of songs)
         for (const tag of song.tag_ids) tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
-      const ranked = candidates.map(song => {
-        let overlap = 0, union = 0, vibe = 0;
+
+      const groups = new Map([
+        ["Same album", []], ["Shared artist", []], ["Shared tags", []], ["Similar vibe", []],
+      ]);
+      for (const song of songs) {
+        if (song.id === anchor.id) continue;
+        const add = (reason, weight) => groups.get(reason).push({song, reason, weight});
+        if (anchor.album_id != null && anchor.album_id === song.album_id) add("Same album", 1);
+        if (anchor.artist_ids.some(id => song.artist_ids.includes(id))) add("Shared artist", 1);
+
+        let overlap = 0, union = 0, vibe = 0, sharedMaps = 0;
         for (const tag of new Set([...anchorTags, ...song.tag_ids])) {
           const weight = 1 / Math.log2(2 + tagCounts.get(tag));
           union += weight;
@@ -1006,23 +1021,29 @@
         }
         for (const [key, point] of Object.entries(anchor.vibe_maps || {})) {
           const other = song.vibe_maps?.[key];
-          if (point.status === "placed" && other?.status === "placed") {
-            const distance = (point.x - other.x)**2 + (point.y - other.y)**2;
-            vibe += Math.exp(-distance / (2 * .65**2)) / 4;
-          }
+          if (point.status !== "placed" || other?.status !== "placed") continue;
+          sharedMaps++;
+          const distance = (point.x - other.x)**2 + (point.y - other.y)**2;
+          vibe += Math.exp(-distance / (2 * .65**2));
         }
-        const tags = union ? overlap / union : 0;
-        return {song, score: mix.value === "tags" ? tags : mix.value === "vibe" ? vibe : (tags + vibe) / 2};
-      }).sort((a,b) => b.score - a.score);
-      const bridge = steps % 4 === 3;
-      const neighbors = ranked.filter(row => row.score > 0).slice(0, bridge ? 16 : 8);
-      const otherArtists = bridge
-        ? neighbors.filter(({song}) => !song.artist_ids.some(id => anchor.artist_ids.includes(id)))
-        : [];
-      const related = otherArtists.length ? otherArtists : neighbors;
-      return related.length
-        ? related[Math.floor(Math.random() * related.length)].song
-        : candidates[Math.floor(Math.random() * candidates.length)];
+        const tagScore = union ? overlap / union : 0;
+        const vibeScore = sharedMaps >= 2 ? vibe / sharedMaps : 0;
+        if (tagScore >= .18) add("Shared tags", tagScore);
+        if (vibeScore >= .72) add("Similar vibe", vibeScore * sharedMaps / 4);
+      }
+
+      const hasFresh = [...groups.values()].some(tracks => tracks.some(({song}) => !recent.includes(song.id)));
+      const choices = [];
+      for (const [reason, tracks] of groups) {
+        const pool = hasFresh ? tracks.filter(({song}) => !recent.includes(song.id)) : tracks;
+        if (!pool.length) continue;
+        // The mix type earns better odds the longer it has gone unused.
+        // A type with no suitable transition stays out of the draw.
+        const age = steps - (mixHistory.get(reason) ?? -4);
+        choices.push({pool, weight: 1 + Math.min(20, age) / 2});
+      }
+      const group = draw(choices);
+      return group ? draw(group.pool) : null;
     }
 
     function foregroundBusy() {
@@ -1065,7 +1086,11 @@
       if (preferenceValue === "paused") return;
       const id = document.body.classList.contains("gameplay-page") ? null : clipId(foreground);
       loadCatalogue().then(songs => {
-        if (id && !track) anchor = songs.find(song => String(song.id) === id) || null;
+        if (id && !track) {
+          anchor = songs.find(song => String(song.id) === id) || null;
+          if (anchor && !recent.includes(anchor.id)) recent.push(anchor.id);
+          if (recent.length > 24) recent.shift();
+        }
       }).catch(() => {});
       if (!requested) {
         requested = true;
@@ -1081,12 +1106,11 @@
       if (track) {
         recent.push(track.id);
         if (recent.length > 24) recent.shift();
-        if (!failed) {
-          anchor = track;
-          steps++;
-        }
+        if (!failed && counted) anchor = track;
       }
       track = null;
+      nowPlaying.hidden = true;
+      counted = false;
       audio.removeAttribute("src");
       if (failed && ++failures >= 5) {
         suspend("Previews unavailable. Press Play to retry.");
@@ -1113,8 +1137,16 @@
           const saved = handoff;
           handoff = null;
           if (saved) anchor = songs.find(song => song.id === saved.anchor) || null;
-          track = songs.find(song => song.id === saved?.id) || choose(songs);
-          if (!track) { suspend("No playable tracks in this mix"); return; }
+          const restored = songs.find(song => song.id === saved?.id);
+          const choice = restored ? null : choose(songs);
+          track = restored || choice?.song;
+          if (!track) {
+            suspend(anchor ? "No more closely related previews" : "No playable previews");
+            anchor = null;
+            return;
+          }
+          relation = restored ? saved.relation || "" : choice.reason;
+          counted = Boolean(restored && saved.counted);
           audio.src = source(track.id, track.audio_url);
           if (saved?.id === track.id && saved.time > 0 && saved.time < 30) resumeTime = saved.time;
         }
@@ -1129,8 +1161,14 @@
           if (resumeTime && resumeTime < audio.duration) audio.currentTime = resumeTime;
           setGain(audio, .38);
           failures = 0;
+          if (!counted) {
+            steps++;
+            if (relation) mixHistory.set(relation, steps);
+            counted = true;
+          }
+          showTrack();
           announce();
-          showState(track.title + (track.artist ? " · " + track.artist : ""));
+          showState("Playing");
         }
       } catch (error) {
         if (active !== revision) return;
@@ -1159,23 +1197,15 @@
       if (root.open) loadCatalogue().catch(() => {});
     });
     skip.addEventListener("click", () => advance());
-    mix.addEventListener("change", () => {
-      remember();
-      handoff = null;
-      steps = 0;
-      usedGroups.clear();
-      recent.length = 0;
-      if (requested) advance();
-      else if (track) {
-        anchor = track;
-        track = null;
-        audio.removeAttribute("src");
-      }
-    });
+    nowArt.addEventListener("error", () => { nowArt.hidden = true; });
     artwork.addEventListener("error", () => { artwork.hidden = true; });
     audio.addEventListener("ended", () => advance());
     audio.addEventListener("error", () => { if (audio.getAttribute("src")) advance(true); });
-    audio.addEventListener("timeupdate", () => { if (audio.currentTime >= 30) advance(); });
+    audio.addEventListener("timeupdate", () => {
+      if (!track) return;
+      updateProgress();
+      if (audio.currentTime >= 30) advance();
+    });
     if (preferenceValue === "paused") showState("Paused");
     restorePage();
     return {foregroundPlayed, yieldToPreview, suspend, leavePage, restorePage};

@@ -71,23 +71,29 @@
 </details>{% endif %}<details class="background-previews" id="background-previews">
 <summary class="icon-btn" aria-label="Background previews" title="Background previews">♫</summary>
 <div class="background-preview-panel">
-  <label for="background-mix">Background previews</label>
-  <select id="background-mix">
-    <option value="related">Related mix</option>
-    <option value="tags">Shared tags</option>
-    <option value="vibe">Vibe Map similarity</option>
-    <option value="top-songs">Top tracks by Elo</option>
-    <option value="bottom-songs">Bottom tracks by Elo</option>
-    <option value="top-artists">Top artists by mean Elo</option>
-    <option value="bottom-artists">Bottom artists by mean Elo</option>
-    <option value="top-albums">Top albums by mean Elo</option>
-    <option value="bottom-albums">Bottom albums by mean Elo</option>
-  </select>
-  <div class="background-preview-actions">
-    <button type="button" class="btn" id="background-toggle">Play</button>
-    <button type="button" class="btn" id="background-next" disabled>Skip</button>
+  <div class="background-preview-heading">
+    <h2>Background previews</h2>
+    <span class="background-track-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+  </div>
+  <div id="background-now" hidden>
+    <div class="background-preview-identity">
+      <img alt="" hidden>
+      <div>
+        <a class="song"></a>
+        <span data-background-byline></span>
+        <span class="album" data-background-album hidden></span>
+      </div>
+    </div>
+    <div class="background-preview-progress">
+      <progress max="30" value="0" aria-label="Preview progress"></progress><time>0:00</time>
+    </div>
+    <small data-background-relation hidden></small>
   </div>
   <p id="background-state" role="status">Starts after your first preview.</p>
+  <div class="background-preview-actions">
+    <button type="button" class="btn primary" id="background-toggle">Play</button>
+    <button type="button" class="btn" id="background-next" disabled>Skip</button>
+  </div>
   <audio id="background-audio" preload="none"></audio>
 </div>
 </details><div class="volume">
