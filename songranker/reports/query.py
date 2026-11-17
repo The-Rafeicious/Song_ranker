@@ -73,6 +73,7 @@ def validate(spec):
             target=int(f.get('target_id',0))
             if target<1: raise ValueError('Choose a saved target for each relationship.')
             source=f.get('source','all'); mode=f.get('mode','all')
+            if source == 'first_round': source = 'tournament'
             if source not in ('all','voting','first_round','tournament','local') or mode not in ('all','standard','blind'): raise ValueError('Invalid match source or visibility.')
             clean.append(dict(field=field,target_id=target,source=source,mode=mode)); continue
         if field not in METRICS: raise ValueError('Unknown statistic.')
@@ -255,7 +256,7 @@ def match_records(conn, songs, mode='all', source='all', include_local=False):
             omitted += 1; continue
         t = brackets[r['tournament_id']]; r=scored_match(r,t); date = saved_date(r.get('played_at'))
         rows.append(dict(key='t'+str(r['id']),winner_id=r['winner_id'],loser_id=r['loser_id'],mode='blind' if t['is_blind'] else 'standard',
-                         source='first_round' if r['round_number']==1 and r['match_type']=='bracket' else 'tournament',scope=t['scope_type'],
+                         source='tournament',scope=t['scope_type'],
                          tournament_id=t['id'],stage=stage_name(t['size'],r['round_number'],r['match_type']),time=date['iso'] if date else None,
                          seconds=date['seconds'] if date else -1e30,winner_before=None,winner_after=None,loser_before=None,loser_after=None,
                          rating_weight=None,points=finite(r.get('points_awarded'))))

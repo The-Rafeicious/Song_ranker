@@ -775,7 +775,7 @@
           "standard",
         ],
       ],
-    )}<div class="song-sections">${window.ProfileUI.stats([track])}${window.EloReplay?.panel(songId) || ""}<section class="panel profile-mode-panel dashboard-surface voting" id="history" style="--section-color:var(--voting)"><div class="section-head"><h2 class="voting">Recent Matches</h2><a class="voting" href="/history">History ↗</a></div><div class="profile-history-body"><div class="pill-nav" aria-label="Match filter"><button class="pill" data-history="all">All</button><button class="pill" data-history="blind">Blind</button><button class="pill" data-history="standard">Non-blind</button></div><div class="pill-nav" aria-label="Match source"><button class="pill" data-history-origin="all">All Elo matches</button><button class="pill" data-history-origin="ordinary">Voting</button><button class="pill tournament" data-history-origin="tournament">Tournament first rounds</button></div><div id="song-history"></div></div></section></div>`;
+    )}<div class="song-sections">${window.ProfileUI.stats([track])}${window.EloReplay?.panel(songId) || ""}<section class="panel profile-mode-panel dashboard-surface voting" id="history" style="--section-color:var(--voting)"><div class="section-head"><h2 class="voting">Recent Matches</h2><a class="voting" href="/history">History ↗</a></div><div class="profile-history-body"><div class="pill-nav" aria-label="Match filter"><button class="pill" data-history="all">All</button><button class="pill" data-history="blind">Blind</button><button class="pill" data-history="standard">Non-blind</button></div><div id="song-history"></div></div></section></div>`;
     renderSongHistory();
     window.ProfileUI.loadSongDetails(songId, main);
     window.EloReplay?.mountAll(main);
@@ -2704,11 +2704,6 @@
   function bracketOverlay(s, i) {
     if (!bracketReveal || bracketReveal.phase === "similarity") return "";
     const winner = bracketReveal.winner === s.id;
-    if (bracketReveal.phase === "elo") {
-      const side = winner ? bracketReveal.elo.winner : bracketReveal.elo.loser,
-        delta = Number(side.elo_score) - Number(side.elo_before);
-      return `<div class="score-reveal elo-reveal ${winner ? "score-win" : "score-loss"}" role="status"><small>Public Elo</small><div class="score-values"><span class="score-before">${Math.round(side.elo_before)}</span><span class="score-arrow" aria-hidden="true">→</span><strong class="elo-score" id="bracket-elo-${i}">${Math.round(side.elo_before)}</strong></div><b class="elo-delta ${delta < 0 ? "loss" : ""}">${delta < 0 ? "↓ " : "↑ +"}${Math.round(delta)}</b></div>`;
-    }
     const loserLabel =
       bracketState.active.match_type === "third_place"
         ? "Fourth place"
@@ -2745,20 +2740,7 @@
         const old = cover.querySelector(".score-reveal"), html = bracketOverlay(track, i);
         if (old) old.outerHTML = html;
         else cover.insertAdjacentHTML("beforeend", html);
-        if (saved.phase === "elo") {
-          const side = id === saved.winner ? saved.elo.winner : saved.elo.loser;
-          animateScore($("#bracket-elo-" + i), side.elo_before, side.elo_score, 0, current);
-        }
       });
-    };
-    const scheduleElo = () => {
-      if (!saved.elo || saved.phase !== "points") return;
-      roundTransition.stageTimer = later(() => {
-        if (!current()) return;
-        roundTransition.stageTimer = null;
-        saved.phase = "elo";
-        updateOverlays();
-      }, saved.pointsDelay);
     };
     if (saved.phase === "similarity") {
       roundTransition.scoreTimer = later(() => {
@@ -2767,9 +2749,8 @@
         saved.phase = "points";
         updateOverlays();
         animateScore($("#bracket-points"), 0, Number(saved.points), 2, current);
-        scheduleElo();
       }, saved.similarityWait);
-    } else scheduleElo();
+    }
   }
   function renderBracketMatch() {
     const { tournament, active, tracks, matches } = bracketState,
@@ -2827,28 +2808,14 @@
       bracketVoting = false;
     }
     bracketState.matches = result.matches;
-    const receipt = result.elo_result,
-      eligible =
-        match.round_number === 1 &&
-        match.match_type === "bracket" &&
-        receipt?.winner?.id === winner &&
-        receipt?.loser?.id === loser &&
-        [receipt.winner, receipt.loser].every(
-          (side) =>
-            Number.isFinite(side.elo_before) && Number.isFinite(side.elo_score),
-        );
     const similarityWait = similarityDelay(result.match_similarity);
     bracketReveal = {
       similarity: result.match_similarity,
       similarityWait,
       winner,
       points: result.points_awarded,
-      elo: eligible ? receipt : null,
       phase: similarityWait ? "similarity" : "points",
-      hold: (eligible
-        ? flow?.duration("tournamentFirst") || 7500
-        : flow?.duration("pairResult") || RESULT_HOLD_MS) + similarityWait,
-      pointsDelay: flow?.duration("tournamentPoints") || 2800,
+      hold: (flow?.duration("pairResult") || RESULT_HOLD_MS) + similarityWait,
     };
     window.PreviewPlayback?.hold();
     renderBracketMatch();
@@ -3669,7 +3636,6 @@
           : count < size
             ? count + " eligible tracks · " + size + " needed"
             : count + " eligible tracks · " + size + " enter the bracket";
-    if(ready) ready.textContent += ['global', 'tag'].includes(scope) ? ' · First-round Elo' : ' · Tournament points only';
     const rows = options.filter((r) =>
       normal(r.name + " " + (r.artist || "") + " #" + r.id).includes(q),
     );

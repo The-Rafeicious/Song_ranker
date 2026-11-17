@@ -133,20 +133,8 @@ def build_activity(conn, mode, now=None, tournament_ids=None):
 
 
 def attach_reports(conn, data, mode, now=None, tournament_ids=None):
-    """Attach shared activity charts and effective tournament Elo history to a mode
-    report.
-    """
+    """Attach shared activity charts to a mode report."""
     data['pulse_data']=build_activity(conn, mode, now=now, tournament_ids=tournament_ids)
-    if mode=='tournament':
-        from songranker.catalog import source_sql
-        rows=[dict(r) for r in conn.execute('SELECT * FROM '+source_sql(conn)+" WHERE origin='tournament'")]
-        data['tournament_elo']=dict(standard=sum(r['mode']=='standard' for r in rows),blind=sum(r['mode']=='blind' for r in rows),total=len(rows),full=sum(r['rating_weight']==1 for r in rows),
-            half=sum(r['rating_weight']==.5 for r in rows),
-            tracks=len({sid for r in rows for sid in (r['winner_id'],r['loser_id']) if sid is not None}))
-        data['tournament_elo']['points_only'] = conn.execute("""SELECT COUNT(*) FROM tournament_matches m JOIN tournaments t ON t.id=m.tournament_id
-            WHERE t.scope_type IN ('artist','album') AND m.round_number=1 AND m.match_type='bracket'
-            AND m.status='completed' AND m.winner_id IS NOT NULL AND m.loser_id IS NOT NULL AND m.winner_id!=m.loser_id""").fetchone()[0]
-    if mode=='tournament' and tournament_ids is not None:data['tournament_elo']['points_only']=0
     return data
 
 

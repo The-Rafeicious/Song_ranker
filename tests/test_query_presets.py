@@ -37,7 +37,7 @@ class QueryPresetTests(unittest.TestCase):
         payload = {'name': '  Tourney cuts  ', 'spec': {
             'entity': 'artists', 'q': 'Rose', 'page': 4,
             'filters': [{'field': 'won_against', 'target_id': 12,
-                         'source': 'first_round', 'mode': 'blind'}],
+                         'source': 'tournament', 'mode': 'blind'}],
             'sort': [{'field': 'name', 'direction': 'asc'}],
             'columns': ['tournament_wins', 'elo'],
         }}

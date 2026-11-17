@@ -39,7 +39,7 @@ async function harness({tournament=false,similarity={similarity:82.4,shared_maps
   await h.tick(699);assert.equal(d.querySelectorAll('.score-reveal:not([hidden])').length,0);
   await h.tick(1);assert.equal(d.querySelectorAll('.score-reveal:not([hidden])').length,2,'scores reveal after similarity pause');
   assert.equal(d.querySelector('.match-similarity'),badge,'badge remains in place');
-  if(tournament){assert.ok(d.querySelector('#bracket-points'));await h.tick(2800);assert.ok(d.querySelector('#bracket-elo-0'));assert.equal(d.querySelector('.match-similarity'),badge,'badge remains through points→Elo');}
+  if(tournament){assert.ok(d.querySelector('#bracket-points'));assert.equal(d.querySelector('#bracket-elo-0'),null);assert.equal(d.querySelector('.match-similarity'),badge,'badge remains through points');}
   await h.click(tournament?'[data-bracket-next]':'[data-next]');assert.equal(d.querySelector('.match-similarity'),null,'next match clears similarity');h.dom.window.close();
  }
  for(const options of [{similarity:null},{reduced:true},{similarity:{similarity:0,shared_maps:1,total_maps:4},quick:true}]){
