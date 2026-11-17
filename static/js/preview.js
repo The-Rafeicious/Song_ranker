@@ -17,7 +17,9 @@
     pending = null,
     closed = false,
     tailId = 0,
-    focusAudio = null;
+    focusAudio = null,
+    armed = 0,
+    background = null;
   // A visible-time fade clock excludes even background time with no timer callbacks.
   let fadeHidden = 0,
     fadeHiddenAt = document.hidden ? performance.now() : null;
@@ -485,6 +487,7 @@
       }
     });
     audio.addEventListener("playing", () => {
+      if (audio.dataset.previewPrepared !== "true" && !armed) background?.foregroundPlayed(audio);
       delete audio.dataset.previewStalled;
       paint(audio, "playing");
       report(audio, "Preview playing", "ready", 2);
@@ -619,6 +622,7 @@
     });
   }
   async function play(audio) {
+    background?.yieldToPreview();
     bind(audio);
     if (closed) throw aborted();
     if (Date.now() < cooldown && audio.readyState < 3) {
@@ -726,12 +730,14 @@
     }
   }
   async function arm(audio) {
+    background?.yieldToPreview();
     bind(audio);
     focusAudio = audio;
     audio.dataset.previewWanted = "true";
     const id = serial,
       work = { audio, cancel: null };
     setGain(audio, 0);
+    armed++;
     if (audio.readyState < 3) show("Loading preview…");
     try {
       const ready = waitReady(audio, work);
@@ -742,6 +748,7 @@
       work.cancel?.();
       audio.pause();
       setGain(audio, 1);
+      armed--;
     }
   }
   function abandon(audio) {
@@ -798,9 +805,17 @@
     isPending: () => !!pending,
     fadeMilliseconds: FADE_MS,
   };
-  document.addEventListener("preview-blocked", stopAll);
+  document.addEventListener("preview-blocked", () => {
+    background?.suspend();
+    stopAll();
+  });
+  document.addEventListener("DOMContentLoaded", () => {
+    const root = document.getElementById("background-previews");
+    if (root) background = mountBackground(root);
+  });
   window.addEventListener("pagehide", () => {
     closed = true;
+    background?.leavePage();
     stopAll();
     clearTimeout(hideTimer);
     clearPage();
@@ -810,6 +825,7 @@
     if (event.persisted) {
       token = newToken();
       for (const audio of document.querySelectorAll("audio")) {
+        if (audio.id === "background-audio") continue;
         const url = audio.dataset.previewPageSource;
         delete audio.dataset.previewPageSource;
         if (!url) {
@@ -828,6 +844,338 @@
         bind(audio);
       }
       preloadPair(document.querySelectorAll("audio[data-preview-pair]"));
+      background?.restorePage();
     }
   });
+
+  function mountBackground(root) {
+    const audio = root.querySelector("audio");
+    const mix = root.querySelector("select");
+    const toggle = root.querySelector("#background-toggle");
+    const skip = root.querySelector("#background-next");
+    const status = root.querySelector("#background-state");
+    const card = document.getElementById("background-track");
+    const artwork = card.querySelector("img");
+    const preference = "songRankerBackgroundPreviews";
+    const handoffKey = "songRankerPreviewHandoff";
+    const recent = [];
+    const usedGroups = new Set();
+    let preferenceValue = "auto";
+    let catalogue = null, loading = null, track = null, anchor = null;
+    let requested = false, starting = false, failures = 0, revision = 0;
+    let wake, cardTimer, loadTimer, foregroundUntil = 0;
+    let handoff = null, steps = 0;
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(preference) || "{}");
+      if (saved.preference === "paused") preferenceValue = "paused";
+      if ([...mix.options].some(option => option.value === saved.mix)) mix.value = saved.mix;
+    } catch {}
+
+    function remember() {
+      try { localStorage.setItem(preference, JSON.stringify({preference: preferenceValue, mix: mix.value})); }
+      catch {}
+    }
+
+    function leavePage() {
+      try {
+        if (requested) {
+          sessionStorage.setItem(handoffKey, JSON.stringify({
+            mix: mix.value, id: track?.id ?? handoff?.id,
+            time: track ? audio.currentTime : handoff?.time,
+            anchor: anchor?.id ?? handoff?.anchor,
+            recent, groups: [...usedGroups], steps,
+          }));
+        } else sessionStorage.removeItem(handoffKey);
+      } catch {}
+      suspend();
+      track = null;
+      anchor = null;
+      audio.removeAttribute("src");
+      audio.load();
+    }
+
+    function restorePage() {
+      let saved;
+      try {
+        saved = JSON.parse(sessionStorage.getItem(handoffKey) || "null");
+        sessionStorage.removeItem(handoffKey);
+      } catch {}
+      try {
+        const latest = JSON.parse(localStorage.getItem(preference) || "{}");
+        preferenceValue = latest.preference === "paused" ? "paused" : "auto";
+      } catch {}
+      if (!saved || preferenceValue === "paused") {
+        if (preferenceValue === "paused") showState("Paused");
+        return;
+      }
+      if ([...mix.options].some(option => option.value === saved.mix)) mix.value = saved.mix;
+      handoff = saved;
+      recent.splice(0, recent.length, ...(saved.recent || []).slice(-24));
+      usedGroups.clear();
+      for (const id of saved.groups || []) usedGroups.add(id);
+      steps = saved.steps || 0;
+      requested = true;
+      failures = 0;
+      showState("Resuming background previews…");
+      schedule();
+    }
+
+    function loadCatalogue() {
+      if (catalogue) return Promise.resolve(catalogue);
+      if (!loading) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), READY_TIMEOUT);
+        loading = fetch("/api/background-previews", {signal: controller.signal}).then(async response => {
+          if (!response.ok) throw Error("Preview list unavailable");
+          const {songs} = await response.json();
+          catalogue = songs;
+          return songs;
+        }).finally(() => {
+          clearTimeout(timeout);
+          loading = null;
+        });
+      }
+      return loading;
+    }
+
+    function showState(message) {
+      status.textContent = message;
+      toggle.textContent = requested ? "Pause" : "Play";
+      skip.disabled = !requested || !track;
+      root.dataset.playing = String(!audio.paused);
+    }
+
+    function announce() {
+      clearTimeout(cardTimer);
+      card.href = "/song/" + encodeURIComponent(track.id);
+      card.querySelector("strong").textContent = track.title;
+      card.querySelector("[data-background-artist]").textContent = track.artist;
+      artwork.hidden = !track.cover_url;
+      if (track.cover_url) artwork.src = track.cover_url;
+      else artwork.removeAttribute("src");
+      card.hidden = false;
+      cardTimer = setTimeout(() => { card.hidden = true; }, 6500);
+    }
+
+    function choose(songs) {
+      const available = songs.filter(song => !recent.includes(song.id));
+      const fresh = available.length ? available : songs.filter(song => song.id !== anchor?.id);
+      const candidates = fresh.length ? fresh : songs;
+      const [direction, type] = mix.value.split("-");
+      if (type) {
+        const groups = new Map();
+        for (const song of songs) {
+          const ids = type === "artists" ? song.artist_ids
+            : type === "albums" ? [song.album_id] : [song.id];
+          if (!(song.matches_played > 0) || !Number.isFinite(song.elo_score)) continue;
+          for (const id of ids) {
+            if (id == null) continue;
+            if (!groups.has(id)) groups.set(id, {id, songs: [], total: 0});
+            const group = groups.get(id);
+            group.songs.push(song);
+            group.total += song.elo_score;
+          }
+        }
+        const ranked = [...groups.values()].sort((a,b) =>
+          (a.total/a.songs.length - b.total/b.songs.length) * (direction === "top" ? -1 : 1));
+        const pool = ranked.slice(0, 16);
+        if (!pool.length) return null;
+        const ids = new Set(candidates.map(song => song.id));
+        const playable = pool.filter(group => group.songs.some(song => ids.has(song.id)));
+        const choices = playable.length ? playable : pool;
+        if (choices.every(group => usedGroups.has(group.id))) usedGroups.clear();
+        const group = choices.find(group => !usedGroups.has(group.id));
+        usedGroups.add(group.id);
+        const options = group.songs.filter(song => ids.has(song.id));
+        const alternatives = group.songs.filter(song => song.id !== anchor?.id);
+        const tracks = options.length ? options : alternatives.length ? alternatives : group.songs;
+        return tracks[Math.floor(Math.random() * tracks.length)];
+      }
+      if (!anchor) return candidates[Math.floor(Math.random() * candidates.length)];
+      const anchorTags = new Set(anchor.tag_ids);
+      const tagCounts = new Map();
+      for (const song of songs)
+        for (const tag of song.tag_ids) tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
+      const ranked = candidates.map(song => {
+        let overlap = 0, union = 0, vibe = 0;
+        for (const tag of new Set([...anchorTags, ...song.tag_ids])) {
+          const weight = 1 / Math.log2(2 + tagCounts.get(tag));
+          union += weight;
+          if (anchorTags.has(tag) && song.tag_ids.includes(tag)) overlap += weight;
+        }
+        for (const [key, point] of Object.entries(anchor.vibe_maps || {})) {
+          const other = song.vibe_maps?.[key];
+          if (point.status === "placed" && other?.status === "placed") {
+            const distance = (point.x - other.x)**2 + (point.y - other.y)**2;
+            vibe += Math.exp(-distance / (2 * .65**2)) / 4;
+          }
+        }
+        const tags = union ? overlap / union : 0;
+        return {song, score: mix.value === "tags" ? tags : mix.value === "vibe" ? vibe : (tags + vibe) / 2};
+      }).sort((a,b) => b.score - a.score);
+      const bridge = steps % 4 === 3;
+      const neighbors = ranked.filter(row => row.score > 0).slice(0, bridge ? 16 : 8);
+      const otherArtists = bridge
+        ? neighbors.filter(({song}) => !song.artist_ids.some(id => anchor.artist_ids.includes(id)))
+        : [];
+      const related = otherArtists.length ? otherArtists : neighbors;
+      return related.length
+        ? related[Math.floor(Math.random() * related.length)].song
+        : candidates[Math.floor(Math.random() * candidates.length)];
+    }
+
+    function foregroundBusy() {
+      return pending || armed || performance.now() < foregroundUntil ||
+        [...players].some(player => player.isConnected && !player.paused &&
+          player.dataset.previewPrepared !== "true");
+    }
+
+    function schedule(delay = 400) {
+      clearTimeout(wake);
+      if (requested && !closed) wake = setTimeout(resume, delay);
+    }
+
+    function quiet() {
+      revision++;
+      starting = false;
+      clearTimeout(loadTimer);
+      audio.pause();
+      clearTimeout(cardTimer);
+      card.hidden = true;
+    }
+
+    function suspend(message = "Paused") {
+      requested = false;
+      clearTimeout(wake);
+      quiet();
+      showState(message);
+    }
+
+    function yieldToPreview() {
+      foregroundUntil = performance.now() + 900;
+      quiet();
+      if (requested) {
+        showState("Waiting for your preview to finish");
+        schedule();
+      }
+    }
+
+    function foregroundPlayed(foreground) {
+      if (preferenceValue === "paused") return;
+      const id = document.body.classList.contains("gameplay-page") ? null : clipId(foreground);
+      loadCatalogue().then(songs => {
+        if (id && !track) anchor = songs.find(song => String(song.id) === id) || null;
+      }).catch(() => {});
+      if (!requested) {
+        requested = true;
+        failures = 0;
+        showState("Waiting for your preview to finish");
+        schedule();
+      }
+    }
+
+    function advance(failed = false) {
+      if (!requested) return;
+      quiet();
+      if (track) {
+        recent.push(track.id);
+        if (recent.length > 24) recent.shift();
+        if (!failed) {
+          anchor = track;
+          steps++;
+        }
+      }
+      track = null;
+      audio.removeAttribute("src");
+      if (failed && ++failures >= 5) {
+        suspend("Previews unavailable. Press Play to retry.");
+        return;
+      }
+      schedule(0);
+    }
+
+    async function resume() {
+      if (!requested || closed || starting || !audio.paused) return;
+      if (foregroundBusy()) {
+        showState("Waiting for your preview to finish");
+        schedule();
+        return;
+      }
+      starting = true;
+      const active = ++revision;
+      try {
+        const songs = catalogue || await loadCatalogue();
+        if (active !== revision) return;
+        if (foregroundBusy()) { schedule(); return; }
+        if (!track) {
+          const saved = handoff;
+          handoff = null;
+          if (saved) anchor = songs.find(song => song.id === saved.anchor) || null;
+          track = songs.find(song => song.id === saved?.id) || choose(songs);
+          if (!track) { suspend("No playable tracks in this mix"); return; }
+          audio.src = source(track.id, track.audio_url);
+          if (saved?.id === track.id && saved.time > 0 && saved.time < 30) audio.currentTime = saved.time;
+        }
+        setGain(audio, .38);
+        showState("Loading preview…");
+        loadTimer = setTimeout(() => {
+          if (active === revision && starting) advance(true);
+        }, READY_TIMEOUT);
+        await audio.play();
+        if (active === revision) {
+          clearTimeout(loadTimer);
+          failures = 0;
+          announce();
+          showState(track.title + (track.artist ? " · " + track.artist : ""));
+        }
+      } catch (error) {
+        if (active !== revision) return;
+        if (error.name === "NotAllowedError") suspend("Press Play to start background previews.");
+        else if (!catalogue) suspend("Preview list unavailable. Press Play to retry.");
+        else advance(true);
+      } finally {
+        if (active === revision) starting = false;
+      }
+    }
+
+    toggle.addEventListener("click", () => {
+      if (requested) {
+        preferenceValue = "paused";
+        suspend();
+      } else {
+        preferenceValue = "auto";
+        requested = true;
+        failures = 0;
+        showState("Loading preview…");
+        resume();
+      }
+      remember();
+    });
+    root.addEventListener("toggle", () => {
+      if (root.open) loadCatalogue().catch(() => {});
+    });
+    skip.addEventListener("click", () => advance());
+    mix.addEventListener("change", () => {
+      remember();
+      handoff = null;
+      steps = 0;
+      usedGroups.clear();
+      recent.length = 0;
+      if (requested) advance();
+      else if (track) {
+        anchor = track;
+        track = null;
+        audio.removeAttribute("src");
+      }
+    });
+    artwork.addEventListener("error", () => { artwork.hidden = true; });
+    audio.addEventListener("ended", () => advance());
+    audio.addEventListener("error", () => { if (audio.getAttribute("src")) advance(true); });
+    audio.addEventListener("timeupdate", () => { if (audio.currentTime >= 30) advance(); });
+    if (preferenceValue === "paused") showState("Paused");
+    restorePage();
+    return {foregroundPlayed, yieldToPreview, suspend, leavePage, restorePage};
+  }
+
 })();

@@ -4,3 +4,12 @@ Tournament matches award bracket points in every round. The one-time startup
 rebuild backs up the database, deletes tournament Elo events, then replays the
 remaining votes and manual adjustments. Saved brackets and placements remain
 available. Voting and Query no longer present a separate first-round Elo source.
+
+## V5.10.1.0
+
+- Play background previews from the banner. Choose related music by shared tags
+  and Vibe Maps, or browse the top and bottom by track Elo or collection mean Elo.
+- The player starts after your first preview, waits for selected previews to
+  finish, and follows the site volume. Pause it from the banner at any time.
+- The queue and clip position carry across pages in the same tab. Related mixes
+  periodically favor a neighboring track by a different artist.

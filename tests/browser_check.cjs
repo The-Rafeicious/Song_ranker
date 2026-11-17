@@ -15,6 +15,47 @@ async function bounded(page,width,phase,folder){
   const page=await browser.newPage({viewport:{width:1365,height:1050}}),errors=[];
   page.on('pageerror',error=>errors.push(error.message));
   const base=process.env.VIBE_TEST_URL,folder='artifacts/vibe-map';fs.mkdirSync(folder,{recursive:true});
+  const radio = await browser.newPage({viewport:{width:390,height:844}});
+  try {
+   const library=await (await radio.request.get(base+'/api/background-previews')).json();
+   assert.ok(Array.isArray(library.songs),'Background inputs come from the public preview catalogue');
+   const radioTracks=[
+    {id:1,title:'Quiet track',artist:'Artist A',audio_url:'/tag-test-audio.wav?radio=1',elo_score:1050,matches_played:2,artist_ids:[1],album_id:1,tag_ids:[1],cover_url:'/vibe-test-art.svg'},
+    {id:2,title:'Bright track',artist:'Artist B',audio_url:'/tag-test-audio.wav?radio=2',elo_score:1300,matches_played:3,artist_ids:[2],album_id:2,tag_ids:[1],cover_url:'/vibe-test-art.svg'}
+   ];
+   await radio.route('**/api/background-previews',route=>route.fulfill({json:{songs:radioTracks}}));
+   await radio.goto(base+'/');
+   await radio.locator('#background-previews summary').click();
+   await radio.locator('#background-mix').selectOption('top-songs');
+   await radio.evaluate(()=>{
+    const audio=document.createElement('audio'),button=document.createElement('button');
+    audio.src='/tag-test-audio.wav?foreground=1';audio.id='radio-foreground';
+    button.id='radio-play-foreground';button.textContent='Play foreground';
+    button.onclick=()=>window.PreviewPlayback.play(audio);
+    document.querySelector('#main').prepend(button,audio);
+   });
+   await radio.locator('#radio-play-foreground').click();
+   await radio.waitForFunction(()=>!document.querySelector('#radio-foreground').paused);
+   assert.equal(await radio.locator('#background-audio').evaluate(a=>a.paused),true);
+   await radio.locator('#radio-foreground').evaluate(a=>a.pause());
+   await radio.locator('#background-track').waitFor();
+   assert.match(await radio.locator('#background-track').textContent(),/Bright track/);
+   await bounded(radio,390,'background-previews',folder);
+   await radio.screenshot({path:folder+'/background-previews-phone.png'});
+   await radio.locator('#background-audio').evaluate(a=>{a.currentTime=8;});
+   await radio.goto(base+'/search');
+   await radio.locator('#background-previews summary').click();
+   await radio.waitForFunction(()=>document.querySelector('#background-previews').dataset.playing==='true' ||
+    document.querySelector('#background-state').textContent.includes('Press Play'));
+   if(await radio.locator('#background-toggle').textContent()==='Play')await radio.locator('#background-toggle').click();
+   await radio.locator('#background-track').waitFor();
+   assert.match(await radio.locator('#background-track').textContent(),/Bright track/);
+   assert.ok(await radio.locator('#background-audio').evaluate(a=>a.currentTime>=7.9),'Page handoff restores the clip position');
+   await radio.locator('#background-toggle').click();
+   await radio.goto(base+'/');
+   await radio.locator('#background-previews summary').click();
+   assert.equal(await radio.locator('#background-state').textContent(),'Paused');
+  } finally { await radio.close(); }
   await page.goto(base+'/');await page.locator('#volume-btn').waitFor();
   await page.locator('.mode-card.voting h2').waitFor();
   assert.equal(await page.locator('.mode-card.voting h2').evaluate(e=>getComputedStyle(e).color),'rgb(165, 180, 252)');
