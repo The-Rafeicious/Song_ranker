@@ -68,7 +68,29 @@
 </label>
 <label class="prepare-round">
 <input id="round-prepare" type="checkbox" checked>Prepare next round</label></div>
-</details>{% endif %}<div class="volume">
+</details>{% endif %}<details class="background-previews" id="background-previews">
+<summary class="icon-btn" aria-label="Background previews" title="Background previews">♫</summary>
+<div class="background-preview-panel">
+  <label for="background-mix">Background previews</label>
+  <select id="background-mix">
+    <option value="related">Related mix</option>
+    <option value="tags">Shared tags</option>
+    <option value="vibe">Vibe Map similarity</option>
+    <option value="top-songs">Top tracks by Elo</option>
+    <option value="bottom-songs">Bottom tracks by Elo</option>
+    <option value="top-artists">Top artists by mean Elo</option>
+    <option value="bottom-artists">Bottom artists by mean Elo</option>
+    <option value="top-albums">Top albums by mean Elo</option>
+    <option value="bottom-albums">Bottom albums by mean Elo</option>
+  </select>
+  <div class="background-preview-actions">
+    <button type="button" class="btn" id="background-toggle">Play</button>
+    <button type="button" class="btn" id="background-next" disabled>Skip</button>
+  </div>
+  <p id="background-state" role="status">Starts after your first preview.</p>
+  <audio id="background-audio" preload="none"></audio>
+</div>
+</details><div class="volume">
 <button id="volume-btn" class="icon-btn" aria-label="Volume" aria-expanded="false" aria-controls="volume-panel">
 <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true">
 <path d="M4 9h4l5-4v14l-5-4H4zM17 8c3 2 3 6 0 8M20 5c5 4 5 10 0 14"/>
@@ -85,6 +107,13 @@
 </form></div>
 </div>
 </header>{% endif %}<div id="preview-status" class="preview-notice" role="status" aria-live="polite" hidden></div>
+{% if page|default('') != 'dev' %}
+<a class="background-track" id="background-track" hidden>
+  <img alt="" hidden>
+  <span><small>Now playing</small><strong></strong><span data-background-artist></span></span>
+  <span class="background-track-bars" aria-hidden="true"><i></i><i></i><i></i></span>
+</a>
+{% endif %}
 <main class="page" id="main">{% block content %}{% endblock %}
 </main>
 <footer class="footer">

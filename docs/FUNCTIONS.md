@@ -767,6 +767,7 @@ Home, catalogue/search/rankings, shared collection profiles and Global Stats rou
 | [query_presets_api](../songranker/pages.py#L208) | `` | List personal presets or save a new one from the current Query builder. |
 | [query_preset_fields](../songranker/pages.py#L232) | `data` | Validate a bounded name and normalize the current builder options for reuse. |
 | [edit_query_preset_api](../songranker/pages.py#L252) | `preset_id` | Update or delete a preset with the Dev session and the editor's revision. |
+| [background_previews](../songranker/pages.py#L286) | `` | Serve the playable catalogue and recommendation inputs without match history. |
 
 ## songranker/reports/global_stats_data.py
 
@@ -1138,9 +1139,9 @@ Preserve public routes, asset order and profile reads across module consolidatio
 | [Assets.handle_starttag](../tests/test_architecture.py#L28) | `self, tag, attrs` | Handle starttag. |
 | [ArchitectureTests.register](../tests/test_architecture.py#L40) | `self` | Register the launcher's actual feature owners without running startup sync. |
 | [ArchitectureTests.test_all_previous_urls_methods_and_endpoint_names_are_preserved](../tests/test_architecture.py#L45) | `self` | Verify all previous urls methods and endpoint names are preserved. |
-| [ArchitectureTests.test_retired_match_network_has_no_routes_or_public_assets](../tests/test_architecture.py#L79) | `self` | Verify retired match network has no routes or public assets. |
-| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L89) | `self` | Verify pages use one asset registry and last shared baseline. |
-| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L139) | `self` | Verify collection profiles share identity payloads and are read only. |
+| [ArchitectureTests.test_retired_match_network_has_no_routes_or_public_assets](../tests/test_architecture.py#L80) | `self` | Verify retired match network has no routes or public assets. |
+| [ArchitectureTests.test_pages_use_one_asset_registry_and_last_shared_baseline](../tests/test_architecture.py#L90) | `self` | Verify pages use one asset registry and last shared baseline. |
+| [ArchitectureTests.test_collection_profiles_share_identity_payloads_and_are_read_only](../tests/test_architecture.py#L140) | `self` | Verify collection profiles share identity payloads and are read only. |
 
 ## tests/test_bulk_source_review.py
 
@@ -2127,11 +2128,11 @@ Disposable served-page and Chromium integration fixtures.
 | [run_vibe.cover](../tools/browser_check.py#L229) | `` | Serve local artwork so browser screenshots do not depend on external images. |
 | [run_vibe.tag_audio_enable](../tools/browser_check.py#L238) | `` | Tag audio enable; POST /tag-test-enable. |
 | [run_vibe.tag_audio](../tools/browser_check.py#L246) | `` | Serve silence or bounded test tones without Apple transport. |
-| [run_vibe.enable_voting_report](../tools/browser_check.py#L264) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
-| [run_vibe.enable_tournament_map](../tools/browser_check.py#L278) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
-| [run_vibe.enable_discs](../tools/browser_check.py#L306) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
-| [run_vibe.enable_elo_replay](../tools/browser_check.py#L318) | `` | Create timestamped public votes only in the disposable browser fixture. |
-| [main](../tools/browser_check.py#L349) | `` | Run the requested disposable integration fixture. |
+| [run_vibe.enable_voting_report](../tools/browser_check.py#L266) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
+| [run_vibe.enable_tournament_map](../tools/browser_check.py#L280) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
+| [run_vibe.enable_discs](../tools/browser_check.py#L308) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
+| [run_vibe.enable_elo_replay](../tools/browser_check.py#L320) | `` | Create timestamped public votes only in the disposable browser fixture. |
+| [main](../tools/browser_check.py#L351) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 
@@ -2152,4 +2153,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1462 Python definitions**.
+Total: **1463 Python definitions**.

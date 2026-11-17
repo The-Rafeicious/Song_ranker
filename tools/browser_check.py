@@ -258,7 +258,9 @@ def run_vibe():
                 else:
                     import math, struct
                     clip.writeframes(b"".join(struct.pack("<h", int(32767 * amplitude * math.sin(2 * math.pi * 440 * i / 8000))) for i in range(30 * 8000)))
-            return Response(buf.getvalue(), mimetype="audio/wav")
+            from flask import send_file
+            buf.seek(0)
+            return send_file(buf, mimetype="audio/wav")
 
         @application.app.post("/voting-test-enable")
         def enable_voting_report():
