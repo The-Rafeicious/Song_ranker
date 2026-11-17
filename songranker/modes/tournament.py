@@ -131,9 +131,22 @@ def api_generate_bracket():
 
 
 def _tournament_seed_order(size, rng=random):
-    """Shuffle seed indexes into bracket slots, including each match's two sides."""
-    positions = list(range(size))
-    rng.shuffle(positions)
+    """Protect the top four seeds, vary nearby lower seeds, and randomise sides."""
+    seeds = list(range(size))
+    # Keep the leading four in separate quarters. Lower seeds can exchange
+    # places within small strength bands, retaining the broad seeded shape.
+    for start in range(4, size, 4):
+        band = seeds[start:start + 4]
+        rng.shuffle(band)
+        seeds[start:start + 4] = band
+    bracket = [1]
+    for round_index in range(size.bit_length() - 1):
+        seed_sum = 2 ** (round_index + 1) + 1
+        bracket = [position for seed in bracket for position in (seed, seed_sum - seed)]
+    positions = [seeds[seed - 1] for seed in bracket]
+    for index in range(0, size, 2):
+        if rng.random() < .5:
+            positions[index], positions[index + 1] = positions[index + 1], positions[index]
     return positions
 
 

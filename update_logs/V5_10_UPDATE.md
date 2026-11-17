@@ -28,3 +28,9 @@ available. Voting and Query no longer present a separate first-round Elo source.
   exposure-weighted entry draw. A favourite can face another favourite early,
   and similarly rated tracks can meet at any stage. Strength seed numbers
   still describe the entrants in tournament reports.
+
+## V5.10.2.1
+
+- Restore seeded bracket placement. The top two start in opposite halves and
+  the top four in separate quarters. Lower seeds vary within groups of four,
+  and each first-round match still randomises its left and right sides.

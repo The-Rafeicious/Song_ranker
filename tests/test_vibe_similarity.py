@@ -175,7 +175,10 @@ class SelectionEvidenceReviewTests(unittest.TestCase):
             draws = [_tournament_seed_order(size, rng) for _ in range(200)]
             for positions in draws:
                 self.assertEqual(sorted(positions), list(range(size)))
-            self.assertTrue(any(p.index(0)//2 == p.index(1)//2 for p in draws))
+            for positions in draws:
+                self.assertNotEqual(positions.index(0)//(size//2), positions.index(1)//(size//2))
+                self.assertEqual(len({positions.index(seed)//(size//4) for seed in range(4)}), 4)
+            self.assertGreater(len({p[p.index(0)^1] for p in draws}), 1)
             self.assertTrue(any(p.index(0)//2 == p.index(size-1)//2 for p in draws))
             stronger_on_left = sum(a < b for p in draws for a,b in zip(p[::2], p[1::2]))
             total = len(draws) * size // 2
