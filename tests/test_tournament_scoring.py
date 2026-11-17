@@ -78,16 +78,14 @@ class TournamentScoringTests(unittest.TestCase):
             self.assertEqual(scored_match(altered,t)['points_awarded'],altered['points_awarded'])
 
 
-import sqlite3
 import test_tournament_policy as policy_fixture
-from songranker.modes.preferences import save_tournament_preference
 from songranker.storage.database_io import capture
 
 
 class TournamentPointsAPITests(unittest.TestCase):
     setUp=policy_fixture.TournamentPolicyTests.setUp
 
-    def test_first_round_elo_and_archival_facts_are_preserved(self):
+    def test_first_round_awards_points_and_preserves_archival_facts(self):
         for sid in range(9,33):
             self.conn.execute('INSERT INTO songs(id,title,album_id,audio_url) VALUES(?,?,1,?)',(sid,f'Track {sid}',f'preview-{sid}'))
             self.conn.execute('INSERT INTO song_artists VALUES(?,1)',(sid,))
@@ -96,18 +94,13 @@ class TournamentPointsAPITests(unittest.TestCase):
             response=self.client.get('/api/generate_bracket',query_string=dict(size=size,scope='global'),content_type='application/json')
             self.assertEqual(response.status_code,200,response.json)
             t_id=response.json['tournament_id'];m=response.json['matches'][0]
-            t=dict(self.conn.execute('SELECT * FROM tournaments WHERE id=?',(t_id,)).fetchone())
-            copy=sqlite3.connect(':memory:');copy.row_factory=sqlite3.Row;self.conn.backup(copy)
-            try:
-                copy.execute('BEGIN')
-                event_id=save_tournament_preference(copy,t,m,m['song1_id'],m['song2_id']);copy.commit()
-                expected=dict(copy.execute('SELECT winner_before,winner_after,loser_before,loser_after FROM preference_rating_projection WHERE event_id=?',(event_id,)).fetchone())
-            finally:copy.close()
+            ratings = capture(self.conn)['tables']
             payload=dict(tournament_id=t_id,match_id=m['id'],winner_id=m['song1_id'],loser_id=m['song2_id'])
             result=self.client.post('/api/tournament_vote',json=payload)
             self.assertEqual(result.status_code,200,result.json);self.assertEqual(result.json['points_awarded'],1)
-            actual=dict(self.conn.execute('SELECT winner_before,winner_after,loser_before,loser_after FROM preference_rating_projection WHERE event_id=?',(result.json['preference_event_id'],)).fetchone())
-            self.assertEqual(actual,expected,'Only tournament points change; canonical first-round Elo remains identical')
+            after_vote = capture(self.conn)['tables']
+            for table in ('songs', 'preference_events', 'preference_mode_ratings'):
+                self.assertEqual(after_vote[table], ratings[table])
             self.assertEqual(self.client.post('/api/tournament_vote',json=payload).json,result.json)
             old=7/(size-1)
             self.conn.execute('UPDATE tournament_matches SET points_awarded=? WHERE id=?',(old,m['id']));self.conn.commit()

@@ -397,8 +397,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
     await page.setViewportSize({width,height:1050});await bounded(page,width,'voting-stats',folder);
     for(const id of ['vote-overview','vote-modes','vote-coverage','vote-distribution'])await page.locator(`[aria-labelledby="${id}"]`).screenshot({path:folder+'/'+id+'-'+width+'.png'});
   }
-  await page.locator('.voting-history-filter .pill.tournament').click();await page.locator('.voting-history-filter .pill.tournament.active').waitFor();
-  assert.equal(await page.locator('.voting-history-filter .pill.tournament.active').evaluate(e=>getComputedStyle(e).color),'rgb(255, 120, 166)');
+  assert.equal(await page.locator('.voting-history-filter .pill.tournament').count(),0);
   // Disc answers stay hidden while playing; repeated within-disc numbers grade in disc order.
   const discData=await (await page.request.post(base+'/shelves-test-enable')).json();
   const shelfMedia=[];page.on('request',r=>{if(r.url().includes('/tag-test-audio.wav?shelf='))shelfMedia.push(r.url())});

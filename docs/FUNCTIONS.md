@@ -442,7 +442,7 @@ Preference offers, idempotent writes, corrections/replay and rating projections.
 | [event_detail](../songranker/modes/preferences.py#L427) | `conn, event_id` | Event detail; reads preference_corrections, preference_effective, preference_events, preference_replay_state. |
 | [correction_response](../songranker/modes/preferences.py#L465) | `row` | Return the corrected event ID, revision and active state after successful replay. |
 | [correct_vote](../songranker/modes/preferences.py#L478) | `conn, event_id, data` | Correct vote; reads backup, preference_corrections, songs; writes preference_corrections. |
-| [override_rating](../songranker/modes/preferences.py#L562) | `conn, data` | Override rating; reads preference_events, preference_rating_overrides, songs; writes preference_rating_overrides, songs. |
+| [override_rating](../songranker/modes/preferences.py#L562) | `conn, data` | Override rating; reads preference_rating_overrides, songs, sqlite_sequence; writes preference_rating_overrides, songs. |
 | [void_song_votes](../songranker/modes/preferences.py#L627) | `conn, song_id` | Void song votes; reads preference_effective; writes preference_corrections, preference_offers. |
 | [reset_preferences](../songranker/modes/preferences.py#L656) | `conn` | Reset preferences; reads preference_events, preference_mode_ratings, preference_offers, preference_rating_overrides, preference_rating_seeds, preference_replay_state; writes preference_events, preference_mode_ratings, preference_offers, preference_rating_overrides, preference_rating_seeds, preference_replay_state, songs. |
 | [void_tournament_preferences](../songranker/modes/preferences.py#L669) | `conn, tournament_id=None` | Keep original facts after bracket deletion/reset, and remove their influence. |
@@ -1857,7 +1857,7 @@ Bracket depth rewards must not turn a bronze-playoff loss into an early-exit adv
 | [TournamentScoringTests.test_local_and_pending_brackets_do_not_affect_overall](../tests/test_tournament_scoring.py#L61) | `self` | Verify local and pending brackets do not affect overall. |
 | [TournamentScoringTests.test_missing_finish_metadata_is_recovered_from_saved_final_and_bronze](../tests/test_tournament_scoring.py#L68) | `self` | Verify missing finish metadata is recovered from saved final and bronze. |
 | [TournamentScoringTests.test_bad_and_unsupported_archives_keep_saved_points](../tests/test_tournament_scoring.py#L75) | `self` | Verify bad and unsupported archives keep saved points. |
-| [TournamentPointsAPITests.test_first_round_elo_and_archival_facts_are_preserved](../tests/test_tournament_scoring.py#L90) | `self` | Verify first round elo and archival facts are preserved. |
+| [TournamentPointsAPITests.test_first_round_awards_points_and_preserves_archival_facts](../tests/test_tournament_scoring.py#L88) | `self` | Verify first round awards points and preserves archival facts. |
 
 ## tests/test_trivia_reveal.py
 

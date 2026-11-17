@@ -1,10 +1,3 @@
-if (process.env.GITHUB_ACTIONS) {
-  const { spawnSync } = require('node:child_process');
-  if (spawnSync('python', ['tools/check.py', 'docs', '--write'], {stdio:'inherit'}).status === 0) {
-    spawnSync('git', ['diff', '--', 'docs/FUNCTIONS.md'], {stdio:'inherit'});
-    spawnSync('python', ['tools/check.py', 'python'], {stdio:'inherit'});
-  }
-}
 /* Real head-to-head controllers: similarity staging, privacy and cancellation. */
 const fs=require('node:fs'),assert=require('node:assert/strict'),{JSDOM}=require('jsdom');
 const flush=async()=>{for(let n=0;n<80;n++)await Promise.resolve()};
