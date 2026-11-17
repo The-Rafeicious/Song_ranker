@@ -37,6 +37,7 @@ async function bounded(page,width,phase,folder){
    await radio.goto(base+'/');
    await radio.locator('#background-previews summary').click();
    assert.equal(await radio.locator('#background-previews select').count(),0);
+   await radio.locator('#background-previews summary').click();
    await radio.evaluate(()=>{
     const audio=document.createElement('audio'),button=document.createElement('button');
     audio.src='/api/previews/1?radio-test=1';audio.id='radio-foreground';
@@ -59,6 +60,7 @@ async function bounded(page,width,phase,folder){
    assert.ok(await radio.locator('#background-audio').evaluate(a=>a.paused),'Selected audio interrupts the active background clip');
    await radio.locator('#radio-foreground').evaluate(a=>a.pause());
    await radio.locator('#background-track').waitFor();
+   await radio.locator('#background-previews summary').click();
    assert.equal(await radio.locator('#background-now [data-background-relation]').textContent(),'Shared tags');
    assert.equal(await radio.locator('#background-now [data-background-album]').textContent(),'Bright release');
    await bounded(radio,390,'background-previews',folder);

@@ -1193,6 +1193,15 @@
       }
       remember();
     });
+    document.addEventListener("click", event => {
+      if (root.open && !root.contains(event.target)) root.open = false;
+    });
+    root.addEventListener("keydown", event => {
+      if (event.key === "Escape" && root.open) {
+        root.open = false;
+        root.querySelector("summary").focus();
+      }
+    });
     root.addEventListener("toggle", () => {
       if (root.open) loadCatalogue().catch(() => {});
     });
