@@ -1108,6 +1108,7 @@
         const songs = catalogue || await loadCatalogue();
         if (active !== revision) return;
         if (foregroundBusy()) { schedule(); return; }
+        let resumeTime = 0;
         if (!track) {
           const saved = handoff;
           handoff = null;
@@ -1115,9 +1116,9 @@
           track = songs.find(song => song.id === saved?.id) || choose(songs);
           if (!track) { suspend("No playable tracks in this mix"); return; }
           audio.src = source(track.id, track.audio_url);
-          if (saved?.id === track.id && saved.time > 0 && saved.time < 30) audio.currentTime = saved.time;
+          if (saved?.id === track.id && saved.time > 0 && saved.time < 30) resumeTime = saved.time;
         }
-        setGain(audio, .38);
+        setGain(audio, resumeTime ? 0 : .38);
         showState("Loading preview…");
         loadTimer = setTimeout(() => {
           if (active === revision && starting) advance(true);
@@ -1125,6 +1126,8 @@
         await audio.play();
         if (active === revision) {
           clearTimeout(loadTimer);
+          if (resumeTime && resumeTime < audio.duration) audio.currentTime = resumeTime;
+          setGain(audio, .38);
           failures = 0;
           announce();
           showState(track.title + (track.artist ? " · " + track.artist : ""));

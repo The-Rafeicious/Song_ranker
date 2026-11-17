@@ -55,6 +55,7 @@ async function bounded(page,width,phase,folder){
    await bounded(radio,390,'background-previews',folder);
    await radio.screenshot({path:folder+'/background-previews-phone.png'});
    await radio.locator('#background-audio').evaluate(a=>{a.currentTime=8;});
+   await radio.waitForFunction(()=>{const a=document.querySelector('#background-audio');return !a.seeking && a.currentTime>=7.9});
    await radio.goto(base+'/search');
    await radio.locator('#background-previews summary').click();
    await radio.waitForFunction(()=>document.querySelector('#background-previews').dataset.playing==='true' ||
@@ -62,7 +63,7 @@ async function bounded(page,width,phase,folder){
    if(await radio.locator('#background-toggle').textContent()==='Play')await radio.locator('#background-toggle').click();
    await radio.locator('#background-track').waitFor();
    assert.match(await radio.locator('#background-track').textContent(),/Bright track/);
-   assert.ok(await radio.locator('#background-audio').evaluate(a=>a.currentTime>=7.9),'Page handoff restores the clip position');
+   await radio.waitForFunction(()=>{const a=document.querySelector('#background-audio');return !a.seeking && a.currentTime>=7.9},null,{timeout:3000});
    await radio.locator('#background-toggle').click();
    await radio.goto(base+'/');
    await radio.locator('#background-previews summary').click();

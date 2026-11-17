@@ -2128,11 +2128,11 @@ Disposable served-page and Chromium integration fixtures.
 | [run_vibe.cover](../tools/browser_check.py#L229) | `` | Serve local artwork so browser screenshots do not depend on external images. |
 | [run_vibe.tag_audio_enable](../tools/browser_check.py#L238) | `` | Tag audio enable; POST /tag-test-enable. |
 | [run_vibe.tag_audio](../tools/browser_check.py#L246) | `` | Serve silence or bounded test tones without Apple transport. |
-| [run_vibe.enable_voting_report](../tools/browser_check.py#L264) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
-| [run_vibe.enable_tournament_map](../tools/browser_check.py#L278) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
-| [run_vibe.enable_discs](../tools/browser_check.py#L306) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
-| [run_vibe.enable_elo_replay](../tools/browser_check.py#L318) | `` | Create timestamped public votes only in the disposable browser fixture. |
-| [main](../tools/browser_check.py#L349) | `` | Run the requested disposable integration fixture. |
+| [run_vibe.enable_voting_report](../tools/browser_check.py#L266) | `` | Seed tested/unplayed Elo cohorts only in the disposable browser fixture. |
+| [run_vibe.enable_tournament_map](../tools/browser_check.py#L280) | `` | Seed a points-only bracket awaiting its final in disposable storage. |
+| [run_vibe.enable_discs](../tools/browser_check.py#L308) | `` | Seed repeated track numbers across discs only in this disposable fixture. |
+| [run_vibe.enable_elo_replay](../tools/browser_check.py#L320) | `` | Create timestamped public votes only in the disposable browser fixture. |
+| [main](../tools/browser_check.py#L351) | `` | Run the requested disposable integration fixture. |
 
 ## tools/check.py
 
