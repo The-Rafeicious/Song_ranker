@@ -35,11 +35,16 @@ async function bounded(page,width,phase,folder){
     document.querySelector('#main').prepend(button,audio);
    });
    await radio.locator('#radio-play-foreground').click();
-   await radio.waitForFunction(()=>!document.querySelector('#radio-foreground').paused);
+   await radio.waitForFunction(()=>document.querySelector('#radio-foreground').dataset.previewState==='playing');
    assert.equal(await radio.locator('#background-audio').evaluate(a=>a.paused),true);
    await radio.locator('#radio-foreground').evaluate(a=>a.pause());
    await radio.locator('#background-track').waitFor();
    assert.match(await radio.locator('#background-track').textContent(),/Bright track/);
+   await radio.locator('#radio-play-foreground').click();
+   await radio.waitForFunction(()=>document.querySelector('#radio-foreground').dataset.previewState==='playing');
+   assert.ok(await radio.locator('#background-audio').evaluate(a=>a.paused),'Selected audio interrupts the active background clip');
+   await radio.locator('#radio-foreground').evaluate(a=>a.pause());
+   await radio.locator('#background-track').waitFor();
    await bounded(radio,390,'background-previews',folder);
    await radio.screenshot({path:folder+'/background-previews-phone.png'});
    await radio.locator('#background-audio').evaluate(a=>{a.currentTime=8;});
