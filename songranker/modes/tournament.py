@@ -6,6 +6,7 @@ from songranker.reports.stats_activity import attach_reports, coverage_milestone
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from math import ceil, isfinite
+import random
 from songranker.catalog import proper_album, song_performance, tournament_weights
 from songranker.reports.global_stats_data import percent, timestamp
 
@@ -102,7 +103,7 @@ def api_generate_bracket():
                 "INSERT INTO tournament_entries (tournament_id, song_id, seed) VALUES (?, ?, ?)",
                 (tournament_id, song["id"], seed),
             )
-        # Mirror tournament.html's standard seeding order so persisted matches match the UI.
+        # Keep strength seed labels for reports, but draw bracket slots separately.
         seed_order = _tournament_seed_order(size)
         for i in range(0, size, 2):
             song1 = songs[seed_order[i]]
@@ -129,17 +130,11 @@ def api_generate_bracket():
         conn.close()
 
 
-def _tournament_seed_order(size):
-    """Return zero-based track indexes in the same bracket seeding order as tournament.html."""
-    bracket = [1]
-    rounds = size.bit_length() - 1
-    for r in range(rounds):
-        seed_sum = (2 ** (r + 1)) + 1
-        next_bracket = []
-        for seed in bracket:
-            next_bracket.extend((seed, seed_sum - seed))
-        bracket = next_bracket
-    return [seed - 1 for seed in bracket]
+def _tournament_seed_order(size, rng=random):
+    """Shuffle seed indexes into bracket slots, including each match's two sides."""
+    positions = list(range(size))
+    rng.shuffle(positions)
+    return positions
 
 
 def _tournament_matches(conn, tournament_id):

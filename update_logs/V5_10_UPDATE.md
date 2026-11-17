@@ -21,3 +21,10 @@ available. Voting and Query no longer present a separate first-round Elo source.
   when a suitable track is available.
 - The banner popup shows the cover, track, artist, visible release, progress,
   and how the current clip connects to the previous one.
+
+## V5.10.2
+
+- Randomise tournament bracket positions and first-round sides after the
+  exposure-weighted entry draw. A favourite can face another favourite early,
+  and similarly rated tracks can meet at any stage. Strength seed numbers
+  still describe the entrants in tournament reports.
