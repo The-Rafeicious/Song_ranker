@@ -47,15 +47,14 @@ class TournamentPolicyTests(unittest.TestCase):
             self.assertEqual(self.client.post('/api/tournament_vote',json=payload).json,first.json)
 
     def test_scopes_have_correct_exchange_and_points_only_retries(self):
-        for scope,weight in [('artist',0),('album',0),('tag',1),('global',1)]:
-            data=self.generate(scope);self.assertEqual(data['elo_weight'],weight)
+        for scope in ('artist', 'album', 'tag', 'global'):
+            data=self.generate(scope)
             m=data['matches'][0];payload=dict(tournament_id=data['tournament_id'],match_id=m['id'],winner_id=m['song1_id'],loser_id=m['song2_id'])
             before=self.conn.execute('SELECT COUNT(*) FROM preference_events').fetchone()[0]
             result=self.client.post('/api/tournament_vote',json=payload)
             self.assertEqual(result.status_code,200,result.json);self.assertGreater(result.json['points_awarded'],0)
-            self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM preference_events').fetchone()[0]-before,int(weight>0))
-            self.assertEqual(result.json['elo_result'] is not None,weight>0)
-            if weight:self.assertEqual(self.conn.execute('SELECT rating_weight FROM preference_events WHERE id=?',(result.json['preference_event_id'],)).fetchone()[0],weight)
+            self.assertEqual(self.conn.execute('SELECT COUNT(*) FROM preference_events').fetchone()[0]-before,0)
+            self.assertNotIn('elo_result', result.json)
             duplicate=self.client.post('/api/tournament_vote',json=payload)
             self.assertEqual(duplicate.status_code,200,duplicate.json)
             self.assertEqual(duplicate.json,result.json)
@@ -201,11 +200,22 @@ class TournamentPolicyTests(unittest.TestCase):
         page=self.client.get('/voting_stats').text
         self.assertNotIn('Half influence',page);self.assertNotIn('Effective votes',page)
         self.assertNotIn('½',page);self.assertNotIn('recalibrat',page.lower())
-        # An unfinished historical bracket continues at full weight too.
+        # An unfinished historical bracket continues with tournament points.
         other=self.conn.execute("SELECT * FROM tournament_matches WHERE tournament_id=? AND status!='completed' LIMIT 1",(m['tournament_id'],)).fetchone()
         result=self.client.post('/api/tournament_vote',json=dict(tournament_id=m['tournament_id'],match_id=other['id'],winner_id=other['song1_id'],loser_id=other['song2_id']))
         self.assertEqual(result.status_code,200,result.json)
-        self.assertEqual(self.conn.execute('SELECT rating_weight FROM preference_events WHERE id=?',(result.json['preference_event_id'],)).fetchone()[0],1)
+        self.assertNotIn('preference_event_id', result.json)
+
+    def test_tournament_elo_retirement_preserves_matches(self):
+        from songranker.storage.database import retire_tournament_elo
+        event, match = self.old_tag_vote()
+        before = dict(self.conn.execute("SELECT * FROM tournament_matches WHERE id=?", (match['id'],)).fetchone())
+        report = retire_tournament_elo(self.path)
+        self.assertEqual(report['events'], 1)
+        self.assertIsNone(self.conn.execute("SELECT id FROM preference_events WHERE id=?", (event,)).fetchone())
+        self.assertEqual(dict(self.conn.execute("SELECT * FROM tournament_matches WHERE id=?", (match['id'],)).fetchone()), before)
+        self.assertEqual(self.conn.execute("SELECT SUM(tournament_matches) FROM preference_mode_ratings").fetchone()[0], 0)
+        self.assertIsNone(retire_tournament_elo(self.path))
 
     def test_tag_replay_failure_rolls_back_and_cutoff_is_not_guessed(self):
         from songranker.storage.database import promote_tag_tournament_elo

@@ -529,31 +529,31 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | --- | --- | --- |
 | [tournament](../songranker/modes/tournament.py#L14) | `` | Use the shared application shell; catalogue scopes load with the collection. |
 | [api_generate_bracket](../songranker/modes/tournament.py#L22) | `` | Serve generate bracket; GET /api/generate_bracket. |
-| [_tournament_seed_order](../songranker/modes/tournament.py#L135) | `size` | Return zero-based track indexes in the same bracket seeding order as tournament.html. |
-| [_tournament_matches](../songranker/modes/tournament.py#L148) | `conn, tournament_id` | Read one bracket's saved matches in round and match order. |
-| [_round_points](../songranker/modes/tournament.py#L161) | `size, round_number` | Current-policy knockout win points; preference Elo is owned separately. |
-| [api_tournament_vote](../songranker/modes/tournament.py#L168) | `` | Serve tournament vote; POST /api/tournament_vote. |
-| [api_tournaments_list](../songranker/modes/tournament.py#L357) | `` | Serve tournaments list; GET /api/tournaments. |
-| [api_tournament_detail](../songranker/modes/tournament.py#L372) | `tournament_id` | Serve tournament detail; GET /api/tournaments/<int:tournament_id>. |
-| [tournament_stats_page](../songranker/modes/tournament.py#L401) | `` | Read-only tournament dashboard; ranking APIs and game actions stay separate. |
-| [tournament_bracket_page](../songranker/modes/tournament.py#L424) | `tournament_id` | A shareable, read-only bracket workspace with saved match inspection. |
-| [api_tournament_stats](../songranker/modes/tournament.py#L439) | `` | Tournament-only leaderboard; regular Elo and history are not involved. |
-| [api_tournament_complete](../songranker/modes/tournament.py#L477) | `` | Serve tournament complete; POST /api/tournament_complete. |
-| [number](../songranker/modes/tournament.py#L556) | `value` | Read a finite nonnegative saved tournament number, returning unknown for invalid values. |
-| [saved_time](../songranker/modes/tournament.py#L567) | `value` | Resolve the saved tournament timestamp for report display. |
-| [stage_name](../songranker/modes/tournament.py#L591) | `size, round_number, match_type='bracket'` | Label a saved bracket stage, third-place playoff or unsupported historical round. |
-| [recorded_result](../songranker/modes/tournament.py#L618) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
-| [podium_points](../songranker/modes/tournament.py#L634) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
-| [build_tournament_stats](../songranker/modes/tournament.py#L652) | `conn, now=None, selected=None, archive_page=1, competition_only=False` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
-| [build_tournament_stats.identity](../songranker/modes/tournament.py#L765) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
-| [build_tournament_stats.scope](../songranker/modes/tournament.py#L777) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
-| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L935) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
-| [build_tournament_stats.category](../songranker/modes/tournament.py#L1009) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
-| [local_tournament_stats_page](../songranker/modes/tournament.py#L1207) | `` | Compare artist/album-only brackets without contributing to competition. |
-| [build_local_tournament_stats](../songranker/modes/tournament.py#L1244) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
-| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1288) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
-| [profile_tournament_details](../songranker/modes/tournament.py#L1331) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
-| [archive_entry_results](../songranker/modes/tournament.py#L1364) | `conn, bracket, selected=None` | Return each saved entrant's finish and current-policy recorded points. |
+| [_tournament_seed_order](../songranker/modes/tournament.py#L132) | `size` | Return zero-based track indexes in the same bracket seeding order as tournament.html. |
+| [_tournament_matches](../songranker/modes/tournament.py#L145) | `conn, tournament_id` | Read one bracket's saved matches in round and match order. |
+| [_round_points](../songranker/modes/tournament.py#L158) | `size, round_number` | Current-policy knockout win points; preference Elo is owned separately. |
+| [api_tournament_vote](../songranker/modes/tournament.py#L165) | `` | Serve tournament vote; POST /api/tournament_vote. |
+| [api_tournaments_list](../songranker/modes/tournament.py#L330) | `` | Serve tournaments list; GET /api/tournaments. |
+| [api_tournament_detail](../songranker/modes/tournament.py#L345) | `tournament_id` | Serve tournament detail; GET /api/tournaments/<int:tournament_id>. |
+| [tournament_stats_page](../songranker/modes/tournament.py#L374) | `` | Read-only tournament dashboard; ranking APIs and game actions stay separate. |
+| [tournament_bracket_page](../songranker/modes/tournament.py#L397) | `tournament_id` | A shareable, read-only bracket workspace with saved match inspection. |
+| [api_tournament_stats](../songranker/modes/tournament.py#L412) | `` | Tournament-only leaderboard; regular Elo and history are not involved. |
+| [api_tournament_complete](../songranker/modes/tournament.py#L450) | `` | Serve tournament complete; POST /api/tournament_complete. |
+| [number](../songranker/modes/tournament.py#L529) | `value` | Read a finite nonnegative saved tournament number, returning unknown for invalid values. |
+| [saved_time](../songranker/modes/tournament.py#L540) | `value` | Resolve the saved tournament timestamp for report display. |
+| [stage_name](../songranker/modes/tournament.py#L564) | `size, round_number, match_type='bracket'` | Label a saved bracket stage, third-place playoff or unsupported historical round. |
+| [recorded_result](../songranker/modes/tournament.py#L591) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
+| [podium_points](../songranker/modes/tournament.py#L607) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
+| [build_tournament_stats](../songranker/modes/tournament.py#L625) | `conn, now=None, selected=None, archive_page=1, competition_only=False` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
+| [build_tournament_stats.identity](../songranker/modes/tournament.py#L738) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
+| [build_tournament_stats.scope](../songranker/modes/tournament.py#L750) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
+| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L908) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
+| [build_tournament_stats.category](../songranker/modes/tournament.py#L982) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
+| [local_tournament_stats_page](../songranker/modes/tournament.py#L1180) | `` | Compare artist/album-only brackets without contributing to competition. |
+| [build_local_tournament_stats](../songranker/modes/tournament.py#L1217) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
+| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1261) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
+| [profile_tournament_details](../songranker/modes/tournament.py#L1304) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
+| [archive_entry_results](../songranker/modes/tournament.py#L1337) | `conn, bracket, selected=None` | Return each saved entrant's finish and current-policy recorded points. |
 
 ## songranker/modes/tournament_scoring.py
 
@@ -811,14 +811,14 @@ Read-only cross-mode filtering, pooled metrics, stable sorting and bounded pagin
 | [search_identities](../songranker/reports/query.py#L50) | `rows, query` | Rank bounded lookup candidates by exact name, prefix, then linked metadata. |
 | [search_identities.priority](../songranker/reports/query.py#L54) | `row` | Priority. |
 | [validate](../songranker/reports/query.py#L61) | `spec` | Validate bounded public input before reading the catalogue; never execute SQL from it. |
-| [rate](../songranker/reports/query.py#L103) | `n, d` | Rate. |
-| [facts](../songranker/reports/query.py#L107) | `songs, competition, local, song=False` | Pool numerators/denominators, counting each current track once per entity. |
-| [facts.total](../songranker/reports/query.py#L109) | `key` | Total. |
-| [facts.mean](../songranker/reports/query.py#L110) | `rows, key` | Mean. |
-| [identities](../songranker/reports/query.py#L140) | `data` | Public identity projection excludes preview URLs and private source metadata. |
-| [execute](../songranker/reports/query.py#L169) | `data, spec` | Filter and stably sort a full snapshot, returning exactly twenty rows per page. |
-| [execute.compare](../songranker/reports/query.py#L212) | `a, b` | Compare. |
-| [match_records](../songranker/reports/query.py#L223) | `conn, songs, mode='all', source='all', include_local=False` | Read Query opponent evidence, deduplicating first rounds and preserving real snapshots. |
+| [rate](../songranker/reports/query.py#L104) | `n, d` | Rate. |
+| [facts](../songranker/reports/query.py#L108) | `songs, competition, local, song=False` | Pool numerators/denominators, counting each current track once per entity. |
+| [facts.total](../songranker/reports/query.py#L110) | `key` | Total. |
+| [facts.mean](../songranker/reports/query.py#L111) | `rows, key` | Mean. |
+| [identities](../songranker/reports/query.py#L141) | `data` | Public identity projection excludes preview URLs and private source metadata. |
+| [execute](../songranker/reports/query.py#L170) | `data, spec` | Filter and stably sort a full snapshot, returning exactly twenty rows per page. |
+| [execute.compare](../songranker/reports/query.py#L213) | `a, b` | Compare. |
+| [match_records](../songranker/reports/query.py#L224) | `conn, songs, mode='all', source='all', include_local=False` | Read Query opponent evidence, deduplicating first rounds and preserving real snapshots. |
 
 ## songranker/reports/stats_activity.py
 
@@ -832,9 +832,9 @@ Shared dated activity, comparison charts and report attachments.
 | [build_activity](../songranker/reports/stats_activity.py#L49) | `conn, mode, now=None, tournament_ids=None` | Build fourteen days of mode activity, previous/current-week totals and graded success rates. |
 | [build_activity.rows](../songranker/reports/stats_activity.py#L59) | `table` | Read a known activity source table while tolerating its absence in historical fixtures. |
 | [build_activity.add](../songranker/reports/stats_activity.py#L64) | `when, kind, right=0, denominator=0` | Add an in-window dated result and its success denominator, counting undated records separately. |
-| [attach_reports](../songranker/reports/stats_activity.py#L135) | `conn, data, mode, now=None, tournament_ids=None` | Attach shared activity charts and effective tournament Elo history to a mode report. |
-| [match_archive](../songranker/reports/stats_activity.py#L153) | `conn, args` | Page a read-only cross-mode archive before hydrating results. |
-| [match_archive.song](../songranker/reports/stats_activity.py#L248) | `sid` | Hydrate only visible identities, retaining explicit deleted-track gaps. |
+| [attach_reports](../songranker/reports/stats_activity.py#L135) | `conn, data, mode, now=None, tournament_ids=None` | Attach shared activity charts to a mode report. |
+| [match_archive](../songranker/reports/stats_activity.py#L141) | `conn, args` | Page a read-only cross-mode archive before hydrating results. |
+| [match_archive.song](../songranker/reports/stats_activity.py#L236) | `sid` | Hydrate only visible identities, retaining explicit deleted-track gaps. |
 
 ## songranker/services.py
 
@@ -849,15 +849,15 @@ Flask configuration, managed connections, song hydration and catalogue writes.
 | [get_db_connection](../songranker/services.py#L56) | `` | Open the configured app database with foreign keys, row objects and a maintenance-gate lease. |
 | [init_db](../songranker/services.py#L81) | `` | Restore before creating anything, then apply the single versioned schema. |
 | [activate_elo_policy](../songranker/services.py#L93) | `` | Back up and activate adaptive Elo after startup database reconciliation. |
-| [export_rankings](../songranker/services.py#L109) | `` | Exports a comprehensive database snapshot to a text file. |
-| [is_close_match](../songranker/services.py#L172) | `guess, actual, threshold=0.75` | Compare trimmed case-insensitive answer text using the configured sequence-similarity threshold. |
-| [fetch_songs](../songranker/services.py#L185) | `conn, *, song_id=None, audio_only=False` | Consistent song metadata plus batched, independent Vibe Map placements. |
-| [get_song_full](../songranker/services.py#L198) | `song_id, conn` | Hydrate one catalogue song through the shared song query, returning no result when absent. |
-| [fetch_match_history](../songranker/services.py#L206) | `conn, song_id=None, limit=50, *, offset=0, mode='all', origin='all'` | Fetch recent matches with the rich song records used by shared VS rows. |
-| [create_database_backup](../songranker/services.py#L268) | `prefix='song_ranker'` | Save the configured live database through the shared rotating-backup policy. |
-| [get_or_create_album](../songranker/services.py#L274) | `conn, album_title, cover_url=None, release_date=None` | Retrieves an existing album or creates one, updating artwork if missing. |
-| [link_artists_to_song](../songranker/services.py#L294) | `conn, song_id, artist_string, default_cover=None, *, artist_names=None` | Splits an artist string and links each artist via the song_artists junction table. |
-| [link_genres_to_song](../songranker/services.py#L318) | `conn, song_id, genre_string` | Splits a genre string and links each tag via the song_genres junction table. |
+| [export_rankings](../songranker/services.py#L108) | `` | Exports a comprehensive database snapshot to a text file. |
+| [is_close_match](../songranker/services.py#L171) | `guess, actual, threshold=0.75` | Compare trimmed case-insensitive answer text using the configured sequence-similarity threshold. |
+| [fetch_songs](../songranker/services.py#L184) | `conn, *, song_id=None, audio_only=False` | Consistent song metadata plus batched, independent Vibe Map placements. |
+| [get_song_full](../songranker/services.py#L197) | `song_id, conn` | Hydrate one catalogue song through the shared song query, returning no result when absent. |
+| [fetch_match_history](../songranker/services.py#L205) | `conn, song_id=None, limit=50, *, offset=0, mode='all', origin='all'` | Fetch recent matches with the rich song records used by shared VS rows. |
+| [create_database_backup](../songranker/services.py#L267) | `prefix='song_ranker'` | Save the configured live database through the shared rotating-backup policy. |
+| [get_or_create_album](../songranker/services.py#L273) | `conn, album_title, cover_url=None, release_date=None` | Retrieves an existing album or creates one, updating artwork if missing. |
+| [link_artists_to_song](../songranker/services.py#L293) | `conn, song_id, artist_string, default_cover=None, *, artist_names=None` | Splits an artist string and links each artist via the song_artists junction table. |
+| [link_genres_to_song](../songranker/services.py#L317) | `conn, song_id, genre_string` | Splits a genre string and links each tag via the song_genres junction table. |
 
 ## songranker/storage/competition.py
 
@@ -894,6 +894,7 @@ Backed-up transactional bootstrap and versioned migration.
 | [initialize_database](../songranker/storage/database.py#L303) | `filename, sql_backup=None` | Existing DB wins. Missing DB restores SQL before any empty schema is made. |
 | [initialize_database.authorize](../songranker/storage/database.py#L322) | `action, arg1, arg2, db, trigger` | Deny ATTACH/DETACH statements while importing a supplied SQL snapshot. |
 | [promote_tag_tournament_elo](../songranker/storage/database.py#L367) | `filename` | Back up, promote historical tag first rounds to full weight and replay once. |
+| [retire_tournament_elo](../songranker/storage/database.py#L407) | `filename` | Back up and remove tournament Elo entries, preserving bracket results. |
 
 ## songranker/storage/database_access.py
 
@@ -1829,17 +1830,18 @@ Tournament scope policy and backed-up removal of historical selective Elo.
 | [TournamentPolicyTests.generate](../tests/test_tournament_policy.py#L29) | `self, scope` | Generate. |
 | [TournamentPolicyTests.test_tournament_similarity_is_available_for_elo_and_points_only_votes](../tests/test_tournament_policy.py#L34) | `self` | Verify tournament similarity is available for elo and points only votes. |
 | [TournamentPolicyTests.test_scopes_have_correct_exchange_and_points_only_retries](../tests/test_tournament_policy.py#L49) | `self` | Verify scopes have correct exchange and points only retries. |
-| [TournamentPolicyTests.old_artist_vote](../tests/test_tournament_policy.py#L63) | `self` | Old artist vote; writes tournament_matches, tournaments. |
-| [TournamentPolicyTests.test_historical_artist_elo_is_archived_voided_and_replayed_once](../tests/test_tournament_policy.py#L71) | `self` | Verify historical artist elo is archived voided and replayed once. |
-| [TournamentPolicyTests.test_failure_during_scope_replay_rolls_back_and_retains_archive](../tests/test_tournament_policy.py#L84) | `self` | Verify failure during scope replay rolls back and retains archive. |
-| [TournamentPolicyTests.test_report_has_semantic_colours_depth_and_bracket_payload](../tests/test_tournament_policy.py#L91) | `self` | Verify report has semantic colours depth and bracket payload. |
-| [TournamentPolicyTests.test_local_comparisons_filter_finished_results_and_keep_raw_counts](../tests/test_tournament_policy.py#L122) | `self` | Verify local comparisons filter finished results and keep raw counts. |
-| [TournamentPolicyTests.test_unfinished_blind_comparisons_hide_identities](../tests/test_tournament_policy.py#L161) | `self` | Verify unfinished blind comparisons hide identities. |
-| [TournamentPolicyTests.old_tag_vote](../tests/test_tournament_policy.py#L171) | `self, blind=False` | Old tag vote; writes tournament_matches, tournaments. |
-| [TournamentPolicyTests.test_tag_full_weight_backup_replay_and_retry_preserve_match_facts](../tests/test_tournament_policy.py#L182) | `self` | Verify tag full weight backup replay and retry preserve match facts. |
-| [TournamentPolicyTests.test_tag_replay_failure_rolls_back_and_cutoff_is_not_guessed](../tests/test_tournament_policy.py#L210) | `self` | Verify tag replay failure rolls back and cutoff is not guessed. |
-| [TournamentPolicyTests.test_offline_tag_script_preserves_input_and_creates_full_weight_copy](../tests/test_tournament_policy.py#L221) | `self` | Verify offline tag script preserves input and creates full weight copy. |
-| [TournamentPolicyTests.test_schema22_migrates_old_constraint_before_full_tag_startup](../tests/test_tournament_policy.py#L233) | `self` | Verify schema22 migrates old constraint before full tag startup. |
+| [TournamentPolicyTests.old_artist_vote](../tests/test_tournament_policy.py#L62) | `self` | Old artist vote; writes tournament_matches, tournaments. |
+| [TournamentPolicyTests.test_historical_artist_elo_is_archived_voided_and_replayed_once](../tests/test_tournament_policy.py#L70) | `self` | Verify historical artist elo is archived voided and replayed once. |
+| [TournamentPolicyTests.test_failure_during_scope_replay_rolls_back_and_retains_archive](../tests/test_tournament_policy.py#L83) | `self` | Verify failure during scope replay rolls back and retains archive. |
+| [TournamentPolicyTests.test_report_has_semantic_colours_depth_and_bracket_payload](../tests/test_tournament_policy.py#L90) | `self` | Verify report has semantic colours depth and bracket payload. |
+| [TournamentPolicyTests.test_local_comparisons_filter_finished_results_and_keep_raw_counts](../tests/test_tournament_policy.py#L121) | `self` | Verify local comparisons filter finished results and keep raw counts. |
+| [TournamentPolicyTests.test_unfinished_blind_comparisons_hide_identities](../tests/test_tournament_policy.py#L160) | `self` | Verify unfinished blind comparisons hide identities. |
+| [TournamentPolicyTests.old_tag_vote](../tests/test_tournament_policy.py#L170) | `self, blind=False` | Old tag vote; writes tournament_matches, tournaments. |
+| [TournamentPolicyTests.test_tag_full_weight_backup_replay_and_retry_preserve_match_facts](../tests/test_tournament_policy.py#L181) | `self` | Verify tag full weight backup replay and retry preserve match facts. |
+| [TournamentPolicyTests.test_tournament_elo_retirement_preserves_matches](../tests/test_tournament_policy.py#L209) | `self` | Verify tournament elo retirement preserves matches. |
+| [TournamentPolicyTests.test_tag_replay_failure_rolls_back_and_cutoff_is_not_guessed](../tests/test_tournament_policy.py#L220) | `self` | Verify tag replay failure rolls back and cutoff is not guessed. |
+| [TournamentPolicyTests.test_offline_tag_script_preserves_input_and_creates_full_weight_copy](../tests/test_tournament_policy.py#L231) | `self` | Verify offline tag script preserves input and creates full weight copy. |
+| [TournamentPolicyTests.test_schema22_migrates_old_constraint_before_full_tag_startup](../tests/test_tournament_policy.py#L243) | `self` | Verify schema22 migrates old constraint before full tag startup. |
 
 ## tests/test_tournament_scoring.py
 
@@ -2150,4 +2152,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1460 Python definitions**.
+Total: **1462 Python definitions**.

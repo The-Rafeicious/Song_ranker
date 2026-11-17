@@ -184,7 +184,7 @@ def mode_query_api():
     import json
     from songranker.reports.query import METRICS, KINDS, validate, execute, identities, search_identities
     if request.args.get('schema') == '1':
-        return jsonify(metrics=list(METRICS.values()), entities=KINDS)
+        return jsonify(metrics=[metric for key, metric in METRICS.items() if key != 'first_round_matches'], entities=KINDS)
     try:
         if request.args.get('lookup'):
             kind=request.args['lookup']

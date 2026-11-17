@@ -601,7 +601,7 @@ def override_rating(conn, data):
             )
         ensure_seeds(conn)
         after = conn.execute(
-            "SELECT COALESCE(MAX(id),0) FROM preference_events"
+            "SELECT COALESCE((SELECT seq FROM sqlite_sequence WHERE name=\'preference_events\'),0)"
         ).fetchone()[0]
         cursor = conn.execute(
             """INSERT INTO preference_rating_overrides(request_token,song_id,song_snapshot,after_event_id,previous_elo,new_elo,reason)

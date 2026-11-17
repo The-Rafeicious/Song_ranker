@@ -823,7 +823,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   }
   const similarityMatches=[0,1].map(i=>({id:900+i,tournament_id:999,round_number:i+1,match_number:i+1,match_type:'bracket',song1_id:matchTracks[2*i].id,song2_id:matchTracks[2*i+1].id,status:'pending'}));
   await page.route('**/api/tournaments/999',route=>route.fulfill({json:{tournament:{id:999,size:8,status:'in_progress',is_blind:1,scope_type:'global'},entries:matchTracks,matches:similarityMatches}}));
-  await page.route('**/api/tournament_vote',route=>route.fulfill({json:{points_awarded:1,elo_result:matchReceipt(matchTracks[0],matchTracks[1]),match_similarity:matchEvidence,matches:similarityMatches.map((m,i)=>i===0?{...m,status:'completed',winner_id:m.song1_id,loser_id:m.song2_id}:m)}}));
+  await page.route('**/api/tournament_vote',route=>route.fulfill({json:{points_awarded:1,match_similarity:matchEvidence,matches:similarityMatches.map((m,i)=>i===0?{...m,status:'completed',winner_id:m.song1_id,loser_id:m.song2_id}:m)}}));
   await page.goto(base+'/tournament?tournament=999');await page.locator('[data-tournament-vote="0"]').waitFor();
   assert.equal(await page.locator('.match-similarity').count(),0);
   await page.locator('[data-tournament-vote="0"]').click();await page.locator('.match-similarity').waitFor();
@@ -831,9 +831,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.locator('#bracket-points').waitFor();
   await page.setViewportSize({width:1365,height:1050});await bounded(page,1365,'tournament-similarity-points',folder);
   await page.locator('#main').screenshot({path:folder+'/tournament-similarity-points.png'});
-  await page.locator('#bracket-elo-0').waitFor();assert.match(await page.locator('.match-similarity').textContent(),/82.4%/);
-  await page.setViewportSize({width:390,height:1050});await bounded(page,390,'tournament-similarity-elo',folder);
-  await page.locator('#main').screenshot({path:folder+'/tournament-similarity-elo-phone.png'});
+  assert.equal(await page.locator('#bracket-elo-0').count(),0);
   await page.unroute('**/api/matchup?*');await page.unroute('**/api/vote');await page.unroute('**/api/tournaments/999');await page.unroute('**/api/tournament_vote');
   // The saved cover and prior score reveal together after the last field, even on a miss.
   let priorTrivia={accuracy:66.7,rounds:2}, triviaFields;

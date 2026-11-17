@@ -92,10 +92,9 @@ def api_generate_bracket():
 
         cursor = conn.execute(
             """INSERT INTO tournaments
-                    (size, scope_type, scope_id, status, created_at, updated_at, current_round, points_version, is_blind, playoff_enabled,
-                     elo_policy_version,elo_weight)
-                    VALUES (?, ?, ?, 'in_progress', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 1, ?, 1, ?, ?)""",
-            (size, scope, scope_id, is_blind, 0 if scope in ("artist", "album") else 1, 1 if scope in ("global", "tag") else 0),
+                    (size, scope_type, scope_id, status, created_at, updated_at, current_round, points_version, is_blind, playoff_enabled)
+                    VALUES (?, ?, ?, 'in_progress', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, 1, 1, ?, 1)""",
+            (size, scope, scope_id, is_blind),
         )
         tournament_id = cursor.lastrowid
         for seed, song in enumerate(songs, start=1):
@@ -120,8 +119,6 @@ def api_generate_bracket():
                 "tournament_id": tournament_id,
                 "tracks": songs,
                 "matches": _tournament_matches(conn, tournament_id),
-                "elo_policy_version": 0 if scope in ("artist", "album") else 1,
-                "elo_weight": 1 if scope in ("global", "tag") else 0,
             }
         )
     except Exception:
@@ -211,19 +208,12 @@ def api_tournament_vote():
                     jsonify(error="This match already has a different saved result."),
                     409,
                 )
-            event = conn.execute(
-                "SELECT p.* FROM preference_events p JOIN preference_effective e ON e.id=p.id WHERE p.tournament_match_id=? AND e.active=1",
-                (match_id,),
-            ).fetchone()
-            from songranker.modes.preferences import receipt
             from songranker.modes.vibe_similarity import match_similarity
 
             return jsonify(
                 match_similarity=match_similarity(conn, winner_id, loser_id),
                 success=True,
                 points_awarded=scored_match(dict(match),dict(tournament))["points_awarded"],
-                preference_event_id=event["id"] if event else None,
-                elo_result=receipt(event) if event else None,
                 matches=_tournament_matches(conn, tournament_id),
             )
         if tournament["status"] != "in_progress":
@@ -269,21 +259,6 @@ def api_tournament_vote():
             points_awarded = ?, played_at = CURRENT_TIMESTAMP WHERE id = ?""",
             (winner_id, loser_id, points, match_id),
         )
-        from songranker.modes.preferences import save_tournament_preference, receipt
-
-        event_id = save_tournament_preference(
-            conn, tournament, match, winner_id, loser_id
-        )
-        elo_result = (
-            receipt(
-                conn.execute(
-                    "SELECT * FROM preference_events WHERE id=?", (event_id,)
-                ).fetchone()
-            )
-            if event_id
-            else None
-        )
-
         round_rows = conn.execute(
             """SELECT * FROM tournament_matches
             WHERE tournament_id = ? AND round_number = ? AND match_type='bracket' ORDER BY match_number""",
@@ -340,8 +315,6 @@ def api_tournament_vote():
                 "match_similarity": match_similarity(conn, winner_id, loser_id),
                 "success": True,
                 "points_awarded": points,
-                "preference_event_id": event_id,
-                "elo_result": elo_result,
                 "matches": _tournament_matches(conn, tournament_id),
             }
         )

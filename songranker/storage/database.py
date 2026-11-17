@@ -402,3 +402,42 @@ def promote_tag_tournament_elo(filename):
         raise
     finally:
         conn.close()
+
+
+def retire_tournament_elo(filename):
+    """Back up and remove tournament Elo entries, preserving bracket results."""
+    from songranker.storage.database_io import create_backup, validate
+    from songranker.storage.preference_state import rebuild_preference_ratings
+
+    path = Path(filename).resolve(strict=True)
+    conn = sqlite3.connect(path, timeout=30)
+    conn.row_factory = sqlite3.Row
+    conn.execute("PRAGMA foreign_keys=ON")
+    try:
+        conn.execute("BEGIN IMMEDIATE")
+        events = conn.execute(
+            "SELECT COUNT(*), MIN(id) FROM preference_events WHERE origin='tournament'"
+        ).fetchone()
+        if not events[0] and not conn.execute(
+            "SELECT 1 FROM tournaments WHERE elo_policy_version<>0 LIMIT 1"
+        ).fetchone():
+            conn.rollback()
+            return None
+        cutoff = conn.execute(
+            "SELECT cutoff_event_id FROM preference_replay_state WHERE id=1"
+        ).fetchone()[0]
+        if events[0] and events[1] <= cutoff:
+            raise ValueError("Tournament Elo predates the replay baseline. Restore a complete vote history.")
+        backup = create_backup(path, "pre_tournament_elo")
+        conn.execute("DELETE FROM preference_events WHERE origin='tournament'")
+        conn.execute("UPDATE tournaments SET elo_policy_version=0, elo_weight=0 WHERE elo_policy_version<>0")
+        if events[0]:
+            rebuild_preference_ratings(conn)
+        validate(conn)
+        conn.commit()
+        return dict(events=events[0], backup=str(backup))
+    except Exception:
+        conn.rollback()
+        raise
+    finally:
+        conn.close()

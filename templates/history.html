@@ -32,7 +32,7 @@
 {% for event in events %}
 {% set color='tournament' if event.activity in ['first_round','tournament'] else event.visibility if event.family=='elo' else event.family %}
 <section class="panel archive-event dashboard-surface" data-archive-mode="{{event.family}}" style="--section-color:var(--{{color}})" aria-labelledby="archive-heading-{{loop.index}}">
-<div class="section-head"><h2 class="{{color}}" id="archive-heading-{{loop.index}}">{{'Tournament first round' if event.activity=='first_round' else 'Standard Vote' if event.family=='elo' else 'Tournament podium' if event.family=='tournament' else 'Trivia' if event.family=='recognition' else 'Album Shelves' if event.family=='shelves' else 'Vibe Map'}}</h2><time>{{event.date or 'Date unavailable'}}{{' UTC' if event.date else ''}}</time></div>
+<div class="section-head"><h2 class="{{color}}" id="archive-heading-{{loop.index}}">{{'Standard Vote' if event.family=='elo' else 'Tournament podium' if event.family=='tournament' else 'Trivia' if event.family=='recognition' else 'Album Shelves' if event.family=='shelves' else 'Vibe Map'}}</h2><time>{{event.date or 'Date unavailable'}}{{' UTC' if event.date else ''}}</time></div>
 {% if event.family=='elo' %}{% set m=event.result %}
 {% if m.winner_song and m.loser_song %}{{ versus_row(m.winner_song,m.loser_song,mode=m.mode,created_at=m.created_at or '',before_left=m.winner_before,after_left=m.winner_after,before_right=m.loser_before,after_right=m.loser_after,match_id=m.id,origin=m.get('origin','ordinary'),tournament_id=m.get('tournament_id'),rating_weight=m.get('rating_weight',1)) }}{% else %}<div class="empty">Match identities unavailable</div>{% endif %}
 {% elif event.family=='tournament' %}
