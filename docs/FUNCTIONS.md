@@ -529,31 +529,31 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | --- | --- | --- |
 | [tournament](../songranker/modes/tournament.py#L15) | `` | Use the shared application shell; catalogue scopes load with the collection. |
 | [api_generate_bracket](../songranker/modes/tournament.py#L23) | `` | Serve generate bracket; GET /api/generate_bracket. |
-| [_tournament_seed_order](../songranker/modes/tournament.py#L133) | `size, rng=random` | Shuffle seed indexes into bracket slots, including each match's two sides. |
-| [_tournament_matches](../songranker/modes/tournament.py#L140) | `conn, tournament_id` | Read one bracket's saved matches in round and match order. |
-| [_round_points](../songranker/modes/tournament.py#L153) | `size, round_number` | Current-policy knockout win points; preference Elo is owned separately. |
-| [api_tournament_vote](../songranker/modes/tournament.py#L160) | `` | Serve tournament vote; POST /api/tournament_vote. |
-| [api_tournaments_list](../songranker/modes/tournament.py#L325) | `` | Serve tournaments list; GET /api/tournaments. |
-| [api_tournament_detail](../songranker/modes/tournament.py#L340) | `tournament_id` | Serve tournament detail; GET /api/tournaments/<int:tournament_id>. |
-| [tournament_stats_page](../songranker/modes/tournament.py#L369) | `` | Read-only tournament dashboard; ranking APIs and game actions stay separate. |
-| [tournament_bracket_page](../songranker/modes/tournament.py#L392) | `tournament_id` | A shareable, read-only bracket workspace with saved match inspection. |
-| [api_tournament_stats](../songranker/modes/tournament.py#L407) | `` | Tournament-only leaderboard; regular Elo and history are not involved. |
-| [api_tournament_complete](../songranker/modes/tournament.py#L445) | `` | Serve tournament complete; POST /api/tournament_complete. |
-| [number](../songranker/modes/tournament.py#L524) | `value` | Read a finite nonnegative saved tournament number, returning unknown for invalid values. |
-| [saved_time](../songranker/modes/tournament.py#L535) | `value` | Resolve the saved tournament timestamp for report display. |
-| [stage_name](../songranker/modes/tournament.py#L559) | `size, round_number, match_type='bracket'` | Label a saved bracket stage, third-place playoff or unsupported historical round. |
-| [recorded_result](../songranker/modes/tournament.py#L586) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
-| [podium_points](../songranker/modes/tournament.py#L602) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
-| [build_tournament_stats](../songranker/modes/tournament.py#L620) | `conn, now=None, selected=None, archive_page=1, competition_only=False` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
-| [build_tournament_stats.identity](../songranker/modes/tournament.py#L733) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
-| [build_tournament_stats.scope](../songranker/modes/tournament.py#L745) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
-| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L903) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
-| [build_tournament_stats.category](../songranker/modes/tournament.py#L977) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
-| [local_tournament_stats_page](../songranker/modes/tournament.py#L1175) | `` | Compare artist/album-only brackets without contributing to competition. |
-| [build_local_tournament_stats](../songranker/modes/tournament.py#L1212) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
-| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1256) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
-| [profile_tournament_details](../songranker/modes/tournament.py#L1299) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
-| [archive_entry_results](../songranker/modes/tournament.py#L1332) | `conn, bracket, selected=None` | Return each saved entrant's finish and current-policy recorded points. |
+| [_tournament_seed_order](../songranker/modes/tournament.py#L133) | `size, rng=random` | Protect the top four seeds, vary nearby lower seeds, and randomise sides. |
+| [_tournament_matches](../songranker/modes/tournament.py#L153) | `conn, tournament_id` | Read one bracket's saved matches in round and match order. |
+| [_round_points](../songranker/modes/tournament.py#L166) | `size, round_number` | Current-policy knockout win points; preference Elo is owned separately. |
+| [api_tournament_vote](../songranker/modes/tournament.py#L173) | `` | Serve tournament vote; POST /api/tournament_vote. |
+| [api_tournaments_list](../songranker/modes/tournament.py#L338) | `` | Serve tournaments list; GET /api/tournaments. |
+| [api_tournament_detail](../songranker/modes/tournament.py#L353) | `tournament_id` | Serve tournament detail; GET /api/tournaments/<int:tournament_id>. |
+| [tournament_stats_page](../songranker/modes/tournament.py#L382) | `` | Read-only tournament dashboard; ranking APIs and game actions stay separate. |
+| [tournament_bracket_page](../songranker/modes/tournament.py#L405) | `tournament_id` | A shareable, read-only bracket workspace with saved match inspection. |
+| [api_tournament_stats](../songranker/modes/tournament.py#L420) | `` | Tournament-only leaderboard; regular Elo and history are not involved. |
+| [api_tournament_complete](../songranker/modes/tournament.py#L458) | `` | Serve tournament complete; POST /api/tournament_complete. |
+| [number](../songranker/modes/tournament.py#L537) | `value` | Read a finite nonnegative saved tournament number, returning unknown for invalid values. |
+| [saved_time](../songranker/modes/tournament.py#L548) | `value` | Resolve the saved tournament timestamp for report display. |
+| [stage_name](../songranker/modes/tournament.py#L572) | `size, round_number, match_type='bracket'` | Label a saved bracket stage, third-place playoff or unsupported historical round. |
+| [recorded_result](../songranker/modes/tournament.py#L599) | `match` | Accept only completed matches with distinct winner/loser identities consistent with saved participants. |
+| [podium_points](../songranker/modes/tournament.py#L615) | `sid, matches` | Sum a participant's recorded win points, preserving unknown points or absent participation. |
+| [build_tournament_stats](../songranker/modes/tournament.py#L633) | `conn, now=None, selected=None, archive_page=1, competition_only=False` | A caller-owned snapshot; no writes, API calls, history cap or Elo inference. |
+| [build_tournament_stats.identity](../songranker/modes/tournament.py#L746) | `sid, absent='Not recorded'` | Resolve a saved participant with a safe unavailable/not-recorded report identity. |
+| [build_tournament_stats.scope](../songranker/modes/tournament.py#L758) | `t` | Resolve a bracket's saved scope to its current collection identity or a historical fallback. |
+| [build_tournament_stats.breakdown](../songranker/modes/tournament.py#L916) | `counter, keys` | Convert bracket counters into labelled counts and shares for the current report set. |
+| [build_tournament_stats.category](../songranker/modes/tournament.py#L990) | `kind, identities, links` | Aggregate entered-song tournament evidence into collection leaders. |
+| [local_tournament_stats_page](../songranker/modes/tournament.py#L1188) | `` | Compare artist/album-only brackets without contributing to competition. |
+| [build_local_tournament_stats](../songranker/modes/tournament.py#L1225) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
+| [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1269) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
+| [profile_tournament_details](../songranker/modes/tournament.py#L1312) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
+| [archive_entry_results](../songranker/modes/tournament.py#L1345) | `conn, bracket, selected=None` | Return each saved entrant's finish and current-policy recorded points. |
 
 ## songranker/modes/tournament_scoring.py
 
@@ -2024,9 +2024,9 @@ Bounded similarity, adaptive coverage and hotspot-aware production draws.
 | [AlbumVibeDataTests.connect](../tests/test_vibe_similarity.py#L141) | `self` | Open the fixture database with the row/connection settings needed by this test. |
 | [AlbumVibeDataTests.test_shelves_profile_includes_unnumbered_songs_without_drawing_them](../tests/test_vibe_similarity.py#L145) | `self` | Verify shelves profile includes unnumbered songs without drawing them. |
 | [SelectionEvidenceReviewTests.test_seed_labels_are_preserved_but_pairings_and_sides_vary](../tests/test_vibe_similarity.py#L168) | `self` | Verify seed labels are preserved but pairings and sides vary. |
-| [SelectionEvidenceReviewTests.test_saved_pair_history_softly_reduces_repeats](../tests/test_vibe_similarity.py#L185) | `self` | Verify saved pair history softly reduces repeats. |
-| [SelectionEvidenceReviewTests.test_saved_pair_history_softly_reduces_repeats.repeats](../tests/test_vibe_similarity.py#L187) | `counts` | Repeats. |
-| [SelectionEvidenceReviewTests.test_local_evidence_is_read_only_bounded_and_opponent_adjusted](../tests/test_vibe_similarity.py#L193) | `self` | Verify local evidence is read only bounded and opponent adjusted. |
+| [SelectionEvidenceReviewTests.test_saved_pair_history_softly_reduces_repeats](../tests/test_vibe_similarity.py#L188) | `self` | Verify saved pair history softly reduces repeats. |
+| [SelectionEvidenceReviewTests.test_saved_pair_history_softly_reduces_repeats.repeats](../tests/test_vibe_similarity.py#L190) | `counts` | Repeats. |
+| [SelectionEvidenceReviewTests.test_local_evidence_is_read_only_bounded_and_opponent_adjusted](../tests/test_vibe_similarity.py#L196) | `self` | Verify local evidence is read only bounded and opponent adjusted. |
 
 ## tests/test_vibe_stats.py
 
