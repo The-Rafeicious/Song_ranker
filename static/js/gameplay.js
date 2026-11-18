@@ -148,7 +148,69 @@ window.GameplayUI = (() => {
       Number.isInteger(shared) && shared > 0 && Number.isInteger(total) && total >= shared;
     return available ? `<div class="match-similarity" role="status" title="Vibe Map closeness across shared placed maps"><span class="match-similarity-label">Vibe similarity</span><strong>${score.toFixed(1).replace(/\.0$/, "")}%</strong><span class="match-similarity-coverage">${shared}/${total} maps</span></div>` : "";
   }
-  return Object.freeze({ select, close, matchSimilarity });
+  function listeningLock(audios, buttons, seconds) {
+    const records = audios.map((audio, index) => ({
+      audio, id: audio.id, button: buttons[index], heard: 0, media: audio.currentTime,
+      clock: performance.now(), unavailable: !audio.getAttribute("src"),
+    }));
+    let disposed = false;
+    const ready = () => records.every(row => row.unavailable || row.heard >= seconds);
+    function paint() {
+      if (disposed) return;
+      const unlocked = ready();
+      for (const [index, row] of records.entries()) {
+        const progress = row.unavailable ? 1 : Math.min(1, row.heard / seconds);
+        row.button.disabled = !unlocked;
+        row.button.classList.add("listening-vote");
+        row.button.style.setProperty("--listened", (progress * 100) + "%");
+        row.button.dataset.listenReady = String(progress >= 1);
+        row.button.textContent = unlocked ? "Vote for " + "AB"[index]
+          : row.unavailable ? "No preview · waiting for opponent"
+          : progress >= 1 ? "Ready · listen to opponent"
+          : "Listen " + "AB"[index] + " · " + Math.ceil(seconds - row.heard) + "s";
+      }
+    }
+    function sample(row) {
+      const replacement = row.id && document.getElementById(row.id);
+      if (replacement && replacement !== row.audio) {
+        row.audio = replacement;
+        row.media = replacement.currentTime;
+        row.clock = performance.now();
+        return;
+      }
+      const now = performance.now(), position = row.audio.currentTime;
+      const elapsed = (now - row.clock) / 1000, movement = position - row.media;
+      if (!document.hidden && !row.audio.paused && !row.audio.seeking &&
+          row.audio.readyState >= 2 && !row.audio.muted && row.audio.volume > 0 &&
+          movement > 0 && movement <= elapsed * Math.max(1, row.audio.playbackRate) + .3) {
+        row.heard = Math.min(seconds, row.heard + Math.min(movement, elapsed));
+      }
+      row.clock = now;
+      row.media = position;
+    }
+    const cleanup = [];
+    for (const row of records) {
+      const update = () => { sample(row); paint(); };
+      for (const event of ["timeupdate", "playing", "pause", "seeking", "seeked", "waiting", "ended"]) {
+        row.audio.addEventListener(event, update);
+        cleanup.push(() => row.audio.removeEventListener(event, update));
+      }
+    }
+    const timer = setInterval(() => {
+      if (buttons.some(button => !button.isConnected)) { dispose(); return; }
+      records.forEach(sample);
+      paint();
+    }, 100);
+    function dispose() {
+      disposed = true;
+      clearInterval(timer);
+      cleanup.forEach(remove => remove());
+    }
+    window.addEventListener("pagehide", dispose, {once: true});
+    paint();
+    return {ready, dispose, refresh: () => { disposed = false; paint(); }};
+  }
+  return Object.freeze({ select, close, matchSimilarity, listeningLock });
 })();
 
 /* Shared result pacing and one speculative JSON question. No scoring or audio. */

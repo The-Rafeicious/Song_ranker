@@ -17,7 +17,48 @@ async function bounded(page,width,phase,folder){
   // The dedicated radio page tests auto playback. Other cases inspect foreground audio.
   await page.addInitScript(()=>localStorage.setItem('songRankerBackgroundPreviews',
     JSON.stringify({preference:'paused',mix:'related'})));
+  // Existing result/visual cases test accepted votes; listening is exercised separately below.
+  await page.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{
+    if(window.GameplayUI)window.GameplayUI={...window.GameplayUI,listeningLock:(_audio,buttons)=>{
+      buttons.forEach(button=>button.disabled=false);
+      return {ready:()=>true,dispose(){},refresh(){buttons.forEach(button=>button.disabled=false)}};
+    }};
+  }));
   const base=process.env.VIBE_TEST_URL,folder='artifacts/vibe-map';fs.mkdirSync(folder,{recursive:true});
+  const listening = await browser.newPage({viewport:{width:390,height:844}});
+  try {
+    await listening.goto(base+'/game');
+    await listening.locator('[data-vote]').first().waitFor();
+    await listening.evaluate(()=>{
+      const audios=[0,1].map(index=>{
+        const audio=document.createElement('audio');
+        audio.src='/tag-test-audio.wav?listen='+index;
+        document.body.append(audio);
+        return audio;
+      });
+      const buttons=[0,1].map(index=>{
+        const button=document.createElement('button');
+        button.id='listen-test-'+index;
+        button.onclick=()=>audios[index].play();
+        button.textContent='Listen '+index;
+        document.querySelector('#main').prepend(button);
+        return button;
+      });
+      const votes=[...document.querySelectorAll('[data-vote]')];
+      window.testListen=window.GameplayUI.listeningLock(audios,votes,1);
+      window.testAudio=audios;
+    });
+    await listening.locator('#listen-test-0').click();
+    await listening.waitForFunction(()=>document.querySelector('[data-vote="0"]').dataset.listenReady==='true');
+    assert.ok(await listening.locator('[data-vote="0"]').isDisabled());
+    await listening.evaluate(()=>window.testAudio[0].pause());
+    await listening.locator('#listen-test-1').click();
+    await listening.waitForFunction(()=>window.testListen.ready());
+    assert.ok(await listening.locator('[data-vote="0"]').isEnabled());
+    assert.ok(await listening.locator('[data-vote="1"]').isEnabled());
+    await bounded(listening,390,'listening-lock',folder);
+    await listening.screenshot({path:folder+'/listening-lock-phone.png'});
+  } finally {await listening.close();}
   const radio = await browser.newPage({viewport:{width:390,height:844}});
   try {
    const library=await (await radio.request.get(base+'/api/background-previews')).json();

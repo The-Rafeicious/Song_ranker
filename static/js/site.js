@@ -861,7 +861,10 @@
       window.scrollTo({ left, top, behavior: "instant" });
     };
   }
+  let voteListening = null;
   function renderGame() {
+    voteListening?.dispose();
+    voteListening = null;
     const releaseHeight = holdGameHeight();
     try {
       pageTone("voting");
@@ -875,6 +878,8 @@
         ),
       );
       attachPlayers();
+      if (!revealed) voteListening = window.GameplayUI.listeningLock(
+        [$("#game-audio-0"), $("#game-audio-1")], $$("[data-vote]"), blind ? 10 : 5);
       window.PreviewPlayback?.preloadPair([
         $("#game-audio-0"),
         $("#game-audio-1"),
@@ -905,8 +910,9 @@
     requestAnimationFrame(tick);
   }
   async function vote(i) {
-    if (revealed || voting || !roundToken) return;
+    if (revealed || voting || !roundToken || !voteListening?.ready()) return;
     voting = true;
+    voteListening.dispose();
     $$("[data-vote]").forEach((b) => (b.disabled = true));
     cancelRoundTransition();
     let result;
@@ -924,7 +930,7 @@
         toast("Showing the result already saved for this round");
       } else {
         toast(error.message);
-        $$("[data-vote]").forEach((b) => (b.disabled = false));
+        voteListening.refresh();
         return;
       }
     } finally {
@@ -2752,7 +2758,10 @@
       }, saved.similarityWait);
     }
   }
+  let bracketListening = null;
   function renderBracketMatch() {
+    bracketListening?.dispose();
+    bracketListening = null;
     const { tournament, active, tracks, matches } = bracketState,
       pair = [tracks.get(active.song1_id), tracks.get(active.song2_id)];
     if (pair.some((s) => !s)) {
@@ -2778,14 +2787,20 @@
                 : "Round " + active.round_number;
     main.innerHTML = `<div class="game-head"><div><h1 class="tournament">${tournament.is_blind ? "Blind Tournament" : "Tournament"}</h1><p class="bracket-progress">${name} · Match ${Math.min(done + (bracketReveal ? 0 : 1), inRound.length)} / ${inRound.length}</p></div></div>${window.GameplayUI.matchSimilarity(bracketReveal?.similarity)}<div class="matchup">${bracketCard(pair[0], 0)}<span class="vs-circle">VS</span>${bracketCard(pair[1], 1)}</div>${bracketReveal ? roundProgress(bracketReveal.hold) : ""}<p id="bracket-error" class="tournament-error" role="alert" hidden></p>`;
     attachPlayers();
+    if (!bracketReveal) {
+      const seconds = Math.min(20, (tournament.is_blind ? 10 : 5) + 2 * (active.round_number - 1));
+      bracketListening = window.GameplayUI.listeningLock(
+        [$("#bracket-audio-0"), $("#bracket-audio-1")], $$("[data-tournament-vote]"), seconds);
+    }
     window.PreviewPlayback?.preloadPair([
       $("#bracket-audio-0"),
       $("#bracket-audio-1"),
     ]);
   }
   async function voteBracket(index) {
-    if (bracketVoting || bracketReveal || !bracketState?.active) return;
+    if (bracketVoting || bracketReveal || !bracketState?.active || !bracketListening?.ready()) return;
     bracketVoting = true;
+    bracketListening.dispose();
     $$("[data-tournament-vote]").forEach((b) => (b.disabled = true));
     cancelRoundTransition();
     const match = bracketState.active,
@@ -2802,7 +2817,7 @@
     } catch (error) {
       $("#bracket-error").textContent = error.message;
       $("#bracket-error").hidden = false;
-      $$("[data-tournament-vote]").forEach((b) => (b.disabled = false));
+      bracketListening.refresh();
       return;
     } finally {
       bracketVoting = false;

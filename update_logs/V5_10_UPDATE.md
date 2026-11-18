@@ -34,3 +34,11 @@ available. Voting and Query no longer present a separate first-round Elo source.
 - Restore seeded bracket placement. The top two start in opposite halves and
   the top four in separate quarters. Lower seeds vary within groups of four,
   and each first-round match still randomises its left and right sides.
+
+## V5.10.3
+
+- Voting unlocks after listening to both previews for 5 seconds in non-blind
+  or 10 seconds in blind. Tournament rounds add 2 seconds per round, capped
+  at 20 seconds. Each button fills as its preview plays.
+- Listening excludes pauses, buffering, seeking, muted audio and hidden pages.
+  Tracks without a preview wait for the other track's listening requirement.
