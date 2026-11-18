@@ -447,6 +447,8 @@
         if (id) loadBracket(id, false).catch(error => toast(error.message));
         return;
       }
+      if (page === "standard" && !revealed && pair.length === 2) renderGame();
+      if (page === "tournament_play" && !bracketReveal && bracketState?.active) renderBracketMatch();
       if (page === "standard" && revealed) {
         showGameScores();
         scheduleRoundTransition(null, nextMatch);
