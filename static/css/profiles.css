@@ -208,7 +208,7 @@ body.profile-page #main .profile-key-stats .stat-label {
   letter-spacing: 0;
 }
 body.profile-page #main .profile-key-stats .stat-value {
-  font-size: 36px;
+  font-size: var(--site-value-size);
   overflow-wrap: anywhere;
 }
 body.profile-page #main #overall-profile {
@@ -236,7 +236,7 @@ body.profile-page #main .joined-metrics {
   margin: 0;
 }
 body.profile-page #main .joined-metrics b {
-  font-size: 36px;
+  font-size: var(--site-value-size);
   color: var(--section-color, var(--page-color));
   overflow-wrap: anywhere;
 }
@@ -426,9 +426,6 @@ body.profile-page #main #history .pill-nav {
   body.profile-page #main .profile-key-stats {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-  body.profile-page #main .joined-metrics b {
-    font-size: 30px;
-  }
 }
 @media (max-width: 600px) {
   body.profile-page #main .song-profile {
@@ -452,14 +449,8 @@ body.profile-page #main #history .pill-nav {
   }
 }
 @media (max-width: 520px) {
-  body.profile-page #main .profile-key-stats .stat-value {
-    font-size: 28px;
-  }
   body.profile-page #main .profile-key-stats .stat-label {
     font-size: 16px;
-  }
-  body.profile-page #main .joined-metrics b {
-    font-size: clamp(20px, 5vw, 25px);
   }
   body.profile-page #main .joined-metrics :is(small, .report-meta) {
     font-size: 16px;
@@ -505,14 +496,19 @@ body.profile-page #main #history .pill-nav {
 
 /* Extra song evidence stays within the existing mode-record composition. */
 body.profile-page #main .profile-song-details {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--site-gap);
   border-top: 1px solid color-mix(in srgb, var(--section-color) 22%, transparent);
   margin-top: 20px;
   padding-top: 20px;
   min-width: 0;
 }
 
+body.profile-page #main .profile-song-details > .profile-rate {
+  margin-top: 0;
+}
 body.profile-page #main .profile-song-disclosure {
-  margin-top: 18px;
   border-top: 1px solid color-mix(in srgb,var(--section-color) 18%,transparent);
 }
 body.profile-page #main .profile-song-disclosure[open] > summary { margin-bottom: 12px; }

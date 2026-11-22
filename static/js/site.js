@@ -1236,7 +1236,8 @@
       {
         trivia: "recognition",
         tournaments: "tournament",
-        history: "standard",
+        history: "voting",
+        shelves_records: "shelves",
         vibe_records: "vibe",
       }[devView] ||
       "song";

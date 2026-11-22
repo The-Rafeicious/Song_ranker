@@ -82,7 +82,7 @@
   {% endfor %}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="shelves-albums">
-    <div class="section-head"><h2 class="shelves" id="shelves-albums">Albums played</h2></div>
+    <div class="section-head"><h2 class="album" id="shelves-albums">Albums played</h2></div>
     <div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3>Highest track-order accuracy</h3>{{ record_list(album_records.best,'album') }}</div><div class="mode-stats-inset"><h3>Most missed comparisons</h3>{{ record_list(album_records.missed,'album',true) }}</div></div>
     <details class="mode-stats-more shelf-all-albums"{% if album_records.page>1 or show_albums %} open{% endif %}><summary>All albums played · {{ album_records.total }}</summary>{{ record_list(album_records.rows,'album') }}
       <nav class="shelf-pagination" aria-label="Played album pages">{% if album_records.page>1 %}<a class="btn shelves" rel="prev" href="{{ url_for('shelf_stats',album_page=album_records.page-1,history_page=history_page) }}#shelves-albums">← Previous</a>{% endif %}<span>Page {{ album_records.page }} / {{ album_records.pages }}</span>{% if album_records.page<album_records.pages %}<a class="btn shelves" rel="next" href="{{ url_for('shelf_stats',album_page=album_records.page+1,history_page=history_page) }}#shelves-albums">Next →</a>{% endif %}</nav>
@@ -91,7 +91,7 @@
   </section>
 
   {% for group in categories %}
-  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="shelves-{{ group.kind }}"><div class="section-head"><h2 class="shelves" id="shelves-{{ group.kind }}">{{ group.title }}</h2></div><div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3>Highest track-order accuracy</h3>{{ record_list(group.best,group.kind) }}</div><div class="mode-stats-inset"><h3>Most missed comparisons</h3>{{ record_list(group.missed,group.kind,true) }}</div></div></section>
+  <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="shelves-{{ group.kind }}"><div class="section-head"><h2 class="{{ group.kind }}" id="shelves-{{ group.kind }}">{{ group.title }}</h2></div><div class="mode-stats-comparisons"><div class="mode-stats-inset"><h3>Highest track-order accuracy</h3>{{ record_list(group.best,group.kind) }}</div><div class="mode-stats-inset"><h3>Most missed comparisons</h3>{{ record_list(group.missed,group.kind,true) }}</div></div></section>
   {% endfor %}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="shelves-placement">

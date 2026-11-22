@@ -83,9 +83,9 @@ body[data-page="home"] #main .home-record-stats .mini-stats b {
   line-height: 1.2;
   overflow-wrap: anywhere;
 }
-body[data-page="home"] #main .home-record-stats .mini-stats small {
-  color: var(--section-color);
-  font-size: 17px;
+body[data-page="home"] #main .home-record-stats .mini-stats :is(small, .report-meta) {
+  color: var(--muted);
+  font-size: 16px;
   line-height: 1.4;
   overflow-wrap: anywhere;
 }

@@ -21,7 +21,7 @@
 {% endmacro %}
 {% block content %}
 <div class="mode-stats-page tournament-stats-page local-tournament-stats">
-  <div class="page-head"><h1 class="tournament">Artist & Album Tournaments</h1><a class="tournament" href="{{url_for('tournament_stats_page')}}">Library & tag stats ↗</a></div>
+  <div class="page-head"><h1 class="tournament">Artist & Album Tournaments</h1><a class="btn tournament" href="{{url_for('tournament_stats_page')}}">Library & tag stats ↗</a></div>
   <section class="panel dashboard-surface mode-stats-panel tournament"><div class="section-head"><h2 class="tournament">Tournament overview</h2></div>
     <dl class="joined-metrics mode-stats-metrics" data-columns="4">{{figure('Completed brackets',summary.completed)}}{{figure('Decided matches',summary.matches)}}{{figure('Tracks compared',summary.tracks)}}{{figure('Points',summary.points|round(2))}}</dl>
     <form class="local-tournament-filter" method="get"><label for="local-view">Compare tournaments</label><select id="local-view" name="view">

@@ -166,6 +166,12 @@ p {
 .nav-left details {
   position: relative;
 }
+.nav-left > a,
+.nav-left summary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
 .nav-left summary {
   list-style: none;
   color: #ddd;
@@ -238,9 +244,11 @@ p {
   color: #eee;
   background: transparent;
   outline: 0;
-  font-size: 14px;
+  font-size: 16px;
 }
 .nav-search button {
+  min-width: 44px;
+  min-height: 44px;
   padding: 9px 14px;
   border: 0;
   color: #081e0e;
@@ -320,6 +328,7 @@ p {
 }
 .btn {
   display: inline-flex;
+  min-height: 44px;
   align-items: center;
   justify-content: center;
   gap: 9px;
@@ -1730,7 +1739,6 @@ dialog h2 {
   }
   .nav-search input {
     padding: 9px 11px;
-    font-size: 12px;
   }
   .nav-search button {
     padding: 9px 10px;
@@ -5487,6 +5495,15 @@ a.blind:hover {
 }
 #main .page-head :is(h1, h2).tournament {
   color: var(--tournament);
+}
+#main .page-head :is(h1, h2).voting {
+  color: var(--voting);
+}
+#main .page-head :is(h1, h2).shelves {
+  color: var(--shelves);
+}
+#main .page-head :is(h1, h2).vibe {
+  color: var(--vibe);
 }
 #main h1 {
   text-align: center;

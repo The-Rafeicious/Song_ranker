@@ -127,7 +127,7 @@
 
   {% for group in categories %}
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="recognition-category-{{ group.kind }}">
-    <div class="section-head"><h2 class="recognition" id="recognition-category-{{ group.kind }}">{{ group.title }}</h2></div>
+    <div class="section-head"><h2 class="{{ group.kind }}" id="recognition-category-{{ group.kind }}">{{ group.title }}</h2></div>
 
     <div class="mode-stats-comparisons">
       <div class="mode-stats-inset"><h3>Highest accuracy</h3>{{ category_list(group.best,group.kind) }}</div>

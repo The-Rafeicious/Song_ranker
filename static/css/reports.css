@@ -46,6 +46,9 @@
 .mode-stats-panel h3.album {
   color: var(--album);
 }
+.mode-stats-panel h3.tag {
+  color: var(--tag);
+}
 .mode-stats-inset {
   min-width: 0;
   border-width: 1px;
@@ -55,7 +58,7 @@
   background: var(--raised);
   padding: 18px;
 }
-.mode-stats-inset > * + * {
+.mode-stats-inset:where(:not(.stats-pulse, .pulse-chart)) > * + * {
   margin-top: 14px;
 }
 .mode-stats-page dl {
@@ -63,7 +66,8 @@
 }
 .mode-stats-metrics dt,
 .mode-stats-small-metrics dt {
-  font-size: 17px;
+  color: var(--muted);
+  font-size: 16px;
   line-height: 1.4;
   font-weight: 700;
 }
@@ -260,6 +264,8 @@
   font-weight: 800;
   font-size: 16px;
   width: fit-content;
+  min-height: 44px;
+  padding-block: 10px;
 }
 .mode-stats-more[open] > .mode-stats-list {
   margin-top: 20px;
@@ -321,10 +327,6 @@
   .mode-stats-inset {
     padding: 16px;
   }
-  .mode-stats-metrics dd,
-  .mode-stats-primary {
-    font-size: 32px;
-  }
   .mode-stats-row {
     --mode-stats-art-size: 88px;
     gap: 14px;
@@ -380,13 +382,6 @@
   .mode-stats-meta {
     font-size: 16px;
     gap: 5px 10px;
-  }
-  .mode-stats-metrics dd,
-  .mode-stats-primary {
-    font-size: 28px;
-  }
-  .mode-stats-metrics dt {
-    font-size: 16px;
   }
   .mode-stats-inset {
     padding: 14px;
@@ -575,9 +570,9 @@
 }
 .global-stats-page .global-metric > span {
   display: block;
-  font-size: 17px;
-  margin-top: 7px;
-  color: var(--section-color);
+  font-size: 16px;
+  margin-top: 6px;
+  color: var(--muted);
 }
 .global-stats-page .global-metric > :is(small, .report-meta) {
   display: block;
@@ -1500,7 +1495,6 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-weight: 800;
 }
 .voting-stats-page .btn,
-.voting-stats-page .section-head > a,
 .voting-stats-page .section-head > div > a,
 .voting-history-filter a {
   min-height: 44px;
@@ -2194,16 +2188,11 @@ body.site-style-baseline #main .voting-stats-page .versus-row {
   font-size: 16px;
 }
 .shelves-stats-page .btn,
-.shelves-stats-page .shelf-action,
-.shelves-stats-page .section-head > a {
+.shelves-stats-page .shelf-action {
   min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-.shelves-stats-page .mode-stats-more summary {
-  min-height: 44px;
-  padding-block: 10px;
 }
 .shelves-stats-page .shelf-placement-body {
   display: grid;
@@ -2766,27 +2755,18 @@ body[data-page="vibe_stats"] {
 }
 /* V4.1.2 reporting visuals; exact figures and original semantic mode colours. */
 body.site-style-baseline #main .stats-pulse {
-  --section-color: var(--pulse-accent, var(--standard));
   --surface-accent: var(--section-color);
   min-width: 0;
   display: grid;
   gap: 20px;
 }
 body.site-style-baseline #main .pulse-head {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
-  align-items: center;
-  gap: 12px;
+  margin: 0;
 }
 body.site-style-baseline #main .pulse-head h2 {
-  grid-column: 2;
-  margin: 0;
-  font-size: 30px;
   color: var(--section-color);
 }
 body.site-style-baseline #main .pulse-head > span {
-  grid-column: 3;
-  justify-self: end;
   color: var(--muted);
   font-size: 16px;
 }
@@ -2795,12 +2775,14 @@ body.site-style-baseline #main .pulse-metrics {
 }
 body.site-style-baseline #main .pulse-metrics b {
   display: block;
-  font-size: 32px;
+  font-size: var(--site-value-size);
   font-weight: 900;
   color: var(--section-color);
 }
 body.site-style-baseline #main .pulse-metrics span {
   display: block;
+  margin-top: 6px;
+  color: var(--muted);
   font-size: 16px;
 }
 body.site-style-baseline #main .pulse-charts {
@@ -2810,13 +2792,6 @@ body.site-style-baseline #main .pulse-charts {
 }
 body.site-style-baseline #main .pulse-charts.pulse-single {
   grid-template-columns: minmax(0, 1fr);
-}
-body.site-style-baseline #main .pulse-chart {
-  min-width: 0;
-  padding: 18px;
-  border: 1px solid var(--line);
-  border-radius: 18px;
-  background: #242424;
 }
 body.site-style-baseline #main .pulse-chart h3 {
   text-align: center;
@@ -3091,16 +3066,6 @@ body.site-style-baseline
   body.site-style-baseline #main .pulse-day > :is(small, .report-meta) {
     display: none;
   }
-  body.site-style-baseline #main .pulse-head h2,
-  body.site-style-baseline #main .pulse-metrics b {
-    font-size: 25px;
-  }
-  body.site-style-baseline #main .pulse-metrics span {
-    font-size: 16px;
-  }
-  body.site-style-baseline #main .pulse-chart {
-    padding: 14px;
-  }
   body.site-style-baseline #main .pulse-bars {
     gap: 4px;
   }
@@ -3168,7 +3133,7 @@ body.site-style-baseline #main .pulse-scale {
 
 /* Shared Elo replay: larger stable lanes, centred song context and a points card. */
 .elo-replay-panel { --section-color:var(--voting); --surface-accent:var(--voting); }
-.elo-replay-controls { display:flex; flex-wrap:wrap; align-items:end; justify-content:center; gap:12px; }
+.elo-replay-controls { margin-top:var(--site-gap); display:flex; flex-wrap:wrap; align-items:end; justify-content:center; gap:12px; }
 .elo-replay-controls .game-select { width:170px; min-width:0; text-align:left; }
 .elo-replay-audio-status { min-height:20px; margin:8px 0 0; text-align:center; color:#aaa; font-size:16px; }
 .elo-replay-clock { display:flex; flex-wrap:wrap; align-items:baseline; justify-content:space-between; gap:8px 18px; margin:20px 0 0; font-variant-numeric:tabular-nums; }
@@ -3307,7 +3272,7 @@ body.site-style-baseline #main .global-stats-page > .stats-pulse { --section-col
 @media(max-width: 600px) { .global-stats-page .global-mode-totals { grid-template-columns: minmax(0, 1fr); } }
 
 /* Tournament overview and podium use the report's shared surfaces and spacing. */
-.ts-report-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 0 0 24px; }
+.ts-report-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; }
 .ts-podium-place h3 { display: flex; justify-content: center; align-items: center; gap: 10px; }
 .ts-place-number {
   display: inline-grid; place-items: center; width: 36px; height: 36px;
