@@ -60,6 +60,32 @@ class SongDetailTests(unittest.TestCase):
         self.assertEqual(len(d['recent']),5)
 
 
+    def test_tournament_filters_include_older_finishes_and_page_without_writes(self):
+        for tid in range(1,9):
+            self.conn.execute("INSERT INTO tournaments(id,size,scope_type,status,champion_id,runner_up_id,completed_at) VALUES(?,8,'global','completed',?,?,?)",
+                              (tid,8 if tid==1 else 7,7 if tid==1 else 8,f'2026-10-{tid:02d}'))
+        before=capture(self.conn)
+        first=profile_tournament_details(self.conn,8,dict(finish='1'))
+        self.assertEqual([r['id'] for r in first['recent']],[1])
+        best=profile_tournament_details(self.conn,8,dict(order='best'))
+        self.assertEqual(best['recent'][0]['finish'],'1st')
+        second=profile_tournament_details(self.conn,8,dict(finish='2',page=2))
+        self.assertEqual((second['results']['total'],len(second['recent'])),(7,2))
+        self.assertTrue(all(r['finish']=='2nd' for r in second['recent']))
+        self.assertEqual(profile_tournament_details(self.conn,8,dict(page='invalid'))['results']['page'],1)
+        self.assertEqual(capture(self.conn),before)
+
+    def test_tag_profile_uses_current_membership_and_tournament_filters(self):
+        self.conn.execute("INSERT INTO genres(id,name) VALUES(99,'Tag cohort')")
+        self.conn.execute("INSERT INTO song_genres VALUES(8,99)")
+        self.conn.execute("INSERT INTO tournaments(id,size,scope_type,status,champion_id) VALUES(99,8,'global','completed',8)")
+        self.conn.commit()
+        with patch.object(services,'DB_NAME',str(self.path)):
+            response=services.app.test_client().get('/api/profile/tags/99/stats?finish=1&order=best')
+            self.assertEqual(response.status_code,200)
+            self.assertEqual(response.json['context']['track_count'],1)
+            self.assertEqual(response.json['tournament']['recent'][0]['song_id'],8)
+
     def test_completed_tournaments_separate_local_results_and_hide_pending(self):
         for tid,scope,status in [(1,'global','completed'),(2,'artist','completed'),(3,'tag','in_progress')]:
             self.conn.execute('INSERT INTO tournaments(id,size,scope_type,status,is_blind,completed_at) VALUES(?,8,?,?,1,?)',(tid,scope,status,'2026-10-31'))

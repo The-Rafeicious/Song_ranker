@@ -55,3 +55,12 @@ available. Voting and Query no longer present a separate first-round Elo source.
 
 - Restore immediate voting in non-blind, blind and all tournament rounds.
   Remove listening countdowns and button progress fills.
+
+## V5.10.6
+
+- Blend profile progress tracks into their panels, simplify history disclosures,
+  and tint Overall mode-balance boxes with their mode colours.
+- Browse all saved tournament finishes on song, artist, album and tag profiles
+  by recent/best finish, placement and page.
+- Start the background mix from the current song or collection, then continue
+  with the existing related-music transitions and page handoff.

@@ -59,9 +59,9 @@ Shared catalogue projections, cross-mode results and Elo history queries.
 | [page](../songranker/catalog.py#L607) | `conn, mode='all', origin='all', number=1, size=50, reader=None` | Return a bounded, filtered page of effective preference history with pagination metadata. |
 | [tournament_appearances](../songranker/catalog.py#L643) | `conn` | Effective first-round evidence per participant, using saved Elo influence. |
 | [profile_selection](../songranker/catalog.py#L665) | `song_ids` | Bind a distinct cohort as one JSON parameter, avoiding SQL variable limits. |
-| [profile_details](../songranker/catalog.py#L672) | `conn, song_ids, kind, entity_id` | Assemble bounded display identities from mode-owned, full-cohort aggregates. |
+| [profile_details](../songranker/catalog.py#L672) | `conn, song_ids, kind, entity_id, tournament_options=None` | Assemble bounded display identities from mode-owned, full-cohort aggregates. |
 | [song_stats](../songranker/catalog.py#L693) | `song_id` | Build mode detail for one existing song in a read-only snapshot. |
-| [collection_stats](../songranker/catalog.py#L706) | `kind, entity_id` | Read all current artist/album tracks once; missing and empty differ. |
+| [collection_stats](../songranker/catalog.py#L706) | `kind, entity_id` | Read a current artist/album/tag cohort once; return bounded mode details. |
 
 ## songranker/developer/catalog_sources.py
 
@@ -552,8 +552,8 @@ Bracket generation, tournament voting/results and detailed Tournament Stats.
 | [local_tournament_stats_page](../songranker/modes/tournament.py#L1188) | `` | Compare artist/album-only brackets without contributing to competition. |
 | [build_local_tournament_stats](../songranker/modes/tournament.py#L1225) | `conn, scope='all', scope_id=None, page=1` | Raw local results: only finished brackets reveal participant comparisons. Scope filters apply before every aggregate; archived unfinished Blind identities stay hidden. Counts are observed results, not a new cross-library rating. |
 | [build_local_tournament_stats.rank](../songranker/modes/tournament.py#L1269) | `rows` | Order observed titles, then win rate and match evidence; names break ties. |
-| [profile_tournament_details](../songranker/modes/tournament.py#L1312) | `conn, song_ids` | Count distinct song/bracket entries and preserve each participant's exit. |
-| [archive_entry_results](../songranker/modes/tournament.py#L1345) | `conn, bracket, selected=None` | Return each saved entrant's finish and current-policy recorded points. |
+| [profile_tournament_details](../songranker/modes/tournament.py#L1312) | `conn, song_ids, options=None` | Aggregate all entries, then filter/order a bounded page of saved finishes. |
+| [archive_entry_results](../songranker/modes/tournament.py#L1367) | `conn, bracket, selected=None` | Return each saved entrant's finish and current-policy recorded points. |
 
 ## songranker/modes/tournament_scoring.py
 
@@ -1705,14 +1705,16 @@ Per-song mode detail reads use complete, effective, public evidence only.
 | [SongDetailTests.test_api_full_detail_is_read_only_and_does_not_hydrate_collection](../tests/test_song_details.py#L19) | `self` | Verify api full detail is read only and does not hydrate collection. |
 | [SongDetailTests.test_voting_mid_table_uses_all_votes_corrections_and_valid_snapshot_counts](../tests/test_song_details.py#L36) | `self` | Verify voting mid table uses all votes corrections and valid snapshot counts. |
 | [SongDetailTests.test_trivia_full_history_field_eligibility_and_disjoint_windows](../tests/test_song_details.py#L49) | `self` | Verify trivia full history field eligibility and disjoint windows. |
-| [SongDetailTests.test_completed_tournaments_separate_local_results_and_hide_pending](../tests/test_song_details.py#L63) | `self` | Verify completed tournaments separate local results and hide pending. |
-| [SongDetailTests.test_exit_opponent_and_round_survive_podium_playoff_and_hydrate_in_api](../tests/test_song_details.py#L75) | `self` | Verify exit opponent and round survive podium playoff and hydrate in api. |
-| [SongDetailTests.test_shelves_grades_full_round_and_excluded_album_hides_whole_result](../tests/test_song_details.py#L99) | `self` | Verify shelves grades full round and excluded album hides whole result. |
-| [SongDetailTests.cohort](../tests/test_song_details.py#L116) | `self` | Create matching artist/album cohorts with two distinct shared tracks. |
-| [SongDetailTests.test_collection_votes_and_guesser_distinguish_events_and_appearances](../tests/test_song_details.py#L124) | `self` | Verify collection votes and guesser distinguish events and appearances. |
-| [SongDetailTests.test_collection_recall_pools_fields_and_uses_global_disjoint_windows](../tests/test_song_details.py#L138) | `self` | Verify collection recall pools fields and uses global disjoint windows. |
-| [SongDetailTests.test_collection_tournament_entries_and_shelves_items_keep_own_song](../tests/test_song_details.py#L151) | `self` | Verify collection tournament entries and shelves items keep own song. |
-| [SongDetailTests.test_collection_api_resolves_cohort_empty_missing_and_large_catalogues](../tests/test_song_details.py#L173) | `self` | Verify collection api resolves cohort empty missing and large catalogues. |
+| [SongDetailTests.test_tournament_filters_include_older_finishes_and_page_without_writes](../tests/test_song_details.py#L63) | `self` | Verify tournament filters include older finishes and page without writes. |
+| [SongDetailTests.test_tag_profile_uses_current_membership_and_tournament_filters](../tests/test_song_details.py#L78) | `self` | Verify tag profile uses current membership and tournament filters. |
+| [SongDetailTests.test_completed_tournaments_separate_local_results_and_hide_pending](../tests/test_song_details.py#L89) | `self` | Verify completed tournaments separate local results and hide pending. |
+| [SongDetailTests.test_exit_opponent_and_round_survive_podium_playoff_and_hydrate_in_api](../tests/test_song_details.py#L101) | `self` | Verify exit opponent and round survive podium playoff and hydrate in api. |
+| [SongDetailTests.test_shelves_grades_full_round_and_excluded_album_hides_whole_result](../tests/test_song_details.py#L125) | `self` | Verify shelves grades full round and excluded album hides whole result. |
+| [SongDetailTests.cohort](../tests/test_song_details.py#L142) | `self` | Create matching artist/album cohorts with two distinct shared tracks. |
+| [SongDetailTests.test_collection_votes_and_guesser_distinguish_events_and_appearances](../tests/test_song_details.py#L150) | `self` | Verify collection votes and guesser distinguish events and appearances. |
+| [SongDetailTests.test_collection_recall_pools_fields_and_uses_global_disjoint_windows](../tests/test_song_details.py#L164) | `self` | Verify collection recall pools fields and uses global disjoint windows. |
+| [SongDetailTests.test_collection_tournament_entries_and_shelves_items_keep_own_song](../tests/test_song_details.py#L177) | `self` | Verify collection tournament entries and shelves items keep own song. |
+| [SongDetailTests.test_collection_api_resolves_cohort_empty_missing_and_large_catalogues](../tests/test_song_details.py#L199) | `self` | Verify collection api resolves cohort empty missing and large catalogues. |
 
 ## tests/test_source_reads.py
 
@@ -2153,4 +2155,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1463 Python definitions**.
+Total: **1465 Python definitions**.

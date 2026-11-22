@@ -59,7 +59,7 @@ window.Overall = (() => {
       modes
         .map(
           (c) =>
-            `<div data-overall-mode="${esc(c.key)}" style="--section-color:var(--${tones[c.key] || "overall"})"><h3 class="overall-mode-title">${esc(c.label)}</h3><dl class="overall-mode-facts">${[
+            `<div class="profile-inset" data-overall-mode="${esc(c.key)}" style="--section-color:var(--${tones[c.key] || "overall"})"><h3 class="overall-mode-title">${esc(c.label)}</h3><dl class="overall-mode-facts">${[
               ...(collection ? [[`${c.applicable_tracks || 0} / ${row.track_count || 0}`, "Eligible tracks"]] : []),
               [pct(c.adjusted), "Adjusted score"],
               [pct(c.allocated), "Effective weight"],

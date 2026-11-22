@@ -2,7 +2,7 @@
 
 from collections import defaultdict
 from songranker.services import app, get_db_connection
-from flask import jsonify
+from flask import jsonify, request
 from songranker.modes import challenges
 from math import ceil
 from songranker.modes.tournament_scoring import scored_match, scored_matches
@@ -669,7 +669,7 @@ def profile_selection(song_ids):
     return ids,json.dumps(sorted(ids))
 
 
-def profile_details(conn, song_ids, kind, entity_id):
+def profile_details(conn, song_ids, kind, entity_id, tournament_options=None):
     """Assemble bounded display identities from mode-owned, full-cohort aggregates."""
     from songranker.modes.voting import profile_voting_details
     from songranker.modes.trivia import profile_trivia_details
@@ -678,7 +678,7 @@ def profile_details(conn, song_ids, kind, entity_id):
     ids,_ = profile_selection(song_ids)
     data = dict(context=dict(kind=kind,id=entity_id,track_count=len(ids)),
                 voting=profile_voting_details(conn,ids),trivia=profile_trivia_details(conn,ids),
-                tournament=profile_tournament_details(conn,ids),shelves=profile_shelves_details(conn,ids))
+                tournament=profile_tournament_details(conn,ids,tournament_options),shelves=profile_shelves_details(conn,ids))
     if kind=='songs':
         data['song_id']=entity_id
     display_ids = {r['id'] for r in data['voting']['opponents_list']}
@@ -697,25 +697,26 @@ def song_stats(song_id):
         conn.execute('BEGIN')
         if not conn.execute('SELECT 1 FROM songs WHERE id=?',(song_id,)).fetchone():
             return jsonify(message='Song not found.'),404
-        return jsonify(profile_details(conn,{song_id},'songs',song_id))
+        return jsonify(profile_details(conn,{song_id},'songs',song_id,request.args))
     finally:
         conn.close()
 
 
 @app.route('/api/profile/<kind>/<int:entity_id>/stats')
 def collection_stats(kind, entity_id):
-    """Read all current artist/album tracks once; missing and empty differ."""
-    if kind not in ('artists','albums'):
+    """Read a current artist/album/tag cohort once; return bounded mode details."""
+    if kind not in ('artists','albums','tags'):
         return jsonify(message='Profile type not found.'),404
     conn=get_db_connection()
     try:
         conn.execute('BEGIN')
-        entity = conn.execute(f'SELECT * FROM {kind} WHERE id=?',(entity_id,)).fetchone()
+        table = 'genres' if kind == 'tags' else kind
+        entity = conn.execute(f'SELECT * FROM {table} WHERE id=?',(entity_id,)).fetchone()
         if not entity or (kind == 'albums' and not proper_album(dict(entity))):
             return jsonify(message='Profile not found.'),404
         query = ('SELECT DISTINCT s.id FROM songs s JOIN song_artists a ON a.song_id=s.id WHERE a.artist_id=?'
-                 if kind=='artists' else 'SELECT id FROM songs WHERE album_id=?')
+                 if kind=='artists' else 'SELECT DISTINCT song_id FROM song_genres WHERE genre_id=?' if kind=='tags' else 'SELECT id FROM songs WHERE album_id=?')
         ids={r[0] for r in conn.execute(query,(entity_id,))}
-        return jsonify(profile_details(conn,ids,kind,entity_id))
+        return jsonify(profile_details(conn,ids,kind,entity_id,request.args))
     finally:
         conn.close()

@@ -72,7 +72,7 @@ window.ProfileUI = (() => {
   function stats(tracks, type = "songs", identity = null) {
     tracks = [...new Map(tracks.map((s) => [s.id, s])).values()];
     const record = (tone, title, body, links) => panel(tone, title, body +
-      ((type === "songs" && tracks.length === 1 || ["artists","albums"].includes(type) && identity) ? `<div class="profile-song-details" data-song-details="${({standard:"voting",recognition:"trivia",tournament:"tournament",shelves:"shelves"})[tone]}" aria-busy="true"><p class="muted">Loading mode details…</p></div>` : ""), links);
+      ((type === "songs" && tracks.length === 1 || ["artists","albums","tags"].includes(type) && identity) ? `<div class="profile-song-details" data-song-details="${({standard:"voting",recognition:"trivia",tournament:"tournament",shelves:"shelves"})[tone]}" aria-busy="true"><p class="muted">Loading mode details…</p></div>` : ""), links);
     const sums = sumFields(tracks, [
       "attempts",
       "correct",
@@ -129,7 +129,7 @@ window.ProfileUI = (() => {
         )}${rate("Win rate", votes[prefix + "wins"], votes[prefix + "matches"])}${standing}</div>`;
       })
       .join("");
-    const outcomes = `<div class="mini-stats joined-metrics profile-vote-totals" data-columns="3">${count(number(votes.wins), "Win weight").replace("<div>", '<div class="vote-win">')}${count(number(votes.losses), "Loss weight").replace("<div>", '<div class="vote-loss">')}${count(votes.raw?.matches ?? votes.matches, type === "songs" ? "Matches" : "Track appearances")}</div>`;
+    const outcomes = `<div class="mini-stats joined-metrics profile-vote-totals" data-columns="3">${count(number(votes.wins), "Win weight").replace("<div>", '<div class="vote-win">')}${count(number(votes.losses), "Loss weight").replace("<div>", '<div class="vote-loss">')}${count(votes.raw?.matches ?? votes.matches, type === "songs" ? "Matches" : "Track votes")}</div>`;
     const voting = record(
       "standard",
       "Voting Record",
@@ -244,6 +244,17 @@ window.ProfileUI = (() => {
     if (!track) return `<span class="muted">Track unavailable</span>${label ? `<span>${esc(label)}</span>` : ""}`;
     return `<div class="profile-opponent"><a href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img data-cover src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span class="profile-detail-art" aria-hidden="true">♫</span>'}</a><div class="profile-opponent-copy"><a class="song" href="/song/${track.id}" title="${esc(track.title)}">${esc(track.title)}</a><div class="metadata">${(track.artists || []).map(a=>`<a class="artist" href="${U.urlFor("artists",a)}">${esc(a.name)}</a>`).join(", ")}${track.album ? ` · <a class="album" href="${U.urlFor("albums",{id:track.album_id,name:track.album,title:track.album})}">${esc(track.album)}</a>` : ""}</div></div></div>${label ? `<strong>${esc(label)}</strong>` : ""}`;
   }
+  function tournamentHistory(data, b, source) {
+    const state=b.results || {finish:"all",order:"recent",page:1,pages:1,total:b.recent.length};
+    const options=(items,value)=>items.map(([key,label])=>`<option value="${key}" ${String(value)===key?"selected":""}>${label}</option>`).join("");
+    return `<details class="profile-song-disclosure"><summary>Tournament finishes</summary><div data-tournament-results aria-live="polite">
+      <div class="profile-result-controls">
+        <label>Order<select data-finish-order>${options([["recent","Most recent"],["best","Best finish"]],state.order)}</select></label>
+        <label>Placement<select data-finish-place>${options([["all","All finishes"],["1","First"],["2","Second"],["3","Third"],["4","Fourth"],["other","Below fourth"]],state.finish)}</select></label>
+      </div><ul class="profile-result-list">${b.recent.map(r=>`<li><span><a class="tournament" href="/tournament/${r.id}/bracket">${esc(r.finish)} · ${r.size}-track bracket ↗</a><span class="report-meta"><span class="${r.mode}">${r.mode === "blind" ? "Blind" : "Non-blind"}</span> · ${esc(({global:"Library",tag:"Tag",artist:"Artist",album:"Album"})[r.scope] || "Other scope")} · ${detailDate(r.date)}</span></span><strong>${r.wins}W · ${r.losses}L</strong>${source(r)}${r.exit ? `<div class="profile-result-context"><p>${r.finish.startsWith("Out in ") ? "Lost to" : `Lost in ${esc(r.exit.round)} to`}</p>${detailTrack(data.songs[r.exit.opponent_id])}</div>` : ""}</li>`).join("") || '<li class="muted">No matching finishes.</li>'}</ul>
+      <div class="profile-result-paging"><button class="btn" data-finish-page="${state.page-1}" ${state.page<=1?"disabled":""}>Previous</button><span>${state.total} results · Page ${state.page} / ${state.pages}</span><button class="btn" data-finish-page="${state.page+1}" ${state.page>=state.pages?"disabled":""}>Next</button></div>
+    </div></details>`;
+  }
   function songDetailBodies(data) {
     const {voting:v, trivia:t, tournament:b, shelves:s} = data;
     const collection = data.context && data.context.kind !== "songs";
@@ -259,16 +270,16 @@ window.ProfileUI = (() => {
       trivia: metrics([[t.rounds,"Saved rounds"],[t.perfect,"Perfect recall rounds"],[t.missed,"Missed all fields"]]) +
         `<div class="profile-detail-grid">${windowRate("Latest",t.latest)}${windowRate("Previous",t.previous)}</div>` +
         (t.rounds > t.graded ? metrics([[t.rounds-t.graded,"Ungraded rounds"]]) : "") +
-        detailList("Recall timing & recent rounds",[
+        detailList("Recall history",[
           ...t.timing.map(r=>`<li><span>${esc(({title:"Song",artist:"Artist",album:"Album"})[r.key])} · correct-answer time<span class="report-meta">${r.samples} timed answers</span></span><strong>${r.mean == null ? "—" : detailNumber(r.mean)+"s average"}<span class="report-meta">${r.fastest == null ? "No timing saved" : detailNumber(r.fastest)+"s fastest"}</span></strong></li>`),
           ...t.recent.map(r=>`<li><span>${detailDate(r.date)}<span class="report-meta">${Object.entries(r.fields).map(([key,value])=>esc(({title:"Song",artist:"Artist",album:"Album"})[key])+": "+(value==null?"Unavailable":value?"Correct":"Missed")).join(" · ")}</span></span><strong>${r.correct == null ? "Unavailable" : `${r.correct} / ${r.available} fields`}</strong>${source(r)}</li>`)
         ]),
       tournament: metrics(collection ? [[b.completed,"Track entries"],[b.brackets,"Different brackets"],[b.first_exits,"First-round exits"]] : [[b.completed,"Completed appearances"],[b.first_exits,"First-round exits"]]) +
         `<div class="profile-detail-grid">${b.groups.map(r=>`<div class="profile-inset">${rate(r.key === "local" ? "Artist / album match wins" : "Library / tag match wins",r.wins,r.wins+r.losses)}${metrics([[r.entries, "Completed entries"]])}</div>`).join("")}</div>` +
-        detailList("Recent tournament finishes",b.recent.map(r=>`<li><span><a class="tournament" href="/tournament/${r.id}/bracket">${esc(r.finish)} · ${r.size}-track bracket ↗</a><span class="report-meta"><span class="${r.mode}">${r.mode === "blind" ? "Blind" : "Non-blind"}</span> · ${esc(({global:"Library",tag:"Tag",artist:"Artist",album:"Album"})[r.scope] || "Other scope")} · ${detailDate(r.date)}</span></span><strong>${r.wins}W · ${r.losses}L</strong>${source(r)}${r.exit ? `<div class="profile-result-context"><p>${r.finish.startsWith("Out in ") ? "Lost to" : `Lost in ${esc(r.exit.round)} to`}</p>${detailTrack(data.songs[r.exit.opponent_id])}</div>` : ""}</li>`)),
+        tournamentHistory(data,b,source),
       shelves: metrics([[s.perfect,"Perfect track results"],[s.wrong_album,"Wrong-album placements"],[s.graded,"Graded track results"]]) +
         (collection || s.unknown ? metrics([...(collection ? [[s.sessions,"Completed rounds"]] : []),...(s.unknown ? [[s.unknown,"Ungraded rounds"]] : [])]) : "") +
-        detailList("Recent track placements",s.recent.map(r=>`<li><span>${detailDate(r.date)}<span class="report-meta">${r.grade ? (r.grade.album_correct ? "Correct album" : "Wrong album") + ` · ${r.grade.order_right} / ${r.grade.order_pairs} order comparisons` : "Saved round cannot be graded"}</span></span><strong>${r.grade ? `${detailNumber(r.grade.points)} / ${detailNumber(r.grade.available)} pts` : "Unavailable"}</strong>${source(r)}</li>`))
+        detailList("Shelves history",s.recent.map(r=>`<li><span>${detailDate(r.date)}<span class="report-meta">${r.grade ? (r.grade.album_correct ? "Correct album" : "Wrong album") + ` · ${r.grade.order_right} / ${r.grade.order_pairs} order comparisons` : "Saved round cannot be graded"}</span></span><strong>${r.grade ? `${detailNumber(r.grade.points)} / ${detailNumber(r.grade.available)} pts` : "Unavailable"}</strong>${source(r)}</li>`))
     };
   }
   async function loadProfileDetails(kind, entityId, container = document) {
@@ -287,6 +298,9 @@ window.ProfileUI = (() => {
       if (data.context ? data.context.kind !== kind || data.context.id !== entityId : kind !== "songs" || data.song_id !== entityId) throw Error("Unexpected profile details.");
       const bodies = songDetailBodies(data);
       slots.forEach(node => { node.innerHTML=bodies[node.dataset.songDetails] || ""; });
+      const slot=slots.find(node=>node.dataset.songDetails==="tournament");
+      if(slot) bindTournamentResults(slot,kind,entityId);
+
     } catch (error) {
       if (songRequest !== request || !slots[0].isConnected) return;
       slots.forEach((node,i) => { node.innerHTML=i ? "" : '<p class="muted" role="alert">Additional mode details could not load. Your summary and player are still available.</p><button class="btn" data-song-details-retry>Retry details</button>'; });
@@ -295,6 +309,46 @@ window.ProfileUI = (() => {
       clearTimeout(timeout);
       if (songRequest === request) slots.forEach(node=>node.removeAttribute("aria-busy"));
     }
+  }
+  function bindTournamentResults(slot,kind,id) {
+    let controller;
+    const refresh=async(page=1,focusSelector)=>{
+      controller?.abort();controller=new AbortController();
+      const request=controller;
+      const root=slot.querySelector("[data-tournament-results]");
+      const query=new URLSearchParams({order:root.querySelector("[data-finish-order]").value,finish:root.querySelector("[data-finish-place]").value,page});
+      const controls=[...root.querySelectorAll("button,select")].map(el=>[el,el.disabled]);
+      const timeout=setTimeout(()=>request.abort(),15000);
+      root.setAttribute("aria-busy","true");
+      root.querySelectorAll("button,select").forEach(el=>el.disabled=true);
+      try {
+        const path=kind==="songs"?`/api/song/${id}/stats`:`/api/profile/${kind}/${id}/stats`;
+        const response=await fetch(path+"?"+query,{signal:request.signal,cache:"no-store"});
+        if(!response.ok)throw Error("Results unavailable");
+        const data=await response.json();
+        if(request!==controller || !slot.isConnected)return;
+        const source=row=>kind!=="songs"?`<div class="profile-result-context"><p>Collection track</p>${detailTrack(data.songs[row.song_id])}</div>`:"";
+        const holder=document.createElement("div");
+        holder.innerHTML=tournamentHistory(data,data.tournament,source);
+        const replacement=holder.querySelector("[data-tournament-results]");
+        root.replaceWith(replacement);
+        if(focusSelector)replacement.querySelector(focusSelector)?.focus({preventScroll:true});
+      } catch(error) {
+        if(request===controller && root.isConnected){
+          root.querySelector("[data-results-error]")?.remove();
+          root.insertAdjacentHTML("beforeend",'<p role="alert" data-results-error>Results could not load. Try the filters again.</p>');
+        }
+      } finally {
+        clearTimeout(timeout);
+        if(request===controller && root.isConnected){
+          root.removeAttribute("aria-busy");
+          controls.forEach(([el,disabled])=>el.disabled=disabled);
+        }
+      }
+    };
+    slot.addEventListener("change",event=>{if(event.target.matches("[data-finish-order],[data-finish-place]"))refresh(1,event.target.matches("[data-finish-order]")?"[data-finish-order]":"[data-finish-place]");});
+    slot.addEventListener("click",event=>{const button=event.target.closest("[data-finish-page]");if(button&&!button.disabled)refresh(button.dataset.finishPage,button.textContent==="Next"?"[data-finish-page]:last-child":"[data-finish-page]:first-child");});
+    window.addEventListener("pagehide",()=>controller?.abort(),{once:true});
   }
   window.addEventListener("pagehide",()=>{songRequest?.abort();songRequest=null;});
   return {

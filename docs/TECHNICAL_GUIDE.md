@@ -1275,3 +1275,15 @@ read-only totals excluding that and later rounds. The value is absent until
 completion. It uses the same correct/available-field denominator as Trivia Stats,
 including legacy deltas and album N/A. The cover overlay does not alter points,
 field grading, timers or streaks.
+
+### Profile finish browsing
+
+The read-only song/profile stats endpoints accept tournament `order=recent|best`,
+`finish=all|1|2|3|4|other` and `page` parameters. Aggregates still cover all
+completed entries; filtering precedes five-entry paging and bounded identity
+hydration. `/api/profile/<kind>/<id>/stats` also accepts `tags`, resolving the
+current song-tag membership. Unknown placements remain unavailable.
+
+The profile hero seeds the existing background preview manager from a playable
+song in its current cohort. This resets the transition anchor, resumes a paused
+mix on explicit activation, and retains normal related selection and page handoff.

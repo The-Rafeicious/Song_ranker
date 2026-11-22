@@ -760,7 +760,7 @@
     songId = track.id;
     const rank = songs.filter((s) => s.elo_score > track.elo_score).length + 1,
       album = byId(albums, track.album_id);
-    main.innerHTML = `<section class="panel song-profile profile-song dashboard-surface"><div class="profile-media">${mediaButton(track, "song-audio", false, true)}</div><div class="profile-copy"><h1 class="profile-page-title" title="${esc(track.title)}">${esc(track.title)}</h1><div class="metadata">${metadata(properAlbum(album) ? track : { ...track, album: "" })}</div><div class="tags">${tagLinks(track)}</div></div></section>${window.ProfileUI.keyStats(
+    main.innerHTML = `<section class="panel song-profile profile-song dashboard-surface"><div class="profile-media">${mediaButton(track, "song-audio", false, true)}</div><div class="profile-copy"><h1 class="profile-page-title" title="${esc(track.title)}">${esc(track.title)}</h1><div class="metadata">${metadata(properAlbum(album) ? track : { ...track, album: "" })}</div><div class="tags">${tagLinks(track)}</div><button class="btn song profile-mix" data-profile-mix>♫ Start background mix</button></div></section>${window.ProfileUI.keyStats(
       [
         ["Current Elo", Math.round(track.elo_score), "standard"],
         ["Global rank", "#" + rank, "standard"],
@@ -780,6 +780,7 @@
     )}<div class="song-sections">${window.ProfileUI.stats([track])}${window.EloReplay?.panel(songId) || ""}<section class="panel profile-mode-panel dashboard-surface voting" id="history" style="--section-color:var(--voting)"><div class="section-head"><h2 class="voting">Recent Matches</h2><a class="voting" href="/history">History ↗</a></div><div class="profile-history-body"><div class="pill-nav" aria-label="Match filter"><button class="pill" data-history="all">All</button><button class="pill" data-history="blind">Blind</button><button class="pill" data-history="standard">Non-blind</button></div><div id="song-history"></div></div></section></div>`;
     renderSongHistory();
     window.ProfileUI.loadSongDetails(songId, main);
+    bindProfileMix([track]);
     window.EloReplay?.mountAll(main);
     attachPlayers();
   }
@@ -905,6 +906,16 @@
       if (t < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
+  }
+  function bindProfileMix(tracks) {
+    const button=$("[data-profile-mix]");
+    if(!button)return;
+    button.disabled=!tracks.some(track=>track.audio_url);
+    button.addEventListener("click",async()=>{
+      button.disabled=true;
+      const started=await window.PreviewPlayback?.startBackground(tracks.map(track=>track.id));
+      if(button.isConnected){button.disabled=false;if(!started)toast("No playable previews available for this page");}
+    });
   }
   async function vote(i) {
     if (revealed || voting || !roundToken) return;
@@ -2222,7 +2233,7 @@
         : "";
     document.body.classList.add("profile-page");
     main.classList.remove("narrow");
-    main.innerHTML = `<section class="panel song-profile profile-${kind} dashboard-surface"><div class="profile-media"><div class="album-cover-player"><button class="cover-button" data-audio="album-audio" data-album-play aria-label="Play ${queueLabel} previews" aria-pressed="false" ${queue.length ? "" : "disabled"}>${artwork(item, type)}<span class="play-overlay" aria-hidden="true">▶</span></button>${queue.length ? `<button class="album-cover-step previous" data-album-step="-1" aria-label="Previous ${queueLabel} preview" title="Previous ${queueLabel} preview">‹</button><button class="album-cover-step next" data-album-step="1" aria-label="Next ${queueLabel} preview" title="Next ${queueLabel} preview">›</button>` : ""}<div class="album-player-info" id="album-player-info" role="status">${window.ProfileUI.queueInfo(queue)}</div></div><audio id="album-audio" preload="none"></audio></div><div class="profile-copy"><h1 class="profile-page-title" title="${esc(item.name)}">${isTag ? "# " : ""}${esc(item.name)}</h1><div class="metadata">${isAlbum ? artistLinks : `${tracks.length} tracks ${isTag ? `<span class="separator muted">·</span> ${artistIds.length} artists ` : ""} <span class="separator muted">·</span> ${properAlbums.length} albums`}</div>${isTag ? `<p class="tag-description">${esc(item.description || "")}</p>` : `<div class="tags profile-tag-list">${window.ProfileUI.tags(tracks, tags)}</div>`}<div class="profile-facts">${isAlbum && item.release_date ? `<span>Released <b>${esc(item.release_date.slice(0, 10))}</b></span>` : ""}<span>Highest track peak <b>${tracks.length ? Math.round(Math.max(...tracks.map((s) => s.highest_elo || s.elo_score))) : "—"} Elo</b></span></div></div></section>${window.ProfileUI.keyStats(
+    main.innerHTML = `<section class="panel song-profile profile-${kind} dashboard-surface"><div class="profile-media"><div class="album-cover-player"><button class="cover-button" data-audio="album-audio" data-album-play aria-label="Play ${queueLabel} previews" aria-pressed="false" ${queue.length ? "" : "disabled"}>${artwork(item, type)}<span class="play-overlay" aria-hidden="true">▶</span></button>${queue.length ? `<button class="album-cover-step previous" data-album-step="-1" aria-label="Previous ${queueLabel} preview" title="Previous ${queueLabel} preview">‹</button><button class="album-cover-step next" data-album-step="1" aria-label="Next ${queueLabel} preview" title="Next ${queueLabel} preview">›</button>` : ""}<div class="album-player-info" id="album-player-info" role="status">${window.ProfileUI.queueInfo(queue)}</div></div><audio id="album-audio" preload="none"></audio></div><div class="profile-copy"><h1 class="profile-page-title" title="${esc(item.name)}">${isTag ? "# " : ""}${esc(item.name)}</h1><div class="metadata">${isAlbum ? artistLinks : `${tracks.length} tracks ${isTag ? `<span class="separator muted">·</span> ${artistIds.length} artists ` : ""} <span class="separator muted">·</span> ${properAlbums.length} albums`}</div>${isTag ? `<p class="tag-description">${esc(item.description || "")}</p>` : `<div class="tags profile-tag-list">${window.ProfileUI.tags(tracks, tags)}</div>`}<div class="profile-facts">${isAlbum && item.release_date ? `<span>Released <b>${esc(item.release_date.slice(0, 10))}</b></span>` : ""}<span>Highest track peak <b>${tracks.length ? Math.round(Math.max(...tracks.map((s) => s.highest_elo || s.elo_score))) : "—"} Elo</b></span></div><button class="btn ${kind} profile-mix" data-profile-mix>♫ Start background mix</button></div></section>${window.ProfileUI.keyStats(
       [
         ["Impact", window.SongRankerUI.impactText(item.impact_score), kind],
         [
@@ -2241,7 +2252,8 @@
       ],
     )}<div class="profile-highlights">${highlight(tracks[0], "Highest-ranked track")}${tracks.length > 1 ? highlight(tracks.at(-1), "Track to rediscover") : ""}</div><div class="song-sections">${window.ProfileUI.stats(tracks, type, item)}${!isAlbum && properAlbums.length ? `<section class="panel profile-mode-panel dashboard-surface album" style="--section-color:var(--album)"><div class="section-head"><h2 class="album">Albums</h2></div><div class="profile-albums" id="profile-albums"></div><div class="profile-list-actions" id="profile-albums-more"></div></section>` : ""}<section class="panel profile-mode-panel dashboard-surface ${kind}" style="--section-color:var(--${kind})"><div class="section-head"><h2 class="${kind}">${isAlbum ? "Album Tracks" : isTag ? "Tagged Tracks" : "Ranked Discography"}</h2>${isAlbum ? '<div class="pill-nav" aria-label="Track order"><button class="pill active" data-profile-sort="rank" aria-pressed="true">Ranked</button><button class="pill" data-profile-sort="track" aria-pressed="false">Track order</button></div>' : ""}</div><div id="profile-tracks"></div><div class="profile-list-actions" id="profile-tracks-more"></div></section></div>`;
     window.ProfileUI.fitTags();
-    if (["artists","albums"].includes(type)) window.ProfileUI.loadProfileDetails(type,item.id,main);
+    bindProfileMix(tracks);
+    if (["artists","albums","tags"].includes(type)) window.ProfileUI.loadProfileDetails(type,item.id,main);
     renderProfileAlbums();
     renderProfileTracks();
     attachPlayers();
