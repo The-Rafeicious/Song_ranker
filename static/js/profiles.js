@@ -129,7 +129,7 @@ window.ProfileUI = (() => {
         )}${rate("Win rate", votes[prefix + "wins"], votes[prefix + "matches"])}${standing}</div>`;
       })
       .join("");
-    const outcomes = `<div class="mini-stats joined-metrics profile-vote-totals" data-columns="3">${count(number(votes.wins), "Win weight").replace("<div>", '<div class="vote-win">')}${count(number(votes.losses), "Loss weight").replace("<div>", '<div class="vote-loss">')}${count(votes.raw?.matches ?? votes.matches, type === "songs" ? "Matches" : "Track appearances")}</div>`;
+    const outcomes = `<div class="mini-stats joined-metrics profile-vote-totals" data-columns="3">${count(number(votes.wins), "Win weight").replace("<div>", '<div class="vote-win">')}${count(number(votes.losses), "Loss weight").replace("<div>", '<div class="vote-loss">')}${count(votes.raw?.matches ?? votes.matches, type === "songs" ? "Matches" : "Track votes")}</div>`;
     const voting = record(
       "standard",
       "Voting Record",

@@ -282,6 +282,14 @@ body.profile-page #main .profile-detail-grid {
 }
 body.profile-page #main .profile-inset {
   min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--surface-border);
+  border-radius: var(--site-inner-radius);
+}
+body.profile-page #main .profile-inset .joined-metrics {
+  background: transparent;
+  border: 0;
+  box-shadow: none;
 }
 body.profile-page #main .profile-inset .profile-rate {
   margin-top: 6px;
@@ -557,7 +565,11 @@ body.profile-page #main .profile-result-context { grid-column: 1 / -1; margin: 0
 body.profile-page #main .profile-mix { margin-top: 18px; }
 body.profile-page #main .profile-result-controls { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
 body.profile-page #main .profile-result-controls label { display:grid; gap:8px; flex:1 1 180px; color:var(--tournament); font-weight:700; min-width:0; }
-body.profile-page #main .profile-result-controls select { width:100%; min-height:44px; font-size:16px; }
+body.profile-page #main .profile-result-controls select {
+  width:100%; min-height:44px; font-size:16px; padding:10px 12px;
+  border:1px solid color-mix(in srgb,var(--tournament) 28%,#383838);
+  border-radius:12px; background:#242424; color:var(--tournament); color-scheme:dark;
+}
 body.profile-page #main .profile-result-paging { display:flex; justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap; margin-top:12px; }
 body.profile-page #main .profile-result-paging span { color:var(--muted); font-size:16px; }
 body.profile-page #main .overall-progress { border:0; background:color-mix(in srgb,var(--section-color,var(--overall)) 8%,#101010); }
