@@ -205,6 +205,14 @@ body.site-style-baseline
   text-align: right;
   min-width: 0;
 }
+/* Section actions share the same hit area on reports, shelves and profiles. */
+body.site-style-baseline #main :is(.section-head, .subsection-head) > a,
+body.site-style-baseline #main :is(.profile-stat-links, .shelf-controls) > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  font-size: 16px;
+}
 /* B1 applies to text actions. Icon/cover/drag/scope controls keep their shape. */
 body.site-style-baseline
   #main
@@ -286,6 +294,11 @@ body.site-style-baseline #main .metadata a {
   white-space: nowrap;
 }
 @media (max-width: 760px) {
+  :root {
+    --site-title-size: 26px;
+    --site-value-size: 32px;
+    --site-padding: 20px;
+  }
   body.site-style-baseline
     #main
     :is(
@@ -295,9 +308,6 @@ body.site-style-baseline #main .metadata a {
       .song-profile .profile-page-title
     ) {
     font-size: 36px;
-  }
-  body.site-style-baseline #main :is(.section-head > h2, .game-card h2) {
-    font-size: 26px;
   }
   body.site-style-baseline #main .leaderboard .leader-row {
     --ranking-art-size: 88px;
@@ -314,19 +324,6 @@ body.site-style-baseline #main .metadata a {
   }
   body.site-style-baseline #main .leaderboard .leader-score {
     font-size: 32px;
-  }
-  body.site-style-baseline
-    #main
-    :is(
-      .panel,
-      .game-card,
-      .mode-card,
-      .result-card,
-      .profile-highlight,
-      .spotlight
-    ),
-  body.site-style-baseline #main .global-stats-page > .panel {
-    padding: 20px;
   }
   body.site-style-baseline #main :is(.section-head, .subsection-head) {
     grid-template-columns: minmax(0, 1fr);
@@ -350,6 +347,11 @@ body.site-style-baseline #main .metadata a {
   }
 }
 @media (max-width: 520px) {
+  :root {
+    --site-title-size: 24px;
+    --site-value-size: 28px;
+    --site-padding: 18px;
+  }
   body.site-style-baseline
     #main
     :is(
@@ -359,22 +361,6 @@ body.site-style-baseline #main .metadata a {
       .song-profile .profile-page-title
     ) {
     font-size: 32px;
-  }
-  body.site-style-baseline #main :is(.section-head > h2, .game-card h2) {
-    font-size: 24px;
-  }
-  body.site-style-baseline
-    #main
-    :is(
-      .stat-value,
-      .global-metric > strong,
-      .vote-total,
-      .overall-global-summary b,
-      .mini-stats b,
-      .overall-value,
-      .overall-highlight > b
-    ) {
-    font-size: 28px;
   }
   body.site-style-baseline #main .leaderboard .leader-row {
     --ranking-art-size: 72px;
@@ -412,19 +398,6 @@ body.site-style-baseline #main .metadata a {
   body.site-style-baseline #main .leaderboard .leader-score :is(small, .report-meta) {
     font-size: 12px;
     margin: 0;
-  }
-  body.site-style-baseline
-    #main
-    :is(
-      .panel,
-      .game-card,
-      .mode-card,
-      .result-card,
-      .profile-highlight,
-      .spotlight
-    ),
-  body.site-style-baseline #main .global-stats-page > .panel {
-    padding: 18px;
   }
   body.site-style-baseline #main .global-podium .small-art {
     --stats-art-size: 72px;

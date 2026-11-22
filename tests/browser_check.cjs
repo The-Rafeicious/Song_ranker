@@ -771,6 +771,25 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
    for(const width of [390,768,1365]){
     await page.setViewportSize({width,height:1000});await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     await bounded(page,width,'report-audit-'+name,folder);
+    if (name === 'voting') {
+      const pulse = page.locator('#vote-activity .stats-pulse');
+      const actual = await pulse.locator('h2').evaluate(node => getComputedStyle(node).color);
+      const expected = await page.locator('#vote-activity > .section-head h2').evaluate(node => getComputedStyle(node).color);
+      assert.equal(actual, expected, 'Nested activity uses the voting family colour');
+      const columns = await page.locator('#vote-independent-elo .joined-metrics').first()
+        .evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length);
+      assert.equal(columns, 2, 'Both Elo evidence metrics fill the row');
+    }
+    if (name === 'song') {
+      const details = page.locator('[data-song-details="tournament"]');
+      const space = await details.evaluate(node => {
+        const counts = node.querySelector('.joined-metrics');
+        return counts.nextElementSibling.getBoundingClientRect().top - counts.getBoundingClientRect().bottom;
+      });
+      assert.ok(space >= 16, 'Profile metric rows leave room before the next panel');
+      const entry = details.locator('.joined-metrics[data-columns="1"]').first();
+      assert.equal(await entry.evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length), 1);
+    }
     const spills=await page.locator('.mode-stats-panel,.profile-mode-panel,.profile-inset,.report-facts,.joined-metrics>div,.overall-mode-grid>div,.versus-row').evaluateAll(nodes=>nodes.filter(e=>e.getBoundingClientRect().width&&getComputedStyle(e).overflowX==='visible'&&e.scrollWidth>e.clientWidth+2).map(e=>({class:e.className,width:e.clientWidth,content:e.scrollWidth,text:e.textContent.trim().slice(0,100)})));
     assert.deepEqual(spills,[],'Container overflow: '+name+' at '+width);
     if(width!==768)await page.screenshot({path:folder+'/report-audit-'+name+'-'+width+'.png',fullPage:true});

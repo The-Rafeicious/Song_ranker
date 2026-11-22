@@ -67,7 +67,7 @@ body[data-page="history"] #main .history-search-panel[data-mode="all"] [data-gam
 .archive-error:empty { display:none; }
 .archive-counts { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; }
 .archive-count { display:grid; gap:8px; text-align:center; padding:16px; background:#242424; border-radius:18px; border:1px solid color-mix(in srgb,var(--section-color) 35%,transparent); }
-.archive-count b { color:var(--section-color); font-size:36px; font-variant-numeric:tabular-nums; }
+.archive-count b { color:var(--section-color); font-size:var(--site-value-size); font-variant-numeric:tabular-nums; }
 .archive-event {
   min-width:0;
   border-color:color-mix(in srgb,var(--section-color) 28%,#383838);
