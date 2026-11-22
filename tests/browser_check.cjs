@@ -17,53 +17,7 @@ async function bounded(page,width,phase,folder){
   // The dedicated radio page tests auto playback. Other cases inspect foreground audio.
   await page.addInitScript(()=>localStorage.setItem('songRankerBackgroundPreviews',
     JSON.stringify({preference:'paused',mix:'related'})));
-  // Existing result/visual cases test accepted votes; listening is exercised separately below.
-  await page.addInitScript(()=>document.addEventListener('DOMContentLoaded',()=>{
-    if(window.GameplayUI)window.GameplayUI={...window.GameplayUI,listeningLock:(_audio,buttons)=>{
-      buttons.forEach(button=>button.disabled=false);
-      return {ready:()=>true,dispose(){},refresh(){buttons.forEach(button=>button.disabled=false)}};
-    }};
-  }));
   const base=process.env.VIBE_TEST_URL,folder='artifacts/vibe-map';fs.mkdirSync(folder,{recursive:true});
-  const listening = await browser.newPage({viewport:{width:390,height:844}});
-  try {
-    await listening.goto(base+'/query');
-    await listening.locator('[data-query-controls] input').first().waitFor();
-    await listening.evaluate(()=>{
-      const audios=[0,1].map(index=>{
-        const audio=document.createElement('audio');
-        audio.src='/tag-test-audio.wav?listen='+index;
-        document.body.append(audio);
-        return audio;
-      });
-      const buttons=[0,1].map(index=>{
-        const button=document.createElement('button');
-        button.id='listen-test-'+index;
-        button.onclick=()=>audios[index].play();
-        button.textContent='Listen '+index;
-        document.querySelector('#main').prepend(button);
-        return button;
-      });
-      const votes=[0,1].map(index=>{
-        const vote=document.createElement('button');
-        vote.dataset.vote=String(index);
-        document.querySelector('#main').append(vote);
-        return vote;
-      });
-      window.testListen=window.GameplayUI.listeningLock(audios,votes,1);
-      window.testAudio=audios;
-    });
-    await listening.locator('#listen-test-0').click();
-    await listening.waitForFunction(()=>document.querySelector('[data-vote="0"]').dataset.listenReady==='true');
-    assert.ok(await listening.locator('[data-vote="0"]').isDisabled());
-    await listening.evaluate(()=>window.testAudio[0].pause());
-    await listening.locator('#listen-test-1').click();
-    await listening.waitForFunction(()=>window.testListen.ready());
-    assert.ok(await listening.locator('[data-vote="0"]').isEnabled());
-    assert.ok(await listening.locator('[data-vote="1"]').isEnabled());
-    await bounded(listening,390,'listening-lock',folder);
-    await listening.screenshot({path:folder+'/listening-lock-phone.png'});
-  } finally {await listening.close();}
   const radio = await browser.newPage({viewport:{width:390,height:844}});
   try {
    const library=await (await radio.request.get(base+'/api/background-previews')).json();
@@ -579,6 +533,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.request.post(base+'/tournament-test-enable');
   for(const [mode,path] of [['vote','/game'],['tournament','/tournament?tournament=77']]){
    await page.goto(base+path);await page.locator('.matchup .match-cover .cover-button').first().waitFor();
+   for(const button of await page.locator('[data-vote],[data-tournament-vote]').all()) assert.ok(await button.isEnabled(),mode+' permits voting before either preview plays');
    const covers=page.locator('.matchup .match-cover');
    assert.equal(await covers.first().evaluate(e=>getComputedStyle(e,'::before').animationName),'none','Idle cover stays soft');
    await covers.first().locator('.cover-button').click();await covers.first().locator('.cover-button[data-playing="true"][data-preview-state="playing"]').waitFor();
@@ -919,6 +874,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.route('**/api/matchup?*',route=>route.fulfill({json:{token:'similarity-qa',rules_version:1,songs:matchTracks.slice(0,2)}}));
   await page.route('**/api/vote',route=>route.fulfill({json:matchReceipt(matchTracks[0],matchTracks[1])}));
   await page.goto(base+'/game?mode=blind');await page.locator('[data-vote="0"]').waitFor();
+  for(const button of await page.locator('[data-vote]').all()) assert.ok(await button.isEnabled(),'Blind voting is immediately available');
   assert.equal(await page.locator('.match-similarity').count(),0,'Blind comparison remains hidden before voting');
   await page.locator('[data-vote="0"]').click();await page.locator('.match-similarity').waitFor();
   assert.equal(await page.locator('.score-reveal:visible').count(),0,'Similarity comes before Elo');
