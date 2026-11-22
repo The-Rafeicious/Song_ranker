@@ -82,6 +82,11 @@ async function bounded(page,width,phase,folder){
    await radio.goto(base+'/');
    await radio.locator('#background-previews summary').click();
    assert.equal(await radio.locator('#background-state').textContent(),'Paused');
+   await radio.route('**/api/collection',async route=>{
+    const response=await route.fetch(),data=await response.json();
+    data.songs.find(song=>song.id===2).audio_url='/tag-test-audio.wav?profile-mix=2';
+    await route.fulfill({response,json:data});
+   });
    await radio.goto(base+'/song/2');await radio.locator('[data-profile-mix]').waitFor();
    await radio.locator('[data-profile-mix]').click();
    await radio.waitForFunction(()=>document.querySelector('#background-now a').textContent==='Bright track'&&!document.querySelector('#background-audio').paused);
