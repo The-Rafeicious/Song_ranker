@@ -3305,3 +3305,20 @@ body.site-style-baseline #main .global-stats-page > .stats-pulse { --section-col
 
 .global-stats-page .global-mode-totals { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media(max-width: 600px) { .global-stats-page .global-mode-totals { grid-template-columns: minmax(0, 1fr); } }
+
+/* Tournament overview and podium use the report's shared surfaces and spacing. */
+.ts-report-links { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 0 0 24px; }
+.ts-podium-place h3 { display: flex; justify-content: center; align-items: center; gap: 10px; }
+.ts-place-number {
+  display: inline-grid; place-items: center; width: 36px; height: 36px;
+  border: 1px solid color-mix(in srgb,var(--tournament) 35%,#383838);
+  border-radius: 50%; color: var(--tournament); font-size: 20px; flex: none;
+}
+.ts-podium-place:first-child { border-top: 3px solid var(--tournament); }
+.tournament-stats-page [aria-labelledby="ts-breakdowns"] {
+  display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px;
+}
+.tournament-stats-page [aria-labelledby="ts-breakdowns"] > .section-head { grid-column: 1 / -1; margin-bottom: 0; }
+@media(max-width:1000px) {
+  .tournament-stats-page [aria-labelledby="ts-breakdowns"] { grid-template-columns: minmax(0,1fr); }
+}

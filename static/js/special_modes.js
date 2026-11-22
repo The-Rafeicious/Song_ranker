@@ -720,6 +720,7 @@ window.SpecialModes = (() => {
               "championships",
               "runner_ups",
               "third_places",
+              "fourth_places",
               "podiums",
               "tournament_wins",
               "tournament_points",
@@ -806,8 +807,9 @@ window.SpecialModes = (() => {
                 `${row.recognition_correct} / ${row.recognition_score} fields correct`,
               ]
             : [
-                `${num(row.podiums)} podium credit`,
-                `${num(row.tournament_wins)} win credit · ${num(row.tournament_appearances)} entry credit`,
+                `${Number(num(row.championships))} first · ${Number(num(row.runner_ups))} second · ${Number(num(row.third_places))} third · ${Number(num(row.fourth_places))} fourth`,
+                `${Number(num(row.podiums))} podium credit`,
+                `${Number(num(row.tournament_wins))} win credit · ${Number(num(row.tournament_appearances))} entry credit`,
               ];
     U.main.innerHTML = `${window.SongRankerUI.rankingHeading(titles[mode]+" Rankings",tone)}${window.SongRankerUI.modeRankingControls("/mode_rankings/" + mode, r.type, r.bottom, "special")}<div class="leaderboard">${rows.map((row, i) => window.SongRankerUI.modeRankingRow(U, row, r.type, i, eligible.length, r.bottom, tone, m[4] === "number" ? rankingValue(row, m) : m[4] === "decimal" ? num(rankingValue(row, m)) : rankingValue(row, m).toFixed(2) + "%", m[1], facts(row))).join("") || '<div class="empty">No results for this category yet</div>'}</div>`;
     history.replaceState(

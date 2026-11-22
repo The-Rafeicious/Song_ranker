@@ -42,3 +42,11 @@ available. Voting and Query no longer present a separate first-round Elo source.
   at 20 seconds. Each button fills as its preview plays.
 - Listening excludes pauses, buffering, seeking, muted audio and hidden pages.
   Tracks without a preview wait for the other track's listening requirement.
+
+## V5.10.4
+
+- Tournament rankings trim trailing zeroes from placement, podium, win and
+  entry credit while keeping two decimal places for points. Placement details
+  show first through fourth.
+- Refresh tournament History cards and the stats overview with clearer podium
+  and points layouts. Local bracket reports have a direct link.

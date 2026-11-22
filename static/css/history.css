@@ -129,3 +129,27 @@ body[data-page="history"] #main .archive-identity .small-art {
   .archive-place[data-place="2"] { grid-column:1; grid-row:1; margin-top:24px; }
   .archive-place[data-place="3"] { grid-column:3; grid-row:1; margin-top:40px; }
 }
+
+/* Tournament results share a clear placement, identity and points hierarchy. */
+.archive-event[data-archive-mode="tournament"] .archive-context {
+  display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+  padding-bottom: 16px; border-bottom: 1px solid var(--line);
+}
+.archive-event[data-archive-mode="tournament"] .archive-context > a { margin-left: auto; font-weight: 800; }
+.archive-place-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.archive-place-heading strong { font-size: 30px; }
+.archive-place-heading span { color: var(--muted); font-size: 14px; }
+.archive-podium-points { display: flex; align-items: baseline; gap: 8px; padding-top: 12px; border-top: 1px solid var(--line); }
+.archive-podium-points strong { font-size: 26px; color: var(--tournament); font-variant-numeric: tabular-nums; }
+.archive-podium-points span { color: var(--muted); font-size: 14px; }
+.archive-place .archive-identity { --archive-art-size: 72px; align-items: center; }
+.archive-event[data-archive-mode="tournament"] .archive-entries {
+  padding: 0; border: 1px solid color-mix(in srgb,var(--tournament) 18%,#383838);
+  border-radius: 18px; overflow: hidden; background: #242424;
+}
+.archive-event[data-archive-mode="tournament"] .archive-entries > summary { padding: 16px; }
+.archive-event[data-archive-mode="tournament"] .archive-entry-list { padding: 0 12px 12px; margin: 0; }
+@media(max-width:520px) {
+  .archive-event[data-archive-mode="tournament"] .archive-context > a { margin-left: 0; }
+  .archive-place .archive-identity { --archive-art-size: 64px; }
+}
