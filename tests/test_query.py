@@ -54,6 +54,15 @@ class QueryTests(unittest.TestCase):
         self.assertEqual(capture(self.conn),before)
         self.assertEqual(self.query(filters=[dict(field='album',target_id=1)])['total'],8)
 
+    def test_rank_filters_keep_population_and_competition_ties(self):
+        data = self.data()
+        for song in data['songs'][:3]:
+            song.update(attempts=1, available_points=2, correct=2 if song['id'] < 3 else 1)
+        result = execute(data, dict(sort=[dict(field='trivia_accuracy_rank', direction='asc')]))
+        self.assertEqual([r['values'].get('trivia_accuracy_rank') for r in result['items'][:4]], [1, 1, 3, None])
+        filtered = execute(data, dict(filters=[dict(field='trivia_accuracy_rank', op='eq', value=3)]))
+        self.assertEqual([r['id'] for r in filtered['items']], [3])
+
     def test_twenty_per_page_clamping_and_empty(self):
         for sid in range(9,54): self.conn.execute('INSERT INTO songs(id,title,album_id) VALUES(?,?,1)',(sid,f'Song {sid}'))
         self.conn.commit()
@@ -70,6 +79,7 @@ class QueryTests(unittest.TestCase):
         data['tournament_matches']=[dict(id=i,tournament_id=i,status='completed',song1_id=1,song2_id=2,winner_id=1 if i!=2 else 2,loser_id=2 if i!=2 else 1,round_number=1,points_awarded=2) for i in (1,2,3)]
         data['query_matches']=[dict(winner_id=2,loser_id=1,mode='blind',source='first_round',scope='artist')]
         values={r['id']:r['values'] for r in execute(data,{})['items']}
+        self.assertEqual((values[1]['finish_first'], values[2]['finish_first'], values[3]['finish_first']), (1, 1, 0))
         self.assertEqual((values[1]['tournament_wins'],values[1]['local_wins'],values[2]['local_wins']),(1,0,1))
         self.assertEqual(execute(data,dict(filters=[dict(field='won_against',target_id=1)]))['total'],0)
         self.assertEqual(execute(data,dict(filters=[dict(field='won_against',target_id=1,source='local')]))['items'][0]['id'],2)

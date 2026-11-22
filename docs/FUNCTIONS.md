@@ -806,20 +806,20 @@ Read-only cross-mode filtering, pooled metrics, stable sorting and bounded pagin
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [metric](../songranker/reports/query.py#L12) | `key, label, family, unit='count'` | Metric. |
-| [normal](../songranker/reports/query.py#L40) | `text` | Normal. |
-| [search_matches](../songranker/reports/query.py#L44) | `query, text` | Match all accent-insensitive words, regardless of their order in metadata. |
-| [search_identities](../songranker/reports/query.py#L50) | `rows, query` | Rank bounded lookup candidates by exact name, prefix, then linked metadata. |
-| [search_identities.priority](../songranker/reports/query.py#L54) | `row` | Priority. |
-| [validate](../songranker/reports/query.py#L61) | `spec` | Validate bounded public input before reading the catalogue; never execute SQL from it. |
-| [rate](../songranker/reports/query.py#L104) | `n, d` | Rate. |
-| [facts](../songranker/reports/query.py#L108) | `songs, competition, local, song=False` | Pool numerators/denominators, counting each current track once per entity. |
-| [facts.total](../songranker/reports/query.py#L110) | `key` | Total. |
-| [facts.mean](../songranker/reports/query.py#L111) | `rows, key` | Mean. |
-| [identities](../songranker/reports/query.py#L141) | `data` | Public identity projection excludes preview URLs and private source metadata. |
-| [execute](../songranker/reports/query.py#L170) | `data, spec` | Filter and stably sort a full snapshot, returning exactly twenty rows per page. |
-| [execute.compare](../songranker/reports/query.py#L213) | `a, b` | Compare. |
-| [match_records](../songranker/reports/query.py#L224) | `conn, songs, mode='all', source='all', include_local=False` | Read Query opponent evidence, deduplicating first rounds and preserving real snapshots. |
+| [metric](../songranker/reports/query.py#L13) | `key, label, family, unit='count'` | Metric. |
+| [normal](../songranker/reports/query.py#L57) | `text` | Normal. |
+| [search_matches](../songranker/reports/query.py#L61) | `query, text` | Match all accent-insensitive words, regardless of their order in metadata. |
+| [search_identities](../songranker/reports/query.py#L67) | `rows, query` | Rank bounded lookup candidates by exact name, prefix, then linked metadata. |
+| [search_identities.priority](../songranker/reports/query.py#L71) | `row` | Priority. |
+| [validate](../songranker/reports/query.py#L78) | `spec` | Validate bounded public input before reading the catalogue; never execute SQL from it. |
+| [rate](../songranker/reports/query.py#L121) | `n, d` | Rate. |
+| [facts](../songranker/reports/query.py#L125) | `songs, competition, local, song=False` | Pool numerators/denominators, counting each current track once per entity. |
+| [facts.total](../songranker/reports/query.py#L127) | `key` | Total. |
+| [facts.mean](../songranker/reports/query.py#L128) | `rows, key` | Mean. |
+| [identities](../songranker/reports/query.py#L158) | `data` | Public identity projection excludes preview URLs and private source metadata. |
+| [execute](../songranker/reports/query.py#L187) | `data, spec` | Filter and stably sort a full snapshot, returning exactly twenty rows per page. |
+| [execute.compare](../songranker/reports/query.py#L261) | `a, b` | Compare. |
+| [match_records](../songranker/reports/query.py#L272) | `conn, songs, mode='all', source='all', include_local=False` | Read Query opponent evidence, deduplicating first rounds and preserving real snapshots. |
 
 ## songranker/reports/stats_activity.py
 
@@ -1606,14 +1606,15 @@ Cross-mode queries preserve pooled evidence, relation semantics and stable pages
 | [QueryTests.test_pooled_rates_missing_evidence_and_current_links](../tests/test_query.py#L26) | `self` | Verify pooled rates missing evidence and current links. |
 | [QueryTests.test_inclusive_elo_and_three_level_null_last_sort](../tests/test_query.py#L38) | `self` | Verify inclusive elo and three level null last sort. |
 | [QueryTests.test_relationships_visibility_and_readonly](../tests/test_query.py#L47) | `self` | Verify relationships visibility and readonly. |
-| [QueryTests.test_twenty_per_page_clamping_and_empty](../tests/test_query.py#L57) | `self` | Verify twenty per page clamping and empty. |
-| [QueryTests.test_local_tournaments_are_separate_and_incomplete_results_are_hidden](../tests/test_query.py#L66) | `self` | Verify local tournaments are separate and incomplete results are hidden. |
-| [QueryTests.test_collection_rates_pool_unequal_denominators_and_unrated_elo_is_missing](../tests/test_query.py#L77) | `self` | Verify collection rates pool unequal denominators and unrated elo is missing. |
-| [QueryTests.test_word_search_accents_metadata_and_lookup_priority](../tests/test_query.py#L87) | `self` | Verify word search accents metadata and lookup priority. |
-| [QueryTests.test_album_queries_exclude_placeholders_and_tags_never_borrow_covers](../tests/test_query.py#L100) | `self` | Verify album queries exclude placeholders and tags never borrow covers. |
-| [QueryTests.test_collection_tag_badges_cover_all_tracks_and_exclude_own_tag](../tests/test_query.py#L124) | `self` | Verify collection tag badges cover all tracks and exclude own tag. |
-| [QueryTests.test_invalid_combinations](../tests/test_query.py#L134) | `self` | Verify invalid combinations. |
-| [QueryTests.test_api_schema_errors_and_page_assets](../tests/test_query.py#L138) | `self` | Verify api schema errors and page assets. |
+| [QueryTests.test_rank_filters_keep_population_and_competition_ties](../tests/test_query.py#L57) | `self` | Verify rank filters keep population and competition ties. |
+| [QueryTests.test_twenty_per_page_clamping_and_empty](../tests/test_query.py#L66) | `self` | Verify twenty per page clamping and empty. |
+| [QueryTests.test_local_tournaments_are_separate_and_incomplete_results_are_hidden](../tests/test_query.py#L75) | `self` | Verify local tournaments are separate and incomplete results are hidden. |
+| [QueryTests.test_collection_rates_pool_unequal_denominators_and_unrated_elo_is_missing](../tests/test_query.py#L87) | `self` | Verify collection rates pool unequal denominators and unrated elo is missing. |
+| [QueryTests.test_word_search_accents_metadata_and_lookup_priority](../tests/test_query.py#L97) | `self` | Verify word search accents metadata and lookup priority. |
+| [QueryTests.test_album_queries_exclude_placeholders_and_tags_never_borrow_covers](../tests/test_query.py#L110) | `self` | Verify album queries exclude placeholders and tags never borrow covers. |
+| [QueryTests.test_collection_tag_badges_cover_all_tracks_and_exclude_own_tag](../tests/test_query.py#L134) | `self` | Verify collection tag badges cover all tracks and exclude own tag. |
+| [QueryTests.test_invalid_combinations](../tests/test_query.py#L144) | `self` | Verify invalid combinations. |
+| [QueryTests.test_api_schema_errors_and_page_assets](../tests/test_query.py#L148) | `self` | Verify api schema errors and page assets. |
 
 ## tests/test_query_matches.py
 
@@ -2155,4 +2156,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1465 Python definitions**.
+Total: **1466 Python definitions**.
