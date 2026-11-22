@@ -50,3 +50,8 @@ available. Voting and Query no longer present a separate first-round Elo source.
   show first through fourth.
 - Refresh tournament History cards and the stats overview with clearer podium
   and points layouts. Local bracket reports have a direct link.
+
+## V5.10.5
+
+- Restore immediate voting in non-blind, blind and all tournament rounds.
+  Remove listening countdowns and button progress fills.

@@ -994,15 +994,3 @@ body.gameplay-page #main .score-reveal[hidden] {display: none;}
 body.gameplay-page #main .trivia-art {position:relative;width:fit-content;margin:0 auto 14px;}
 body.gameplay-page #main .trivia-art .mystery-cover {display:block;margin:0;}
 body.gameplay-page #main .trivia-accuracy {inset:auto 2px 2px;border-radius:0 0 16px 16px;color:var(--recognition);text-shadow:none;}
-
-/* Listening fills each vote button; the pair becomes actionable together. */
-body.gameplay-page #main .vote-btn.listening-vote:disabled {
-  opacity: 1;
-  color: var(--muted);
-  background: linear-gradient(to right, color-mix(in srgb, var(--game-accent) 35%, #242424) var(--listened), #242424 var(--listened));
-  border-color: color-mix(in srgb, var(--game-accent) 28%, #383838);
-  cursor: default;
-}
-body.gameplay-page #main .vote-btn.listening-vote[data-listen-ready="true"]:disabled {
-  color: var(--game-accent);
-}
