@@ -772,11 +772,11 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
     await page.setViewportSize({width,height:1000});await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
     await bounded(page,width,'report-audit-'+name,folder);
     if (name === 'voting') {
-      const pulse = page.locator('#vote-activity .stats-pulse');
+      const pulse = page.locator('[aria-labelledby="vote-activity"] .stats-pulse');
       const actual = await pulse.locator('h2').evaluate(node => getComputedStyle(node).color);
-      const expected = await page.locator('#vote-activity > .section-head h2').evaluate(node => getComputedStyle(node).color);
+      const expected = await page.locator('#vote-activity').evaluate(node => getComputedStyle(node).color);
       assert.equal(actual, expected, 'Nested activity uses the voting family colour');
-      const columns = await page.locator('#vote-independent-elo .joined-metrics').first()
+      const columns = await page.locator('[aria-labelledby="vote-independent-elo"] .joined-metrics').first()
         .evaluate(node => getComputedStyle(node).gridTemplateColumns.split(' ').length);
       assert.equal(columns, 2, 'Both Elo evidence metrics fill the row');
     }
