@@ -1,4 +1,5 @@
 """Read-only cross-mode query engine. Missing rates remain distinct from zero."""
+from collections import Counter, defaultdict
 import math
 import unicodedata
 from functools import cmp_to_key
@@ -35,6 +36,22 @@ for prefix, label in [('', 'All voting'), ('standard_', 'Non-blind'), ('blind_',
 for prefix,label in [('tournament_','Competition tournaments'),('local_','Local tournaments')]:
     for key,suffix in [('appearances','entry credit'),('wins','win credit'),('losses','loss credit'),('points','points'),('championships','championships'),('win_rate','win percentage')]:
         metric(prefix+key,label+' '+suffix,'Tournament','percent' if key=='win_rate' else 'count')
+
+
+# Ranks compare the selected entity type before applying any Query filters.
+RANK_FIELDS = {
+    'elo': ('Voting', 'Rated Elo'), 'standard_elo': ('Voting', 'Non-blind Elo'),
+    'blind_elo': ('Voting', 'Blind Elo'), 'trivia_accuracy': ('Recognition', 'Field accuracy'),
+    'shelf_accuracy': ('Album Shelves', 'Points earned'),
+    'tournament_points': ('Tournament', 'Competition points'),
+    'vibe_samples': ('Vibe', 'Mapping samples'),
+}
+for field, (family, label) in RANK_FIELDS.items():
+    metric(field+'_rank', label+' rank', family)
+metric('overall_rank', 'Overall rank', 'Overall')
+PLACES = ('first', 'second', 'third', 'fourth', 'other')
+for place in PLACES:
+    metric('finish_'+place, ('Other knockout exits' if place == 'other' else place.title()+' places'), 'Tournament')
 
 
 def normal(text):
@@ -119,7 +136,7 @@ def facts(songs, competition, local, song=False):
         album_accuracy=rate(total('album_correct'),total('album_attempts')),
         shelf_rounds=total('shelf_attempts'),shelf_album=rate(total('shelf_album_correct'),total('shelf_attempts')),
         shelf_order=rate(total('shelf_order_right'),total('shelf_order_pairs')),shelf_accuracy=rate(total('shelf_points'),total('shelf_available')),
-        vibe_maps=sum(v.get('status')=='mapped' for s in songs for v in s.get('vibe_maps',{}).values()),
+        vibe_maps=sum(v.get('status')=='placed' for s in songs for v in s.get('vibe_maps',{}).values()),
         vibe_samples=sum(v.get('sample_count',0) for s in songs for v in s.get('vibe_maps',{}).values()),vibe_passes=total('vibe_completed_passes'))
     shared=[]
     for mode in ('standard','blind'):
@@ -181,13 +198,44 @@ def execute(data,spec):
     completed={**data,'tournaments':[t for t in data['tournaments'] if t.get('status')=='completed']}
     competition=song_performance(completed)
     local=song_performance({**completed,'tournaments':[t for t in completed['tournaments'] if t.get('scope_type') in ('artist','album')]},competitive=False)
-    rows=[]
+    finishes = defaultdict(Counter)
+    podiums = {}
+    for bracket in completed['tournaments']:
+        podium = {bracket.get(key): place for key, place in zip(
+            ('champion_id', 'runner_up_id', 'third_place_id', 'fourth_place_id'), PLACES
+        ) if bracket.get(key) is not None}
+        podiums[bracket['id']] = podium
+        for sid, place in podium.items():
+            finishes[sid][place] += 1
+    from songranker.modes.tournament import recorded_result
+    exits = {(m['tournament_id'], m['loser_id']) for m in data.get('tournament_matches', [])
+             if m.get('tournament_id') in podiums and m.get('match_type') == 'bracket'
+             and recorded_result(m) and m['loser_id'] not in podiums[m['tournament_id']]}
+    for _, sid in exits:
+        finishes[sid]['other'] += 1
+    cohort = []
     for identity in ids[kind].values():
         if kind=='albums' and not identity['proper_album']: continue
         group=[s for s in data['songs'] if (s['id']==identity['id'] if kind=='songs' else identity['id'] in s.get('artist_ids',[]) if kind=='artists' else s.get('album_id')==identity['id'] if kind=='albums' else identity['id'] in s.get('tag_ids',[]))]
         values=facts(group,competition,local,kind=='songs')
         score=overall.get(identity['id'],{})
         values.update(overall_score=score.get('score'),overall_evidence=score.get('evidence',0),overall_modes=score.get('mode_count',0))
+        values['overall_rank'] = score.get('rank')
+        for place in PLACES:
+            values['finish_'+place] = sum(finishes[s['id']][place] for s in group)
+        cohort.append((identity, group, values))
+    for field in RANK_FIELDS:
+        eligible = [values for _, group, values in cohort if values.get(field) is not None
+                    and (field != 'elo' or any(s.get('elo_matches_played', 0) for s in group))
+                    and (field != 'tournament_points' or values['tournament_appearances'])
+                    and (field != 'vibe_samples' or values[field])]
+        previous = None
+        for position, values in enumerate(sorted(eligible, key=lambda v: -v[field]), 1):
+            if values[field] != previous:
+                rank, previous = position, values[field]
+            values[field+'_rank'] = rank
+    rows = []
+    for identity, group, values in cohort:
         song_ids={s['id'] for s in group}
         if spec['q'] and not search_matches(spec['q'],' '.join([identity['name']]+[ids['songs'][s['id']]['name'] for s in group]+[r['name'] for s in group for r in ids['songs'][s['id']]['related']])): continue
         keep=True
