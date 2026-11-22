@@ -756,11 +756,11 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
    await page.goto(base+route);await page.locator('#main .panel').first().waitFor();
    if(['song','artist','album','tag'].includes(name)){
     await page.locator('#overall-profile').waitFor();
-    if(name!=='tag')await page.waitForFunction(()=>!document.querySelector('[data-song-details][aria-busy]'));
+    await page.waitForFunction(()=>!document.querySelector('[data-song-details][aria-busy]'));
    }
    const primaryIssues=await page.locator('#main .panel').evaluateAll(nodes=>nodes.filter(e=>e.getBoundingClientRect().width).flatMap(e=>{const s=getComputedStyle(e);return s.backgroundColor==='rgb(30, 30, 30)'&&s.backgroundImage.includes('gradient')&&s.boxShadow.includes('26px')?[]:[{class:e.className,base:s.backgroundColor,shadow:s.boxShadow,wash:s.backgroundImage}];}));
    assert.deepEqual(primaryIssues,[],'Shared primary surface recipe: '+name);
-   const insetIssues=await page.locator('#main .mode-stats-inset,#main .joined-metrics').evaluateAll(nodes=>nodes.filter(e=>e.getBoundingClientRect().width).flatMap(e=>{const s=getComputedStyle(e);return s.backgroundColor==='rgb(36, 36, 36)'&&s.boxShadow==='none'?[]:[{class:e.className,base:s.backgroundColor,shadow:s.boxShadow}];}));
+   const insetIssues=await page.locator('#main .mode-stats-inset,#main .joined-metrics').evaluateAll(nodes=>nodes.filter(e=>e.getBoundingClientRect().width).flatMap(e=>{const s=getComputedStyle(e);const expected=e.matches('.joined-metrics')&&document.body.classList.contains('profile-page')&&e.closest('.profile-inset')?'rgba(0, 0, 0, 0)':'rgb(36, 36, 36)';return s.backgroundColor===expected&&s.boxShadow==='none'?[]:[{class:e.className,base:s.backgroundColor,shadow:s.boxShadow}];}));
    assert.deepEqual(insetIssues,[],'Nested surfaces do not stack halos: '+name);
    await page.locator('.profile-song-disclosure,.overall-breakdown,.guess-history-item,.shelf-history-item').evaluateAll(nodes=>nodes.slice(0,8).forEach(n=>n.open=true));
    assert.equal(await page.locator('.profile-detail-note,.overall-balance-copy,.overall-mode-context').count(),0,'No methodology footnotes: '+name);
