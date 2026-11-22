@@ -82,6 +82,14 @@ async function bounded(page,width,phase,folder){
    await radio.goto(base+'/');
    await radio.locator('#background-previews summary').click();
    assert.equal(await radio.locator('#background-state').textContent(),'Paused');
+   await radio.goto(base+'/song/2');await radio.locator('[data-profile-mix]').waitFor();
+   await radio.locator('[data-profile-mix]').click();
+   await radio.waitForFunction(()=>document.querySelector('#background-now a').textContent==='Bright track'&&!document.querySelector('#background-audio').paused);
+   await radio.goto(base+'/');
+   await radio.waitForFunction(()=>document.querySelector('#background-now a').textContent==='Bright track'&&!document.querySelector('#background-audio').paused);
+   await radio.locator('#background-previews summary').click();
+   await radio.locator('#background-toggle').click();
+
   } finally { await radio.close(); }
   await page.goto(base+'/');await page.locator('#volume-btn').waitFor();
   await page.locator('.mode-card.voting h2').waitFor();
@@ -251,7 +259,7 @@ async function bounded(page,width,phase,folder){
     assert.equal(await page.locator('#profile-vibe .vibe-mini-map').count(),4);
     assert.equal(await page.locator('#profile-vibe .vibe-mini-dot').first().evaluate(e=>e.getBoundingClientRect().width),11);
    }
-   if(['artist','album'].includes(kind)){
+   if(['artist','album','tag'].includes(kind)){
     await page.waitForFunction(()=>document.querySelectorAll('[data-song-details]').length>0&&!document.querySelector('[data-song-details][aria-busy]'));
     assert.equal(await page.locator('[data-song-details-retry]').count(),0,kind+' mode evidence loads');
     assert.equal(await page.locator('.profile-song-disclosure').count(),4,kind+' has expanded mode records');
@@ -260,9 +268,18 @@ async function bounded(page,width,phase,folder){
     await page.locator('.profile-song-disclosure').evaluateAll(nodes=>nodes.forEach(node=>node.open=true));
     await page.locator('#voting-record').screenshot({path:folder+'/'+kind+'-voting-details-desktop.png'});
    }
+   assert.equal(await page.locator('[data-profile-mix]').count(),1,kind+' has a background mix action');
+   await page.locator('[data-song-details="tournament"] details').evaluate(node=>node.open=true);
+   const filtered=page.waitForResponse(r=>r.url().includes('/stats?')&&r.url().includes('finish=1'));
+   await page.locator('[data-finish-place]').selectOption('1');await filtered;
+   await page.locator('[data-tournament-results][aria-busy]').waitFor({state:'detached'});
+   assert.equal(await page.locator('[data-finish-place]').inputValue(),'1');
+   await page.locator('#tournament').screenshot({path:folder+'/profile-finishes-'+kind+'-desktop.png'});
    await page.locator('#profile-vibe').screenshot({path:folder+'/profile-'+kind+'-desktop.png'});
    for(const width of [320,390,768,1365]){
     await page.setViewportSize({width,height:900});await bounded(page,width,'profile-'+kind,folder);
+    if(width===390)await page.locator('#tournament').screenshot({path:folder+'/profile-finishes-'+kind+'-phone.png'});
+
     if(kind!=='song'){
      const rows=await page.locator('#profile-vibe .vibe-mini-map').evaluateAll(nodes=>nodes.map(e=>e.offsetTop));
      if(width>760)assert.ok(rows.every(top=>top===rows[0]),kind+' four maps in one row');
@@ -271,7 +288,7 @@ async function bounded(page,width,phase,folder){
      assert.ok(Math.max(...plotOffsets)-Math.min(...plotOffsets)<2,'Aligned map captions at '+width);
     }
    }
-   if(['artist','album'].includes(kind)){await page.setViewportSize({width:390,height:844});await page.locator('#voting-record').screenshot({path:folder+'/'+kind+'-voting-details-phone.png'});}
+   if(['artist','album','tag'].includes(kind)){await page.setViewportSize({width:390,height:844});await page.locator('#voting-record').screenshot({path:folder+'/'+kind+'-voting-details-phone.png'});}
    if(kind==='song'){await page.setViewportSize({width:390,height:844});await page.locator('#voting-record').screenshot({path:folder+'/song-voting-details-phone.png'});}
    await page.setViewportSize({width:390,height:844});await page.locator('#profile-vibe').screenshot({path:folder+'/profile-'+kind+'-phone.png'});
   }

@@ -31,7 +31,7 @@ async function harness(page,width=1280,size=75,eligible=true,detailState={}){
  const playing=new WeakSet();w.HTMLMediaElement.prototype.play=function(){playing.add(this);this.dispatchEvent(new w.Event('play'));return Promise.resolve()};w.HTMLMediaElement.prototype.pause=function(){playing.delete(this);this.dispatchEvent(new w.Event('pause'))};w.HTMLMediaElement.prototype.load=function(){};
  Object.defineProperty(w.HTMLMediaElement.prototype,'paused',{get(){return !playing.has(this)}});
  w.fetch=async url=>({ok:true,json:async()=>{
-  if(/^\/api\/song\/\d+\/stats$/.test(url) || /^\/api\/profile\/(artists|albums)\/\d+\/stats$/.test(url)){
+  if(/^\/api\/song\/\d+\/stats$/.test(url) || /^\/api\/profile\/(artists|albums|tags)\/\d+\/stats$/.test(url)){
    detailState.calls=(detailState.calls||0)+1;
    if(detailState.pending)await new Promise(resolve=>{(detailState.resolvers ||= []).push(resolve)});
    if(detailState.fail)throw Error('Unavailable');
@@ -65,7 +65,7 @@ async function harness(page,width=1280,size=75,eligible=true,detailState={}){
   const h=await harness(type,width),{d}=h;
   check(d.body.classList.contains('profile-page'),type+' profile class '+width);
   check(JSON.stringify([...d.querySelectorAll('[data-profile-panel]')].map(n=>n.dataset.profilePanel))===JSON.stringify(expected),type+' uses the four shared records');
-  check(d.querySelectorAll('.song-sections details').length===(['song','artist','album'].includes(type)?4:0),type+' bounded song detail disclosures only');
+  check(d.querySelectorAll('.song-sections details').length===4,type+' bounded song detail disclosures only');
   check(d.querySelectorAll('#overall-profile details').length===1,type+' keeps Overall dropdown');
   check(!d.querySelector('#overall-profile .overall-balance-copy,#overall-profile .overall-mode-context'),type+' removes Overall explanation');
   check(d.querySelectorAll('#recognition > .profile-field-grid > .profile-inset').length===3,type+' fields shown inline');

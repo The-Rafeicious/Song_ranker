@@ -1309,8 +1309,8 @@ def build_local_tournament_stats(conn, scope='all', scope_id=None, page=1):
                 tracks=track_rows,groups=groups,pairs=head_to_head,archive=brackets[(page-1)*20:page*20],page=page,pages=pages)
 
 
-def profile_tournament_details(conn, song_ids):
-    """Count distinct song/bracket entries and preserve each participant's exit."""
+def profile_tournament_details(conn, song_ids, options=None):
+    """Aggregate all entries, then filter/order a bounded page of saved finishes."""
     from songranker.catalog import profile_selection
     ids, selected = profile_selection(song_ids)
     participants = defaultdict(set)
@@ -1338,8 +1338,30 @@ def profile_tournament_details(conn, song_ids):
                              exit=dict(round=stage_name(t['size'],exit_match['round_number']),opponent_id=exit_match['winner_id']) if exit_match else None,
                              wins=sum(m['winner_id']==sid for m in played),losses=sum(m['loser_id']==sid for m in played),first_exit=bool(exit_match and exit_match['round_number']==1)))
     rows.sort(key=lambda r:((r['date'] or {}).get('seconds',float('-inf')),r['id'],-r['song_id']),reverse=True)
+    options = options or {}
+    finish = str(options.get('finish', 'all'))
+    order = 'best' if options.get('order') == 'best' else 'recent'
+    for row in rows:
+        row['place'] = {'1st':1,'2nd':2,'3rd':3,'4th':4}.get(row['finish'])
+        # Non-podium exits share a place range, never an invented exact finish.
+        stage = next((n for n in range(1, rounds(row['size'])+1)
+                      if stage_name(row['size'], n) == (row['exit'] or {}).get('round')), None)
+        row['rank'] = row['place'] or (row['size']//2**stage+1 if stage else 999)
+    filtered = [r for r in rows if finish == 'all' or
+                (finish in ('1','2','3','4') and r['place'] == int(finish)) or
+                (finish == 'other' and r['finish'].startswith('Out in '))]
+    if finish not in ('all','1','2','3','4','other'):
+        finish, filtered = 'all', rows[:]
+    if order == 'best':
+        filtered.sort(key=lambda r: r['rank'])
+    pages = max(1, (len(filtered)+4)//5)
+    try:
+        page = max(1, min(int(options.get('page', 1)), pages))
+    except (TypeError, ValueError, OverflowError):
+        page = 1
     return dict(completed=len(rows),brackets=len({r['id'] for r in rows}),first_exits=sum(r['first_exit'] for r in rows),
-                groups=[dict(key=key,entries=sum(r['scope'] in scopes for r in rows),wins=sum(r['wins'] for r in rows if r['scope'] in scopes),losses=sum(r['losses'] for r in rows if r['scope'] in scopes)) for key,scopes in [('competition',('global','tag')),('local',('artist','album'))]],recent=rows[:5])
+                results=dict(finish=finish,order=order,page=page,pages=pages,total=len(filtered)),
+                groups=[dict(key=key,entries=sum(r['scope'] in scopes for r in rows),wins=sum(r['wins'] for r in rows if r['scope'] in scopes),losses=sum(r['losses'] for r in rows if r['scope'] in scopes)) for key,scopes in [('competition',('global','tag')),('local',('artist','album'))]],recent=filtered[(page-1)*5:page*5])
 
 
 def archive_entry_results(conn, bracket, selected=None):

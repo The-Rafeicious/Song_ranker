@@ -783,6 +783,7 @@
   }
   window.PreviewPlayback = {
     source,
+    startBackground: ids => background?.startFrom(ids) || Promise.resolve(false),
     bind,
     play,
     arm,
@@ -1180,6 +1181,33 @@
       }
     }
 
+    async function startFrom(ids) {
+      quiet();
+      const active=revision;
+      showState("Loading mix…");
+      try {
+        const songs=await loadCatalogue();
+        if(active!==revision || closed)return false;
+        const wanted=new Set(ids.map(Number));
+        const pool=songs.filter(song=>wanted.has(Number(song.id)) && song.audio_url);
+        if(!pool.length){showState("No playable previews for this page");if(requested)schedule();return false;}
+        const seed=pool[Math.floor(Math.random()*pool.length)];
+        stopAll();
+        foregroundUntil=0;
+        track=null;anchor=null;counted=false;
+        recent.length=0;mixHistory.clear();steps=0;
+        handoff={id:seed.id,anchor:seed.id,relation:"From this page"};
+        preferenceValue="auto";requested=true;failures=0;
+        remember();
+        await resume();
+        return true;
+      } catch {
+        showState("Preview list unavailable. Try again.");
+        if(requested)schedule();
+        return false;
+      }
+    }
+
     toggle.addEventListener("click", () => {
       if (requested) {
         preferenceValue = "paused";
@@ -1217,7 +1245,7 @@
     });
     if (preferenceValue === "paused") showState("Paused");
     restorePage();
-    return {foregroundPlayed, yieldToPreview, suspend, leavePage, restorePage};
+    return {foregroundPlayed, yieldToPreview, suspend, leavePage, restorePage, startFrom};
   }
 
 })();

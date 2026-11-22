@@ -483,3 +483,13 @@ visible but are not remapped by a new mapping.
 Trivia's completed reveal uses the shared score-reveal cover overlay for previous
 field accuracy, in the Trivia accent. It appears with artwork only after all
 fields are settled, regardless of correctness. First attempts show no prior score.
+
+Profile histories use one quiet disclosure per mode. Tournament finishes have
+Recent/Best ordering, exact top-four placement filters and a below-fourth option;
+filter the complete saved cohort before paging five entries. Keep collection
+track identities, tied knockout evidence and missing finishes explicit. Tag
+profiles use the same read-only detail endpoint as artists and albums.
+Profile hero mix actions seed the shared background player from a playable track
+on the current page; existing relation transitions, interruption and page handoff
+continue unchanged. Progress tracks have no contrasting outline, and Overall
+mode-balance insets use the shared semantic surface recipe.
