@@ -27,8 +27,8 @@ async function bounded(page,width,phase,folder){
   const base=process.env.VIBE_TEST_URL,folder='artifacts/vibe-map';fs.mkdirSync(folder,{recursive:true});
   const listening = await browser.newPage({viewport:{width:390,height:844}});
   try {
-    await listening.goto(base+'/game');
-    await listening.locator('[data-vote]').first().waitFor();
+    await listening.goto(base+'/query');
+    await listening.locator('[data-query-controls] input').first().waitFor();
     await listening.evaluate(()=>{
       const audios=[0,1].map(index=>{
         const audio=document.createElement('audio');
@@ -44,7 +44,12 @@ async function bounded(page,width,phase,folder){
         document.querySelector('#main').prepend(button);
         return button;
       });
-      const votes=[...document.querySelectorAll('[data-vote]')];
+      const votes=[0,1].map(index=>{
+        const vote=document.createElement('button');
+        vote.dataset.vote=String(index);
+        document.querySelector('#main').append(vote);
+        return vote;
+      });
       window.testListen=window.GameplayUI.listeningLock(audios,votes,1);
       window.testAudio=audios;
     });
@@ -856,7 +861,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   assert.ok(await page.locator('.archive-entries').first().evaluate(e=>e.open));
   assert.match(await page.locator('.archive-entry').first().textContent(),/Joint 5–8/);
   assert.match(await page.locator('.archive-entry').first().textContent(),/Out in Quarter-finals/);
-  assert.equal((await page.locator('.archive-entry-points strong').first().textContent()).trim(),'0');
+  assert.equal((await page.locator('.archive-entry-points strong').first().textContent()).trim(),'0.00');
   for(const width of [390,768,1365,1800]){
    await page.setViewportSize({width,height:1000});await bounded(page,width,'history-entry-search',folder);
    const art=await page.locator('.archive-entry .small-art').first().boundingBox();assert.equal(art.width,64);assert.equal(art.height,64);

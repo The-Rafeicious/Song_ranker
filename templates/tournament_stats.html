@@ -32,10 +32,7 @@
 {% block content %}
 <div class="tournament-stats-page mode-stats-page">
   <div class="page-head"><h1 class="tournament">Tournament Stats</h1><a class="btn tournament" href="{{ url_for('tournament') }}">Play Tournament →</a></div>
-  <section class="panel dashboard-surface mode-stats-panel tournament" id="local-tournament-summary"><div class="section-head"><h2 class="tournament">Artist &amp; album tournaments</h2><a class="tournament" href="{{url_for('local_tournament_stats_page')}}">Stats &amp; comparisons ↗</a></div>
-    <dl class="joined-metrics mode-stats-metrics">{{figure('Completed brackets',local_summary.summary.completed)}}{{figure('Matches',local_summary.summary.matches)}}{{figure('Tracks compared',local_summary.summary.tracks)}}</dl>
-    {% if local_summary.tracks %}<div class="mode-stats-inset"><h3>Leading track</h3>{{song(local_summary.tracks[0],local_summary.tracks[0].championships,'Titles')}}</div>{% endif %}
-  </section>
+  <nav class="ts-report-links" aria-label="Tournament reports"><a class="btn tournament" href="/mode_rankings/tournament">Rankings ↗</a><a class="btn tournament" href="/history?mode=tournament">Match History ↗</a><a class="btn" href="{{url_for('local_tournament_stats_page')}}">Artist &amp; album tournaments ↗</a></nav>
   {% if selected_missing %}<p class="report-facts" role="status">That bracket is no longer available. Your tournament stats are below.</p>{% endif %}
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-overview">
@@ -56,10 +53,10 @@
     {{ context(latest) }}
     <div class="ts-podium">
       {% for place in latest.podium %}<div class="mode-stats-inset ts-podium-place">
-        <h3>{{ ['Champion','Runner-up','Third place'][loop.index0] }}</h3>
+        <h3><span class="ts-place-number" aria-hidden="true">{{loop.index}}</span>{{ ['Champion','Runner-up','Third place'][loop.index0] }}</h3>
         <span class="mode-stats-art">{{ art(place.song.cover_url) }}</span>
         <div class="mode-stats-copy">{{ song_name(place.song) }}{{ metadata(place.song) }}</div>
-        <strong class="mode-stats-primary">{{ '%g'|format(place.points) if place.points is not none else '—' }}<span class="report-meta"> points</span></strong>
+        <strong class="mode-stats-primary">{{ '%.2f'|format(place.points) if place.points is not none else '—' }}<span class="report-meta"> points</span></strong>
       </div>{% endfor %}
     </div>
     {% if recent_champions %}<div class="mode-stats-inset"><h3>Previous champions</h3>
@@ -76,7 +73,7 @@
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-breakdowns">
     <div class="section-head"><h2 class="tournament" id="ts-breakdowns">Bracket breakdowns</h2></div>
 
-    {{ distribution('Bracket sizes',sizes) }}{{ distribution('Blind and non-blind',visibility) }}{{ distribution('Collection scopes',scopes) }}
+    {{ distribution('Bracket sizes',sizes) }}{{ distribution('Blind and non-blind',visibility) }}{{ distribution('Collection scopes',scopes|rejectattr('key','in',['artist','album'])|list) }}
   </section>
 
   <section class="panel dashboard-surface mode-stats-panel" aria-labelledby="ts-activity">
@@ -101,7 +98,7 @@
       <h3>{{ record.label }}</h3>
       {% if record.song %}<div class="ts-record-track"><span class="mode-stats-art">{{ art(record.song.cover_url) }}</span><div class="mode-stats-copy">{{ song_name(record.song) }}{{ metadata(record.song) }}</div></div>
       <strong class="mode-stats-primary">{{ '%g'|format(record.value) }}{{ '%' if record.unit=='%' else '' }}{% if record.unit!='%' %}<span class="report-meta"> {{ record.unit }}</span>{% endif %}</strong>
-      <p>{{ '%.2f'|format(record.song.tournament_wins) }}W · {{ '%.2f'|format(record.song.tournament_losses) }}L · {{ record.song.entries }} brackets</p>
+      <p>{{ '%g'|format(record.song.tournament_wins) }} wins · {{ '%g'|format(record.song.tournament_losses) }} losses · {{ record.song.entries }} brackets</p>
       {% else %}<div class="empty">No qualifying result yet.</div>{% endif %}
     </article>{% endfor %}</div>
   </section>
