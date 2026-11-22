@@ -732,7 +732,7 @@
     };
     const tournament = h.origin === "tournament",
       source = tournament
-        ? `<a class="tournament versus-origin" href="/tournament_stats?tournament=${h.tournament_id}#tournament-${h.tournament_id}">Tournament #${h.tournament_id}</a><span class="versus-date">Round 1 · Elo</span>`
+        ? `<a class="tournament versus-origin" href="/tournament_stats?tournament=${h.tournament_id}#tournament-${h.tournament_id}">Tournament #${h.tournament_id}</a>`
         : '<span class="versus-date">Voting</span>';
     return `<article class="versus-row history-match dashboard-surface" data-match-mode="${esc(h.mode)}" data-match-origin="${tournament ? "tournament" : "ordinary"}" data-match-id="${h.id}">${side(w, "left", true)}<div class="versus-center"><strong class="versus-label">VS</strong><span class="versus-mode-label">${h.mode === "blind" ? "Blind" : "Non-blind"}</span></div><div class="versus-context"><span class="${esc(h.mode)}">${h.mode === "blind" ? "Blind" : "Non-blind"}</span>${source}<span>${esc(String(h.created_at || "Date unavailable").slice(0, 16))}${h.created_at ? " UTC" : ""}</span></div>${side(l, "right", false)}</article>`;
   }

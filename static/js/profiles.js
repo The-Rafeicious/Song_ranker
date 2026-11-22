@@ -265,7 +265,6 @@ window.ProfileUI = (() => {
       voting: metrics(collection ? [[v.events,"Different matches"],[v.internal,"Within-collection matches"],[v.opponents,"External opponents"]] : [[v.opponents,"Different opponents"],[v.best_run,"Best win run"],[v.current_run,"Current win run"]]) +
         rate(collection ? `Last ${v.recent_events} matches · track wins` : "Last 10 matches · raw wins",v.recent_wins,v.recent_matches) +
         metrics([[v.net == null ? null : (v.net > 0 ? "+" : "") + detailNumber(v.net),"Recorded Elo change"],[`${v.snapshots} / ${v.matches}`,"Saved rating snapshots"]]) +
-        `<div class="profile-detail-grid">${v.sources.map(r=>`<div class="profile-inset" style="--section-color:var(--${r.key === "tournament" ? "tournament" : "voting"})">${rate(r.key === "tournament" ? "Tournament first-round · raw wins" : "Ordinary voting · raw wins",r.wins,r.matches)}</div>`).join("")}</div>` +
         detailList(collection ? "Most frequent external opponents" : "Most frequent opponents",v.opponents_list.map(r=>`<li>${detailTrack(data.songs[r.id],`${r.wins}W · ${r.losses}L`)}</li>`)),
       trivia: metrics([[t.rounds,"Saved rounds"],[t.perfect,"Perfect recall rounds"],[t.missed,"Missed all fields"]]) +
         `<div class="profile-detail-grid">${windowRate("Latest",t.latest)}${windowRate("Previous",t.previous)}</div>` +

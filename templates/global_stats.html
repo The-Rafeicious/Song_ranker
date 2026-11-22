@@ -29,7 +29,7 @@
     <div class="stats global-stat-grid global-mode-totals">{% for row in mode_totals %}{{ stat(row.label,row.value,row.kind) }}{% endfor %}</div>
   </div>
   {{pulse(pulse_data)}}
-  <section class="panel stats-glow glow-voting mode-stats-panel"><div class="section-head"><h2 class="voting">Public Elo activity</h2><a class="standard" href="/history">History ↗</a></div><div class="joined-metrics" data-columns="3">{{metric('Elo matches',elo_summary.total,'standard')}}{{metric('Voting',elo_summary.ordinary,'voting')}}{{metric('Tournament first rounds',elo_summary.tournament,'tournament')}}</div><p class="report-facts tournament">Round 1 · {{elo_summary.tournament_standard}} Non-blind · {{elo_summary.tournament_blind}} Blind</p></section>
+  <section class="panel stats-glow glow-voting mode-stats-panel"><div class="section-head"><h2 class="voting">Public Elo activity</h2><a class="standard" href="/history">History ↗</a></div><div class="joined-metrics" data-columns="3">{{metric('Elo matches',elo_summary.total,'standard')}}{{metric('Voting',elo_summary.ordinary,'voting')}}{{metric('Tournament Elo matches',elo_summary.tournament,'tournament')}}</div></section>
   <section id="global-collection" class="panel stats-glow glow-collection" data-global-section="collection">
     <div class="section-head"><h2 class="global-theme-title">Collection Records</h2></div>
     <div class="collection-record-grid">{% for record in collection_records %}<article class="collection-record"><span class="report-meta">{{ record.label }}</span><div class="record-identity">

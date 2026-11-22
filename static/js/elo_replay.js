@@ -156,7 +156,7 @@ window.EloReplay = (() => {
       const track = data.songs[shownCause.opponent_id], receiver = data.songs[shownCause.id];
       const mode = shownCause.mode === "blind" ? "blind" : "standard", tournament = shownCause.origin === "tournament";
       opponent.dataset.mode = mode; opponent.dataset.origin = tournament ? "tournament" : "ordinary";
-      opponent.innerHTML = `<h3>Latest gain</h3><p class="elo-replay-card-mode"><span class="${mode}">${mode === "blind" ? "Blind" : "Non-blind"}</span>${tournament ? ' · <span class="tournament">Tournament · first round</span>' : ""}</p><a class="elo-replay-opponent-art" href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img data-cover src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(track)}<p class="elo-replay-transfer"><b class="song">${signed(shownCause.after - shownCause.before)} Elo</b> for ${songLink(receiver)}</p>`;
+      opponent.innerHTML = `<h3>Latest gain</h3><p class="elo-replay-card-mode"><span class="${mode}">${mode === "blind" ? "Blind" : "Non-blind"}</span>${tournament ? ' · <span class="tournament">Tournament</span>' : ""}</p><a class="elo-replay-opponent-art" href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img data-cover src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(track)}<p class="elo-replay-transfer"><b class="song">${signed(shownCause.after - shownCause.before)} Elo</b> for ${songLink(receiver)}</p>`;
     }
     function render(motion = false) {
       const frame = data.frames[index], token = ++generation;
