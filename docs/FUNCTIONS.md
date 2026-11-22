@@ -1702,20 +1702,19 @@ Per-song mode detail reads use complete, effective, public evidence only.
 
 | Definition | Signature | Purpose |
 | --- | --- | --- |
-| [SongDetailTests.setUp](../tests/test_song_details.py#L16) | `self` | Extend the minimal replay fixture with tag membership tables. |
-| [SongDetailTests.test_api_full_detail_is_read_only_and_does_not_hydrate_collection](../tests/test_song_details.py#L23) | `self` | Verify api full detail is read only and does not hydrate collection. |
-| [SongDetailTests.test_voting_mid_table_uses_all_votes_corrections_and_valid_snapshot_counts](../tests/test_song_details.py#L40) | `self` | Verify voting mid table uses all votes corrections and valid snapshot counts. |
-| [SongDetailTests.test_trivia_full_history_field_eligibility_and_disjoint_windows](../tests/test_song_details.py#L53) | `self` | Verify trivia full history field eligibility and disjoint windows. |
-| [SongDetailTests.test_tournament_filters_include_older_finishes_and_page_without_writes](../tests/test_song_details.py#L67) | `self` | Verify tournament filters include older finishes and page without writes. |
-| [SongDetailTests.test_tag_profile_uses_current_membership_and_tournament_filters](../tests/test_song_details.py#L82) | `self` | Verify tag profile uses current membership and tournament filters. |
-| [SongDetailTests.test_completed_tournaments_separate_local_results_and_hide_pending](../tests/test_song_details.py#L93) | `self` | Verify completed tournaments separate local results and hide pending. |
-| [SongDetailTests.test_exit_opponent_and_round_survive_podium_playoff_and_hydrate_in_api](../tests/test_song_details.py#L105) | `self` | Verify exit opponent and round survive podium playoff and hydrate in api. |
-| [SongDetailTests.test_shelves_grades_full_round_and_excluded_album_hides_whole_result](../tests/test_song_details.py#L129) | `self` | Verify shelves grades full round and excluded album hides whole result. |
-| [SongDetailTests.cohort](../tests/test_song_details.py#L146) | `self` | Create matching artist/album cohorts with two distinct shared tracks. |
-| [SongDetailTests.test_collection_votes_and_guesser_distinguish_events_and_appearances](../tests/test_song_details.py#L154) | `self` | Verify collection votes and guesser distinguish events and appearances. |
-| [SongDetailTests.test_collection_recall_pools_fields_and_uses_global_disjoint_windows](../tests/test_song_details.py#L168) | `self` | Verify collection recall pools fields and uses global disjoint windows. |
-| [SongDetailTests.test_collection_tournament_entries_and_shelves_items_keep_own_song](../tests/test_song_details.py#L181) | `self` | Verify collection tournament entries and shelves items keep own song. |
-| [SongDetailTests.test_collection_api_resolves_cohort_empty_missing_and_large_catalogues](../tests/test_song_details.py#L203) | `self` | Verify collection api resolves cohort empty missing and large catalogues. |
+| [SongDetailTests.test_api_full_detail_is_read_only_and_does_not_hydrate_collection](../tests/test_song_details.py#L19) | `self` | Verify api full detail is read only and does not hydrate collection. |
+| [SongDetailTests.test_voting_mid_table_uses_all_votes_corrections_and_valid_snapshot_counts](../tests/test_song_details.py#L36) | `self` | Verify voting mid table uses all votes corrections and valid snapshot counts. |
+| [SongDetailTests.test_trivia_full_history_field_eligibility_and_disjoint_windows](../tests/test_song_details.py#L49) | `self` | Verify trivia full history field eligibility and disjoint windows. |
+| [SongDetailTests.test_tournament_filters_include_older_finishes_and_page_without_writes](../tests/test_song_details.py#L63) | `self` | Verify tournament filters include older finishes and page without writes. |
+| [SongDetailTests.test_tag_profile_uses_current_membership_and_tournament_filters](../tests/test_song_details.py#L78) | `self` | Verify tag profile uses current membership and tournament filters. |
+| [SongDetailTests.test_completed_tournaments_separate_local_results_and_hide_pending](../tests/test_song_details.py#L89) | `self` | Verify completed tournaments separate local results and hide pending. |
+| [SongDetailTests.test_exit_opponent_and_round_survive_podium_playoff_and_hydrate_in_api](../tests/test_song_details.py#L101) | `self` | Verify exit opponent and round survive podium playoff and hydrate in api. |
+| [SongDetailTests.test_shelves_grades_full_round_and_excluded_album_hides_whole_result](../tests/test_song_details.py#L125) | `self` | Verify shelves grades full round and excluded album hides whole result. |
+| [SongDetailTests.cohort](../tests/test_song_details.py#L142) | `self` | Create matching artist/album cohorts with two distinct shared tracks. |
+| [SongDetailTests.test_collection_votes_and_guesser_distinguish_events_and_appearances](../tests/test_song_details.py#L150) | `self` | Verify collection votes and guesser distinguish events and appearances. |
+| [SongDetailTests.test_collection_recall_pools_fields_and_uses_global_disjoint_windows](../tests/test_song_details.py#L164) | `self` | Verify collection recall pools fields and uses global disjoint windows. |
+| [SongDetailTests.test_collection_tournament_entries_and_shelves_items_keep_own_song](../tests/test_song_details.py#L177) | `self` | Verify collection tournament entries and shelves items keep own song. |
+| [SongDetailTests.test_collection_api_resolves_cohort_empty_missing_and_large_catalogues](../tests/test_song_details.py#L199) | `self` | Verify collection api resolves cohort empty missing and large catalogues. |
 
 ## tests/test_source_reads.py
 
@@ -2156,4 +2155,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1466 Python definitions**.
+Total: **1465 Python definitions**.

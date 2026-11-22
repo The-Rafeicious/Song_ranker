@@ -710,11 +710,12 @@ def collection_stats(kind, entity_id):
     conn=get_db_connection()
     try:
         conn.execute('BEGIN')
-        entity = conn.execute(f'SELECT * FROM {kind} WHERE id=?',(entity_id,)).fetchone()
+        table = 'genres' if kind == 'tags' else kind
+        entity = conn.execute(f'SELECT * FROM {table} WHERE id=?',(entity_id,)).fetchone()
         if not entity or (kind == 'albums' and not proper_album(dict(entity))):
             return jsonify(message='Profile not found.'),404
         query = ('SELECT DISTINCT s.id FROM songs s JOIN song_artists a ON a.song_id=s.id WHERE a.artist_id=?'
-                 if kind=='artists' else 'SELECT DISTINCT song_id FROM song_tags WHERE tag_id=?' if kind=='tags' else 'SELECT id FROM songs WHERE album_id=?')
+                 if kind=='artists' else 'SELECT DISTINCT song_id FROM song_genres WHERE genre_id=?' if kind=='tags' else 'SELECT id FROM songs WHERE album_id=?')
         ids={r[0] for r in conn.execute(query,(entity_id,))}
         return jsonify(profile_details(conn,ids,kind,entity_id,request.args))
     finally:

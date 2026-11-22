@@ -13,11 +13,7 @@ from songranker import pages
 
 
 class SongDetailTests(unittest.TestCase):
-    def setUp(self):
-        """Extend the minimal replay fixture with tag membership tables."""
-        replay_fixture.EloReplayTests.setUp(self)
-        self.conn.execute('CREATE TABLE tags(id INTEGER PRIMARY KEY,name TEXT)')
-        self.conn.execute('CREATE TABLE song_tags(song_id INTEGER,tag_id INTEGER)')
+    setUp = replay_fixture.EloReplayTests.setUp
     vote = replay_fixture.EloReplayTests.vote
 
     def test_api_full_detail_is_read_only_and_does_not_hydrate_collection(self):
@@ -80,8 +76,8 @@ class SongDetailTests(unittest.TestCase):
         self.assertEqual(capture(self.conn),before)
 
     def test_tag_profile_uses_current_membership_and_tournament_filters(self):
-        self.conn.execute("INSERT INTO tags(id,name) VALUES(99,'Tag cohort')")
-        self.conn.execute("INSERT INTO song_tags VALUES(8,99)")
+        self.conn.execute("INSERT INTO genres(id,name) VALUES(99,'Tag cohort')")
+        self.conn.execute("INSERT INTO song_genres VALUES(8,99)")
         self.conn.execute("INSERT INTO tournaments(id,size,scope_type,status,champion_id) VALUES(99,8,'global','completed',8)")
         self.conn.commit()
         with patch.object(services,'DB_NAME',str(self.path)):

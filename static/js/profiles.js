@@ -312,7 +312,7 @@ window.ProfileUI = (() => {
   }
   function bindTournamentResults(slot,kind,id) {
     let controller;
-    const refresh=async(page=1)=>{
+    const refresh=async(page=1,focusSelector)=>{
       controller?.abort();controller=new AbortController();
       const request=controller;
       const root=slot.querySelector("[data-tournament-results]");
@@ -330,7 +330,9 @@ window.ProfileUI = (() => {
         const source=row=>kind!=="songs"?`<div class="profile-result-context"><p>Collection track</p>${detailTrack(data.songs[row.song_id])}</div>`:"";
         const holder=document.createElement("div");
         holder.innerHTML=tournamentHistory(data,data.tournament,source);
-        root.replaceWith(holder.querySelector("[data-tournament-results]"));
+        const replacement=holder.querySelector("[data-tournament-results]");
+        root.replaceWith(replacement);
+        if(focusSelector)replacement.querySelector(focusSelector)?.focus({preventScroll:true});
       } catch(error) {
         if(request===controller && root.isConnected){
           root.querySelector("[data-results-error]")?.remove();
@@ -344,8 +346,8 @@ window.ProfileUI = (() => {
         }
       }
     };
-    slot.addEventListener("change",event=>{if(event.target.matches("[data-finish-order],[data-finish-place]"))refresh();});
-    slot.addEventListener("click",event=>{const button=event.target.closest("[data-finish-page]");if(button&&!button.disabled)refresh(button.dataset.finishPage);});
+    slot.addEventListener("change",event=>{if(event.target.matches("[data-finish-order],[data-finish-place]"))refresh(1,event.target.matches("[data-finish-order]")?"[data-finish-order]":"[data-finish-place]");});
+    slot.addEventListener("click",event=>{const button=event.target.closest("[data-finish-page]");if(button&&!button.disabled)refresh(button.dataset.finishPage,button.textContent==="Next"?"[data-finish-page]:last-child":"[data-finish-page]:first-child");});
     window.addEventListener("pagehide",()=>controller?.abort(),{once:true});
   }
   window.addEventListener("pagehide",()=>{songRequest?.abort();songRequest=null;});
