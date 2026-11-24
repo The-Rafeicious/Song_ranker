@@ -760,7 +760,7 @@
     songId = track.id;
     const rank = songs.filter((s) => s.elo_score > track.elo_score).length + 1,
       album = byId(albums, track.album_id);
-    main.innerHTML = `<section class="panel song-profile profile-song dashboard-surface"><div class="profile-media">${mediaButton(track, "song-audio", false, true)}</div><div class="profile-copy"><h1 class="profile-page-title" title="${esc(track.title)}">${esc(track.title)}</h1><div class="metadata">${metadata(properAlbum(album) ? track : { ...track, album: "" })}</div><div class="tags">${tagLinks(track)}</div><button class="btn song profile-mix" data-profile-mix>♫ Start background mix</button></div></section>${window.ProfileUI.keyStats(
+    main.innerHTML = `<section class="panel song-profile profile-song dashboard-surface"><div class="profile-media">${mediaButton(track, "song-audio", false, true)}${profileMixControl()}</div><div class="profile-copy"><h1 class="profile-page-title" title="${esc(track.title)}">${esc(track.title)}</h1><div class="metadata">${metadata(properAlbum(album) ? track : { ...track, album: "" })}</div><div class="tags">${tagLinks(track)}</div></div></section>${window.ProfileUI.keyStats(
       [
         ["Current Elo", Math.round(track.elo_score), "standard"],
         ["Global rank", "#" + rank, "standard"],
@@ -906,6 +906,9 @@
       if (t < 1) requestAnimationFrame(tick);
     };
     requestAnimationFrame(tick);
+  }
+  function profileMixControl() {
+    return '<button type="button" class="profile-mix" data-profile-mix aria-label="Start background mix from this page" title="Start background mix from this page"><span aria-hidden="true">♫</span></button>';
   }
   function bindProfileMix(tracks) {
     const button=$("[data-profile-mix]");
@@ -2234,7 +2237,7 @@
         : "";
     document.body.classList.add("profile-page");
     main.classList.remove("narrow");
-    main.innerHTML = `<section class="panel song-profile profile-${kind} dashboard-surface"><div class="profile-media"><div class="album-cover-player"><button class="cover-button" data-audio="album-audio" data-album-play aria-label="Play ${queueLabel} previews" aria-pressed="false" ${queue.length ? "" : "disabled"}>${artwork(item, type)}<span class="play-overlay" aria-hidden="true">▶</span></button>${queue.length ? `<button class="album-cover-step previous" data-album-step="-1" aria-label="Previous ${queueLabel} preview" title="Previous ${queueLabel} preview">‹</button><button class="album-cover-step next" data-album-step="1" aria-label="Next ${queueLabel} preview" title="Next ${queueLabel} preview">›</button>` : ""}<div class="album-player-info" id="album-player-info" role="status">${window.ProfileUI.queueInfo(queue)}</div></div><audio id="album-audio" preload="none"></audio></div><div class="profile-copy"><h1 class="profile-page-title" title="${esc(item.name)}">${isTag ? "# " : ""}${esc(item.name)}</h1><div class="metadata">${isAlbum ? artistLinks : `${tracks.length} tracks ${isTag ? `<span class="separator muted">·</span> ${artistIds.length} artists ` : ""} <span class="separator muted">·</span> ${properAlbums.length} albums`}</div>${isTag ? `<p class="tag-description">${esc(item.description || "")}</p>` : `<div class="tags profile-tag-list">${window.ProfileUI.tags(tracks, tags)}</div>`}<div class="profile-facts">${isAlbum && item.release_date ? `<span>Released <b>${esc(item.release_date.slice(0, 10))}</b></span>` : ""}<span>Highest track peak <b>${tracks.length ? Math.round(Math.max(...tracks.map((s) => s.highest_elo || s.elo_score))) : "—"} Elo</b></span></div><button class="btn ${kind} profile-mix" data-profile-mix>♫ Start background mix</button></div></section>${window.ProfileUI.keyStats(
+    main.innerHTML = `<section class="panel song-profile profile-${kind} dashboard-surface"><div class="profile-media"><div class="album-cover-player"><button class="cover-button" data-audio="album-audio" data-album-play aria-label="Play ${queueLabel} previews" aria-pressed="false" ${queue.length ? "" : "disabled"}>${artwork(item, type)}<span class="play-overlay" aria-hidden="true">▶</span></button>${queue.length ? `<button class="album-cover-step previous" data-album-step="-1" aria-label="Previous ${queueLabel} preview" title="Previous ${queueLabel} preview">‹</button><button class="album-cover-step next" data-album-step="1" aria-label="Next ${queueLabel} preview" title="Next ${queueLabel} preview">›</button>` : ""}<div class="album-player-info" id="album-player-info" role="status">${window.ProfileUI.queueInfo(queue)}</div></div><audio id="album-audio" preload="none"></audio>${profileMixControl()}</div><div class="profile-copy"><h1 class="profile-page-title" title="${esc(item.name)}">${isTag ? "# " : ""}${esc(item.name)}</h1><div class="metadata">${isAlbum ? artistLinks : `${tracks.length} tracks ${isTag ? `<span class="separator muted">·</span> ${artistIds.length} artists ` : ""} <span class="separator muted">·</span> ${properAlbums.length} albums`}</div>${isTag ? `<p class="tag-description">${esc(item.description || "")}</p>` : `<div class="tags profile-tag-list">${window.ProfileUI.tags(tracks, tags)}</div>`}<div class="profile-facts">${isAlbum && item.release_date ? `<span>Released <b>${esc(item.release_date.slice(0, 10))}</b></span>` : ""}<span>Highest track peak <b>${tracks.length ? Math.round(Math.max(...tracks.map((s) => s.highest_elo || s.elo_score))) : "—"} Elo</b></span></div></div></section>${window.ProfileUI.keyStats(
       [
         ["Impact", window.SongRankerUI.impactText(item.impact_score), kind],
         [
