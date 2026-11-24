@@ -24,10 +24,10 @@ async function bounded(page,width,phase,folder){
    assert.ok(Array.isArray(library.songs),'Background inputs come from the public preview catalogue');
    const maps=Object.fromEntries(['pace_mood','energy_story'].map(key=>[key,{status:'placed',x:.5,y:.5}]));
    const radioTracks=[
-    {id:1,title:'Quiet track',artist:'Artist A',audio_url:'/tag-test-audio.wav?radio=1',artist_ids:[1],album_id:1,tag_ids:[1]},
-    {id:2,title:'Bright track',artist:'Artist B',album:'Bright release',audio_url:'/tag-test-audio.wav?radio=2',artist_ids:[2],album_id:2,tag_ids:[1],vibe_maps:maps,cover_url:'/vibe-test-art.svg'},
+    {id:1,title:'Quiet track',artist:'Artist A',audio_url:'/tag-test-audio.wav?radio=1',artist_ids:[1],album_id:1,tag_ids:[1,5]},
+    {id:2,title:'Bright track',artist:'Artist B',album:'Bright release',audio_url:'/tag-test-audio.wav?radio=2',artist_ids:[2],album_id:2,tag_ids:[1,5],vibe_maps:maps,cover_url:'/vibe-test-art.svg'},
     {id:3,title:'Warm track',artist:'Artist C',audio_url:'/tag-test-audio.wav?radio=3',artist_ids:[3],album_id:3,tag_ids:[3],vibe_maps:maps},
-    {id:4,title:'Unrelated track',artist:'Artist D',audio_url:'/tag-test-audio.wav?radio=4',artist_ids:[4],album_id:4,tag_ids:[4]},
+    {id:4,title:'Unrelated track',artist:'Artist D',audio_url:'/tag-test-audio.wav?radio=4',artist_ids:[4],album_id:4,tag_ids:[1]},
    ];
    await radio.route('**/api/background-previews',route=>route.fulfill({json:{songs:radioTracks}}));
    await radio.route('**/api/previews/1?*',async route=>{

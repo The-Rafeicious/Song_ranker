@@ -292,7 +292,7 @@ def background_previews():
     with closing(get_db_connection()) as conn:
         conn.execute('BEGIN')
         songs = with_vibe_maps(conn, conn.execute("""
-            SELECT s.id, s.title, s.audio_url, s.album_id, a.cover_url
+            SELECT s.id, s.title, s.audio_url, s.album_id, s.elo_score, a.cover_url
             FROM songs s LEFT JOIN albums a ON a.id=s.album_id
             LEFT JOIN song_details d ON d.song_id=s.id
             WHERE TRIM(COALESCE(s.audio_url,''))!='' AND COALESCE(d.preview_bad,0)=0
