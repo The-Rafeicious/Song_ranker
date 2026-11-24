@@ -39,7 +39,7 @@ function harness(focus=false,motion=false){
  assert.equal(h.calls[0].url,'/api/voting-replay?song_id=1');
  assert.equal(h.root.querySelectorAll('.elo-replay-row').length,3);
  assert.equal(h.root.querySelectorAll('img').length,0,'text stays escaped');
- assert.equal(h.root.querySelectorAll('[data-replay-focus],[data-replay-opponent],[data-replay-sound]').length,0,'focused view has no top-five summary, points card or leader audio');
+ assert.ok($('[data-replay-opponent]') && $('[data-replay-sound]'));
  assert.equal($('.is-focus-track').style.transform,'translateY(224px)');
  assert.equal(h.root.querySelectorAll('.elo-replay-gap').length,2);
  assert.equal($('[data-replay-seek]').parentElement.previousElementSibling.className,'elo-replay-clock','clock sits directly above timeline');
@@ -49,6 +49,7 @@ function harness(focus=false,motion=false){
  assert.deepEqual([...$('[data-replay-speed]').options].map(o=>o.value),['4800','3200','2000']);
  h.tick();assert.equal($('[data-replay-time]').dateTime,'2026-10-30T12:00:00+00:00');
  assert.match($('[data-replay-cue]').textContent,/−16 Elo to Track 2/);
+ assert.match($('[data-replay-opponent]').textContent,/Latest match.*Track 2.*−16 Elo/);
  assert.equal($('.is-focus-track').style.transform,'translateY(224px)');
  $('[data-replay-play]').click();assert.equal(h.timers.size,0);assert.ok(w.document.getElementById('song-audio').paused);
  $('[data-replay-seek]').value=2;$('[data-replay-seek]').dispatchEvent(new w.Event('input'));
