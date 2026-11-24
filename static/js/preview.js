@@ -998,7 +998,15 @@
         let roll = Math.random() * candidates.reduce((sum, candidate) => sum + candidate.weight, 0);
         return candidates.find(candidate => (roll -= candidate.weight) < 0) || candidates.at(-1);
       };
-      if (!anchor) return draw(liked(songs.map(song => ({song, reason: "", weight: 1}))));
+      // A modest, bounded Elo bias keeps even the lowest-rated tracks in the draw.
+      const ratingWeight = song => 1 + .25 * Math.tanh(((song.elo_score ?? 1200) - 1200) / 100);
+      const explore = pool => draw(liked(pool.map(song => ({song, reason: anchor ? "Library mix" : "", weight: ratingWeight(song)}))));
+      if (!anchor) return explore(songs);
+
+      const albumTracks = new Set(songs.filter(s => anchor.album_id != null && s.album_id === anchor.album_id).map(s => s.id));
+      let albumRun = 0;
+      for (let i = recent.length - 1; i >= 0 && albumTracks.has(recent[i]); i--) albumRun++;
+      const leaveAlbum = albumRun >= 3 && songs.some(s => !albumTracks.has(s.id) && !recent.includes(s.id));
 
       const anchorTags = new Set(anchor.tag_ids);
       const tagCounts = new Map();
@@ -1006,19 +1014,19 @@
         for (const tag of song.tag_ids) tagCounts.set(tag, (tagCounts.get(tag) || 0) + 1);
 
       const groups = new Map([
-        ["Same album", []], ["Shared artist", []], ["Shared tags", []], ["Similar vibe", []],
+        ["Same album", []], ["Shared artist", []], ["Shared tags", []], ["Similar vibe", []], ["Similar vibe and tags", []],
       ]);
       for (const song of songs) {
-        if (song.id === anchor.id) continue;
-        const add = (reason, weight) => groups.get(reason).push({song, reason, weight});
+        if (song.id === anchor.id || (leaveAlbum && albumTracks.has(song.id))) continue;
+        const add = (reason, weight) => groups.get(reason).push({song, reason, weight: weight * ratingWeight(song)});
         if (anchor.album_id != null && anchor.album_id === song.album_id) add("Same album", 1);
         if (anchor.artist_ids.some(id => song.artist_ids.includes(id))) add("Shared artist", 1);
 
-        let overlap = 0, union = 0, vibe = 0, sharedMaps = 0;
+        let sharedTags = 0, overlap = 0, union = 0, vibe = 0, sharedMaps = 0;
         for (const tag of new Set([...anchorTags, ...song.tag_ids])) {
           const weight = 1 / Math.log2(2 + tagCounts.get(tag));
           union += weight;
-          if (anchorTags.has(tag) && song.tag_ids.includes(tag)) overlap += weight;
+          if (anchorTags.has(tag) && song.tag_ids.includes(tag)) { overlap += weight; sharedTags++; }
         }
         for (const [key, point] of Object.entries(anchor.vibe_maps || {})) {
           const other = song.vibe_maps?.[key];
@@ -1029,11 +1037,15 @@
         }
         const tagScore = union ? overlap / union : 0;
         const vibeScore = sharedMaps >= 2 ? vibe / sharedMaps : 0;
-        if (tagScore >= .18) add("Shared tags", tagScore);
-        if (vibeScore >= .72) add("Similar vibe", vibeScore * sharedMaps / 4);
+        const tagsMatch = sharedTags >= 2 && tagScore >= .18;
+        if (vibeScore >= .72) add(tagsMatch ? "Similar vibe and tags" : "Similar vibe", vibeScore * sharedMaps / 4);
+        else if (tagsMatch) add("Shared tags", tagScore);
       }
 
       const hasFresh = [...groups.values()].some(tracks => tracks.some(({song}) => !recent.includes(song.id)));
+      const alternatives = songs.filter(s => s.id !== anchor.id && !(leaveAlbum && albumTracks.has(s.id)));
+      if (!hasFresh && alternatives.some(s => !recent.includes(s.id))) return explore(alternatives);
+      const priority = {"Similar vibe and tags": 6, "Similar vibe": 4, "Shared artist": 2, "Same album": 2, "Shared tags": 1};
       const choices = [];
       for (const [reason, tracks] of groups) {
         const pool = hasFresh ? tracks.filter(({song}) => !recent.includes(song.id)) : tracks;
@@ -1041,10 +1053,10 @@
         // The mix type earns better odds the longer it has gone unused.
         // A type with no suitable transition stays out of the draw.
         const age = steps - (mixHistory.get(reason) ?? -4);
-        choices.push({pool, weight: 1 + Math.min(20, age) / 2});
+        choices.push({pool, weight: priority[reason] * (1 + Math.min(12, age) / 12)});
       }
       const group = draw(choices);
-      return group ? draw(group.pool) : null;
+      return group ? draw(group.pool) : explore(alternatives);
     }
 
     function foregroundBusy() {

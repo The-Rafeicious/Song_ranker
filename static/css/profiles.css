@@ -558,7 +558,35 @@ body.profile-page #main .profile-opponent-copy .metadata { font-size: 16px; }
 body.profile-page #main .profile-result-context { grid-column: 1 / -1; margin: 0; padding: 12px; border-radius: 12px; background: var(--raised); color: var(--muted); font-size: 16px; }
 
 /* Profile controls and mode balance inherit the same semantic inset recipe. */
-body.profile-page #main .profile-mix { margin-top: 18px; }
+body.profile-page #main .profile-media { position: relative; }
+body.profile-page #main .profile-mix {
+  position: absolute;
+  inset: 4px 4px auto auto;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: var(--page-color);
+}
+.profile-mix > span {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid color-mix(in srgb, currentColor 50%, var(--line));
+  border-radius: 50%;
+  background: var(--panel);
+  font-size: 18px;
+}
+.profile-mix:is(:hover, :focus-visible):enabled > span {
+  border-color: currentColor;
+  background: var(--raised);
+}
 body.profile-page #main .profile-result-controls { display:flex; flex-wrap:wrap; gap:12px; margin-bottom:12px; }
 body.profile-page #main .profile-result-controls label { display:grid; gap:8px; flex:1 1 180px; color:var(--tournament); font-weight:700; min-width:0; }
 body.profile-page #main .profile-result-controls select {
