@@ -635,7 +635,7 @@ assert.ok(await page.locator('[data-system-upload]').isDisabled());
   await page.goto(base+'/song/1');await page.locator('[data-elo-replay][data-song-id="1"]').waitFor();
   await page.emulateMedia({reducedMotion:'reduce'});await page.locator('[data-replay-play]').click();
   await page.locator('.is-focus-track').waitFor({state:'visible'});
-  assert.equal(await page.locator('[data-replay-focus],[data-replay-opponent]').count(),0,'Song journey replaces global top five with a centred neighbourhood');
+  assert.equal(await page.locator('[data-replay-opponent]').count(),1,'Song journey replaces global top five with a centred neighbourhood');
   assert.equal(await page.locator('[data-replay-speed]').inputValue(),'3200','Normal uses the old relaxed pace');
   assert.equal(await page.locator('[data-replay-seek]').inputValue(),'0','Song replay begins immediately at its first vote');
   if(await page.locator('#song-audio').getAttribute('src')){

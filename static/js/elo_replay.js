@@ -16,11 +16,11 @@ window.EloReplay = (() => {
     const paceId = `elo-replay-pace-${++instance}`;
     root.classList.toggle("elo-replay-is-song", !!songId);
     root.innerHTML = `<div class="section-head"><h2 class="voting">${songId ? "Elo journey" : "Top five replay"}</h2></div>
-      <div class="elo-replay-controls"><button class="btn voting" data-replay-play aria-pressed="false">Play replay</button><button class="btn" data-replay-restart disabled>Restart</button>${window.GameplayUI.select(paceId, "Pace", [{value:"4800",label:"Relaxed"},{value:"3200",label:"Normal"},{value:"2000",label:"Quick"}], "3200")}${songId ? "" : '<button class="btn" data-replay-sound aria-pressed="true">Sound on</button>'}</div>
-      ${songId ? "" : '<p class="elo-replay-audio-status" data-replay-audio-status role="status"></p>'}
+      <div class="elo-replay-controls"><button class="btn voting" data-replay-play aria-pressed="false">Play replay</button><button class="btn" data-replay-restart disabled>Restart</button>${window.GameplayUI.select(paceId, "Pace", [{value:"4800",label:"Relaxed"},{value:"3200",label:"Normal"},{value:"2000",label:"Quick"}], "3200")}<button class="btn" data-replay-sound aria-pressed="true">Sound on</button></div>
+      <p class="elo-replay-audio-status" data-replay-audio-status role="status"></p>
       <div class="elo-replay-clock"><time data-replay-time>Starting ratings → current</time><span data-replay-step>Saved public Elo</span></div>
       <label class="elo-replay-seek">Timeline <input data-replay-seek type="range" min="0" max="0" value="0" disabled aria-label="Replay position"></label>
-      <div class="elo-replay-layout" data-replay-layout hidden><div class="elo-replay-stage" data-replay-stage aria-label="${songId ? "Two tracks above and two below the selected song" : "Five highest public Elo ratings"}"></div>${songId ? "" : '<aside class="elo-replay-opponent" data-replay-opponent aria-label="Latest leaderboard points gain"></aside>'}</div>
+      <div class="elo-replay-layout" data-replay-layout hidden><div class="elo-replay-stage" data-replay-stage aria-label="${songId ? "Two tracks above and two below the selected song" : "Five highest public Elo ratings"}"></div><aside class="elo-replay-opponent" data-replay-opponent aria-label="${songId ? "Latest song match" : "Latest leaderboard points gain"}"></aside></div>
       <div class="elo-replay-cue" data-replay-cue aria-live="polite" aria-atomic="true">${songId ? "Ready to replay." : "Ready to replay."}</div>
       <div class="report-facts elo-replay-note" data-replay-note hidden></div>`;
     root.querySelector(`#${paceId}`).setAttribute("data-replay-speed", "");
@@ -87,9 +87,9 @@ window.EloReplay = (() => {
     }
     document.addEventListener("play", captureHeroPlay, true);
     function playHero() {
-      if (!songId || !playing || disposed || document.hidden) return;
+      if (!songId || !sound || !playing || disposed || document.hidden) return;
       const clip = document.getElementById("song-audio");
-      if (!clip?.getAttribute("src")) return;
+      if (!clip?.getAttribute("src")) { audioStatus.textContent = "Song preview unavailable"; return; }
       heroOwned = true; clip.dataset.replayHeroOwner = paceId; heroClips.add(clip);
       const token = ++heroSerial;
       Promise.resolve(window.PreviewPlayback ? window.PreviewPlayback.play(clip) : clip.play()).then(() => {
@@ -152,11 +152,11 @@ window.EloReplay = (() => {
     function pointsCard() {
       if (!opponent || shownCause === causes[index]) return;
       shownCause = causes[index];
-      if (!shownCause) { delete opponent.dataset.mode; delete opponent.dataset.origin; opponent.innerHTML = '<h3>Latest gain</h3><p class="mode-stats-caption">The opponent behind a leaderboard gain will appear here.</p>'; return; }
+      if (!shownCause) { delete opponent.dataset.mode; delete opponent.dataset.origin; opponent.innerHTML = songId ? '<h3>Latest match</h3><p class="mode-stats-caption">No recorded opponent yet.</p>' : '<h3>Latest gain</h3><p class="mode-stats-caption">The opponent behind a leaderboard gain will appear here.</p>'; return; }
       const track = data.songs[shownCause.opponent_id], receiver = data.songs[shownCause.id];
       const mode = shownCause.mode === "blind" ? "blind" : "standard", tournament = shownCause.origin === "tournament";
       opponent.dataset.mode = mode; opponent.dataset.origin = tournament ? "tournament" : "ordinary";
-      opponent.innerHTML = `<h3>Latest gain</h3><p class="elo-replay-card-mode"><span class="${mode}">${mode === "blind" ? "Blind" : "Non-blind"}</span>${tournament ? ' · <span class="tournament">Tournament</span>' : ""}</p><a class="elo-replay-opponent-art" href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img data-cover src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(track)}<p class="elo-replay-transfer"><b class="song">${signed(shownCause.after - shownCause.before)} Elo</b> for ${songLink(receiver)}</p>`;
+      opponent.innerHTML = `<h3>${songId ? "Latest match" : "Latest gain"}</h3><p class="elo-replay-card-mode"><span class="${mode}">${mode === "blind" ? "Blind" : "Non-blind"}</span>${tournament ? ' · <span class="tournament">Tournament</span>' : ""}</p><a class="elo-replay-opponent-art" href="/song/${track.id}" aria-label="${esc(track.title)}">${track.cover_url ? `<img data-cover src="${esc(track.cover_url)}" alt="" loading="lazy">` : '<span aria-hidden="true">♫</span>'}</a>${identity(track)}<p class="elo-replay-transfer"><b class="${shownCause.after < shownCause.before ? "danger" : "song"}">${signed(shownCause.after - shownCause.before)} Elo</b> for ${songLink(receiver)}</p>`;
     }
     function render(motion = false) {
       const frame = data.frames[index], token = ++generation;
@@ -196,7 +196,7 @@ window.EloReplay = (() => {
         const direction = change ? delta : previousEntry ? entry.elo - previousEntry.elo : 0;
         const changed = previous && (change || previousPosition !== offset || previousEntry?.elo !== entry.elo);
         const glow = row.node.querySelector(".elo-replay-glow");
-        glow.hidden = !!songId || !changed;
+        glow.hidden = !changed;
         glow.style.color = direction < 0 || (!direction && previousPosition >= 0 && previousPosition < offset) ? "var(--danger)" : "var(--song)";
         row.position = position; row.value = entry.elo;
       });
@@ -256,7 +256,7 @@ window.EloReplay = (() => {
             let cause = null, previous = new Set();
             causes = data.frames.map(frame => {
               const kept = new Set(frame.board.map(row => row.id));
-              const gain = frame.kind === "vote" && (frame.changes.find(c => c.opponent_id && c.after > c.before && kept.has(c.id) && !previous.has(c.id)) || frame.changes.find(c => c.opponent_id && c.after > c.before && kept.has(c.id)));
+              const gain = frame.kind === "vote" && (songId ? frame.changes.find(c => c.id === songId && c.opponent_id) : frame.changes.find(c => c.opponent_id && c.after > c.before && kept.has(c.id) && !previous.has(c.id)) || frame.changes.find(c => c.opponent_id && c.after > c.before && kept.has(c.id)));
               if (gain) cause = {...gain, mode:frame.mode, origin:frame.origin};
               previous = kept; return cause;
             });
@@ -313,8 +313,8 @@ window.EloReplay = (() => {
     soundButton?.addEventListener("click", () => {
       sound = !sound; soundButton.textContent = sound ? "Sound on" : "Sound off";
       soundButton.setAttribute("aria-pressed", String(sound));
-      if (sound) { failedAudio.clear(); playLeader(); }
-      else { stopAudio(); audioStatus.textContent = ""; }
+      if (sound) { failedAudio.clear(); if (songId) playHero(); else playLeader(); }
+      else { pauseHero(); stopAudio(); audioStatus.textContent = ""; }
     });
     const visibility = () => { if (document.hidden) pause(); };
     document.addEventListener("visibilitychange", visibility);
