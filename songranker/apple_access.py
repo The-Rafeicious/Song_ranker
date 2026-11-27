@@ -371,6 +371,8 @@ def api_preview(song_id):
     page=request.args.get('page','')
     if page and not re.fullmatch(r'[A-Za-z0-9_-]{1,64}',page):
         return AppleRequestError('Invalid preview page.',400).response()
+    reusable = page == 'background' or re.fullmatch(r'tournament-[1-9]\d*', page)
+    browser_policy = 'private, max-age=86400' if reusable else 'no-store'
     cache_key=(page,song_id,url) if page else url
     byte_range=request.headers.get('Range')
     if byte_range and not re.fullmatch(r'bytes=(?:\d+-\d*|-\d+)',byte_range):
@@ -378,7 +380,10 @@ def api_preview(song_id):
     cached=preview_cache.get(cache_key)
     if cached is not None:
         remember(song_id,'cached')
-        return cached_preview_response(*cached,byte_range)
+        response = cached_preview_response(*cached,byte_range)
+        if response.status_code in (200, 206):
+            response.headers['Cache-Control'] = browser_policy
+        return response
     reservation=preview_cache.reserve(cache_key)
     play=request.args.get('play','')
     key=(song_id,play) if re.fullmatch(r'[A-Za-z0-9_-]{1,64}',play) else None
@@ -433,7 +438,11 @@ def api_preview(song_id):
         for name in ('Content-Type','Content-Length','Content-Range','Accept-Ranges'):
             if name in stream.headers:
                 response.headers[name]=stream.headers[name]
-        response.headers['Cache-Control']='no-store'
+        response.headers['Cache-Control'] = browser_policy
+        if reusable:
+            for name in ('ETag', 'Last-Modified'):
+                if name in stream.headers:
+                    response.headers[name] = stream.headers[name]
         response.headers['X-Preview-Cache']='miss'
         response.call_on_close(stream.close)
         return response

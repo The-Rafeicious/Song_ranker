@@ -5,3 +5,7 @@ Voting now uses active standard and blind votes for exposure, recent songs and r
 ## 5.11.1
 
 Voting reads exposure and repeat opponents together. Overall detail pages build the breakdown for the selected item. Background playback loads only the Vibe coordinates used to pick the next track.
+
+## 5.11.1.1
+
+Background Apple previews can be reused across page changes for a day. Tournament votes, bracket replay and podium share previews within their saved bracket. Ordinary foreground previews remain page-scoped.
