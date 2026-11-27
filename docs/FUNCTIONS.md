@@ -475,19 +475,19 @@ Adaptive draw algorithms plus the shared SQL exposure/recency adapters.
 | [draw_entries](../songranker/modes/selection.py#L294) | `pool, size, rng=random, *, counts=None, other_counts=None, recent=()` | Select unique exposure-weighted tournament entries with a bounded Vibe affinity after the first draw. |
 | [tournament_tracks](../songranker/modes/selection.py#L319) | `pool, size, rng=random, *, counts=None, local_strength=None, other_counts=None, recent=()` | Fair entry draw followed by strength seeding; local evidence is bounded. |
 | [tournament_selection_evidence](../songranker/modes/selection.py#L338) | `conn, pool, is_blind, *, scope='global', scope_id=None` | Read entry-based visibility counts and pool-relative recent bracket groups. |
-| [voting_pair_counts](../songranker/modes/selection.py#L378) | `conn` | Count active voting results between songs still in the catalogue. |
-| [local_seed_strength](../songranker/modes/selection.py#L391) | `conn` | Shrink local bracket outcomes toward Elo expectation per opponent. |
-| [shelves_feasible](../songranker/modes/selection.py#L413) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
-| [shelf_album_weights](../songranker/modes/selection.py#L423) | `groups, album_counts, track_counts, count` | Size-aware exposure support; two-album rounds favour more track capacity. |
-| [draw_shelves](../songranker/modes/selection.py#L447) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None, album_artists=None` | Equal feasible formats; soft album/artist/recency balance, then track exposure. |
-| [mode_counts](../songranker/modes/selection.py#L546) | `conn, mode` | Read active appearances from the mode-specific exposure projection. |
-| [preference_pair](../songranker/modes/selection.py#L556) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
-| [eligible_vibe_ids](../songranker/modes/selection.py#L589) | `conn, scope='all', scope_id=None` | Return unfinished profiles only; completed passes and four resolved slots retire a song. |
-| [vibe_song](../songranker/modes/selection.py#L603) | `conn, *, counts=None, previous=None, rng=random, scope='all', scope_id=None` | Draw only unfinished songs in the requested cohort, without changing evidence. |
-| [album_vibe_groups](../songranker/modes/selection.py#L634) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
-| [recent_preferences](../songranker/modes/selection.py#L649) | `conn, owner=None, limit=128` | Prefer this browser's active results, falling back to shared voting history. |
-| [shelf_history](../songranker/modes/selection.py#L669) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
-| [with_catalogue_age](../songranker/modes/selection.py#L684) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
+| [voting_history_counts](../songranker/modes/selection.py#L378) | `conn` | Derive repeat pairs and both visibility counts from one active-history scan. |
+| [local_seed_strength](../songranker/modes/selection.py#L396) | `conn` | Shrink local bracket outcomes toward Elo expectation per opponent. |
+| [shelves_feasible](../songranker/modes/selection.py#L418) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
+| [shelf_album_weights](../songranker/modes/selection.py#L428) | `groups, album_counts, track_counts, count` | Size-aware exposure support; two-album rounds favour more track capacity. |
+| [draw_shelves](../songranker/modes/selection.py#L452) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None, album_artists=None` | Equal feasible formats; soft album/artist/recency balance, then track exposure. |
+| [mode_counts](../songranker/modes/selection.py#L551) | `conn, mode` | Read active appearances from the mode-specific exposure projection. |
+| [preference_pair](../songranker/modes/selection.py#L561) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
+| [eligible_vibe_ids](../songranker/modes/selection.py#L594) | `conn, scope='all', scope_id=None` | Return unfinished profiles only; completed passes and four resolved slots retire a song. |
+| [vibe_song](../songranker/modes/selection.py#L608) | `conn, *, counts=None, previous=None, rng=random, scope='all', scope_id=None` | Draw only unfinished songs in the requested cohort, without changing evidence. |
+| [album_vibe_groups](../songranker/modes/selection.py#L639) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
+| [recent_preferences](../songranker/modes/selection.py#L654) | `conn, owner=None, limit=128` | Prefer this browser's active results, falling back to shared voting history. |
+| [shelf_history](../songranker/modes/selection.py#L674) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
+| [with_catalogue_age](../songranker/modes/selection.py#L689) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
 
 ## songranker/modes/shelves.py
 
@@ -500,26 +500,26 @@ Album Shelves eligibility, ordering/grading and detailed Shelves Stats.
 | [grade_shelf](../songranker/modes/shelves.py#L34) | `items` | 0.5 membership points + up to 2.5 relative-order points per track. |
 | [album_shelves](../songranker/modes/shelves.py#L84) | `` | Album shelves; GET /album_shelves. |
 | [shelf_stats](../songranker/modes/shelves.py#L89) | `` | Shelf stats; GET /album_shelves_stats. |
-| [shelf_pool](../songranker/modes/shelves.py#L107) | `conn` | The existing numbered/proper-album pool, shared by the picker and stats. |
-| [shelf_candidates](../songranker/modes/shelves.py#L129) | `conn, count` | Draw eligible albums and tracks using production exposure, recency and Vibe-aware selection. |
-| [shelf_payload](../songranker/modes/shelves.py#L158) | `conn, row` | Shelf payload; reads album_shelf_items, albums, songs. |
-| [shelf_round](../songranker/modes/shelves.py#L186) | `` | Shelf round; POST /api/album-shelves/round. |
-| [shelf_answer](../songranker/modes/shelves.py#L254) | `` | Shelf answer; POST /api/album-shelves/answer. |
-| [percentage](../songranker/modes/shelves.py#L333) | `right, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
-| [saved_date](../songranker/modes/shelves.py#L337) | `value` | Parse a saved result date for report display and ordering. |
-| [integer](../songranker/modes/shelves.py#L347) | `value, low=1, high=None` | Validate/normalise the feature’s integer input before using it. |
-| [can_grade](../songranker/modes/shelves.py#L351) | `items, rules` | Validate saved Shelves rules, slots, track positions and unique identities before reconstructing a grade. |
-| [can_grade.unique](../songranker/modes/shelves.py#L370) | `keys` | Check that a chosen tuple of saved item fields is unique within the round. |
-| [empty_counts](../songranker/modes/shelves.py#L383) | `` | Create the zeroed track/order/point counters shared by Shelves report aggregates. |
-| [add_counts](../songranker/modes/shelves.py#L400) | `target, source` | Accumulate one Shelves result's known counters into an existing aggregate. |
-| [item_counts](../songranker/modes/shelves.py#L406) | `item` | Project a graded track into album/order/point and error-category report counters. |
-| [finish_counts](../songranker/modes/shelves.py#L424) | `row` | Derive album/order accuracy and wrong-order counts from aggregated Shelves counters. |
-| [window_totals](../songranker/modes/shelves.py#L436) | `rows` | Summarise Shelves rounds in a report window, distinguishing graded results from unknown history. |
-| [page_number](../songranker/modes/shelves.py#L456) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
-| [build_shelves_stats](../songranker/modes/shelves.py#L466) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
-| [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L497) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
-| [build_shelves_stats.records](../songranker/modes/shelves.py#L773) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
-| [profile_shelves_details](../songranker/modes/shelves.py#L888) | `conn, song_ids` | Grade each full eligible round once, then pool distinct cohort items. |
+| [shelf_pool](../songranker/modes/shelves.py#L107) | `conn, *, selection_inputs=True` | The existing numbered/proper-album pool, shared by the picker and stats. |
+| [shelf_candidates](../songranker/modes/shelves.py#L130) | `conn, count` | Draw eligible albums and tracks using production exposure, recency and Vibe-aware selection. |
+| [shelf_payload](../songranker/modes/shelves.py#L159) | `conn, row` | Shelf payload; reads album_shelf_items, albums, songs. |
+| [shelf_round](../songranker/modes/shelves.py#L187) | `` | Shelf round; POST /api/album-shelves/round. |
+| [shelf_answer](../songranker/modes/shelves.py#L255) | `` | Shelf answer; POST /api/album-shelves/answer. |
+| [percentage](../songranker/modes/shelves.py#L334) | `right, total` | Return a one-decimal percentage, or unavailable when its denominator is zero. |
+| [saved_date](../songranker/modes/shelves.py#L338) | `value` | Parse a saved result date for report display and ordering. |
+| [integer](../songranker/modes/shelves.py#L348) | `value, low=1, high=None` | Validate/normalise the feature’s integer input before using it. |
+| [can_grade](../songranker/modes/shelves.py#L352) | `items, rules` | Validate saved Shelves rules, slots, track positions and unique identities before reconstructing a grade. |
+| [can_grade.unique](../songranker/modes/shelves.py#L371) | `keys` | Check that a chosen tuple of saved item fields is unique within the round. |
+| [empty_counts](../songranker/modes/shelves.py#L384) | `` | Create the zeroed track/order/point counters shared by Shelves report aggregates. |
+| [add_counts](../songranker/modes/shelves.py#L401) | `target, source` | Accumulate one Shelves result's known counters into an existing aggregate. |
+| [item_counts](../songranker/modes/shelves.py#L407) | `item` | Project a graded track into album/order/point and error-category report counters. |
+| [finish_counts](../songranker/modes/shelves.py#L425) | `row` | Derive album/order accuracy and wrong-order counts from aggregated Shelves counters. |
+| [window_totals](../songranker/modes/shelves.py#L437) | `rows` | Summarise Shelves rounds in a report window, distinguishing graded results from unknown history. |
+| [page_number](../songranker/modes/shelves.py#L457) | `value, pages` | Clamp a report page number to the available range, defaulting invalid input to page one. |
+| [build_shelves_stats](../songranker/modes/shelves.py#L467) | `conn, now=None, history_page=1, album_page=1, selected=None` | Aggregate all completed rounds in the caller's snapshot; page only lists. |
+| [build_shelves_stats.album_identity](../songranker/modes/shelves.py#L498) | `aid, slot=None` | Build a report release identity with linked artists and a fallback for unavailable albums. |
+| [build_shelves_stats.records](../songranker/modes/shelves.py#L774) | `rows` | Choose stable best/worst Shelves order-accuracy records from tested report rows. |
+| [profile_shelves_details](../songranker/modes/shelves.py#L889) | `conn, song_ids` | Grade each full eligible round once, then pool distinct cohort items. |
 
 ## songranker/modes/tournament.py
 
@@ -733,11 +733,11 @@ Derived, calibrated Overall scores and their rankings/details APIs.
 | [song_score](../songranker/overall.py#L274) | `fact, model, details=False` | Combine eligible mode contributions into a song's Overall score and evidence diagnostics. |
 | [entity_score](../songranker/overall.py#L305) | `ids, scores, details=False` | Aggregate member-song scores into an evidence-adjusted collection score with a neutral prior. |
 | [apply_display_scores](../songranker/overall.py#L342) | `rows` | Preserve raw distances/endpoints; category standing never rescales a score. |
-| [evaluate](../songranker/overall.py#L359) | `data, force=False, details=False` | Compute and rank Overall songs, artists, albums and tags with calibration and summary diagnostics. |
-| [overall_rankings](../songranker/overall.py#L403) | `` | Overall rankings; GET /overall_rankings. |
-| [overall_api](../songranker/overall.py#L406) | `` | Overall api; GET /api/overall. |
-| [overall_details](../songranker/overall.py#L410) | `` | Overall details; GET /api/overall/details. |
-| [recalibrate_overall](../songranker/overall.py#L422) | `` | Recalibrate overall; POST /api/dev/overall/recalibrate. |
+| [evaluate](../songranker/overall.py#L359) | `data, force=False, details=False, detail_target=None` | Compute and rank Overall songs, artists, albums and tags with calibration and summary diagnostics. |
+| [overall_rankings](../songranker/overall.py#L404) | `` | Overall rankings; GET /overall_rankings. |
+| [overall_api](../songranker/overall.py#L407) | `` | Overall api; GET /api/overall. |
+| [overall_details](../songranker/overall.py#L411) | `` | Overall details; GET /api/overall/details. |
+| [recalibrate_overall](../songranker/overall.py#L423) | `` | Recalibrate overall; POST /api/dev/overall/recalibrate. |
 
 ## songranker/pages.py
 
@@ -2082,20 +2082,20 @@ Voting recency, per-track visibility balance and saved-history routing.
 | [VotingHistoryTests.offer](../tests/test_voting_selection.py#L114) | `self, index, owner='browser', mode='standard', status='answered'` | Save a browser offer and its voting event when answered. |
 | [VotingHistoryTests.test_history_spans_modes_is_bounded_and_ignores_other_browsers_and_open_offers](../tests/test_voting_selection.py#L126) | `self` | Verify history spans modes is bounded and ignores other browsers and open offers. |
 | [VotingHistoryTests.test_only_active_voting_history_influences_selection](../tests/test_voting_selection.py#L137) | `self` | Verify only active voting history influences selection. |
-| [VotingHistoryTests.test_fallback_uses_effective_saved_results_and_both_modes](../tests/test_voting_selection.py#L153) | `self` | Verify fallback uses effective saved results and both modes. |
-| [VotingHistoryTests.test_preview_eligibility_balance_inputs_and_reads_do_not_change_data](../tests/test_voting_selection.py#L160) | `self` | Verify preview eligibility balance inputs and reads do not change data. |
-| [VotingHistoryTests.test_production_history_horizon_grows_with_eligible_collection](../tests/test_voting_selection.py#L170) | `self` | The production reader scales its horizon and respects preview eligibility. |
-| [VotingHistoryTests.test_diagnostics_match_production_anchor_weights_without_writes](../tests/test_voting_selection.py#L181) | `self` | Selection health uses the same recency and own-mode balance rules. |
-| [VotingHistoryTests.bracket](../tests/test_voting_selection.py#L202) | `self, tid, ids, blind=False, status='in_progress', scope='global', scope_id=None` | Save a bracket's unique entrants without manufacturing match results. |
-| [VotingHistoryTests.test_tournament_counts_split_visibility_and_count_entries_once](../tests/test_voting_selection.py#L209) | `self` | Verify tournament counts split visibility and count entries once. |
-| [VotingHistoryTests.test_tournament_history_ignores_unrelated_scopes_and_scales_group_age](../tests/test_voting_selection.py#L223) | `self` | Verify tournament history ignores unrelated scopes and scales group age. |
-| [VotingHistoryTests.test_tournament_draw_ignores_artist_labels_and_uses_tracks_without_replacement](../tests/test_voting_selection.py#L234) | `self` | Verify tournament draw ignores artist labels and uses tracks without replacement. |
-| [VotingHistoryTests.test_tournament_draw_soft_balance_unique_and_full_pool_fallback](../tests/test_voting_selection.py#L244) | `self` | Verify tournament draw soft balance unique and full pool fallback. |
-| [VotingHistoryTests.test_tournament_diagnostics_match_entry_weights](../tests/test_voting_selection.py#L258) | `self` | Verify tournament diagnostics match entry weights. |
-| [VotingHistoryTests.test_bracket_route_passes_visibility_evidence_and_preserves_eligibility](../tests/test_voting_selection.py#L272) | `self` | Verify bracket route passes visibility evidence and preserves eligibility. |
-| [VotingHistoryTests.test_local_entries_and_results_leave_competition_weights_and_draws_unchanged](../tests/test_voting_selection.py#L294) | `self` | Verify local entries and results leave competition weights and draws unchanged. |
-| [VotingHistoryTests.test_local_visibility_and_recency_use_only_the_selected_collection](../tests/test_voting_selection.py#L326) | `self` | Verify local visibility and recency use only the selected collection. |
-| [VotingHistoryTests.test_route_never_uses_local_seed_results_for_library_or_tag](../tests/test_voting_selection.py#L345) | `self` | Verify route never uses local seed results for library or tag. |
+| [VotingHistoryTests.test_fallback_uses_effective_saved_results_and_both_modes](../tests/test_voting_selection.py#L156) | `self` | Verify fallback uses effective saved results and both modes. |
+| [VotingHistoryTests.test_preview_eligibility_balance_inputs_and_reads_do_not_change_data](../tests/test_voting_selection.py#L163) | `self` | Verify preview eligibility balance inputs and reads do not change data. |
+| [VotingHistoryTests.test_production_history_horizon_grows_with_eligible_collection](../tests/test_voting_selection.py#L173) | `self` | The production reader scales its horizon and respects preview eligibility. |
+| [VotingHistoryTests.test_diagnostics_match_production_anchor_weights_without_writes](../tests/test_voting_selection.py#L184) | `self` | Selection health uses the same recency and own-mode balance rules. |
+| [VotingHistoryTests.bracket](../tests/test_voting_selection.py#L205) | `self, tid, ids, blind=False, status='in_progress', scope='global', scope_id=None` | Save a bracket's unique entrants without manufacturing match results. |
+| [VotingHistoryTests.test_tournament_counts_split_visibility_and_count_entries_once](../tests/test_voting_selection.py#L212) | `self` | Verify tournament counts split visibility and count entries once. |
+| [VotingHistoryTests.test_tournament_history_ignores_unrelated_scopes_and_scales_group_age](../tests/test_voting_selection.py#L226) | `self` | Verify tournament history ignores unrelated scopes and scales group age. |
+| [VotingHistoryTests.test_tournament_draw_ignores_artist_labels_and_uses_tracks_without_replacement](../tests/test_voting_selection.py#L237) | `self` | Verify tournament draw ignores artist labels and uses tracks without replacement. |
+| [VotingHistoryTests.test_tournament_draw_soft_balance_unique_and_full_pool_fallback](../tests/test_voting_selection.py#L247) | `self` | Verify tournament draw soft balance unique and full pool fallback. |
+| [VotingHistoryTests.test_tournament_diagnostics_match_entry_weights](../tests/test_voting_selection.py#L261) | `self` | Verify tournament diagnostics match entry weights. |
+| [VotingHistoryTests.test_bracket_route_passes_visibility_evidence_and_preserves_eligibility](../tests/test_voting_selection.py#L275) | `self` | Verify bracket route passes visibility evidence and preserves eligibility. |
+| [VotingHistoryTests.test_local_entries_and_results_leave_competition_weights_and_draws_unchanged](../tests/test_voting_selection.py#L297) | `self` | Verify local entries and results leave competition weights and draws unchanged. |
+| [VotingHistoryTests.test_local_visibility_and_recency_use_only_the_selected_collection](../tests/test_voting_selection.py#L329) | `self` | Verify local visibility and recency use only the selected collection. |
+| [VotingHistoryTests.test_route_never_uses_local_seed_results_for_library_or_tag](../tests/test_voting_selection.py#L348) | `self` | Verify route never uses local seed results for library or tag. |
 
 ## tests/test_waitress_shutdown.py
 

@@ -356,7 +356,7 @@ def apply_display_scores(rows):
         position=end
 
 
-def evaluate(data,force=False,details=False):
+def evaluate(data,force=False,details=False,detail_target=None):
     """Compute and rank Overall songs, artists, albums and tags with calibration and
     summary diagnostics.
     """
@@ -366,7 +366,7 @@ def evaluate(data,force=False,details=False):
         # Ratios live on the server. Keep only a compact version marker in cookies.
         compact=dict(id=model['id'],version=VERSION,generated_at=model['generated_at'])
         if session.get('overall_calibration')!=compact:session['overall_calibration']=compact
-    scored={sid:song_score(fact,model,details) for sid,fact in facts.items()}
+    scored={sid:song_score(fact,model,details and detail_target in (None, ("songs", sid))) for sid,fact in facts.items()}
     by_album=defaultdict(list);by_artist=defaultdict(set);by_tag=defaultdict(set)
     album_lookup={a['id']:a for a in data.get('albums',[])}
     result={kind:[] for kind in ('songs','artists','albums','tags')}
@@ -382,8 +382,9 @@ def evaluate(data,force=False,details=False):
             if kind == 'albums' and not proper_album(entity):
                 continue
             name=entity.get('name',entity.get('title',''))
-            row=dict(id=entity['id'],name=name,title=name,cover_url=entity.get('cover_url'),eligible=kind!='albums' or proper_album(entity),**entity_score(index[entity['id']],scored,details))
-            if details:
+            entity_details = details and detail_target in (None, (kind, entity['id']))
+            row=dict(id=entity['id'],name=name,title=name,cover_url=entity.get('cover_url'),eligible=kind!='albums' or proper_album(entity),**entity_score(index[entity['id']],scored,entity_details))
+            if entity_details:
                 linked_ids=set(index[entity['id']])
                 row['linked_songs']=[dict(id=s['id'],name=s['name'],score=s['score'],
                                          composite_score=s['composite_score'],
@@ -412,7 +413,7 @@ def overall_details():
     try:id=int(request.args.get('id',''))
     except ValueError:abort(400)
     if kind not in ('songs','artists','albums','tags'):abort(400)
-    result=evaluate(collection(True),details=True)
+    result=evaluate(collection(True),details=True,detail_target=(kind,id))
     row=next((r for r in result['entities'][kind] if r['id']==id),None)
     if not row:abort(404)
     response=jsonify(entity=row,calibration=result['calibration']);response.headers['Cache-Control']='no-store';return response

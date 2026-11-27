@@ -294,7 +294,7 @@ def collection(include_overall_sources=False, include_query_sources=False):
             for r in conn.execute("SELECT song_id,added_at FROM song_details")
         }
         from songranker.modes.shelves import shelf_pool
-        shelf_ids = {s["id"] for group in shelf_pool(conn).values() for s in group}
+        shelf_ids = {s["id"] for group in shelf_pool(conn, selection_inputs=False).values() for s in group}
         for song in data["songs"]:
             song.update(
                 shelves_eligible=song["id"] in shelf_ids,

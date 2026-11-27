@@ -375,17 +375,22 @@ def tournament_selection_evidence(conn, pool, is_blind, *, scope="global", scope
     return dict(counts=counts, other_counts=other, recent=recent)
 
 
-def voting_pair_counts(conn):
-    """Count active voting results between songs still in the catalogue."""
-    return {
-        (low, high): count
-        for low, high, count in conn.execute("""
-            SELECT MIN(h.winner_id,h.loser_id), MAX(h.winner_id,h.loser_id), COUNT(*)
-            FROM history h JOIN songs w ON w.id=h.winner_id JOIN songs l ON l.id=h.loser_id
-            WHERE h.winner_id!=h.loser_id AND h.mode IN ('standard','blind')
-            GROUP BY 1,2
-        """)
-    }
+def voting_history_counts(conn):
+    """Derive repeat pairs and both visibility counts from one active-history scan."""
+    from collections import Counter
+
+    pairs = Counter()
+    exposure = {"standard": Counter(), "blind": Counter()}
+    for low, high, mode, count in conn.execute("""
+        SELECT MIN(h.winner_id,h.loser_id), MAX(h.winner_id,h.loser_id), h.mode, COUNT(*)
+        FROM history h JOIN songs w ON w.id=h.winner_id JOIN songs l ON l.id=h.loser_id
+        WHERE h.winner_id!=h.loser_id AND h.mode IN ('standard','blind')
+        GROUP BY 1,2,3
+    """):
+        pairs[low, high] += count
+        exposure[mode][low] += count
+        exposure[mode][high] += count
+    return pairs, exposure
 
 
 def local_seed_strength(conn):
@@ -572,13 +577,13 @@ def preference_pair(conn, mode, owner=None, rng=random):
     horizon = max(8, math.ceil(4 * math.sqrt(len(rated_pool(pool)))))
     recent = recent_preferences(conn, owner, limit=horizon)
     previous = recent[0] if recent else ()
-    pair_counts = voting_pair_counts(conn)
-    other = mode_counts(conn, "blind" if mode == "standard" else "standard")
+    pair_counts, exposure = voting_history_counts(conn)
+    other = exposure["blind" if mode == "standard" else "standard"]
     # A track without a preview cannot catch up in Blind, so its Non-blind
     # selection must not be suppressed by an impossible balance target.
     other = {s["id"]: other.get(s["id"], 0) for s in pool
              if str(s.get("audio_url") or "").strip()}
-    pair = choose_match(pool, rng, counts=mode_counts(conn, mode), previous=previous,
+    pair = choose_match(pool, rng, counts=exposure[mode], previous=previous,
                         pair_counts=pair_counts, other_counts=other, recent=recent)
     if pair[0] is None:
         return pair

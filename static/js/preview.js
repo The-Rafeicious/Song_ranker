@@ -934,7 +934,7 @@
       if (!loading) {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), READY_TIMEOUT);
-        loading = fetch("/api/background-previews", {signal: controller.signal}).then(async response => {
+        loading = fetch("/api/background-previews", {signal: controller.signal, headers: {"X-Preview-Layout": "playback"}}).then(async response => {
           if (!response.ok) throw Error("Preview list unavailable");
           const {songs} = await response.json();
           catalogue = songs;

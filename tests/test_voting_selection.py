@@ -146,7 +146,10 @@ class VotingHistoryTests(unittest.TestCase):
             expected = [(5, 6)] if active else []
             for owner in ('browser', None):
                 self.assertEqual(S.recent_preferences(self.conn, owner), expected)
-            self.assertEqual(S.voting_pair_counts(self.conn), {pair:1 for pair in expected})
+            pairs, exposure = S.voting_history_counts(self.conn)
+            self.assertEqual(pairs, {pair:1 for pair in expected})
+            for mode in exposure:
+                self.assertEqual(exposure[mode], S.mode_counts(self.conn, mode))
             self.assertEqual(S.mode_counts(self.conn, 'standard'), {})
             self.assertEqual(S.mode_counts(self.conn, 'blind'), {5:1,6:1} if active else {})
 
