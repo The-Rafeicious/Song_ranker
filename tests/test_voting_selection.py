@@ -112,11 +112,16 @@ class VotingHistoryTests(unittest.TestCase):
         self.conn.commit()
 
     def offer(self, index, owner='browser', mode='standard', status='answered'):
-        """Save presentation history without adding exposure or rating evidence."""
+        """Save a browser offer and its voting event when answered."""
         self.conn.execute('''INSERT INTO preference_offers
             (token,owner_hash,song1_id,song2_id,mode,rules_version,status,
              closed_at,song1_snapshot,song2_snapshot) VALUES(?,?,1,2,?,1,?,?,'{}','{}')''',
             (str(index), owner_hash(owner), mode, status, f'2026-10-01 00:{index // 60:02}:{index % 60:02}'))
+
+        if status == 'answered':
+            pair = (3, 4) if index == 139 else (1, 2)
+            record_preference(self.conn, *pair, mode, {sid:dict(id=sid) for sid in pair},
+                              offer_token=str(index))
 
     def test_history_spans_modes_is_bounded_and_ignores_other_browsers_and_open_offers(self):
         for index in range(140):
@@ -128,6 +133,22 @@ class VotingHistoryTests(unittest.TestCase):
         self.assertEqual(len(recent), 128)
         self.assertEqual(recent[0], (3, 4))
         self.assertEqual(len(S.recent_preferences(self.conn, 'browser', 8)), 8)
+
+    def test_only_active_voting_history_influences_selection(self):
+        self.offer(1)
+        self.conn.execute("""INSERT INTO preference_events
+            (winner_id,loser_id,mode,origin,tournament_id,tournament_match_id,rating_weight)
+            VALUES(3,4,'blind','tournament',1,1,0.5)""")
+        for action, active in [('void', 0), ('restore', 1)]:
+            self.conn.execute("""INSERT INTO preference_corrections
+                (event_id,request_token,action,winner_id,loser_id,mode,active)
+                VALUES(1,?,?,5,6,'blind',?)""", (action, action, active))
+            expected = [(5, 6)] if active else []
+            for owner in ('browser', None):
+                self.assertEqual(S.recent_preferences(self.conn, owner), expected)
+            self.assertEqual(S.voting_pair_counts(self.conn), {pair:1 for pair in expected})
+            self.assertEqual(S.mode_counts(self.conn, 'standard'), {})
+            self.assertEqual(S.mode_counts(self.conn, 'blind'), {5:1,6:1} if active else {})
 
     def test_fallback_uses_effective_saved_results_and_both_modes(self):
         for mode, pair in [('standard', (1, 2)), ('blind', (3, 4))]:
@@ -171,8 +192,8 @@ class VotingHistoryTests(unittest.TestCase):
         standard = next(p for p in report['pools'] if p['key'] == 'standard')
         rows = S.with_catalogue_age(self.conn, self.conn.execute('SELECT * FROM songs ORDER BY id'))
         other = {i:0 for i in range(1, 5)}
-        weights = S.voting_weights(rows, S.mode_counts(self.conn, 'standard'), other, [(3, 4)])
-        weights[2] = weights[3] = 0
+        weights = S.voting_weights(rows, S.mode_counts(self.conn, 'standard'), other, [(1, 2)])
+        weights[0] = weights[1] = 0
         total = sum(weights)
         for row in standard['rows']:
             self.assertAlmostEqual(row['probability'], weights[row['id'] - 1] / total)
@@ -288,7 +309,7 @@ class VotingHistoryTests(unittest.TestCase):
         self.bracket(3,[1,2,3,4],blind=True,status='completed',scope='artist',scope_id=1)
         self.bracket(4,[1,2,3,4],blind=True,scope='album',scope_id=1)
         self.conn.execute("INSERT INTO tournament_matches(tournament_id,round_number,match_number,song1_id,song2_id,winner_id,loser_id,status) VALUES(3,1,1,1,2,1,2,'completed')")
-        self.assertTrue(S.preference_evidence(self.conn)[1],'local results remain available to local seeding')
+        self.assertTrue(S.local_seed_strength(self.conn),'local results remain available to local seeding')
         before=capture(self.conn)
         for (scope,blind),expected in baseline.items():
             actual=S.tournament_selection_evidence(self.conn,rows,blind,scope=scope,scope_id=1 if scope=='tag' else None)
@@ -333,7 +354,7 @@ class VotingHistoryTests(unittest.TestCase):
         self.conn.commit()
         path=self.conn.execute('PRAGMA database_list').fetchone()[2]
         local={1:1,2:-1}
-        with patch.object(services,'DB_NAME',path),patch.object(S,'preference_evidence',return_value=({},local)) as evidence,patch.object(tournament,'tournament_tracks',wraps=S.tournament_tracks) as draw:
+        with patch.object(services,'DB_NAME',path),patch.object(S,'local_seed_strength',return_value=local) as evidence,patch.object(tournament,'tournament_tracks',wraps=S.tournament_tracks) as draw:
             client=services.app.test_client()
             for scope in ('global','tag'):
                 result=client.get('/api/generate_bracket',query_string=dict(size=8,scope=scope,scope_id=1),content_type='application/json')

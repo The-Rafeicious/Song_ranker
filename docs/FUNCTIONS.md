@@ -475,19 +475,19 @@ Adaptive draw algorithms plus the shared SQL exposure/recency adapters.
 | [draw_entries](../songranker/modes/selection.py#L294) | `pool, size, rng=random, *, counts=None, other_counts=None, recent=()` | Select unique exposure-weighted tournament entries with a bounded Vibe affinity after the first draw. |
 | [tournament_tracks](../songranker/modes/selection.py#L319) | `pool, size, rng=random, *, counts=None, local_strength=None, other_counts=None, recent=()` | Fair entry draw followed by strength seeding; local evidence is bounded. |
 | [tournament_selection_evidence](../songranker/modes/selection.py#L338) | `conn, pool, is_blind, *, scope='global', scope_id=None` | Read entry-based visibility counts and pool-relative recent bracket groups. |
-| [preference_evidence](../songranker/modes/selection.py#L378) | `conn` | Read pair exposure and local seed evidence without writing ratings. |
-| [shelves_feasible](../songranker/modes/selection.py#L412) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
-| [shelf_album_weights](../songranker/modes/selection.py#L422) | `groups, album_counts, track_counts, count` | Size-aware exposure support; two-album rounds favour more track capacity. |
-| [draw_shelves](../songranker/modes/selection.py#L446) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None, album_artists=None` | Equal feasible formats; soft album/artist/recency balance, then track exposure. |
-| [mode_counts](../songranker/modes/selection.py#L545) | `conn, mode` | Read mode exposures and add effective weighted tournament participation to voting modes. |
-| [preference_pair](../songranker/modes/selection.py#L563) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
-| [eligible_vibe_ids](../songranker/modes/selection.py#L596) | `conn, scope='all', scope_id=None` | Return unfinished profiles only; completed passes and four resolved slots retire a song. |
-| [vibe_song](../songranker/modes/selection.py#L610) | `conn, *, counts=None, previous=None, rng=random, scope='all', scope_id=None` | Draw only unfinished songs in the requested cohort, without changing evidence. |
-| [album_vibe_groups](../songranker/modes/selection.py#L641) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
-| [recent_preferences](../songranker/modes/selection.py#L656) | `conn, owner=None, limit=128` | Read a bounded newest-first song history across both voting visibilities. |
-| [previous_preference](../songranker/modes/selection.py#L682) | `conn, mode, owner=None` | Read the owning browser's last answered pair, falling back to the latest effective mode result. |
-| [shelf_history](../songranker/modes/selection.py#L708) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
-| [with_catalogue_age](../songranker/modes/selection.py#L723) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
+| [voting_pair_counts](../songranker/modes/selection.py#L378) | `conn` | Count active voting results between songs still in the catalogue. |
+| [local_seed_strength](../songranker/modes/selection.py#L391) | `conn` | Shrink local bracket outcomes toward Elo expectation per opponent. |
+| [shelves_feasible](../songranker/modes/selection.py#L413) | `groups, available, count` | Check whether a remaining album choice can supply the required album count and ten tracks. |
+| [shelf_album_weights](../songranker/modes/selection.py#L423) | `groups, album_counts, track_counts, count` | Size-aware exposure support; two-album rounds favour more track capacity. |
+| [draw_shelves](../songranker/modes/selection.py#L447) | `groups, album_counts, track_counts, history, count=0, rng=random, *, vibe_groups=None, album_artists=None` | Equal feasible formats; soft album/artist/recency balance, then track exposure. |
+| [mode_counts](../songranker/modes/selection.py#L546) | `conn, mode` | Read active appearances from the mode-specific exposure projection. |
+| [preference_pair](../songranker/modes/selection.py#L556) | `conn, mode, owner=None, rng=random` | Draw a standard/blind pair from eligible songs, then hydrate only the two selected records. |
+| [eligible_vibe_ids](../songranker/modes/selection.py#L589) | `conn, scope='all', scope_id=None` | Return unfinished profiles only; completed passes and four resolved slots retire a song. |
+| [vibe_song](../songranker/modes/selection.py#L603) | `conn, *, counts=None, previous=None, rng=random, scope='all', scope_id=None` | Draw only unfinished songs in the requested cohort, without changing evidence. |
+| [album_vibe_groups](../songranker/modes/selection.py#L634) | `conn, album_ids` | All songs belonging to eligible albums, including unnumbered tracks. |
+| [recent_preferences](../songranker/modes/selection.py#L649) | `conn, owner=None, limit=128` | Prefer this browser's active results, falling back to shared voting history. |
+| [shelf_history](../songranker/modes/selection.py#L669) | `conn` | One ordered set per completed round; frozen album links retain their meaning. |
+| [with_catalogue_age](../songranker/modes/selection.py#L684) | `conn, rows` | Read age and vibe metadata for shared adaptive selectors. |
 
 ## songranker/modes/shelves.py
 
@@ -2080,21 +2080,21 @@ Voting recency, per-track visibility balance and saved-history routing.
 | [VotingWeightTests.test_seeded_repeated_play_reduces_short_returns_without_stalling.simulate](../tests/test_voting_selection.py#L78) | `adaptive` | Count short returns while updating the same per-mode exposure facts. |
 | [VotingHistoryTests.setUp](../tests/test_voting_selection.py#L102) | `self` | Create isolated disposable state and register cleanup for this test. |
 | [VotingHistoryTests.offer](../tests/test_voting_selection.py#L114) | `self, index, owner='browser', mode='standard', status='answered'` | Save presentation history without adding exposure or rating evidence. |
-| [VotingHistoryTests.test_history_spans_modes_is_bounded_and_ignores_other_browsers_and_open_offers](../tests/test_voting_selection.py#L121) | `self` | Verify history spans modes is bounded and ignores other browsers and open offers. |
-| [VotingHistoryTests.test_fallback_uses_effective_saved_results_and_both_modes](../tests/test_voting_selection.py#L132) | `self` | Verify fallback uses effective saved results and both modes. |
-| [VotingHistoryTests.test_preview_eligibility_balance_inputs_and_reads_do_not_change_data](../tests/test_voting_selection.py#L139) | `self` | Verify preview eligibility balance inputs and reads do not change data. |
-| [VotingHistoryTests.test_production_history_horizon_grows_with_eligible_collection](../tests/test_voting_selection.py#L149) | `self` | The production reader scales its horizon and respects preview eligibility. |
-| [VotingHistoryTests.test_diagnostics_match_production_anchor_weights_without_writes](../tests/test_voting_selection.py#L160) | `self` | Selection health uses the same recency and own-mode balance rules. |
-| [VotingHistoryTests.bracket](../tests/test_voting_selection.py#L181) | `self, tid, ids, blind=False, status='in_progress', scope='global', scope_id=None` | Save a bracket's unique entrants without manufacturing match results. |
-| [VotingHistoryTests.test_tournament_counts_split_visibility_and_count_entries_once](../tests/test_voting_selection.py#L188) | `self` | Verify tournament counts split visibility and count entries once. |
-| [VotingHistoryTests.test_tournament_history_ignores_unrelated_scopes_and_scales_group_age](../tests/test_voting_selection.py#L202) | `self` | Verify tournament history ignores unrelated scopes and scales group age. |
-| [VotingHistoryTests.test_tournament_draw_ignores_artist_labels_and_uses_tracks_without_replacement](../tests/test_voting_selection.py#L213) | `self` | Verify tournament draw ignores artist labels and uses tracks without replacement. |
-| [VotingHistoryTests.test_tournament_draw_soft_balance_unique_and_full_pool_fallback](../tests/test_voting_selection.py#L223) | `self` | Verify tournament draw soft balance unique and full pool fallback. |
-| [VotingHistoryTests.test_tournament_diagnostics_match_entry_weights](../tests/test_voting_selection.py#L237) | `self` | Verify tournament diagnostics match entry weights. |
-| [VotingHistoryTests.test_bracket_route_passes_visibility_evidence_and_preserves_eligibility](../tests/test_voting_selection.py#L251) | `self` | Verify bracket route passes visibility evidence and preserves eligibility. |
-| [VotingHistoryTests.test_local_entries_and_results_leave_competition_weights_and_draws_unchanged](../tests/test_voting_selection.py#L273) | `self` | Verify local entries and results leave competition weights and draws unchanged. |
-| [VotingHistoryTests.test_local_visibility_and_recency_use_only_the_selected_collection](../tests/test_voting_selection.py#L305) | `self` | Verify local visibility and recency use only the selected collection. |
-| [VotingHistoryTests.test_route_never_uses_local_seed_results_for_library_or_tag](../tests/test_voting_selection.py#L324) | `self` | Verify route never uses local seed results for library or tag. |
+| [VotingHistoryTests.test_history_spans_modes_is_bounded_and_ignores_other_browsers_and_open_offers](../tests/test_voting_selection.py#L126) | `self` | Verify history spans modes is bounded and ignores other browsers and open offers. |
+| [VotingHistoryTests.test_fallback_uses_effective_saved_results_and_both_modes](../tests/test_voting_selection.py#L137) | `self` | Verify fallback uses effective saved results and both modes. |
+| [VotingHistoryTests.test_preview_eligibility_balance_inputs_and_reads_do_not_change_data](../tests/test_voting_selection.py#L144) | `self` | Verify preview eligibility balance inputs and reads do not change data. |
+| [VotingHistoryTests.test_production_history_horizon_grows_with_eligible_collection](../tests/test_voting_selection.py#L154) | `self` | The production reader scales its horizon and respects preview eligibility. |
+| [VotingHistoryTests.test_diagnostics_match_production_anchor_weights_without_writes](../tests/test_voting_selection.py#L165) | `self` | Selection health uses the same recency and own-mode balance rules. |
+| [VotingHistoryTests.bracket](../tests/test_voting_selection.py#L186) | `self, tid, ids, blind=False, status='in_progress', scope='global', scope_id=None` | Save a bracket's unique entrants without manufacturing match results. |
+| [VotingHistoryTests.test_tournament_counts_split_visibility_and_count_entries_once](../tests/test_voting_selection.py#L193) | `self` | Verify tournament counts split visibility and count entries once. |
+| [VotingHistoryTests.test_tournament_history_ignores_unrelated_scopes_and_scales_group_age](../tests/test_voting_selection.py#L207) | `self` | Verify tournament history ignores unrelated scopes and scales group age. |
+| [VotingHistoryTests.test_tournament_draw_ignores_artist_labels_and_uses_tracks_without_replacement](../tests/test_voting_selection.py#L218) | `self` | Verify tournament draw ignores artist labels and uses tracks without replacement. |
+| [VotingHistoryTests.test_tournament_draw_soft_balance_unique_and_full_pool_fallback](../tests/test_voting_selection.py#L228) | `self` | Verify tournament draw soft balance unique and full pool fallback. |
+| [VotingHistoryTests.test_tournament_diagnostics_match_entry_weights](../tests/test_voting_selection.py#L242) | `self` | Verify tournament diagnostics match entry weights. |
+| [VotingHistoryTests.test_bracket_route_passes_visibility_evidence_and_preserves_eligibility](../tests/test_voting_selection.py#L256) | `self` | Verify bracket route passes visibility evidence and preserves eligibility. |
+| [VotingHistoryTests.test_local_entries_and_results_leave_competition_weights_and_draws_unchanged](../tests/test_voting_selection.py#L278) | `self` | Verify local entries and results leave competition weights and draws unchanged. |
+| [VotingHistoryTests.test_local_visibility_and_recency_use_only_the_selected_collection](../tests/test_voting_selection.py#L310) | `self` | Verify local visibility and recency use only the selected collection. |
+| [VotingHistoryTests.test_route_never_uses_local_seed_results_for_library_or_tag](../tests/test_voting_selection.py#L329) | `self` | Verify route never uses local seed results for library or tag. |
 
 ## tests/test_waitress_shutdown.py
 

@@ -375,23 +375,25 @@ def tournament_selection_evidence(conn, pool, is_blind, *, scope="global", scope
     return dict(counts=counts, other_counts=other, recent=recent)
 
 
-def preference_evidence(conn):
-    """Read pair exposure and local seed evidence without writing ratings.
+def voting_pair_counts(conn):
+    """Count active voting results between songs still in the catalogue."""
+    return {
+        (low, high): count
+        for low, high, count in conn.execute("""
+            SELECT MIN(h.winner_id,h.loser_id), MAX(h.winner_id,h.loser_id), COUNT(*)
+            FROM history h JOIN songs w ON w.id=h.winner_id JOIN songs l ON l.id=h.loser_id
+            WHERE h.winner_id!=h.loser_id AND h.mode IN ('standard','blind')
+            GROUP BY 1,2
+        """)
+    }
 
-    Ordinary effective votes count once; all valid saved tournament rounds count
-    once, including local brackets. Local seed evidence shrinks each opponent's
-    result towards its current Elo expectation with eight neutral observations;
-    opponents then contribute equally, so repeating one rivalry cannot dominate.
-    """
+
+def local_seed_strength(conn):
+    """Shrink local bracket outcomes toward Elo expectation per opponent."""
     from collections import defaultdict
-    from songranker.catalog import source_sql
     ratings={r['id']:r['elo_score'] for r in rated_pool([dict(row) for row in conn.execute('SELECT id,elo_score FROM songs')])}
     spread=rating_spread(ratings.values())
-    pairs=defaultdict(int)
     local=defaultdict(lambda: [0,0])
-    for row in conn.execute('SELECT winner_id,loser_id FROM '+source_sql(conn)+" WHERE origin='ordinary'"):
-        a,b=row
-        if a in ratings and b in ratings and a!=b:pairs[tuple(sorted((a,b)))]+=1
     for row in conn.execute("""SELECT m.winner_id,m.loser_id,t.scope_type
         FROM tournament_matches m JOIN tournaments t ON t.id=m.tournament_id
         WHERE m.status='completed' AND m.winner_id!=m.loser_id
@@ -399,14 +401,13 @@ def preference_evidence(conn):
           OR (m.winner_id=m.song2_id AND m.loser_id=m.song1_id))"""):
         a,b,scope=row
         if a not in ratings or b not in ratings:continue
-        pairs[tuple(sorted((a,b)))]+=1
         if scope not in ('artist','album'):continue
         for sid,other,won in ((a,b,1),(b,a,0)):
             expected=1/(1+math.exp(max(-35,min(35,(ratings[other]-ratings[sid])/spread)))) if spread else .5
             bucket=local[sid,other];bucket[0]+=won-expected;bucket[1]+=1
     evidence=defaultdict(list)
     for (sid,other),(residual,n) in local.items():evidence[sid].append(2*residual/(n+8))
-    return dict(pairs), {sid:statistics.fmean(values) for sid,values in evidence.items()}
+    return {sid:statistics.fmean(values) for sid,values in evidence.items()}
 
 
 def shelves_feasible(groups, available, count):
@@ -543,21 +544,13 @@ def draw_shelves(
 
 
 def mode_counts(conn, mode):
-    """Read mode exposures and add effective weighted tournament participation to
-    voting modes.
-    """
-    counts = {
+    """Read active appearances from the mode-specific exposure projection."""
+    return {
         r["song_id"]: r["appearances"]
         for r in conn.execute(
             "SELECT song_id,appearances FROM mode_exposures WHERE mode=?", (mode,)
         )
     }
-    if mode in ("standard", "blind", "public"):
-        from songranker.catalog import tournament_appearances
-
-        for sid, values in tournament_appearances(conn).items():
-            counts[sid] = counts.get(sid, 0) + values[mode]
-    return counts
 
 
 def preference_pair(conn, mode, owner=None, rng=random):
@@ -578,8 +571,8 @@ def preference_pair(conn, mode, owner=None, rng=random):
     # eligible collection instead of becoming a fixed lifetime tuning limit.
     horizon = max(8, math.ceil(4 * math.sqrt(len(rated_pool(pool)))))
     recent = recent_preferences(conn, owner, limit=horizon)
-    previous = recent[0] if recent else previous_preference(conn, mode, owner)
-    pair_counts, _ = preference_evidence(conn)
+    previous = recent[0] if recent else ()
+    pair_counts = voting_pair_counts(conn)
     other = mode_counts(conn, "blind" if mode == "standard" else "standard")
     # A track without a preview cannot catch up in Blind, so its Non-blind
     # selection must not be suppressed by an impossible balance target.
@@ -654,55 +647,23 @@ def album_vibe_groups(conn, album_ids):
 
 
 def recent_preferences(conn, owner=None, limit=128):
-    """Read a bounded newest-first song history across both voting visibilities.
-
-    Use the browser's answered ordinary offers when available, including seen
-    identities after corrections. Fall back to effective saved results for old
-    sessions/imports. Merely preparing an offer does not create played history.
-    """
-    from songranker.modes.preferences import owner_hash
-    from songranker.catalog import source_sql
-
-    rows = []
-    if owner:
-        rows = conn.execute(
-            """SELECT song1_id,song2_id FROM preference_offers
-            WHERE owner_hash=? AND origin='ordinary' AND status='answered'
-            ORDER BY closed_at DESC,rowid DESC LIMIT ?""",
-            (owner_hash(owner), limit),
-        ).fetchall()
-    if not rows:
-        rows = conn.execute(
-            "SELECT winner_id,loser_id FROM " + source_sql(conn) +
-            " ORDER BY id DESC LIMIT ?", (limit,),
-        ).fetchall()
-    return [tuple(row) for row in rows]
-
-
-def previous_preference(conn, mode, owner=None):
-    """Read the owning browser's last answered pair, falling back to the latest
-    effective mode result.
-    """
+    """Prefer this browser's active results, falling back to shared voting history."""
     from songranker.modes.preferences import owner_hash
 
-    previous = None
+    history = """
+        SELECT h.winner_id,h.loser_id FROM history h
+        JOIN songs w ON w.id=h.winner_id JOIN songs l ON l.id=h.loser_id
+    """
+    valid = " WHERE h.winner_id!=h.loser_id AND h.mode IN ('standard','blind')"
+    newest = " ORDER BY h.id DESC LIMIT ?"
     if owner:
-        previous = conn.execute(
-            """SELECT song1_id,song2_id FROM preference_offers
-            WHERE owner_hash=? AND mode=? AND origin='ordinary' AND status='answered'
-            ORDER BY closed_at DESC,rowid DESC LIMIT 1""",
-            (owner_hash(owner), mode),
-        ).fetchone()
-    if previous is None:
-        from songranker.catalog import source_sql
-
-        previous = conn.execute(
-            f"SELECT winner_id,loser_id FROM {source_sql(conn)} WHERE mode=? ORDER BY id DESC LIMIT 1",
-            (mode,),
-        ).fetchone()
-    return tuple(previous) if previous else ()
-
-
+        rows = conn.execute(history + """
+            JOIN preference_events e ON e.id=h.id
+            JOIN preference_offers o ON o.token=e.offer_token
+        """ + valid + " AND o.owner_hash=?" + newest, (owner_hash(owner), limit)).fetchall()
+        if rows:
+            return [tuple(row) for row in rows]
+    return [tuple(row) for row in conn.execute(history + valid + newest, (limit,))]
 
 
 def shelf_history(conn):
