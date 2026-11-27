@@ -1,4 +1,4 @@
-/* Shared ready-only preview handoffs. Audio caching lives in bounded app memory. */
+/* Shared ready-only preview handoffs. Ordinary previews are page-scoped; recurring clips also use the browser cache. */
 (() => {
   "use strict";
   const bound = new WeakSet(),
@@ -92,7 +92,7 @@
     for (const c of url) value = Math.imul(value ^ c.charCodeAt(0), 16777619);
     return (value >>> 0).toString(36);
   }
-  function source(id, url) {
+  function source(id, url, scope) {
     try {
       const parsed = new URL(url, location.href),
         host = parsed.hostname.toLowerCase();
@@ -103,17 +103,16 @@
         !parsed.password &&
         ["", "80", "443"].includes(parsed.port) &&
         (host.endsWith(".itunes.apple.com") || host.endsWith(".mzstatic.com"))
-      )
-        return (
-          "/api/previews/" +
-          encodeURIComponent(id) +
-          "?play=" +
-          token +
-          "&page=" +
-          token +
-          "&rev=" +
-          urlRevision(parsed.href)
-        );
+      ) {
+        const page = new URL(location.href);
+        const bracket = page.pathname === "/tournament"
+          ? page.searchParams.get("tournament")
+          : /^\/tournament\/(\d+)\/bracket$/.exec(page.pathname)?.[1];
+        const owner = scope === "background" ? scope
+          : /^[1-9]\d*$/.test(bracket || "") ? "tournament-" + bracket : token;
+        return "/api/previews/" + encodeURIComponent(id) +
+          "?play=" + owner + "&page=" + owner + "&rev=" + urlRevision(parsed.href);
+      }
     } catch {}
     return url || "";
   }
@@ -262,7 +261,7 @@
         try {
           const response = await fetch(url, {
             signal: controller.signal,
-            cache: "no-store",
+            cache: new URL(url, location.href).searchParams.get("page") === token ? "no-store" : "default",
           });
           if (!response.ok) {
             await response.body?.cancel();
@@ -326,7 +325,7 @@
     for (const audio of [...audios].filter(Boolean)) {
       const url = audio.getAttribute("src"),
         id = clipId(audio);
-      if (id) ids.add(Number(id));
+      if (id && new URL(url, location.href).searchParams.get("page") === token) ids.add(Number(id));
       warmJobs.get(url)?.controller.abort();
       warmJobs.delete(url);
       if (prepared.has(url)) {
@@ -838,8 +837,10 @@
           parsed.origin === location.origin &&
           /^\/api\/previews\/\d+$/.test(parsed.pathname)
         ) {
-          parsed.searchParams.set("play", token);
-          parsed.searchParams.set("page", token);
+          if (!/^tournament-[1-9]\d*$/.test(parsed.searchParams.get("page") || "")) {
+            parsed.searchParams.set("play", token);
+            parsed.searchParams.set("page", token);
+          }
           audio.src = parsed.pathname + parsed.search;
         } else audio.src = url;
         bind(audio);
@@ -1160,7 +1161,7 @@
           }
           relation = restored ? saved.relation || "" : choice.reason;
           counted = Boolean(restored && saved.counted);
-          audio.src = source(track.id, track.audio_url);
+          audio.src = source(track.id, track.audio_url, "background");
           if (saved?.id === track.id && saved.time > 0 && saved.time < 30) resumeTime = saved.time;
         }
         setGain(audio, resumeTime ? 0 : .38);

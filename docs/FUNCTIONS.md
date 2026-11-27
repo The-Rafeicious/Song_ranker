@@ -32,7 +32,7 @@ Apple request gates, bounded lookup/preview caches and streaming diagnostics.
 | [remember](../songranker/apple_access.py#L330) | `song_id, state, message='', retry_after=0, upstream_status=None` | Store bounded short-lived preview diagnostics and retry timing for one song. |
 | [api_preview_status](../songranker/apple_access.py#L341) | `song_id` | Serve preview status; GET /api/previews/<int:song_id>/status. |
 | [api_preview](../songranker/apple_access.py#L360) | `song_id` | Serve preview; GET /api/previews/<int:song_id>. |
-| [api_preview.chunks](../songranker/apple_access.py#L412) | `` | Stream upstream audio, record interruptions and cache only complete bounded downloads. |
+| [api_preview.chunks](../songranker/apple_access.py#L417) | `` | Stream upstream audio, record interruptions and cache only complete bounded downloads. |
 
 ## songranker/catalog.py
 
@@ -1592,7 +1592,8 @@ Preview request budgeting and completed-cache reuse without real CDN traffic.
 | --- | --- | --- |
 | [PreviewDeliveryTests.test_ten_song_rotation_fits_the_existing_gate](../tests/test_preview_delivery.py#L9) | `self` | Verify ten song rotation fits the existing gate. |
 | [PreviewDeliveryTests.test_cached_replay_and_ranges_bypass_upstream_even_during_cooldown](../tests/test_preview_delivery.py#L26) | `self` | Verify cached replay and ranges bypass upstream even during cooldown. |
-| [PreviewDeliveryTests.test_cache_holds_a_full_round_and_expires_without_disk_storage](../tests/test_preview_delivery.py#L59) | `self` | Verify cache holds a full round and expires without disk storage. |
+| [PreviewDeliveryTests.test_background_and_bracket_hits_survive_ordinary_page_cleanup](../tests/test_preview_delivery.py#L60) | `self` | Verify background and bracket hits survive ordinary page cleanup. |
+| [PreviewDeliveryTests.test_cache_holds_a_full_round_and_expires_without_disk_storage](../tests/test_preview_delivery.py#L81) | `self` | Verify cache holds a full round and expires without disk storage. |
 
 ## tests/test_query.py
 
@@ -2157,4 +2158,4 @@ Source/asset checks, generated function ownership and unified test commands.
 | [javascript](../tools/check.py#L374) | `` | Run script syntax, DOM interaction suites and the served Dev integration. |
 | [main](../tools/check.py#L384) | `argv=None` | Select an independently runnable validation group or the complete PR gate. |
 
-Total: **1467 Python definitions**.
+Total: **1468 Python definitions**.

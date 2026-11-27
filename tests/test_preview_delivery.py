@@ -46,6 +46,7 @@ class PreviewDeliveryTests(unittest.TestCase):
             first = client.get(url)
             self.assertEqual(first.data, body)
             self.assertEqual(first.headers["X-Preview-Cache"], "miss")
+            self.assertEqual(first.cache_control.no_store, True)
             gate.block(60)
             replay = client.get(url)
             self.assertEqual(replay.data, body)
@@ -55,6 +56,27 @@ class PreviewDeliveryTests(unittest.TestCase):
             self.assertEqual(part.data, body[3:9])
             self.assertEqual(get.call_count, 1)
             upstream.close.assert_called()
+
+    def test_background_and_bracket_hits_survive_ordinary_page_cleanup(self):
+        url = "https://audio-ssl.itunes.apple.com/test.m4a"
+        conn = MagicMock()
+        conn.execute.return_value.fetchone.return_value = {"audio_url": url}
+        cache = media.PreviewMemoryCache()
+        for page in ("background", "tournament-23", "voting_page"):
+            cache.put((page, 1, url), b"preview", "audio/mp4")
+        cache.discard("voting_page", close=True)
+        self.assertIsNone(cache.get(("voting_page", 1, url)))
+        with patch.object(media, "get_db_connection", return_value=conn), patch.object(
+            media, "preview_cache", cache
+        ):
+            client = media.app.test_client()
+            for page in ("background", "tournament-23"):
+                path = "/api/previews/1?page=" + page
+                replay = client.get(path, headers={"Range": "bytes=1-3"})
+                self.assertEqual((replay.status_code, replay.data), (206, b"rev"))
+                self.assertTrue(replay.cache_control.private)
+                self.assertEqual(replay.cache_control.max_age, 86400)
+                self.assertTrue(client.get(path, headers={"Range": "bytes=99-"}).cache_control.no_store)
 
     def test_cache_holds_a_full_round_and_expires_without_disk_storage(self):
         clock = [0.0]
