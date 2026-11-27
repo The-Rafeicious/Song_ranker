@@ -80,9 +80,9 @@ def api_generate_bracket():
         from songranker.modes.selection import with_catalogue_age
 
         pool = with_catalogue_age(conn, pool)
-        from songranker.modes.selection import preference_evidence
+        from songranker.modes.selection import local_seed_strength
         # Local results may seed local brackets, never library/tag competition.
-        local_strength = preference_evidence(conn)[1] if scope in ("artist", "album") else None
+        local_strength = local_seed_strength(conn) if scope in ("artist", "album") else None
         songs = tournament_tracks(pool, size, local_strength=local_strength,
                                   **tournament_selection_evidence(conn, pool, is_blind, scope=scope, scope_id=scope_id))
         if songs is None:

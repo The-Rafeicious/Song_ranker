@@ -198,19 +198,19 @@ class SelectionEvidenceReviewTests(unittest.TestCase):
         c=sqlite3.connect(':memory:');c.row_factory=sqlite3.Row
         c.executescript("""CREATE TABLE songs(id INTEGER,elo_score REAL);
             INSERT INTO songs VALUES(1,1000),(2,1400),(3,800);
-            CREATE TABLE history(winner_id INTEGER,loser_id INTEGER);
-            INSERT INTO history VALUES(1,2);
+            CREATE TABLE history(winner_id INTEGER,loser_id INTEGER,mode TEXT);
+            INSERT INTO history VALUES(1,2,'standard');
             CREATE TABLE tournaments(id INTEGER,scope_type TEXT);
             INSERT INTO tournaments VALUES(1,'artist');
             CREATE TABLE tournament_matches(tournament_id INTEGER,status TEXT,winner_id INTEGER,loser_id INTEGER,song1_id INTEGER,song2_id INTEGER);
             INSERT INTO tournament_matches VALUES(1,'completed',2,1,1,2);""")
         before=c.total_changes
-        pairs,strength=S.preference_evidence(c)
-        self.assertEqual(pairs[(1,2)],2)
+        pairs,strength=S.voting_pair_counts(c),S.local_seed_strength(c)
+        self.assertEqual(pairs[(1,2)],1)
         self.assertLess(strength[1],0)
         self.assertGreater(strength[1],-.1,'A loss against a stronger opponent is weak negative evidence')
         self.assertEqual(c.total_changes,before)
         c.executemany("INSERT INTO tournament_matches VALUES(1,'completed',2,1,1,2)",[()]*100)
-        _,strength=S.preference_evidence(c)
+        strength=S.local_seed_strength(c)
         self.assertTrue(all(-1<=v<=1 for v in strength.values()))
         c.close()
