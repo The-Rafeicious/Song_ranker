@@ -104,7 +104,7 @@ def shelf_stats():
     )
 
 
-def shelf_pool(conn):
+def shelf_pool(conn, *, selection_inputs=True):
     """The existing numbered/proper-album pool, shared by the picker and stats."""
     pool = [
         dict(r)
@@ -118,7 +118,8 @@ def shelf_pool(conn):
     ]
     from songranker.modes.selection import with_catalogue_age
 
-    pool = with_catalogue_age(conn, pool)
+    if selection_inputs:
+        pool = with_catalogue_age(conn, pool)
     grouped = defaultdict(list)
     for song in pool:
         grouped[song["album_id"]].append(song)

@@ -205,7 +205,7 @@ class SelectionEvidenceReviewTests(unittest.TestCase):
             CREATE TABLE tournament_matches(tournament_id INTEGER,status TEXT,winner_id INTEGER,loser_id INTEGER,song1_id INTEGER,song2_id INTEGER);
             INSERT INTO tournament_matches VALUES(1,'completed',2,1,1,2);""")
         before=c.total_changes
-        pairs,strength=S.voting_pair_counts(c),S.local_seed_strength(c)
+        pairs,strength=S.voting_history_counts(c)[0],S.local_seed_strength(c)
         self.assertEqual(pairs[(1,2)],1)
         self.assertLess(strength[1],0)
         self.assertGreater(strength[1],-.1,'A loss against a stronger opponent is weak negative evidence')

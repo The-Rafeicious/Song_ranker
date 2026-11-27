@@ -291,13 +291,24 @@ def background_previews():
 
     with closing(get_db_connection()) as conn:
         conn.execute('BEGIN')
-        songs = with_vibe_maps(conn, conn.execute("""
+        rows = conn.execute("""
             SELECT s.id, s.title, s.audio_url, s.album_id, s.elo_score, a.cover_url
             FROM songs s LEFT JOIN albums a ON a.id=s.album_id
             LEFT JOIN song_details d ON d.song_id=s.id
             WHERE TRIM(COALESCE(s.audio_url,''))!='' AND COALESCE(d.preview_bad,0)=0
             ORDER BY s.id
-        """))
+        """)
+        playback = request.headers.get('X-Preview-Layout') == 'playback'
+        if playback:
+            songs = [dict(row, vibe_maps={}) for row in rows]
+            by_id = {song['id']: song for song in songs}
+            for sid, map_id, x, y in conn.execute("""
+                SELECT song_id,map_id,x,y FROM song_vibe_positions WHERE status='placed'
+            """):
+                if sid in by_id:
+                    by_id[sid]['vibe_maps'][map_id] = dict(status='placed', x=x, y=y)
+        else:
+            songs = with_vibe_maps(conn, rows)
         artists, tags = defaultdict(list), defaultdict(list)
         for row in conn.execute("""
             SELECT sa.song_id, sa.artist_id, a.name FROM song_artists sa
@@ -316,4 +327,6 @@ def background_previews():
             song['album'] = visible_albums.get(song['album_id'])
             if song['album'] is None:
                 song['album_id'] = None
-        return jsonify(songs=songs)
+        response = jsonify(songs=songs)
+        response.vary.add("X-Preview-Layout")
+        return response
